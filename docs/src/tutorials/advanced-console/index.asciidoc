@@ -1,0 +1,595 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500]
+
+The Gremlin Console
+===================
+
+In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/#_the_first_five_minutes["The First Five Minutes"]
+of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] wth TinkerPop and graphs, the
+importance of the link:http://tinkerpop.apache.org/docs/x.y.z/#gremlin-console[Gremlin Console] was introduced. This
+tutorial further explores the usage of the console in the daily work of Gremlin developers delving more deeply
+into the details of its operations and expanding upon the basic usage guide in the
+link:http://tinkerpop.apache.org/docs/x.y.z/#gremlin-console[reference documentation].
+
+image::gremlin-dashboard.png[width="600",align="center"]
+
+IMPORTANT: This tutorial assumes that the Gremlin Console is installed and that you have some familiarity with Gremlin
+in general. Please be sure to read the link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started]
+tutorial prior to proceeding further with this one.
+
+The Gremlin Console serves a variety of use cases that can meet the needs of different types of Gremlin users. This
+tutorial explores the features of the Gremlin Console, through a number of these different use cases to hopefully
+inspire you to new levels of usage. While a use case may not fit your needs, you may well find it worthwhile to
+read, as it is possible that a "feature" will be discussed that may be useful to you.
+
+The following points summarize the key features discussed in each of the use cases:
+
+* <<learning-tool,A Learning Tool>>
+** Introducing the <<toy-graphs,toy graphs>>
+** Finding <<help,help>> for commands
+* <<application-devs,Application Developers>>
+** <<result-iteration,Result iteration>>
+* <<ad-hoc, Ad-hoc Analysis>>
+** <<import-command,Importing classes>>
+** <<install-command, Installing new dependencies>>
+** Deciding when to use the <<def-usage,def>> keyword
+
+[[learning-tool]]
+Use Case: A Learning Tool
+-------------------------
+
+image:gremlin-grad.png[float=left,width=185] __You are a new user of Apache TinkerPop and perhaps new to graphs as well.  You're trying to get familiar with how
+Gremlin works and how it might fit into your project.  You want some "quick wins" with Gremlin and aim to conceptually
+prove that the TinkerPop stack is a good direction to go.__
+
+It cannot be emphasized enough just how important the Gremlin Console is to new users. The interactive nature of a
+link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] makes it possible to quickly try some
+Gremlin code and get some notion of success or failure without the longer process of build tools, IDEs, compilation,
+and application execution. The faster that you can iterate through versions of your Gremlin code, the faster you can
+advance your knowledge.
+
+As a new user, your best way to learn is to try Gremlin with a graph already packaged with the console:
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph is an in-memory
+graph that is easy to use and does not have a lot of configuration options to be concerned with. You can create an
+empty TinkerGraph as follows:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = graph.traversal()
+----
+
+[[toy-graphs]]
+Now that you have an empty TinkerGraph instance, you could load a sample of your data and get started with some
+traversals.  Of course, you might also try one of the "toy" graphs (i.e. graphs with sample data) that TinkerPop
+packages with the console through the `TinkerFactory`.  `TinkerFactory` has a number of static methods that can be
+called to create these standard `TinkerGraph` instances.  They are "standard" in the sense that they are typically used
+for all TinkerPop examples and test cases.
+
+* `createClassic()` - The original TinkerPop 2.x toy graph (link:http://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-classic.png[diagram]).
+* `createModern()` - The TinkerPop 3.x representation of the "classic" graph, where the main difference is that vertex
+labels are defined and the "weight" edge property is a `double` rather than a `float`
+(link:http://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png[diagram]).
+* `createTheCrew` - A graph that demonstrates usage of the new structural features of TinkerPop 3.x (as compared to
+2.x) such as link:http://tinkerpop.apache.org/docs/x.y.z/#vertex-properties[vertex properties and multi-properties]
+(link:http://tinkerpop.apache.org/docs/x.y.zimages/the-crew-graph.png[diagram]).
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+----
+
+image:grateful-gremlin.png[float=right,width=110] As you might have noticed from the diagrams of these graphs or from
+the output of the Gremlin Console itself, these toy graphs are small (only a few vertices and edges each). It is nice
+to have a small graph when learning Gremlin so that you can easily see if you are getting the results you expect. Even
+though these graphs are "small", they are robust enough in structure to try out many different kinds of traversals.
+However, if you find that a larger graph might be helpful, there is another option: The Grateful Dead
+(link:http://tinkerpop.apache.org/docs/x.y.z/images/grateful-dead-schema.png[schema]).
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+graph.io(gryo()).readGraph('data/grateful-dead.kryo')
+graph
+----
+
+The Grateful Dead graph ships with the Gremlin Console and the data can be found in several formats (along with the
+other toy graphs previously mentioned) in the console's `data` directory.
+
+TIP: If you find yourself in a position where you need to ask a question on the
+link:http://groups.google.com/group/gremlin-users[Gremlin Users mailing list] about a traversal that you are having
+trouble with in your application, try to convert the gist of it to one of the toy graphs.  Taking this step will make it
+easier for advanced Gremlin users to help you, which should lead to a faster response time for your problem. In
+addition, there is the added benefit that the mailing list post will likely be more relevant to other users as it is not
+written solely in the context of your domain.
+
+[[help]]
+As you get familiar with the console, it is good to know what some of the basic commands are. A "command" is not
+"Gremlin code", but something interpreted by the console to have special meaning in terms of configuring how the
+console works or performing a particular function outside of code itself.  These commands are itemized in the
+link:http://tinkerpop.apache.org/docs/x.y.z/#_console_commands[reference documentation], but they also be accessed
+within the console itself with the `:help` command.
+
+[gremlin-groovy]
+----
+:help
+----
+
+The `:help` command shows a list of all the commands registered to the console and as this console is based on the
+link:http://www.groovy-lang.org/groovysh.html[Groovy Shell], you will see commands that are inherited from there in
+addition to the ones provided by TinkerPop. You can also request help on a specific command:
+
+[gremlin-groovy]
+----
+:help :remote
+----
+
+The Gremlin Console can also provide you with code help via auto-complete functionality. Use the `<TAB>` key to
+trigger a search of possible method names that might complete what you've typed to that point.
+
+As you learn more about Gremlin you will find many code examples in the documentation and most all will be executable
+in the console. Trying these examples for yourself and modifying their execution slightly to see how output changes is
+a good way to go about your Gremlin education.
+
+[[application-devs]]
+Use Case: Application Development
+---------------------------------
+
+image:gremlin-working-on-tinkerpop.png[width=350,float=right] __You are an application developer and the TinkerPop stack
+will be central to your application architecture. You need to develop a series of services that will execute queries
+against a graph database in support of the front-end of the software.__
+
+Most application developers use an link:https://en.wikipedia.org/wiki/Integrated_development_environment[IDE], such
+as link:https://en.wikipedia.org/wiki/IntelliJ_IDEA[Intellij], to help with their software development efforts. The
+IDE provides shortcuts and conveniences that make an otherwise complex engineering job more productive. When
+developing applications for TinkerPop, the Gremlin Console should accompany the IDE as a productivity tool. In other
+words, when you open your IDE, open the Gremlin Console next to it.
+
+You will find that as you write Gremlin for your code base in your IDE, you will inevitably reach a point of
+sufficient complexity in your traversals where you will need to:
+
+* Quickly test the traversal over real data to determine if it is correct.
+* Test or debug pieces of the traversal in isolation.
+* Experiment with different ways of expressing the same traversal.
+* Examine the performance of a traversal through link:http://tinkerpop.apache.org/docs/x.y.z/#profile-step[profile()]
+step or by other link:http://tinkerpop.apache.org/docs/x.y.z/#benchmarking-and-profiling[profiling and benchmarking]
+methods.
+
+Consider an example where you are developing an application that uses TinkerGraph and the data from the "modern"
+toy graph. You want to encapsulate some logic for a graph traversal that finds a "person" vertex, iterates outgoing
+edges and groups the adjacent vertices as "value maps".
+
+As you have read the TinkerPop documentation and have been experimenting with Gremlin for a while, you head to your
+IDE with your open project in it and write a simple class like this:
+
+[source,java]
+----
+package com.my.company;
+
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+
+import java.util.List;
+import java.util.Map;
+
+public final class Traversals {
+  public static Map<String,List<Vertex>> groupAround(GraphTraversalSource g, long id) {
+    return g.V(id).outE().group().by(label).by(inV()).next()
+  }
+}
+----
+
+In the "modern" graph, calling `groupAround` with "1" as the `id` argument, should return a `Map` with two keys:
+"knows" and "created", where the "knows" key should have vertices "2" and "4" and the "created" key should have
+vertex "3". As you are a good developer, you know to write a unit test to validate this outcome.  You write your
+test, compile your application, and execute your test only to find it failing on the "knows" key which only has one
+vertex associated to it instead of two.
+
+[[result-iteration]]
+As you have the Gremlin Console open you decide to debug the problem there.  You copy your Gremlin code from
+the IDE and execute it in the console and confirm the failure:
+
+[gremlin-groovy,modern]
+----
+g.V(1).outE().group().by(label).by(inV())
+----
+
+Note that `next()` is removed here. The Gremlin Console automatically tries to iterate all results from a line of
+execution. In the above case, that line returns a `Traversal`.  A `Traversal` is an `Iterator` and when the console
+detects that type it steps through each item in the `Iterator` and prints it to the screen.
+
+Trying it with the use of `next()` produces the following:
+
+[gremlin-groovy,modern]
+----
+g.V(1).outE().group().by(label).by(inV()).next()
+----
+
+In this case, the line of execution does not return a `Traversal`.  It returns the first item in the `Traversal` with
+the call to `next()`.  This first item is a `Map`.  When the console detects that it is a `Map`, it iterates the
+`entries()` and prints each to the screen.
+
+It is possible to "prevent" auto-iteration which is useful when you want to work with a `Traversal` as a variable.
+
+[gremlin-groovy,modern]
+----
+t = g.V(1).outE().group().by(label).by(inV());null
+t.next()
+----
+
+image:gremlin-console-ide.png[float=left,width=300] The first line assigns the `Traversal` to `t`, but the line itself
+is actually two lines of code as denoted by the semi-colon. The line of execution actually returns `null`, which is
+what the console actual auto-iterates. At that point you can work with `t` as you desire.
+
+Turning your attention back to the original problem, you can now think about the issue with the `Traversal` not
+containing the appropriate number of vertices in the context of iteration. In the original `Traversal` the second
+`by()` modulator takes `inV()` as an argument (an anonymous `Traversal` spawned from the `__` class whose methods are
+statically imported to the console). This `by()` tells Gremlin what aspect of the current group of edges should be
+stored in the list associated with that group.  By specifying `inV()` you are saying that you want to store the
+in-vertices of the edges for a group.
+
+WARNING: While convenient, statically imported methods can be confusing for new users, especially those who are
+translating their code between the console (which is Groovy-based) and a Java IDE. Take care with the use of the
+`in()` method in this context, as the word `in` is reserved in Groovy. For the console, you must explicitly use
+this method as `__.in()`.
+
+Structurally, this `Traversal` is sound, however it makes an assumption about how `inV()` will be utilized as an inner
+`Traversal`.  It is always important to remember that the console does not auto-iterate every `Traversal` in your
+script.  It only iterates the result of a line of execution.  Therefore, inner `Traversal` instances do not get that
+benefit, and as such, `inV()` only has `next()` called upon it pulling a single vertex from the "knows" edges. You
+can remedy that by adding `fold()` to `inV()` as follows:
+
+[gremlin-groovy,modern]
+----
+g.V(1).outE().group().by(label).by(inV().fold()).next()
+----
+
+You can now see that your result is as expected and can modify your Java class to reflect the change:
+
+[source,java]
+----
+package com.my.company;
+
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+
+import java.util.List;
+import java.util.Map;
+
+public final class Traversals {
+  public static Map<String,List<Vertex>> groupAround(GraphTraversalSource g, long id) {
+    return g.V(id).outE().group().by(label).by(inV().fold()).next()
+  }
+}
+----
+
+Result iteration represents the most common "simple" bug that users encounter. It's all too easy to write a traversal
+as follows:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').drop()
+g.V().has('name','marko').count()
+----
+
+As you can see, the first traversal removes vertices with the "name" field of "marko" and the second traversal verifies
+that there are no vertices named "marko" after the first is executed.  After seeing success like that in the console
+it is all too tempting to copy and paste that line of code to a Java class like:
+
+[source,java]
+----
+package com.my.company;
+
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+
+public final class Traversals {
+  public static void removeByName(GraphTraversalSource g, String name) {
+    g.V().has('name', name).drop();
+  }
+}
+----
+
+Of course, this won't work and you will likely be left wondering why your unit test for "removeByName" is failing, but
+the identical line of code in the console is doing what is expected.  The `drop()` step is not some special form
+of terminating step that iterates the traversal - it is just one more step that vertices will pass through.  Outside
+of the console you must add `iterate()` as follows:
+
+[source,java]
+----
+package com.my.company;
+
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+
+public final class Traversals {
+  public static void removeByName(GraphTraversalSource g, String name) {
+    g.V().has('name', name).drop().iterate();
+  }
+}
+----
+
+The call to `iterate()` will do what the console does automatically and executes the `Traversal` instance and steps
+through the results.  You will generally use `iterate()` to generate side-effects (e.g. drop vertices from the
+database) and it has its usage in the console as well.  If you have an especially long result set for which
+side-effects will be generated, you can simply call `iterate()` on the traversal and avoid a long stream of output to
+the console.
+
+Gremlin written in the console usually has a copy and paste translation to source files (and vice versa). You need
+only recall the rules of iteration when you move code between them. It is equally important that you keep an eye on
+`Traversal` objects declared as inner traversals or within lambda expressions where they will not receive automatic
+iteration. Keeping these semantics in mind will save you from many annoying debugging sessions.
+
+[[ad-hoc]]
+Use Case: Ad-hoc Analysis
+-------------------------
+
+__You are doing some general analysis on a graph with Gremlin and decide that you'd like to store those results in
+Cassandra for additional analysis with other tools.__
+
+image:gremlin-explorer-old-photo.png[float=right,width=350] The Gremlin Console is an indispensable tool for working
+with graph data, but it is also well suited for working with other types of data as well. Its ability to process data
+from different sources and formats provides a flexible environment for exploratory analysis. This ability stems from
+the underlying Groovy Shell and the fact that any JVM-based libraries are easily imported into it, making their
+classes and functions available at the prompt in conjunction with Gremlin.
+
+Let's consider an example where you are exploring "The Crew" toy graph and that you are interested in doing some
+analysis on where people live and when they lived there. You decide to start simple and just get a basic feeling for
+the data of the "person" vertices in the graph:
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createTheCrew()
+g = graph.traversal()
+
+g.V().hasLabel('person').valueMap()
+----
+
+You can see from the output above that there are four "person" vertices and each has a "name" property and a "location"
+property.  The "location" is actually a link:http://tinkerpop.apache.org/docs/x.y.z/#vertex-properties[multi-property],
+where "location" does not have one value, but several. If you look a bit closer you can also see that each "location"
+has link:http://tinkerpop.apache.org/docs/x.y.z/#vertex-properties[meta-properties] as well:
+
+[gremlin-groovy,theCrew]
+----
+g.V().hasLabel('person').as('person').
+      properties('location').as('location').
+      select('person','location').by('name').by(valueMap())
+----
+
+You are pleased.  You like that you have the basic data present to achieve your goal, but you see a couple of problems.
+First, just given a quick glance at the data, you can see that the data doesn't uniformly start at a particular time.
+You were hoping to see data presented in such a way that each "person" had data starting and ending in the same years.
+The second problem you can see is that the data really isn't in a format that you need. Ideally, you would like to
+have something that had rows and columns that was easily dumped to CSV for use in other tools. You currently have the
+data in two separate traversals and the data is nested.
+
+image:graph-to-table.png[align=center]
+
+As a first step to solving your problems, you first need to determine the earliest "startTime" that is common to all
+the "person" vertices, as this will be the main filter for the data you intend to retrieve:
+
+[gremlin-groovy,theCrew]
+----
+firstYear = g.V().hasLabel('person').
+                  local(properties('location').values('startTime').min()).
+                  max().next()
+----
+
+You store that result in a variable called "firstYear" as you will likely need that later to help filter results in the
+traversal that ultimately gets the data.  It is often helpful to store results from traversals if you intend to work
+with that data later and the traversal itself is expensive to execute. It is only important to keep in mind that you
+will be limited by the memory available to the console.
+
+TIP: The `-Xmx` setting for Gremlin Console can be changed in `bin/gremlin.sh`. It is likely best to append them to
+the initialization of the `JAVA_OPTIONS` variable in that script.  If you choose to override `JAVA_OPTIONS`, be sure
+to examine the default settings in `bin/gremlin.sh` to include them as they should not be omitted in your override.
+
+In an attempt to test things out, you take a naive approach at the traversal with your filter for "firstYear" applied:
+
+[gremlin-groovy,theCrew]
+----
+firstYear = g.V().hasLabel('person').
+                  local(properties('location').values('startTime').min()).
+                  max().next()
+l = g.V().hasLabel('person').as('person').
+          properties('location').or(has('endTime',gt(firstYear)),hasNot('endTime')).as('location').
+          valueMap().as('times').
+          select('person','location','times').by('name').by(value).by().toList()
+----
+
+As you scan through the data, you can see that it appears to cover the range of time you were looking for. Of course,
+you still have the problem of the format of the data. Recalling that the Gremlin Console is an extension of the Groovy
+Console, you decide to just process "l" with some Groovy syntax to coerce it into the format that you would like to
+see for your rows and columns style output:
+
+[gremlin-groovy,theCrew]
+----
+firstYear = g.V().hasLabel('person').
+                  local(properties('location').values('startTime').min()).
+                  max().next()
+l = g.V().hasLabel('person').as('person').
+          properties('location').or(has('endTime',gt(firstYear)),hasNot('endTime')).as('location').
+          valueMap().as('times').
+          select('person','location','times').by('name').by(value).by().toList()
+l.collect{
+  row->((Math.max(row.times.startTime,firstYear))..((row.times.endTime?:2017)-1)).collect{
+    year->[person:row.person,location:row.location,year:year]}}.flatten()
+----
+
+You had to apply a bit of brute force, but now you have the rows and columns you wanted, with the data normalized and
+flattened in such a way that each year since "2004" is represented all the way up to 2016.
+
+image:gremlin-asciiart.png[width=225,float=right] Unfortunately, you are unsatisfied. The added Groovy processing of "l" feels "wrong" despite it producing the correct
+output.  It has that unfortunate hack for dealing with the possibility that the "endTime" property contains a "null"
+value, thus hard-coding the future "2017" year into the it.  You also recall that the Gremlin language has advanced
+considerably in TinkerPop 3.x and that it is usually possible to eliminate closures and other direct processing
+with Groovy. With those issues in mind, you look to enhance your work.
+
+[[import-command]]
+A first step would be to get rid of the hard-coded "2017". You decide to get the current year programmatically by
+using `java.time.Year`. This class is not one that is available by default in the console. You might think of this as
+similar to what happens when you decide to use a particular class in a Java file.  You must "import" the classes that
+you wish to use. To do this, you need to use the `import` command:
+
+[gremlin-groovy,theCrew]
+----
+import java.time.Year
+Year.now()
+----
+
+You can now use `Year` with the link:http://tinkerpop.apache.org/docs/x.y.z/#constant-step[constant()] step,
+to produce the set of years to have for each person up to the current year:
+
+[gremlin-groovy,theCrew]
+----
+import java.time.Year
+firstYear = g.V().hasLabel('person').
+                  local(properties('location').values('startTime').min()).
+                  max().next()
+g.V().hasLabel("person").as("person").
+      constant((firstYear..(Year.now().value)).toList()).unfold().as("year").
+      select('person','year').by('name').by()
+----
+
+From there you can build on that traversal to grab the "location" given the generated "year" for that data:
+
+[gremlin-groovy,theCrew]
+----
+import java.time.Year
+firstYear = g.V().hasLabel('person').
+                  local(properties('location').values('startTime').min()).
+                  max().next()
+g.V().hasLabel("person").as("person").
+      constant((firstYear..(new Date().getYear() + 1900)).toList()).unfold().as("year").
+      select("person").coalesce(properties("location").filter(values("startTime").where(gte("year"))).
+                                                       order().by("startTime").limit(1),
+                                properties("location").hasNot("endTime")).value().as("location").
+      select("person","year","location").by("name").by().by()
+----
+
+TIP: Not sure what the above traversal is doing?  When you come across a traversal that you don't understand fully,
+the Gremlin Console is great place to get help.  You can dismantle a large traversal and execute it in smaller parts
+to see what each part produces as output.
+
+You now have a traversal written with idiomatic Gremlin with the results in the form that you wanted to have. Now
+you'd like to dump this data to Cassandra for further analysis in another tool.  You decide to use the DataStax
+link:https://github.com/datastax/java-driver[java-driver] in the console to write to Cassandra.
+
+image:graph-to-table-to-cassandra.png[align=center]
+
+[[install-command]]
+The driver does not come bundled with the console and is not available on its classpath by default.  You can bring
+other libraries into the console with the `:install` command. With `:install`, you can reference the Maven
+coordinates (i.e. group, artifact, and version) of a library to have it automatically downloaded from a Maven
+repository and placed into the console classpath. If you have read through the reference documentation, you would find
+a number of examples of `:install` usage to bring in unbundled TinkerPop libraries, like
+link:http://tinkerpop.apache.org/docs/x.y.z/#neo4j-gremlin[neo4j-gremlin] or
+link:http://tinkerpop.apache.org/docs/x.y.z/#hadoop-gremlin[hadoop-gremlin].
+
+IMPORTANT: Before you use the `:install` command, please be sure to read the reference documentation on
+link:http://tinkerpop.apache.org/docs/x.y.z/#gremlin-applications[Grape configuration]. If you do not have proper
+settings in place, it is likely that the `:install` command will fail by way of download errors.
+
+TIP: You can also manually "install" dependencies to the console by copying them into the Gremlin Console classpath.
+This is most easily accomplished by copying the required jar files to the `GREMLIN_HOME/lib` directory.
+
+[source,groovy]
+----
+gremlin> :install com.datastax.cassandra cassandra-driver-core 2.1.9
+==>Loaded: [com.datastax.cassandra, cassandra-driver-core, 2.1.9]
+gremlin> import com.datastax.driver.core.*
+==>groovy.grape.Grape, org.apache.commons.configuration.*, ... java.time.Year, com.datastax.driver.core.*
+gremlin> cluster = com.datastax.driver.core.Cluster.builder().addContactPoint("localhost").build()
+==>com.datastax.driver.core.Cluster@3e1624c7
+gremlin> session = cluster.connect()
+==>com.datastax.driver.core.SessionManager@35764bef
+gremlin> session.execute("CREATE KEYSPACE crew WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }")
+gremlin> session.execute("USE crew")
+gremlin> session.execute("CREATE TABLE locations ( name varchar, location varchar, year int, PRIMARY KEY (name, year))")
+----
+
+In the above code, you first use `:install` to pull in the dependencies of the driver.  When that first line has
+executed to completion you can inspect the `GREMLIN_HOME/ext` directory to see that the appropriate jar files have
+been copied to the classpath. The remaining lines of code demonstrate how to instantiate a driver instance to
+connect to a running Cassandra instance. link:http://docs.datastax.com/en/cql/3.1/cql/cql_reference/cqlReferenceTOC.html[CQL]
+statements are then issued to create the keyspace and table to hold the data.
+
+Now that you have a `Session` established with a table to store the data in, you can use the
+link:http://tinkerpop.apache.org/docs/x.y.z/#lambda-steps[sideEffect()] step to stream the data to Cassandra:
+
+[source,groovy]
+----
+gremlin> g.V().hasLabel("person").as("person").
+gremlin>       constant((firstYear..(new Date().getYear() + 1900)).toList()).unfold().as("year").
+gremlin>       select("person").coalesce(properties("location").filter(values("startTime").where(gte("year"))).
+gremlin>                                                        order().by("startTime").limit(1),
+gremlin>                                 properties("location").hasNot("endTime")).value().as("location").
+gremlin>       select("person","year","location").by("name").by().by().
+gremlin>       sideEffect{
+gremlin>         def row = it.get()
+gremlin>         session.execute("INSERT INTO locations(name, location, year) VALUES ('${row.person}', '${row.location}', ${row.year});")
+gremlin>       }.iterate();null
+==>null
+gremlin> session.execute("SELECT * FROM locations")
+==>Row[daniel, 2004, kaiserslautern]
+==>Row[daniel, 2005, kaiserslautern]
+==>Row[daniel, 2006, aachen]
+==>Row[daniel, 2007, aachen]
+==>Row[daniel, 2008, aachen]
+==>Row[daniel, 2009, aachen]
+==>Row[daniel, 2010, aachen]
+...
+==>Row[stephen, 2015, purcellville]
+==>Row[stephen, 2016, purcellville]
+gremlin> session.execute("SELECT COUNT(*) FROM locations")
+==>Row[52]
+----
+
+[[def-usage]]
+TIP: The `sideEffect()` takes the `Traverser` referred to as "it" (the default naming in Groovy for the argument in a
+closure), and assigns the object it is holding to a variable called "row". Note the use of `def` in this case. In the
+console, the use of `def` inside a closure scopes that variable to the closure.  Without `def` the "row" variable would
+be accessible globally (i.e. at the `gremlin>` prompt).
+
+TIP: If you find that you always work with a particular library, consider starting the console with an initialization
+script that prepares your environment for you. An "initialization script" is just a Groovy script that contains the
+initial commands to execute when the console starts.  Following the use case, it would be nice if the initialization
+script contained the `import` statement for the driver and possibly the code to get the `Session` object ready for use.
+Start the Gremlin Console with that script by just adding it as an argument on the command line:
+`bin/gremlin.sh init.groovy`.
+
+This use case focused on using a Cassandra related library, but it should be evident that it would be equally
+straightforward to perform this same data dump to link:https://hbase.apache.org/[HBase],
+link:https://en.wikipedia.org/wiki/Microsoft_SQL_Server[Microsoft SQL Server],
+link:https://www.mongodb.org/[MongoDB], etc.  You should further note, that you are not restricted to a "data dump".
+You could just as easily `:install` libraries to read data from link:https://en.wikipedia.org/wiki/Oracle_Database[Oracle]
+into a graph, use functions from link:https://commons.apache.org/proper/commons-math/[Commons Math], or do anything
+else you can think of with available JVM libraries.
+
+Summary
+-------
+
+These use cases have tried to demonstrate some of the common ways in which you can use the Gremlin Console. In the
+process, they exposed tips and pitfalls to be aware of when working with it. Hopefully, you have gained some new
+knowledge on what the console can do for you and have been inspired to work with it in more productive ways.
