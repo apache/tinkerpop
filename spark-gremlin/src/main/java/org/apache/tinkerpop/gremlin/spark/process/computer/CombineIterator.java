@@ -71,9 +71,11 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
         }
     }
 
+    private static final int MAX_SIZE = 5000;
+
     private void processNext() {
         int sizeCounter = this.combineMap.size();
-        while (this.inputIterator.hasNext()) {
+        while (sizeCounter < MAX_SIZE && this.inputIterator.hasNext()) {
             final Tuple2<K, V> keyValue = this.inputIterator.next();
             List<V> values = this.combineMap.get(keyValue._1());
             if (null == values) {
@@ -81,14 +83,15 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
                 this.combineMap.put(keyValue._1(), values);
             }
             values.add(keyValue._2());
-            if(++sizeCounter > 100000)
-                break;
-        }
-        for (final K key : this.combineMap.keySet()) {
-            final List<V> values = this.combineMap.get(key);
-            if (values.size() > 1) {
-                this.combineMap.remove(key);
-                this.mapReduce.combine(key, values.iterator(), this.combineIteratorEmitter);
+            if (++sizeCounter > MAX_SIZE) {
+                for (final K key : this.combineMap.keySet()) {
+                    final List<V> values2 = this.combineMap.get(key);
+                    if (values2.size() > 1) {
+                        this.combineMap.remove(key);
+                        this.mapReduce.combine(key, values2.iterator(), this.combineIteratorEmitter);
+                    }
+                }
+                sizeCounter = this.combineMap.size();
             }
         }
     }
