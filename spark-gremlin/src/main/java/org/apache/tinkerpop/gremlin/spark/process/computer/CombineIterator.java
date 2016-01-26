@@ -45,7 +45,6 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
         this.mapReduce.workerStart(MapReduce.Stage.COMBINE);
     }
 
-
     @Override
     public boolean hasNext() {
         if (!this.combineMap.isEmpty())
@@ -73,7 +72,8 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
     }
 
     private void processNext() {
-        while (this.inputIterator.hasNext() && this.combineMap.size() < 500) {
+        int sizeCounter = this.combineMap.size();
+        while (this.inputIterator.hasNext()) {
             final Tuple2<K, V> keyValue = this.inputIterator.next();
             List<V> values = this.combineMap.get(keyValue._1());
             if (null == values) {
@@ -81,7 +81,7 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
                 this.combineMap.put(keyValue._1(), values);
             }
             values.add(keyValue._2());
-            if (values.size() > 1000)
+            if(++sizeCounter > 100000)
                 break;
         }
         for (final K key : this.combineMap.keySet()) {
