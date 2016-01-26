@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Test;
@@ -37,15 +38,17 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
     public void shouldCompileStatic() throws Exception {
         // with no type checking this should pass
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine()) {
-            assertEquals(255, scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).red"));
+            assertEquals(255, scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()"));
         }
 
         final CompileStaticCustomizerProvider provider = new CompileStaticCustomizerProvider();
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(provider)) {
-            scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).red");
+            scriptEngine.eval("((Object) new java.awt.Color(255, 255, 255)).getRed()");
             fail("Should have failed type checking");
         } catch (ScriptException se) {
-            assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            final Throwable root = ExceptionUtils.getRootCause(se);
+            assertEquals(MultipleCompilationErrorsException.class, root.getClass());
+            assertThat(se.getMessage(), containsString("[Static type checking] - Cannot find matching method java.lang.Object#getRed(). Please check if the declared type is right and if the method exists."));
         }
     }
 
