@@ -156,11 +156,6 @@ import java.util.stream.Stream;
         method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldSupportWorkerCount",
-        reason = "It is not possible to control Spark worker counts in integration testing.",
-        computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer"})
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
         method = "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
