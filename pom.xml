@@ -756,15 +756,15 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>tutorial-advanced-console</id>
+                                <id>tutorial-the-gremlin-console</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/advanced-console</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/advanced-console</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
