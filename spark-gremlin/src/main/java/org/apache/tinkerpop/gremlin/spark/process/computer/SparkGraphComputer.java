@@ -237,15 +237,16 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         mapReduce.storeState(newApacheConfiguration);
                         // map
                         final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceGraphRDD, mapReduce, newApacheConfiguration);
-                        // combine TODO: is this really needed?
+                        // combine
+                        final JavaPairRDD combineRDD = mapReduce.doStage(MapReduce.Stage.COMBINE) ? SparkExecutor.executeCombine(mapRDD, newApacheConfiguration) : mapRDD;
                         // reduce
-                        final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
+                        final JavaPairRDD reduceRDD = mapReduce.doStage(MapReduce.Stage.REDUCE) ? SparkExecutor.executeReduce(combineRDD, mapReduce, newApacheConfiguration) : combineRDD;
                         // write the map reduce output back to disk (memory)
                         try {
                             mapReduce.addResultToMemory(finalMemory,
                                     hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
                                             .newInstance()
-                                            .writeMemoryRDD(apacheConfiguration, mapReduce.getMemoryKey(), null == reduceRDD ? mapRDD : reduceRDD));
+                                            .writeMemoryRDD(apacheConfiguration, mapReduce.getMemoryKey(), reduceRDD));
                         } catch (final InstantiationException | IllegalAccessException e) {
                             throw new IllegalStateException(e.getMessage(), e);
                         }

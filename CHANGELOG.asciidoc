@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added a lazy iterator, memory safe implementation of MapReduce to `SparkGraphComputer`.
+* Added `MapReduce.combine()` support to `SparkGraphComputer`.
 * Bumped to Neo4j 2.3.2.
 * Fixed Java comparator contract issue around `Order.shuffle`.
 * Optimized a very inefficient implementation of `SampleLocalStep`.
