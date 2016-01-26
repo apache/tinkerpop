@@ -549,8 +549,7 @@ gremlin>       select("person","year","location").by("name").by().by().
 gremlin>       sideEffect{
 gremlin>         def row = it.get()
 gremlin>         session.execute("INSERT INTO locations(name, location, year) VALUES ('${row.person}', '${row.location}', ${row.year});")
-gremlin>       }.iterate();null
-==>null
+gremlin>       }.iterate()
 gremlin> session.execute("SELECT * FROM locations")
 ==>Row[daniel, 2004, kaiserslautern]
 ==>Row[daniel, 2005, kaiserslautern]
