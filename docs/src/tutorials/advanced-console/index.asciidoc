@@ -519,7 +519,9 @@ This is most easily accomplished by copying the required jar files to the `GREML
 gremlin> :install com.datastax.cassandra cassandra-driver-core 2.1.9
 ==>Loaded: [com.datastax.cassandra, cassandra-driver-core, 2.1.9]
 gremlin> import com.datastax.driver.core.*
-==>groovy.grape.Grape, org.apache.commons.configuration.*, ... java.time.Year, com.datastax.driver.core.*
+==>groovy.grape.Grape, org.apache.commons.configuration.*, ..., com.datastax.driver.core.*
+gremlin> import static com.datastax.driver.core.querybuilder.QueryBuilder.*
+==>groovy.grape.Grape, org.apache.commons.configuration.*, ..., static com.datastax.driver.core.querybuilder.QueryBuilder.*
 gremlin> cluster = com.datastax.driver.core.Cluster.builder().addContactPoint("localhost").build()
 ==>com.datastax.driver.core.Cluster@3e1624c7
 gremlin> session = cluster.connect()
@@ -548,9 +550,13 @@ gremlin>                                 properties("location").hasNot("endTime"
 gremlin>       select("person","year","location").by("name").by().by().
 gremlin>       sideEffect{
 gremlin>         def row = it.get()
-gremlin>         session.execute("INSERT INTO locations(name, location, year) VALUES ('${row.person}', '${row.location}', ${row.year});")
+gremlin>         def statement = insertInto("locations").
+gremlin>                         value("name", row.person).
+gremlin>                         value("location", row.location).
+gremlin>                         value("year", row.year)
+gremlin>         session.execute(statement)
 gremlin>       }.iterate()
-gremlin> session.execute("SELECT * FROM locations")
+gremlin> session.execute(select().all().from("locations"))
 ==>Row[daniel, 2004, kaiserslautern]
 ==>Row[daniel, 2005, kaiserslautern]
 ==>Row[daniel, 2006, aachen]
@@ -561,8 +567,6 @@ gremlin> session.execute("SELECT * FROM locations")
 ...
 ==>Row[stephen, 2015, purcellville]
 ==>Row[stephen, 2016, purcellville]
-gremlin> session.execute("SELECT COUNT(*) FROM locations")
-==>Row[52]
 ----
 
 [[def-usage]]
