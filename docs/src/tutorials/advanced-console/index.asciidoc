@@ -23,9 +23,9 @@ The Gremlin Console
 In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
 of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[get started] wth TinkerPop and graphs, the
-importance of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was introduced. This
-tutorial further explores the usage of the console in the daily work of Gremlin developers delving more deeply
-into the details of its operations and expanding upon the basic usage guide in the
+importance of the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console] was
+introduced. This tutorial further explores the usage of the console in the daily work of Gremlin developers delving
+more deeply into the details of its operations and expanding upon the basic usage guide in the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference[reference documentation].
 
 image::gremlin-dashboard.png[width="600",align="center"]
@@ -501,9 +501,10 @@ firstYear = g.V().hasLabel('person').
                   max().next()
 g.V().hasLabel("person").as("person").
       constant((firstYear..(new Date().getYear() + 1900)).toList()).unfold().as("year").
-      select("person").coalesce(properties("location").filter(values("startTime").where(gte("year"))).
-                                                       order().by("startTime").limit(1),
-                                properties("location").hasNot("endTime")).value().as("location").
+      select("person").coalesce(
+        properties("location").filter(values("startTime").where(gte("year"))).
+                               order().by("startTime").limit(1),
+        properties("location").hasNot("endTime")).value().as("location").
       select("person","year","location").by("name").by().by()
 ----
 
@@ -563,9 +564,10 @@ and stream the data to Cassandra:
 ----
 gremlin> g.V().hasLabel("person").as("person").
 gremlin>       constant((firstYear..(new Date().getYear() + 1900)).toList()).unfold().as("year").
-gremlin>       select("person").coalesce(properties("location").filter(values("startTime").where(gte("year"))).
-gremlin>                                                        order().by("startTime").limit(1),
-gremlin>                                 properties("location").hasNot("endTime")).value().as("location").
+gremlin>       select("person").coalesce(
+gremlin>         properties("location").filter(values("startTime").where(gte("year"))).
+gremlin>                                order().by("startTime").limit(1),
+gremlin>         properties("location").hasNot("endTime")).value().as("location").
 gremlin>       select("person","year","location").by("name").by().by().
 gremlin>       forEachRemaining{
 gremlin>         def statement = insertInto("locations").
