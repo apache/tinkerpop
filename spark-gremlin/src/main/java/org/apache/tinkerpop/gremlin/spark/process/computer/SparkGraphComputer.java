@@ -231,12 +231,15 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // process the map reducers //
                 //////////////////////////////
                 if (!this.mapReducers.isEmpty()) {
+                    // drop all the edges of the graph as they are not used in mapReduce processing
                     computedGraphRDD = computedGraphRDD.mapValues(vertexWritable -> {
                         vertexWritable.get().dropEdges();
                         return vertexWritable;
                     });
-                    if (!outputToSpark && computedGraphCreated)  // if the computed graph wasn't already persisted to spark, persist it here
-                        computedGraphRDD = computedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));  // drop all the edges of the graph as they are not used in mapReduce processing
+                    // if the computed graph wasn't already persisted, persist it here for all the MapReduce jobs to reuse
+                    // however, if there is only one MapReduce to execute, don't bother wasting the clock cycles.
+                    if (!outputToSpark && computedGraphCreated && this.mapReducers.size() > 1)
+                        computedGraphRDD = computedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
 
                     for (final MapReduce mapReduce : this.mapReducers) {
                         // execute the map reduce job
