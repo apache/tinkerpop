@@ -22,6 +22,8 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.junit.Test;
 
 import javax.script.Bindings;
@@ -37,12 +39,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -372,7 +376,6 @@ public class GremlinExecutorTest {
         assertFalse(b2.get());
 
         gremlinExecutor.close();
-
     }
 
     @Test
@@ -593,5 +596,45 @@ public class GremlinExecutorTest {
 
         assertSame(service, gremlinExecutor.getScheduledExecutorService());
         gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldAllowVariableReuseAcrossThreads() throws Exception {
+        final ExecutorService service = Executors.newFixedThreadPool(8, testingThreadFactory);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+
+        final int max = 256;
+        final List<Pair<Integer, List<Integer>>> futures = new ArrayList<>(max);
+        IntStream.range(0, max).forEach(i -> {
+            final int yValue = i * 2;
+            final Bindings b = new SimpleBindings();
+            b.put("x", i);
+            b.put("y", yValue);
+            final int zValue = i * -1;
+
+            final String script = "z=" + zValue + ";[x,y,z]";
+            try {
+                service.submit(() -> {
+                    try {
+                        final List<Integer> result = (List<Integer>) gremlinExecutor.eval(script, b).get();
+                        futures.add(Pair.with(i, result));
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        service.shutdown();
+        service.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+        assertEquals(max, futures.size());
+        futures.forEach(t -> {
+            assertEquals(t.getValue0(), t.getValue1().get(0));
+            assertEquals(t.getValue0() * 2, t.getValue1().get(1).intValue());
+            assertEquals(t.getValue0() * -1, t.getValue1().get(2).intValue());
+        });
     }
 }

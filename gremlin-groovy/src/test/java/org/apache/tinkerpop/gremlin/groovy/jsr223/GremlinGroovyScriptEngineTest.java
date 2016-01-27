@@ -19,10 +19,13 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.Closure;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +36,19 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -317,5 +326,46 @@ public class GremlinGroovyScriptEngineTest {
     public void shouldProcessScriptWithUTF8Characters() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         assertEquals("轉注", engine.eval("'轉注'"));
+    }
+
+    @Test
+    public void shouldAllowVariableReuseAcrossThreads() throws Exception {
+        final BasicThreadFactory testingThreadFactory = new BasicThreadFactory.Builder().namingPattern("test-gremlin-scriptengine-%d").build();
+        final ExecutorService service = Executors.newFixedThreadPool(8, testingThreadFactory);
+        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
+
+        final int max = 256;
+        final List<Pair<Integer, List<Integer>>> futures = new ArrayList<>(max);
+        IntStream.range(0, max).forEach(i -> {
+            final int yValue = i * 2;
+            final int zValue = i * -1;
+            final Bindings b = new SimpleBindings();
+            b.put("x", i);
+            b.put("y", yValue);
+
+            final String script = "z=" + zValue + ";[x,y,z]";
+            try {
+                service.submit(() -> {
+                    try {
+                        final List<Integer> result = (List<Integer>) scriptEngine.eval(script, b);
+                        futures.add(Pair.with(i, result));
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        service.shutdown();
+        service.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+        assertEquals(max, futures.size());
+        futures.forEach(t -> {
+            assertEquals(t.getValue0(), t.getValue1().get(0));
+            assertEquals(t.getValue0() * 2, t.getValue1().get(1).intValue());
+            assertEquals(t.getValue0() * -1, t.getValue1().get(2).intValue());
+        });
     }
 }
