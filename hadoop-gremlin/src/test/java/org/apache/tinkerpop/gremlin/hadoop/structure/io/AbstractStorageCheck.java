@@ -83,6 +83,7 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
         assertEquals(2, storage.ls(outputLocation).size());
         assertTrue(storage.rm(Constants.getGraphLocation(outputLocation)));
+        assertFalse(storage.rm(Constants.getGraphLocation(outputLocation)));
         assertEquals(1, storage.ls(outputLocation).size());
         assertTrue(storage.rm(Constants.getMemoryLocation(outputLocation, "clusterCount")));
         assertEquals(0, storage.ls(outputLocation).size());
@@ -141,5 +142,54 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         ///
         assertEquals(4l, traversal.asAdmin().getSideEffects().<Long>get(Graph.Hidden.hide("reducing")).get().longValue());
 
+    }
+
+    public void checkFileDirectoryDistinction(final Storage storage, final String directory1, final String directory2) throws Exception {
+        assertTrue(storage.exists(directory1));
+        assertTrue(storage.exists(directory2));
+        assertTrue(storage.exists(directory1 + "/f*"));
+        assertTrue(storage.exists(directory2 + "/f*"));
+        assertEquals(10, storage.ls(directory1).size());
+        assertEquals(10, storage.ls(directory1 + "/*").size());
+        assertEquals(5, storage.ls(directory2).size());
+        assertEquals(5, storage.ls(directory2 + "/*").size());
+        for (int i = 0; i < 10; i++) {
+            assertTrue(storage.exists(directory1 + "/file1-" + i + ".txt.bz"));
+            assertTrue(storage.exists(directory1 + "/file1-" + i + "*"));
+            assertTrue(storage.exists(directory1 + "/file1-" + i + ".txt*"));
+            assertTrue(storage.exists(directory1 + "/file1-" + i + ".*.bz"));
+            assertTrue(storage.exists(directory1 + "/file1-" + i + ".*.b*"));
+        }
+        assertFalse(storage.exists(directory1 + "/file1-10.txt.bz"));
+        for (int i = 0; i < 5; i++) {
+            assertTrue(storage.exists(directory2 + "/file2-" + i + ".txt.bz"));
+            assertTrue(storage.exists(directory2 + "/file2-" + i + "*"));
+            assertTrue(storage.exists(directory2 + "/file2-" + i + ".txt*"));
+            assertTrue(storage.exists(directory2 + "/file2-" + i + ".*.bz"));
+            assertTrue(storage.exists(directory2 + "/file2-" + i + ".*.b*"));
+        }
+        assertFalse(storage.exists(directory2 + "/file1-5.txt.bz"));
+        assertTrue(storage.rm(directory1 + "/file1-0.txt.bz"));
+        assertFalse(storage.rm(directory1 + "/file1-0.txt.bz"));
+        assertEquals(9, storage.ls(directory1).size());
+        assertEquals(9, storage.ls(directory1 + "/*").size());
+        assertEquals(9, storage.ls(directory1 + "/file*").size());
+        assertEquals(9, storage.ls(directory1 + "/file1*").size());
+        assertEquals(0, storage.ls(directory1 + "/file2*").size());
+        assertEquals(5, storage.ls(directory2).size());
+        assertEquals(5, storage.ls(directory2 + "/*").size());
+        assertEquals(5, storage.ls(directory2 + "/file*").size());
+        assertEquals(5, storage.ls(directory2 + "/file2*").size());
+        assertEquals(0, storage.ls(directory2 + "/file1*").size());
+        assertTrue(storage.rm(directory1 + "/file1-*"));
+        assertFalse(storage.rm(directory1 + "/file1-*"));
+        assertEquals(0, storage.ls(directory1).size());
+        assertEquals(0, storage.ls(directory1 + "/*").size());
+        assertEquals(5, storage.ls(directory2).size());
+        assertEquals(5, storage.ls(directory2 + "/*").size());
+        assertTrue(storage.rm(directory2 + "/f*"));
+        assertFalse(storage.rm(directory2 + "/file*"));
+        assertEquals(0, storage.ls(directory2).size());
+        assertEquals(0, storage.ls(directory2 + "*").size());
     }
 }

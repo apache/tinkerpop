@@ -78,6 +78,22 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
         super.checkResidualDataInStorage(storage, outputLocation);
     }
 
+    @Test
+    public void shouldSupportDirectoryFileDistinction() throws Exception {
+        final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
+        final String directory1 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory1");
+        final String directory2 = TestHelper.makeTestDataDirectory(FileSystemStorageCheck.class, "directory2");
+        for (int i = 0; i < 10; i++) {
+            new File(directory1 + "/" + "file1-" + i + ".txt.bz").createNewFile();
+        }
+        for (int i = 0; i < 5; i++) {
+            new File(directory2 + "/" + "file2-" + i + ".txt.bz").createNewFile();
+        }
+        super.checkFileDirectoryDistinction(storage, directory1, directory2);
+        deleteDirectory(directory1);
+        deleteDirectory(directory2);
+    }
+
     private static void deleteDirectory(final String location) throws IOException {
         // TestHelper creates the directory and we need it not to exist
         assertTrue(new File(location).isDirectory());

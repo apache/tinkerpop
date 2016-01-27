@@ -30,12 +30,11 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,7 +44,7 @@ import java.util.UUID;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class HadoopElementIterator<E extends Element> implements Iterator<E> {
+public abstract class HadoopElementIterator<E extends Element> implements Iterator<E>, AutoCloseable {
 
     protected final HadoopGraph graph;
     protected final Queue<RecordReader<NullWritable, VertexWritable>> readers = new LinkedList<>();
@@ -69,6 +68,17 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
                 this.readers.add(inputFormat.createRecordReader(split, new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
             }
         } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            for (final RecordReader reader : this.readers) {
+                reader.close();
+            }
+        } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

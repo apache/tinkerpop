@@ -84,10 +84,14 @@ public final class FileSystemStorage implements Storage {
         s.append(status.getOwner()).append(SPACE);
         s.append(status.getGroup()).append(SPACE);
         s.append(status.getLen()).append(SPACE);
-        if (status.isDir())
+        if (status.isDirectory())
             s.append(D_SPACE);
         s.append(status.getPath().getName());
         return s.toString();
+    }
+
+    private String tryHomeDirectory(final String location) {
+        return location.equals("/") ? this.fs.getHomeDirectory().toString() : location;
     }
 
     @Override
@@ -98,9 +102,9 @@ public final class FileSystemStorage implements Storage {
     @Override
     public List<String> ls(final String location) {
         try {
-            final String newLocation;
-            newLocation = location.equals("/") ? this.fs.getHomeDirectory().toString() : location;
-            return Stream.of(this.fs.globStatus(new Path(newLocation + "/*"))).map(FileSystemStorage::fileStatusString).collect(Collectors.toList());
+            return this.fs.isDirectory(new Path(tryHomeDirectory(location))) ?
+                    Stream.of(this.fs.globStatus(new Path(tryHomeDirectory(location) + "/*"))).map(FileSystemStorage::fileStatusString).collect(Collectors.toList()) :
+                    Stream.of(this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"))).map(FileSystemStorage::fileStatusString).collect(Collectors.toList());
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -126,7 +130,7 @@ public final class FileSystemStorage implements Storage {
     @Override
     public boolean exists(final String location) {
         try {
-            return this.fs.exists(new Path(location));
+            return this.fs.globStatus(new Path(tryHomeDirectory(location) + "*")).length > 0;
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -135,7 +139,15 @@ public final class FileSystemStorage implements Storage {
     @Override
     public boolean rm(final String location) {
         try {
-            return FileSystemStorage.globDelete(this.fs, location, true);
+            final FileStatus[] statuses = this.fs.globStatus(new Path(tryHomeDirectory(location) + "*"));
+            Stream.of(statuses).forEach(status -> {
+                try {
+                    this.fs.delete(status.getPath(), true);
+                } catch (IOException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            });
+            return statuses.length > 0;
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -215,18 +227,6 @@ public final class FileSystemStorage implements Storage {
         }
     }
 
-    ////////////
-
-    private static boolean globDelete(final FileSystem fs, final String path, final boolean recursive) throws IOException {
-        if (!fs.exists(new Path(path)))
-            return false;
-        boolean deleted = false;
-        for (final Path p : FileUtil.stat2Paths(fs.globStatus(new Path(path)))) {
-            fs.delete(p, recursive);
-            deleted = true;
-        }
-        return deleted;
-    }
 
     private static List<Path> getAllFilePaths(final FileSystem fs, Path path, final PathFilter filter) throws IOException {
         if (null == path) path = fs.getHomeDirectory();

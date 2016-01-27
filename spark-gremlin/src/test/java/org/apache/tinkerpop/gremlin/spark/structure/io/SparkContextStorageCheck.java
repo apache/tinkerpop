@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io;
 
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractStorageCheck;
@@ -70,5 +72,17 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
         final Storage storage = SparkContextStorage.open("local[4]");
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         super.checkResidualDataInStorage(storage, outputLocation);
+    }
+
+    @Test
+    public void shouldSupportDirectoryFileDistinction() throws Exception {
+        final Storage storage = SparkContextStorage.open("local[4]");
+        for (int i = 0; i < 10; i++) {
+            JavaSparkContext.fromSparkContext(Spark.getContext()).emptyRDD().setName("directory1/file1-" + i + ".txt.bz").persist(StorageLevel.DISK_ONLY());
+        }
+        for (int i = 0; i < 5; i++) {
+            JavaSparkContext.fromSparkContext(Spark.getContext()).emptyRDD().setName("directory2/file2-" + i + ".txt.bz").persist(StorageLevel.DISK_ONLY());
+        }
+        super.checkFileDirectoryDistinction(storage, "directory1", "directory2");
     }
 }
