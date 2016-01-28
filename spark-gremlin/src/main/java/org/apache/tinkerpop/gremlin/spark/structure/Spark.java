@@ -49,13 +49,13 @@ public class Spark {
     public static void create(final Configuration configuration) {
         final SparkConf sparkConf = new SparkConf();
         configuration.getKeys().forEachRemaining(key -> sparkConf.set(key, configuration.getProperty(key).toString()));
-        sparkConf.setAppName("Spark-Gremlin Persisted Context Application");
+        sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
         CONTEXT = SparkContext.getOrCreate(sparkConf);
     }
 
     public static void create(final String master) {
         final SparkConf sparkConf = new SparkConf();
-        sparkConf.setAppName("Spark-Gremlin Persisted Context Application");
+        sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
         sparkConf.setMaster(master);
         CONTEXT = SparkContext.getOrCreate(sparkConf);
     }
