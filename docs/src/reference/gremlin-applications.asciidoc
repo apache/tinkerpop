@@ -51,12 +51,11 @@ the defaults.  TinkerPop recommends the following configuration in that file:
       <ibiblio name="codehaus" root="http://repository.codehaus.org/" m2compatible="true"/>
       <ibiblio name="central" root="http://central.maven.org/maven2/" m2compatible="true"/>
       <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true"/>
-      <ibiblio name="hyracs-releases" root="http://obelix.ics.uci.edu/nexus/content/groups/hyracks-public-releases/" m2compatible="true"/>
     </chain>
   </resolvers>
 </ivysettings>
 
-Note that if the intention is to work with TinkerPop snapshots then the file should also include:
+Note that if the intention is to work with TinkerPop snapshots then the file should also include.
 
 [source,xml]
 <ibiblio name="apache-snapshots" root="http://repository.apache.org/snapshots/" m2compatible="true"/>
