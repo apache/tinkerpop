@@ -38,6 +38,7 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
     private final MapReduce<K, V, OK, OV, ?> mapReduce;
     private final CombineIteratorEmitter combineIteratorEmitter = new CombineIteratorEmitter();
     private final Map<K, List<V>> combineMap = new ConcurrentHashMap<>();
+    private boolean combined = true;
 
     public CombineIterator(final MapReduce<K, V, OK, OV, ?> mapReduce, final Iterator<Tuple2<K, V>> inputIterator) {
         this.inputIterator = inputIterator;
@@ -74,8 +75,8 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
     private static final int MAX_SIZE = 5000;
 
     private void processNext() {
-        int sizeCounter = this.combineMap.size();
-        while (sizeCounter < MAX_SIZE && this.inputIterator.hasNext()) {
+        int combinedSize = this.combineMap.size();
+        while (combinedSize < MAX_SIZE && this.inputIterator.hasNext()) {
             final Tuple2<K, V> keyValue = this.inputIterator.next();
             List<V> values = this.combineMap.get(keyValue._1());
             if (null == values) {
@@ -83,20 +84,30 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
                 this.combineMap.put(keyValue._1(), values);
             }
             values.add(keyValue._2());
-            if (++sizeCounter > MAX_SIZE) {
-                for (final K key : this.combineMap.keySet()) {
-                    final List<V> values2 = this.combineMap.get(key);
-                    if (values2.size() > 1) {
-                        this.combineMap.remove(key);
-                        this.mapReduce.combine(key, values2.iterator(), this.combineIteratorEmitter);
-                    }
-                }
-                sizeCounter = this.combineMap.size();
+            combinedSize++;
+            this.combined = false;
+            if (combinedSize >= MAX_SIZE) {
+                this.doCombine();
+                combinedSize = this.combineMap.size();
             }
         }
     }
 
+    private void doCombine() {
+        if (!this.combined) {
+            for (final K key : this.combineMap.keySet()) {
+                final List<V> values2 = this.combineMap.get(key);
+                if (values2.size() > 1) {
+                    this.combineMap.remove(key);
+                    this.mapReduce.combine(key, values2.iterator(), this.combineIteratorEmitter);
+                }
+            }
+            this.combined = true;
+        }
+    }
+
     private Tuple2<OK, OV> nextFromCombineMap() {
+        this.doCombine();
         final OK key = (OK) this.combineMap.keySet().iterator().next();
         final List<OV> values = (List<OV>) this.combineMap.get(key);
         final Tuple2<OK, OV> keyValue = new Tuple2<>(key, values.remove(0));
@@ -106,7 +117,6 @@ public final class CombineIterator<K, V, OK, OV> implements Iterator<Tuple2<OK, 
     }
 
     private class CombineIteratorEmitter implements MapReduce.ReduceEmitter<OK, OV> {
-
         @Override
         public void emit(final OK key, OV value) {
             List<V> values = combineMap.get(key);

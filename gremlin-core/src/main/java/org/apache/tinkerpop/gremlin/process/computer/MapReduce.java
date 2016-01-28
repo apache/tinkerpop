@@ -271,7 +271,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
     /**
      * A convenience singleton when a single key is needed so that all emitted values converge to the same combiner/reducer.
      */
-    public static class NullObject implements Comparable, Serializable {
+    public static class NullObject implements Comparable<NullObject>, Serializable {
         private static final NullObject INSTANCE = new NullObject();
         private static final String NULL_OBJECT = "";
 
@@ -281,20 +281,17 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
 
         @Override
         public int hashCode() {
-            return 0;
+            return -9832049;
         }
 
         @Override
         public boolean equals(final Object object) {
-            return object instanceof NullObject;
+            return this == object || object instanceof NullObject;
         }
 
         @Override
-        public int compareTo(final Object object) {
-            if (object instanceof NullObject)
-                return 0;
-            else
-                throw new IllegalArgumentException("The " + NullObject.class.getSimpleName() + " can not be compared with " + object.getClass().getSimpleName());
+        public int compareTo(final NullObject object) {
+            return 0;
         }
 
         @Override
