@@ -56,7 +56,7 @@ SPARK_NODES=${@:2}
 cat > ${TMP_DIR}/init-conf.sh <<EOF
 #!/bin/bash
 
-if [ ! -f \"${SPARK_HOME}/conf/spark-env.sh\" ]; then
+if [ ! -f "${SPARK_HOME}/conf/spark-env.sh" ]; then
   cp ${SPARK_HOME}/conf/spark-env.sh.template ${SPARK_HOME}/conf/spark-env.sh
 fi
 grep -F GREMLIN_LIBS ${SPARK_HOME}/conf/spark-env.sh > /dev/null || {
