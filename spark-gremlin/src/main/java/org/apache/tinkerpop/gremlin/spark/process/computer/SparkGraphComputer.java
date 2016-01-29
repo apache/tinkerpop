@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.spark.HashPartitioner;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -163,18 +164,28 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // create a message-passing friendly rdd from the input rdd
                 JavaPairRDD<Object, VertexWritable> loadedGraphRDD;
                 JavaPairRDD<Object, VertexWritable> computedGraphRDD = null;
+                boolean partitioned = false;
                 try {
                     loadedGraphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
                             .readGraphRDD(apacheConfiguration, sparkContext);
+
+                    if (loadedGraphRDD.partitioner().isPresent())
+                        this.logger.info("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
+                    else {
+                        loadedGraphRDD = loadedGraphRDD.partitionBy(new HashPartitioner(this.workersSet ? this.workers : loadedGraphRDD.partitions().size()));
+                        partitioned = true;
+                    }
+                    assert loadedGraphRDD.partitioner().isPresent();
+                    // if the loaded graphRDD was already partitioned previous, then this coalesce/repartition will not take place
                     if (this.workersSet) {
-                        if (loadedGraphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
+                        if (loadedGraphRDD.partitions().size() > this.workers) // ensures that the loaded graphRDD does not have more partitions than workers
                             loadedGraphRDD = loadedGraphRDD.coalesce(this.workers);
-                        else if (loadedGraphRDD.partitions().size() < this.workers) // ensures that the graphRDD does not have less partitions than workers
+                        else if (loadedGraphRDD.partitions().size() < this.workers) // ensures that the loaded graphRDD does not have less partitions than workers
                             loadedGraphRDD = loadedGraphRDD.repartition(this.workers);
                     }
                     // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
-                    if (!inputFromSpark)
+                    if (!inputFromSpark || partitioned)
                         loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
                 } catch (final InstantiationException | IllegalAccessException e) {
                     throw new IllegalStateException(e.getMessage(), e);
@@ -265,7 +276,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 }
 
                 // unpersist the loaded graph if it will not be used again (no PersistedInputRDD)
-                if (!inputFromSpark && computedGraphCreated)
+                // if the graphRDD was loaded from Spark, but then partitioned, its a different RDD
+                if ((!inputFromSpark || partitioned) && computedGraphCreated)
                     loadedGraphRDD.unpersist();
                 // unpersist the computed graph if it will not be used again (no PersistedOutputRDD)
                 if (!outputToSpark || this.persist.equals(GraphComputer.Persist.NOTHING))
