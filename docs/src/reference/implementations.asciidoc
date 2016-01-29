@@ -1172,13 +1172,13 @@ specified in `HADOOP_GREMLIN_LIBS`.
 [source,shell]
 export HADOOP_GREMLIN_LIBS=$HADOOP_GREMLIN_LIBS:/usr/local/gremlin-console/ext/spark-gremlin/lib
 
-Furthermore the lib directory should be distributed across all servers in the Spark cluster. For this purpose TinkerPop
-provides a helper script, which takes the Spark installation directory and the the spark servers as input:
+Furthermore the `lib/` directory should be distributed across all machines in the SparkServer cluster. For this purpose TinkerPop
+provides a helper script, which takes the Spark installation directory and the the Spark machines as input:
 
 [source,shell]
 bin/init-tp-spark.sh /usr/local/spark spark@10.0.0.1 spark@10.0.0.2 spark@10.0.0.3
 
-Once the `lib` directory is distributed, `SparkGraphComputer` can be used as follows.
+Once the `lib/` directory is distributed, `SparkGraphComputer` can be used as follows.
 
 [gremlin-groovy]
 ----
@@ -1224,10 +1224,20 @@ image::spark-algorithm.png[width=775]
 |gremlin.spark.persistStorageLevel |What `StorageLevel` to use when persisted RDDs via `PersistedOutputRDD` (default `MEMORY_ONLY`).
 |========================================================
 
-If the provider/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD
+InputRDD and OutputRDD
+++++++++++++++++++++++
+
+If the provider/user does not want to use Hadoop `InputFormats`, it is possible to leverage Spark's RDD
 constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends
 InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use
 `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
+
+If the graph system provider uses an `InputRDD`, the RDD should maintain an associated `org.apache.spark.Partitioner`. By doing so,
+`SparkGraphComputer` will not partition the loaded graph across the cluster as it has already been partitioned by the graph system provider.
+This can save a significant amount of time and space resources.
+If the `InputRDD` does not have a registered partitioner, `SparkGraphComputer` will partition the graph using
+a `org.apache.spark.HashPartitioner` with the number of partitions being either the number of existing partitions in the input (e.g. input splits)
+or the user specified number of `GraphComputer.workers()`.
 
 Using a Persisted Context
 +++++++++++++++++++++++++

@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
@@ -62,6 +63,13 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         add(HadoopProperty.class);
         add(HadoopVertex.class);
         add(HadoopVertexProperty.class);
+        add(ComputerGraph.class);
+        add(ComputerGraph.ComputerElement.class);
+        add(ComputerGraph.ComputerVertex.class);
+        add(ComputerGraph.ComputerEdge.class);
+        add(ComputerGraph.ComputerVertexProperty.class);
+        add(ComputerGraph.ComputerAdjacentVertex.class);
+        add(ComputerGraph.ComputerProperty.class);
     }};
 
     static {

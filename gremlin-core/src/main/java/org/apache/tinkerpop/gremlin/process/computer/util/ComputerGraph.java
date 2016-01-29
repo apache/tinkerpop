@@ -118,7 +118,7 @@ public final class ComputerGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    private class ComputerElement implements Element, WrappedElement<Element> {
+    public class ComputerElement implements Element, WrappedElement<Element> {
         private final Element element;
 
         public ComputerElement(final Element element) {
@@ -200,7 +200,7 @@ public final class ComputerGraph implements Graph {
 
     ///////////////////////////////////
 
-    private class ComputerVertex extends ComputerElement implements Vertex, WrappedVertex<Vertex> {
+    public class ComputerVertex extends ComputerElement implements Vertex, WrappedVertex<Vertex> {
 
 
         public ComputerVertex(final Vertex vertex) {
@@ -273,7 +273,7 @@ public final class ComputerGraph implements Graph {
 
     ////////////////////////////
 
-    private class ComputerEdge extends ComputerElement implements Edge, WrappedEdge<Edge> {
+    public class ComputerEdge extends ComputerElement implements Edge, WrappedEdge<Edge> {
 
         public ComputerEdge(final Edge edge) {
             super(edge);
@@ -313,7 +313,7 @@ public final class ComputerGraph implements Graph {
 
     ///////////////////////////
 
-    private class ComputerVertexProperty<V> extends ComputerElement implements VertexProperty<V>, WrappedVertexProperty<VertexProperty<V>> {
+    public class ComputerVertexProperty<V> extends ComputerElement implements VertexProperty<V>, WrappedVertexProperty<VertexProperty<V>> {
         public ComputerVertexProperty(final VertexProperty<V> vertexProperty) {
             super(vertexProperty);
         }
@@ -351,7 +351,7 @@ public final class ComputerGraph implements Graph {
 
     ///////////////////////////
 
-    private class ComputerProperty<V> implements Property<V>, WrappedProperty<Property<V>> {
+    public class ComputerProperty<V> implements Property<V>, WrappedProperty<Property<V>> {
 
         private final Property<V> property;
 
@@ -413,7 +413,7 @@ public final class ComputerGraph implements Graph {
 
     ///////////////////////////
 
-    private class ComputerAdjacentVertex implements Vertex, WrappedVertex<Vertex> {
+    public class ComputerAdjacentVertex implements Vertex, WrappedVertex<Vertex> {
 
         private final Vertex adjacentVertex;
 

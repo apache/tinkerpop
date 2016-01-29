@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGremlinSuite;
@@ -80,6 +81,7 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportRemoteSugarTraversal() throws Exception {
+        SugarTestHelper.clearRegistry(this.graphProvider);
         this.console.addBinding("graph", this.graph);
         this.console.addBinding("g", this.g);
         this.remote.connect(Arrays.asList("graph"));

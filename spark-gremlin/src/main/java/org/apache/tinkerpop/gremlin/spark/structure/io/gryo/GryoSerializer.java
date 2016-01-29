@@ -28,6 +28,7 @@ import org.apache.spark.api.python.PythonBroadcast;
 import org.apache.spark.broadcast.HttpBroadcast;
 import org.apache.spark.network.util.ByteUnit;
 import org.apache.spark.scheduler.CompressedMapStatus;
+import org.apache.spark.scheduler.HighlyCompressedMapStatus;
 import org.apache.spark.serializer.Serializer;
 import org.apache.spark.serializer.SerializerInstance;
 import org.apache.spark.util.SerializableConfiguration;
@@ -88,6 +89,7 @@ public final class GryoSerializer extends Serializer {
                                 .addCustom(CompactBuffer.class, new JavaSerializer())
                                 .addCustom(CompactBuffer[].class, new JavaSerializer())
                                 .addCustom(CompressedMapStatus.class, new JavaSerializer())
+                                .addCustom(HighlyCompressedMapStatus.class, new JavaSerializer())
                                 .addCustom(HttpBroadcast.class, new JavaSerializer())
                                 .addCustom(PythonBroadcast.class, new JavaSerializer())
                                 .addCustom(BoxedUnit.class, new JavaSerializer())
