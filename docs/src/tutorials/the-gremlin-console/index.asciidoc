@@ -39,7 +39,7 @@ tutorial explores the features of the Gremlin Console through a number of these 
 inspire you to new levels of usage. While a use case may not fit your needs, you may well find it worthwhile to
 read, as it is possible that a "feature" will be discussed that may be useful to you.
 
-The following points summarize the key features discussed of each use case:
+The following points summarize the key features discussed in each use case:
 
 * <<learning-tool,A Learning Tool>>
 ** Introducing the <<toy-graphs,toy graphs>>
@@ -81,7 +81,9 @@ g = graph.traversal()        <2>
 <1> Creates the `Graph` instance that is the API to the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_structure[structure] of the graph.
 <2> Creates the `TraversalSource` which is the API for
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_process[processing] or traversing that `Graph`.
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_graph_process[processing] or
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_graph_traversal_staying_simple[traversing]
+that `Graph`.
 
 IMPORTANT: TinkerPop recommends creating the `TraversalSource` once and re-using it as necessary in your application.
 
@@ -108,7 +110,7 @@ g = graph.traversal()
 
 image:grateful-gremlin.png[float=right,width=110] As you might have noticed from the diagrams of these graphs or from
 the output of the Gremlin Console itself, these toy graphs are small (only a few vertices and edges each). It is nice
-to have a small graph when learning Gremlin so that you can easily see if you are getting the results you expect. Even
+to have a small graph when learning Gremlin, so that you can easily see if you are getting the results you expect. Even
 though these graphs are "small", they are robust enough in structure to try out many different kinds of traversals.
 However, if you find that a larger graph might be helpful, there is another option: The Grateful Dead
 (link:http://tinkerpop.apache.org/docs/x.y.z/images/grateful-dead-schema.png[schema]).
@@ -127,7 +129,7 @@ TIP: If you find yourself in a position where you need to ask a question on the
 link:http://groups.google.com/group/gremlin-users[Gremlin Users mailing list] about a traversal that you are having
 trouble with in your application, try to convert the gist of it to one of the toy graphs.  Taking this step will make it
 easier for advanced Gremlin users to help you, which should lead to a faster response time for your problem. In
-addition, there is the added benefit that the mailing list post will likely be more relevant to other users, as it is
+addition, there is the added benefit that the mailing list post will be more relevant to other users, as it is
 not written solely in the context of your domain.
 
 [[help]]
@@ -164,7 +166,7 @@ Use Case: Application Development
 
 image:gremlin-working-on-tinkerpop.png[width=350,float=right] __You are an application developer and the TinkerPop stack
 will be central to your application architecture. You need to develop a series of services that will execute queries
-against a graph database in support of the front-end of the software.__
+against a graph database in support of the application front-end.__
 
 Most application developers use an IDE, such as link:https://en.wikipedia.org/wiki/IntelliJ_IDEA[Intellij], to help
 with their software development efforts. The IDE provides shortcuts and conveniences that make complex engineering jobs
@@ -184,7 +186,8 @@ methods.
 
 Consider an example where you are developing an application that uses TinkerGraph and the data from the "modern"
 toy graph. You want to encapsulate some logic for a graph traversal that finds a "person" vertex, iterates outgoing
-edges and groups the adjacent vertices as "value maps".
+edges and groups the adjacent vertices as
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step["value maps"].
 
 [[static-imports]]
 As you have read the TinkerPop documentation and have been experimenting with Gremlin for a while, you head to your
@@ -215,11 +218,14 @@ the `__` and `T` classes, the traversal would read as follows: `g.V(id).outE().g
 The console automatically performs the static imports for these methods, so they do not need to be imported again
 in that environment.
 
-In the "modern" graph, calling `groupAround` with "1" as the `vertexId` argument, should return a `Map` with two keys:
-"knows" and "created", where the "knows" key should have vertices "2" and "4" and the "created" key should have
-vertex "3". As you are a good developer, you know to write a unit test to validate this outcome.  You write your
-test, compile your application, and execute your test only to find it failing on the "knows" key, which only has one
-vertex associated to it instead of two.
+image::tinkerpop-modern.png[width="500",align="center"]
+
+The diagram above displays the "modern" graph for reference.  Assuming that `g` refers to a `TraversalSource` generated
+from a `Graph` instance that refers to that graph, calling `groupAround` with "1" as the `vertexId` argument, should
+return a `Map` with two keys: "knows" and "created", where the "knows" key should have vertices "2" and "4" and the
+"created" key should have vertex "3". As you are a good developer, you know to write a unit test to validate this
+outcome.  You write your test, compile your application, and execute your test only to find it failing on the "knows"
+key, which only has one vertex associated to it instead of two.
 
 [[result-iteration]]
 As you have the Gremlin Console open you decide to debug the problem there.  You copy your Gremlin code from
@@ -456,12 +462,12 @@ l.collect{
 ----
 
 You had to apply a bit of brute force, but now you have the rows and columns you wanted, with the data normalized and
-flattened in such a way that each year since "2004" is represented all the way up to 2016.
+flattened in such a way that each year since "2004" is represented all the way up to "2016".
 
 image:gremlin-asciiart.png[width=225,float=right] Unfortunately, you are unsatisfied. The added Groovy processing of
 "l" feels "wrong" despite it producing the correct output.  It has that unfortunate hack for dealing with the
 possibility that the "endTime" property contains a "null" value, thus hard-coding the "2017" year into the it (you
-want the years through 2016).  You also recall that the Gremlin language has advanced considerably in TinkerPop 3.x
+want the years through "2016").  You also recall that the Gremlin language has advanced considerably in TinkerPop 3.x
 and that it is usually possible to eliminate closures and other direct processing with Groovy. With those issues in
 mind, you look to enhance your work.
 
