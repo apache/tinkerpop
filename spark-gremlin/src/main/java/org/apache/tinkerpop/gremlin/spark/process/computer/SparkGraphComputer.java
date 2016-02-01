@@ -158,8 +158,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     if (null != edgeFilter)
                         ((GraphFilterAware) inputRDD).setEdgeFilter(this.edgeFilter);
                     filtered = false;
-                } else {
+                } else if (null != this.vertexFilter || null != this.edgeFilter) {
                     filtered = true;
+                } else {
+                    filtered = false;
                 }
             } catch (final InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException(e.getMessage(), e);
