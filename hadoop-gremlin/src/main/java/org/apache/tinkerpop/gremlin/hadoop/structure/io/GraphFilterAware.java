@@ -19,9 +19,16 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.Iterator;
 
 /**
  * An input graph class is {@code GraphFilterAware} if it can filter out vertices and edges as its loading the graph from the
@@ -36,4 +43,32 @@ public interface GraphFilterAware {
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter);
 
     public void setEdgeFilter(final Traversal<Edge, Edge> edgeFilter);
+
+    public static Vertex applyVertexAndEdgeFilters(final Vertex vertex, final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
+        if (null == vertex)
+            return null;
+        else if (vertexFilter == null || TraversalUtil.test(vertex, vertexFilter)) {
+            if (edgeFilter != null) {
+                final Iterator<Edge> edgeIterator = vertex.edges(Direction.BOTH);
+                while (edgeIterator.hasNext()) {
+                    if (!TraversalUtil.test(edgeIterator.next(), edgeFilter))
+                        edgeIterator.remove();
+                }
+            }
+            return vertex;
+        } else {
+            return null;
+        }
+    }
+
+    public static void storeVertexAndEdgeFilters(final Configuration apacheConfiguration, final org.apache.hadoop.conf.Configuration hadoopConfiguration, final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
+        if (null != vertexFilter) {
+            VertexProgramHelper.serialize(vertexFilter, apacheConfiguration, Constants.GREMLIN_HADOOP_VERTEX_FILTER);
+            hadoopConfiguration.set(Constants.GREMLIN_HADOOP_VERTEX_FILTER, apacheConfiguration.getString(Constants.GREMLIN_HADOOP_VERTEX_FILTER));
+        }
+        if (null != edgeFilter) {
+            VertexProgramHelper.serialize(edgeFilter, apacheConfiguration, Constants.GREMLIN_HADOOP_EDGE_FILTER);
+            hadoopConfiguration.set(Constants.GREMLIN_HADOOP_EDGE_FILTER, apacheConfiguration.getString(Constants.GREMLIN_HADOOP_EDGE_FILTER));
+        }
+    }
 }

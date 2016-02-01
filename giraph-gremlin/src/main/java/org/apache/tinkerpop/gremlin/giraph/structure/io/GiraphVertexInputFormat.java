@@ -28,7 +28,13 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,6 +45,10 @@ import java.util.List;
 public final class GiraphVertexInputFormat extends VertexInputFormat {
 
     private InputFormat<NullWritable, VertexWritable> hadoopGraphInputFormat;
+    protected Traversal.Admin<Vertex, Vertex> vertexFilter = null;
+    protected Traversal.Admin<Edge, Edge> edgeFilter = null;
+    private boolean filtersLoader = false;
+    private boolean graphFilterAware;
 
     @Override
     public void checkInputSpecs(final Configuration configuration) {
@@ -55,7 +65,7 @@ public final class GiraphVertexInputFormat extends VertexInputFormat {
     public VertexReader createVertexReader(final InputSplit split, final TaskAttemptContext context) throws IOException {
         this.constructor(context.getConfiguration());
         try {
-            return new GiraphVertexReader(this.hadoopGraphInputFormat.createRecordReader(split, context));
+            return new GiraphVertexReader(this.hadoopGraphInputFormat.createRecordReader(split, context), this.graphFilterAware, this.vertexFilter, this.edgeFilter);
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
@@ -64,6 +74,14 @@ public final class GiraphVertexInputFormat extends VertexInputFormat {
     private final void constructor(final Configuration configuration) {
         if (null == this.hadoopGraphInputFormat) {
             this.hadoopGraphInputFormat = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class), configuration);
+            this.graphFilterAware = this.hadoopGraphInputFormat instanceof GraphFilterAware;
+            if (!this.filtersLoader) {
+                if (configuration.get(Constants.GREMLIN_HADOOP_VERTEX_FILTER, null) != null)
+                    this.vertexFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_VERTEX_FILTER);
+                if (configuration.get(Constants.GREMLIN_HADOOP_EDGE_FILTER, null) != null)
+                    this.edgeFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_EDGE_FILTER);
+                this.filtersLoader = true;
+            }
         }
     }
 

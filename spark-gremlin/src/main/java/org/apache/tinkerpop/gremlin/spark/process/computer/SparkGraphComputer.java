@@ -150,7 +150,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 outputRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class).newInstance();
                 // if the input class can filter on load, then set the filters
                 if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class))) {
-                    InputFormatRDD.storeVertexAndEdgeFilters(apacheConfiguration, hadoopConfiguration, this.vertexFilter, this.edgeFilter);
+                    GraphFilterAware.storeVertexAndEdgeFilters(apacheConfiguration, hadoopConfiguration, this.vertexFilter, this.edgeFilter);
                     filtered = false;
                 } else if (inputRDD instanceof GraphFilterAware) {
                     if (null != this.vertexFilter)

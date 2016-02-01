@@ -29,12 +29,8 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-
-import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,22 +64,5 @@ public abstract class CommonFileInputFormat extends FileInputFormat<NullWritable
     @Override
     public void setEdgeFilter(final Traversal<Edge, Edge> edgeFilter) {
         // do nothing. loaded through configuration.
-    }
-
-    public static final Vertex applyVertexAndEdgeFilters(final Vertex vertex, final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
-        if (null == vertex)
-            return null;
-        else if (vertexFilter == null || TraversalUtil.test(vertex, vertexFilter)) {
-            if (edgeFilter != null) {
-                final Iterator<Edge> edgeIterator = vertex.edges(Direction.BOTH);
-                while (edgeIterator.hasNext()) {
-                    if (!TraversalUtil.test(edgeIterator.next(), edgeFilter))
-                        edgeIterator.remove();
-                }
-            }
-            return vertex;
-        } else {
-            return null;
-        }
     }
 }

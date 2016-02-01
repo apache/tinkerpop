@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.ComputerSubmiss
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.InputOutputHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
@@ -143,6 +144,10 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         storage.rm(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
         this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(Persist.EDGES));
         try {
+            // store vertex and edge filters (will propagate down to native InputFormat or else GiraphVertexInputFormat will process)
+            final Configuration apacheConfiguration = new BaseConfiguration();
+            GraphFilterAware.storeVertexAndEdgeFilters(apacheConfiguration, this.giraphConfiguration, this.vertexFilter, this.edgeFilter);
+
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {
                 // a way to verify in Giraph whether the traversal will go over the wire or not
