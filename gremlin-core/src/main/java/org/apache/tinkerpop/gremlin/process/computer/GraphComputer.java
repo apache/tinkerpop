@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import java.util.concurrent.Future;
 
 /**
@@ -102,6 +106,10 @@ public interface GraphComputer {
      * @return the updated GraphComputer with newly set worker count
      */
     public GraphComputer workers(final int workers);
+
+    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter);
+
+    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter);
 
     /**
      * Set an arbitrary configuration key/value for the underlying {@link org.apache.commons.configuration.Configuration} in the {@link GraphComputer}.

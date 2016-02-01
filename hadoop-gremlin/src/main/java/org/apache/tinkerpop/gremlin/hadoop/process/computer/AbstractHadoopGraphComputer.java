@@ -29,6 +29,9 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +55,24 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected ResultGraph resultGraph = null;
     protected Persist persist = null;
 
+    protected Traversal.Admin<Vertex, Vertex> vertexFilter = null;
+    protected Traversal.Admin<Vertex, Edge> edgeFilter = null;
+
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
         this.logger = LoggerFactory.getLogger(this.getClass());
+    }
+
+    @Override
+    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+        this.vertexFilter = vertexFilter.asAdmin();
+        return this;
+    }
+
+    @Override
+    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
+        this.edgeFilter = edgeFilter.asAdmin();
+        return this;
     }
 
     @Override

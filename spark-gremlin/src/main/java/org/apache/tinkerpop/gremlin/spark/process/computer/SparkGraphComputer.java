@@ -170,6 +170,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             .newInstance()
                             .readGraphRDD(apacheConfiguration, sparkContext);
 
+                    loadedGraphRDD = SparkExecutor.filterLoadedGraph(loadedGraphRDD, this.vertexFilter, this.edgeFilter);
+
                     if (loadedGraphRDD.partitioner().isPresent())
                         this.logger.info("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
                     else {
