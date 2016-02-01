@@ -56,7 +56,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected Persist persist = null;
 
     protected Traversal.Admin<Vertex, Vertex> vertexFilter = null;
-    protected Traversal.Admin<Vertex, Edge> edgeFilter = null;
+    protected Traversal.Admin<Edge, Edge> edgeFilter = null;
 
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
@@ -70,7 +70,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     }
 
     @Override
-    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
+    public GraphComputer edges(final Traversal<Edge, Edge> edgeFilter) {
         this.edgeFilter = edgeFilter.asAdmin();
         return this;
     }

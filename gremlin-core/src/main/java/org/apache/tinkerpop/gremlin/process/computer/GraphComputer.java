@@ -109,7 +109,7 @@ public interface GraphComputer {
 
     public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter);
 
-    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter);
+    public GraphComputer edges(final Traversal<Edge, Edge> edgeFilter);
 
     /**
      * Set an arbitrary configuration key/value for the underlying {@link org.apache.commons.configuration.Configuration} in the {@link GraphComputer}.

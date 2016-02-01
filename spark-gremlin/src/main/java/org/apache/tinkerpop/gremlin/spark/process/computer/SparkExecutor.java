@@ -29,13 +29,13 @@ import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.MessagePayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.Payload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
@@ -46,6 +46,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -63,23 +64,25 @@ public final class SparkExecutor {
     // DATA LOADING //
     //////////////////
 
-    public static JavaPairRDD<Object, VertexWritable> filterLoadedGraph(JavaPairRDD<Object, VertexWritable> graphRDD, final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Vertex, Edge> edgeFilter) {
-        if (null != vertexFilter) {
-            graphRDD = graphRDD.mapPartitionsToPair(partitionIterator -> {
-                final Traversal.Admin<Vertex, Vertex> vFilter = vertexFilter.clone();
-                return () -> IteratorUtils.filter(partitionIterator, tuple -> TraversalUtil.test(tuple._2().get(), vFilter));
-            }, true);
-        }
-        if (null != edgeFilter) {
-            graphRDD = graphRDD.mapPartitionsToPair(partitionIterator -> {
-                final Traversal.Admin<Vertex, Edge> eFilter = (Traversal.Admin) __.not(edgeFilter.clone()).drop().asAdmin();
-                return () -> IteratorUtils.map(partitionIterator, tuple -> {
-                    IteratorUtils.iterate(TraversalUtil.applyAll(tuple._2().get(), eFilter));
-                    return tuple;
-                });
-            }, true);
-        }
-        return graphRDD;
+    public static JavaPairRDD<Object, VertexWritable> filterLoadedGraph(JavaPairRDD<Object, VertexWritable> graphRDD, final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
+        return graphRDD.mapPartitionsToPair(partitionIterator -> {
+            final Traversal.Admin<Vertex, Vertex> vFilter = (null == vertexFilter) ? null : vertexFilter.clone();
+            final Traversal.Admin<Edge, Edge> eFilter = (null == edgeFilter) ? null : edgeFilter.clone();
+            return () -> IteratorUtils.filter(partitionIterator, tuple -> {
+                if (null != vFilter && !TraversalUtil.test(tuple._2().get(), vFilter))
+                    return false;
+                else {
+                    if (null != eFilter) {
+                        final Iterator<Edge> edgeIterator = tuple._2().get().edges(Direction.BOTH);
+                        while (edgeIterator.hasNext()) {
+                            if (!TraversalUtil.test(edgeIterator.next(), eFilter))
+                                edgeIterator.remove();
+                        }
+                    }
+                    return true;
+                }
+            });
+        }, true);
     }
 
 

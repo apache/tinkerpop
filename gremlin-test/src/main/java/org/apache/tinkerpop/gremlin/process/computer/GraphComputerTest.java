@@ -24,11 +24,16 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -126,6 +131,16 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer workers(final int workers) {
+            return null;
+        }
+
+        @Override
+        public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+            return null;
+        }
+
+        @Override
+        public GraphComputer edges(final Traversal<Edge, Edge> edgeFilter) {
             return null;
         }
 
@@ -1465,5 +1480,148 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
     }
+
+    /////////////////////////////////////////////
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportVertexAndEdgeFilters() throws Exception {
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.hasLabel("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.hasLabel("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Edge>hasLabel("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+    }
+
+    public static class VertexProgramM implements VertexProgram {
+
+        public static final String SOFTWARE_ONLY = "softwareOnly";
+        public static final String PEOPLE_ONLY = "peopleOnly";
+        public static final String KNOWS_ONLY = "knowsOnly";
+        public static final String PEOPLE_KNOWS_ONLY = "peopleKnowsOnly";
+        public static final String PEOPLE_KNOWS_WELL_ONLY = "peopleKnowsWellOnly";
+
+        private String state;
+
+        public VertexProgramM() {
+
+        }
+
+        public VertexProgramM(final String state) {
+            this.state = state;
+        }
+
+        @Override
+        public void setup(final Memory memory) {
+
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            switch (this.state) {
+                case SOFTWARE_ONLY: {
+                    assertEquals("software", vertex.label());
+                    assertFalse(vertex.edges(Direction.OUT).hasNext());
+                    assertTrue(vertex.edges(Direction.IN).hasNext());
+                    assertTrue(vertex.edges(Direction.IN, "created").hasNext());
+                    assertFalse(vertex.edges(Direction.IN, "knows").hasNext());
+                    break;
+                }
+                case PEOPLE_ONLY: {
+                    assertEquals("person", vertex.label());
+                    assertFalse(vertex.edges(Direction.IN, "created").hasNext());
+                    assertTrue(IteratorUtils.count(vertex.edges(Direction.BOTH)) > 0);
+                    break;
+                }
+                case KNOWS_ONLY: {
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "created")));
+                    if (vertex.value("name").equals("marko"))
+                        assertEquals(2, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                    else if (vertex.value("name").equals("vadas"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else if (vertex.value("name").equals("josh"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else {
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                case PEOPLE_KNOWS_ONLY: {
+                    assertEquals("person", vertex.label());
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "created")));
+                    if (vertex.value("name").equals("marko"))
+                        assertEquals(2, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                    else if (vertex.value("name").equals("vadas"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else if (vertex.value("name").equals("josh"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else {
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                case PEOPLE_KNOWS_WELL_ONLY: {
+                    assertEquals("person", vertex.label());
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "created")));
+                    if (vertex.value("name").equals("marko")) {
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(1.0, vertex.edges(Direction.OUT, "knows").next().value("weight"), 0.001);
+                    } else if (vertex.value("name").equals("vadas"))
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else if (vertex.value("name").equals("josh")) {
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                        assertEquals(1.0, vertex.edges(Direction.IN, "knows").next().value("weight"), 0.001);
+                    } else {
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("This is an illegal state for this test case: " + this.state);
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return true;
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.NOTHING;
+        }
+
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
+        public VertexProgramM clone() {
+            return new VertexProgramM(this.state);
+        }
+
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
+            this.state = configuration.getString("state");
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            configuration.setProperty("state", this.state);
+            VertexProgram.super.storeState(configuration);
+        }
+
+    }
+
 
 }

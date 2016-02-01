@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -89,6 +91,16 @@ public final class TinkerGraphComputer implements GraphComputer {
     public GraphComputer workers(final int workers) {
         this.workers = workers;
         return this;
+    }
+
+    @Override
+    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphComputer edges(final Traversal<Edge, Edge> edgeFilter) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
