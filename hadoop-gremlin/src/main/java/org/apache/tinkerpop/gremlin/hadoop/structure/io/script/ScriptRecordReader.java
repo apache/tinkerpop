@@ -29,7 +29,9 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -57,8 +59,13 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     private final LineRecordReader lineRecordReader;
     private ScriptEngine engine;
 
-    public ScriptRecordReader() {
+    private final Traversal.Admin<Vertex, Vertex> vertexFilter;
+    private final Traversal.Admin<Edge, Edge> edgeFilter;
+
+    public ScriptRecordReader(final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
         this.lineRecordReader = new LineRecordReader();
+        this.vertexFilter = null == vertexFilter ? null : vertexFilter.clone();
+        this.edgeFilter = null == edgeFilter ? null : edgeFilter.clone();
     }
 
     @Override
@@ -83,7 +90,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 final Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
-                final Vertex vertex = (Vertex) engine.eval(READ_CALL, bindings);
+                final Vertex vertex = CommonFileInputFormat.applyVertexAndEdgeFilters((Vertex) engine.eval(READ_CALL, bindings), this.vertexFilter, this.edgeFilter);
                 if (vertex != null) {
                     this.vertexWritable.set(vertex);
                     return true;

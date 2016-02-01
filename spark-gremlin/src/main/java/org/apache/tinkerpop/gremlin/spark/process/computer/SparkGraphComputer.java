@@ -144,19 +144,27 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, Object.class));
             final InputRDD inputRDD;
             final OutputRDD outputRDD;
+            final boolean filtered;
             try {
                 inputRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class).newInstance();
                 outputRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class).newInstance();
-                if (inputRDD instanceof GraphFilterAware) { // if the input class can filter on load, then set the filters
+                // if the input class can filter on load, then set the filters
+                if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class))) {
+                    InputFormatRDD.storeVertexAndEdgeFilters(apacheConfiguration, hadoopConfiguration, this.vertexFilter, this.edgeFilter);
+                    filtered = false;
+                } else if (inputRDD instanceof GraphFilterAware) {
                     if (null != this.vertexFilter)
                         ((GraphFilterAware) inputRDD).setVertexFilter(this.vertexFilter);
                     if (null != edgeFilter)
                         ((GraphFilterAware) inputRDD).setEdgeFilter(this.edgeFilter);
+                    filtered = false;
+                } else {
+                    filtered = true;
                 }
             } catch (final InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            final boolean filtered = (this.vertexFilter != null || this.edgeFilter != null) && !(inputRDD instanceof GraphFilterAware);
+
             SparkMemory memory = null;
             // delete output location
             final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);

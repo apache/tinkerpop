@@ -25,8 +25,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolsConfigurable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
@@ -35,19 +34,14 @@ import java.io.IOException;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class ScriptInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
+public final class ScriptInputFormat extends CommonFileInputFormat {
 
     @Override
-    public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context)
-            throws IOException, InterruptedException {
-
-        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader();
+    public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
+        super.loadVertexAndEdgeFilters(context);
+        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader(this.vertexFilter, this.edgeFilter);
         reader.initialize(split, context);
         return reader;
     }
 
-    @Override
-    protected boolean isSplitable(final JobContext context, final Path file) {
-        return null == new CompressionCodecFactory(context.getConfiguration()).getCodec(file);
-    }
 }

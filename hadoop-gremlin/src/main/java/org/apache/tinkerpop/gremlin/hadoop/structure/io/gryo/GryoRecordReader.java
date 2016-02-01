@@ -27,8 +27,12 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexTerminator;
@@ -54,8 +58,12 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
 
     private long currentLength = 0;
     private long splitLength;
+    private final Traversal.Admin<Vertex, Vertex> vertexFilter;
+    private final Traversal.Admin<Edge, Edge> edgeFilter;
 
-    public GryoRecordReader() {
+    public GryoRecordReader(final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
+        this.vertexFilter = null == vertexFilter ? null : vertexFilter.clone();
+        this.edgeFilter = null == edgeFilter ? null : edgeFilter.clone();
     }
 
     @Override
@@ -123,8 +131,15 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
             terminatorLocation = ((byte) currentByte) == TERMINATOR[terminatorLocation] ? terminatorLocation + 1 : 0;
             if (terminatorLocation >= TERMINATOR.length) {
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
-                    this.vertexWritable.set(this.gryoReader.readVertex(in, Attachable::get)); // I know how GryoReader works, so I'm cheating here
-                    return true;
+                    final Vertex vertex = CommonFileInputFormat.applyVertexAndEdgeFilters(this.gryoReader.readVertex(in, Attachable::get), this.vertexFilter, this.edgeFilter); // I know how GryoReader works, so I'm cheating here
+                    if (null != vertex) {
+                        this.vertexWritable.set(vertex);
+                        return true;
+                    } else {
+                        currentVertexLength = 0;
+                        terminatorLocation = 0;
+                        output.reset();
+                    }
                 }
             }
         }
