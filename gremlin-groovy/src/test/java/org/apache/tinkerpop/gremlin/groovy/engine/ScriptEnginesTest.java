@@ -185,6 +185,7 @@ public class ScriptEnginesTest {
                     successes.incrementAndGet();
                 } catch (Exception ex) {
                     if (failures.incrementAndGet() == 500) threadImport.start();
+                    Thread.yield();
                 }
             })
         );
@@ -194,8 +195,8 @@ public class ScriptEnginesTest {
         threadEvalAndTriggerImport.join();
         threadImport.join();
 
-        assertTrue(successes.intValue() > 0);
-        assertTrue(failures.intValue() >= 500);
+        assertTrue("Success: " + successes.intValue() + " - Failures: " + failures.intValue(), successes.intValue() > 0);
+        assertTrue("Success: " + successes.intValue() + " - Failures: " + failures.intValue(), failures.intValue() >= 500);
 
         engines.close();
     }

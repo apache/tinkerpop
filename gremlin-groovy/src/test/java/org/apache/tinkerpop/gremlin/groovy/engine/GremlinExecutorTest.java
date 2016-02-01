@@ -627,8 +627,8 @@ public class GremlinExecutorTest {
             }
         });
 
-        service.shutdown();
         service.awaitTermination(30000, TimeUnit.MILLISECONDS);
+        service.shutdownNow();
 
         assertEquals(max, futures.size());
         futures.forEach(t -> {
