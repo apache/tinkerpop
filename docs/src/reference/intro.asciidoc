@@ -93,7 +93,7 @@ they share an incident edge. A property is attached to an element and an element
 is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the
 methods necessary to create such a structure. The TinkerPop graph previously diagrammed can be created with the
 following Java 8 code. Note that this graph is available as an in-memory TinkerGraph using
-`TinkerFactory.createClassic()`.
+`TinkerFactory.createModern()`.
 
 [source,java]
 Graph graph = TinkerGraph.open(); <1>
