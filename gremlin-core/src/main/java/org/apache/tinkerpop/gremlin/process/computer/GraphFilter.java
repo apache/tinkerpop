@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,12 +62,22 @@ public final class GraphFilter implements Cloneable, Serializable {
         }
     }
 
+    public boolean legalVertex(final Vertex vertex) {
+        return null == this.vertexFilter || TraversalUtil.test(vertex, this.vertexFilter);
+    }
+
+    public Iterator<Edge> legalEdges(final Vertex vertex) {
+        return null == this.edgeFilter ?
+                vertex.edges(Direction.BOTH) :
+                TraversalUtil.applyAll(vertex, this.edgeFilter);
+    }
+
     public final Traversal.Admin<Vertex, Vertex> getVertexFilter() {
-        return this.vertexFilter.clone();
+        return this.vertexFilter;
     }
 
     public final Traversal.Admin<Vertex, Edge> getEdgeFilter() {
-        return this.edgeFilter.clone();
+        return this.edgeFilter;
     }
 
     public boolean hasFilter() {

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -66,14 +65,14 @@ public final class TinkerGraphComputerView {
         if (this.graphFilter.hasFilter()) {
             graph.vertices().forEachRemaining(vertex -> {
                 boolean legalVertex = false;
-                if (this.graphFilter.hasVertexFilter() && TraversalUtil.applyAll(vertex, this.graphFilter.getVertexFilter()).hasNext()) {
+                if (this.graphFilter.hasVertexFilter() && this.graphFilter.legalVertex(vertex)) {
                     this.legalVertices.add(vertex.id());
                     legalVertex = true;
                 }
                 if ((legalVertex || !this.graphFilter.hasVertexFilter()) && this.graphFilter.hasEdgeFilter()) {
                     final Set<Object> edges = new HashSet<>();
                     this.legalEdges.put(vertex.id(), edges);
-                    TraversalUtil.applyAll(vertex, this.graphFilter.getEdgeFilter()).forEachRemaining(edge -> edges.add(edge.id()));
+                    this.graphFilter.legalEdges(vertex).forEachRemaining(edge -> edges.add(edge.id()));
                 }
             });
         }
