@@ -42,23 +42,6 @@ public interface GraphFilterAware {
 
     public void setGraphFilter(final GraphFilter graphFilter);
 
-    public static Vertex applyGraphFilter(final Vertex vertex, final GraphFilter graphFilter) {
-        if (null == vertex)
-            return null;
-        else if (!graphFilter.hasVertexFilter() || TraversalUtil.test(vertex, graphFilter.getVertexFilter())) {
-            if (graphFilter.hasEdgeFilter()) {
-                final Iterator<Edge> edgeIterator = vertex.edges(Direction.BOTH);
-                while (edgeIterator.hasNext()) {
-                    if (!TraversalUtil.test(edgeIterator.next(), graphFilter.getEdgeFilter()))
-                        edgeIterator.remove();
-                }
-            }
-            return vertex;
-        } else {
-            return null;
-        }
-    }
-
     public static void storeGraphFilter(final Configuration apacheConfiguration, final org.apache.hadoop.conf.Configuration hadoopConfiguration, final GraphFilter graphFilter) {
         if (graphFilter.hasFilter()) {
             VertexProgramHelper.serialize(graphFilter, apacheConfiguration, Constants.GREMLIN_HADOOP_GRAPH_FILTER);

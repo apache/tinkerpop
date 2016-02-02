@@ -20,10 +20,21 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,34 +42,43 @@ import java.io.Serializable;
 public final class GraphFilter implements Cloneable, Serializable {
 
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
-    private Traversal.Admin<Edge, Edge> edgeFilter = null;
+    private Traversal.Admin<Vertex, Edge> edgeFilter = null;
+
+    private Direction allowedEdgeDirection = Direction.BOTH;
+    private Set<String> allowedEdgeLabels = new HashSet<>();
+    private boolean allowAllRemainingEdges = false;
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
         this.vertexFilter = vertexFilter.asAdmin().clone();
     }
 
-    public void setEdgeFilter(final Traversal<Edge, Edge> edgeFilter) {
+    public void setEdgeFilter(final Traversal<Vertex, Edge> edgeFilter) {
         this.edgeFilter = edgeFilter.asAdmin().clone();
-    }
-
-    public boolean hasVertexFilter() {
-        return this.vertexFilter != null;
+        if (this.edgeFilter.getStartStep() instanceof VertexStep) {
+            this.allowedEdgeLabels.addAll(Arrays.asList(((VertexStep) this.edgeFilter.getStartStep()).getEdgeLabels()));
+            this.allowedEdgeDirection = ((VertexStep) this.edgeFilter.getStartStep()).getDirection();
+            this.allowAllRemainingEdges = 1 == this.edgeFilter.getSteps().size();
+        }
     }
 
     public final Traversal.Admin<Vertex, Vertex> getVertexFilter() {
-        return this.vertexFilter;
+        return this.vertexFilter.clone();
     }
 
-    public final Traversal.Admin<Edge, Edge> getEdgeFilter() {
-        return this.edgeFilter;
+    public final Traversal.Admin<Vertex, Edge> getEdgeFilter() {
+        return this.edgeFilter.clone();
+    }
+
+    public boolean hasFilter() {
+        return this.vertexFilter != null || this.edgeFilter != null;
     }
 
     public boolean hasEdgeFilter() {
         return this.edgeFilter != null;
     }
 
-    public boolean hasFilter() {
-        return this.vertexFilter != null || this.edgeFilter != null;
+    public boolean hasVertexFilter() {
+        return this.vertexFilter != null;
     }
 
     @Override
@@ -85,5 +105,59 @@ public final class GraphFilter implements Cloneable, Serializable {
             return "graphfilter[" + this.vertexFilter + "]";
         else
             return "graphfilter[" + this.edgeFilter + "]";
+    }
+
+    //////////////////////////////////////
+    /////////////////////////////////////
+    ////////////////////////////////////
+
+    public StarGraph.StarVertex applyGraphFilter(final StarGraph.StarVertex vertex) {
+        if (!this.hasFilter())
+            return vertex;
+        else if (null == vertex)
+            return null;
+        else if (!this.hasVertexFilter() || TraversalUtil.test(vertex, this.vertexFilter)) {
+            if (this.hasEdgeFilter()) {
+                if (!this.allowedEdgeDirection.equals(Direction.BOTH))
+                    vertex.dropEdges(this.allowedEdgeDirection.opposite());
+                if (!this.allowedEdgeLabels.isEmpty())
+                    vertex.keepEdges(this.allowedEdgeDirection, this.allowedEdgeLabels);
+
+                if (!this.allowAllRemainingEdges) {
+                    final Map<String, List<Edge>> outEdges = new HashMap<>();
+                    final Map<String, List<Edge>> inEdges = new HashMap<>();
+                    TraversalUtil.applyAll(vertex, this.edgeFilter).forEachRemaining(edge -> {
+                        if (edge instanceof StarGraph.StarOutEdge) {
+                            List<Edge> edges = outEdges.get(edge.label());
+                            if (null == edges) {
+                                edges = new ArrayList<>();
+                                outEdges.put(edge.label(), edges);
+                            }
+                            edges.add(edge);
+                        } else {
+                            List<Edge> edges = inEdges.get(edge.label());
+                            if (null == edges) {
+                                edges = new ArrayList<>();
+                                inEdges.put(edge.label(), edges);
+                            }
+                            edges.add(edge);
+                        }
+                    });
+
+                    if (outEdges.isEmpty())
+                        vertex.dropEdges(Direction.OUT);
+                    else
+                        vertex.setEdges(Direction.OUT, outEdges);
+
+                    if (inEdges.isEmpty())
+                        vertex.dropEdges(Direction.IN);
+                    else
+                        vertex.setEdges(Direction.IN, inEdges);
+                }
+            }
+            return vertex;
+        } else {
+            return null;
+        }
     }
 }

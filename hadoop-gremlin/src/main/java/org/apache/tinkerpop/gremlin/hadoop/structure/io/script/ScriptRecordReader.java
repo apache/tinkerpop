@@ -29,7 +29,6 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -88,7 +87,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 final Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
-                final Vertex vertex = GraphFilterAware.applyGraphFilter((Vertex) engine.eval(READ_CALL, bindings), this.graphFilter);
+                final Vertex vertex = this.graphFilter.applyGraphFilter((StarGraph.StarVertex) engine.eval(READ_CALL, bindings));
                 if (vertex != null) {
                     this.vertexWritable.set(vertex);
                     return true;

@@ -45,7 +45,7 @@ public final class GiraphVertexInputFormat extends VertexInputFormat {
     private InputFormat<NullWritable, VertexWritable> hadoopGraphInputFormat;
     protected GraphFilter graphFilter = new GraphFilter();
     private boolean graphFilterLoaded = false;
-    private boolean graphFilterAware;
+    private boolean graphFilterAware = false;
 
     @Override
     public void checkInputSpecs(final Configuration configuration) {

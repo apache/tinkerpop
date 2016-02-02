@@ -39,10 +39,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -273,11 +275,57 @@ public final class StarGraph implements Graph, Serializable {
             super(id, label);
         }
 
-        public void dropEdges() {
-            if (null != this.outEdges) this.outEdges.clear();
-            if (null != this.inEdges) this.inEdges.clear();
-            this.outEdges = null;
-            this.inEdges = null;
+        public void setEdges(final Direction direction, final Map<String, List<Edge>> edges) {
+            if (direction.equals(Direction.OUT))
+                this.outEdges = edges;
+            else if (direction.equals(Direction.IN))
+                this.inEdges = edges;
+            else
+                throw new IllegalArgumentException("The following direction is not supported: " + direction);
+        }
+
+        public void keepEdges(final Direction direction, final Set<String> edgeLabels) {
+            final Set<String> dropLabels = new HashSet<>();
+            if ((direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) && null != this.outEdges)
+                dropLabels.addAll(this.outEdges.keySet());
+            if ((direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) && null != this.inEdges)
+                dropLabels.addAll(this.inEdges.keySet());
+            //
+            for (final String label : edgeLabels) {
+                dropLabels.remove(label);
+            }
+            if (dropLabels.size() > 0) {
+                this.dropEdges(direction, dropLabels);
+            }
+        }
+
+        public void dropEdges(final Direction direction) {
+            if ((direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) && null != this.outEdges) {
+                this.outEdges.clear();
+                this.outEdges = null;
+            }
+            if ((direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) && null != this.inEdges) {
+                this.inEdges.clear();
+                this.inEdges = null;
+            }
+        }
+
+        public void dropEdges(final Direction direction, final Set<String> edgeLabels) {
+            if ((direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) && null != this.outEdges) {
+                for (final String edgeLabel : edgeLabels) {
+                    this.outEdges.remove(edgeLabel);
+                }
+                if (this.outEdges.isEmpty())
+                    this.outEdges = null;
+            }
+            if ((direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) && null != this.inEdges) {
+                for (final String edgeLabel : edgeLabels) {
+                    this.inEdges.remove(edgeLabel);
+                }
+
+                if (this.inEdges.isEmpty())
+                    this.inEdges = null;
+            }
         }
 
         public void dropVertexProperties(final String... propertyKeys) {
@@ -441,7 +489,7 @@ public final class StarGraph implements Graph, Serializable {
         @Override
         public void remove() {
             if (null != StarGraph.this.starVertex.vertexProperties)
-                StarGraph.this.starVertex.vertexProperties.get(this.label()).remove(this);
+                StarGraph.this.starVertex.vertexProperties.get(this.label).remove(this);
         }
 
         @Override

@@ -22,7 +22,6 @@ import com.google.common.base.Optional;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
@@ -63,7 +62,7 @@ public final class SparkExecutor {
     public static JavaPairRDD<Object, VertexWritable> filterLoadedGraph(JavaPairRDD<Object, VertexWritable> graphRDD, final GraphFilter graphFilter) {
         return graphRDD.mapPartitionsToPair(partitionIterator -> {
             final GraphFilter gFilter = graphFilter.clone();
-            return () -> IteratorUtils.filter(partitionIterator, tuple -> GraphFilterAware.applyGraphFilter(tuple._2().get(), gFilter) != null);
+            return () -> IteratorUtils.filter(partitionIterator, tuple -> gFilter.applyGraphFilter(tuple._2().get()) != null);
         }, true);
     }
 

@@ -27,7 +27,6 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
@@ -36,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexTerminator;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -128,7 +128,7 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
             terminatorLocation = ((byte) currentByte) == TERMINATOR[terminatorLocation] ? terminatorLocation + 1 : 0;
             if (terminatorLocation >= TERMINATOR.length) {
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
-                    final Vertex vertex = GraphFilterAware.applyGraphFilter(this.gryoReader.readVertex(in, Attachable::get), this.graphFilter); // I know how GryoReader works, so I'm cheating here
+                    final Vertex vertex = this.graphFilter.applyGraphFilter((StarGraph.StarVertex) this.gryoReader.readVertex(in, Attachable::get)); // I know how GryoReader works, so I'm cheating here
                     if (null != vertex) {
                         this.vertexWritable.set(vertex);
                         return true;

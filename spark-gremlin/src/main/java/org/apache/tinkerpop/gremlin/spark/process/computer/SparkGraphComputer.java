@@ -61,6 +61,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 import java.io.File;
@@ -264,7 +265,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     if (computedGraphCreated && !outputToSpark) {
                         // drop all the edges of the graph as they are not used in mapReduce processing
                         computedGraphRDD = computedGraphRDD.mapValues(vertexWritable -> {
-                            vertexWritable.get().dropEdges();
+                            vertexWritable.get().dropEdges(Direction.BOTH);
                             return vertexWritable;
                         });
                         // if there is only one MapReduce to execute, don't bother wasting the clock cycles.

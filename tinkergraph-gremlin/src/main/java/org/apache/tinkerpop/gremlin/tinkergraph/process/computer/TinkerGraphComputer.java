@@ -99,7 +99,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     }
 
     @Override
-    public GraphComputer edges(final Traversal<Edge, Edge> edgeFilter) {
+    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
         throw new UnsupportedOperationException();
     }
 
