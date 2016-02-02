@@ -75,7 +75,7 @@ public final class SparkContextStorage implements Storage {
     @Override
     public List<String> ls(final String location) {
         final List<String> rdds = new ArrayList<>();
-        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace(".", "\\.").replace("*", ".*").replace('\\', '/');
+        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace('\\', '/').replace(".", "\\.").replace("*", ".*");
         for (final RDD<?> rdd : Spark.getRDDs()) {
             if (rdd.name().replace('\\', '/').matches(wildCardLocation))
                 rdds.add(rdd.name() + " [" + rdd.getStorageLevel().description() + "]");
@@ -103,7 +103,7 @@ public final class SparkContextStorage implements Storage {
     @Override
     public boolean rm(final String location) {
         final List<String> rdds = new ArrayList<>();
-        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace(".", "\\.").replace("*", ".*").replace('\\', '/');
+        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace('\\', '/').replace(".", "\\.").replace("*", ".*");
         for (final RDD<?> rdd : Spark.getRDDs()) {
             if (rdd.name().replace('\\', '/').matches(wildCardLocation))
                 rdds.add(rdd.name());
