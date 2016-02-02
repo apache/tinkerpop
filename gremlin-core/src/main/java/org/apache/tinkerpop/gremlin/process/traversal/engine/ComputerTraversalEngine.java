@@ -26,7 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -70,7 +72,8 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         private Class<? extends GraphComputer> graphComputerClass;
         private int workers = -1;
         private static final List<TraversalStrategy> WITH_STRATEGIES = Collections.singletonList(ComputerResultStrategy.instance());
-
+        private Traversal<Vertex, Vertex> vertexFilter = null;
+        private Traversal<Vertex, Edge> edgeFilter = null;
 
         @Override
         public List<TraversalStrategy> getWithStrategies() {
@@ -87,11 +90,25 @@ public final class ComputerTraversalEngine implements TraversalEngine {
             return this;
         }
 
+        public Builder vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+            this.vertexFilter = vertexFilter;
+            return this;
+        }
+
+        public Builder edges(final Traversal<Vertex, Edge> edgeFilter) {
+            this.edgeFilter = edgeFilter;
+            return this;
+        }
+
 
         public ComputerTraversalEngine create(final Graph graph) {
-            final GraphComputer graphComputer = null == this.graphComputerClass ? graph.compute() : graph.compute(this.graphComputerClass);
+            GraphComputer graphComputer = null == this.graphComputerClass ? graph.compute() : graph.compute(this.graphComputerClass);
             if (-1 != this.workers)
-                graphComputer.workers(this.workers);
+                graphComputer = graphComputer.workers(this.workers);
+            if (null != this.vertexFilter)
+                graphComputer = graphComputer.vertices(this.vertexFilter);
+            if (null != this.edgeFilter)
+                graphComputer = graphComputer.edges(this.edgeFilter);
             return new ComputerTraversalEngine(graphComputer);
         }
     }
