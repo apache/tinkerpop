@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -169,6 +170,9 @@ public final class TinkerGraphComputer implements GraphComputer {
                             this.memory.completeSubRound();
                         }
                     }
+                } else {
+                    // MapReduce only
+                    TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, Collections.emptySet());
                 }
 
                 // execute mapreduce jobs
