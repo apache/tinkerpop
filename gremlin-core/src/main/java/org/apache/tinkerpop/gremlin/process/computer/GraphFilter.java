@@ -45,9 +45,10 @@ public final class GraphFilter implements Cloneable, Serializable {
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
     private Traversal.Admin<Vertex, Edge> edgeFilter = null;
 
-    private Direction allowedEdgeDirection = Direction.BOTH;
-    private Set<String> allowedEdgeLabels = new HashSet<>();
-    private boolean allowAllRemainingEdges = false;
+    // private boolean dropAllEdges (make this a fast one if the end is limit(0)?)
+    protected Direction allowedEdgeDirection = Direction.BOTH;
+    protected Set<String> allowedEdgeLabels = new HashSet<>();
+    protected boolean allowAllRemainingEdges = false;
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
         this.vertexFilter = vertexFilter.asAdmin().clone();
@@ -127,7 +128,7 @@ public final class GraphFilter implements Cloneable, Serializable {
             return vertex;
         else if (null == vertex)
             return null;
-        else if (!this.hasVertexFilter() || TraversalUtil.test(vertex, this.vertexFilter)) {
+        else if (this.legalVertex(vertex)) {
             if (this.hasEdgeFilter()) {
                 if (!this.allowedEdgeDirection.equals(Direction.BOTH))
                     vertex.dropEdges(this.allowedEdgeDirection.opposite());
@@ -137,7 +138,7 @@ public final class GraphFilter implements Cloneable, Serializable {
                 if (!this.allowAllRemainingEdges) {
                     final Map<String, List<Edge>> outEdges = new HashMap<>();
                     final Map<String, List<Edge>> inEdges = new HashMap<>();
-                    TraversalUtil.applyAll(vertex, this.edgeFilter).forEachRemaining(edge -> {
+                    this.legalEdges(vertex).forEachRemaining(edge -> {
                         if (edge instanceof StarGraph.StarOutEdge) {
                             List<Edge> edges = outEdges.get(edge.label());
                             if (null == edges) {
