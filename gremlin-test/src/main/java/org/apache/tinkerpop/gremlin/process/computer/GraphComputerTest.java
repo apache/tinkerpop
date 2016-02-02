@@ -69,7 +69,9 @@ import static org.junit.Assert.fail;
         "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated",
         "resultGraphPersistCombinationNotSupported",
         "vertexPropertiesCanNotBeUpdatedInMapReduce",
-        "computerRequiresMoreWorkersThanSupported"
+        "computerRequiresMoreWorkersThanSupported",
+        "vertexFilterAccessesIncidentEdges",
+        "edgeFilterAccessesAdjacentVertices"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
@@ -1505,6 +1507,20 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
         graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
         graph.compute(graphComputerClass.get()).edges(__.outE()).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+
+        // EXCEPTION HANDLING
+        try {
+            graph.compute(graphComputerClass.get()).vertices(__.out());
+            fail();
+        } catch (final IllegalArgumentException e) {
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(__.out()).getMessage());
+        }
+        try {
+            graph.compute(graphComputerClass.get()).edges(__.<Vertex>out().outE());
+            fail();
+        } catch (final IllegalArgumentException e) {
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>out().outE()).getMessage());
+        }
     }
 
     public static class VertexProgramM implements VertexProgram {

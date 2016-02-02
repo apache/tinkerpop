@@ -53,13 +53,13 @@ public final class GraphFilter implements Cloneable, Serializable {
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
         if (!TraversalHelper.isLocalVertex(vertexFilter.asAdmin()))
-            throw new IllegalArgumentException("The provided vertex filter must not leave the local vertex: " + edgeFilter);
+            throw GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(vertexFilter);
         this.vertexFilter = vertexFilter.asAdmin().clone();
     }
 
     public void setEdgeFilter(final Traversal<Vertex, Edge> edgeFilter) {
         if (!TraversalHelper.isLocalStarGraph(edgeFilter.asAdmin()))
-            throw new IllegalArgumentException("The provided edge filter must not leave the local star graph: " + edgeFilter);
+            throw GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(edgeFilter);
         this.edgeFilter = edgeFilter.asAdmin().clone();
         if (this.edgeFilter.getStartStep() instanceof VertexStep) {
             this.allowedEdgeLabels.addAll(Arrays.asList(((VertexStep) this.edgeFilter.getStartStep()).getEdgeLabels()));

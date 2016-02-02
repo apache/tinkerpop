@@ -77,18 +77,18 @@ public class GraphFilterTest {
         //
         graphFilter = new GraphFilter();
         try {
-            graphFilter.setEdgeFilter(__.<Vertex>inE("likes").inV().outE().has("weight", 1));    // cannot leave local star graph
+            graphFilter.setVertexFilter(__.out("likes"));    // cannot leave local vertex
             fail();
         } catch (final IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("local star graph"));
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(__.out("likes")).getMessage());
         }
         //
         graphFilter = new GraphFilter();
         try {
-            graphFilter.setVertexFilter(__.out("likes"));    // cannot leave local vertex
+            graphFilter.setEdgeFilter(__.<Vertex>inE("likes").inV().outE().has("weight", 1));    // cannot leave local star graph
             fail();
         } catch (final IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("local vertex"));
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>inE("likes").inV().outE().has("weight", 1)).getMessage());
         }
     }
 

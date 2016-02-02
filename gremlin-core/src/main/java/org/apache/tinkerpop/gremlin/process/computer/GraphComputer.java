@@ -126,7 +126,7 @@ public interface GraphComputer {
      *
      * @param edgeFilter the traversal that determines which edges are loaded for each vertex
      * @return the updated GraphComputer with newly set edge filter
-     * @throws IllegalArgumentException if the provided traversal goes attempts to access adjacent vertices
+     * @throws IllegalArgumentException if the provided traversal attempts to access adjacent vertices
      */
     public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) throws IllegalArgumentException;
 
@@ -263,6 +263,14 @@ public interface GraphComputer {
 
         public static IllegalArgumentException computerRequiresMoreWorkersThanSupported(final int workers, final int maxWorkers) {
             return new IllegalArgumentException("The computer requires more workers than supported: " + workers + " [max:" + maxWorkers + "]");
+        }
+
+        public static IllegalArgumentException vertexFilterAccessesIncidentEdges(final Traversal<Vertex, Vertex> vertexFilter) {
+            return new IllegalArgumentException("The provided vertex filter traversal accesses incident edges: " + vertexFilter);
+        }
+
+        public static IllegalArgumentException edgeFilterAccessesAdjacentVertices(final Traversal<Vertex, Edge> edgeFilter) {
+            return new IllegalArgumentException("The provided edge filter traversal accesses data on adjacent vertices: " + edgeFilter);
         }
     }
 
