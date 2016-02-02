@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
@@ -58,6 +59,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     private boolean executed = false;
     private final Set<MapReduce> mapReducers = new HashSet<>();
     private int workers = Runtime.getRuntime().availableProcessors();
+    private final GraphFilter graphFilter = new GraphFilter();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -95,12 +97,14 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     @Override
     public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
-        throw new UnsupportedOperationException();
+        this.graphFilter.setVertexFilter(vertexFilter);
+        return this;
     }
 
     @Override
     public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
-        throw new UnsupportedOperationException();
+        this.graphFilter.setEdgeFilter(edgeFilter);
+        return this;
     }
 
     @Override
@@ -134,7 +138,7 @@ public final class TinkerGraphComputer implements GraphComputer {
             final long time = System.currentTimeMillis();
             try (final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers)) {
                 if (null != this.vertexProgram) {
-                    TinkerHelper.createGraphComputerView(this.graph, this.vertexProgram.getElementComputeKeys());
+                    TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getElementComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     this.memory.completeSubRound();

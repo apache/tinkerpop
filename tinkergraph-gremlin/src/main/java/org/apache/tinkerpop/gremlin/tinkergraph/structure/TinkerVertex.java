@@ -143,12 +143,21 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
+        final Iterator<Edge> edgeIterator = (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
+        return TinkerHelper.inComputerMode(this.graph) ?
+                IteratorUtils.filter(edgeIterator, edge -> this.graph.graphComputerView.legalEdge(this, edge)) :
+                edgeIterator;
     }
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
+        return TinkerHelper.inComputerMode(this.graph) ?
+                direction.equals(Direction.BOTH) ?
+                        IteratorUtils.concat(
+                                IteratorUtils.map(this.edges(Direction.OUT, edgeLabels), Edge::inVertex),
+                                IteratorUtils.map(this.edges(Direction.IN, edgeLabels), Edge::outVertex)) :
+                        IteratorUtils.map(this.edges(direction, edgeLabels), edge -> edge.vertices(direction.opposite()).next()) :
+                (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 
     @Override

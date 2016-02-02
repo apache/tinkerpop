@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -1394,7 +1393,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     /////////////////////////////////////////////
 
     @Test
-    @Ignore
     @LoadGraphWith(GRATEFUL)
     public void shouldSupportWorkerCount() throws Exception {
         int maxWorkers = graph.compute(graphComputerClass.get()).features().getMaxWorkers();
