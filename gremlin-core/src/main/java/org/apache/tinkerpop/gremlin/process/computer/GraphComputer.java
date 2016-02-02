@@ -107,9 +107,28 @@ public interface GraphComputer {
      */
     public GraphComputer workers(final int workers);
 
-    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter);
+    /**
+     * Add a filter that will limit which vertices are loaded from the graph source.
+     * The provided {@link Traversal} can only check the vertex, its vertex properties, and the vertex property properties.
+     * The loaded graph will only have those vertices that pass through the provided filter.
+     *
+     * @param vertexFilter the traversal to verify whether or not to load the current vertex
+     * @return the updated GraphComputer with newly set vertex filter
+     * @throws IllegalArgumentException if the provided traversal attempts to access vertex edges
+     */
+    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) throws IllegalArgumentException;
 
-    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter);
+    /**
+     * Add a filter that will limit which edges of the vertices are loaded from the graph source.
+     * The provided {@link Traversal} can only check the local star graph of the vertex and thus,
+     * can not access properties/labels of the adjacent vertices.
+     * The vertices of the loaded graph will only have those edges that pass through the provided filter.
+     *
+     * @param edgeFilter the traversal that determines which edges are loaded for each vertex
+     * @return the updated GraphComputer with newly set edge filter
+     * @throws IllegalArgumentException if the provided traversal goes attempts to access adjacent vertices
+     */
+    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) throws IllegalArgumentException;
 
     /**
      * Set an arbitrary configuration key/value for the underlying {@link org.apache.commons.configuration.Configuration} in the {@link GraphComputer}.

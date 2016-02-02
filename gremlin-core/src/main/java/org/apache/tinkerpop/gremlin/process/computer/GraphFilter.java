@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -51,10 +52,14 @@ public final class GraphFilter implements Cloneable, Serializable {
     protected boolean allowAllRemainingEdges = false;
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
+        if (!TraversalHelper.isLocalVertex(vertexFilter.asAdmin()))
+            throw new IllegalArgumentException("The provided vertex filter must not leave the local vertex: " + edgeFilter);
         this.vertexFilter = vertexFilter.asAdmin().clone();
     }
 
     public void setEdgeFilter(final Traversal<Vertex, Edge> edgeFilter) {
+        if (!TraversalHelper.isLocalStarGraph(edgeFilter.asAdmin()))
+            throw new IllegalArgumentException("The provided edge filter must not leave the local star graph: " + edgeFilter);
         this.edgeFilter = edgeFilter.asAdmin().clone();
         if (this.edgeFilter.getStartStep() instanceof VertexStep) {
             this.allowedEdgeLabels.addAll(Arrays.asList(((VertexStep) this.edgeFilter.getStartStep()).getEdgeLabels()));
