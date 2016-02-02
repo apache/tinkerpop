@@ -39,7 +39,7 @@ public final class ScriptInputFormat extends CommonFileInputFormat {
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
         super.loadVertexAndEdgeFilters(context);
-        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader(this.vertexFilter, this.edgeFilter);
+        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader(this.graphFilter);
         reader.initialize(split, context);
         return reader;
     }

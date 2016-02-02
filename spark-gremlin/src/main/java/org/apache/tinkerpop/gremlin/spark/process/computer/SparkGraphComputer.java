@@ -150,15 +150,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 outputRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class).newInstance();
                 // if the input class can filter on load, then set the filters
                 if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class))) {
-                    GraphFilterAware.storeVertexAndEdgeFilters(apacheConfiguration, hadoopConfiguration, this.vertexFilter, this.edgeFilter);
+                    GraphFilterAware.storeGraphFilter(apacheConfiguration, hadoopConfiguration, this.graphFilter);
                     filtered = false;
                 } else if (inputRDD instanceof GraphFilterAware) {
-                    if (null != this.vertexFilter)
-                        ((GraphFilterAware) inputRDD).setVertexFilter(this.vertexFilter);
-                    if (null != edgeFilter)
-                        ((GraphFilterAware) inputRDD).setEdgeFilter(this.edgeFilter);
+                    ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
                     filtered = false;
-                } else if (null != this.vertexFilter || null != this.edgeFilter) {
+                } else if (this.graphFilter.hasFilter()) {
                     filtered = true;
                 } else {
                     filtered = false;
@@ -195,8 +192,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(apacheConfiguration, sparkContext);
                 // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
                 if (filtered) {
-                    this.logger.info("Filtering the loaded graphRDD: " + this.vertexFilter + " and " + this.edgeFilter);
-                    loadedGraphRDD = SparkExecutor.filterLoadedGraph(loadedGraphRDD, this.vertexFilter, this.edgeFilter);
+                    this.logger.info("Filtering the loaded graphRDD: " + this.graphFilter);
+                    loadedGraphRDD = SparkExecutor.filterLoadedGraph(loadedGraphRDD, this.graphFilter);
                 }
                 // if the loaded graph RDD is already partitioned use that partitioner, else partition it with HashPartitioner
                 if (loadedGraphRDD.partitioner().isPresent())

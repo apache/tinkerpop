@@ -146,7 +146,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         try {
             // store vertex and edge filters (will propagate down to native InputFormat or else GiraphVertexInputFormat will process)
             final Configuration apacheConfiguration = new BaseConfiguration();
-            GraphFilterAware.storeVertexAndEdgeFilters(apacheConfiguration, this.giraphConfiguration, this.vertexFilter, this.edgeFilter);
+            GraphFilterAware.storeGraphFilter(apacheConfiguration, this.giraphConfiguration, this.graphFilter);
 
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {

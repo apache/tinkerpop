@@ -22,22 +22,19 @@ import com.google.common.base.Optional;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.MessagePayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.Payload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -46,7 +43,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -64,24 +60,10 @@ public final class SparkExecutor {
     // DATA LOADING //
     //////////////////
 
-    public static JavaPairRDD<Object, VertexWritable> filterLoadedGraph(JavaPairRDD<Object, VertexWritable> graphRDD, final Traversal.Admin<Vertex, Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
+    public static JavaPairRDD<Object, VertexWritable> filterLoadedGraph(JavaPairRDD<Object, VertexWritable> graphRDD, final GraphFilter graphFilter) {
         return graphRDD.mapPartitionsToPair(partitionIterator -> {
-            final Traversal.Admin<Vertex, Vertex> vFilter = (null == vertexFilter) ? null : vertexFilter.clone();
-            final Traversal.Admin<Edge, Edge> eFilter = (null == edgeFilter) ? null : edgeFilter.clone();
-            return () -> IteratorUtils.filter(partitionIterator, tuple -> {
-                if (null != vFilter && !TraversalUtil.test(tuple._2().get(), vFilter))
-                    return false;
-                else {
-                    if (null != eFilter) {
-                        final Iterator<Edge> edgeIterator = tuple._2().get().edges(Direction.BOTH);
-                        while (edgeIterator.hasNext()) {
-                            if (!TraversalUtil.test(edgeIterator.next(), eFilter))
-                                edgeIterator.remove();
-                        }
-                    }
-                    return true;
-                }
-            });
+            final GraphFilter gFilter = graphFilter.clone();
+            return () -> IteratorUtils.filter(partitionIterator, tuple -> GraphFilterAware.applyGraphFilter(tuple._2().get(), gFilter) != null);
         }, true);
     }
 

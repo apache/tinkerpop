@@ -25,11 +25,9 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 
 import java.io.IOException;
 
@@ -39,15 +37,13 @@ import java.io.IOException;
 public final class GiraphVertexReader extends VertexReader {
 
     private RecordReader<NullWritable, VertexWritable> recordReader;
-    private final Traversal.Admin<org.apache.tinkerpop.gremlin.structure.Vertex, org.apache.tinkerpop.gremlin.structure.Vertex> vertexFilter;
-    private final Traversal.Admin<Edge, Edge> edgeFilter;
+    private final GraphFilter graphFilter;
     private final boolean graphFilterAware;
 
-    public GiraphVertexReader(final RecordReader<NullWritable, VertexWritable> recordReader, final boolean graphFilterAware, final Traversal.Admin<org.apache.tinkerpop.gremlin.structure.Vertex, org.apache.tinkerpop.gremlin.structure.Vertex> vertexFilter, final Traversal.Admin<Edge, Edge> edgeFilter) {
+    public GiraphVertexReader(final RecordReader<NullWritable, VertexWritable> recordReader, final boolean graphFilterAware, final GraphFilter graphFilter) {
         this.recordReader = recordReader;
         this.graphFilterAware = graphFilterAware;
-        this.vertexFilter = null == vertexFilter ? null : vertexFilter.clone();
-        this.edgeFilter = null == edgeFilter ? null : edgeFilter.clone();
+        this.graphFilter = graphFilter.clone();
     }
 
     @Override
@@ -63,7 +59,7 @@ public final class GiraphVertexReader extends VertexReader {
             while (true) {
                 if (this.recordReader.nextKeyValue()) {
                     final VertexWritable vertexWritable = this.recordReader.getCurrentValue();
-                    final org.apache.tinkerpop.gremlin.structure.Vertex vertex = GraphFilterAware.applyVertexAndEdgeFilters(vertexWritable.get(), this.vertexFilter, this.edgeFilter);
+                    final org.apache.tinkerpop.gremlin.structure.Vertex vertex = GraphFilterAware.applyGraphFilter(vertexWritable.get(), this.graphFilter);
                     if (null != vertex) {
                         vertexWritable.set(vertex);
                         return true;
