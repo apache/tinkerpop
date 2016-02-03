@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -46,7 +47,7 @@ public final class GraphFilter implements Cloneable, Serializable {
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
     private Traversal.Admin<Vertex, Edge> edgeFilter = null;
 
-    // private boolean dropAllEdges (make this a fast one if the end is limit(0)?)
+    protected boolean allowNoEdges = false;
     protected Direction allowedEdgeDirection = Direction.BOTH;
     protected Set<String> allowedEdgeLabels = new HashSet<>();
     protected boolean allowAllRemainingEdges = false;
@@ -61,7 +62,10 @@ public final class GraphFilter implements Cloneable, Serializable {
         if (!TraversalHelper.isLocalStarGraph(edgeFilter.asAdmin()))
             throw GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(edgeFilter);
         this.edgeFilter = edgeFilter.asAdmin().clone();
-        if (this.edgeFilter.getStartStep() instanceof VertexStep) {
+        if (this.edgeFilter.getEndStep() instanceof RangeGlobalStep && 0 == ((RangeGlobalStep) this.edgeFilter.getEndStep()).getHighRange()) {
+            this.allowNoEdges = true;
+        } else if (this.edgeFilter.getStartStep() instanceof VertexStep) {
+            this.allowedEdgeLabels.clear();
             this.allowedEdgeLabels.addAll(Arrays.asList(((VertexStep) this.edgeFilter.getStartStep()).getEdgeLabels()));
             this.allowedEdgeDirection = ((VertexStep) this.edgeFilter.getStartStep()).getDirection();
             this.allowAllRemainingEdges = 1 == this.edgeFilter.getSteps().size();
@@ -135,41 +139,45 @@ public final class GraphFilter implements Cloneable, Serializable {
             return null;
         else if (this.legalVertex(vertex)) {
             if (this.hasEdgeFilter()) {
-                if (!this.allowedEdgeDirection.equals(Direction.BOTH))
-                    vertex.dropEdges(this.allowedEdgeDirection.opposite());
-                if (!this.allowedEdgeLabels.isEmpty())
-                    vertex.keepEdges(this.allowedEdgeDirection, this.allowedEdgeLabels);
+                if (this.allowNoEdges) {
+                    vertex.dropEdges(Direction.BOTH);
+                } else {
+                    if (!this.allowedEdgeDirection.equals(Direction.BOTH))
+                        vertex.dropEdges(this.allowedEdgeDirection.opposite());
+                    if (!this.allowedEdgeLabels.isEmpty())
+                        vertex.keepEdges(this.allowedEdgeDirection, this.allowedEdgeLabels);
 
-                if (!this.allowAllRemainingEdges) {
-                    final Map<String, List<Edge>> outEdges = new HashMap<>();
-                    final Map<String, List<Edge>> inEdges = new HashMap<>();
-                    this.legalEdges(vertex).forEachRemaining(edge -> {
-                        if (edge instanceof StarGraph.StarOutEdge) {
-                            List<Edge> edges = outEdges.get(edge.label());
-                            if (null == edges) {
-                                edges = new ArrayList<>();
-                                outEdges.put(edge.label(), edges);
+                    if (!this.allowAllRemainingEdges) {
+                        final Map<String, List<Edge>> outEdges = new HashMap<>();
+                        final Map<String, List<Edge>> inEdges = new HashMap<>();
+                        this.legalEdges(vertex).forEachRemaining(edge -> {
+                            if (edge instanceof StarGraph.StarOutEdge) {
+                                List<Edge> edges = outEdges.get(edge.label());
+                                if (null == edges) {
+                                    edges = new ArrayList<>();
+                                    outEdges.put(edge.label(), edges);
+                                }
+                                edges.add(edge);
+                            } else {
+                                List<Edge> edges = inEdges.get(edge.label());
+                                if (null == edges) {
+                                    edges = new ArrayList<>();
+                                    inEdges.put(edge.label(), edges);
+                                }
+                                edges.add(edge);
                             }
-                            edges.add(edge);
-                        } else {
-                            List<Edge> edges = inEdges.get(edge.label());
-                            if (null == edges) {
-                                edges = new ArrayList<>();
-                                inEdges.put(edge.label(), edges);
-                            }
-                            edges.add(edge);
-                        }
-                    });
+                        });
 
-                    if (outEdges.isEmpty())
-                        vertex.dropEdges(Direction.OUT);
-                    else
-                        vertex.setEdges(Direction.OUT, outEdges);
+                        if (outEdges.isEmpty())
+                            vertex.dropEdges(Direction.OUT);
+                        else
+                            vertex.setEdges(Direction.OUT, outEdges);
 
-                    if (inEdges.isEmpty())
-                        vertex.dropEdges(Direction.IN);
-                    else
-                        vertex.setEdges(Direction.IN, inEdges);
+                        if (inEdges.isEmpty())
+                            vertex.dropEdges(Direction.IN);
+                        else
+                            vertex.setEdges(Direction.IN, inEdges);
+                    }
                 }
             }
             return vertex;

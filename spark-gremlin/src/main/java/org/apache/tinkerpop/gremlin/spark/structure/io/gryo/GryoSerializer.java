@@ -30,6 +30,7 @@ import org.apache.spark.scheduler.CompressedMapStatus;
 import org.apache.spark.scheduler.HighlyCompressedMapStatus;
 import org.apache.spark.serializer.Serializer;
 import org.apache.spark.serializer.SerializerInstance;
+import org.apache.spark.storage.BlockManagerId;
 import org.apache.spark.util.SerializableConfiguration;
 import org.apache.spark.util.collection.CompactBuffer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
@@ -87,7 +88,8 @@ public final class GryoSerializer extends Serializer {
                                 .addCustom(Tuple3[].class)
                                 .addCustom(CompactBuffer.class, new CompactBufferSerializer())
                                 .addCustom(CompactBuffer[].class)
-                                .addCustom(CompressedMapStatus.class, new ExternalizableSerializer())  // externalizable implemented so its okay
+                                .addCustom(CompressedMapStatus.class)
+                                .addCustom(BlockManagerId.class)
                                 .addCustom(HighlyCompressedMapStatus.class, new ExternalizableSerializer())   // externalizable implemented so its okay
                                 .addCustom(HttpBroadcast.class)
                                 .addCustom(PythonBroadcast.class)
