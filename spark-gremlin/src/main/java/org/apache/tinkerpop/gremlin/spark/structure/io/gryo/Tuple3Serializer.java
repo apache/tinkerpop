@@ -23,30 +23,25 @@ import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
-import scala.collection.JavaConversions;
-import scala.collection.mutable.WrappedArray;
+import scala.Tuple3;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>> {
+public final class Tuple3Serializer<A, B, C> extends Serializer<Tuple3<A, B, C>> {
 
     @Override
-    public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
-        output.writeVarInt(iterable.size(), true);
-        JavaConversions.asJavaList(iterable).forEach(t -> {
-            kryo.writeClassAndObject(output, t);
-            output.flush();
-        });
+    public void write(final Kryo kryo, final Output output, final Tuple3<A, B, C> tuple3) {
+        kryo.writeClassAndObject(output, tuple3._1());
+        output.flush();
+        kryo.writeClassAndObject(output, tuple3._2());
+        output.flush();
+        kryo.writeClassAndObject(output, tuple3._3());
+        output.flush();
     }
 
     @Override
-    public WrappedArray<T> read(final Kryo kryo, final Input input, final Class<WrappedArray<T>> aClass) {
-        final int size = input.readVarInt(true);
-        final Object[] array = new Object[size];
-        for (int i = 0; i < size; i++) {
-            array[i] = kryo.readClassAndObject(input);
-        }
-        return new WrappedArray.ofRef<>((T[]) array);
+    public Tuple3<A, B, C> read(final Kryo kryo, final Input input, final Class<Tuple3<A, B, C>> clazz) {
+        return new Tuple3(kryo.readClassAndObject(input), kryo.readClassAndObject(input), kryo.readClassAndObject(input));
     }
 }

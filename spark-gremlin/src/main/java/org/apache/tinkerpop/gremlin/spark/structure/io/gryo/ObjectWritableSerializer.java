@@ -19,34 +19,25 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
-import scala.collection.JavaConversions;
-import scala.collection.mutable.WrappedArray;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>> {
+public final class ObjectWritableSerializer<T> extends Serializer<ObjectWritable<T>> {
 
     @Override
-    public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
-        output.writeVarInt(iterable.size(), true);
-        JavaConversions.asJavaList(iterable).forEach(t -> {
-            kryo.writeClassAndObject(output, t);
-            output.flush();
-        });
+    public void write(final Kryo kryo, final Output output, final ObjectWritable<T> objectWritable) {
+        kryo.writeClassAndObject(output, objectWritable.get());
+        output.flush();
     }
 
     @Override
-    public WrappedArray<T> read(final Kryo kryo, final Input input, final Class<WrappedArray<T>> aClass) {
-        final int size = input.readVarInt(true);
-        final Object[] array = new Object[size];
-        for (int i = 0; i < size; i++) {
-            array[i] = kryo.readClassAndObject(input);
-        }
-        return new WrappedArray.ofRef<>((T[]) array);
+    public ObjectWritable<T> read(final Kryo kryo, final Input input, final Class<ObjectWritable<T>> clazz) {
+        return new ObjectWritable(kryo.readClassAndObject(input));
     }
 }

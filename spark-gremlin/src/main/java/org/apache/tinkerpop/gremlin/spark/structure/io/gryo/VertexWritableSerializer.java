@@ -19,34 +19,24 @@
 
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
-import scala.collection.JavaConversions;
-import scala.collection.mutable.WrappedArray;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>> {
-
+public final class VertexWritableSerializer extends Serializer<VertexWritable> {
     @Override
-    public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
-        output.writeVarInt(iterable.size(), true);
-        JavaConversions.asJavaList(iterable).forEach(t -> {
-            kryo.writeClassAndObject(output, t);
-            output.flush();
-        });
+    public void write(final Kryo kryo, final Output output, final VertexWritable vertexWritable) {
+        kryo.writeObject(output, vertexWritable.get().graph());
     }
 
     @Override
-    public WrappedArray<T> read(final Kryo kryo, final Input input, final Class<WrappedArray<T>> aClass) {
-        final int size = input.readVarInt(true);
-        final Object[] array = new Object[size];
-        for (int i = 0; i < size; i++) {
-            array[i] = kryo.readClassAndObject(input);
-        }
-        return new WrappedArray.ofRef<>((T[]) array);
+    public VertexWritable read(final Kryo kryo, final Input input, final Class<VertexWritable> aClass) {
+        return new VertexWritable(kryo.readObject(input, StarGraph.class).getStarVertex());
     }
 }
