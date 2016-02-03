@@ -57,7 +57,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -291,7 +290,15 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
-                    serializeResponseMessage(ctx, msg, serializer, useBinary, aggregate, code);
+                    Frame frame;
+                    try {
+                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code);
+                    } catch (Exception ex) {
+                        // exception is handled in makeFrame() - serialization error gets written back to driver
+                        // at that point
+                        if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        break;
+                    }
 
                     // only need to reset the aggregation list if there's more stuff to write
                     if (toIterate.hasNext())
@@ -311,8 +318,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     }
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
-                    // required then it will be 100% complete before the client receives it.
-                    ctx.flush();
+                    // required then it will be 100% complete before the client receives it. the "frame" at this point
+                    // should have completely detached objects from the transaction (i.e. serialization has occurred)
+                    // so a new one should not be opened on the flush down the netty pipeline
+                    ctx.writeAndFlush(frame);
                 }
             } else {
                 // don't keep triggering this warning over and over again for the same request
@@ -339,23 +348,21 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         stopWatch.stop();
     }
 
-    private static void serializeResponseMessage(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                                 final MessageSerializer serializer, final boolean useBinary, List<Object> aggregate,
-                                                 final ResponseStatusCode code) {
+    private static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
+                                   final MessageSerializer serializer, final boolean useBinary, List<Object> aggregate,
+                                   final ResponseStatusCode code) throws Exception {
         try {
             if (useBinary) {
-                ctx.write(new Frame(
-                        serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
-                        .code(code)
-                        .result(aggregate).create(), ctx.alloc())));
+                return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
+                                .code(code)
+                                .result(aggregate).create(), ctx.alloc()));
             } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                ctx.write(new Frame(
-                        textSerializer.serializeResponseAsString(ResponseMessage.build(msg)
-                        .code(code)
-                        .result(aggregate).create())));
+                return new Frame(textSerializer.serializeResponseAsString(ResponseMessage.build(msg)
+                                .code(code)
+                                .result(aggregate).create()));
             }
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
@@ -365,6 +372,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             ctx.writeAndFlush(error);
+            throw ex;
         }
     }
 
