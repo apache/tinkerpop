@@ -100,7 +100,7 @@ public final class GryoSerializer extends Serializer {
                                 .addCustom(ViewIncomingPayload.class)
                                 .addCustom(ViewOutgoingPayload.class)
                                 .addCustom(ViewPayload.class)
-                                .addCustom(SerializableConfiguration.class)
+                                .addCustom(SerializableConfiguration.class, new JavaSerializer())
                                 .addCustom(VertexWritable.class, new VertexWritableSerializer())
                                 .addCustom(ObjectWritable.class, new ObjectWritableSerializer())
                                 .referenceTracking(referenceTracking)

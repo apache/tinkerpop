@@ -176,7 +176,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             }
 
             // the Spark application name will always be set by SparkContextStorage, thus, INFO the name to make it easier to debug
-            logger.info(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
+            logger.debug(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
 
             // create the spark configuration from the graph computer configuration
             final SparkConf sparkConfiguration = new SparkConf();
@@ -193,15 +193,15 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(apacheConfiguration, sparkContext);
                 // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
                 if (filtered) {
-                    this.logger.info("Filtering the loaded graphRDD: " + this.graphFilter);
+                    this.logger.debug("Filtering the loaded graphRDD: " + this.graphFilter);
                     loadedGraphRDD = SparkExecutor.filterLoadedGraph(loadedGraphRDD, this.graphFilter);
                 }
                 // if the loaded graph RDD is already partitioned use that partitioner, else partition it with HashPartitioner
                 if (loadedGraphRDD.partitioner().isPresent())
-                    this.logger.info("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
+                    this.logger.debug("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
                 else {
                     final Partitioner partitioner = new HashPartitioner(this.workersSet ? this.workers : loadedGraphRDD.partitions().size());
-                    this.logger.info("Partitioning the loaded graphRDD: " + partitioner);
+                    this.logger.debug("Partitioning the loaded graphRDD: " + partitioner);
                     loadedGraphRDD = loadedGraphRDD.partitionBy(partitioner);
                     partitioned = true;
                 }
