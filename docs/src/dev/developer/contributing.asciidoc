@@ -398,13 +398,14 @@ distributions, either:
 * target/apache-gremlin-server-x.y.z-distribution.zip
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
-license then it should be added in the pattern already defined.
+license (e.g. BSD, MIT) then it should be added in the pattern already defined.
 
-To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it.
+To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
+found in `/META-INF` directory of the jar).
 
-* If the bundled file does not have a NOTICE then no changes to TinkerPop's NOTICE are required.
-* If the NOTICE of the file being bundled is NOT Apache licensed then there is no change to TinkerPop's NOTICE.
-* If the NOTICE of the file being bundled is Apache licensed then include the copyright notification in TinkerPop's
+* If the bundled file does not have a NOTICE, then no changes to TinkerPop's NOTICE are required.
+* If the NOTICE of the file being bundled is NOT Apache licensed, then there is no change to TinkerPop's NOTICE.
+* If the NOTICE of the file being bundled is Apache licensed, then include the copyright notification in TinkerPop's
 NOTICE.
 * If the NOTICE of the file being bundled is Apache licensed AND is an Apache Software Foundation project, then
 ONLY include the portion of that NOTICE in TinkerPop's NOTICE that is unrelated to the Apache boilerplate NOTICE.

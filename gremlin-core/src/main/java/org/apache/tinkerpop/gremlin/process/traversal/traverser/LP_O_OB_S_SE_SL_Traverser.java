@@ -35,6 +35,9 @@ public class LP_O_OB_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
 
     protected Path path;
 
+    protected LP_O_OB_S_SE_SL_Traverser() {
+    }
+
     public LP_O_OB_S_SE_SL_Traverser(final T t, final Step<T, ?> step) {
         super(t, step);
         this.path = ImmutablePath.make();
