@@ -30,7 +30,6 @@ import org.apache.spark.scheduler.CompressedMapStatus;
 import org.apache.spark.scheduler.HighlyCompressedMapStatus;
 import org.apache.spark.serializer.Serializer;
 import org.apache.spark.serializer.SerializerInstance;
-import org.apache.spark.storage.BlockManagerId;
 import org.apache.spark.util.SerializableConfiguration;
 import org.apache.spark.util.collection.CompactBuffer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
@@ -41,6 +40,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingP
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo.serializers.ExternalizableSerializer;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import scala.Tuple2;
 import scala.Tuple3;
@@ -87,12 +87,11 @@ public final class GryoSerializer extends Serializer {
                                 .addCustom(Tuple3[].class)
                                 .addCustom(CompactBuffer.class, new CompactBufferSerializer())
                                 .addCustom(CompactBuffer[].class)
-                                .addCustom(CompressedMapStatus.class)
-                                .addCustom(HighlyCompressedMapStatus.class)
+                                .addCustom(CompressedMapStatus.class, new ExternalizableSerializer())  // externalizable implemented so its okay
+                                .addCustom(HighlyCompressedMapStatus.class, new ExternalizableSerializer())   // externalizable implemented so its okay
                                 .addCustom(HttpBroadcast.class)
                                 .addCustom(PythonBroadcast.class)
                                 .addCustom(BoxedUnit.class)
-                                .addCustom(BlockManagerId.class)
                                 .addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer())
                                 .addCustom(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer())
                                 .addCustom(WrappedArray.ofRef.class, new WrappedArraySerializer())
