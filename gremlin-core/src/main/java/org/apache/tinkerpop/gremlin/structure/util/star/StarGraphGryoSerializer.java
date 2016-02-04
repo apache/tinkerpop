@@ -99,6 +99,9 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
         }
     }
 
+    /**
+     * If the returned {@link StarGraph} is null, that means that the {@link GraphFilter} filtered the vertex.
+     */
     @Override
     public StarGraph read(final Kryo kryo, final Input input, final Class<StarGraph> aClass) {
         final StarGraph starGraph = StarGraph.open();
@@ -120,7 +123,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
                 }
             }
         }
-        return this.graphFilter.applyGraphFilter(starGraph);
+        return this.graphFilter.hasFilter() ? this.graphFilter.applyGraphFilter(starGraph).orElse(null) : starGraph;
     }
 
     private void writeEdges(final Kryo kryo, final Output output, final StarGraph starGraph, final Direction direction) {
@@ -152,7 +155,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
                 for (int j = 0; j < numberOfEdgesWithLabel; j++) {
                     final Object edgeId = kryo.readClassAndObject(input);
                     final Object adjacentVertexId = kryo.readClassAndObject(input);
-                    if (this.graphFilter.maybeLegalEdge(direction, edgeLabel)) {
+                    if (this.graphFilter.checkEdgeLegality(direction, edgeLabel).positive()) {
                         if (direction.equals(Direction.OUT))
                             starGraph.starVertex.addOutEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
                         else

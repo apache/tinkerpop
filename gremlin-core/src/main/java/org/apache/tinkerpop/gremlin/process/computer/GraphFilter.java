@@ -37,12 +37,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GraphFilter implements Cloneable, Serializable {
+
+    public enum Legal {
+        YES, NO, MAYBE;
+
+        public boolean positive() {
+            return this != NO;
+        }
+    }
 
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
     private Traversal.Admin<Vertex, Edge> edgeFilter = null;
@@ -72,7 +81,7 @@ public final class GraphFilter implements Cloneable, Serializable {
         }
     }
 
-    public void applyStrategies() {
+    public void compileFilters() {
         if (null != this.vertexFilter && !this.vertexFilter.isLocked())
             this.vertexFilter.applyStrategies();
         if (null != this.edgeFilter && !this.edgeFilter.isLocked())
@@ -109,17 +118,17 @@ public final class GraphFilter implements Cloneable, Serializable {
         return this.vertexFilter != null;
     }
 
-    public boolean maybeLegalEdge(final Direction direction, final String label) {
+    public Legal checkEdgeLegality(final Direction direction, final String label) {
         if (null == this.edgeFilter)
-            return true;
+            return Legal.YES;
         else if (this.allowNoEdges)
-            return false;
+            return Legal.NO;
         else if (!direction.equals(Direction.BOTH) && !this.allowedEdgeDirection.equals(direction))
-            return false;
+            return Legal.NO;
         else if (!this.allowedEdgeLabels.isEmpty() && !this.allowedEdgeLabels.contains(label))
-            return false;
+            return Legal.NO;
         else
-            return true;
+            return Legal.MAYBE;
     }
 
     @Override
@@ -169,16 +178,16 @@ public final class GraphFilter implements Cloneable, Serializable {
     /////////////////////////////////////
     ////////////////////////////////////
 
-    public StarGraph applyGraphFilter(final StarGraph graph) {
-        final StarGraph.StarVertex filtered = this.applyGraphFilter(graph.getStarVertex());
-        return null == filtered ? null : (StarGraph) filtered.graph();
+    public Optional<StarGraph> applyGraphFilter(final StarGraph graph) {
+        final Optional<StarGraph.StarVertex> filtered = this.applyGraphFilter(graph.getStarVertex());
+        return filtered.isPresent() ? Optional.of((StarGraph) filtered.get().graph()) : Optional.empty();
     }
 
-    public StarGraph.StarVertex applyGraphFilter(final StarGraph.StarVertex vertex) {
+    public Optional<StarGraph.StarVertex> applyGraphFilter(final StarGraph.StarVertex vertex) {
         if (!this.hasFilter())
-            return vertex;
+            return Optional.of(vertex);
         else if (null == vertex)
-            return null;
+            return Optional.empty();
         else if (this.legalVertex(vertex)) {
             if (this.hasEdgeFilter()) {
                 if (this.allowNoEdges) {
@@ -222,9 +231,9 @@ public final class GraphFilter implements Cloneable, Serializable {
                     }
                 }
             }
-            return vertex;
+            return Optional.of(vertex);
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 }

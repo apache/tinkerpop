@@ -27,8 +27,10 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,9 +60,9 @@ public final class GiraphVertexReader extends VertexReader {
             while (true) {
                 if (this.recordReader.nextKeyValue()) {
                     final VertexWritable vertexWritable = this.recordReader.getCurrentValue();
-                    final org.apache.tinkerpop.gremlin.structure.Vertex vertex = this.graphFilter.applyGraphFilter(vertexWritable.get());
-                    if (null != vertex) {
-                        vertexWritable.set(vertex);
+                    final Optional<StarGraph.StarVertex> vertex = this.graphFilter.applyGraphFilter(vertexWritable.get());
+                    if (vertex.isPresent()) {
+                        vertexWritable.set(vertex.get());
                         return true;
                     }
                 } else {

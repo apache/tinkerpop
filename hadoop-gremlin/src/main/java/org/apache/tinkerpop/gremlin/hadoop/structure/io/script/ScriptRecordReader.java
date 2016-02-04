@@ -42,6 +42,7 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -87,9 +88,9 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 final Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
-                final Vertex vertex = this.graphFilter.applyGraphFilter((StarGraph.StarVertex) engine.eval(READ_CALL, bindings));
-                if (vertex != null) {
-                    this.vertexWritable.set(vertex);
+                final Optional<StarGraph.StarVertex> vertex = this.graphFilter.applyGraphFilter((StarGraph.StarVertex) engine.eval(READ_CALL, bindings));
+                if (vertex.isPresent()) {
+                    this.vertexWritable.set(vertex.get());
                     return true;
                 }
             } catch (final ScriptException e) {

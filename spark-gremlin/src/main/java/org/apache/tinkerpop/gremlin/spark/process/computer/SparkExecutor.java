@@ -62,7 +62,7 @@ public final class SparkExecutor {
     public static JavaPairRDD<Object, VertexWritable> filterLoadedGraph(JavaPairRDD<Object, VertexWritable> graphRDD, final GraphFilter graphFilter) {
         return graphRDD.mapPartitionsToPair(partitionIterator -> {
             final GraphFilter gFilter = graphFilter.clone();
-            return () -> IteratorUtils.filter(partitionIterator, tuple -> gFilter.applyGraphFilter(tuple._2().get()) != null);
+            return () -> IteratorUtils.filter(partitionIterator, tuple -> gFilter.applyGraphFilter(tuple._2().get()).isPresent());
         }, true);
     }
 

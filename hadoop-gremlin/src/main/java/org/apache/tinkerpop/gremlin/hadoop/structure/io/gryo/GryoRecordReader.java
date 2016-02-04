@@ -60,7 +60,7 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
 
     public GryoRecordReader(final GraphFilter graphFilter) {
         this.graphFilter = graphFilter.clone();
-        this.graphFilter.applyStrategies();
+        this.graphFilter.compileFilters();
     }
 
     @Override
