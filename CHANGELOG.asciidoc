@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Made `GryoRecordReader` more robust to 0 byte record splits.
 * Fixed a constructor/serialization bug in `LP_O_OB_S_SE_SL_Traverser`.
 * Added a lazy iterator, memory safe implementation of MapReduce to `SparkGraphComputer`.
 * Added `MapReduce.combine()` support to `SparkGraphComputer`.

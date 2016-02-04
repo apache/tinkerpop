@@ -76,7 +76,8 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
         }
         // open the file and seek to the start of the split
         this.inputStream = file.getFileSystem(configuration).open(split.getPath());
-        this.splitLength = split.getLength() - (seekToHeader(this.inputStream, start) - start);
+        this.splitLength = split.getLength();
+        if (this.splitLength > 0) this.splitLength -= (seekToHeader(this.inputStream, start) - start);
     }
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {
