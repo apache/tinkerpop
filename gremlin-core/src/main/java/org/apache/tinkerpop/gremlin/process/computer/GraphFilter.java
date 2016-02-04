@@ -123,7 +123,7 @@ public final class GraphFilter implements Cloneable, Serializable {
             return Legal.YES;
         else if (this.allowNoEdges)
             return Legal.NO;
-        else if (!direction.equals(Direction.BOTH) && !this.allowedEdgeDirection.equals(direction))
+        else if (!this.allowedEdgeDirection.equals(Direction.BOTH) && !this.allowedEdgeDirection.equals(direction))
             return Legal.NO;
         else if (!this.allowedEdgeLabels.isEmpty() && !this.allowedEdgeLabels.contains(label))
             return Legal.NO;
