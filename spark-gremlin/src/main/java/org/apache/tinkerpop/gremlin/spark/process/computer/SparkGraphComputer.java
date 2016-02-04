@@ -194,7 +194,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
                 if (filtered) {
                     this.logger.debug("Filtering the loaded graphRDD: " + this.graphFilter);
-                    loadedGraphRDD = SparkExecutor.filterLoadedGraph(loadedGraphRDD, this.graphFilter);
+                    loadedGraphRDD = SparkExecutor.applyGraphFilter(loadedGraphRDD, this.graphFilter);
                 }
                 // if the loaded graph RDD is already partitioned use that partitioner, else partition it with HashPartitioner
                 if (loadedGraphRDD.partitioner().isPresent())
