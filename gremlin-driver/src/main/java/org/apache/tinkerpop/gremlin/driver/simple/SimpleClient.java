@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 
 import java.io.Closeable;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -35,4 +37,16 @@ public interface SimpleClient extends Closeable {
     }
 
     public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception;
+
+    public default List<ResponseMessage> submit(final String gremlin) throws Exception {
+        return submit(RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create());
+    }
+
+    public List<ResponseMessage> submit(final RequestMessage requestMessage) throws Exception;
+
+    public default CompletableFuture<List<ResponseMessage>> submitAsync(final String gremlin) throws Exception {
+        return submitAsync(RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create());
+    }
+
+    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception;
 }
