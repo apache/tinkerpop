@@ -47,10 +47,10 @@ public final class GraphFilter implements Cloneable, Serializable {
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
     private Traversal.Admin<Vertex, Edge> edgeFilter = null;
 
-    protected boolean allowNoEdges = false;
-    protected Direction allowedEdgeDirection = Direction.BOTH;
-    protected Set<String> allowedEdgeLabels = new HashSet<>();
-    protected boolean allowAllRemainingEdges = false;
+    private boolean allowNoEdges = false;
+    private Direction allowedEdgeDirection = Direction.BOTH;
+    private Set<String> allowedEdgeLabels = new HashSet<>();
+    private boolean allowAllRemainingEdges = false;
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
         if (!TraversalHelper.isLocalVertex(vertexFilter.asAdmin()))
@@ -62,14 +62,21 @@ public final class GraphFilter implements Cloneable, Serializable {
         if (!TraversalHelper.isLocalStarGraph(edgeFilter.asAdmin()))
             throw GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(edgeFilter);
         this.edgeFilter = edgeFilter.asAdmin().clone();
-        if (this.edgeFilter.getEndStep() instanceof RangeGlobalStep && 0 == ((RangeGlobalStep) this.edgeFilter.getEndStep()).getHighRange()) {
+        if (this.edgeFilter.getEndStep() instanceof RangeGlobalStep && 0 == ((RangeGlobalStep) this.edgeFilter.getEndStep()).getHighRange())
             this.allowNoEdges = true;
-        } else if (this.edgeFilter.getStartStep() instanceof VertexStep) {
+        else if (this.edgeFilter.getStartStep() instanceof VertexStep) {
             this.allowedEdgeLabels.clear();
             this.allowedEdgeLabels.addAll(Arrays.asList(((VertexStep) this.edgeFilter.getStartStep()).getEdgeLabels()));
             this.allowedEdgeDirection = ((VertexStep) this.edgeFilter.getStartStep()).getDirection();
             this.allowAllRemainingEdges = 1 == this.edgeFilter.getSteps().size();
         }
+    }
+
+    public void applyStrategies() {
+        if (null != this.vertexFilter && !this.vertexFilter.isLocked())
+            this.vertexFilter.applyStrategies();
+        if (null != this.edgeFilter && !this.edgeFilter.isLocked())
+            this.edgeFilter.applyStrategies();
     }
 
     public boolean legalVertex(final Vertex vertex) {
@@ -102,6 +109,36 @@ public final class GraphFilter implements Cloneable, Serializable {
         return this.vertexFilter != null;
     }
 
+    public boolean maybeLegalEdge(final Direction direction, final String label) {
+        if (null == this.edgeFilter)
+            return true;
+        else if (this.allowNoEdges)
+            return false;
+        else if (!direction.equals(Direction.BOTH) && !this.allowedEdgeDirection.equals(direction))
+            return false;
+        else if (!this.allowedEdgeLabels.isEmpty() && !this.allowedEdgeLabels.contains(label))
+            return false;
+        else
+            return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (null == this.edgeFilter ? 124 : this.edgeFilter.hashCode()) ^ (null == this.vertexFilter ? 875 : this.vertexFilter.hashCode());
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (!(object instanceof GraphFilter))
+            return false;
+        else if (((GraphFilter) object).hasVertexFilter() && !((GraphFilter) object).getVertexFilter().equals(this.vertexFilter))
+            return false;
+        else if (((GraphFilter) object).hasEdgeFilter() && !((GraphFilter) object).getEdgeFilter().equals(this.edgeFilter))
+            return false;
+        else
+            return true;
+    }
+
     @Override
     public GraphFilter clone() {
         try {
@@ -131,6 +168,11 @@ public final class GraphFilter implements Cloneable, Serializable {
     //////////////////////////////////////
     /////////////////////////////////////
     ////////////////////////////////////
+
+    public StarGraph applyGraphFilter(final StarGraph graph) {
+        final StarGraph.StarVertex filtered = this.applyGraphFilter(graph.getStarVertex());
+        return null == filtered ? null : (StarGraph) filtered.graph();
+    }
 
     public StarGraph.StarVertex applyGraphFilter(final StarGraph.StarVertex vertex) {
         if (!this.hasFilter())

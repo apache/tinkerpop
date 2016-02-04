@@ -19,78 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphFilterTest {
-
-    @Test
-    public void shouldHandlePreFilterCorrectly() {
-        GraphFilter graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE().limit(0));
-        assertTrue(graphFilter.allowedEdgeLabels.isEmpty());
-        assertEquals(Direction.BOTH, graphFilter.allowedEdgeDirection);
-        assertFalse(graphFilter.allowAllRemainingEdges);
-        //
-        graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>bothE("knows").limit(0));
-        assertEquals(1, graphFilter.allowedEdgeLabels.size());
-        assertTrue(graphFilter.allowedEdgeLabels.contains("knows"));
-        assertEquals(Direction.BOTH, graphFilter.allowedEdgeDirection);
-        assertFalse(graphFilter.allowAllRemainingEdges);
-        //
-        graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>outE("knows", "created"));
-        assertEquals(2, graphFilter.allowedEdgeLabels.size());
-        assertTrue(graphFilter.allowedEdgeLabels.contains("knows"));
-        assertTrue(graphFilter.allowedEdgeLabels.contains("created"));
-        assertEquals(Direction.OUT, graphFilter.allowedEdgeDirection);
-        assertTrue(graphFilter.allowAllRemainingEdges);
-        //
-        graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>inE("knows", "created", "likes"));
-        assertEquals(3, graphFilter.allowedEdgeLabels.size());
-        assertTrue(graphFilter.allowedEdgeLabels.contains("knows"));
-        assertTrue(graphFilter.allowedEdgeLabels.contains("created"));
-        assertTrue(graphFilter.allowedEdgeLabels.contains("likes"));
-        assertEquals(Direction.IN, graphFilter.allowedEdgeDirection);
-        assertTrue(graphFilter.allowAllRemainingEdges);
-        //
-        graphFilter = new GraphFilter();
-        graphFilter.setEdgeFilter(__.<Vertex>inE("knows", "created", "likes"));
-        assertEquals(3, graphFilter.allowedEdgeLabels.size());
-        assertTrue(graphFilter.allowedEdgeLabels.contains("knows"));
-        assertTrue(graphFilter.allowedEdgeLabels.contains("created"));
-        assertTrue(graphFilter.allowedEdgeLabels.contains("likes"));
-        assertEquals(Direction.IN, graphFilter.allowedEdgeDirection);
-        assertTrue(graphFilter.allowAllRemainingEdges);
-        //
-        graphFilter = new GraphFilter();
-        try {
-            graphFilter.setVertexFilter(__.out("likes"));    // cannot leave local vertex
-            fail();
-        } catch (final IllegalArgumentException e) {
-            assertEquals(e.getMessage(), GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(__.out("likes")).getMessage());
-        }
-        //
-        graphFilter = new GraphFilter();
-        try {
-            graphFilter.setEdgeFilter(__.<Vertex>inE("likes").inV().outE().has("weight", 1));    // cannot leave local star graph
-            fail();
-        } catch (final IllegalArgumentException e) {
-            assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>inE("likes").inV().outE().has("weight", 1)).getMessage());
-        }
-    }
 
     /*@Test
     public void shouldHandleStarGraph() {

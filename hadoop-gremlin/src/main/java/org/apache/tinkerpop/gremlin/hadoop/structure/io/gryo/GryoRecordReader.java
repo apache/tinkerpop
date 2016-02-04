@@ -34,13 +34,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexTerminator;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,6 +60,7 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
 
     public GryoRecordReader(final GraphFilter graphFilter) {
         this.graphFilter = graphFilter.clone();
+        this.graphFilter.applyStrategies();
     }
 
     @Override
@@ -129,9 +129,9 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
             terminatorLocation = ((byte) currentByte) == TERMINATOR[terminatorLocation] ? terminatorLocation + 1 : 0;
             if (terminatorLocation >= TERMINATOR.length) {
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
-                    final Vertex vertex = this.graphFilter.applyGraphFilter((StarGraph.StarVertex) this.gryoReader.readVertex(in, Attachable::get)); // I know how GryoReader works, so I'm cheating here
-                    if (null != vertex) {
-                        this.vertexWritable.set(vertex);
+                    final Optional<Vertex> vertex = this.gryoReader.readVertex(in, this.graphFilter);
+                    if (vertex.isPresent()) {
+                        this.vertexWritable.set(vertex.get());
                         return true;
                     } else {
                         currentVertexLength = 0;
