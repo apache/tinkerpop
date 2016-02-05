@@ -46,7 +46,7 @@ public class GroovyGraphFilterTest {
         assertEquals(1, graphFilter.allowedEdgeLabels.size());
         assertTrue(graphFilter.allowedEdgeLabels.contains("knows"));
         assertEquals(Direction.BOTH, graphFilter.allowedEdgeDirection);
-        assertFalse(graphFilter.allowAllRemainingEdges);
+        //assertFalse(graphFilter.allowAllRemainingEdges);
         assertFalse(graphFilter.allowNoEdges);
         //
         graphFilter = new GraphFilter();
@@ -55,7 +55,7 @@ public class GroovyGraphFilterTest {
         assertTrue(graphFilter.allowedEdgeLabels.contains("knows"));
         assertTrue(graphFilter.allowedEdgeLabels.contains("created"));
         assertEquals(Direction.OUT, graphFilter.allowedEdgeDirection);
-        assertTrue(graphFilter.allowAllRemainingEdges);
+        //assertTrue(graphFilter.allowAllRemainingEdges);
         assertFalse(graphFilter.allowNoEdges);
         //
         graphFilter = new GraphFilter();
@@ -65,7 +65,7 @@ public class GroovyGraphFilterTest {
         assertTrue(graphFilter.allowedEdgeLabels.contains("created"));
         assertTrue(graphFilter.allowedEdgeLabels.contains("likes"));
         assertEquals(Direction.IN, graphFilter.allowedEdgeDirection);
-        assertTrue(graphFilter.allowAllRemainingEdges);
+        //assertTrue(graphFilter.allowAllRemainingEdges);
         assertFalse(graphFilter.allowNoEdges);
         //
         graphFilter = new GraphFilter();
@@ -75,7 +75,7 @@ public class GroovyGraphFilterTest {
         assertTrue(graphFilter.allowedEdgeLabels.contains("created"));
         assertTrue(graphFilter.allowedEdgeLabels.contains("likes"));
         assertEquals(Direction.IN, graphFilter.allowedEdgeDirection);
-        assertTrue(graphFilter.allowAllRemainingEdges);
+        //assertTrue(graphFilter.allowAllRemainingEdges);
         assertFalse(graphFilter.allowNoEdges);
         //
         graphFilter = new GraphFilter();
