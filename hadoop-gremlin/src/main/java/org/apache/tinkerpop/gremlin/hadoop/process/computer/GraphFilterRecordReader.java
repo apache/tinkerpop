@@ -66,7 +66,7 @@ public final class GraphFilterRecordReader extends RecordReader<NullWritable, Ve
             while (true) {
                 if (this.recordReader.nextKeyValue()) {
                     final VertexWritable vertexWritable = this.recordReader.getCurrentValue();
-                    final Optional<StarGraph.StarVertex> vertex = this.graphFilter.applyGraphFilter(vertexWritable.get());
+                    final Optional<StarGraph.StarVertex> vertex = vertexWritable.get().applyGraphFilter(this.graphFilter);
                     if (vertex.isPresent()) {
                         vertexWritable.set(vertex.get());
                         return true;

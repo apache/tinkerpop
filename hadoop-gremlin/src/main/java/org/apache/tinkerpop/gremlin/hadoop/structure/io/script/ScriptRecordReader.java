@@ -92,7 +92,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 final Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
-                final Optional<StarGraph.StarVertex> vertex = this.graphFilter.applyGraphFilter((StarGraph.StarVertex) engine.eval(READ_CALL, bindings));
+                final Optional<StarGraph.StarVertex> vertex = ((StarGraph.StarVertex) engine.eval(READ_CALL, bindings)).applyGraphFilter(this.graphFilter);
                 if (vertex.isPresent()) {
                     this.vertexWritable.set(vertex.get());
                     return true;

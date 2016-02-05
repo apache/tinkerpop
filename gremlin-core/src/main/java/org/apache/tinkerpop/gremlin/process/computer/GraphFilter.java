@@ -27,17 +27,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -45,7 +39,8 @@ import java.util.Set;
  * There are two types of filters: a {@link Vertex} filter and an {@link Edge} filter.
  * The vertex filter is a {@link Traversal} that can only check the id, label, and properties of the vertex.
  * The edge filter is a {@link Traversal} that starts at the vertex are emits all legal incident edges.
- * The use of GraphFilter can greatly reduce the amount of data processed by the {@link GraphComputer}.
+ * If no vertex filter is provided, then no vertices are filtered. If no edge filter is provided, then no edges are filtered.
+ * The use of a GraphFilter can greatly reduce the amount of data processed by the {@link GraphComputer}.
  * For instance, for {@code g.V().count()}, there is no reason to load edges, and thus, the edge filter can be {@code bothE().limit(0)}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,6 +53,10 @@ public final class GraphFilter implements Cloneable, Serializable {
         public boolean positive() {
             return this != NO;
         }
+
+        public boolean negative() {
+            return this == NO;
+        }
     }
 
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
@@ -66,7 +65,7 @@ public final class GraphFilter implements Cloneable, Serializable {
     private boolean allowNoEdges = false;
     private Direction allowedEdgeDirection = Direction.BOTH;
     private Set<String> allowedEdgeLabels = new HashSet<>();
-    private boolean allowAllRemainingEdges = false;
+    //private boolean allowAllRemainingEdges = false;
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
         if (!TraversalHelper.isLocalVertex(vertexFilter.asAdmin()))
@@ -84,16 +83,16 @@ public final class GraphFilter implements Cloneable, Serializable {
             this.allowedEdgeLabels.clear();
             this.allowedEdgeLabels.addAll(Arrays.asList(((VertexStep) this.edgeFilter.getStartStep()).getEdgeLabels()));
             this.allowedEdgeDirection = ((VertexStep) this.edgeFilter.getStartStep()).getDirection();
-            this.allowAllRemainingEdges = 1 == this.edgeFilter.getSteps().size();
+            //this.allowAllRemainingEdges = 1 == this.edgeFilter.getSteps().size();
         }
     }
 
-    public void compileFilters() {
+    /*public void compileFilters() {
         if (null != this.vertexFilter && !this.vertexFilter.isLocked())
             this.vertexFilter.applyStrategies();
         if (null != this.edgeFilter && !this.edgeFilter.isLocked())
             this.edgeFilter.applyStrategies();
-    }
+    }*/
 
     public boolean legalVertex(final Vertex vertex) {
         return null == this.vertexFilter || TraversalUtil.test(vertex, this.vertexFilter);
@@ -138,9 +137,20 @@ public final class GraphFilter implements Cloneable, Serializable {
             return Legal.MAYBE;
     }
 
+    public Legal checkEdgeLegality(final Direction direction) {
+        if (null == this.edgeFilter)
+            return Legal.YES;
+        else if (this.allowNoEdges)
+            return Legal.NO;
+        else if (!this.allowedEdgeDirection.equals(Direction.BOTH) && !this.allowedEdgeDirection.equals(direction))
+            return Legal.NO;
+        else
+            return Legal.MAYBE;
+    }
+
     @Override
     public int hashCode() {
-        return (null == this.edgeFilter ? 124 : this.edgeFilter.hashCode()) ^ (null == this.vertexFilter ? 875 : this.vertexFilter.hashCode());
+        return (null == this.edgeFilter ? 111 : this.edgeFilter.hashCode()) ^ (null == this.vertexFilter ? 222 : this.vertexFilter.hashCode());
     }
 
     @Override
@@ -179,68 +189,5 @@ public final class GraphFilter implements Cloneable, Serializable {
             return "graphfilter[" + this.vertexFilter + "]";
         else
             return "graphfilter[" + this.edgeFilter + "]";
-    }
-
-    //////////////////////////////////////
-    /////////////////////////////////////
-    ////////////////////////////////////
-
-    public Optional<StarGraph> applyGraphFilter(final StarGraph graph) {
-        final Optional<StarGraph.StarVertex> filtered = this.applyGraphFilter(graph.getStarVertex());
-        return filtered.isPresent() ? Optional.of((StarGraph) filtered.get().graph()) : Optional.empty();
-    }
-
-    public Optional<StarGraph.StarVertex> applyGraphFilter(final StarGraph.StarVertex vertex) {
-        if (!this.hasFilter())
-            return Optional.of(vertex);
-        else if (null == vertex)
-            return Optional.empty();
-        else if (this.legalVertex(vertex)) {
-            if (this.hasEdgeFilter()) {
-                if (this.allowNoEdges) {
-                    vertex.dropEdges(Direction.BOTH);
-                } else {
-                    if (!this.allowedEdgeDirection.equals(Direction.BOTH))
-                        vertex.dropEdges(this.allowedEdgeDirection.opposite());
-                    if (!this.allowedEdgeLabels.isEmpty())
-                        vertex.keepEdges(this.allowedEdgeDirection, this.allowedEdgeLabels);
-
-                    if (!this.allowAllRemainingEdges) {
-                        final Map<String, List<Edge>> outEdges = new HashMap<>();
-                        final Map<String, List<Edge>> inEdges = new HashMap<>();
-                        this.legalEdges(vertex).forEachRemaining(edge -> {
-                            if (edge instanceof StarGraph.StarOutEdge) {
-                                List<Edge> edges = outEdges.get(edge.label());
-                                if (null == edges) {
-                                    edges = new ArrayList<>();
-                                    outEdges.put(edge.label(), edges);
-                                }
-                                edges.add(edge);
-                            } else {
-                                List<Edge> edges = inEdges.get(edge.label());
-                                if (null == edges) {
-                                    edges = new ArrayList<>();
-                                    inEdges.put(edge.label(), edges);
-                                }
-                                edges.add(edge);
-                            }
-                        });
-
-                        if (outEdges.isEmpty())
-                            vertex.dropEdges(Direction.OUT);
-                        else
-                            vertex.setEdges(Direction.OUT, outEdges);
-
-                        if (inEdges.isEmpty())
-                            vertex.dropEdges(Direction.IN);
-                        else
-                            vertex.setEdges(Direction.IN, inEdges);
-                    }
-                }
-            }
-            return Optional.of(vertex);
-        } else {
-            return Optional.empty();
-        }
     }
 }

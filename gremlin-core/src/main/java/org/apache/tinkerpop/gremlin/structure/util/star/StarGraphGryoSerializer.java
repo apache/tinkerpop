@@ -123,7 +123,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
                 }
             }
         }
-        return this.graphFilter.hasFilter() ? this.graphFilter.applyGraphFilter(starGraph).orElse(null) : starGraph;
+        return this.graphFilter.hasFilter() ? starGraph.applyGraphFilter(this.graphFilter).orElse(null) : starGraph;
     }
 
     private void writeEdges(final Kryo kryo, final Output output, final StarGraph starGraph, final Direction direction) {

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.util.star;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -44,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -216,6 +217,13 @@ public final class StarGraph implements Graph, Serializable {
         return starGraph;
     }
 
+    public Optional<StarGraph> applyGraphFilter(final GraphFilter graphFilter) {
+        if (null == this.starVertex)
+            return Optional.empty();
+        final Optional<StarGraph.StarVertex> filtered = this.starVertex.applyGraphFilter(graphFilter);
+        return filtered.isPresent() ? Optional.of((StarGraph) filtered.get().graph()) : Optional.empty();
+    }
+
     ///////////////////////
     //// STAR ELEMENT ////
     //////////////////////
@@ -275,30 +283,6 @@ public final class StarGraph implements Graph, Serializable {
             super(id, label);
         }
 
-        public void setEdges(final Direction direction, final Map<String, List<Edge>> edges) {
-            if (direction.equals(Direction.OUT))
-                this.outEdges = edges;
-            else if (direction.equals(Direction.IN))
-                this.inEdges = edges;
-            else
-                throw new IllegalArgumentException("The following direction is not supported: " + direction);
-        }
-
-        public void keepEdges(final Direction direction, final Set<String> edgeLabels) {
-            final Set<String> dropLabels = new HashSet<>();
-            if ((direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) && null != this.outEdges)
-                dropLabels.addAll(this.outEdges.keySet());
-            if ((direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) && null != this.inEdges)
-                dropLabels.addAll(this.inEdges.keySet());
-            //
-            for (final String label : edgeLabels) {
-                dropLabels.remove(label);
-            }
-            if (dropLabels.size() > 0) {
-                this.dropEdges(direction, dropLabels);
-            }
-        }
-
         public void dropEdges(final Direction direction) {
             if ((direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) && null != this.outEdges) {
                 this.outEdges.clear();
@@ -310,18 +294,15 @@ public final class StarGraph implements Graph, Serializable {
             }
         }
 
-        public void dropEdges(final Direction direction, final Set<String> edgeLabels) {
-            if ((direction.equals(Direction.OUT) || direction.equals(Direction.BOTH)) && null != this.outEdges) {
-                for (final String edgeLabel : edgeLabels) {
-                    this.outEdges.remove(edgeLabel);
-                }
+        public void dropEdges(final Direction direction, final String edgeLabel) {
+            if (null != this.outEdges && (direction.equals(Direction.OUT) || direction.equals(Direction.BOTH))) {
+                this.outEdges.remove(edgeLabel);
+
                 if (this.outEdges.isEmpty())
                     this.outEdges = null;
             }
-            if ((direction.equals(Direction.IN) || direction.equals(Direction.BOTH)) && null != this.inEdges) {
-                for (final String edgeLabel : edgeLabels) {
-                    this.inEdges.remove(edgeLabel);
-                }
+            if (null != this.inEdges && (direction.equals(Direction.IN) || direction.equals(Direction.BOTH))) {
+                this.inEdges.remove(edgeLabel);
 
                 if (this.inEdges.isEmpty())
                     this.inEdges = null;
@@ -450,6 +431,65 @@ public final class StarGraph implements Graph, Serializable {
                         .filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys))
                         .flatMap(entry -> entry.getValue().stream())
                         .iterator();
+        }
+
+        ///////////////
+
+        public Optional<StarVertex> applyGraphFilter(final GraphFilter graphFilter) {
+            if (!graphFilter.hasFilter())
+                return Optional.of(this);
+            else if (graphFilter.legalVertex(this)) {
+                if (graphFilter.hasEdgeFilter()) {
+                    if (graphFilter.checkEdgeLegality(Direction.OUT).negative())
+                        this.dropEdges(Direction.OUT);
+                    if (graphFilter.checkEdgeLegality(Direction.IN).negative())
+                        this.dropEdges(Direction.IN);
+                    if (null != this.outEdges)
+                        for (final String key : new HashSet<>(this.outEdges.keySet())) {
+                            if (graphFilter.checkEdgeLegality(Direction.OUT, key).negative())
+                                this.dropEdges(Direction.OUT, key);
+                        }
+                    if (null != this.inEdges)
+                        for (final String key : new HashSet<>(this.inEdges.keySet())) {
+                            if (graphFilter.checkEdgeLegality(Direction.IN, key).negative())
+                                this.dropEdges(Direction.IN, key);
+                        }
+                    if (null != this.inEdges || null != this.outEdges) {
+                        final Map<String, List<Edge>> outEdges = new HashMap<>();
+                        final Map<String, List<Edge>> inEdges = new HashMap<>();
+                        graphFilter.legalEdges(this).forEachRemaining(edge -> {
+                            if (edge instanceof StarGraph.StarOutEdge) {
+                                List<Edge> edges = outEdges.get(edge.label());
+                                if (null == edges) {
+                                    edges = new ArrayList<>();
+                                    outEdges.put(edge.label(), edges);
+                                }
+                                edges.add(edge);
+                            } else {
+                                List<Edge> edges = inEdges.get(edge.label());
+                                if (null == edges) {
+                                    edges = new ArrayList<>();
+                                    inEdges.put(edge.label(), edges);
+                                }
+                                edges.add(edge);
+                            }
+                        });
+
+                        if (outEdges.isEmpty())
+                            this.dropEdges(Direction.OUT);
+                        else
+                            this.outEdges = outEdges;
+
+                        if (inEdges.isEmpty())
+                            this.dropEdges(Direction.IN);
+                        else
+                            this.inEdges = inEdges;
+                    }
+                }
+                return Optional.of(this);
+            } else {
+                return Optional.empty();
+            }
         }
     }
 
@@ -885,5 +925,4 @@ public final class StarGraph implements Graph, Serializable {
             return true;
         }
     }
-
 }
