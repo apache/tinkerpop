@@ -341,7 +341,7 @@ public abstract class Client {
             final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
             if (!possibleHosts.hasNext()) throw new TimeoutException("Timed out waiting for an available host.");
 
-            final Host bestHost = this.cluster.loadBalancingStrategy().select(msg).next();
+            final Host bestHost = possibleHosts.next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
         }
