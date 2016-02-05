@@ -41,6 +41,13 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * GraphFilter is used by {@link GraphComputer} implementations to prune the source graph data being loaded into the OLAP system.
+ * There are two types of filters: a {@link Vertex} filter and an {@link Edge} filter.
+ * The vertex filter is a {@link Traversal} that can only check the id, label, and properties of the vertex.
+ * The edge filter is a {@link Traversal} that starts at the vertex are emits all legal incident edges.
+ * The use of GraphFilter can greatly reduce the amount of data processed by the {@link GraphComputer}.
+ * For instance, for {@code g.V().count()}, there is no reason to load edges, and thus, the edge filter can be {@code bothE().limit(0)}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GraphFilter implements Cloneable, Serializable {

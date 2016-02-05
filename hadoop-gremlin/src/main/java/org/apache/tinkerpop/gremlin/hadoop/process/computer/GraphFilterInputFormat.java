@@ -28,15 +28,22 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
+ * GraphFilterInputFormat is a utility {@link InputFormat} that is useful if the underlying InputFormat is not {@link GraphFilterAware}.
+ * If the underlying InputFormat is GraphFilterAware, then GraphFilterInputFormat acts as an identity mapping.
+ * If the underlying InputFormat is not GraphFilterAware, then GraphFilterInputFormat will apply the respective {@link GraphFilter}
+ * and prune the loaded source graph data accordingly.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GraphFilterInputFormat extends InputFormat<NullWritable, VertexWritable> {
+public final class GraphFilterInputFormat extends InputFormat<NullWritable, VertexWritable> implements GraphFilterAware {
 
     @Override
     public List<InputSplit> getSplits(final JobContext jobContext) throws IOException, InterruptedException {
@@ -46,9 +53,11 @@ public final class GraphFilterInputFormat extends InputFormat<NullWritable, Vert
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
-        final GraphFilterRecordReader recordReader = new GraphFilterRecordReader();
-        recordReader.initialize(inputSplit, taskAttemptContext);
-        return recordReader;
+        return new GraphFilterRecordReader();
     }
 
+    @Override
+    public void setGraphFilter(final GraphFilter graphFilter) {
+        // do nothing -- loaded via configuration
+    }
 }
