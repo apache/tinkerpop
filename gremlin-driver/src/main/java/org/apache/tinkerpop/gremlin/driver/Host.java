@@ -71,12 +71,15 @@ public final class Host {
         isAvailable = false;
 
         // only do a connection re-attempt if one is not already in progress
-        reconnectionAttempt.compareAndSet(null,
-                this.cluster.executor().scheduleAtFixedRate(() -> {
-                            logger.debug("Trying to reconnect to dead host at {}", this);
-                            if (reconnect.apply(this)) reconnected();
-                        }, cluster.connectionPoolSettings().reconnectInitialDelay,
-                        cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS));
+        synchronized (reconnectionAttempt) {
+            if (reconnectionAttempt.get() == null) {
+                reconnectionAttempt.set(this.cluster.executor().scheduleAtFixedRate(() -> {
+                    logger.debug("Trying to reconnect to dead host at {}", this);
+                    if (reconnect.apply(this))
+                        reconnected();
+                }, cluster.connectionPoolSettings().reconnectInitialDelay, cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS));
+            }
+        }
     }
 
     private void reconnected() {
