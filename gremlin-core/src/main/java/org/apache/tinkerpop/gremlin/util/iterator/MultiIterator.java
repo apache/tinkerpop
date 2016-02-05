@@ -59,7 +59,7 @@ public final class MultiIterator<T> implements Iterator<T>, Serializable {
 
     @Override
     public void remove() {
-        // this.iterators.get(this.current).remove();
+        this.iterators.get(this.current).remove();
     }
 
     @Override

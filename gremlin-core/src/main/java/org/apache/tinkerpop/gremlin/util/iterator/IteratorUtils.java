@@ -392,4 +392,23 @@ public final class IteratorUtils {
     public static <T> Stream<T> stream(final Iterable<T> iterable) {
         return IteratorUtils.stream(iterable.iterator());
     }
+
+    public static <T> Iterator<T> noRemove(final Iterator<T> iterator) {
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public void remove() {
+                // do nothing
+            }
+
+            @Override
+            public T next() {
+                return iterator.next();
+            }
+        };
+    }
 }
