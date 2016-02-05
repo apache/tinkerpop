@@ -28,8 +28,8 @@ import java.util.Iterator;
  */
 final class DoubleIterator<T> implements Iterator<T>, Serializable {
 
-    private final T a;
-    private final T b;
+    private T a;
+    private T b;
     private char current = 'a';
 
     protected DoubleIterator(final T a, final T b) {
@@ -40,6 +40,14 @@ final class DoubleIterator<T> implements Iterator<T>, Serializable {
     @Override
     public boolean hasNext() {
         return this.current != 'x';
+    }
+
+    @Override
+    public void remove() {
+        if (this.current == 'b')
+            this.a = null;
+        else if (this.current == 'x')
+            this.b = null;
     }
 
     @Override

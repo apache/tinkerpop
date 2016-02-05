@@ -105,6 +105,11 @@ public final class IteratorUtils {
             }
 
             @Override
+            public void remove() {
+                iterator.remove();
+            }
+
+            @Override
             public S next() {
                 if (this.count++ >= limit)
                     throw FastNoSuchElementException.instance();
@@ -205,6 +210,11 @@ public final class IteratorUtils {
             }
 
             @Override
+            public void remove() {
+                iterator.remove();
+            }
+
+            @Override
             public S next() {
                 final S s = iterator.next();
                 consumer.accept(s);
@@ -225,6 +235,11 @@ public final class IteratorUtils {
             @Override
             public boolean hasNext() {
                 return iterator.hasNext();
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
             }
 
             @Override
@@ -254,6 +269,11 @@ public final class IteratorUtils {
                     advance();
                     return null != this.nextResult;
                 }
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
             }
 
             @Override
@@ -309,6 +329,11 @@ public final class IteratorUtils {
                     }
                 }
                 return false;
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
             }
 
             @Override

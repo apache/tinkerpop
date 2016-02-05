@@ -61,6 +61,16 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
         return CountGlobalMapReduce.instance();
     }
 
+    @Override
+    public Traverser<Long> processNextStart() {
+        if (this.byPass) {
+            final Traverser.Admin<S> traverser = this.starts.next();
+            return traverser.asAdmin().split(1l, this); // if bypassing, just key all the traversers to 1 long (the count is going to be the bulk of course)
+        } else {
+            return super.processNextStart();
+        }
+    }
+
     ///////////
 
     private static class CountBiFunction<S> implements BiFunction<Long, Traverser<S>, Long>, Serializable {
