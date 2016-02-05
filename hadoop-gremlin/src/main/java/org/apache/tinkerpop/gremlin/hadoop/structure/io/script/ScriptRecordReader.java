@@ -29,8 +29,11 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -59,17 +62,18 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     private final LineRecordReader lineRecordReader;
     private ScriptEngine engine;
 
-    private final GraphFilter graphFilter;
+    private GraphFilter graphFilter = new GraphFilter();
 
-    public ScriptRecordReader(final GraphFilter graphFilter) {
+    public ScriptRecordReader() {
         this.lineRecordReader = new LineRecordReader();
-        this.graphFilter = graphFilter.clone();
     }
 
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
+        if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
+            this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         this.engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
         //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);

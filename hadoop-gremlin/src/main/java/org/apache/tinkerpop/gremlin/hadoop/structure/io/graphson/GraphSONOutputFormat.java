@@ -34,7 +34,7 @@ public final class GraphSONOutputFormat extends CommonFileOutputFormat implement
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new GraphSONRecordWriter(getDataOuputStream(job), job.getConfiguration());
+        return new GraphSONRecordWriter(getDataOutputStream(job), job.getConfiguration());
     }
 
 }

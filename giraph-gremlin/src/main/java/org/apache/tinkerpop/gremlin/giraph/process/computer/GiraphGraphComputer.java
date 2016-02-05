@@ -108,6 +108,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         super.program(vertexProgram);
         this.memory.addVertexProgramMemoryComputeKeys(this.vertexProgram);
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
+        apacheConfiguration.setDelimiterParsingDisabled(true);
         vertexProgram.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
         this.vertexProgram.getMessageCombiner().ifPresent(combiner -> this.giraphConfiguration.setMessageCombinerClass(GiraphMessageCombiner.class));
@@ -145,7 +146,8 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(Persist.EDGES));
         try {
             // store vertex and edge filters (will propagate down to native InputFormat or else GiraphVertexInputFormat will process)
-            final Configuration apacheConfiguration = new BaseConfiguration();
+            final BaseConfiguration apacheConfiguration = new BaseConfiguration();
+            apacheConfiguration.setDelimiterParsingDisabled(true);
             GraphFilterAware.storeGraphFilter(apacheConfiguration, this.giraphConfiguration, this.graphFilter);
 
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
@@ -157,8 +159,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                     if (e.getCause() instanceof NumberFormatException)
                         throw new NotSerializableException("The provided traversal is not serializable and thus, can not be distributed across the cluster");
                 }
-                // prepare the giraph vertex-centric computing job
-                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // split required workers across system (open map slots + max threads per machine = total amount of TinkerPop workers)
                 if (!this.useWorkerThreadsInConfiguration) {
                     final Cluster cluster = new Cluster(GiraphGraphComputer.this.giraphConfiguration);
@@ -174,6 +174,8 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                         this.giraphConfiguration.setNumComputeThreads(threadsPerMapper);
                     }
                 }
+                // prepare the giraph vertex-centric computing job
+                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // handle input paths (if any)
                 if (FileInputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
                     FileInputFormat.setInputPaths(job.getInternalJob(), Constants.getSearchGraphLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), storage).get());

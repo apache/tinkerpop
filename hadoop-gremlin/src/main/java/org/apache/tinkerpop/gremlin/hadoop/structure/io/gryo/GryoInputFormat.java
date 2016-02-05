@@ -34,8 +34,7 @@ public final class GryoInputFormat extends CommonFileInputFormat {
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        super.loadVertexAndEdgeFilters(context);
-        final RecordReader<NullWritable, VertexWritable> reader = new GryoRecordReader(this.graphFilter);
+        final RecordReader<NullWritable, VertexWritable> reader = new GryoRecordReader();
         reader.initialize(split, context);
         return reader;
     }

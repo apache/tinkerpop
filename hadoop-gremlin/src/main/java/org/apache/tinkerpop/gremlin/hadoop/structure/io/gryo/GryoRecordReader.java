@@ -27,9 +27,12 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
@@ -56,17 +59,18 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
 
     private long currentLength = 0;
     private long splitLength;
-    private final GraphFilter graphFilter;
+    private GraphFilter graphFilter = new GraphFilter();
 
-    public GryoRecordReader(final GraphFilter graphFilter) {
-        this.graphFilter = graphFilter.clone();
-        this.graphFilter.compileFilters();
+    public GryoRecordReader() {
+
     }
 
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         final FileSplit split = (FileSplit) genericSplit;
         final Configuration configuration = context.getConfiguration();
+        if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
+            this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         HadoopPools.initialize(configuration);
         this.gryoReader = HadoopPools.getGryoPool().takeReader();
         long start = split.getStart();

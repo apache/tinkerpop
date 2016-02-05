@@ -25,12 +25,10 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.GraphFilterRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,13 +36,9 @@ import java.util.Optional;
 public final class GiraphVertexReader extends VertexReader {
 
     private RecordReader<NullWritable, VertexWritable> recordReader;
-    private final GraphFilter graphFilter;
-    private final boolean graphFilterAware;
 
-    public GiraphVertexReader(final RecordReader<NullWritable, VertexWritable> recordReader, final boolean graphFilterAware, final GraphFilter graphFilter) {
-        this.recordReader = recordReader;
-        this.graphFilterAware = graphFilterAware;
-        this.graphFilter = graphFilter.clone();
+    public GiraphVertexReader() {
+        this.recordReader = new GraphFilterRecordReader();
     }
 
     @Override
@@ -54,22 +48,7 @@ public final class GiraphVertexReader extends VertexReader {
 
     @Override
     public boolean nextVertex() throws IOException, InterruptedException {
-        if (this.graphFilterAware) {
-            return this.recordReader.nextKeyValue();
-        } else {
-            while (true) {
-                if (this.recordReader.nextKeyValue()) {
-                    final VertexWritable vertexWritable = this.recordReader.getCurrentValue();
-                    final Optional<StarGraph.StarVertex> vertex = this.graphFilter.applyGraphFilter(vertexWritable.get());
-                    if (vertex.isPresent()) {
-                        vertexWritable.set(vertex.get());
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
+        return this.recordReader.nextKeyValue();
     }
 
     @Override
