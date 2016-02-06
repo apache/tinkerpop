@@ -94,6 +94,16 @@ TinkerPop 3.1.1 (Release Date: February 8, 2016)
 Bugs
 ^^^^
 
+* TINKERPOP-763 IsStep broken when profiling is enabled.
+* TINKERPOP-972 Cluster::close does not shut down its executor
+* TINKERPOP-973 BLVP shouldn't clear configuration properties
+* TINKERPOP-976 Fail earlier if invalid version is supplied in validate-distribution.sh
+* TINKERPOP-977 Dead link to traversal javadocs
+* TINKERPOP-979 ComputerVerificationStrategy not picking up Order local traversal
+* TINKERPOP-985 shouldPersistDataOnClose makes incorrect feature check
+* TINKERPOP-990 Mixed types in VertexPropertyTest
+* TINKERPOP-993 cyclicPath is not(simplePath)
+* TINKERPOP-997 FeatureRequirementSet.SIMPLE should not require multi-property *(breaking)*
 * TINKERPOP-1000 GremlinGroovyScriptEngineOverGraphTest failures
 * TINKERPOP-1001 SugarLoaderPerformanceTest contains hardcoded vertex ids
 * TINKERPOP-1002 Should rollback transaction after catching on close
@@ -109,45 +119,10 @@ Bugs
 * TINKERPOP-1083 Traversal needs a hashCode() and equals() definition.
 * TINKERPOP-1089 Order.shuffle implementation is too fragile
 * TINKERPOP-1119 LP_O_OB_S_SE_SL_Traverser doesn't have a protected constructor().
-* TINKERPOP-763 IsStep broken when profiling is enabled.
-* TINKERPOP-972 Cluster::close does not shut down its executor
-* TINKERPOP-973 BLVP shouldn't clear configuration properties
-* TINKERPOP-976 Fail earlier if invalid version is supplied in validate-distribution.sh
-* TINKERPOP-977 Dead link to traversal javadocs
-* TINKERPOP-979 ComputerVerificationStrategy not picking up Order local traversal
-* TINKERPOP-985 shouldPersistDataOnClose makes incorrect feature check
-* TINKERPOP-990 Mixed types in VertexPropertyTest
-* TINKERPOP-993 cyclicPath is not(simplePath)
-* TINKERPOP-997 FeatureRequirementSet.SIMPLE should not require multi-property (breaking)
 
 Improvements
 ^^^^^^^^^^^^
 
-* TINKERPOP-1009 Add a CAUTION to documentation about HadoopGraph and getting back elements
-* TINKERPOP-1013 Traverser tags as a safer way of using path labels
-* TINKERPOP-1018 Allow setting for maxContentLength to be set from yaml in driver
-* TINKERPOP-1019 Convert println in test to SLF4j
-* TINKERPOP-1022 Automatically warm up ops handlers
-* TINKERPOP-1023 Add a spark variable in SparkGremlinPlugin like we do hdfs for HadoopGremlinPlugin
-* TINKERPOP-1026 BVLP should store vertex IDs as String
-* TINKERPOP-1033 Store sideEffects as a persisted RDD
-* TINKERPOP-1035 Better Consistency in Gremlin Server Transaction Management
-* TINKERPOP-1045 Client-Side Hangs when attempting to access a HashMap with Keys of type Integer
-* TINKERPOP-1047 TinkerGraph GraphSON storage format broken
-* TINKERPOP-1051 Add note in best practice docs about gremlin server heap setting
-* TINKERPOP-1055 Gremlin Console FileNotFoundException can be misleading
-* TINKERPOP-1062 Make LifeCycle beforeEval execute in same thread as eval operation
-* TINKERPOP-1064 Allow a ClassResolver to be added to GryoMapper construction
-* TINKERPOP-1065 Fix some typos and clarify some wording in the TinkerPop documentation
-* TINKERPOP-1066 Add ioRegistries configuration to GraphSON MessageSerializer
-* TINKERPOP-1067 Update Groovy to 2.4.5
-* TINKERPOP-1072 Allow the user to set persistence options using StorageLevel.valueOf()
-* TINKERPOP-1073 HadoopGraph toString() is weird for Spark PersitedRDD data.
-* TINKERPOP-1086 Include gryo serializers for java.time related classes
-* TINKERPOP-1087 Add has()/order() to FilterRankStrategy
-* TINKERPOP-1093 Add Spark init.sh script and update dev documentation.
-* TINKERPOP-1100 Look deeply into adding combine()-support in Spark MapReduce.
-* TINKERPOP-1117 InputFormatRDD.readGraphRDD requires a valid gremlin.hadoop.inputLocation, breaking InputFormats (Cassandra, HBase) that don't need one
 * TINKERPOP-320 BulkDumperVertexProgram
 * TINKERPOP-379 MessageScope.Local.setStaticMessage(M msg)
 * TINKERPOP-824 Do we need runtime BigDecimal in more places?
@@ -179,6 +154,31 @@ Improvements
 * TINKERPOP-995 Add Authenticator.newSaslNegotiator(InetAddress)
 * TINKERPOP-996 Please delete old releases from mirroring system
 * TINKERPOP-998 Deprecate VertexPropertyFeatures.FEATURE_ADD_PROPERTY
+* TINKERPOP-1009 Add a CAUTION to documentation about HadoopGraph and getting back elements
+* TINKERPOP-1013 Traverser tags as a safer way of using path labels
+* TINKERPOP-1018 Allow setting for maxContentLength to be set from yaml in driver
+* TINKERPOP-1019 Convert println in test to SLF4j
+* TINKERPOP-1022 Automatically warm up ops handlers
+* TINKERPOP-1023 Add a spark variable in SparkGremlinPlugin like we do hdfs for HadoopGremlinPlugin
+* TINKERPOP-1026 BVLP should store vertex IDs as String
+* TINKERPOP-1033 Store sideEffects as a persisted RDD
+* TINKERPOP-1035 Better Consistency in Gremlin Server Transaction Management
+* TINKERPOP-1045 Client-Side Hangs when attempting to access a HashMap with Keys of type Integer
+* TINKERPOP-1047 TinkerGraph GraphSON storage format broken
+* TINKERPOP-1051 Add note in best practice docs about gremlin server heap setting
+* TINKERPOP-1055 Gremlin Console FileNotFoundException can be misleading
+* TINKERPOP-1062 Make LifeCycle beforeEval execute in same thread as eval operation
+* TINKERPOP-1064 Allow a ClassResolver to be added to GryoMapper construction
+* TINKERPOP-1065 Fix some typos and clarify some wording in the TinkerPop documentation
+* TINKERPOP-1066 Add ioRegistries configuration to GraphSON MessageSerializer
+* TINKERPOP-1067 Update Groovy to 2.4.5
+* TINKERPOP-1072 Allow the user to set persistence options using StorageLevel.valueOf()
+* TINKERPOP-1073 HadoopGraph toString() is weird for Spark PersitedRDD data.
+* TINKERPOP-1086 Include gryo serializers for java.time related classes
+* TINKERPOP-1087 Add has()/order() to FilterRankStrategy
+* TINKERPOP-1093 Add Spark init.sh script and update dev documentation.
+* TINKERPOP-1100 Look deeply into adding combine()-support in Spark MapReduce.
+* TINKERPOP-1117 InputFormatRDD.readGraphRDD requires a valid gremlin.hadoop.inputLocation, breaking InputFormats (Cassandra, HBase) that don't need one
 
 [[release-3.1.0-incubating]]
 TinkerPop 3.1.0 (Release Date: November 16, 2015)
