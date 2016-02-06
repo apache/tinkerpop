@@ -1,0 +1,51 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+TinkerPop 3.2.0
+===============
+
+image::NULL
+
+*CURRENTLY NO NAME*
+
+TinkerPop 3.2.0
+---------------
+
+*Release Date: NOT YET RELEASED*
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+GraphFilter and GraphComputer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `GraphComputer` API has changed with the addition of `GraphComputer.vertices(Traversal)` and `GraphComputer.edges(Traversal)`.
+These methods construct a `GraphFilter` object which is also new to TinkerPop 3.2.0. `GraphFilter` is a "push-down predicate"
+used to selectively retrieve subgraphs of the underlying graph to be OLAP processed.
+
+* If the graph system provider relies on an existing `GraphComputer` implementations such as `SparkGraphComputer` and/or `GiraphGraphComputer`,
+then there is no immediate action required on their part to remain TinkerPop-compliant. However, they may wish to update
+their `InputFormat` or `InputRDD` implementation to be `GraphFilterAware` and handle the `GraphFilter` filtering at the disk/database
+level. It is advisable to do so in order to reduce OLAP load times and memory/GC usage.
+
+* If the graph system provider has their own `GraphComputer` implementation, then they will need to implement the two new methods
+and ensure that `GraphFilter` is processed correctly. There is a new test case called `GraphComputerTest.shouldSupportGraphFilter()`
+which ensures the semantics of `GraphFilter` are handled correctly. For a "quick and easy" way to move forward, look to
+`GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
+execution.
