@@ -27,11 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -59,16 +60,6 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
     @Override
     public MapReduce<MapReduce.NullObject, Long, MapReduce.NullObject, Long, Long> getMapReduce() {
         return CountGlobalMapReduce.instance();
-    }
-
-    @Override
-    public Traverser<Long> processNextStart() {
-        if (this.byPass) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            return traverser.asAdmin().split(1l, this); // if bypassing, just key all the traversers to 1 long (the count is going to be the bulk of course)
-        } else {
-            return super.processNextStart();
-        }
     }
 
     ///////////
@@ -108,7 +99,11 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, Long> emitter) {
-            vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.bulk())));
+            final Iterator<Long> values = IteratorUtils.map(vertex.<Set<Traverser.Admin<Long>>>property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(Collections.emptySet()).iterator(),
+                    traverser -> traverser.get() * traverser.bulk());
+            long count = getCount(values);
+            if (count > 0)
+                emitter.emit(count);
         }
 
         @Override
@@ -118,11 +113,17 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
 
         @Override
         public void reduce(final NullObject key, final Iterator<Long> values, final ReduceEmitter<NullObject, Long> emitter) {
+            long count = getCount(values);
+            if (count > 0)
+                emitter.emit(count);
+        }
+
+        private Long getCount(final Iterator<Long> longs) {
             long count = 0l;
-            while (values.hasNext()) {
-                count = count + values.next();
+            while (longs.hasNext()) {
+                count = count + longs.next();
             }
-            emitter.emit(count);
+            return count;
         }
 
         @Override

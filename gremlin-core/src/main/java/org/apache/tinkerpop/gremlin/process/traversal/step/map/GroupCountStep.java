@@ -97,16 +97,6 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     }
 
     @Override
-    public Traverser<Map<E, Long>> processNextStart() {
-        if (this.byPass) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            return traverser.asAdmin().split(TraversalUtil.applyNullable(traverser, (Traversal.Admin<S, Map<E, Long>>) this.groupTraversal), this);
-        } else {
-            return super.processNextStart();
-        }
-    }
-
-    @Override
     public String toString() {
         return StringFactory.stepString(this, this.groupTraversal);
     }
@@ -146,7 +136,11 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<E, Long> emitter) {
-            vertex.<TraverserSet<E>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get(), traverser.bulk())));
+            final Map<E, Long> groupCount = new HashMap<>();
+            vertex.<TraverserSet<Map<E, Long>>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet ->
+                    traverserSet.forEach(traverser ->
+                            traverser.get().forEach((k, v) -> MapHelper.incr(groupCount, k, (v * traverser.bulk())))));
+            groupCount.forEach(emitter::emit);
         }
 
         @Override

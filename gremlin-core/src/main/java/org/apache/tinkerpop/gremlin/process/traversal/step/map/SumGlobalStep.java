@@ -27,11 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -104,7 +105,10 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, Number> emitter) {
-            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(mul(traverser.get(), traverser.bulk()))));
+            final Iterator<Number> values = IteratorUtils.map(vertex.<Set<Traverser.Admin<Number>>>property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(Collections.emptySet()).iterator(),
+                    traverser -> mul(traverser.get(), traverser.bulk()));
+            if (values.hasNext())
+                emitter.emit(getSum(values));
         }
 
         @Override
@@ -114,13 +118,16 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
-            if (values.hasNext()) {
-                Number sum = values.next();
-                while (values.hasNext()) {
-                    sum = add(sum, values.next());
-                }
-                emitter.emit(sum);
+            if (values.hasNext())
+                emitter.emit(getSum(values));
+        }
+
+        private Number getSum(final Iterator<Number> numbers) {
+            Number sum = numbers.next();
+            while (numbers.hasNext()) {
+                sum = add(sum, numbers.next());
             }
+            return sum;
         }
 
         @Override
