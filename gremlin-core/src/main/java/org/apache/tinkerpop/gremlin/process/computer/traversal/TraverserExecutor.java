@@ -61,9 +61,9 @@ public final class TraverserExecutor {
             }
         }
         // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
-        Step<?, ?> previousStep = EmptyStep.instance();
         while (!toProcessTraversers.isEmpty()) {
             // process local traversers and if alive, repeat, else halt.
+            Step<?, ?> previousStep = EmptyStep.instance();
             Iterator<Traverser.Admin<Object>> traversers = toProcessTraversers.iterator();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
