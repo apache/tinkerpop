@@ -24,7 +24,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 
 [[release-3.1.1-incubating]]
 TinkerPop 3.1.1 (Release Date: February 8, 2016)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Made `GryoRecordReader` more robust to 0 byte record splits.
 * Fixed a constructor/serialization bug in `LP_O_OB_S_SE_SL_Traverser`.
