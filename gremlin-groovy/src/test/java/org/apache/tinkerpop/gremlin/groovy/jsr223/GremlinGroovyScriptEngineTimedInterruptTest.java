@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;
@@ -42,7 +43,7 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
         } catch (ScriptException se) {
-            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
+            assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
         }
     }
 
@@ -55,7 +56,7 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
         } catch (ScriptException se) {
-            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
+            assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
         }
 
         assertEquals(2, engine.eval("1+1"));
@@ -72,7 +73,7 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
                 engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 2000) {}");
                 fail("This should have timed out");
             } catch (ScriptException se) {
-                assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
+                assertEquals(TimedInterruptTimeoutException.class, se.getCause().getCause().getClass());
             }
 
             // this script takes 500 ms less than the interruptionTimeout

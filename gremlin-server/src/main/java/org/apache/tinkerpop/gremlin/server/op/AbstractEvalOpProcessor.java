@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
@@ -213,9 +214,14 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             timerContext.stop();
 
             if (t != null) {
-                if (t instanceof TimeoutException) {
-                    final String errorMessage = String.format("Response evaluation exceeded the configured threshold for request [%s] - %s", msg, t.getMessage());
+                if (t instanceof TimedInterruptTimeoutException) {
+                    // occurs when the TimedInterruptCustomizerProvider is in play
+                    final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider").create());
+                } else if (t instanceof TimeoutException) {
+                    final String errorMessage = String.format("Response evaluation exceeded the configured threshold for request [%s] - %s", msg, t.getMessage());
+                    logger.warn(errorMessage, t);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(t.getMessage()).create());
                 } else {
                     logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
@@ -328,7 +334,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.split();
             if (stopWatch.getSplitTime() > settings.serializedResponseTimeout) {
-                final String timeoutMsg = String.format("Serialization of the entire response exceeded the serializeResponseTimeout setting %s",
+                final String timeoutMsg = String.format("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting %s",
                         warnOnce ? "[Gremlin Server paused writes to client as messages were not being consumed quickly enough]" : "");
                 throw new TimeoutException(timeoutMsg.trim());
             }
