@@ -23,8 +23,8 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3.1.1-incubating]]
-TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.1.1 (Release Date: February 8, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Made `GryoRecordReader` more robust to 0 byte record splits.
 * Fixed a constructor/serialization bug in `LP_O_OB_S_SE_SL_Traverser`.
@@ -90,6 +90,95 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 * Fixed a traversal strategy ordering bug in `AdjacentToIncidentStrategy` and `IncidentToAdjacentStrategy`.
 * Made a number of changes to improve traversal startup and execution performance.
 * Added support for 'gremlin.tinkergraph.graphLocation' to accept a fully qualified class name that implements `Io.Builder` interface.
+
+Bugs
+^^^^
+
+* TINKERPOP-763 IsStep broken when profiling is enabled.
+* TINKERPOP-972 Cluster::close does not shut down its executor
+* TINKERPOP-973 BLVP shouldn't clear configuration properties
+* TINKERPOP-976 Fail earlier if invalid version is supplied in validate-distribution.sh
+* TINKERPOP-977 Dead link to traversal javadocs
+* TINKERPOP-979 ComputerVerificationStrategy not picking up Order local traversal
+* TINKERPOP-985 shouldPersistDataOnClose makes incorrect feature check
+* TINKERPOP-990 Mixed types in VertexPropertyTest
+* TINKERPOP-993 cyclicPath is not(simplePath)
+* TINKERPOP-997 FeatureRequirementSet.SIMPLE should not require multi-property *(breaking)*
+* TINKERPOP-1000 GremlinGroovyScriptEngineOverGraphTest failures
+* TINKERPOP-1001 SugarLoaderPerformanceTest contains hardcoded vertex ids
+* TINKERPOP-1002 Should rollback transaction after catching on close
+* TINKERPOP-1006 Random error during builds: shouldReloadClassLoaderWhileDoingEvalInSeparateThread()
+* TINKERPOP-1011 HadoopGraph can't re-attach when the InputFormat is not a FileInputFormat
+* TINKERPOP-1012 BulkLoaderVertexProgram shouldn't assume vertex IDs of type Long
+* TINKERPOP-1025 Solve SparkContext Persistence Issues with BulkLoaderVertexProgram
+* TINKERPOP-1027 Merge view prior to writing graphRDD to output format/rdd
+* TINKERPOP-1036 Support self-looping edges in IO
+* TINKERPOP-1052 @Graph.OptOut causes Exception during Suite setup
+* TINKERPOP-1060 LambdaRestrictionStrategy too restrictive
+* TINKERPOP-1075 Profile duration of cap step seems broken.
+* TINKERPOP-1083 Traversal needs a hashCode() and equals() definition.
+* TINKERPOP-1089 Order.shuffle implementation is too fragile
+* TINKERPOP-1119 LP_O_OB_S_SE_SL_Traverser doesn't have a protected constructor().
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-320 BulkDumperVertexProgram
+* TINKERPOP-379 MessageScope.Local.setStaticMessage(M msg)
+* TINKERPOP-824 Do we need runtime BigDecimal in more places?
+* TINKERPOP-859 Provide a more general way to set log levels in plugins
+* TINKERPOP-860 Bindings applied to the PluginAcceptor should appear to Gremlin Server
+* TINKERPOP-886 Allow any GraphReader/Writer to be persistence engine for TinkerGraph
+* TINKERPOP-891 Re-examine Sandboxing Abstractions
+* TINKERPOP-912 Improve the ability to embed Gremlin Server with Channelizer injection
+* TINKERPOP-928 Use directories to separate different books
+* TINKERPOP-930 Tie Alias to Transaction Manager in Gremlin Server
+* TINKERPOP-938 Add a "clear SNAPSHOT jars" section to the process-docs.sh.
+* TINKERPOP-941 Improve error message for wrong order().by() arguments
+* TINKERPOP-943 Warn if Gremlin Server is running prior to generating docs
+* TINKERPOP-945 Exceptions should allow me to include root cause if/when available
+* TINKERPOP-952 Include Cardinality.list example in VertexProperty section of main docs.
+* TINKERPOP-954 Consistent test directory usage
+* TINKERPOP-957 Improve speed of addV()
+* TINKERPOP-964 Test XXXGraphComputer on a Hadoop2 cluster (non-pseudocluster).
+* TINKERPOP-970 ProfileStep should be off Traversal, not GraphTraversal
+* TINKERPOP-978 Native TinkerGraph Serializers for GraphSON
+* TINKERPOP-981 Deprecate support for credentialsDbLocation in Gremlin Server Config
+* TINKERPOP-982 valuesDecr, valuesIncr, keysDecr, and valuesDecr is lame.
+* TINKERPOP-983 Provide a way to track open Graph instances in tests
+* TINKERPOP-984 Use GraphProvider for id conversion in Groovy Environment test suite
+* TINKERPOP-987 Use tinkerpop.apache.org URL in all documentation and homepage
+* TINKERPOP-988 SparkGraphComputer.submit shouldn't use ForkJoinPool.commonPool
+* TINKERPOP-992 Better support for schema driven Graphs in IO related tests
+* TINKERPOP-994 Driver using deprecated Rebindings Still
+* TINKERPOP-995 Add Authenticator.newSaslNegotiator(InetAddress)
+* TINKERPOP-996 Please delete old releases from mirroring system
+* TINKERPOP-998 Deprecate VertexPropertyFeatures.FEATURE_ADD_PROPERTY
+* TINKERPOP-1009 Add a CAUTION to documentation about HadoopGraph and getting back elements
+* TINKERPOP-1013 Traverser tags as a safer way of using path labels
+* TINKERPOP-1018 Allow setting for maxContentLength to be set from yaml in driver
+* TINKERPOP-1019 Convert println in test to SLF4j
+* TINKERPOP-1022 Automatically warm up ops handlers
+* TINKERPOP-1023 Add a spark variable in SparkGremlinPlugin like we do hdfs for HadoopGremlinPlugin
+* TINKERPOP-1026 BVLP should store vertex IDs as String
+* TINKERPOP-1033 Store sideEffects as a persisted RDD
+* TINKERPOP-1035 Better Consistency in Gremlin Server Transaction Management
+* TINKERPOP-1045 Client-Side Hangs when attempting to access a HashMap with Keys of type Integer
+* TINKERPOP-1047 TinkerGraph GraphSON storage format broken
+* TINKERPOP-1051 Add note in best practice docs about gremlin server heap setting
+* TINKERPOP-1055 Gremlin Console FileNotFoundException can be misleading
+* TINKERPOP-1062 Make LifeCycle beforeEval execute in same thread as eval operation
+* TINKERPOP-1064 Allow a ClassResolver to be added to GryoMapper construction
+* TINKERPOP-1065 Fix some typos and clarify some wording in the TinkerPop documentation
+* TINKERPOP-1066 Add ioRegistries configuration to GraphSON MessageSerializer
+* TINKERPOP-1067 Update Groovy to 2.4.5
+* TINKERPOP-1072 Allow the user to set persistence options using StorageLevel.valueOf()
+* TINKERPOP-1073 HadoopGraph toString() is weird for Spark PersitedRDD data.
+* TINKERPOP-1086 Include gryo serializers for java.time related classes
+* TINKERPOP-1087 Add has()/order() to FilterRankStrategy
+* TINKERPOP-1093 Add Spark init.sh script and update dev documentation.
+* TINKERPOP-1100 Look deeply into adding combine()-support in Spark MapReduce.
+* TINKERPOP-1117 InputFormatRDD.readGraphRDD requires a valid gremlin.hadoop.inputLocation, breaking InputFormats (Cassandra, HBase) that don't need one
 
 [[release-3.1.0-incubating]]
 TinkerPop 3.1.0 (Release Date: November 16, 2015)

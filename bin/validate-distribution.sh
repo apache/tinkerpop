@@ -115,7 +115,7 @@ fi
 # validate docs/ and javadocs/ directories
 echo -n "* validating ${COMPONENT}'s docs ... "
 cd ${DIR_NAME}
-[ -d "docs" ] && [ -f "docs/index.html" ] && [ -d "docs/images" ] || { echo "docs/ directory is incomplete or not present"; exit 1; }
+[ -d "docs" ] && [ -f "docs/reference/index.html" ] && [ -d "docs/images" ] || { echo "docs/ directory is incomplete or not present"; exit 1; }
 [ -d "javadocs/core" ] && [ -d "javadocs/full" ] || { echo "javadocs/ directory is incomplete or not present"; exit 1; }
 x=`find javadocs -name 'GraphTraversal.html' | wc -l`
 [[ ${x} -eq 4 ]] || { echo "${COMPONENT}'s javadocs/ directory is incomplete"; exit 1; }
