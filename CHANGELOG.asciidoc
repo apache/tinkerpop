@@ -17,6 +17,27 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 ====================
 
+TinkerPop 3.2.0 (XXX)
+---------------------
+
+[[release-3.2.0-incubating]]
+TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added `GraphFilter` to support filtering out vertices and edges that won't be touched by an OLAP job.
+* Added `GraphComputer.vertices()` and `GraphComputer.edges()` for `GraphFilter` construction *(breaking)*.
+* `SparkGraphComputer`, `GiraphGraphComputer`, and `TinkerGraphComputer` all support `GraphFilter`.
+* Added `GraphComputerTest.shouldSupportGraphFilter()` which verifies all filtered graphs have the same topology.
+* Added `GraphFilterAware` interface to `hadoop-gremlin/` which tells the OLAP engine that the `InputFormat` handles filtering.
+* `GryoInputFormat` and `ScriptInputFormat` implement `GraphFilterAware`.
+* Added `GraphFilterInputFormat` which handles graph filtering for `InputFormats` that are not `GraphFilterAware`.
+* Fixed a bug in `TraversalUtil.isLocalStarGraph()` which allowed certain illegal traversals to pass.
+* Added `TraversalUtil.isLocalVertex()` to verify that the traversal does not touch incident edges.
+* `GraphReader` IO interface now has `Optional<Vertex> readGraph(InputStream, GraphFilter)`. Default `UnsupportOperationException`.
+* `GryoReader` does not materialize edges that will be filtered out and this greatly reduces GC and load times.
+* Created custom `Serializers` for `SparkGraphComputer` message-passing classes which reduce graph sizes significantly.
+
+
 TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 --------------------------------------------------
 

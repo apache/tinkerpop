@@ -231,6 +231,11 @@ public final class IteratorUtils {
             public E next() {
                 return function.apply(iterator.next());
             }
+
+            @Override
+            public void remove() {
+                iterator.remove();
+            }
         };
     }
 
@@ -254,6 +259,11 @@ public final class IteratorUtils {
                     advance();
                     return null != this.nextResult;
                 }
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
             }
 
             @Override
@@ -309,6 +319,11 @@ public final class IteratorUtils {
                     }
                 }
                 return false;
+            }
+
+            @Override
+            public void remove() {
+                this.currentIterator.remove();
             }
 
             @Override

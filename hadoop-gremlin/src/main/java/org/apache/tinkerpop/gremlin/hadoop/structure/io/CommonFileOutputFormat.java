@@ -38,7 +38,7 @@ import java.io.IOException;
  */
 public abstract class CommonFileOutputFormat extends FileOutputFormat<NullWritable, VertexWritable> implements PersistResultGraphAware {
 
-    protected DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {
+    protected DataOutputStream getDataOutputStream(final TaskAttemptContext job) throws IOException, InterruptedException {
         final Configuration conf = job.getConfiguration();
         boolean isCompressed = getCompressOutput(job);
         CompressionCodec codec = null;

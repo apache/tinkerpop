@@ -16,28 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
-import java.io.IOException;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class ScriptInputFormat extends CommonFileInputFormat {
+public final class ObjectWritableSerializer<T> extends Serializer<ObjectWritable<T>> {
 
     @Override
-    public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader();
-        reader.initialize(split, context);
-        return reader;
+    public void write(final Kryo kryo, final Output output, final ObjectWritable<T> objectWritable) {
+        kryo.writeClassAndObject(output, objectWritable.get());
+        output.flush();
     }
 
+    @Override
+    public ObjectWritable<T> read(final Kryo kryo, final Input input, final Class<ObjectWritable<T>> clazz) {
+        return new ObjectWritable(kryo.readClassAndObject(input));
+    }
 }

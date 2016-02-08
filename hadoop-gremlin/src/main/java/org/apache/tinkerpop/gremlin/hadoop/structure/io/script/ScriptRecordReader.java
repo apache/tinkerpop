@@ -29,7 +29,11 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -41,6 +45,7 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -57,6 +62,8 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     private final LineRecordReader lineRecordReader;
     private ScriptEngine engine;
 
+    private GraphFilter graphFilter = new GraphFilter();
+
     public ScriptRecordReader() {
         this.lineRecordReader = new LineRecordReader();
     }
@@ -65,6 +72,8 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
+        if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
+            this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         this.engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
         //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
@@ -83,9 +92,9 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 final Bindings bindings = this.engine.createBindings();
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, new ScriptElementFactory());
-                final Vertex vertex = (Vertex) engine.eval(READ_CALL, bindings);
-                if (vertex != null) {
-                    this.vertexWritable.set(vertex);
+                final Optional<StarGraph.StarVertex> vertex = ((StarGraph.StarVertex) engine.eval(READ_CALL, bindings)).applyGraphFilter(this.graphFilter);
+                if (vertex.isPresent()) {
+                    this.vertexWritable.set(vertex.get());
                     return true;
                 }
             } catch (final ScriptException e) {

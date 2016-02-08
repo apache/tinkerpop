@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -33,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -60,6 +57,28 @@ public final class TraversalHelper {
     private TraversalHelper() {
     }
 
+    public static boolean isLocalVertex(final Traversal.Admin<?, ?> traversal) {
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof RepeatStep &&
+                    ((RepeatStep<?>) step).getGlobalChildren().stream()
+                            .flatMap(t -> t.getSteps().stream())
+                            .filter(s -> s instanceof VertexStep)
+                            .findAny()
+                            .isPresent())  // TODO: is this sufficient?
+                return false;
+            else if (step instanceof VertexStep) {
+                return false;
+            } else if (step instanceof EdgeVertexStep) {
+                return false;
+            } else if (step instanceof TraversalParent) {
+                if (((TraversalParent) step).getLocalChildren().stream()
+                        .filter(t -> !isLocalVertex(t.asAdmin()))
+                        .findAny().isPresent()) return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         return isLocalStarGraph(traversal, 'v');
     }
@@ -69,21 +88,17 @@ public final class TraversalHelper {
             if (step instanceof RepeatStep &&
                     ((RepeatStep<?>) step).getGlobalChildren().stream()
                             .flatMap(t -> t.getSteps().stream())
-                            .filter(temp -> temp instanceof VertexStep)
+                            .filter(s -> s instanceof VertexStep)
                             .findAny()
                             .isPresent())  // TODO: is this sufficient?
                 return false;
-            if (step instanceof PropertiesStep && state == 'u')
+            else if (step instanceof PropertiesStep && state == 'u')
                 return false;
             else if (step instanceof VertexStep) {
-                if (((VertexStep) step).returnsVertex()) {
-                    if (state == 'u') return false;
-                    if (state == 'v') state = 'u';
-                } else {
-                    state = 'e';
-                }
+                if (state == 'u') return false;
+                state = ((VertexStep) step).returnsVertex() ? 'u' : 'e';
             } else if (step instanceof EdgeVertexStep) {
-                if (state == 'e') state = 'u';
+                state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
                 if (((HasContainerHolder) step).getHasContainers().stream()
                         .filter(c -> !c.getKey().equals(T.id.getAccessor())) // TODO: are labels available?

@@ -16,28 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
+package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
+
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-
-import java.io.IOException;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class ScriptInputFormat extends CommonFileInputFormat {
-
+public final class VertexWritableSerializer extends Serializer<VertexWritable> {
     @Override
-    public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader();
-        reader.initialize(split, context);
-        return reader;
+    public void write(final Kryo kryo, final Output output, final VertexWritable vertexWritable) {
+        kryo.writeObject(output, vertexWritable.get().graph());
     }
 
+    @Override
+    public VertexWritable read(final Kryo kryo, final Input input, final Class<VertexWritable> aClass) {
+        return new VertexWritable(kryo.readObject(input, StarGraph.class).getStarVertex());
+    }
 }

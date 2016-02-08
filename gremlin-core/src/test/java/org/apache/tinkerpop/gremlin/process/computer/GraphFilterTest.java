@@ -16,25 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.RecordWriter;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolsConfigurable;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-
-import java.io.IOException;
+package org.apache.tinkerpop.gremlin.process.computer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GraphSONOutputFormat extends CommonFileOutputFormat implements HadoopPoolsConfigurable {
+public class GraphFilterTest {
 
-    @Override
-    public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
-        return new GraphSONRecordWriter(getDataOutputStream(job), job.getConfiguration());
-    }
-
+    /*@Test
+    public void shouldHandleStarGraph() {
+        final StarGraph graph = StarGraph.open();
+        final Vertex vertex = graph.addVertex("person");
+        for (int i = 0; i < 10; i++) {
+            vertex.addEdge("created", graph.addVertex(i < 5 ? "software" : "hardware"), "weight", 1);
+        }
+        final GraphFilter graphFilter = new GraphFilter();
+    }*/
 }

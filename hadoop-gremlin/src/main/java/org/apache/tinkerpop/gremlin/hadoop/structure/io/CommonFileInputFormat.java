@@ -16,28 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
+package org.apache.tinkerpop.gremlin.hadoop.structure.io;
+
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-
-import java.io.IOException;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class ScriptInputFormat extends CommonFileInputFormat {
+public abstract class CommonFileInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable, GraphFilterAware {
 
     @Override
-    public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, VertexWritable> reader = new ScriptRecordReader();
-        reader.initialize(split, context);
-        return reader;
+    protected boolean isSplitable(final JobContext context, final Path file) {
+        return null == new CompressionCodecFactory(context.getConfiguration()).getCodec(file);
     }
 
+    @Override
+    public void setGraphFilter(final GraphFilter graphFilter) {
+        // do nothing. loaded through configuration.
+    }
 }

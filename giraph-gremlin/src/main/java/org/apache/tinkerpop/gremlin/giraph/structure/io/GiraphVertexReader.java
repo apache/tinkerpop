@@ -25,6 +25,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.GraphFilterRecordReader;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
@@ -36,8 +37,8 @@ public final class GiraphVertexReader extends VertexReader {
 
     private RecordReader<NullWritable, VertexWritable> recordReader;
 
-    public GiraphVertexReader(final RecordReader<NullWritable, VertexWritable> recordReader) {
-        this.recordReader = recordReader;
+    public GiraphVertexReader() {
+        this.recordReader = new GraphFilterRecordReader();
     }
 
     @Override

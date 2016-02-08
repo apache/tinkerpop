@@ -22,7 +22,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
@@ -32,6 +31,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.GraphFilterInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopCombine;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopMap;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.HadoopReduce;
@@ -72,6 +72,10 @@ public final class MapReduceHelper {
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
 
             newConfiguration.setClass(Constants.GREMLIN_HADOOP_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
+            if (vertexProgramExists) {
+                newConfiguration.set(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)).getCanonicalName());
+                newConfiguration.unset(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+            }
             final Job job = Job.getInstance(newConfiguration, mapReduce.toString());
             HadoopGraph.LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(HadoopGraph.class);
@@ -94,9 +98,7 @@ public final class MapReduceHelper {
             job.setMapOutputValueClass(ObjectWritable.class);
             job.setOutputKeyClass(ObjectWritable.class);
             job.setOutputValueClass(ObjectWritable.class);
-            job.setInputFormatClass(vertexProgramExists ?
-                    InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)) :
-                    (Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
+            job.setInputFormatClass(GraphFilterInputFormat.class);
             job.setOutputFormatClass(SequenceFileOutputFormat.class);
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = vertexProgramExists ?
@@ -130,7 +132,7 @@ public final class MapReduceHelper {
                 FileSystem.get(newConfiguration).delete(memoryPath, true); // delete the temporary memory path
                 memoryPath = sortedMemoryPath;
             }
-            mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
+            mapReduce.addResultToMemory(memory, new ObjectWritableIterator(newConfiguration, memoryPath));
         }
     }
 }

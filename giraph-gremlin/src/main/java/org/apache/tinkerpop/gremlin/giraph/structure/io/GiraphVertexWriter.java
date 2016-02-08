@@ -20,11 +20,14 @@ package org.apache.tinkerpop.gremlin.giraph.structure.io;
 
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexWriter;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
@@ -33,16 +36,16 @@ import java.io.IOException;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GiraphVertexWriter extends VertexWriter {
-    private final OutputFormat<NullWritable, VertexWritable> outputFormat;
     private RecordWriter<NullWritable, VertexWritable> recordWriter;
 
-    public GiraphVertexWriter(final OutputFormat<NullWritable, VertexWritable> outputFormat) {
-        this.outputFormat = outputFormat;
+    public GiraphVertexWriter() {
+
     }
 
     @Override
     public void initialize(final TaskAttemptContext context) throws IOException, InterruptedException {
-        this.recordWriter = this.outputFormat.getRecordWriter(context);
+        final Configuration configuration = context.getConfiguration();
+        this.recordWriter = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class, OutputFormat.class), configuration).getRecordWriter(context);
     }
 
     @Override

@@ -24,11 +24,16 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -64,7 +69,9 @@ import static org.junit.Assert.fail;
         "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated",
         "resultGraphPersistCombinationNotSupported",
         "vertexPropertiesCanNotBeUpdatedInMapReduce",
-        "computerRequiresMoreWorkersThanSupported"
+        "computerRequiresMoreWorkersThanSupported",
+        "vertexFilterAccessesIncidentEdges",
+        "edgeFilterAccessesAdjacentVertices"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
@@ -126,6 +133,16 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer workers(final int workers) {
+            return null;
+        }
+
+        @Override
+        public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+            return null;
+        }
+
+        @Override
+        public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
             return null;
         }
 
@@ -1465,5 +1482,351 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
     }
+
+    /////////////////////////////////////////////
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportGraphFilter() throws Exception {
+        /// VERTEX PROGRAM
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.outE()).program(new VertexProgramM(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+
+        /// VERTEX PROGRAM + MAP REDUCE
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.outE()).program(new VertexProgramM(VertexProgramM.OUT_EDGES_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+
+        /// MAP REDUCE ONLY
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).mapReduce(new MapReduceJ(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.bothE("knows")).mapReduce(new MapReduceJ(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.bothE("knows")).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
+        graph.compute(graphComputerClass.get()).edges(__.outE()).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+
+        // EXCEPTION HANDLING
+        try {
+            graph.compute(graphComputerClass.get()).vertices(__.out());
+            fail();
+        } catch (final IllegalArgumentException e) {
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(__.out()).getMessage());
+        }
+        try {
+            graph.compute(graphComputerClass.get()).edges(__.<Vertex>out().outE());
+            fail();
+        } catch (final IllegalArgumentException e) {
+            assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>out().outE()).getMessage());
+        }
+    }
+
+    public static class VertexProgramM implements VertexProgram {
+
+        public static final String SOFTWARE_ONLY = "softwareOnly";
+        public static final String PEOPLE_ONLY = "peopleOnly";
+        public static final String KNOWS_ONLY = "knowsOnly";
+        public static final String PEOPLE_KNOWS_ONLY = "peopleKnowsOnly";
+        public static final String PEOPLE_KNOWS_WELL_ONLY = "peopleKnowsWellOnly";
+        public static final String VERTICES_ONLY = "verticesOnly";
+        public static final String ONE_OUT_EDGE_ONLY = "oneOutEdgeOnly";
+        public static final String OUT_EDGES_ONLY = "outEdgesOnly";
+
+        private String state;
+
+        public VertexProgramM() {
+
+        }
+
+        public VertexProgramM(final String state) {
+            this.state = state;
+        }
+
+        @Override
+        public void setup(final Memory memory) {
+
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            switch (this.state) {
+                case SOFTWARE_ONLY: {
+                    assertEquals("software", vertex.label());
+                    assertFalse(vertex.edges(Direction.OUT).hasNext());
+                    assertTrue(vertex.edges(Direction.IN).hasNext());
+                    assertTrue(vertex.edges(Direction.IN, "created").hasNext());
+                    assertFalse(vertex.edges(Direction.IN, "knows").hasNext());
+                    break;
+                }
+                case PEOPLE_ONLY: {
+                    assertEquals("person", vertex.label());
+                    assertFalse(vertex.edges(Direction.IN, "created").hasNext());
+                    assertTrue(IteratorUtils.count(vertex.edges(Direction.BOTH)) > 0);
+                    break;
+                }
+                case KNOWS_ONLY: {
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "created")));
+                    if (vertex.value("name").equals("marko"))
+                        assertEquals(2, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                    else if (vertex.value("name").equals("vadas"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else if (vertex.value("name").equals("josh"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else {
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                case PEOPLE_KNOWS_ONLY: {
+                    assertEquals("person", vertex.label());
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "created")));
+                    if (vertex.value("name").equals("marko"))
+                        assertEquals(2, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                    else if (vertex.value("name").equals("vadas"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else if (vertex.value("name").equals("josh"))
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else {
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                case PEOPLE_KNOWS_WELL_ONLY: {
+                    assertEquals("person", vertex.label());
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "created")));
+                    if (vertex.value("name").equals("marko")) {
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(1.0, vertex.edges(Direction.OUT, "knows").next().value("weight"), 0.001);
+                    } else if (vertex.value("name").equals("vadas"))
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                    else if (vertex.value("name").equals("josh")) {
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.IN, "knows")));
+                        assertEquals(1.0, vertex.edges(Direction.IN, "knows").next().value("weight"), 0.001);
+                    } else {
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH, "knows")));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                case VERTICES_ONLY: {
+                    assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    break;
+                }
+                case ONE_OUT_EDGE_ONLY: {
+                    if (vertex.label().equals("software") || vertex.value("name").equals("vadas"))
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    else {
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.OUT)));
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.IN)));
+                        assertEquals(1, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                case OUT_EDGES_ONLY: {
+                    if (vertex.label().equals("software") || vertex.value("name").equals("vadas"))
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    else {
+                        assertTrue(IteratorUtils.count(vertex.edges(Direction.OUT)) > 0);
+                        assertEquals(0, IteratorUtils.count(vertex.edges(Direction.IN)));
+                        assertEquals(IteratorUtils.count(vertex.edges(Direction.OUT)), IteratorUtils.count(vertex.edges(Direction.BOTH)));
+                    }
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("This is an illegal state for this test case: " + this.state);
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return true;
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.NOTHING;
+        }
+
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
+        public VertexProgramM clone() {
+            return new VertexProgramM(this.state);
+        }
+
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
+            this.state = configuration.getString("state");
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            configuration.setProperty("state", this.state);
+            VertexProgram.super.storeState(configuration);
+        }
+
+    }
+
+    private static class MapReduceJ implements MapReduce<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> {
+
+        private String state;
+
+        public MapReduceJ() {
+        }
+
+        public MapReduceJ(final String state) {
+            this.state = state;
+        }
+
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
+            this.state = configuration.getString("state");
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            configuration.setProperty("state", this.state);
+            MapReduce.super.storeState(configuration);
+        }
+
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
+        public MapReduceJ clone() {
+            return new MapReduceJ(this.state);
+        }
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Integer> emitter) {
+            emitter.emit(1);
+            switch (this.state) {
+                case VertexProgramM.SOFTWARE_ONLY: {
+                    assertEquals("software", vertex.label());
+                    break;
+                }
+                case VertexProgramM.PEOPLE_ONLY: {
+                    assertEquals("person", vertex.label());
+                    break;
+                }
+                case VertexProgramM.KNOWS_ONLY: {
+                    assertTrue(vertex.label().equals("person") || vertex.label().equals("software"));
+                    break;
+                }
+                case VertexProgramM.PEOPLE_KNOWS_ONLY: {
+                    assertEquals("person", vertex.label());
+                    break;
+                }
+                case VertexProgramM.PEOPLE_KNOWS_WELL_ONLY: {
+                    assertEquals("person", vertex.label());
+                    break;
+                }
+                case VertexProgramM.VERTICES_ONLY: {
+                    assertTrue(vertex.label().equals("person") || vertex.label().equals("software"));
+                    break;
+                }
+                case VertexProgramM.ONE_OUT_EDGE_ONLY: {
+                    assertTrue(vertex.label().equals("person") || vertex.label().equals("software"));
+                    break;
+                }
+                case VertexProgramM.OUT_EDGES_ONLY: {
+                    assertTrue(vertex.label().equals("person") || vertex.label().equals("software"));
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("This is an illegal state for this test case: " + this.state);
+            }
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
+            this.reduce(key, values, emitter);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
+            int count = 0;
+            while (values.hasNext()) {
+                count = count + values.next();
+            }
+            emitter.emit(count);
+        }
+
+        @Override
+        public Integer generateFinalResult(final Iterator<KeyValue<NullObject, Integer>> keyValues) {
+            int counter = keyValues.next().getValue();
+            assertFalse(keyValues.hasNext());
+
+            switch (this.state) {
+                case VertexProgramM.SOFTWARE_ONLY: {
+                    assertEquals(2, counter);
+                    break;
+                }
+                case VertexProgramM.PEOPLE_ONLY: {
+                    assertEquals(4, counter);
+                    break;
+                }
+                case VertexProgramM.KNOWS_ONLY: {
+                    assertEquals(6, counter);
+                    break;
+                }
+                case VertexProgramM.PEOPLE_KNOWS_ONLY: {
+                    assertEquals(4, counter);
+                    break;
+                }
+                case VertexProgramM.PEOPLE_KNOWS_WELL_ONLY: {
+                    assertEquals(4, counter);
+                    break;
+                }
+                case VertexProgramM.VERTICES_ONLY: {
+                    assertEquals(6, counter);
+                    break;
+                }
+                case VertexProgramM.ONE_OUT_EDGE_ONLY: {
+                    assertEquals(6, counter);
+                    break;
+                }
+                case VertexProgramM.OUT_EDGES_ONLY: {
+                    assertEquals(6, counter);
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("This is an illegal state for this test case: " + this.state);
+            }
+            return counter;
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return "a";
+        }
+    }
+
 
 }

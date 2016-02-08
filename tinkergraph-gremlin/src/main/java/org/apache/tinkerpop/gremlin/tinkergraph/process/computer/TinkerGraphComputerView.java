@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -35,6 +36,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,11 +53,29 @@ public final class TinkerGraphComputerView {
     private final TinkerGraph graph;
     protected final Set<String> computeKeys;
     private Map<Element, Map<String, List<VertexProperty<?>>>> computeProperties;
+    private final Set<Object> legalVertices = new HashSet<>();
+    private final Map<Object, Set<Object>> legalEdges = new HashMap<>();
+    private final GraphFilter graphFilter;
 
-    public TinkerGraphComputerView(final TinkerGraph graph, final Set<String> computeKeys) {
+    public TinkerGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<String> computeKeys) {
         this.graph = graph;
         this.computeKeys = computeKeys;
         this.computeProperties = new ConcurrentHashMap<>();
+        this.graphFilter = graphFilter;
+        if (this.graphFilter.hasFilter()) {
+            graph.vertices().forEachRemaining(vertex -> {
+                boolean legalVertex = false;
+                if (this.graphFilter.hasVertexFilter() && this.graphFilter.legalVertex(vertex)) {
+                    this.legalVertices.add(vertex.id());
+                    legalVertex = true;
+                }
+                if ((legalVertex || !this.graphFilter.hasVertexFilter()) && this.graphFilter.hasEdgeFilter()) {
+                    final Set<Object> edges = new HashSet<>();
+                    this.legalEdges.put(vertex.id(), edges);
+                    this.graphFilter.legalEdges(vertex).forEachRemaining(edge -> edges.add(edge.id()));
+                }
+            });
+        }
     }
 
     public <V> Property<V> addProperty(final TinkerVertex vertex, final String key, final V value) {
@@ -93,9 +114,18 @@ public final class TinkerGraphComputerView {
         }
     }
 
+    public boolean legalVertex(final Vertex vertex) {
+        return !this.graphFilter.hasVertexFilter() || this.legalVertices.contains(vertex.id());
+    }
+
+    public boolean legalEdge(final Vertex vertex, final Edge edge) {
+        return !this.graphFilter.hasEdgeFilter() || this.legalEdges.get(vertex.id()).contains(edge.id());
+    }
+
     //////////////////////
 
-    public Graph processResultGraphPersist(final GraphComputer.ResultGraph resultGraph, final GraphComputer.Persist persist) {
+    public Graph processResultGraphPersist(final GraphComputer.ResultGraph resultGraph,
+                                           final GraphComputer.Persist persist) {
         if (GraphComputer.Persist.NOTHING == persist) {
             if (GraphComputer.ResultGraph.ORIGINAL == resultGraph)
                 return this.graph;

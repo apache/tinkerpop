@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.star;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -46,6 +47,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
     private static final Map<Direction, StarGraphGryoSerializer> CACHE = new HashMap<>();
 
     private final Direction edgeDirectionToSerialize;
+    private GraphFilter graphFilter = new GraphFilter(); // will allow all vertices/edges
 
     private final static byte VERSION_1 = Byte.MIN_VALUE;
 
@@ -66,6 +68,12 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
      */
     public static StarGraphGryoSerializer with(final Direction direction) {
         return CACHE.get(direction);
+    }
+
+    public static StarGraphGryoSerializer withGraphFilter(final GraphFilter graphFilter) {
+        final StarGraphGryoSerializer serializer = new StarGraphGryoSerializer(Direction.BOTH);
+        serializer.graphFilter = graphFilter.clone();
+        return serializer;
     }
 
     @Override
@@ -91,6 +99,9 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
         }
     }
 
+    /**
+     * If the returned {@link StarGraph} is null, that means that the {@link GraphFilter} filtered the vertex.
+     */
     @Override
     public StarGraph read(final Kryo kryo, final Input input, final Class<StarGraph> aClass) {
         final StarGraph starGraph = StarGraph.open();
@@ -112,7 +123,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
                 }
             }
         }
-        return starGraph;
+        return this.graphFilter.hasFilter() ? starGraph.applyGraphFilter(this.graphFilter).orElse(null) : starGraph;
     }
 
     private void writeEdges(final Kryo kryo, final Output output, final StarGraph starGraph, final Direction direction) {
@@ -135,7 +146,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
         }
     }
 
-    private static void readEdges(final Kryo kryo, final Input input, final StarGraph starGraph, final Direction direction) {
+    private void readEdges(final Kryo kryo, final Input input, final StarGraph starGraph, final Direction direction) {
         if (kryo.readObject(input, Boolean.class)) {
             final int numberOfUniqueLabels = kryo.readObject(input, Integer.class);
             for (int i = 0; i < numberOfUniqueLabels; i++) {
@@ -144,10 +155,14 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
                 for (int j = 0; j < numberOfEdgesWithLabel; j++) {
                     final Object edgeId = kryo.readClassAndObject(input);
                     final Object adjacentVertexId = kryo.readClassAndObject(input);
-                    if (direction.equals(Direction.OUT))
-                        starGraph.starVertex.addOutEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
-                    else
-                        starGraph.starVertex.addInEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
+                    if (this.graphFilter.checkEdgeLegality(direction, edgeLabel).positive()) {
+                        if (direction.equals(Direction.OUT))
+                            starGraph.starVertex.addOutEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
+                        else
+                            starGraph.starVertex.addInEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
+                    } else if (null != starGraph.edgeProperties) {
+                        starGraph.edgeProperties.remove(edgeId);
+                    }
                 }
             }
         }

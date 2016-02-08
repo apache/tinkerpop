@@ -36,9 +36,9 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -318,12 +318,12 @@ public final class TinkerGraph implements Graph {
     }
 
 
-
     private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
                                                                   final IdManager idManager,
                                                                   final Object... ids) {
+        final Iterator<T> iterator;
         if (0 == ids.length) {
-            return elements.values().iterator();
+            iterator = elements.values().iterator();
         } else {
             // base the conversion function on the first item in the id list as the expectation is that these
             // id values will be a uniform list
@@ -336,14 +336,19 @@ public final class TinkerGraph implements Graph {
                 // other implementation. the assumption is that id conversion is not required for detached
                 // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
                 // vertex to be findable in OrientDB
-                return Stream.of(ids).map(id -> elements.get(((T) id).id())).filter(Objects::nonNull).iterator();
+                iterator = Stream.of(ids).map(id -> elements.get(((T) id).id())).filter(Objects::nonNull).iterator();
             } else {
                 final Class<?> firstClass = ids[0].getClass();
                 if (!Stream.of(ids).map(Object::getClass).allMatch(firstClass::equals))
                     throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-                return Stream.of(ids).map(id -> idManager.convert(id)).map(elements::get).filter(Objects::nonNull).iterator();
+                iterator = Stream.of(ids).map(id -> idManager.convert(id)).map(elements::get).filter(Objects::nonNull).iterator();
             }
         }
+        return TinkerHelper.inComputerMode(this) ?
+                (Iterator<T>) (clazz.equals(Vertex.class) ?
+                        IteratorUtils.filter((Iterator<Vertex>) iterator, t -> this.graphComputerView.legalVertex(t)) :
+                        IteratorUtils.filter((Iterator<Edge>) iterator, t -> this.graphComputerView.legalEdge(t.outVertex(), t))) :
+                iterator;
     }
 
     /**
