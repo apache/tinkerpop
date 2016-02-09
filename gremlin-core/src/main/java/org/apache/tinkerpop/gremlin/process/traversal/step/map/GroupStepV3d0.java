@@ -25,7 +25,9 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -55,18 +57,24 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Deprecated
-public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements MapReducer, TraversalParent {
+public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements MapReducer, EngineDependent, TraversalParent {
 
     private char state = 'k';
 
     private Traversal.Admin<S, K> keyTraversal = null;
     private Traversal.Admin<S, V> valueTraversal = null;
     private Traversal.Admin<Collection<V>, R> reduceTraversal = null;
+    private boolean byPass = false;
 
     public GroupStepV3d0(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) new GroupMapSupplierV3d0());
         this.setBiFunction(new GroupBiFunction(this));
+    }
+
+    @Override
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.byPass = traversalEngine.isComputer();
     }
 
     @Override

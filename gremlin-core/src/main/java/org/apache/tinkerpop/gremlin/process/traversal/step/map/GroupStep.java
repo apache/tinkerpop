@@ -24,9 +24,11 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -55,7 +57,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements MapReducer, TraversalParent {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements MapReducer, EngineDependent, TraversalParent {
 
     private char state = 'k';
 
@@ -63,11 +65,17 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     private Traversal.Admin<S, ?> valueTraversal = this.integrateChild(__.identity().asAdmin());   // used in OLAP
     private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
     private Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
+    private boolean byPass = false;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) new GroupStepHelper.GroupMapSupplier());
         this.setBiFunction(new GroupBiFunction(this));
+    }
+
+    @Override
+    public void onEngine(final TraversalEngine traversalEngine) {
+        this.byPass = traversalEngine.isComputer();
     }
 
     @Override

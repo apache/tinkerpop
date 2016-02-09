@@ -26,9 +26,9 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class SingleIterator<T> implements Iterator<T>,Serializable {
+final class SingleIterator<T> implements Iterator<T>, Serializable {
 
-    private final T t;
+    private T t;
     private boolean alive = true;
 
     protected SingleIterator(final T t) {
@@ -38,6 +38,11 @@ final class SingleIterator<T> implements Iterator<T>,Serializable {
     @Override
     public boolean hasNext() {
         return this.alive;
+    }
+
+    @Override
+    public void remove() {
+        this.t = null;
     }
 
     @Override

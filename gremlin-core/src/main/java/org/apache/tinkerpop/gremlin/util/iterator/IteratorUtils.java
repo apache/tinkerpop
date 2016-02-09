@@ -105,6 +105,11 @@ public final class IteratorUtils {
             }
 
             @Override
+            public void remove() {
+                iterator.remove();
+            }
+
+            @Override
             public S next() {
                 if (this.count++ >= limit)
                     throw FastNoSuchElementException.instance();
@@ -205,6 +210,11 @@ public final class IteratorUtils {
             }
 
             @Override
+            public void remove() {
+                iterator.remove();
+            }
+
+            @Override
             public S next() {
                 final S s = iterator.next();
                 consumer.accept(s);
@@ -228,13 +238,13 @@ public final class IteratorUtils {
             }
 
             @Override
-            public E next() {
-                return function.apply(iterator.next());
+            public void remove() {
+                iterator.remove();
             }
 
             @Override
-            public void remove() {
-                iterator.remove();
+            public E next() {
+                return function.apply(iterator.next());
             }
         };
     }
@@ -323,7 +333,7 @@ public final class IteratorUtils {
 
             @Override
             public void remove() {
-                this.currentIterator.remove();
+                iterator.remove();
             }
 
             @Override
@@ -381,5 +391,24 @@ public final class IteratorUtils {
 
     public static <T> Stream<T> stream(final Iterable<T> iterable) {
         return IteratorUtils.stream(iterable.iterator());
+    }
+
+    public static <T> Iterator<T> noRemove(final Iterator<T> iterator) {
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public void remove() {
+                // do nothing
+            }
+
+            @Override
+            public T next() {
+                return iterator.next();
+            }
+        };
     }
 }

@@ -742,7 +742,8 @@ limitations under the License.
                                 <configuration>
                                     <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -762,9 +763,11 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console
+                                    </sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -954,7 +957,8 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory}
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties}
+                                -Dbuild.dir=${project.build.directory}
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>

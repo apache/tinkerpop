@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.MultiIterator;
 
 import java.util.Iterator;
@@ -64,19 +65,19 @@ public final class TinkerMessenger<M> implements Messenger<M> {
                 final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
                 final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
                 final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-                multiIterator.addIterator(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
+                multiIterator.addIterator(IteratorUtils.noRemove(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
                         .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
                         .filter(q -> null != q)
                         .flatMap(Queue::stream)
                         .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
-                        .iterator());
+                        .iterator()));
 
             } else {
-                multiIterator.addIterator(Stream.of(this.vertex)
+                multiIterator.addIterator(IteratorUtils.noRemove(Stream.of(this.vertex)
                         .map(this.messageBoard.receiveMessages::get)
                         .filter(q -> null != q)
                         .flatMap(Queue::stream)
-                        .iterator());
+                        .iterator()));
             }
         }
         return multiIterator;
@@ -93,8 +94,8 @@ public final class TinkerMessenger<M> implements Messenger<M> {
     }
 
     private void addMessage(final Vertex vertex, final M message) {
-        this.messageBoard.sendMessages.compute(vertex, (v,queue) -> {
-            if(null == queue) queue = new ConcurrentLinkedQueue<>();
+        this.messageBoard.sendMessages.compute(vertex, (v, queue) -> {
+            if (null == queue) queue = new ConcurrentLinkedQueue<>();
             queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
             return queue;
         });
