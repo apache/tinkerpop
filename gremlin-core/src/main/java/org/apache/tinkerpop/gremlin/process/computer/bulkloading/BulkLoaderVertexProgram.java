@@ -171,7 +171,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
                 listener = new BulkLoadingListener();
-                g = new GraphTraversalSource(graph).withStrategy(EventStrategy.build().addListener(listener).create());
+                g = graph.traversal().withStrategies(EventStrategy.build().addListener(listener).create());
             } catch (Exception e) {
                 try {
                     graph.close();

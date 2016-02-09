@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -146,40 +145,42 @@ public interface Graph extends AutoCloseable, Host {
     public GraphComputer compute() throws IllegalArgumentException;
 
     /**
-     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}. The {@link TraversalSource}
-     * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
-     * and a {@link GraphComputer}.
+     * Generate a {@link TraversalSource} using the specified {@code TraversalSource} class.
+     * The reusable {@link TraversalSource} provides methods for spawning {@link Traversal} instances.
      *
-     * @param traversalSource The traversal source to use
-     * @param <C>             The traversal source class
+     * @param traversalSourceClass The traversal source class
+     * @param <C>                  The traversal source class
      */
-    public default <C extends TraversalSource> C traversal(final TraversalSource traversalSource) {
-        return (C) traversalSource; // make this a class
+    public default <C extends TraversalSource> C traversal(final Class<C> traversalSourceClass) {
+        try {
+            return traversalSourceClass.getConstructor(Graph.class).newInstance(this);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
-
-    /*
-     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}. The {@link TraversalSource}
-     * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
-     * and a {@link GraphComputer}.
+    /**
+     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}.
+     * The reusable {@link TraversalSource} provides methods for spawning {@link Traversal} instances.
      *
      * @param sourceBuilder The traversal source builder to use
      * @param <C>           The traversal source class
-
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
-    *
 
     /**
-     * Generate a {@link GraphTraversalSource} instance. The
-     * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
-     * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
+     * Generate a reusable {@link GraphTraversalSource} instance.
+     * The {@link GraphTraversalSource} provides methods for creating
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal} instances.
      *
-     * @return A standard graph traversal source
+     * @return A graph traversal source
      */
     public default GraphTraversalSource traversal() {
-        return this.traversal(new GraphTraversalSource(this));
+        return new GraphTraversalSource(this);
     }
 
     /**

@@ -48,6 +48,6 @@ public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerPr
                 .map(TraversalStrategy::getClass)
                 .filter(clazz -> !REQUIRED_STRATEGIES.contains(clazz))
                 .collect(Collectors.toList());
-        return graph.traversal().withoutStrategy(toRemove.toArray(new Class[toRemove.size()])).withComputer(Graph::compute);
+        return graph.traversal().withoutStrategies(toRemove.toArray(new Class[toRemove.size()])).withComputer(Graph::compute);
     }
 }

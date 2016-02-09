@@ -18,29 +18,130 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
+import java.util.function.Function;
+
 /**
- * A {@code TraversalSource} is responsible for generating a {@link Traversal}. A {@code TraversalSource}, once built,
- * can generate any number of {@link Traversal} instances. Each traversal DSL will maintain a corresponding
- * {@code TraversalSource} which specifies the methods which being a "fluent-chaining" of traversal steps.
+ * A {@code TraversalSource} is used to create {@link Traversal} instances.
+ * A traversal source can generate any number of {@link Traversal} instances.
+ * A traversal source is primarily composed of a {@link Graph} and a {@link TraversalStrategies}.
+ * Various {@code withXXX}-based methods are used to configure the traversal strategies.
+ * Various other methods (dependent on the traversal source type) will then generate a traversal given the graph and configured strategies.
+ * A traversal source is immutable in that fluent chaining of configurations create new traversal sources.
+ * This is unlike {@link Traversal} and {@link GraphComputer}, where chained methods configure the same instance.
+ * Every traversal source implementation must maintain two constructors to enable proper reflection-based construction.
+ * <p/>
+ * {@code TraversalSource(Graph)} and {@code TraversalSource(Graph,TraversalStrategies)}
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalSource extends Cloneable {
 
-    // withStrategy
-    // withoutStrategy
-    // withBulk
-    // withPath
-    // withSack
-    // withSideEffect
-
+    /**
+     * Get the {@link TraversalStrategies} associated with this traversal source.
+     *
+     * @return the traversal strategies of the traversal source
+     */
     public TraversalStrategies getStrategies();
 
+    /**
+     * Get the {@link Graph) associated with this traversal source.
+     *
+     * @return the graph of the traversal source
+     */
     public Graph getGraph();
 
+    /////////////////////////////
+
+    /**
+     * Add a {@link Function} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy} to the strategies.
+     *
+     * @param graphComputerFunction a function to generate a graph computer from the graph
+     * @return a new traversal source with updated strategies
+     */
+    public TraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction);
+
+    /**
+     * Add a {@link GraphComputer} class used to execute the traversal.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy} to the strategies.
+     *
+     * @param graphComputerClass the graph computer class
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
+        return this.withComputer(g -> g.compute(graphComputerClass));
+    }
+
+    /**
+     * Add the standard {@link GraphComputer} of the graph that will be used to execute the traversal.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy} to the strategies.
+     *
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withComputer() {
+        return this.withComputer(Graph::compute);
+    }
+
+    /**
+     * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
+     *
+     * @param traversalStrategies a colleciton of traversal strategies to add
+     * @return a new traversal source with updated strategies
+     */
+    public TraversalSource withStrategies(final TraversalStrategy... traversalStrategies);
+
+    /**
+     * Remove an arbitrary collection of {@link TraversalStrategy} classes from the traversal source.
+     *
+     * @param traversalStrategyClasses a collection of traversal strategy classes to remove
+     * @return a new traversal source with updated strategies
+     */
+    @SuppressWarnings({"unchecked", "varargs"})
+    public TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses);
+
+    /**
+     * The clone-method should be used to create immutable traversal sources with each call to a configuration method.
+     * The clone-method should clone the internal {@link TraversalStrategies}, mutate the cloned strategies accordingly,
+     * and then return the cloned traversal source.
+     *
+     * @return the cloned traversal source
+     */
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public TraversalSource clone();
+
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
+    public interface Builder<C extends TraversalSource> extends Serializable {
+
+        /**
+         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+         */
+        @Deprecated
+        public Builder engine(final TraversalEngine.Builder engine);
+
+        /**
+         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+         */
+        @Deprecated
+        public Builder with(final TraversalStrategy strategy);
+
+        /**
+         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+         */
+        @Deprecated
+        public Builder without(final Class<? extends TraversalStrategy> strategyClass);
+
+        /**
+         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+         */
+        @Deprecated
+        public C create(final Graph graph);
+    }
 
 }

@@ -54,6 +54,6 @@ public class TinkerGraphNoStrategyProvider extends TinkerGraphProvider {
                 .map(TraversalStrategy::getClass)
                 .filter(clazz -> !REQUIRED_STRATEGIES.contains(clazz))
                 .collect(Collectors.toList());
-        return graph.traversal().withoutStrategy(toRemove.toArray(new Class[toRemove.size()]));
+        return graph.traversal().withoutStrategies(toRemove.toArray(new Class[toRemove.size()]));
     }
 }

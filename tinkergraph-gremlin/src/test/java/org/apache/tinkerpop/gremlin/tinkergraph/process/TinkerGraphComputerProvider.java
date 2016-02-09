@@ -24,14 +24,20 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
+import java.util.Random;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
+    private static final Random RANDOM = new Random();
+
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        return new GraphTraversalSource(graph).withComputer(Graph::compute);
+        return RANDOM.nextBoolean() ?
+                graph.traversal().withComputer(Graph::compute) :
+                graph.traversal(GraphTraversalSource.computer());
     }
 }

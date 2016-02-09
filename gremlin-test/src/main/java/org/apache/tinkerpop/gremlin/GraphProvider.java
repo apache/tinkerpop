@@ -89,7 +89,7 @@ public interface GraphProvider {
      * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
      */
     public default GraphTraversalSource traversal(final Graph graph) {
-        return new GraphTraversalSource(graph);
+        return graph.traversal();
     }
 
     /**
@@ -103,7 +103,7 @@ public interface GraphProvider {
      * it's {@code create} method.
      */
     public default GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
-        return this.traversal(graph).withStrategy(strategies);
+        return this.traversal(graph).withStrategies(strategies);
     }
 
     public default GraphComputer getGraphComputer(final Graph graph) {
