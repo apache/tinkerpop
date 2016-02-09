@@ -147,5 +147,9 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
         public Edge edge(final Vertex out, final Vertex in, final String label) {
             return out.addEdge(label, in);
         }
+
+        public Edge edge(final Vertex out, final Vertex in, final Object id, final String label) {
+            return out.addEdge(label, in, T.id, id);
+        }
     }
 }
