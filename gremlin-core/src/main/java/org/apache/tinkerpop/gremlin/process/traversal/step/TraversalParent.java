@@ -61,7 +61,7 @@ public interface TraversalParent {
     }
 
     public default boolean isGlobalChild(final Traversal.Admin<?, ?> child) {
-        return this.getLocalChildren().contains(child);
+        return this.getGlobalChildren().contains(child);
     }
 
     public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {
