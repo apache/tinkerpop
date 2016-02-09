@@ -19,13 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -36,87 +33,64 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ComputerResultStep<S> extends AbstractStep<S, S> implements Bypassing {
+public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S> {
 
-    private final transient GraphComputer graphComputer;
-    private final transient ComputerResult computerResult;
 
-    private Iterator<Traverser.Admin<S>> traversers;
-    private Graph graph;
     private final boolean attachElements; // should be part of graph computer with "propagate properties"
-    private boolean first = true;
-    private boolean byPass = false;
+    private Iterator<Traverser.Admin<S>> currentIterator = Collections.emptyIterator();
 
-    public ComputerResultStep(final Traversal.Admin traversal, final GraphComputer graphComputer, final boolean attachElements) {
+    public ComputerResultStep(final Traversal.Admin traversal, final boolean attachElements) {
         super(traversal);
         this.attachElements = attachElements;
-        this.graphComputer = graphComputer;
-        this.computerResult = null;
     }
 
-    public ComputerResultStep(final Traversal.Admin traversal, final ComputerResult computerResult, final boolean attachElements) {
-        super(traversal);
-        this.attachElements = attachElements;
-        this.graphComputer = null;
-        this.computerResult = computerResult;
-        this.populateTraversers(this.computerResult);
+    public Iterator<Traverser.Admin<S>> attach(final Iterator<Traverser.Admin<S>> iterator, final Graph graph) {
+        return IteratorUtils.map(iterator, traverser -> {
+            if (this.attachElements && (traverser.get() instanceof Attachable))
+                traverser.set((S) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
+            return traverser;
+        });
     }
 
     @Override
-    public Traverser<S> processNextStart() {
-        if (this.byPass) return this.starts.next();
-        if (this.first && null == this.computerResult) {
-            try {
-                populateTraversers(this.graphComputer.program(TraversalVertexProgram.build().traversal(this.getTraversal()).create(this.graph)).submit().get());
-            } catch (final Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            this.first = false;
-        }
-
-        final Traverser.Admin<S> traverser = this.traversers.next();
-        if (this.attachElements && (traverser.get() instanceof Attachable))
-            traverser.set((S) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
-        return traverser;
-    }
-
-    public void populateTraversers(final ComputerResult result) {
-        this.graph = result.graph();
-        result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
-        final Step endStep = this.getPreviousStep();
-        if (endStep instanceof SideEffectCapStep) {
-            final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();
-            if (sideEffectKeys.size() == 1)
-                this.traversers = IteratorUtils.of(this.getTraversal().getTraverserGenerator().generate(result.memory().get(sideEffectKeys.get(0)), this, 1l));
+    protected Traverser<S> processNextStart() throws NoSuchElementException {
+        while (true) {
+            if (this.currentIterator.hasNext())
+                return this.currentIterator.next();
             else {
-                final Map<String, Object> sideEffects = new HashMap<>();
-                for (final String sideEffectKey : sideEffectKeys) {
-                    sideEffects.put(sideEffectKey, result.memory().get(sideEffectKey));
+                final ComputerResult result = this.starts.next().get();
+                result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
+                final Step endStep = ((TraversalVertexProgramStep<?>) this.getPreviousStep()).getGlobalChildren().get(0).getEndStep();
+                if (endStep instanceof SideEffectCapStep) {
+                    final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();
+                    if (sideEffectKeys.size() == 1)
+                        this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of(result.memory().get(sideEffectKeys.get(0))), (Step) this, 1l);
+                    else {
+                        final Map<String, Object> sideEffects = new HashMap<>();
+                        for (final String sideEffectKey : sideEffectKeys) {
+                            sideEffects.put(sideEffectKey, result.memory().get(sideEffectKey));
+                        }
+                        this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of((S) sideEffects), (Step) this, 1l);
+                    }
+                } else if (result.memory().exists(ReducingBarrierStep.REDUCING)) {
+                    this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of(result.memory().get(ReducingBarrierStep.REDUCING)), (Step) this, 1l);
+                } else {
+                    this.currentIterator = this.attach(result.memory().get(TraverserMapReduce.TRAVERSERS), result.graph());
                 }
-                this.traversers = IteratorUtils.of(this.getTraversal().getTraverserGenerator().generate((S) sideEffects, this, 1l));
             }
-        } else if (result.memory().exists(ReducingBarrierStep.REDUCING)) {
-            this.traversers = IteratorUtils.of(this.getTraversal().getTraverserGenerator().generate(result.memory().get(ReducingBarrierStep.REDUCING), this, 1l));
-        } else {
-            this.traversers = result.memory().get(TraverserMapReduce.TRAVERSERS);
         }
-        this.first = false;
-        this.byPass = false;
-    }
-
-    @Override
-    public void setBypass(final boolean byPass) {
-        this.byPass = byPass;
     }
 
     @Override

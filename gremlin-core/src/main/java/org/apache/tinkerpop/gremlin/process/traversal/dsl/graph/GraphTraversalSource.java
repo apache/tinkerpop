@@ -99,7 +99,7 @@ public class GraphTraversalSource implements TraversalSource {
     @Override
     public GraphTraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
         final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(new TraversalVertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
+        clone.strategies.addStrategies(new TraversalVertexProgramStrategy(graphComputerFunction));
         return clone;
     }
 

@@ -117,7 +117,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             throw new IllegalArgumentException("The configuration does not have a traversal supplier:" + TRAVERSAL_SUPPLIER);
         }
         this.traversal = this.configurationTraversal.get();
-        ((ComputerResultStep) this.traversal.getEndStep()).setBypass(true);
+        //((ComputerResultStep) this.traversal.getEndStep()).setBypass(true);
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
@@ -263,11 +263,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         };
     }
 
-    public <S, E> Traversal.Admin<S, E> computerResultTraversal(final ComputerResult result) {
+    /*public <S, E> Traversal.Admin<S, E> computerResultTraversal(final ComputerResult result) {
         final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) this.getTraversal();
         ((ComputerResultStep) traversal.getEndStep()).populateTraversers(result);
         return traversal;
-    }
+    }*/
 
     //////////////
 

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -29,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -56,8 +59,11 @@ public final class TraversalVertexProgramStrategy extends AbstractTraversalStrat
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getParent() instanceof EmptyStep) {
-            traversal.addStep(new ComputerResultStep<>(traversal, null == this.graphComputerFunction ? null : this.graphComputerFunction.apply(traversal.getGraph().get()), true));
-            TraversalVertexProgramStrategy.onlyGlobalChildren(traversal);
+            final Traversal.Admin newTraversal = new DefaultTraversal<>();
+            TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), newTraversal);
+            traversal.addStep(new TraversalVertexProgramStep<>(traversal, newTraversal, this.graphComputerFunction.apply(traversal.getGraph().get())));
+            TraversalVertexProgramStrategy.onlyGlobalChildren(newTraversal);
+            traversal.addStep(new ComputerResultStep<>(traversal, true));
         }
     }
 
