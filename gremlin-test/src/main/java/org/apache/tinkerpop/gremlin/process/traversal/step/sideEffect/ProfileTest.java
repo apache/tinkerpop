@@ -47,7 +47,9 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -294,7 +296,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         t.iterate();
         assertTrue(mockStep.callbackCalled);
 
-        if (t.asAdmin().getEngine().isStandard()) {
+        if (!t.asAdmin().getStrategies().onGraphComputer()) {
             final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }

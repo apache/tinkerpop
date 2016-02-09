@@ -58,7 +58,7 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.hasStepOfAssignableClass(ConnectiveStep.class, traversal)) {
-            processConjunctionMarkers(traversal);
+            processConnectiveMarker(traversal);
         }
     }
 
@@ -66,7 +66,7 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
         return !(step instanceof EmptyStep || step instanceof ProfileStep || step instanceof ComputerAwareStep.EndStep || (step instanceof StartStep && !StartStep.isVariableStartStep(step)) || GraphStep.isStartStep(step));
     }
 
-    private static void processConjunctionMarkers(final Traversal.Admin<?, ?> traversal) {
+    private static void processConnectiveMarker(final Traversal.Admin<?, ?> traversal) {
         processConjunctionMarker(OrStep.class, traversal);
         processConjunctionMarker(AndStep.class, traversal);
     }
@@ -75,15 +75,15 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
 
         TraversalHelper.getStepsOfClass(markerClass, traversal).stream()
                 .filter(conjunctionStep -> conjunctionStep.getLocalChildren().isEmpty())
-                .findFirst().ifPresent(conjunctionStep -> {
+                .findFirst().ifPresent(connectiveStep -> {
 
-            Step<?, ?> currentStep = conjunctionStep.getNextStep();
+            Step<?, ?> currentStep = connectiveStep.getNextStep();
             final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
-            if (!conjunctionStep.getLabels().isEmpty()) {
+            if (!connectiveStep.getLabels().isEmpty()) {
                 final StartStep<?> startStep = new StartStep<>(rightTraversal);
-                final Set<String> conjunctionLabels = ((Step<?, ?>) conjunctionStep).getLabels();
+                final Set<String> conjunctionLabels = ((Step<?, ?>) connectiveStep).getLabels();
                 conjunctionLabels.forEach(startStep::addLabel);
-                conjunctionLabels.forEach(label -> conjunctionStep.removeLabel(label));
+                conjunctionLabels.forEach(label -> connectiveStep.removeLabel(label));
                 rightTraversal.addStep(startStep);
             }
             while (legalCurrentStep(currentStep)) {
@@ -92,9 +92,9 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                 traversal.removeStep(currentStep);
                 currentStep = nextStep;
             }
-            processConjunctionMarkers(rightTraversal);
+            processConnectiveMarker(rightTraversal);
 
-            currentStep = conjunctionStep.getPreviousStep();
+            currentStep = connectiveStep.getPreviousStep();
             final Traversal.Admin<?, ?> leftTraversal = __.start().asAdmin();
             while (legalCurrentStep(currentStep)) {
                 final Step<?, ?> previousStep = currentStep.getPreviousStep();
@@ -102,10 +102,10 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                 traversal.removeStep(currentStep);
                 currentStep = previousStep;
             }
-            processConjunctionMarkers(leftTraversal);
+            processConnectiveMarker(leftTraversal);
 
-            conjunctionStep.addLocalChild(leftTraversal);
-            conjunctionStep.addLocalChild(rightTraversal);
+            connectiveStep.addLocalChild(leftTraversal);
+            connectiveStep.addLocalChild(rightTraversal);
         });
     }
 

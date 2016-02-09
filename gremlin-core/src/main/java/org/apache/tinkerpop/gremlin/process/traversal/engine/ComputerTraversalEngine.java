@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -29,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.Prof
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,6 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public final class ComputerTraversalEngine implements TraversalEngine {
 
     private final transient GraphComputer graphComputer;
@@ -55,7 +54,8 @@ public final class ComputerTraversalEngine implements TraversalEngine {
 
     @Override
     public String toString() {
-        return StringFactory.traversalEngineString(this);
+        return null;
+        //return StringFactory.traversalEngineString(this);
     }
 
     @Override
@@ -132,9 +132,9 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         @Override
         public void apply(final Traversal.Admin<?, ?> traversal) {
             if (traversal.getParent() instanceof EmptyStep) {
-                final TraversalEngine engine = traversal.getEngine();
-                if (engine.isComputer())
-                    traversal.addStep(new ComputerResultStep<>(traversal, engine.getGraphComputer().get(), true));
+                //final TraversalEngine engine = traversal.getEngine();
+                //if (engine.isComputer())
+                //    traversal.addStep(new ComputerResultStep<>(traversal, engine.getGraphComputer().get(), true));
             }
         }
 

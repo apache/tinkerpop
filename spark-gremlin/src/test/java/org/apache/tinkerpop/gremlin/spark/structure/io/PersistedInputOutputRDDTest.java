@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMa
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
@@ -66,7 +65,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
-        assertEquals(6, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().out().count().next().longValue());
+        assertEquals(6, graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)).V().out().count().next().longValue());
         ////////
         assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertEquals(0, Spark.getContext().getPersistentRDDs().size());
@@ -96,7 +95,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                     .result(GraphComputer.ResultGraph.NEW)
                     .persist(GraphComputer.Persist.EDGES)
                     .program(TraversalVertexProgram.build()
-                            .traversal(GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)),
+                            .traversal(graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)),
                                     "gremlin-groovy",
                                     "g.V().groupCount('m').by('name').out()").create(graph)).submit().get();
             ////////
@@ -128,7 +127,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                 .result(GraphComputer.ResultGraph.NEW)
                 .persist(GraphComputer.Persist.EDGES)
                 .program(TraversalVertexProgram.build()
-                        .traversal(GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)),
+                        .traversal(graph.traversal().withComputer(SparkGraphComputer.class),
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
         ////////
@@ -154,7 +153,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                 .result(GraphComputer.ResultGraph.NEW)
                 .persist(GraphComputer.Persist.EDGES)
                 .program(TraversalVertexProgram.build()
-                        .traversal(GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)),
+                        .traversal(graph.traversal().withComputer(SparkGraphComputer.class),
                                 "gremlin-groovy",
                                 "g.V().count()").create(graph)).submit().get();
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
@@ -166,7 +165,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName2);
         graph = GraphFactory.open(configuration);
-        assertEquals(6, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().out().count().next().longValue());
+        assertEquals(6, graph.traversal().withComputer(SparkGraphComputer.class).V().out().count().next().longValue());
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertTrue(Spark.hasRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("reducing"))));
         assertEquals(2, Spark.getContext().getPersistentRDDs().size());

@@ -58,9 +58,9 @@ class SugarLoader {
             GraphTraversalSourceCategory.get((GraphTraversalSource) delegate, key);
         }
 
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.getProperty = { final String key ->
+        /*GraphTraversalSource.GraphTraversalSourceStub.metaClass.getProperty = { final String key ->
             GraphTraversalSourceStubCategory.get((GraphTraversalSource.GraphTraversalSourceStub) delegate, key);
-        }
+        }*/
 
         // __.age and __.out
         __.metaClass.static.propertyMissing = { final String name ->
@@ -86,7 +86,7 @@ class SugarLoader {
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversalSource.metaClass.mixin(GraphTraversalSourceCategory.class);
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.mixin(GraphTraversalSourceStubCategory.class);
+        //GraphTraversalSource.GraphTraversalSourceStub.metaClass.mixin(GraphTraversalSourceStubCategory.class);
         GraphTraversal.metaClass.mixin(GraphTraversalCategory.class);
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
@@ -167,7 +167,7 @@ class SugarLoader {
         }
     }
 
-    public static class GraphTraversalSourceStubCategory {
+    /*public static class GraphTraversalSourceStubCategory {
 
         private static final String V = "V";
         private static final String E = "E";
@@ -184,8 +184,8 @@ class SugarLoader {
 
         /*public String toString() {
             return StringFactory.traversalSourceString(this.metaClass.owner);
-        }*/
-    }
+        }
+    }*/
 
     public static class GraphTraversalCategory {
 

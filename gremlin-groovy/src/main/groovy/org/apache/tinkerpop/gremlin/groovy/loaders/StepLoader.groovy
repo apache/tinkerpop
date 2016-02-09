@@ -54,26 +54,5 @@ class StepLoader {
             final Closure closure, final Closure splitOperator, final Closure mergeOperator ->
                 return ((GraphTraversalSource) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
         }
-
-        ///////////////////
-
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSideEffect = {
-            final String key, final Object object ->
-                return (((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSideEffect(key, object instanceof Closure ? ((Closure) object) as Supplier : new ConstantSupplier<>(object)));
-        }
-
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = { final Closure closure ->
-            return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(closure as Supplier);
-        }
-
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = {
-            final Closure closure, final Closure splitOrMergeOperator ->
-                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(closure as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
-        }
-
-        GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = {
-            final Closure closure, final Closure splitOperator, Closure mergeOperator ->
-                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
-        }
     }
 }

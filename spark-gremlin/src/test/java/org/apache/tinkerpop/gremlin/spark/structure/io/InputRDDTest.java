@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InputRDDTest  extends AbstractSparkTest {
+public class InputRDDTest extends AbstractSparkTest {
 
     @Test
     public void shouldReadFromArbitraryRDD() {
@@ -52,8 +52,8 @@ public class InputRDDTest  extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         ////////
         Graph graph = GraphFactory.open(configuration);
-        assertEquals(123l, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().values("age").sum().next());
-        assertEquals(Long.valueOf(4l), graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next());
+        assertEquals(123l, graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)).V().values("age").sum().next());
+        assertEquals(Long.valueOf(4l), graph.traversal().withComputer(SparkGraphComputer.class).V().count().next());
     }
 
     @Test

@@ -19,14 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -34,12 +35,13 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -48,52 +50,143 @@ import java.util.function.UnaryOperator;
  */
 public class GraphTraversalSource implements TraversalSource {
 
-    public static Builder standard() {
-        return GraphTraversalSource.build().engine(StandardTraversalEngine.build());
-    }
+    private final Graph graph;
+    private TraversalStrategies strategies;
+    private boolean oneBulk = false;
+    private boolean pathOn = false;
 
-    public static Builder computer() {
-        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build());
-    }
-
-    public static Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
-        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(graphComputerClass));
-    }
-
-    ////
-
-    private final transient Graph graph;
-    private final TraversalEngine.Builder engineBuilder;
-    private final TraversalStrategies strategies;
-    private final List<TraversalStrategy> withStrategies;
-    private final List<Class<? extends TraversalStrategy>> withoutStrategies;
-
-    private GraphTraversalSource(final Graph graph, final TraversalEngine.Builder engineBuilder, final List<TraversalStrategy> withStrategies, final List<Class<? extends TraversalStrategy>> withoutStrategies) {
+    public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
-        this.engineBuilder = engineBuilder;
-        this.withStrategies = withStrategies;
-        this.withoutStrategies = withoutStrategies;
-        this.withStrategies.addAll(engineBuilder.getWithStrategies());
-        this.withoutStrategies.addAll(engineBuilder.getWithoutStrategies());
-        final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
-        this.strategies = withStrategies.isEmpty() && withoutStrategies.isEmpty() ?
-                tempStrategies :
-                tempStrategies.clone()
-                        .addStrategies(withStrategies.toArray(new TraversalStrategy[withStrategies.size()]))
-                        .removeStrategies(withoutStrategies.toArray(new Class[withoutStrategies.size()]));
+        this.strategies = traversalStrategies;
+    }
+
+    public GraphTraversalSource(final Graph graph) {
+        this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
     }
 
     private <S> GraphTraversal.Admin<S, S> generateTraversal() {
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(this.graph);
-        final TraversalEngine engine = this.engineBuilder.create(this.graph);
-        traversal.setEngine(engine);
         traversal.setStrategies(this.strategies);
+        if (this.oneBulk)
+            traversal.addTraverserRequirement(TraverserRequirement.ONE_BULK);
+        if (this.pathOn)
+            traversal.addTraverserRequirement(TraverserRequirement.PATH);
         return traversal;
     }
 
-    public <S> GraphTraversal<S, S> inject(S... starts) {
-        return (GraphTraversal<S, S>) this.generateTraversal().inject(starts);
+    @Override
+    public TraversalStrategies getStrategies() {
+        return this.strategies;
     }
+
+    @Override
+    public Graph getGraph() {
+        return this.graph;
+    }
+
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public GraphTraversalSource clone() {
+        try {
+            final GraphTraversalSource clone = (GraphTraversalSource) super.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    //// UTILITIES
+
+
+    public GraphTraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
+        this.strategies = this.strategies.clone();
+        this.strategies.addStrategies(new TraversalVertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
+        return this;
+    }
+
+    public GraphTraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
+        return this.withComputer(g -> g.compute(graphComputerClass));
+    }
+
+    public GraphTraversalSource withComputer() {
+        return this.withComputer(Graph::compute);
+    }
+
+    public GraphTraversalSource withStrategy(final TraversalStrategy... traversalStrategies) {
+        this.strategies = this.strategies.clone();
+        this.strategies.addStrategies(traversalStrategies);
+        return this;
+    }
+
+    public GraphTraversalSource withoutStrategy(final Class<? extends TraversalStrategy>... traversalStrategyClass) {
+        this.strategies = this.strategies.clone();
+        this.strategies.removeStrategies(traversalStrategyClass);
+        return this;
+    }
+
+    public GraphTraversalSource withSideEffect(final String key, final Supplier sideEffect) {
+        this.strategies = this.strategies.clone();
+        this.strategies.addStrategies(new SideEffectStrategy(Collections.singletonList(new Pair<>(key, sideEffect))));
+        return this;
+    }
+
+
+    public GraphTraversalSource withSideEffect(final Object... keyValues) {
+        this.strategies = this.strategies.clone();
+        final List<Pair<String, Supplier>> sideEffects = new ArrayList<>();
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            sideEffects.add(new Pair<>((String) keyValues[i], keyValues[i + 1] instanceof Supplier ? (Supplier) keyValues[i + 1] : new ConstantSupplier<>(keyValues[i + 1])));
+        }
+        this.strategies.addStrategies(new SideEffectStrategy(sideEffects));
+        return this;
+    }
+
+    public <A> GraphTraversalSource withSack(final A initialValue) {
+        return this.withSack(initialValue, null, null);
+    }
+
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue) {
+        return this;//.withSack((Supplier<A>) initialValue, null, null);
+    }
+
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
+        return this.withSack(initialValue, splitOperator, null);
+    }
+
+    public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
+        return this.withSack(initialValue, splitOperator, null);
+    }
+
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
+        return this.withSack(initialValue, null, mergeOperator);
+    }
+
+    public <A> GraphTraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
+        return this.withSack(initialValue, null, mergeOperator);
+    }
+
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        this.strategies = this.strategies.clone();
+        this.strategies.addStrategies(new SackStrategy(initialValue, splitOperator, mergeOperator));
+        return this;
+    }
+
+    public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        this.strategies = this.strategies.clone();
+        this.strategies.addStrategies(new SackStrategy(new ConstantSupplier<>(initialValue), splitOperator, mergeOperator));
+        return this;
+    }
+
+    public GraphTraversalSource withBulk(final boolean useBulk) {
+        this.oneBulk = !useBulk;
+        return this;
+    }
+
+    public <S> GraphTraversalSource withPath() {
+        this.pathOn = true;
+        return this;
+    }
+
+    /////////////////////////////
 
     /**
      * @deprecated As of release 3.1.0, replaced by {@link #addV()}
@@ -116,6 +209,10 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new AddVertexStartStep(traversal, null));
     }
 
+    public <S> GraphTraversal<S, S> inject(S... starts) {
+        return (GraphTraversal<S, S>) this.generateTraversal().inject(starts);
+    }
+
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
         return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
@@ -126,239 +223,14 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
     }
 
-    //// UTILITIES
-
-    public GraphTraversalSourceStub withSideEffect(final String key, final Supplier supplier) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().registerSupplier(key, supplier);
-        return new GraphTraversalSourceStub(traversal);
-    }
-
-    public GraphTraversalSourceStub withSideEffect(final String key, final Object object) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().registerSupplier(key, new ConstantSupplier<>(object));
-        return new GraphTraversalSourceStub(traversal);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final A initialValue) {
-        return this.withSack(initialValue, null, null);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(initialValue, null, null);
-        return new GraphTraversalSourceStub(traversal);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        return this.withSack(initialValue, splitOperator, null);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-        return this.withSack(initialValue, splitOperator, null);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(initialValue, null, mergeOperator);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(initialValue, null, mergeOperator);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(initialValue, splitOperator, mergeOperator);
-        return new GraphTraversalSourceStub(traversal);
-    }
-
-    public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), splitOperator, mergeOperator);
-        return new GraphTraversalSourceStub(traversal);
-    }
-
-    public GraphTraversalSourceStub withBulk(final boolean useBulk) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.addTraverserRequirement(useBulk ? TraverserRequirement.BULK : TraverserRequirement.ONE_BULK);
-        return new GraphTraversalSourceStub(traversal);
-    }
-
-    public <S> GraphTraversalSourceStub withPath() {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.addTraverserRequirement(TraverserRequirement.PATH);
-        return new GraphTraversalSourceStub(traversal);
-    }
 
     public Transaction tx() {
         return this.graph.tx();
     }
 
-    public static Builder build() {
-        return new Builder();
-    }
-
-    @Override
-    public List<TraversalStrategy> getStrategies() {
-        return Collections.unmodifiableList(this.strategies.toList());
-    }
-
-    @Override
-    public Optional<GraphComputer> getGraphComputer() {
-        return this.engineBuilder.create(this.graph).getGraphComputer();
-    }
-
-    @Override
-    public Optional<Graph> getGraph() {
-        return Optional.ofNullable(this.graph);
-    }
-
-    @Override
-    public GraphTraversalSource.Builder asBuilder() {
-        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(this.engineBuilder);
-        this.withStrategies.forEach(builder::with);
-        this.withoutStrategies.forEach(builder::without);
-        return builder;
-    }
 
     @Override
     public String toString() {
         return StringFactory.traversalSourceString(this);
-    }
-
-    //////
-
-    public final static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
-
-        private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
-        private List<TraversalStrategy> withStrategies = new ArrayList<>();
-        private List<Class<? extends TraversalStrategy>> withoutStrategies = new ArrayList<>();
-
-        private Builder() {
-        }
-
-        @Override
-        public Builder engine(final TraversalEngine.Builder engineBuilder) {
-            this.engineBuilder = engineBuilder;
-            return this;
-        }
-
-        @Override
-        public Builder with(final TraversalStrategy strategy) {
-            this.withStrategies.add(strategy);
-            return this;
-        }
-
-        @Override
-        public TraversalSource.Builder without(final Class<? extends TraversalStrategy> strategyClass) {
-            this.withoutStrategies.add(strategyClass);
-            return this;
-        }
-
-        @Override
-        public GraphTraversalSource create(final Graph graph) {
-            return new GraphTraversalSource(graph, this.engineBuilder, this.withStrategies, this.withoutStrategies);
-        }
-    }
-
-    public static class GraphTraversalSourceStub {
-
-        private final GraphTraversal.Admin traversal;
-
-        public GraphTraversalSourceStub(final GraphTraversal.Admin traversal) {
-            this.traversal = traversal;
-        }
-
-        public <S> GraphTraversal<S, S> inject(S... starts) {
-            return this.traversal.inject(starts);
-        }
-
-        /**
-         * @deprecated As of release 3.1.0, replaced by {@link #addV()}
-         */
-        @Deprecated
-        public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
-            this.traversal.addStep(new AddVertexStartStep(this.traversal, null));
-            ((AddVertexStartStep) this.traversal.getEndStep()).addPropertyMutations(keyValues);
-            return this.traversal;
-        }
-
-        public GraphTraversal<Vertex, Vertex> addV(final String label) {
-            return this.traversal.addStep(new AddVertexStartStep(this.traversal, label));
-        }
-
-        public GraphTraversal<Vertex, Vertex> addV() {
-            return this.traversal.addStep(new AddVertexStartStep(this.traversal, null));
-        }
-
-        public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-            return this.traversal.addStep(new GraphStep<>(this.traversal, Vertex.class, true, vertexIds));
-        }
-
-        public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
-            return this.traversal.addStep(new GraphStep<>(this.traversal, Edge.class, true, edgesIds));
-        }
-
-        //// UTILITIES
-
-        public GraphTraversalSourceStub withSideEffect(final String key, final Supplier supplier) {
-            this.traversal.getSideEffects().registerSupplier(key, supplier);
-            return this;
-        }
-
-        public GraphTraversalSourceStub withSideEffect(final String key, final Object object) {
-            this.traversal.getSideEffects().registerSupplier(key, new ConstantSupplier<>(object));
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final A initialValue) {
-            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), null, null);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue) {
-            this.traversal.getSideEffects().setSack(initialValue, null, null);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-            this.traversal.getSideEffects().setSack(initialValue, splitOperator, null);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), splitOperator, null);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-            this.traversal.getSideEffects().setSack(initialValue, null, mergeOperator);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), null, mergeOperator);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-            this.traversal.getSideEffects().setSack(initialValue, splitOperator, mergeOperator);
-            return this;
-        }
-
-        public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), splitOperator, mergeOperator);
-            return this;
-        }
-
-        public GraphTraversalSourceStub withBulk(final boolean useBulk) {
-            this.traversal.addTraverserRequirement(useBulk ? TraverserRequirement.BULK : TraverserRequirement.ONE_BULK);
-            return this;
-        }
-
-        public GraphTraversalSourceStub withPath() {
-            this.traversal.addTraverserRequirement(TraverserRequirement.PATH);
-            return this;
-        }
     }
 }

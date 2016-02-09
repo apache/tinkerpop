@@ -16,31 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
+
 /**
- * A {@code TraversalSource} is responsible for generating a {@link Traversal}. A {@code TraversalSource}, once built,
- * can generate any number of {@link Traversal} instances. Each traversal DSL will maintain a corresponding
- * {@code TraversalSource} which specifies the methods which being a "fluent-chaining" of traversal steps.
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalSource extends Cloneable {
+public final class TraversalSourceFactory<T extends TraversalSource> implements Serializable {
 
-    // withStrategy
-    // withoutStrategy
-    // withBulk
-    // withPath
-    // withSack
-    // withSideEffect
+    private final TraversalStrategies traversalStrategies;
+    private final Class<T> traversalSourceClass;
 
-    public TraversalStrategies getStrategies();
+    public TraversalSourceFactory(final T traversalSource) {
+        this.traversalSourceClass = (Class<T>) traversalSource.getClass();
+        this.traversalStrategies = traversalSource.getStrategies();
+    }
 
-    public Graph getGraph();
-
-    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
-    public TraversalSource clone();
-
+    public T createTraversalSource(final Graph graph) {
+        try {
+            return this.traversalSourceClass.getConstructor(Graph.class, TraversalStrategies.class).newInstance(graph, this.traversalStrategies);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 }

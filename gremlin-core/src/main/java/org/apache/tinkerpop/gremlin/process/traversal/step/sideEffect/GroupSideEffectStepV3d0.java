@@ -96,8 +96,8 @@ public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S>
     }
 
     @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        this.onGraphComputer = traversalEngine.isComputer();
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
     }
 
     @Override

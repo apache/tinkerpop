@@ -131,7 +131,7 @@ public class NativeNeo4jStructureCheck extends AbstractNeo4jGremlinTest {
     public void shouldEnsureTraverseRelationshipNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph.traversal(GraphTraversalSource.standard()));
+        bindings.put("g", graph.traversal());
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
         Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -152,7 +152,7 @@ public class NativeNeo4jStructureCheck extends AbstractNeo4jGremlinTest {
     public void shouldEnsureTraversalOfVerticesNeedsTx() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Bindings bindings = engine.createBindings();
-        bindings.put("g", graph.traversal(GraphTraversalSource.standard()));
+        bindings.put("g", graph.traversal());
         bindings.put("#jsr223.groovy.engine.keep.globals", "phantom");
 
         Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");

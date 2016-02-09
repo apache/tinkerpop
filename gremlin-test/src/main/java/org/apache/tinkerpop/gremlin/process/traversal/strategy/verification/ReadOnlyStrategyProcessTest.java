@@ -107,7 +107,7 @@ public class ReadOnlyStrategyProcessTest extends AbstractGremlinProcessTest {
                 fail("The traversal should not have failed as there is no mutating step.");
             else {
                 // TraversalVerificationStrategy fails before this as mutating operations are not allowed in OLAP
-                if (!hasGraphComputerRequirement())
+                if (!t.asAdmin().getStrategies().onGraphComputer())
                     assertThat(ise.getMessage(), startsWith("The provided traversal has a mutating step and thus is not read only"));
             }
         }

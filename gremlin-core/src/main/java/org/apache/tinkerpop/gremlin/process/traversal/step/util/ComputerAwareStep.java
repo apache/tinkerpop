@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -49,8 +48,8 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     }
 
     @Override
-    public void onEngine(final TraversalEngine engine) {
-        this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
+    public void onGraphComputer() {
+        this.traverserStepIdAndLabelsSetByChild = true;
     }
 
     @Override
@@ -88,8 +87,8 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         }
 
         @Override
-        public void onEngine(final TraversalEngine engine) {
-            this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
+        public void onGraphComputer() {
+            this.traverserStepIdAndLabelsSetByChild = true;
         }
     }
 

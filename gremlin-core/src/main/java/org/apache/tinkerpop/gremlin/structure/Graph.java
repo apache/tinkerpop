@@ -25,8 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -152,22 +150,36 @@ public interface Graph extends AutoCloseable, Host {
      * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
      * and a {@link GraphComputer}.
      *
+     * @param traversalSource The traversal source to use
+     * @param <C>             The traversal source class
+     */
+    public default <C extends TraversalSource> C traversal(final TraversalSource traversalSource) {
+        return (C) traversalSource; // make this a class
+    }
+
+
+    /*
+     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}. The {@link TraversalSource}
+     * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
+     * and a {@link GraphComputer}.
+     *
      * @param sourceBuilder The traversal source builder to use
      * @param <C>           The traversal source class
-     */
+
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
+    *
 
     /**
-     * Generate a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
+     * Generate a {@link GraphTraversalSource} instance. The
      * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
      * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
      *
      * @return A standard graph traversal source
      */
     public default GraphTraversalSource traversal() {
-        return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
+        return this.traversal(new GraphTraversalSource(this));
     }
 
     /**
@@ -365,9 +377,9 @@ public interface Graph extends AutoCloseable, Host {
             public static IllegalArgumentException variableValueCanNotBeNull() {
                 return new IllegalArgumentException("Graph variable value can not be null");
             }
-            
+
             public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val) {
-            	return dataTypeOfVariableValueNotSupported(val, null);
+                return dataTypeOfVariableValueNotSupported(val, null);
             }
 
             public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val, final Exception rootCause) {
@@ -1143,15 +1155,15 @@ public interface Graph extends AutoCloseable, Host {
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
         }
-        
+
         public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id, final Exception rootCause) {
-        	NoSuchElementException elementNotFoundException;
-        	if(null == id)
-        		elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph");
-    		else
-    			elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
-        	elementNotFoundException.initCause(rootCause);
-			return elementNotFoundException;
+            NoSuchElementException elementNotFoundException;
+            if (null == id)
+                elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph");
+            else
+                elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
+            elementNotFoundException.initCause(rootCause);
+            return elementNotFoundException;
         }
     }
 
@@ -1231,7 +1243,7 @@ public interface Graph extends AutoCloseable, Host {
          * default, an empty array is assigned and it is thus assumed that all computers are excluded when an
          * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
          */
-        public String[] computers() default { };
+        public String[] computers() default {};
 
     }
 

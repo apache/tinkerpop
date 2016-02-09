@@ -71,8 +71,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEngine().isStandard())
-            return;
 
         Step<?, ?> endStep = traversal.getEndStep();
         while (endStep instanceof ComputerAwareStep.EndStep || endStep instanceof ComputerResultStep) {

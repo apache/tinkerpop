@@ -18,13 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface EngineDependent {
 
-    public void onEngine(final TraversalEngine traversalEngine);
+    public void onGraphComputer();
 
 }

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
@@ -131,8 +130,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        this.onGraphComputer = traversalEngine.isComputer();
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
     }
 
     @Override
@@ -232,10 +231,10 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
         @Override
         public void reduce(final K key, final Iterator<Collection<?>> values, final ReduceEmitter<K, V> emitter) {
-            Traversal.Admin<?,V> reduceTraversalClone = this.reduceTraversal.clone();
+            Traversal.Admin<?, V> reduceTraversalClone = this.reduceTraversal.clone();
             while (values.hasNext()) {
                 final BulkSet<?> value = (BulkSet<?>) values.next();
-                value.forEach((v,bulk) -> reduceTraversalClone.addStart(reduceTraversalClone.getTraverserGenerator().generate(v, (Step) reduceTraversalClone.getStartStep(), bulk)));
+                value.forEach((v, bulk) -> reduceTraversalClone.addStart(reduceTraversalClone.getTraverserGenerator().generate(v, (Step) reduceTraversalClone.getStartStep(), bulk)));
                 TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, reduceTraversalClone).ifPresent(Barrier::processAllStarts);
             }
             emitter.emit(key, reduceTraversalClone.next());
