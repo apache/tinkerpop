@@ -27,9 +27,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -98,7 +98,9 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, Number> emitter) {
-            vertex.<TraverserSet<Number>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser.get())));
+            final Iterator<Number> values = IteratorUtils.map(vertex.<Set<Traverser.Admin<Number>>>property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(Collections.emptySet()).iterator(), Traverser.Admin::get);
+            if (values.hasNext())
+                emitter.emit(getMax(values));
         }
 
         @Override
@@ -108,14 +110,17 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
-            if (values.hasNext()) {
-                Number max = null;
-                while (values.hasNext()) {
-                    final Number value = values.next();
-                    max = max != null ? max(value, max) : value;
-                }
-                emitter.emit(max);
+            if (values.hasNext())
+                emitter.emit(getMax(values));
+        }
+
+        private Number getMax(final Iterator<Number> numbers) {
+            Number max = null;
+            while (numbers.hasNext()) {
+                final Number value = numbers.next();
+                max = max != null ? max(value, max) : value;
             }
+            return max;
         }
 
         @Override

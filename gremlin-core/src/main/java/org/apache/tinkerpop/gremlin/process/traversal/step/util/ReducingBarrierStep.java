@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -43,14 +42,15 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, GraphComputing, Barrier {
+
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, Barrier {
+
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
     protected Supplier<E> seedSupplier;
     protected BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
-    protected boolean byPass = false;
 
     private E seed = null;
 
@@ -66,12 +66,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         this.reducingBiFunction = reducingBiFunction;
     }
 
-    @Override
-    public void onGraphComputer() {
-        this.byPass = true;
-    }
-
-    @Override
     public void reset() {
         super.reset();
         this.done = false;
@@ -79,27 +73,35 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
-    public void processAllStarts() {
-        if (!this.byPass) {
-            if (this.seed == null) this.seed = this.seedSupplier.get();
-            while (this.starts.hasNext())
-                this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+    public void addStarts(final Iterator<Traverser<S>> starts) {
+        if (starts.hasNext()) {
+            this.done = false;
+            super.addStarts(starts);
         }
     }
 
     @Override
+    public void addStart(final Traverser<S> start) {
+        this.done = false;
+        super.addStart(start);
+    }
+
+    @Override
+    public void processAllStarts() {
+        if (this.seed == null) this.seed = this.seedSupplier.get();
+        while (this.starts.hasNext())
+            this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+    }
+
+    @Override
     public Traverser<E> processNextStart() {
-        if (this.byPass) {
-            return (Traverser<E>) this.starts.next();
-        } else {
-            if (this.done)
-                throw FastNoSuchElementException.instance();
-            this.processAllStarts();
-            this.done = true;
-            final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
-            this.seed = null;
-            return traverser;
-        }
+        if (this.done)
+            throw FastNoSuchElementException.instance();
+        this.processAllStarts();
+        this.done = true;
+        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
+        this.seed = null;
+        return traverser;
     }
 
     @Override
