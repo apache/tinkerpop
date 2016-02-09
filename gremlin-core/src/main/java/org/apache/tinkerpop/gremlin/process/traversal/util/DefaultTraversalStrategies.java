@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -64,6 +65,11 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         }
         if (removed) this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
+    }
+
+    @Override
+    public boolean onGraphComputer() {
+        return this.traversalStrategies.stream().filter(strategy -> strategy instanceof TraversalVertexProgramStrategy).findAny().isPresent();
     }
 
     @Override
