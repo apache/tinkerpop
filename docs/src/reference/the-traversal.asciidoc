@@ -328,7 +328,7 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(standard())
+g = graph.traversal()
 clockWithResult(1){g.V().both().both().both().count().next()} <1>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <2>
 clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <3>
@@ -349,7 +349,7 @@ The non-default `LazyBarrierStrategy` inserts `barrier()`-steps in a traversal w
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(GraphTraversalSource.build().with(LazyBarrierStrategy.instance()).engine(StandardTraversalEngine.build()))
+g = graph.traversal().withStrategies(LazyBarrierStrategy.instance())
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <1>
 ----
@@ -923,7 +923,7 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 [gremlin-groovy]
 ----
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(standard())
+g = graph.traversal()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -1693,7 +1693,7 @@ The following example demonstrates how to produce the "knows" subgraph:
 [gremlin-groovy,modern]
 ----
 subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
-sg = subGraph.traversal(standard())
+sg = subGraph.traversal()
 sg.E() <2>
 ----
 
@@ -1705,7 +1705,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 [gremlin-groovy,modern]
 ----
 subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
-sg = subGraph.traversal(standard())
+sg = subGraph.traversal()
 sg.E()
 ----
 
@@ -1718,8 +1718,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').get().traversal(standard()).E()
-t.sideEffects.get('createdG').get().traversal(standard()).E()
+t.sideEffects.get('knowsG').get().traversal().E()
+t.sideEffects.get('createdG').get().traversal().E()
 ----
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover,
@@ -2208,7 +2208,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEngine().isComputer())
+        if (traversal.getSideEffects().onGraphComputer())
             return;
 
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
@@ -2278,7 +2278,7 @@ under the hood.
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
-g = GraphTraversalSource.build().with(strategy).create(graph)
+g = graph.traversal().withStrategies(strategy)
 g.addV().property(id, '42a').id()
 ----
 
@@ -2313,7 +2313,7 @@ console session displays the basic usage:
 graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
-g = GraphTraversalSource.build().with(strategy).create(graph)
+g = graph.traversal().withStrategies(strategy)
 g.addV('name','stephen')
 g.E().drop()
 ----
@@ -2351,9 +2351,9 @@ The best way to understand `PartitionStrategy` is via example.
 graph = TinkerFactory.createModern()
 strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
 strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
-gA = GraphTraversalSource.build().with(strategyA).create(graph)
+gA = graph.traversal().withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
-gB = GraphTraversalSource.build().with(strategyB).create(graph)
+gB = graph.traversal().withStrategies(strategyB)
 gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
@@ -2385,7 +2385,7 @@ and edges as determined by a `Traversal` criterion defined individually for each
 ----
 graph = TinkerFactory.createModern()
 strategy = SubgraphStrategy.build().edgeCriterion(hasId(8,9,10)).create()
-g = GraphTraversalSource.build().with(strategy).create(graph)
+g = graph.traversal().withStrategies(strategy)
 g.V() // shows all vertices as no filter for vertices was specified
 g.E() // shows only the edges defined in the edgeCriterion
 ----

@@ -274,7 +274,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> graph = TinkerFactory.createModern() // <1>
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal(standard())        // <2>
+gremlin> g = graph.traversal()        // <2>
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','marko').out('knows').values('name') // <3>
 ==>vadas

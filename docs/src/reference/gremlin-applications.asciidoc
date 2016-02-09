@@ -123,7 +123,7 @@ The "toy" graph provides a way to get started with Gremlin quickly.
 
 [gremlin-groovy]
 ----
-g = TinkerFactory.createModern().traversal(standard())
+g = TinkerFactory.createModern().traversal()
 g.V()
 g.V().values('name')
 g.V().has('name','marko').out('knows').values('name')
