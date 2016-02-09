@@ -1551,7 +1551,6 @@ Vertex vertex(Object id); // get or create the vertex with the given id
 Vertex vertex(Object id, String label); // get or create the vertex with the given id and label
 Edge edge(Vertex out, Vertex in); // create an edge between the two given vertices
 Edge edge(Vertex out, Vertex in, String label); // create an edge between the two given vertices using the given label
-Edge edge(Vertex out, Vertex in, Object id, String label); // create an edge between the two given vertices using the given edge id and label
 
 An appropriate `parse()` for the above adjacency list file is:
 
