@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -43,7 +43,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, EngineDependent, Barrier {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, GraphComputing, Barrier {
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 

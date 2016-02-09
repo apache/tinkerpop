@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -63,8 +63,8 @@ public final class TraversalVertexProgramStrategy extends AbstractTraversalStrat
 
     private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
         for (final Step step : traversal.getSteps()) {
-            if (step instanceof EngineDependent)
-                ((EngineDependent) step).onGraphComputer();
+            if (step instanceof GraphComputing)
+                ((GraphComputing) step).onGraphComputer();
             if (step instanceof TraversalParent) {
                 ((TraversalParent) step).getGlobalChildren().forEach(TraversalVertexProgramStrategy::onlyGlobalChildren);
             }
