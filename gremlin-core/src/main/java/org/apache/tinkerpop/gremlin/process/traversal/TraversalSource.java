@@ -20,16 +20,20 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A {@code TraversalSource} is used to create {@link Traversal} instances.
  * A traversal source can generate any number of {@link Traversal} instances.
  * A traversal source is primarily composed of a {@link Graph} and a {@link TraversalStrategies}.
- * Various {@code withXXX}-based methods are used to configure the traversal strategies.
- * Various other methods (dependent on the traversal source type) will then generate a traversal given the graph and configured strategies.
+ * Various {@code withXXX}-based methods are used to configure the traversal strategies (called "configurations").
+ * Various other methods (dependent on the traversal source type) will then generate a traversal given the graph and configured strategies (called "spawns").
  * A traversal source is immutable in that fluent chaining of configurations create new traversal sources.
  * This is unlike {@link Traversal} and {@link GraphComputer}, where chained methods configure the same instance.
  * Every traversal source implementation must maintain two constructors to enable proper reflection-based construction.
@@ -73,7 +77,7 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        return this.withComputer(g -> g.compute(graphComputerClass));
+        return this.withComputer(graph -> graph.compute(graphComputerClass));
     }
 
     /**
@@ -102,6 +106,122 @@ public interface TraversalSource extends Cloneable {
      */
     @SuppressWarnings({"unchecked", "varargs"})
     public TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses);
+
+    /**
+     * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy} to the strategies.
+     *
+     * @param key          the key of the sideEffect
+     * @param initialValue a supplier that produces the initial value of the sideEffect
+     * @return a new traversal source with updated strategies
+     */
+    public TraversalSource withSideEffect(final String key, final Supplier initialValue);
+
+    /**
+     * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy} to the strategies.
+     *
+     * @param key          the key of the sideEffect
+     * @param initialValue the initial value of the sideEffect
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withSideEffect(final String key, final Object initialValue) {
+        return this.withSideEffect(key, new ConstantSupplier<>(initialValue));
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue  a supplier that produces the initial value of the sideEffect
+     * @param splitOperator the sack split operator
+     * @param mergeOperator the sack merge operator
+     * @return a new traversal source with updated strategies
+     */
+    public <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator);
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue  the initial value of the sideEffect
+     * @param splitOperator the sack split operator
+     * @param mergeOperator the sack merge operator
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        return this.withSack(new ConstantSupplier<>(initialValue), splitOperator, mergeOperator);
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue the initial value of the sideEffect
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final A initialValue) {
+        return this.withSack(initialValue, null, null);
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue a supplier that produces the initial value of the sideEffect
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final Supplier<A> initialValue) {
+        return this.withSack(initialValue, (UnaryOperator<A>) null, null);
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue  a supplier that produces the initial value of the sideEffect
+     * @param splitOperator the sack split operator
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
+        return this.withSack(initialValue, splitOperator, null);
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue  the initial value of the sideEffect
+     * @param splitOperator the sack split operator
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
+        return this.withSack(initialValue, splitOperator, null);
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue  a supplier that produces the initial value of the sideEffect
+     * @param mergeOperator the sack merge operator
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
+        return this.withSack(initialValue, null, mergeOperator);
+    }
+
+    /**
+     * Add a sack to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy} to the strategies.
+     *
+     * @param initialValue  the initial value of the sideEffect
+     * @param mergeOperator the sack merge operator
+     * @return a new traversal source with updated strategies
+     */
+    public default <A> TraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
+        return this.withSack(initialValue, null, mergeOperator);
+    }
 
     /**
      * The clone-method should be used to create immutable traversal sources with each call to a configuration method.

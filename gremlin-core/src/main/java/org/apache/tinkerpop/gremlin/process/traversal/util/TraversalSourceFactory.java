@@ -17,13 +17,19 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
 
 /**
+ * {@link TraversalSource} is not {@link Serializable}.
+ * {@code TraversalSourceFactory} can be used to create a serializable representation of a traversal source.
+ * This is is primarily an internal utility class for use and should not be used by standard users.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class TraversalSourceFactory<T extends TraversalSource> implements Serializable {

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
@@ -37,7 +38,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +57,6 @@ public class GraphTraversalSource implements TraversalSource {
 
     private final Graph graph;
     private TraversalStrategies strategies;
-    private boolean oneBulk = false;
-    private boolean pathOn = false;
 
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
@@ -72,10 +70,6 @@ public class GraphTraversalSource implements TraversalSource {
     private <S> GraphTraversal.Admin<S, S> generateTraversal() {
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(this.graph);
         traversal.setStrategies(this.strategies);
-        if (this.oneBulk)
-            traversal.addTraverserRequirement(TraverserRequirement.ONE_BULK);
-        if (this.pathOn)
-            traversal.addTraverserRequirement(TraverserRequirement.PATH);
         return traversal;
     }
 
@@ -134,63 +128,73 @@ public class GraphTraversalSource implements TraversalSource {
         return clone;
     }
 
-    public GraphTraversalSource withSideEffect(final String key, final Supplier sideEffect) {
+    @Override
+    public GraphTraversalSource withSideEffect(final String key, final Supplier initialValue) {
         final GraphTraversalSource clone = this.clone();
-        SideEffectStrategy.addSideEffect(clone.strategies, key, sideEffect);
+        SideEffectStrategy.addSideEffect(clone.strategies, key, initialValue);
         return clone;
     }
 
-    public GraphTraversalSource withSideEffect(final String key, final Object sideEffect) {
-        final GraphTraversalSource clone = this.clone();
-        SideEffectStrategy.addSideEffect(clone.strategies, key, sideEffect);
-        return clone;
+    @Override
+    public GraphTraversalSource withSideEffect(final String key, final Object initialValue) {
+        return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(new SackStrategy(initialValue, splitOperator, mergeOperator));
+        clone.strategies.addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
         return clone;
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(new SackStrategy(new ConstantSupplier<>(initialValue), splitOperator, mergeOperator));
-        return clone;
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator, mergeOperator);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final A initialValue) {
-        return this.withSack(initialValue, null, null);
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue) {
-        return this.withSack(initialValue, (UnaryOperator<A>) null, null);
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        return this.withSack(initialValue, splitOperator, null);
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-        return this.withSack(initialValue, splitOperator, null);
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(initialValue, null, mergeOperator);
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, mergeOperator);
     }
 
+    @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(initialValue, null, mergeOperator);
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, mergeOperator);
     }
 
     public GraphTraversalSource withBulk(final boolean useBulk) {
-        final GraphTraversalSource clone = this.clone();
-        clone.oneBulk = !useBulk;
-        return clone;
+        if (!useBulk) {
+            final GraphTraversalSource clone = this.clone();
+            RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.ONE_BULK);
+            return clone;
+        } else {
+            return this;
+        }
     }
 
     public GraphTraversalSource withPath() {
         final GraphTraversalSource clone = this.clone();
-        clone.pathOn = true;
+        RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.PATH);
         return clone;
     }
 

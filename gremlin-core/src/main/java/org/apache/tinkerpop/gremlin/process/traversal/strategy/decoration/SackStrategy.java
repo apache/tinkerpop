@@ -37,8 +37,9 @@ public final class SackStrategy extends AbstractTraversalStrategy<TraversalStrat
     private final UnaryOperator splitOperator;
     private final BinaryOperator mergeOperator;
 
-
-    public SackStrategy(final Supplier initialValue, final UnaryOperator splitOperator, final BinaryOperator mergeOperator) {
+    private SackStrategy(final Supplier initialValue, final UnaryOperator splitOperator, final BinaryOperator mergeOperator) {
+        if (null == initialValue)
+            throw new IllegalArgumentException("The initial value of a sack can not be null");
         this.initialValue = initialValue;
         this.splitOperator = splitOperator;
         this.mergeOperator = mergeOperator;
@@ -48,5 +49,38 @@ public final class SackStrategy extends AbstractTraversalStrategy<TraversalStrat
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getParent() instanceof EmptyStep)
             traversal.getSideEffects().setSack(this.initialValue, this.splitOperator, this.mergeOperator);
+    }
+
+    public static <A> Builder<A> build() {
+        return new Builder<>();
+    }
+
+    public final static class Builder<A> {
+
+        private Supplier<A> initialValue;
+        private UnaryOperator<A> splitOperator = null;
+        private BinaryOperator<A> mergeOperator = null;
+
+        private Builder() {
+        }
+
+        public Builder initialValue(final Supplier<A> initialValue) {
+            this.initialValue = initialValue;
+            return this;
+        }
+
+        public Builder splitOperator(final UnaryOperator<A> splitOperator) {
+            this.splitOperator = splitOperator;
+            return this;
+        }
+
+        public Builder mergeOperator(final BinaryOperator<A> mergeOperator) {
+            this.mergeOperator = mergeOperator;
+            return this;
+        }
+
+        public SackStrategy create() {
+            return new SackStrategy(this.initialValue, this.splitOperator, this.mergeOperator);
+        }
     }
 }

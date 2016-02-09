@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.loaders
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier
 
 import java.util.function.BinaryOperator
 import java.util.function.Function
@@ -38,21 +37,21 @@ class StepLoader {
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? closure as Function : closure as Comparator);
         }
 
-        GraphTraversalSource.metaClass.withSideEffect = { final String key, final Object object ->
-            return ((GraphTraversalSource) delegate).withSideEffect(key, object instanceof Closure ? ((Closure) object) as Supplier : new ConstantSupplier<>(object));
+        TraversalSource.metaClass.withSideEffect = { final String key, final Closure object ->
+            return ((TraversalSource) delegate).withSideEffect(key, object as Supplier);
         }
 
-        GraphTraversalSource.metaClass.withSack = { final Closure closure ->
-            return ((GraphTraversalSource) delegate).withSack(closure as Supplier);
+        TraversalSource.metaClass.withSack = { final Closure closure ->
+            return ((TraversalSource) delegate).withSack(closure as Supplier);
         }
 
-        GraphTraversalSource.metaClass.withSack = { final Closure closure, final Closure splitOrMergeOperator ->
-            return ((GraphTraversalSource) delegate).withSack(closure as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
+        TraversalSource.metaClass.withSack = { final Closure closure, final Closure splitOrMergeOperator ->
+            return ((TraversalSource) delegate).withSack(closure as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
         }
 
-        GraphTraversalSource.metaClass.withSack = {
+        TraversalSource.metaClass.withSack = {
             final Closure closure, final Closure splitOperator, final Closure mergeOperator ->
-                return ((GraphTraversalSource) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
+                return ((TraversalSource) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
         }
     }
 }
