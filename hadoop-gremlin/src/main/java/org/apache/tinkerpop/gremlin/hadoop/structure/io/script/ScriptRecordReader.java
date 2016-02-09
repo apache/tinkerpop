@@ -39,6 +39,7 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 
@@ -68,10 +69,13 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
         this.engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
         //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
-        try {
-            this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
-        } catch (final ScriptException e) {
-            throw new IOException(e.getMessage(), e);
+        try (final InputStream stream = fs.open(new Path(configuration.get(SCRIPT_FILE)));
+             final InputStreamReader reader = new InputStreamReader(stream)) {
+            try {
+                this.engine.eval(reader);
+            } catch (ScriptException e) {
+                throw new IOException(e.getMessage(), e);
+            }
         }
     }
 
@@ -137,6 +141,10 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
 
         public Edge edge(final Vertex out, final Vertex in, final String label) {
             return out.addEdge(label, in);
+        }
+
+        public StarGraph graph() {
+            return this.graph;
         }
     }
 }
