@@ -94,16 +94,6 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
-    public Traverser<Tree> processNextStart() {
-        if (this.byPass) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            return traverser.split(this.reducingBiFunction.apply(new Tree(), traverser), this);
-        } else {
-            return super.processNextStart();
-        }
-    }
-
-    @Override
     public String toString() {
         return StringFactory.stepString(this, this.traversalRing);
     }

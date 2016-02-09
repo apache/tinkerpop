@@ -42,7 +42,7 @@ public final class MultiIterator<T> implements Iterator<T>, Serializable {
         if (this.current >= this.iterators.size())
             return false;
 
-        Iterator<T> currentIterator = iterators.get(this.current);
+        Iterator<T> currentIterator = this.iterators.get(this.current);
 
         while (true) {
             if (currentIterator.hasNext()) {
@@ -55,6 +55,11 @@ public final class MultiIterator<T> implements Iterator<T>, Serializable {
             }
         }
         return false;
+    }
+
+    @Override
+    public void remove() {
+        this.iterators.get(this.current).remove();
     }
 
     @Override

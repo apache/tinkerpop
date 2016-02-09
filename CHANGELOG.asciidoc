@@ -26,7 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+* Optimized memory-usage in `TraversalVertexProgram`.
+* Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
 
 [[release-3.1.1-incubating]]
 TinkerPop 3.1.1 (Release Date: February 8, 2016)
