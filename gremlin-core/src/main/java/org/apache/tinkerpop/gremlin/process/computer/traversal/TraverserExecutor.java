@@ -51,7 +51,6 @@ public final class TraverserExecutor {
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         while (messages.hasNext()) {
             final Iterator<Traverser.Admin<Object>> traversers = (Iterator) messages.next().iterator();
-            messages.remove();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();

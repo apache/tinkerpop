@@ -52,6 +52,7 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -359,7 +360,7 @@ public class GremlinGroovyScriptEngineTest {
         });
 
         service.shutdown();
-        service.awaitTermination(30000, TimeUnit.MILLISECONDS);
+        assertThat(service.awaitTermination(120000, TimeUnit.MILLISECONDS), is(true));
 
         assertEquals(max, futures.size());
         futures.forEach(t -> {

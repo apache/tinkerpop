@@ -18,6 +18,14 @@
 # under the License.
 #
 
+# Note that this script validates the signatures of the published
+# artifacts. You must have gpg installed and must import the
+# published KEYS file in order for that aspect of the validation
+# to pass.
+#
+# curl -L -O http://archive.apache.org/dist/incubator/tinkerpop/KEYS
+# gpg --import KEYS
+
 TMP_DIR="/tmp/tpdv"
 
 VERSION=${1}
@@ -107,7 +115,7 @@ echo "OK"
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* building project ... "
-mvn clean install -Dmaven.test.skip=true 2>&1 > /dev/null || { echo "failed"; exit 1; }
+mvn clean install 2>&1 > /dev/null || { echo "failed"; exit 1; }
 echo "OK"
 exit 0
 fi
