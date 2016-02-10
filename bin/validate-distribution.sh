@@ -107,7 +107,7 @@ echo "OK"
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* building project ... "
-mvn clean install -Dmaven.test.skip=true 2>&1 > /dev/null || { echo "failed"; exit 1; }
+mvn clean install 2>&1 > /dev/null || { echo "failed"; exit 1; }
 echo "OK"
 exit 0
 fi
