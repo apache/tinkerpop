@@ -19,7 +19,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty
  * under the License.
  */
 def parse(line, factory) {
-    def graph = factory.graph()
     def parts = line.split(/\t/)
     def (id, label, name, x) = parts[0].split(/:/).toList()
     def v1 = graph.addVertex(T.id, id, T.label, label)

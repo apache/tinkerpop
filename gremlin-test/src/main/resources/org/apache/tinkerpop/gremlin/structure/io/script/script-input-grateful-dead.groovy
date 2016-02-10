@@ -18,7 +18,6 @@
  */
 
 def parse(line, factory) {
-    def graph = factory.graph()
     def (vertex, outEdges, inEdges) = line.split(/\t/, 3)
     def (v1id, v1label, v1props) = vertex.split(/,/, 3)
     def v1 = graph.addVertex(T.id, v1id.toInteger(), T.label, v1label)
