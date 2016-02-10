@@ -27,6 +27,7 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Optimized memory-usage in `TraversalVertexProgram`.
+* `Graph` instances are not merely "closed" at the end of tests, they are "cleared" via `GraphProvider.clear()`, which should in turn cleans up old data for an implementation.
 * Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
 
 [[release-3.1.1-incubating]]

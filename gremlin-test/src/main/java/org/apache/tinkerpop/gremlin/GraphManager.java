@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,22 +68,25 @@ public class GraphManager {
     /**
      * This class provides a way to intercepts calls to {@link Graph} implementation's {@link GraphProvider} instances.
      * When {@link #openTestGraph(Configuration)} is called the created object is stored in a list and when tests are
-     * complete the {@link #tryCloseGraphs()} is called. When this is called, an attempt is made to close all open graphs.
+     * complete the {@link #tryClearGraphs()} is called. When this is called, an attempt is made to close all open graphs.
      */
     public static class ManagedGraphProvider implements GraphProvider {
+        private static final Logger logger = LoggerFactory.getLogger(ManagedGraphProvider.class);
         private final GraphProvider innerGraphProvider;
-        private final List<Graph> openGraphs = new ArrayList<>();
+        private final List<Pair<Graph, Configuration>> openGraphs = new ArrayList<>();
 
         public ManagedGraphProvider(final GraphProvider innerGraphProvider){
             this.innerGraphProvider = innerGraphProvider;
         }
 
-        public void tryCloseGraphs(){
-            for(Graph graph : openGraphs) {
+        public void tryClearGraphs(){
+            for(Pair<Graph, Configuration> p : openGraphs) {
                 try {
-                    graph.close();
+                    innerGraphProvider.clear(p.getValue0(), p.getValue1());
                 }catch (Exception e){
-                    e.printStackTrace();
+                    logger.warn(String.format("Automatic close of Graph instance [%s] and config [%s] generated failure.",
+                            p.getValue0() != null ? p.getValue0().toString() : "null",
+                            p.getValue1() != null ? p.getValue1().toString() : "null"), e);
                 }
             }
         }
@@ -102,15 +108,15 @@ public class GraphManager {
 
         @Override
         public Graph standardTestGraph(final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
-            final Graph graph = innerGraphProvider.standardTestGraph(test, testMethodName, loadGraphWith);
-            openGraphs.add(graph);
-            return graph;
+            // call the ManagedGraphProvider.openTestGraph() so that the created Graph/Configuration instances
+            // are tracked
+            return openTestGraph(standardGraphConfiguration(test, testMethodName, loadGraphWith));
         }
 
         @Override
         public Graph openTestGraph(final Configuration config) {
             final Graph graph = innerGraphProvider.openTestGraph(config);
-            openGraphs.add(graph);
+            openGraphs.add(Pair.with(graph, config));
             return graph;
         }
 

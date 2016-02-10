@@ -57,8 +57,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         if (null != graph) {
-            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
-                graph.tx().rollback();
+            if (graph.tx().isOpen()) graph.tx().rollback();
             graph.close();
         }
 
