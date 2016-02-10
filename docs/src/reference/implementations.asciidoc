@@ -1544,7 +1544,7 @@ mapper in the Hadoop job. The script must have the following method defined:
 [source,groovy]
 def parse(String line, ScriptElementFactory factory) { ... }
 
-`ScriptElementFactory` is a legacy from previous version and, although it's still functional, it should no longer be used.
+`ScriptElementFactory` is a legacy from previous versions and, although it's still functional, it should no longer be used.
 In order to create vertices and edges, the `parse()` method gets access to a global variable named `graph`, which holds
 the local `StarGraph` for the current line/vertex.
 
