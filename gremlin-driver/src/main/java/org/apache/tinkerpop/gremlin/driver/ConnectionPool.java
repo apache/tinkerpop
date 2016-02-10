@@ -301,6 +301,7 @@ final class ConnectionPool {
             connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
         } catch (ConnectionException ce) {
             logger.debug("Connections were under max, but there was an error creating the connection.", ce);
+            open.decrementAndGet();
             considerUnavailable();
             return false;
         }
@@ -326,6 +327,7 @@ final class ConnectionPool {
     private void definitelyDestroyConnection(final Connection connection) {
         bin.add(connection);
         connections.remove(connection);
+        open.decrementAndGet();
 
         if (connection.borrowed.get() == 0 && bin.remove(connection))
             connection.closeAsync();
@@ -413,6 +415,7 @@ final class ConnectionPool {
             this.cluster.loadBalancingStrategy().onAvailable(host);
             return true;
         } catch (Exception ex) {
+            logger.debug("Failed reconnect attempt on {}", host);
             if (connection != null) definitelyDestroyConnection(connection);
             return false;
         }
