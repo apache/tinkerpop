@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public final class SparkMessenger<M> implements Messenger<M> {
 
     @Override
     public Iterator<M> receiveMessages() {
-        return this.incomingMessages.iterator();
+        return IteratorUtils.removeOnNext(this.incomingMessages.iterator());
     }
 
     @Override

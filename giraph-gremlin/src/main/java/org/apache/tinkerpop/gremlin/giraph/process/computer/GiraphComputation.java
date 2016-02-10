@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 
@@ -42,7 +41,7 @@ public final class GiraphComputation extends BasicComputation<ObjectWritable, Ve
     public void compute(final Vertex<ObjectWritable, VertexWritable, NullWritable> vertex, final Iterable<ObjectWritable> messages) throws IOException {
         final GiraphWorkerContext workerContext = this.getWorkerContext();
         final VertexProgram<?> vertexProgram = workerContext.getVertexProgramPool().take();
-        vertexProgram.execute(ComputerGraph.vertexProgram(vertex.getValue().get(), vertexProgram), workerContext.getMessenger((GiraphVertex) vertex, this, IteratorUtils.noRemove(messages.iterator())), workerContext.getMemory());
+        vertexProgram.execute(ComputerGraph.vertexProgram(vertex.getValue().get(), vertexProgram), workerContext.getMessenger((GiraphVertex) vertex, this, messages.iterator()), workerContext.getMemory());
         workerContext.getVertexProgramPool().offer(vertexProgram);
     }
 }
