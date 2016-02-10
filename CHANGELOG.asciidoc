@@ -47,6 +47,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TraversalExplanation` is now `Serializable` and registered with `GryoMapper`.
 * Optimized memory-usage in `TraversalVertexProgram`.
 * Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
 
