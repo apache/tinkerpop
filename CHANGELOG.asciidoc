@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Deprecated `ScriptElementFactory` and made the local `StarGraph` globally available for `ScriptInputFormat`'s `parse()` method.
 * Optimized memory-usage in `TraversalVertexProgram`.
 * Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
 
