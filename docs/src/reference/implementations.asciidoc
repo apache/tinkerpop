@@ -1544,20 +1544,14 @@ mapper in the Hadoop job. The script must have the following method defined:
 [source,groovy]
 def parse(String line, ScriptElementFactory factory) { ... }
 
-`ScriptElementFactory` provides the following 4 methods:
-
-[source,java]
-Graph graph(); // get a reference to the local star graph
-Vertex vertex(Object id); // get or create the vertex with the given id
-Vertex vertex(Object id, String label); // get or create the vertex with the given id and label
-Edge edge(Vertex out, Vertex in); // create an edge between the two given vertices
-Edge edge(Vertex out, Vertex in, String label); // create an edge between the two given vertices using the given label
+`ScriptElementFactory` is a legacy from previous version and, although it's still functional, it should no longer be used.
+In order to create vertices and edges, the `parse()` method gets access to a global variable named `graph`, which holds
+the local `StarGraph` for the current line/vertex.
 
 An appropriate `parse()` for the above adjacency list file is:
 
 [source,groovy]
 def parse(line, factory) {
-    def graph = factory.graph()
     def parts = line.split(/ /)
     def (id, label, name, x) = parts[0].split(/:/).toList()
     def v1 = graph.addVertex(T.id, id, T.label, label)
