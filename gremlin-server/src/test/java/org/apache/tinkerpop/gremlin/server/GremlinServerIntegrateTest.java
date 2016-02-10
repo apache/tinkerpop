@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
@@ -60,6 +61,9 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
@@ -123,7 +127,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
                 processorSettings.className = SessionOpProcessor.class.getCanonicalName();
                 processorSettings.config = new HashMap<>();
-                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000l);
+                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
                 break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
@@ -189,8 +193,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @org.junit.Ignore("This test hangs - not sure why")
     @Test
+    @org.junit.Ignore("This test hangs - not sure why")
     public void shouldEnableSslButFailIfClientConnectsWithoutIt() {
         // todo: need to get this to pass somehow - should just error out.
         final Cluster cluster = Cluster.build().enableSsl(false).create();
@@ -262,18 +266,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReturnInvalidRequestArgsWhenGremlinArgIsNotSupplied() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL).create();
-            final CountDownLatch latch = new CountDownLatch(1);
-            final AtomicBoolean pass = new AtomicBoolean(false);
-            client.submit(request, result -> {
-                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
-                    latch.countDown();
-                }
-            });
-
-            if (!latch.await(300, TimeUnit.MILLISECONDS))
-                fail("Request should have returned error, but instead timed out");
-            assertTrue(pass.get());
+            final ResponseMessage result = client.submit(request).get(0);
+            assertThat(result.getStatus().getCode(), is(not(ResponseStatusCode.PARTIAL_CONTENT)));
+            assertEquals(result.getStatus().getCode(), ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS);
         }
     }
 
@@ -347,107 +342,95 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldBatchResultsByTwos() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
+                    .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9]").create();
 
-            // set the latch to six as there should be six responses when you include the terminator
-            final CountDownLatch latch = new CountDownLatch(5);
-            client.submit(request, r -> latch.countDown());
-
-            assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
+            final List<ResponseMessage> msgs = client.submit(request);
+            assertEquals(5, client.submit(request).size());
+            assertEquals(0, ((List<Integer>) msgs.get(0).getResult().getData()).get(0).intValue());
+            assertEquals(1, ((List<Integer>) msgs.get(0).getResult().getData()).get(1).intValue());
+            assertEquals(2, ((List<Integer>) msgs.get(1).getResult().getData()).get(0).intValue());
+            assertEquals(3, ((List<Integer>) msgs.get(1).getResult().getData()).get(1).intValue());
+            assertEquals(4, ((List<Integer>) msgs.get(2).getResult().getData()).get(0).intValue());
+            assertEquals(5, ((List<Integer>) msgs.get(2).getResult().getData()).get(1).intValue());
+            assertEquals(6, ((List<Integer>) msgs.get(3).getResult().getData()).get(0).intValue());
+            assertEquals(7, ((List<Integer>) msgs.get(3).getResult().getData()).get(1).intValue());
+            assertEquals(8, ((List<Integer>) msgs.get(4).getResult().getData()).get(0).intValue());
+            assertEquals(9, ((List<Integer>) msgs.get(4).getResult().getData()).get(1).intValue());
         }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldBatchResultsByOnesByOverridingFromClientSide() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9]")
                     .addArg(Tokens.ARGS_BATCH_SIZE, 1).create();
 
-            // should be 11 responses when you include the terminator
-            final CountDownLatch latch = new CountDownLatch(10);
-            client.submit(request, r -> latch.countDown());
-
-            assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
+            final List<ResponseMessage> msgs = client.submit(request);
+            assertEquals(10, msgs.size());
+            IntStream.rangeClosed(0, 9).forEach(i -> assertEquals(i, ((List<Integer>) msgs.get(i).getResult().getData()).get(0).intValue()));
         }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldWorkOverNioTransport() throws Exception {
         try (SimpleClient client = new NioClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
+                    .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9,]").create();
 
-            // should be 2 responses when you include the terminator
-            final CountDownLatch latch = new CountDownLatch(1);
-            client.submit(request, r -> latch.countDown());
-
-            assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
+            final List<ResponseMessage> msg = client.submit(request);
+            assertEquals(1, msg.size());
+            final List<Integer> integers = (List<Integer>) msg.get(0).getResult().getData();
+            IntStream.rangeClosed(0, 9).forEach(i -> assertEquals(i, integers.get(i).intValue()));
         }
     }
 
     @Test
     public void shouldNotThrowNoSuchElementException() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
+        try (SimpleClient client = new WebSocketClient()){
             // this should return "nothing" - there should be no exception
-            assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            cluster.close();
+            final List<ResponseMessage> responses = client.submit("g.V().has('name','kadfjaldjfla')");
+            assertNull(responses.get(0).getResult().getData());
         }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("Thread.sleep(3000);'some-stuff-that-should not return'").all().join();
-            fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            assertTrue(ExceptionUtils.getRootCause(re).getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+        try (SimpleClient client = new WebSocketClient()){
+            final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
+            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        } finally {
-            cluster.close();
+            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
         }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
+        try (SimpleClient client = new WebSocketClient()){
+            final List<ResponseMessage> responses = client.submit("(0..<100000)");
 
-        try {
-            client.submit("(0..<100000)").all().join();
-            fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            assertTrue(re.getCause().getMessage().endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+            // the last message should contain the error
+            assertThat(responses.get(responses.size() - 1).getStatus().getMessage(), endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        } finally {
-            cluster.close();
+            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
         }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldLoadInitScript() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-        try {
-            assertEquals(2, client.submit("addItUp(1,1)").all().join().get(0).getInt());
-        } finally {
-            cluster.close();
+        try (SimpleClient client = new WebSocketClient()){
+            assertEquals(2, ((List<Integer>) client.submit("addItUp(1,1)").get(0).getResult().getData()).get(0).intValue());
         }
     }
 
@@ -510,6 +493,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     @Test
     public void shouldBlockRequestWhenTooBig() throws Exception {
         final Cluster cluster = Cluster.open();
@@ -587,28 +571,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEvalAndReturnSuccessOnlyNoPartialContent() throws Exception {
+    public void shouldNotHavePartialContentWithOneResult() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "10").create();
-
-            // set the latch to two as there should be two responses when you include the terminator -
-            // the error and the terminator
-            final CountDownLatch latch = new CountDownLatch(1);
-            final AtomicInteger messages = new AtomicInteger(0);
-            final AtomicBoolean errorReceived = new AtomicBoolean(false);
-            client.submit(request, r -> {
-                errorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS));
-                latch.countDown();
-                messages.incrementAndGet();
-            });
-
-            assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
-
-            // make sure no extra message sneak in
-            Thread.sleep(1000);
-
-            assertEquals(1, messages.get());
+            final List<ResponseMessage> responses = client.submit(request);
+            assertEquals(1, responses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, responses.get(0).getStatus().getCode());
         }
     }
 
@@ -617,118 +586,81 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "new String().doNothingAtAllBecauseThis is a syntax error").create();
-
-            final CountDownLatch latch = new CountDownLatch(1);
-            final AtomicInteger messages = new AtomicInteger(0);
-            final AtomicBoolean errorReceived = new AtomicBoolean(false);
-            client.submit(request, r -> {
-                errorReceived.set(r.getStatus().equals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION));
-                latch.countDown();
-                messages.incrementAndGet();
-            });
-
-            assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
-
-            // make sure no extra message sneak in
-            Thread.sleep(1000);
-
-            assertEquals(1, messages.get());
+            final List<ResponseMessage> responses = client.submit(request);
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, responses.get(0).getStatus().getCode());
+            assertEquals(1, responses.size());
         }
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient() throws Exception {
         assumeNeo4jIsPresent();
         
-        final SimpleClient client = new WebSocketClient();
-        
-        //open a transaction, create a vertex, commit
-        final CountDownLatch latch = new CountDownLatch(1);
-        final RequestMessage OpenRequest = RequestMessage.build(Tokens.OPS_EVAL)
-                .processor("session")
-                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
-                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().open()")
-                .create();
-        client.submit(OpenRequest, (r) -> {
-            latch.countDown();
-        });
-        assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
-        
-        final CountDownLatch latch2 = new CountDownLatch(1);
-        final RequestMessage AddRequest = RequestMessage.build(Tokens.OPS_EVAL)
-                .processor("session")
-                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
-                .addArg(Tokens.ARGS_GREMLIN, "v=graph.addVertex(\"name\",\"stephen\")")
-                .create();
-        client.submit(AddRequest, (r) -> {
-            latch2.countDown();
-        });
-        assertTrue(latch2.await(1500, TimeUnit.MILLISECONDS));
-        
-        final CountDownLatch latch3 = new CountDownLatch(1);
-        final RequestMessage CommitRequest = RequestMessage.build(Tokens.OPS_EVAL)
-                .processor("session")
-                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
-                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().commit()")
-                .create();
-        client.submit(CommitRequest, (r) -> {
-            latch3.countDown();
-            
-        });
-        assertTrue(latch3.await(1500, TimeUnit.MILLISECONDS));
-        
-        // Check to see if the transaction is closed.
-        final CountDownLatch latch4 = new CountDownLatch(1);
-        final AtomicBoolean isOpen = new AtomicBoolean(false);
-        final RequestMessage CheckRequest = RequestMessage.build(Tokens.OPS_EVAL)
-                .processor("session")
-                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
-                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
-                .create();
-        client.submit(CheckRequest, (r) -> {
-            ArrayList<Boolean> response = (ArrayList) r.getResult().getData();
-            isOpen.set(response.get(0));
-            latch4.countDown();
-        });
-        assertTrue(latch4.await(1500, TimeUnit.MILLISECONDS));
-        
-        // make sure no extra message sneak in
-        Thread.sleep(1000);
-        
-        assertTrue("Transaction should be closed", !isOpen.get());
-        
-        //lets run a sessionless read
-        final CountDownLatch latch5 = new CountDownLatch(1);
-        final RequestMessage sessionlessRequest = RequestMessage.build(Tokens.OPS_EVAL)
-                .addArg(Tokens.ARGS_GREMLIN, "graph.traversal().V()")
-                .create();
-        client.submit(sessionlessRequest, (r) -> {
-            latch5.countDown();
-        });
-        assertTrue(latch5.await(1500, TimeUnit.MILLISECONDS));
-        
-        // Check to see if the transaction is still closed.
-        final CountDownLatch latch6 = new CountDownLatch(1);
-        final AtomicBoolean isStillOpen = new AtomicBoolean(false);
-        final RequestMessage CheckAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)
-                .processor("session")
-                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
-                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
-                .create();
-        client.submit(CheckAgainRequest, (r) -> {
-            ArrayList<Boolean> response = (ArrayList) r.getResult().getData();
-            isStillOpen.set(response.get(0));
-            latch6.countDown();
-        });
-        assertTrue(latch6.await(1500, TimeUnit.MILLISECONDS));
-        
-        // make sure no extra message sneak in
-        Thread.sleep(1000);
-        
-        assertTrue("Transaction should still be closed", !isStillOpen.get());
+        try (final SimpleClient client = new WebSocketClient()) {
+
+            //open a transaction, create a vertex, commit
+            final RequestMessage openRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().open()")
+                    .create();
+            final List<ResponseMessage> openResponses = client.submit(openRequest);
+            assertEquals(1, openResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, openResponses.get(0).getStatus().getCode());
+
+            final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "v=graph.addVertex(\"name\",\"stephen\")")
+                    .create();
+            final List<ResponseMessage> addResponses = client.submit(addRequest);
+            assertEquals(1, addResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, addResponses.get(0).getStatus().getCode());
+
+            final RequestMessage commitRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().commit()")
+                    .create();
+            final List<ResponseMessage> commitResponses = client.submit(commitRequest);
+            assertEquals(1, commitResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, commitResponses.get(0).getStatus().getCode());
+
+            // Check to see if the transaction is closed.
+            final RequestMessage checkRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                    .create();
+            final List<ResponseMessage> checkResponses = client.submit(checkRequest);
+            assertEquals(1, checkResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, checkResponses.get(0).getStatus().getCode());
+            assertThat(((List<Boolean>) checkResponses.get(0).getResult().getData()).get(0), is(false));
+
+            //lets run a sessionless read
+            final RequestMessage sessionlessRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.traversal().V()")
+                    .create();
+            final List<ResponseMessage> sessionlessResponses = client.submit(sessionlessRequest);
+            assertEquals(1, sessionlessResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, sessionlessResponses.get(0).getStatus().getCode());
+
+            // Check to see if the transaction is still closed.
+            final RequestMessage checkAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                    .create();
+            final List<ResponseMessage> checkAgainstResponses = client.submit(checkAgainRequest);
+            assertEquals(1, checkAgainstResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, checkAgainstResponses.get(0).getStatus().getCode());
+            assertThat(((List<Boolean>) checkAgainstResponses.get(0).getResult().getData()).get(0), is(false));
+        }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldStillSupportDeprecatedRebindingsParameterOnServer() throws Exception {
         // this test can be removed when the rebindings arg is removed
         try (SimpleClient client = new WebSocketClient()) {
@@ -737,18 +669,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "xyz.addVertex('name','jason')")
                     .addArg(Tokens.ARGS_REBINDINGS, rebindings).create();
-            final CountDownLatch latch = new CountDownLatch(1);
-            final AtomicBoolean pass = new AtomicBoolean(false);
-            client.submit(request, result -> {
-                final List<Object> results = (List<Object>) result.getResult().getData();
-                final DetachedVertex v = (DetachedVertex) results.get(0);
-                pass.set(ResponseStatusCode.SUCCESS == result.getStatus().getCode() && v.value("name").equals("jason"));
-                latch.countDown();
-            });
+            final List<ResponseMessage> responses = client.submit(request);
+            assertEquals(1, responses.size());
 
-            if (!latch.await(300, TimeUnit.MILLISECONDS)) fail("Request should have returned a response");
-
-            assertTrue(pass.get());
+            final DetachedVertex v = ((ArrayList<DetachedVertex>) responses.get(0).getResult().getData()).get(0);
+            assertEquals("jason", v.value("name"));
         }
     }
 }
