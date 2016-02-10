@@ -18,6 +18,14 @@
 # under the License.
 #
 
+# Note that this script validates the signatures of the published
+# artifacts. You must have gpg installed and must import the
+# published KEYS file in order for that aspect of the validation
+# to pass.
+#
+# curl -L -O http://archive.apache.org/dist/incubator/tinkerpop/KEYS
+# gpg --import KEYS
+
 TMP_DIR="/tmp/tpdv"
 
 VERSION=${1}
