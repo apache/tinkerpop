@@ -143,7 +143,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         return settings;
     }
-
+/*
     @Test
     public void shouldUseSimpleSandbox() throws Exception {
         final Cluster cluster = Cluster.open();
@@ -161,7 +161,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
-
+*/
     @Test
     public void shouldStartWithDefaultSettings() {
         // just quickly validate that results are returning given defaults. no graphs are config'd with defaults
