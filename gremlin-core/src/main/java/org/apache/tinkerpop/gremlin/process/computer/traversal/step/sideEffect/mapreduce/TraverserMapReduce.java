@@ -69,7 +69,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     }
 
     private void genericLoadState() {
-        final Step<?, ?> traversalEndStep = traversal.getEndStep().getPreviousStep();  // don't get the ComputerResultStep
+        final Step<?, ?> traversalEndStep = traversal.getEndStep();
         this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
         if (!this.comparator.isPresent() && traversalEndStep instanceof CollectingBarrierStep)
             this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);

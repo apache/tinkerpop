@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -43,7 +43,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
@@ -69,6 +68,17 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     private ComputerVerificationStrategy() {
     }
 
+
+    private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof GraphComputing)
+                ((GraphComputing) step).onGraphComputer();
+            if (step instanceof TraversalParent) {
+                ((TraversalParent) step).getGlobalChildren().forEach(ComputerVerificationStrategy::onlyGlobalChildren);
+            }
+        }
+    }
+
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
 
@@ -76,9 +86,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             return;
 
         Step<?, ?> endStep = traversal.getEndStep();
-        while (endStep instanceof ComputerAwareStep.EndStep || endStep instanceof ComputerResultStep) {
-            endStep = endStep.getPreviousStep();
-        }
 
         if (traversal.getParent() instanceof EmptyStep) {
             if (!(traversal.getStartStep() instanceof GraphStep))
@@ -96,6 +103,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                 ((Bypassing) endStep).setBypass(true);
             if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
                 throw new VerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
+
+            ComputerVerificationStrategy.onlyGlobalChildren(traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Iden
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -62,7 +63,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     public List<TraversalStrategy<?>> toList();
 
     public default boolean onGraphComputer() {
-        return toList().stream().filter(strategy -> strategy instanceof TraversalVertexProgramStrategy).findAny().isPresent();
+        return toList().stream().filter(strategy -> strategy instanceof ComputerVerificationStrategy).findAny().isPresent();
     }
 
     /**

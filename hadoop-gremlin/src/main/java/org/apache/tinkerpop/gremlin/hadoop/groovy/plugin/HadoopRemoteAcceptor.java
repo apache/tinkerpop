@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -98,8 +99,9 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             final ComputerResult computerResult = TraversalVertexProgramStrategy.getGraphComputer(this.hadoopGraph, this.traversalSource.getStrategies()).get().program(program).submit().get();
             this.shell.getInterp().getContext().setVariable(RESULT, computerResult);
             ///
-            final Traversal.Admin<?, ?> traversal = new DefaultTraversal<>(computerResult.graph());
-            traversal.addStep(new ComputerResultStep<>(traversal, computerResult, false));
+            final Traversal.Admin<ComputerResult, ?> traversal = new DefaultTraversal<>(computerResult.graph());
+            traversal.addStep(new ComputerResultStep<>(traversal, false));  // TODO: FIX THIS UP
+            traversal.addStart(traversal.getTraverserGenerator().generate(computerResult, EmptyStep.instance(), 1l));
             return traversal;
         } catch (final Exception e) {
             throw new RemoteException(e);

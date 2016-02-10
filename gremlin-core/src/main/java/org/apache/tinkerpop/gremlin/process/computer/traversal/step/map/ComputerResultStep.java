@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -72,7 +73,9 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
             else {
                 final ComputerResult result = this.starts.next().get();
                 result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
-                final Step endStep = ((TraversalVertexProgramStep<?>) this.getPreviousStep()).getGlobalChildren().get(0).getEndStep();
+                final Step endStep = this.getPreviousStep() instanceof TraversalVertexProgramStep ?
+                        ((TraversalVertexProgramStep<?>) this.getPreviousStep()).computerTraversal.getEndStep() :
+                        EmptyStep.instance();
                 if (endStep instanceof SideEffectCapStep) {
                     final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();
                     if (sideEffectKeys.size() == 1)

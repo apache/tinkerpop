@@ -47,6 +47,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.fold;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.groupCount;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
@@ -68,7 +69,7 @@ public class TinkerGraphPlayTest {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal().withComputer(); //GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
-        System.out.println(g.V().out().toList().toString());
+        System.out.println(g.V().repeat(groupCount("m").by("name").out()).times(2).cap("m").toList());
 
     }
 

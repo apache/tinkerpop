@@ -73,6 +73,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_out_out_profile_simple() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
@@ -289,6 +290,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileStrategyCallback() {
         final Traversal<Vertex, Vertex> t = get_g_V_out_out_profile();
         MockStep mockStep = new MockStep(t.asAdmin());

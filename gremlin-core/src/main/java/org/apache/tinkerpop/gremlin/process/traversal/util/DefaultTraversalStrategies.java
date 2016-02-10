@@ -68,11 +68,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public boolean onGraphComputer() {
-        return this.traversalStrategies.stream().filter(strategy -> strategy instanceof TraversalVertexProgramStrategy).findAny().isPresent();
-    }
-
-    @Override
     public List<TraversalStrategy<?>> toList() {
         return Collections.unmodifiableList(this.traversalStrategies);
     }

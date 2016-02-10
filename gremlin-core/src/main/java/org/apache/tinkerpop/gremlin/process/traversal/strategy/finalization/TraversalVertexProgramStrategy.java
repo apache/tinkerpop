@@ -22,29 +22,24 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.util.Collections;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
+public final class TraversalVertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
-    private static final Set<Class<? extends FinalizationStrategy>> PRIORS = Collections.singleton(ProfileStrategy.class);
     private transient Function<Graph, GraphComputer> graphComputerFunction;
 
     private TraversalVertexProgramStrategy() {
@@ -55,31 +50,15 @@ public final class TraversalVertexProgramStrategy extends AbstractTraversalStrat
         this.graphComputerFunction = graphComputerFunction;
     }
 
-
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent() instanceof EmptyStep) {
-            final Traversal.Admin newTraversal = new DefaultTraversal<>();
-            TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), newTraversal);
+        traversal.addTraverserRequirement(TraverserRequirement.BULK); // all computer traversals require bulking
+        if (traversal.getParent() instanceof EmptyStep && null != this.graphComputerFunction) { // if the function is null, then its been serialized and thus, already in a graph computer
+            Traversal.Admin<?, ?> newTraversal = new DefaultTraversal<>();
+            TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) newTraversal);
             traversal.addStep(new TraversalVertexProgramStep<>(traversal, newTraversal, this.graphComputerFunction.apply(traversal.getGraph().get())));
-            TraversalVertexProgramStrategy.onlyGlobalChildren(newTraversal);
             traversal.addStep(new ComputerResultStep<>(traversal, true));
         }
-    }
-
-    private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
-        for (final Step step : traversal.getSteps()) {
-            if (step instanceof GraphComputing)
-                ((GraphComputing) step).onGraphComputer();
-            if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getGlobalChildren().forEach(TraversalVertexProgramStrategy::onlyGlobalChildren);
-            }
-        }
-    }
-
-    @Override
-    public Set<Class<? extends FinalizationStrategy>> applyPrior() {
-        return PRIORS;
     }
 
     public static Optional<GraphComputer> getGraphComputer(final Graph graph, final TraversalStrategies strategies) {

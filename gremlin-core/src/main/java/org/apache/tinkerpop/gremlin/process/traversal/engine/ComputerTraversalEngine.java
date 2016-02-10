@@ -156,8 +156,8 @@ public final class ComputerTraversalEngine implements TraversalEngine {
          * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
          */
         @Deprecated
-        public TraversalSource create(GraphTraversalSource traversalSource) {
-            traversalSource = traversalSource.withComputer(g -> {
+        public TraversalSource create(final GraphTraversalSource traversalSource) {
+            return traversalSource.withComputer(g -> {
                 GraphComputer graphComputer = (null == this.graphComputerClass) ? g.compute() : g.compute(this.graphComputerClass);
                 if (-1 != this.workers)
                     graphComputer = graphComputer.workers(this.workers);
@@ -167,7 +167,6 @@ public final class ComputerTraversalEngine implements TraversalEngine {
                     graphComputer = graphComputer.edges(this.edgeFilter);
                 return graphComputer;
             });
-            return traversalSource;
         }
     }
 }
