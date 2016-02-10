@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -43,7 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -82,12 +83,15 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
 
-        if (traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
+        if (!TraversalHelper.onGraphComputer(traversal) || traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
             return;
 
         Step<?, ?> endStep = traversal.getEndStep();
+        while (endStep instanceof ComputerAwareStep.EndStep) {
+            endStep = endStep.getPreviousStep();
+        }
 
-        if (traversal.getParent() instanceof EmptyStep) {
+        if (traversal.getParent() instanceof TraversalVertexProgramStep) {
             if (!(traversal.getStartStep() instanceof GraphStep))
                 throw new VerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
             ///
@@ -108,7 +112,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
                 throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())

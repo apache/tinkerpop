@@ -62,10 +62,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      */
     public List<TraversalStrategy<?>> toList();
 
-    public default boolean onGraphComputer() {
-        return toList().stream().filter(strategy -> strategy instanceof ComputerVerificationStrategy).findAny().isPresent();
-    }
-
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
      * This method must ensure that the strategies are sorted prior to application.

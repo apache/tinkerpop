@@ -24,41 +24,39 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgramStep<S> extends AbstractStep<S, ComputerResult> {
+public final class TraversalVertexProgramStep<S> extends AbstractStep<S, ComputerResult> implements TraversalParent {
 
     public Traversal.Admin<S, ?> computerTraversal;
-    private final GraphComputer graphComputer;
+    private final transient GraphComputer graphComputer;
     private boolean first = true;
 
     public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> computerTraversal, final GraphComputer graphComputer) {
         super(traversal);
         this.graphComputer = graphComputer;
-        this.computerTraversal = computerTraversal;
-        this.computerTraversal.getSideEffects().mergeInto(this.getTraversal().getSideEffects());
-        this.computerTraversal.setSideEffects(this.getTraversal().getSideEffects());
-        TraversalStrategies strategies = this.getTraversal().getStrategies().clone();
-        strategies.removeStrategies(TraversalVertexProgramStrategy.class);
-        strategies.addStrategies(ComputerVerificationStrategy.instance());
-        this.computerTraversal.setStrategies(strategies);
-        this.computerTraversal.applyStrategies();
+        this.computerTraversal = this.integrateChild(computerTraversal);
+    }
+
+    public List<Traversal.Admin<?, ?>> getGlobalChildren() {
+        return Collections.singletonList(this.computerTraversal);
     }
 
     @Override
     protected Traverser<ComputerResult> processNextStart() {
+
         if (this.first) { // && previousStep EmptyStep
             try {
                 this.first = false;
@@ -73,17 +71,18 @@ public final class TraversalVertexProgramStep<S> extends AbstractStep<S, Compute
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.computerTraversal);
+        return StringFactory.stepString(this, this.computerTraversal, this.graphComputer);
     }
 
-    /*@Override
+    @Override
     public TraversalVertexProgramStep<S> clone() {
         final TraversalVertexProgramStep<S> clone = (TraversalVertexProgramStep<S>) super.clone();
         clone.computerTraversal = this.integrateChild(this.computerTraversal.clone());
         return clone;
-    }*/
+    }
 
+    @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.computerTraversal.getTraverserRequirements();
+        return TraversalParent.super.getSelfAndChildRequirements(TraverserRequirement.BULK);
     }
 }

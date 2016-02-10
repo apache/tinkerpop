@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -53,15 +54,17 @@ public final class TraversalVertexProgramStrategy extends AbstractTraversalStrat
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        traversal.addTraverserRequirement(TraverserRequirement.BULK); // all computer traversals require bulking
         if (traversal.getParent() instanceof EmptyStep) {
             if (null != this.graphComputerFunction) {   // if the function is null, then its been serialized and thus, already in a graph computer
                 Traversal.Admin<?, ?> newTraversal = new DefaultTraversal<>();
                 TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) newTraversal);
                 traversal.addStep(new TraversalVertexProgramStep<>(traversal, newTraversal, this.graphComputerFunction.apply(traversal.getGraph().get())));
                 traversal.addStep(new ComputerResultStep<>(traversal, true));
-            } else {
+            } else {  // this is a total hack to trick the difference between TraversalVertexProgram via GraphComputer and via TraversalSource. :|
+                traversal.setParent(new TraversalVertexProgramStep<>(EmptyTraversal.instance(),EmptyTraversal.instance(),null));
                 ComputerVerificationStrategy.instance().apply(traversal);
+                traversal.setParent(EmptyStep.instance());
+                traversal.addTraverserRequirement(TraverserRequirement.BULK);
             }
         }
     }

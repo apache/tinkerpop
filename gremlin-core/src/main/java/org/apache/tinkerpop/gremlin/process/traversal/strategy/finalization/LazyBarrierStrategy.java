@@ -61,7 +61,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getStrategies().onGraphComputer())
+        if (TraversalHelper.onGraphComputer(traversal))
             return;
 
         if (traversal.getTraverserRequirements().contains(TraverserRequirement.PATH))

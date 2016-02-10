@@ -365,7 +365,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
                 requirements.add(TraverserRequirement.SIDE_EFFECTS);
             if (null != this.getSideEffects().getSackInitialValue())
                 requirements.add(TraverserRequirement.SACK);
-            if (this.getStrategies().onGraphComputer())
+            if (TraversalHelper.onGraphComputer(this))
                 requirements.add(TraverserRequirement.BULK);
             if (requirements.contains(TraverserRequirement.ONE_BULK))
                 requirements.remove(TraverserRequirement.BULK);

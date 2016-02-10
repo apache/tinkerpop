@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -104,7 +105,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
         if (traversalMetrics == null) {
             // look up the TraversalMetrics in the root traversal's sideEffects
             Traversal t = this.getTraversal();
-            while (!(t.asAdmin().getParent() instanceof EmptyStep)) {
+            while (!(t.asAdmin().getParent() instanceof TraversalVertexProgramStep)) {
                 t = t.asAdmin().getParent().asStep().getTraversal();
             }
             traversalMetrics = t.asAdmin().getSideEffects().<StandardTraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
@@ -117,7 +118,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
             return;
         }
 
-        if (!(this.getTraversal().getParent() instanceof EmptyStep)) {
+        if (!(this.getTraversal().getParent() instanceof TraversalVertexProgramStep) && !(this.getTraversal().getParent() instanceof EmptyStep)) {
             // Initialization is handled at the top-level of the traversal only.
             return;
         }

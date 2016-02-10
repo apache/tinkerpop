@@ -32,9 +32,9 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,7 +50,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
 
 
     private final boolean attachElements; // should be part of graph computer with "propagate properties"
-    private Iterator<Traverser.Admin<S>> currentIterator = Collections.emptyIterator();
+    private Iterator<Traverser.Admin<S>> currentIterator = EmptyIterator.instance();
 
     public ComputerResultStep(final Traversal.Admin traversal, final boolean attachElements) {
         super(traversal);

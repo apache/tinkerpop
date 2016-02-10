@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
@@ -467,4 +468,14 @@ public final class TraversalHelper {
         return variables;
     }
 
+    public static boolean onGraphComputer(Traversal.Admin<?, ?> traversal) {
+        if (traversal.getParent().asStep() instanceof TraversalVertexProgramStep)
+            return true;
+        while (!((traversal.getParent()) instanceof EmptyStep)) {
+            if (traversal.getParent().asStep() instanceof TraversalVertexProgramStep)
+                return true;
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return false;
+    }
 }

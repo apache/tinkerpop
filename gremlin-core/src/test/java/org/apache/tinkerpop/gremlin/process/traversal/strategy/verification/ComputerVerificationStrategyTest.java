@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -58,6 +60,7 @@ public class ComputerVerificationStrategyTest {
         try {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(ComputerVerificationStrategy.instance());
+            traversal.asAdmin().setParent(new TraversalVertexProgramStep<>(EmptyTraversal.instance(), EmptyTraversal.instance(), null)); // trick it
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().applyStrategies();
             fail("The strategy should not allow traversal: " + this.traversal);

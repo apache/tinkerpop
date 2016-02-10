@@ -69,7 +69,7 @@ public class TinkerGraphPlayTest {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal().withComputer(); //GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
-        System.out.println(g.V().repeat(groupCount("m").by("name").out()).times(2).cap("m").toList());
+        System.out.println(g.withBulk(false).withSack(1, Operator.sum).V().out().barrier().sack().toList());
 
     }
 

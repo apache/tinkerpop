@@ -40,9 +40,6 @@ public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getStrategies().onGraphComputer())
-            return;
-
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
             final Neo4jGraphStep<?, ?> neo4jGraphStep = new Neo4jGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, (Step) neo4jGraphStep, traversal);
