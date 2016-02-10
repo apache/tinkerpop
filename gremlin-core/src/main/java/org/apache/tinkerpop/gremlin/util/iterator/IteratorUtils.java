@@ -411,4 +411,25 @@ public final class IteratorUtils {
             }
         };
     }
+
+    public static <T> Iterator<T> removeOnNext(final Iterator<T> iterator) {
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public void remove() {
+                iterator.remove();
+            }
+
+            @Override
+            public T next() {
+                final T object = iterator.next();
+                iterator.remove();
+                return object;
+            }
+        };
+    }
 }
