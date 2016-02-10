@@ -42,7 +42,8 @@ public final class Host {
     private final Cluster cluster;
     private final String hostLabel;
 
-    final AtomicReference<ScheduledFuture<?>> reconnectionAttempt = new AtomicReference<>(null);
+    final AtomicReference<Boolean> retryInProgress = new AtomicReference<>(Boolean.FALSE);
+    ScheduledFuture<?> retryThread = null;
 
     Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
@@ -71,17 +72,21 @@ public final class Host {
         isAvailable = false;
 
         // only do a connection re-attempt if one is not already in progress
-        reconnectionAttempt.compareAndSet(null,
-                this.cluster.executor().scheduleAtFixedRate(() -> {
-                            logger.debug("Trying to reconnect to dead host at {}", this);
-                            if (reconnect.apply(this)) reconnected();
-                        }, cluster.connectionPoolSettings().reconnectInitialDelay,
-                        cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS));
+        if (retryInProgress.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+            retryThread = this.cluster.executor().scheduleAtFixedRate(() -> {
+                                                                          logger.debug("Trying to reconnect to dead host at {}", this);
+                                                                          if (reconnect.apply(this)) reconnected();
+                                                                      }, cluster.connectionPoolSettings().reconnectInitialDelay,
+                                                                      cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS);
+        }
     }
 
     private void reconnected() {
-        reconnectionAttempt.get().cancel(false);
-        reconnectionAttempt.set(null);
+        // race condition!  retry boolean could be set to false, a new retryThread created above
+        // and then cancelled here.   But we're only executing this at all because we *have* reconnected
+        retryThread.cancel(false);
+        retryThread = null;
+        retryInProgress.set(Boolean.FALSE);
         makeAvailable();
     }
 
