@@ -319,7 +319,7 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Xmx1024m -XX:MaxPermSize=256m
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Xmx2048m -XX:MaxPermSize=256m
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
