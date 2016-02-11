@@ -24,6 +24,15 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Refactored `TraversalSource` model to allow fluent-method construction of `TraversalSources`.
+* Deprecated the concept of a `TraversalSource.Builder`.
+* Removed the concept of a `TraversalEngine`. All `Traversal` modulations are now mediated by `TraversalStrategies`. (*breaking*)
+* Added `SideEffectStrategy` for registering sideEffects in a spawned `Traversal`.
+* Added `SackStrategy` for registering a sack for a spawned `Traversal`.
+* Added `RequirementsStrategy` and `RequirementsStep` for adding dynamic `TraverserRequirements` to a `Traversal`.
+* Removed `EngineDependentStrategy`.
+* Renamed step interface `EngineDependent` to `GraphComputing` with method `onGraphComputer()`. (*breaking*)
+* Cleaned up various `TraversalStrategy` tests now that `TraversalEngine` no longer exists.
 * Added `GraphFilter` to support filtering out vertices and edges that won't be touched by an OLAP job.
 * Added `GraphComputer.vertices()` and `GraphComputer.edges()` for `GraphFilter` construction *(breaking)*.
 * `SparkGraphComputer`, `GiraphGraphComputer`, and `TinkerGraphComputer` all support `GraphFilter`.
