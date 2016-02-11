@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -109,6 +110,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
                 if (((TraversalParent) endStep).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
                     throw new VerificationException("A final CollectingBarrierStep can not process the incident edges of a vertex: " + endStep, traversal);
+                if (!((TraversalParent) endStep).getLocalChildren().isEmpty() && TraversalHelper.getLastElementClass(traversal).equals(Edge.class))
+                    throw new VerificationException("The final CollectingBarrierStep can not operate on edges or their properties:" + endStep, traversal);
             }
             ///
             if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)

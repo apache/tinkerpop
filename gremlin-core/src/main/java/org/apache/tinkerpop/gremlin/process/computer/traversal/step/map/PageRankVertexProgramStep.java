@@ -64,12 +64,12 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES);
+                final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
                 return this.traversal.getTraverserGenerator().generate(graphComputer.program(PageRankVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get(), this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
-                final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES);
+                final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
                 return traverser.split(graphComputer.program(PageRankVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get(), this);
             }
         } catch (final InterruptedException | ExecutionException e) {

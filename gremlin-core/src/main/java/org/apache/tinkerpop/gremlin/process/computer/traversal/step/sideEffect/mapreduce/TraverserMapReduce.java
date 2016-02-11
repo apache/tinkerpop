@@ -37,9 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -106,11 +104,8 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     @Override
     public void map(final Vertex vertex, final MapEmitter<Comparable, Traverser<?>> emitter) {
         vertex.<TraverserSet<Object>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> IteratorUtils.removeOnNext(traverserSet.iterator()).forEachRemaining(traverser -> {
-            if (this.attachHaltedTraverser) {
-                if (traverser.get() instanceof Edge)
-                    throw new VerificationException("Edges can not be accessed -- this should really be caught at compile time", EmptyTraversal.instance());
+            if (this.attachHaltedTraverser && !(traverser.get() instanceof Edge))
                 traverser.attach(Attachable.Method.get(vertex));
-            }
             if (this.comparator.isPresent())    // TODO: I think we shouldn't ever single key it  -- always double emit to load balance the servers.
                 emitter.emit(traverser, traverser);
             else

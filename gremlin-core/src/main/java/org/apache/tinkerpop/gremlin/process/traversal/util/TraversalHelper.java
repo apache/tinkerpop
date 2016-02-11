@@ -30,13 +30,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -56,6 +60,30 @@ import java.util.stream.Collectors;
 public final class TraversalHelper {
 
     private TraversalHelper() {
+    }
+
+    public static Class getLastElementClass(final Traversal.Admin<?, ?> traversal) {
+        Step<?, ?> currentStep = traversal.getEndStep();
+        while (!(currentStep instanceof EmptyStep)) {
+            if (currentStep instanceof VertexStep)
+                return ((VertexStep) currentStep).getReturnClass();
+            else if (currentStep instanceof GraphStep)
+                return ((GraphStep) currentStep).getReturnClass();
+            else if (currentStep instanceof EdgeVertexStep)
+                return Vertex.class;
+            else if (currentStep instanceof PropertiesStep)
+                return ((PropertiesStep) currentStep).getReturnType().forProperties() ? Property.class : Object.class;
+            else if (currentStep instanceof SelectOneStep) {
+                final String key = ((SelectOneStep<?, ?>) currentStep).getScopeKeys().iterator().next();
+                while (!(currentStep instanceof EmptyStep)) {
+                    if (currentStep.getLabels().contains(key))
+                        break;
+                    currentStep = currentStep.getPreviousStep();
+                }
+            } else
+                currentStep = currentStep.getPreviousStep();
+        }
+        return Object.class;
     }
 
     public static boolean isLocalVertex(final Traversal.Admin<?, ?> traversal) {
