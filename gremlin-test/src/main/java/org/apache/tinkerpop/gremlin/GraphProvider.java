@@ -152,12 +152,15 @@ public interface GraphProvider {
 
     /**
      * Clears a {@link Graph} of all data and settings.  Implementations will have different ways of handling this.
+     * It is typically expected that {@link Graph#close()} will be called and open transactions will be closed.
      * For a brute force approach, implementers can simply delete data directories provided in the configuration.
      * Implementers may choose a more elegant approach if it exists.
      * <p/>
      * Implementations should be able to accept an argument of null for the Graph, in which case the only action
      * that can be performed is a clear given the configuration.  The method will typically be called this way
      * as clean up task on setup to ensure that a persisted graph has a clear space to create a test graph.
+     * <p/>
+     * Calls to this method may occur multiple times for a specific test. Develop this method to be idempotent.
      */
     public void clear(final Graph graph, final Configuration configuration) throws Exception;
 

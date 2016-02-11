@@ -22,6 +22,32 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 
 *A 187 On The Undercover Gremlinz*
 
+TinkerPop 3.1.2
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-XXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+GraphProvider.clear() Semantics
++++++++++++++++++++++++++++++++
+
+The semantics of the various `clear()` methods on `GraphProvider` didn't really change, but it would be worth reviewing
+their implementations to ensure that implementations can be called successfully in an idempotent fashion. Multiple
+calls to `clear()` may occur for a single test on the same `Graph` instance, as `3.1.1-incubating` introduced an
+automated method for clearing graphs at the end of a test and some tests call `clear()` manually.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1146[TINKERPOP-1146]
+
 TinkerPop 3.1.1
 ---------------
 

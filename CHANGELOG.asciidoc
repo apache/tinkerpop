@@ -29,6 +29,7 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 * `TraversalExplanation` is now `Serializable` and registered with `GryoMapper`.
 * Deprecated `ScriptElementFactory` and made the local `StarGraph` globally available for `ScriptInputFormat`'s `parse()` method.
 * Optimized memory-usage in `TraversalVertexProgram`.
+* `Graph` instances are not merely "closed" at the end of tests, they are "cleared" via `GraphProvider.clear()`, which should in turn cleans up old data for an implementation.
 * Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
 
 [[release-3.1.1-incubating]]
