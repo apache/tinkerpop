@@ -20,13 +20,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.max;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.min;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -75,24 +77,6 @@ public abstract class ComputerVerificationStrategyProcessTest extends AbstractGr
             try {
                 final GraphTraversal t = g.V().values("age").union(max(), min(), sum()).iterate();
                 fail("Nested global traversals should not be allowed to contain barriers (COMPUTER): " + t);
-            } catch (IllegalStateException e) {
-               assertTrue(true);
-            }
-        }
-
-        @Test
-        @LoadGraphWith(MODERN)
-        public void shouldNotAllowMidTraversalBarriersOnComputer() {
-            try {
-                final GraphTraversal t = g.V().count().sum().iterate();
-                fail("Mid-traversal barrier steps are not allowed (COMPUTER): " + t);
-            } catch (IllegalStateException e) {
-                assertTrue(true);
-            }
-
-            try {
-                final GraphTraversal t = g.V().count().sum().map(x -> mul(x.get(), 19)).iterate();
-                fail("Mid-traversal barrier steps are not allowed (COMPUTER): " + t);
             } catch (IllegalStateException e) {
                 assertTrue(true);
             }

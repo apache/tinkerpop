@@ -20,15 +20,18 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalComparator<S, E> implements Comparator<S>, Serializable, Cloneable {
+public final class TraversalComparator<S, E> implements Comparator<S>, Serializable, Cloneable, TraversalParent {
 
     private Traversal.Admin<S, E> traversal;
     private final Comparator<E> comparator;
@@ -38,6 +41,10 @@ public final class TraversalComparator<S, E> implements Comparator<S>, Serializa
         this.comparator = comparator;
     }
 
+    public List<Traversal.Admin<S, E>> getLocalChildren() {
+        return Collections.singletonList(this.traversal);
+    }
+
     @Override
     public String toString() {
         return this.comparator.toString() + "(" + this.traversal + ")";
@@ -45,9 +52,14 @@ public final class TraversalComparator<S, E> implements Comparator<S>, Serializa
 
     @Override
     public int compare(final S start1, final S start2) {
-        return start1 instanceof Traverser ?
-                this.comparator.compare(TraversalUtil.apply((Traverser.Admin<S>) start1, this.traversal), TraversalUtil.apply((Traverser.Admin<S>) start2, this.traversal)) :
-                this.comparator.compare(TraversalUtil.apply(start1, this.traversal), TraversalUtil.apply(start2, this.traversal));
+        if (start1 instanceof Traverser && start2 instanceof Traverser)
+            return this.comparator.compare(TraversalUtil.apply((Traverser.Admin<S>) start1, this.traversal), TraversalUtil.apply((Traverser.Admin<S>) start2, this.traversal));
+        else if (start1 instanceof Traverser)
+            return this.comparator.compare(TraversalUtil.apply((Traverser.Admin<S>) start1, this.traversal), TraversalUtil.apply(start2, this.traversal));
+        else if (start2 instanceof Traverser)
+            return this.comparator.compare(TraversalUtil.apply(start1, this.traversal), TraversalUtil.apply((Traverser.Admin<S>) start2, this.traversal));
+        else
+            return this.comparator.compare(TraversalUtil.apply(start1, this.traversal), TraversalUtil.apply(start2, this.traversal));
     }
 
     @Override

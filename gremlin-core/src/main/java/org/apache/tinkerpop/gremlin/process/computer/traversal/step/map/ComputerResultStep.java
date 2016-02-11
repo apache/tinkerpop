@@ -59,6 +59,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
 
     public Iterator<Traverser.Admin<S>> attach(final Iterator<Traverser.Admin<S>> iterator, final Graph graph) {
         return IteratorUtils.map(iterator, traverser -> {
+            traverser.setSideEffects(this.getTraversal().getSideEffects());   // necessary to ensure no NPE
             if (this.attachElements && (traverser.get() instanceof Attachable))
                 traverser.set((S) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
             return traverser;
@@ -75,7 +76,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
                 result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
                 final Step endStep = this.getPreviousStep() instanceof TraversalVertexProgramStep ?
                         ((TraversalVertexProgramStep) this.getPreviousStep()).computerTraversal.getEndStep() :
-                        EmptyStep.instance();
+                        EmptyStep.instance();   // TODO: need to be selective and smart
                 if (endStep instanceof SideEffectCapStep) {
                     final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();
                     if (sideEffectKeys.size() == 1)
@@ -90,8 +91,9 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
                 } else if (result.memory().exists(ReducingBarrierStep.REDUCING)) {
                     this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of(result.memory().get(ReducingBarrierStep.REDUCING)), (Step) this, 1l);
                 } else {
-                    this.currentIterator = this.attach(result.memory().get(TraverserMapReduce.TRAVERSERS), result.graph());
+                    this.currentIterator = result.memory().get(TraverserMapReduce.TRAVERSERS);
                 }
+                this.currentIterator = attach(this.currentIterator, result.graph());
             }
         }
     }

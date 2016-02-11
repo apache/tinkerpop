@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -125,8 +126,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementFunctionComparator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementValueComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.FunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
@@ -1149,6 +1148,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LocalStep<>(this.asAdmin(), localTraversal.asAdmin()));
     }
 
+    /////////////////// VERTEX PROGRAM STEPS ////////////////
+
+    public default GraphTraversal<S, E> pageRank() {
+        return this.asAdmin().addStep((Step<?, E>) new PageRankVertexProgramStep(this.asAdmin()));
+    }
+
+
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
@@ -1202,7 +1208,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     //// COMPARATOR BY-MODULATORS
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
-        ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(comparator);
+        this.by(new IdentityTraversal<>(), comparator);
         return this;
     }
 
@@ -1211,23 +1217,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <V> GraphTraversal<S, E> by(final Column column, final Comparator<V> objectComparator) {
-        return this.by(new FunctionComparator(column, objectComparator));
+        return this.by(new FunctionComparator<>((Function) column, objectComparator));
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection,
                                                final Comparator<V> elementFunctionValueComparator) {
-        return ((Function) elementFunctionProjection) instanceof Column ?
-                this.by((Column) ((Function) elementFunctionProjection), elementFunctionValueComparator) :
-                this.by((Comparator) new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
+        if (((Function) elementFunctionProjection) instanceof Column)
+            return this.by((Column) ((Function) elementFunctionProjection), elementFunctionValueComparator);
+        else if (elementFunctionProjection instanceof T)
+            return this.by(new TokenTraversal<>((T) elementFunctionProjection), elementFunctionValueComparator);
+        else
+            return this.by(__.map((Function) elementFunctionProjection), elementFunctionValueComparator);
     }
 
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection,
                                                final Comparator<V> propertyValueComparator) {
-        return this.by((Comparator) new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
+        return this.by(new ElementValueTraversal<>(elementPropertyProjection), propertyValueComparator);
     }
 
     public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> endComparator) {
-        return this.by(new TraversalComparator(traversal.asAdmin(), endComparator));
+        ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(new TraversalComparator(traversal.asAdmin(), endComparator));
+        return this;
     }
 
     ////

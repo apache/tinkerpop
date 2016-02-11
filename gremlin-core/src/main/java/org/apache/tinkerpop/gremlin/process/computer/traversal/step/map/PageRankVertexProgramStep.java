@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,12 +48,14 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
 
     private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
 
-    private Traversal.Admin<Vertex, Edge> pageRankTraversal = __.<Vertex>outE().asAdmin();  // need to compile against the ComputerResult.graph()
+    private Traversal.Admin<Vertex, Edge> pageRankTraversal;
+    private Traversal.Admin<Vertex, Edge> purePageRankTraversal;
     private boolean first = true;
 
 
     public PageRankVertexProgramStep(final Traversal.Admin traversal) {
         super(traversal);
+        this.addLocalChild(__.<Vertex>outE().asAdmin());
     }
 
     @Override
@@ -61,12 +65,12 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
                 final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES);
-                return this.traversal.getTraverserGenerator().generate(graphComputer.program(PageRankVertexProgram.build().traversal(this.pageRankTraversal).create(graph)).submit().get(), this, 1l);
+                return this.traversal.getTraverserGenerator().generate(graphComputer.program(PageRankVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get(), this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
                 final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES);
-                return traverser.split(graphComputer.program(PageRankVertexProgram.build().traversal(this.pageRankTraversal).create(graph)).submit().get(), this);
+                return traverser.split(graphComputer.program(PageRankVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get(), this);
             }
         } catch (final InterruptedException | ExecutionException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -76,6 +80,7 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
         this.pageRankTraversal = this.integrateChild((Traversal.Admin) localChildTraversal);
+        this.purePageRankTraversal = this.pageRankTraversal.clone();
     }
 
     @Override
@@ -84,14 +89,27 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
     }
 
     @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.pageRankTraversal);
+    }
+
+    @Override
     public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
         this.graphComputerFunction = graphComputerFunction;
+    }
+
+    private final Traversal.Admin<Vertex, Edge> compileTraversal(final Graph graph) {
+        final Traversal.Admin<Vertex, Edge> compiledPageRankTraversal = this.purePageRankTraversal.clone();
+        compiledPageRankTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
+        compiledPageRankTraversal.applyStrategies();
+        return compiledPageRankTraversal;
     }
 
     @Override
     public PageRankVertexProgramStep clone() {
         final PageRankVertexProgramStep clone = (PageRankVertexProgramStep) super.clone();
         clone.pageRankTraversal = clone.integrateChild(this.pageRankTraversal);
+        clone.purePageRankTraversal = clone.integrateChild(this.purePageRankTraversal);
         return clone;
     }
 }

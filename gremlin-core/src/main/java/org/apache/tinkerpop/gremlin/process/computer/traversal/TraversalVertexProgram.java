@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
@@ -27,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
@@ -41,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
@@ -148,10 +147,16 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
             vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
 
-            if (!(this.traversal.getStartStep() instanceof GraphStep))
-                throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
-
-            final GraphStep<Element, Element> graphStep = (GraphStep<Element, Element>) this.traversal.getStartStep();
+            /*if (!(this.traversal.getStartStep() instanceof GraphStep)) {  // TODO: support reactivating halted traversers
+                final TraverserSet<Object> aliveTraverses = new TraverserSet<>();
+                aliveTraverses.addAll(haltedTraversers);
+                haltedTraversers.clear();
+                if (!haltedTraversers.isEmpty())
+                    messenger.sendMessage(MessageScope.Global.of(vertex), aliveTraverses);
+            }*/
+            final GraphStep<Element, Element> graphStep = (this.traversal.getStartStep() instanceof GraphStep) ?
+                    (GraphStep<Element, Element>) this.traversal.getStartStep() :
+                    new GraphStep((Traversal.Admin) EmptyTraversal.instance(), Vertex.class, true); // if no start vertices, then do all vertices
             final String future = graphStep.getNextStep().getId();
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)
@@ -172,7 +177,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                     if (ElementHelper.idExists(start.id(), graphStep.getIds())) {
                         final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, graphStep, 1l);
                         traverser.setStepId(future);
-                        traverser.detach();
+                        traverser.detach(); // TODO: bad
                         if (traverser.isHalted())
                             haltedTraversers.add((Traverser.Admin) traverser);
                         else {
