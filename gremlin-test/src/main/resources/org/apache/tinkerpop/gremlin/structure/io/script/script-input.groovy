@@ -21,7 +21,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty
 def parse(line, factory) {
     def parts = line.split(/\t/)
     def (id, label, name, x) = parts[0].split(/:/).toList()
-    def v1 = factory.vertex(id, label)
+    def v1 = graph.addVertex(T.id, id, T.label, label)
     if (name != null) v1.property(VertexProperty.Cardinality.single, "name", name)
     if (x != null) {
         if (label.equals("project")) v1.property(VertexProperty.Cardinality.single, "lang", x)
@@ -31,18 +31,16 @@ def parse(line, factory) {
     if (parts.length >= 2) {
         parts[1].split(/,/).grep { !it.isEmpty() }.each {
             def (eLabel, refId, weight) = it.split(/:/).toList()
-            def v2 = factory.vertex(refId)
-            def edge = factory.edge(v1, v2, eLabel)
-            edge.property("weight", Double.valueOf(weight))
+            def v2 = graph.addVertex(T.id, refId)
+            v1.addOutEdge(eLabel, v2, "weight", Double.valueOf(weight))
         }
     }
     // process in-edges
     if (parts.length == 3) {
         parts[2].split(/,/).grep { !it.isEmpty() }.each {
             def (eLabel, refId, weight) = it.split(/:/).toList()
-            def v2 = factory.vertex(refId)
-            def edge = factory.edge(v2, v1, eLabel)
-            edge.property("weight", Double.valueOf(weight))
+            def v2 = graph.addVertex(T.id, refId)
+            v1.addInEdge(eLabel, v2, "weight", Double.valueOf(weight))
         }
     }
     return v1

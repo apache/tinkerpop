@@ -17,9 +17,11 @@
  * under the License.
  */
 def parse(line, factory) {
+    // "factory" should no longer be used, as ScriptElementFactory is now deprecated
+    // instead use the global "graph" variable which is the local star graph for the current element
     def parts = line.split(/ /)
     def (id, label, name, x) = parts[0].split(/:/).toList()
-    def v1 = factory.vertex(id, label)
+    def v1 = graph.addVertex(T.id, id, T.label, label)
     if (name != null) v1.property("name", name) // first value is always the name
     if (x != null) {
         // second value depends on the vertex label; it's either
@@ -30,9 +32,8 @@ def parse(line, factory) {
     if (parts.length == 2) {
         parts[1].split(/,/).grep { !it.isEmpty() }.each {
             def (eLabel, refId, weight) = it.split(/:/).toList()
-            def v2 = factory.vertex(refId)
-            def edge = factory.edge(v1, v2, eLabel)
-            edge.property("weight", Double.valueOf(weight))
+            def v2 = graph.addVertex(T.id, refId)
+            v1.addOutEdge(eLabel, v2, "weight", Double.valueOf(weight))
         }
     }
     return v1
