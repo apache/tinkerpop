@@ -210,6 +210,8 @@ If the above email template is used for the "Incubator Vote", then it should inc
 Finally, the dev@tinkerpop [VOTE] thread can be found at this location:
 
     https://pony-poc.apache.org/thread.html/...
+
+Result summary: +X (Y binding, Z non-binding), 0 (0), -1 (0)
 ```
 
 where this link should point to the result of the VOTE.
