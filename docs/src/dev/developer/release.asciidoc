@@ -180,6 +180,9 @@ Two binary distributions are provided for user convenience:
 	apache-gremlin-console-xx.yy.zz-bin.zip
 	apache-gremlin-server-xx.yy.zz-bin.zip
 
+The GPG key used to sign the release artifacts is available at:
+    https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/KEYS
+
 The online docs can be found here:
 	http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
 	http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
