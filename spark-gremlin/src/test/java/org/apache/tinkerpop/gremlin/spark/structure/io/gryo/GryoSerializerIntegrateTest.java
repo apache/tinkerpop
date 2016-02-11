@@ -64,7 +64,7 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
         Graph graph = GraphFactory.open(configuration);
-        assertEquals(totalVertices, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next().longValue());
+        assertEquals(totalVertices, graph.traversal().withComputer(SparkGraphComputer.class).V().count().next().longValue());
 
         configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
@@ -83,7 +83,7 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         graph = GraphFactory.open(configuration);
-        assertEquals(totalVertices, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next().longValue());
+        assertEquals(totalVertices, graph.traversal().withComputer(SparkGraphComputer.class).V().count().next().longValue());
 
         configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, "persisted-rdd");
@@ -94,6 +94,6 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_AND_DISK");
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         graph = GraphFactory.open(configuration);
-        assertEquals(totalVertices, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next().longValue());
+        assertEquals(totalVertices, graph.traversal().withComputer(SparkGraphComputer.class).V().count().next().longValue());
     }
 }

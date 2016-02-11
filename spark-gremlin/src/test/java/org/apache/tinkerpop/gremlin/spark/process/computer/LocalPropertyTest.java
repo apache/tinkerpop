@@ -32,8 +32,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
@@ -69,7 +67,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
                 .result(GraphComputer.ResultGraph.NEW)
                 .persist(GraphComputer.Persist.EDGES)
                 .program(TraversalVertexProgram.build()
-                        .traversal(GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)),
+                        .traversal(graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)),
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
         ////////
@@ -92,7 +90,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
                 .result(GraphComputer.ResultGraph.NEW)
                 .persist(GraphComputer.Persist.NOTHING)
                 .program(TraversalVertexProgram.build()
-                        .traversal(GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)),
+                        .traversal(graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)),
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
         ///////

@@ -42,7 +42,9 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+
 public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, Barrier {
+
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
@@ -64,7 +66,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         this.reducingBiFunction = reducingBiFunction;
     }
 
-    @Override
     public void reset() {
         super.reset();
         this.done = false;

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -44,10 +45,11 @@ import java.util.NoSuchElementException;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
+public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics>, GraphComputing {
 
     // Stored in the Traversal sideEffects but kept here as a reference for convenience.
     private StandardTraversalMetrics traversalMetrics;
+    private boolean onGraphComputer = false;
 
     public ProfileStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -140,7 +142,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
             MutableMetrics metrics;
 
             // Computer metrics are "stand-alone" but Standard metrics handle double-counted upstream time.
-            if (traversal.getEngine().isComputer()) {
+            if (this.onGraphComputer) {
                 metrics = new MutableMetrics(step.getId(), step.toString());
             } else {
                 metrics = new DependantMutableMetrics(step.getId(), step.toString(), prevMetrics);
@@ -176,6 +178,11 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
                 }
             }
         }
+    }
+
+    @Override
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
     }
 
     //////////////////

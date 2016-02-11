@@ -95,7 +95,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
         final BulkLoader loader = getBulkLoader(blvp);
         assertFalse(loader.useUserSuppliedIds());
-        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+        graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get();
         assertGraphEquality(graph, getWriteGraph(), v -> v.value(loader.getVertexIdProperty()));
     }
 
@@ -107,7 +107,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
         final BulkLoader loader = getBulkLoader(blvp);
         assertTrue(loader.useUserSuppliedIds());
-        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+        graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get();
         assertGraphEquality(graph, getWriteGraph());
     }
 
@@ -117,8 +117,8 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
                 .userSuppliedIds(true)
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
-        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get(); // initial
-        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get(); // incremental
+        graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get(); // initial
+        graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get(); // incremental
         assertGraphEquality(graph, getWriteGraph());
     }
 
@@ -130,7 +130,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
                 .userSuppliedIds(true)
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
-        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+        graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get();
         assertGraphEquality(graph, getWriteGraph());
     }
 
@@ -143,7 +143,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                     .writeGraph(getWriteGraphConfiguration()).create(graph);
             final BulkLoader loader = getBulkLoader(blvp);
             assertTrue(loader instanceof OneTimeBulkLoader);
-            graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+            graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get();
             final Graph result = getWriteGraph();
             assertEquals(6 * iteration, IteratorUtils.count(result.vertices()));
             assertEquals(6 * iteration, IteratorUtils.count(result.edges()));
@@ -160,7 +160,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
         final BulkLoader loader = getBulkLoader(blvp);
         assertTrue(loader instanceof OneTimeBulkLoader);
-        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+        graphProvider.getGraphComputer(graph).workers(1).program(blvp).submit().get();
         final Graph result = getWriteGraph();
         assertEquals(6, IteratorUtils.count(result.vertices()));
         assertEquals(6, IteratorUtils.count(result.edges()));

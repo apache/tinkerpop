@@ -20,9 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -41,7 +40,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements EngineDependent {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing {
 
     protected final Class<E> returnClass;
     protected Object[] ids;
@@ -99,13 +98,11 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        if (traversalEngine.isComputer()) {
-            this.iteratorSupplier = Collections::emptyIterator;
-            for (int i = 0; i < this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
-                if (this.ids[i] instanceof Element)
-                    this.ids[i] = ((Element) this.ids[i]).id();
-            }
+    public void onGraphComputer() {
+        this.iteratorSupplier = Collections::emptyIterator;
+        for (int i = 0; i < this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
+            if (this.ids[i] instanceof Element)
+                this.ids[i] = ((Element) this.ids[i]).id();
         }
     }
 

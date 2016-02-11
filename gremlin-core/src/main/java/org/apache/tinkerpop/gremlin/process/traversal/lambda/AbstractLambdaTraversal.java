@@ -20,12 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_TraverserGenerator;
@@ -68,11 +66,6 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     @Override
     public void applyStrategies() throws IllegalStateException {
 
-    }
-
-    @Override
-    public TraversalEngine getEngine() {
-        return StandardTraversalEngine.instance();
     }
 
     @Override
@@ -141,11 +134,6 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     @Override
     public boolean isLocked() {
         return true;
-    }
-
-    @Override
-    public void setEngine(final TraversalEngine engine) {
-
     }
 
     @Override

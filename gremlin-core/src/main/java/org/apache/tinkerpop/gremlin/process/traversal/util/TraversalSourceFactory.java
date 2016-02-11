@@ -16,36 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.io.Serializable;
+
 /**
+ * {@link TraversalSource} is not {@link Serializable}.
+ * {@code TraversalSourceFactory} can be used to create a serializable representation of a traversal source.
+ * This is is primarily an internal utility class for use and should not be used by standard users.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalScriptHelper {
+public final class TraversalSourceFactory<T extends TraversalSource> implements Serializable {
 
-    private TraversalScriptHelper() {
+    private final TraversalStrategies traversalStrategies;
+    private final Class<T> traversalSourceClass;
+
+    public TraversalSourceFactory(final T traversalSource) {
+        this.traversalSourceClass = (Class<T>) traversalSource.getClass();
+        this.traversalStrategies = traversalSource.getStrategies();
     }
 
-    public static <S, E> Traversal.Admin<S, E> compute(
-            final Graph graph,
-            final TraversalSource traversalSource,
-            final String scriptEngineName,
-            final String traversalScript,
-            final Object... bindings) {
-
+    public T createTraversalSource(final Graph graph) {
         try {
-            return new TraversalScriptFunction<S, E>(traversalSource, scriptEngineName, traversalScript, bindings).apply(graph);
+            return this.traversalSourceClass.getConstructor(Graph.class, TraversalStrategies.class).newInstance(graph, this.traversalStrategies);
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    public static <S, E> Traversal.Admin<S, E> compute(final String script, final GraphTraversalSource g, final Object... bindings) {
-        return TraversalScriptHelper.compute(g.getGraph(), g, "gremlin-groovy", script, bindings);
     }
 }

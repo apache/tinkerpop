@@ -20,11 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -56,7 +54,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected TraversalParent traversalParent = EmptyStep.instance();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
-    protected TraversalEngine traversalEngine = StandardTraversalEngine.instance(); // necessary for strategies that need the engine in OLAP message passing (not so bueno)
     protected boolean locked = false;
     protected Set<TraverserRequirement> traverserRequirements = new HashSet<>();
 
@@ -86,13 +83,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.setStrategies(this.strategies);
-                    globalChild.setEngine(this.traversalEngine);
                     if (hasGraph) globalChild.setGraph(this.graph);
                     globalChild.applyStrategies();
                 }
                 for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
                     localChild.setStrategies(this.strategies);
-                    localChild.setEngine(StandardTraversalEngine.instance());
                     if (hasGraph) localChild.setGraph(this.graph);
                     localChild.applyStrategies();
                 }
@@ -100,16 +95,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         }
         this.finalEndStep = this.getEndStep();
         this.locked = true;
-    }
-
-    @Override
-    public TraversalEngine getEngine() {
-        return this.traversalEngine;
-    }
-
-    @Override
-    public void setEngine(final TraversalEngine engine) {
-        this.traversalEngine = engine;
     }
 
     @Override
@@ -124,7 +109,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             requirements.add(TraverserRequirement.SIDE_EFFECTS);
         if (null != this.getSideEffects().getSackInitialValue())
             requirements.add(TraverserRequirement.SACK);
-        if (this.getEngine().isComputer())
+        if (this.strategies.onGraphComputer())
             requirements.add(TraverserRequirement.BULK);
         if (requirements.contains(TraverserRequirement.ONE_BULK))
             requirements.remove(TraverserRequirement.BULK);
@@ -241,7 +226,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        this.strategies = strategies.clone();
+        this.strategies = strategies.clone(); // todo: why do we clone this?
     }
 
     @Override

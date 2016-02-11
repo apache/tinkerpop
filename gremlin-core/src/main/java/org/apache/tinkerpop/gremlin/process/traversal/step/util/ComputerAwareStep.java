@@ -19,9 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
@@ -31,7 +30,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements EngineDependent {
+public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements GraphComputing {
 
     private Iterator<Traverser<E>> previousIterator = EmptyIterator.instance();
 
@@ -49,8 +48,8 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     }
 
     @Override
-    public void onEngine(final TraversalEngine engine) {
-        this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
+    public void onGraphComputer() {
+        this.traverserStepIdAndLabelsSetByChild = true;
     }
 
     @Override
@@ -66,7 +65,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     //////
 
-    public static class EndStep<S> extends AbstractStep<S, S> implements EngineDependent {
+    public static class EndStep<S> extends AbstractStep<S, S> implements GraphComputing {
 
         public EndStep(final Traversal.Admin traversal) {
             super(traversal);
@@ -88,8 +87,8 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         }
 
         @Override
-        public void onEngine(final TraversalEngine engine) {
-            this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
+        public void onGraphComputer() {
+            this.traverserStepIdAndLabelsSetByChild = true;
         }
     }
 

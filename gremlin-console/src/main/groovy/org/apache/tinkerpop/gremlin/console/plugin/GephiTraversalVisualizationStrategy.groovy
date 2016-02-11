@@ -26,9 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy
@@ -66,7 +66,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEngine().isComputer())
+        if (traversal.getStrategies().onGraphComputer())
             return
 
         // only apply these strategies if the traversal was :submit to the acceptor - otherwise process as usual
@@ -102,7 +102,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
                     final BulkSet<Object> objects = ((BulkSet<Object>) traverser.sideEffects(sideEffectKey))
                     if (!objects.isEmpty()) {
-                        final List<String> vertices = objects.findAll{ Object o -> o instanceof Vertex}
+                        final List<String> vertices = objects.findAll { Object o -> o instanceof Vertex }
                                 .collect { Object o -> ((Vertex) o).id().toString() }
                         acceptor.updateVisitedVertices(vertices)
                         objects.clear()

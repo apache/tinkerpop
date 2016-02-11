@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -52,7 +50,7 @@ import java.util.stream.StreamSupport;
  * This is the base interface for all traversal's, where each extending interface is seen as a domain specific language.
  * For example, {@link GraphTraversal} is a domain specific language for traversing a graph using "graph concepts" (e.g. vertices, edges).
  * Another example may represent the graph using "social concepts" (e.g. people, cities, artifacts).
- * A {@link Traversal} is evaluated in one of two ways: {@link StandardTraversalEngine} (OLTP) and {@link ComputerTraversalEngine} (OLAP).
+ * A {@link Traversal} is evaluated in one of two ways: iterator-based OLTP or {@link GraphComputer}-based OLAP.
  * OLTP traversals leverage an iterator and are executed within a single JVM (with data access allowed to be remote).
  * OLAP traversals leverage {@link GraphComputer} and are executed between multiple JVMs (and/or cores).
  *
@@ -345,20 +343,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         public void applyStrategies() throws IllegalStateException;
 
         /**
-         * Get the {@link TraversalEngine} that will be used to execute this traversal.
-         *
-         * @return get the traversal engine associated with this traversal.
-         */
-        public TraversalEngine getEngine();
-
-        /**
-         * Set the {@link TraversalEngine} to be used for executing this traversal.
-         *
-         * @param engine the engine to execute the traversal with.
-         */
-        public void setEngine(final TraversalEngine engine);
-
-        /**
          * Get the {@link TraverserGenerator} associated with this traversal.
          * The traversal generator creates {@link Traverser} instances that are respective of the traversal's {@link org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement}.
          *
@@ -381,7 +365,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
                 requirements.add(TraverserRequirement.SIDE_EFFECTS);
             if (null != this.getSideEffects().getSackInitialValue())
                 requirements.add(TraverserRequirement.SACK);
-            if (this.getEngine().isComputer())
+            if (this.getStrategies().onGraphComputer())
                 requirements.add(TraverserRequirement.BULK);
             if (requirements.contains(TraverserRequirement.ONE_BULK))
                 requirements.remove(TraverserRequirement.BULK);

@@ -82,7 +82,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldHaveStandardStringRepresentation() {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         assertEquals(StringFactory.graphComputerString(computer), computer.toString());
     }
 
@@ -90,7 +90,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldNotAllowWithNoVertexProgramNorMapReducers() throws Exception {
         try {
-            graph.compute(graphComputerClass.get()).submit().get();
+            graphProvider.getGraphComputer(graph).submit().get();
             fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
         } catch (Exception ex) {
             validateException(GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers(), ex);
@@ -163,7 +163,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldHaveImmutableComputeResultMemory() throws Exception {
-        final ComputerResult results = graph.compute(graphComputerClass.get()).program(new VertexProgramB()).submit().get();
+        final ComputerResult results = graphProvider.getGraphComputer(graph).program(new VertexProgramB()).submit().get();
 
         try {
             results.memory().set("set", "test");
@@ -236,7 +236,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldNotAllowNullMemoryKeys() throws Exception {
         try {
-            graph.compute(graphComputerClass.get()).program(new VertexProgramC()).submit().get();
+            graphProvider.getGraphComputer(graph).program(new VertexProgramC()).submit().get();
             fail("Providing null memory key should fail");
         } catch (Exception ex) {
             // validateException(Memory.Exceptions.memoryKeyCanNotBeNull(), ex);
@@ -286,7 +286,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldNotAllowEmptyMemoryKeys() throws Exception {
         try {
-            graph.compute(graphComputerClass.get()).program(new VertexProgramD()).submit().get();
+            graphProvider.getGraphComputer(graph).program(new VertexProgramD()).submit().get();
             fail("Providing empty memory key should fail");
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryKeyCanNotBeEmpty(), ex);
@@ -335,7 +335,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldNotAllowSettingUndeclaredMemoryKeys() throws Exception {
-        graph.compute(graphComputerClass.get()).program(new VertexProgramE()).submit().get();
+        graphProvider.getGraphComputer(graph).program(new VertexProgramE()).submit().get();
     }
 
     public static class VertexProgramE extends StaticVertexProgram {
@@ -381,7 +381,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldNotAllowTheSameComputerToExecutedTwice() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get()).program(new VertexProgramA());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph).program(new VertexProgramA());
         computer.submit().get(); // this should work as its the first run of the graph computer
 
         try {
@@ -442,7 +442,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldHaveConsistentMemoryVertexPropertiesAndExceptions() throws Exception {
-        ComputerResult results = graph.compute(graphComputerClass.get()).program(new VertexProgramF()).submit().get();
+        ComputerResult results = graphProvider.getGraphComputer(graph).program(new VertexProgramF()).submit().get();
         assertEquals(1, results.memory().getIteration());
         assertEquals(2, results.memory().asMap().size());
         assertEquals(2, results.memory().keys().size());
@@ -529,7 +529,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldAndOrIncrCorrectlyThroughSubStages() throws Exception {
-        ComputerResult results = graph.compute(graphComputerClass.get()).program(new VertexProgramG()).submit().get();
+        ComputerResult results = graphProvider.getGraphComputer(graph).program(new VertexProgramG()).submit().get();
         assertEquals(2, results.memory().getIteration());
         assertEquals(6, results.memory().asMap().size());
         assertEquals(6, results.memory().keys().size());
@@ -641,7 +641,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldAllowMapReduceWithNoVertexProgram() throws Exception {
-        final ComputerResult results = graph.compute(graphComputerClass.get()).mapReduce(new MapReduceA()).submit().get();
+        final ComputerResult results = graphProvider.getGraphComputer(graph).mapReduce(new MapReduceA()).submit().get();
         assertEquals(123, results.memory().<Integer>get("ageSum").intValue());
     }
 
@@ -681,7 +681,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSupportMultipleMapReduceJobs() throws Exception {
-        final ComputerResult results = graph.compute(graphComputerClass.get())
+        final ComputerResult results = graphProvider.getGraphComputer(graph)
                 .program(new VertexProgramH())
                 .mapReduce(new MapReduceH1())
                 .mapReduce(new MapReduceH2()).submit().get();
@@ -802,7 +802,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSortReduceOutput() throws Exception {
-        final ComputerResult results = graph.compute(graphComputerClass.get()).mapReduce(new MapReduceB()).submit().get();
+        final ComputerResult results = graphProvider.getGraphComputer(graph).mapReduce(new MapReduceB()).submit().get();
         final List<Integer> nameLengths = results.memory().get("nameLengths");
         assertEquals(6, nameLengths.size());
         for (int i = 1; i < nameLengths.size(); i++) {
@@ -849,7 +849,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSortMapOutput() throws Exception {
-        final ComputerResult results = graph.compute(graphComputerClass.get()).mapReduce(new MapReduceBB()).submit().get();
+        final ComputerResult results = graphProvider.getGraphComputer(graph).mapReduce(new MapReduceBB()).submit().get();
         final List<Integer> nameLengths = results.memory().get("nameLengths");
         assertEquals(6, nameLengths.size());
         for (int i = 1; i < nameLengths.size(); i++) {
@@ -892,7 +892,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldOnlyAllowReadingVertexPropertiesInMapReduce() throws Exception {
-        graph.compute(graphComputerClass.get()).mapReduce(new MapReduceC()).submit().get();
+        graphProvider.getGraphComputer(graph).mapReduce(new MapReduceC()).submit().get();
     }
 
     public static class MapReduceC extends StaticMapReduce<MapReduce.NullObject, MapReduce.NullObject, MapReduce.NullObject, MapReduce.NullObject, MapReduce.NullObject> {
@@ -954,7 +954,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldOnlyAllowIDAccessOfAdjacentVertices() throws Exception {
-        graph.compute(graphComputerClass.get()).program(new VertexProgramI()).submit().get();
+        graphProvider.getGraphComputer(graph).program(new VertexProgramI()).submit().get();
     }
 
     public static class VertexProgramI extends StaticVertexProgram<MapReduce.NullObject> {
@@ -1066,7 +1066,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     public void shouldStartAndEndWorkersForVertexProgramAndMapReduce() throws Exception {
         MapReduceI.WORKER_START.clear();
         MapReduceI.WORKER_END.clear();
-        assertEquals(3, graph.compute(graphComputerClass.get()).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get().memory().<Integer>get("a").intValue());
+        assertEquals(3, graphProvider.getGraphComputer(graph).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get().memory().<Integer>get("a").intValue());
         if (MapReduceI.WORKER_START.size() == 2) {
             assertEquals(2, MapReduceI.WORKER_START.size());
             assertTrue(MapReduceI.WORKER_START.contains(MapReduce.Stage.MAP) && MapReduceI.WORKER_START.contains(MapReduce.Stage.REDUCE));
@@ -1218,7 +1218,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     public void shouldSupportPersistResultGraphPairsStatedInFeatures() throws Exception {
         for (final GraphComputer.ResultGraph resultGraph : GraphComputer.ResultGraph.values()) {
             for (final GraphComputer.Persist persist : GraphComputer.Persist.values()) {
-                final GraphComputer computer = graph.compute(graphComputerClass.get());
+                final GraphComputer computer = graphProvider.getGraphComputer(graph);
                 if (computer.features().supportsResultGraphPersistCombination(resultGraph, persist)) {
                     computer.program(new VertexProgramK()).result(resultGraph).persist(persist).submit().get();
                 } else {
@@ -1236,7 +1236,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldProcessResultGraphNewWithPersistNothing() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.NOTHING)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.NOTHING).submit().get();
             assertEquals(Long.valueOf(0l), result.graph().traversal().V().count().next());
@@ -1256,7 +1256,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldProcessResultGraphNewWithPersistVertexProperties() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
             assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
@@ -1276,7 +1276,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldProcessResultGraphNewWithPersistEdges() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.EDGES).submit().get();
             assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
@@ -1296,7 +1296,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldProcessResultGraphOriginalWithPersistNothing() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.NOTHING)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.NOTHING).submit().get();
             assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
@@ -1316,7 +1316,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldProcessResultGraphOriginalWithPersistVertexProperties() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
             assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
@@ -1336,7 +1336,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldProcessResultGraphOriginalWithPersistEdges() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        final GraphComputer computer = graphProvider.getGraphComputer(graph);
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.EDGES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.EDGES).submit().get();
             assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
@@ -1397,11 +1397,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldSupportWorkerCount() throws Exception {
-        int maxWorkers = graph.compute(graphComputerClass.get()).features().getMaxWorkers();
+        int maxWorkers = graphProvider.getGraphComputer(graph).features().getMaxWorkers();
         if (maxWorkers != Integer.MAX_VALUE) {
             for (int i = maxWorkers + 1; i < maxWorkers + 10; i++) {
                 try {
-                    graph.compute(graphComputerClass.get()).program(new VertexProgramL()).workers(i).submit().get();
+                    graphProvider.getGraphComputer(graph).program(new VertexProgramL()).workers(i).submit().get();
                     fail("Should throw a GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported() exception");
                 } catch (final IllegalArgumentException e) {
                     assertTrue(e.getMessage().contains("computer requires more workers"));
@@ -1410,7 +1410,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
         if (maxWorkers > 25) maxWorkers = 25;
         for (int i = 1; i <= maxWorkers; i++) {
-            ComputerResult result = graph.compute(graphComputerClass.get()).program(new VertexProgramL()).workers(i).submit().get();
+            ComputerResult result = graphProvider.getGraphComputer(graph).program(new VertexProgramL()).workers(i).submit().get();
             assertEquals(Integer.valueOf(i).longValue(), (long) result.memory().get("workerCount"));
         }
     }
@@ -1489,44 +1489,44 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldSupportGraphFilter() throws Exception {
         /// VERTEX PROGRAM
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.outE()).program(new VertexProgramM(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.outE()).program(new VertexProgramM(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
 
         /// VERTEX PROGRAM + MAP REDUCE
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.SOFTWARE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.KNOWS_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.outE()).program(new VertexProgramM(VertexProgramM.OUT_EDGES_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.outE()).program(new VertexProgramM(VertexProgramM.OUT_EDGES_ONLY)).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
 
         /// MAP REDUCE ONLY
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("software")).mapReduce(new MapReduceJ(VertexProgramM.SOFTWARE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.bothE("knows")).mapReduce(new MapReduceJ(VertexProgramM.KNOWS_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.bothE("knows")).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.<Vertex>bothE().limit(0)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.<Vertex>outE().limit(1)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
-        graph.compute(graphComputerClass.get()).edges(__.outE()).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software")).mapReduce(new MapReduceJ(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.bothE("knows")).mapReduce(new MapReduceJ(VertexProgramM.KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.bothE("knows")).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).mapReduce(new MapReduceJ(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.<Vertex>bothE().limit(0)).mapReduce(new MapReduceJ(VertexProgramM.VERTICES_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.<Vertex>outE().limit(1)).mapReduce(new MapReduceJ(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).edges(__.outE()).mapReduce(new MapReduceJ(VertexProgramM.OUT_EDGES_ONLY)).submit().get();
 
         // EXCEPTION HANDLING
         try {
-            graph.compute(graphComputerClass.get()).vertices(__.out());
+            graphProvider.getGraphComputer(graph).vertices(__.out());
             fail();
         } catch (final IllegalArgumentException e) {
             assertEquals(e.getMessage(), GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(__.out()).getMessage());
         }
         try {
-            graph.compute(graphComputerClass.get()).edges(__.<Vertex>out().outE());
+            graphProvider.getGraphComputer(graph).edges(__.<Vertex>out().outE());
             fail();
         } catch (final IllegalArgumentException e) {
             assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>out().outE()).getMessage());

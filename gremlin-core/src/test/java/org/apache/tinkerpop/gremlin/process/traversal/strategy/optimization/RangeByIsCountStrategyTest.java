@@ -19,16 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -36,145 +32,76 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.inside;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.lte;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.outside;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(Enclosed.class)
+@RunWith(Parameterized.class)
 public class RangeByIsCountStrategyTest {
 
-    @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractRangeByIsCountStrategyTest {
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
+    @Parameterized.Parameter(value = 0)
+    public String name;
 
-        @Parameterized.Parameter(value = 0)
-        public String name;
+    @Parameterized.Parameter(value = 1)
+    public Object predicate;
 
-        @Parameterized.Parameter(value = 1)
-        public Object predicate;
+    @Parameterized.Parameter(value = 2)
+    public long expectedHighRange;
 
-        @Parameterized.Parameter(value = 2)
-        public long expectedHighRange;
+    public void applyRangeByIsCountStrategy(final Traversal traversal) {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(RangeByIsCountStrategy.instance());
 
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(predicate, expectedHighRange);
-        }
+        traversal.asAdmin().setStrategies(strategies);
+        //traversal.asAdmin().setEngine(this.traversalEngine);
+        traversal.asAdmin().applyStrategies();
     }
 
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractRangeByIsCountStrategyTest {
+    @Test
+    public void doTest() {
+        final AtomicInteger counter = new AtomicInteger(0);
+        final Traversal traversal = __.out().count().is(predicate);
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
+        applyRangeByIsCountStrategy(traversal);
 
-        @Parameterized.Parameter(value = 0)
-        public String name;
+        final List<RangeGlobalStep> steps = TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal.asAdmin());
+        assertEquals(1, steps.size());
 
-        @Parameterized.Parameter(value = 1)
-        public Object predicate;
+        steps.forEach(step -> {
+            assertEquals(0, step.getLowRange());
+            assertEquals(expectedHighRange, step.getHighRange());
+            counter.incrementAndGet();
+        });
 
-        @Parameterized.Parameter(value = 2)
-        public long expectedHighRange;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(predicate, expectedHighRange);
-        }
+        assertEquals(1, counter.intValue());
     }
 
-    public static class SpecificComputerTest extends AbstractRangeByIsCountStrategyTest {
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
 
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void nestedCountEqualsNullShouldLimitToOne() {
-            final AtomicInteger counter = new AtomicInteger(0);
-            final Traversal traversal = __.out().where(__.outE("created").count().is(0));
-            applyRangeByIsCountStrategy(traversal);
-
-            final TraversalFilterStep filterStep = TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal.asAdmin()).stream().findFirst().get();
-            final Traversal nestedTraversal = (Traversal) filterStep.getLocalChildren().get(0);
-            TraversalHelper.getStepsOfClass(RangeGlobalStep.class, nestedTraversal.asAdmin()).stream().forEach(step -> {
-                assertEquals(0, step.getLowRange());
-                assertEquals(1, step.getHighRange());
-                counter.incrementAndGet();
-            });
-            assertEquals(1, counter.get());
-        }
-    }
-
-    private static abstract class AbstractRangeByIsCountStrategyTest {
-
-        protected TraversalEngine traversalEngine;
-
-        void applyRangeByIsCountStrategy(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(RangeByIsCountStrategy.instance());
-
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
-            traversal.asAdmin().applyStrategies();
-        }
-
-        public void doTest(final Object predicate, final long expectedHighRange) {
-            final AtomicInteger counter = new AtomicInteger(0);
-            final Traversal traversal = __.out().count().is(predicate);
-
-            applyRangeByIsCountStrategy(traversal);
-
-            final List<RangeGlobalStep> steps = TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal.asAdmin());
-            assertEquals(1, steps.size());
-
-            steps.forEach(step -> {
-                assertEquals(0, step.getLowRange());
-                assertEquals(expectedHighRange, step.getHighRange());
-                counter.incrementAndGet();
-            });
-
-            assertEquals(1, counter.intValue());
-        }
-
-        static Iterable<Object[]> generateTestParameters() {
-
-            return Arrays.asList(new Object[][]{
-                    {"countEqualsNullShouldLimitToOne", eq(0l), 1l},
-                    {"countNotEqualsFourShouldLimitToFive", neq(4l), 5l},
-                    {"countLessThanOrEqualThreeShouldLimitToFour", lte(3l), 4l},
-                    {"countLessThanThreeShouldLimitToThree", lt(3l), 3l},
-                    {"countGreaterThanTwoShouldLimitToThree", gt(2l), 3l},
-                    {"countGreaterThanOrEqualTwoShouldLimitToTwo", gte(2l), 2l},
-                    {"countInsideTwoAndFourShouldLimitToFour", inside(2l, 4l), 4l},
-                    {"countOutsideTwoAndFourShouldLimitToFive", outside(2l, 4l), 5l},
-                    {"countWithinTwoSixFourShouldLimitToSeven", within(2l, 6l, 4l), 7l},
-                    {"countWithoutTwoSixFourShouldLimitToSix", without(2l, 6l, 4l), 6l}});
-        }
+        return Arrays.asList(new Object[][]{
+                {"countEqualsNullShouldLimitToOne", eq(0l), 1l},
+                {"countNotEqualsFourShouldLimitToFive", neq(4l), 5l},
+                {"countLessThanOrEqualThreeShouldLimitToFour", lte(3l), 4l},
+                {"countLessThanThreeShouldLimitToThree", lt(3l), 3l},
+                {"countGreaterThanTwoShouldLimitToThree", gt(2l), 3l},
+                {"countGreaterThanOrEqualTwoShouldLimitToTwo", gte(2l), 2l},
+                {"countInsideTwoAndFourShouldLimitToFour", inside(2l, 4l), 4l},
+                {"countOutsideTwoAndFourShouldLimitToFive", outside(2l, 4l), 5l},
+                {"countWithinTwoSixFourShouldLimitToSeven", within(2l, 6l, 4l), 7l},
+                {"countWithoutTwoSixFourShouldLimitToSix", without(2l, 6l, 4l), 6l}});
     }
 }

@@ -56,6 +56,14 @@ public interface TraversalParent {
         throw new IllegalStateException("This traversal parent does not support the removal of global traversals: " + this.getClass().getCanonicalName());
     }
 
+    public default boolean isLocalChild(final Traversal.Admin<?, ?> child) {
+        return this.getLocalChildren().contains(child);
+    }
+
+    public default boolean isGlobalChild(final Traversal.Admin<?, ?> child) {
+        return this.getGlobalChildren().contains(child);
+    }
+
     public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {
         final Set<TraverserRequirement> requirements = EnumSet.noneOf(TraverserRequirement.class);
         Collections.addAll(requirements, selfRequirements);

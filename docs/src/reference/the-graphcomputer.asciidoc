@@ -82,7 +82,7 @@ memory manipulations).
 ----
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
-g = result.graph().traversal(standard())
+g = result.graph().traversal()
 g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
 ----
 
@@ -140,7 +140,7 @@ that the property is "hidden" unless it is directly accessed via name.
 graph = TinkerFactory.createModern()
 result = graph.compute().program(PeerPressureVertexProgram.build().create()).mapReduce(ClusterPopulationMapReduce.build().create()).submit().get()
 result.memory().get('clusterPopulation')
-g = result.graph().traversal(standard())
+g = result.graph().traversal()
 g.V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
 g.V().valueMap()
 ----
@@ -300,7 +300,7 @@ The above `PageRankVertexProgram` is used as follows.
 ----
 result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
 result.memory().runtime
-g = result.graph().traversal(standard())
+g = result.graph().traversal()
 g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
 ----
 
@@ -388,7 +388,7 @@ TraversalVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~
 
 image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in
-that it can be executed via a `GraphTraversal` with a `ComputerTraversalEngine`. In Gremlin, it is possible to have
+that it can be executed via a `Traversal` and a `GraphComputer`. In Gremlin, it is possible to have
 the same traversal executed using either the standard OTLP-engine or the `GraphComputer` OLAP-engine. The difference
 being where the traversal is submitted.
 
@@ -398,9 +398,9 @@ link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engine
 
 [gremlin-groovy,modern]
 ----
-g = graph.traversal(standard())
+g = graph.traversal()
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLTP
-g = graph.traversal(computer())
+g = graph.traversal().withComputer()
 g.V().both().hasLabel('person').values('age').groupCount().next() // OLAP
 ----
 

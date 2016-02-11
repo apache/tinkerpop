@@ -71,7 +71,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEngine().isStandard())
+
+        if (traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
             return;
 
         Step<?, ?> endStep = traversal.getEndStep();

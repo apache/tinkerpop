@@ -281,8 +281,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             super(TraversalVertexProgram.class);
         }
 
-        public Builder traversal(final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(builder, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(traversalSource, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
