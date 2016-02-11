@@ -86,7 +86,7 @@ public final class Cluster {
      * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
      * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
      * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
-     * single request.  The transactions are managed by the user and must be committed or rolledback manually.
+     * single request.  The transactions are managed by the user and must be committed or rolled-back manually.
      * <p/>
      * Note that calling this method does not imply that a connection is made to the server itself at this point.
      * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
@@ -96,9 +96,29 @@ public final class Cluster {
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
     public <T extends Client> T connect(final String sessionId) {
+        return connect(sessionId, false);
+    }
+
+    /**
+     * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
+     * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
+     * single request.  If {@code manageTransactions} is set to {@code false} then transactions are managed by the
+     * user and must be committed or rolled-back manually. When set to {@code true} the transaction is committed or
+     * rolled-back at the end of each request.
+     * <p/>
+     * Note that calling this method does not imply that a connection is made to the server itself at this point.
+     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
+     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
+     * submitted or can be directly initialized via {@link Client#init()}.
+     *
+     * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
+     * @param manageTransactions enables auto-transactions when set to true
+     */
+    public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
         if (null == sessionId || sessionId.isEmpty())
             throw new IllegalArgumentException("sessionId cannot be null or empty");
-        return (T) new Client.SessionedClient(this, sessionId);
+        return (T) new Client.SessionedClient(this, sessionId, manageTransactions);
     }
 
     @Override

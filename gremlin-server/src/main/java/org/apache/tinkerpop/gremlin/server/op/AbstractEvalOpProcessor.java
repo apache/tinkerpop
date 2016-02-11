@@ -57,7 +57,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -190,6 +189,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : null;
         final Bindings bindings = bindingsSupplier.get();
 
+        // sessionless requests are always transaction managed, but in-session requests are configurable.
+        final boolean managedTransactionsForRequest = manageTransactions ?
+                true : (Boolean) args.getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+
         final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings, null, o -> {
             final Iterator itty = IteratorUtils.asIterator(o);
 
@@ -201,11 +204,11 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                 final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
                 logger.warn(errorMessage);
                 ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
-                if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
             } catch (Exception ex) {
                 logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
                 ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
             }
         });
 
@@ -245,11 +248,15 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
         boolean warnOnce = false;
 
+        // sessionless requests are always transaction managed, but in-session requests are configurable.
+        final boolean managedTransactionsForRequest = manageTransactions ?
+                true : (Boolean) msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
             // as there is nothing left to iterate if we are transaction managed then we should execute a
             // commit here before we send back a NO_CONTENT which implies success
-            if (manageTransactions) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+            if (managedTransactionsForRequest) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .create());
@@ -260,9 +267,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        // if we manage the transactions then we need to commit stuff now that eval is complete.
-        Iterator toIterate = itty;
-
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
@@ -271,7 +275,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         // use an external control to manage the loop as opposed to just checking hasNext() in the while.  this
         // prevent situations where auto transactions create a new transaction after calls to commit() withing
         // the loop on calls to hasNext().
-        boolean hasMore = toIterate.hasNext();
+        boolean hasMore = itty.hasNext();
 
         while (hasMore) {
             if (Thread.interrupted()) throw new InterruptedException();
@@ -280,13 +284,13 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             // so iterating next() if the message is not written and flushed would bump the aggregate size beyond
             // the expected resultIterationBatchSize.  Total serialization time for the response remains in
             // effect so if the client is "slow" it may simply timeout.
-            if (aggregate.size() < resultIterationBatchSize) aggregate.add(toIterate.next());
+            if (aggregate.size() < resultIterationBatchSize) aggregate.add(itty.next());
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
             if (ctx.channel().isWritable()) {
-                if (aggregate.size() == resultIterationBatchSize || !toIterate.hasNext()) {
-                    final ResponseStatusCode code = toIterate.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
+                if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                    final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
 
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
@@ -294,7 +298,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     serializeResponseMessage(ctx, msg, serializer, useBinary, aggregate, code);
 
                     // only need to reset the aggregation list if there's more stuff to write
-                    if (toIterate.hasNext())
+                    if (itty.hasNext())
                         aggregate = new ArrayList<>(resultIterationBatchSize);
                     else {
                         // iteration and serialization are both complete which means this finished successfully. note that
@@ -302,7 +306,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                         // local errors will get rolledback below because the exceptions aren't thrown in those cases to be
                         // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
                         // there are no more items to iterate and serialization is complete
-                        if (manageTransactions) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        if (managedTransactionsForRequest) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
 
                         // exit the result iteration loop as there are no more results left.  using this external control
                         // because of the above commit.  some graphs may open a new transaction on the call to
