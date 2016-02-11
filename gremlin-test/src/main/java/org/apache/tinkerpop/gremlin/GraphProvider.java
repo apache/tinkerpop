@@ -85,8 +85,7 @@ public interface GraphProvider {
     /**
      * Create a {@link GraphTraversalSource} from a {@link Graph} instance.  The default implementation does not
      * use {@link GraphComputer} so vendors should override as necessary if their implementation is testing
-     * something that requires a different engine type, like those tests for
-     * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
+     * something that requires a different engine type, like {@link GraphComputer}.
      */
     public default GraphTraversalSource traversal(final Graph graph) {
         return graph.traversal();
@@ -95,8 +94,7 @@ public interface GraphProvider {
     /**
      * Create a {@link GraphTraversalSource} from a {@link Graph} instance.  The default implementation does not use
      * {@link GraphComputer} so vendors should override as necessary if their implementation is testing
-     * something that requires a different engine type, like those tests for
-     * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
+     * something that requires a different engine type, like {@link GraphComputer}.
      * <p/>
      * Implementations should apply strategies as necessary to the
      * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource} before calling
@@ -106,6 +104,12 @@ public interface GraphProvider {
         return this.traversal(graph).withStrategies(strategies);
     }
 
+    /**
+     * Create a {@link GraphComputer} from the {@link Graph} instance. The default implementation simply calls {@code graph.compute()}.
+     *
+     * @param graph the graph to get the graph computer from
+     * @return a new graph computer
+     */
     public default GraphComputer getGraphComputer(final Graph graph) {
         return graph.compute();
     }

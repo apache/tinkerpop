@@ -38,13 +38,13 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgramStep<S> extends AbstractStep<S, ComputerResult> implements TraversalParent {
+public final class TraversalVertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements TraversalParent {
 
-    public Traversal.Admin<S, ?> computerTraversal;
+    public Traversal.Admin<?, ?> computerTraversal;
     private final transient GraphComputer graphComputer;
     private boolean first = true;
 
-    public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> computerTraversal, final GraphComputer graphComputer) {
+    public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<?, ?> computerTraversal, final GraphComputer graphComputer) {
         super(traversal);
         this.graphComputer = graphComputer;
         this.computerTraversal = this.integrateChild(computerTraversal);
@@ -75,8 +75,8 @@ public final class TraversalVertexProgramStep<S> extends AbstractStep<S, Compute
     }
 
     @Override
-    public TraversalVertexProgramStep<S> clone() {
-        final TraversalVertexProgramStep<S> clone = (TraversalVertexProgramStep<S>) super.clone();
+    public TraversalVertexProgramStep clone() {
+        final TraversalVertexProgramStep clone = (TraversalVertexProgramStep) super.clone();
         clone.computerTraversal = this.integrateChild(this.computerTraversal.clone());
         return clone;
     }

@@ -60,7 +60,7 @@ public class ComputerVerificationStrategyTest {
         try {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(ComputerVerificationStrategy.instance());
-            traversal.asAdmin().setParent(new TraversalVertexProgramStep<>(EmptyTraversal.instance(), EmptyTraversal.instance(), null)); // trick it
+            traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance(), null)); // trick it
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().applyStrategies();
             fail("The strategy should not allow traversal: " + this.traversal);

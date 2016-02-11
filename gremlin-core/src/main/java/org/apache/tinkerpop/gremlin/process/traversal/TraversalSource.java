@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
@@ -62,7 +63,7 @@ public interface TraversalSource extends Cloneable {
 
     /**
      * Add a {@link Function} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
-     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy} to the strategies.
+     * This adds a {@link VertexProgramStrategy} to the strategies.
      *
      * @param graphComputerFunction a function to generate a graph computer from the graph
      * @return a new traversal source with updated strategies
@@ -71,7 +72,7 @@ public interface TraversalSource extends Cloneable {
 
     /**
      * Add a {@link GraphComputer} class used to execute the traversal.
-     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy} to the strategies.
+     * This adds a {@link VertexProgramStrategy} to the strategies.
      *
      * @param graphComputerClass the graph computer class
      * @return a new traversal source with updated strategies
@@ -82,7 +83,7 @@ public interface TraversalSource extends Cloneable {
 
     /**
      * Add the standard {@link GraphComputer} of the graph that will be used to execute the traversal.
-     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy} to the strategies.
+     * This adds a {@link VertexProgramStrategy} to the strategies.
      *
      * @return a new traversal source with updated strategies
      */

@@ -109,8 +109,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             requirements.add(TraverserRequirement.SIDE_EFFECTS);
         if (null != this.getSideEffects().getSackInitialValue())
             requirements.add(TraverserRequirement.SACK);
-        if (TraversalHelper.onGraphComputer(this))
-            requirements.add(TraverserRequirement.BULK);
         if (requirements.contains(TraverserRequirement.ONE_BULK))
             requirements.remove(TraverserRequirement.BULK);
         return requirements;

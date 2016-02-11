@@ -120,7 +120,6 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
-
         }
         if (!(this.traversal.getEndStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep() instanceof ReducingBarrierStep))
             this.mapReducers.add(new TraverserMapReduce(this.traversal));

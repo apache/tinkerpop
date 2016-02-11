@@ -118,7 +118,7 @@ public final class TraversalHelper {
      * Insert a step before a specified step instance.
      *
      * @param insertStep the step to insert
-     * @param afterStep  the step to insert the new step after
+     * @param afterStep  the step to insert the new step before
      * @param traversal  the traversal on which the action should occur
      */
     public static <S, E> void insertBeforeStep(final Step<S, E> insertStep, final Step<E, ?> afterStep, final Traversal.Admin<?, ?> traversal) {
@@ -469,9 +469,7 @@ public final class TraversalHelper {
     }
 
     public static boolean onGraphComputer(Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent().asStep() instanceof TraversalVertexProgramStep)
-            return true;
-        while (!((traversal.getParent()) instanceof EmptyStep)) {
+        while (!(traversal.getParent() instanceof EmptyStep)) {
             if (traversal.getParent().asStep() instanceof TraversalVertexProgramStep)
                 return true;
             traversal = traversal.getParent().asStep().getTraversal();

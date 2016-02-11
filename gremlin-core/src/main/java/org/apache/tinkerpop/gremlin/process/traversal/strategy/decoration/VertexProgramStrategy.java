@@ -17,14 +17,16 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -40,37 +42,41 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+public final class VertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private transient Function<Graph, GraphComputer> graphComputerFunction;
 
-    private TraversalVertexProgramStrategy() {
+    private VertexProgramStrategy() {
 
     }
 
-    public TraversalVertexProgramStrategy(final Function<Graph, GraphComputer> graphComputerFunction) {
+    public VertexProgramStrategy(final Function<Graph, GraphComputer> graphComputerFunction) {
         this.graphComputerFunction = graphComputerFunction;
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent() instanceof EmptyStep) {
+        traversal.addTraverserRequirement(TraverserRequirement.BULK); // all graph computations require bulk
+        if (traversal.getParent() instanceof EmptyStep) {  // VertexPrograms can only execute at the root level of a Traversal
+            if (traversal.getStartStep() instanceof GraphStep && traversal.getStartStep().getNextStep() instanceof PageRankVertexProgramStep) {
+                traversal.removeStep(0);
+                TraversalHelper.insertAfterStep(new ComputerResultStep<>(traversal, true), (PageRankVertexProgramStep) traversal.getStartStep().getNextStep(), traversal);
+            }
             if (null != this.graphComputerFunction) {   // if the function is null, then its been serialized and thus, already in a graph computer
                 Traversal.Admin<?, ?> newTraversal = new DefaultTraversal<>();
                 TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) newTraversal);
-                traversal.addStep(new TraversalVertexProgramStep<>(traversal, newTraversal, this.graphComputerFunction.apply(traversal.getGraph().get())));
+                traversal.addStep(new TraversalVertexProgramStep(traversal, newTraversal, this.graphComputerFunction.apply(traversal.getGraph().get())));
                 traversal.addStep(new ComputerResultStep<>(traversal, true));
             } else {  // this is a total hack to trick the difference between TraversalVertexProgram via GraphComputer and via TraversalSource. :|
-                traversal.setParent(new TraversalVertexProgramStep<>(EmptyTraversal.instance(),EmptyTraversal.instance(),null));
+                traversal.setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance(), null));
                 ComputerVerificationStrategy.instance().apply(traversal);
                 traversal.setParent(EmptyStep.instance());
-                traversal.addTraverserRequirement(TraverserRequirement.BULK);
             }
         }
     }
 
     public static Optional<GraphComputer> getGraphComputer(final Graph graph, final TraversalStrategies strategies) {
-        final Optional<TraversalStrategy<?>> optional = strategies.toList().stream().filter(strategy -> strategy instanceof TraversalVertexProgramStrategy).findAny();
-        return optional.isPresent() ? Optional.of(((TraversalVertexProgramStrategy) optional.get()).graphComputerFunction.apply(graph)) : Optional.empty();
+        final Optional<TraversalStrategy<?>> optional = strategies.toList().stream().filter(strategy -> strategy instanceof VertexProgramStrategy).findAny();
+        return optional.isPresent() ? Optional.of(((VertexProgramStrategy) optional.get()).graphComputerFunction.apply(graph)) : Optional.empty();
     }
 }
