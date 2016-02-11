@@ -65,6 +65,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
@@ -638,6 +639,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(4, results3.all().get().get(0).getInt());
 
         cluster.close();
+    }
+    @Test
+    public void shouldNotThrowNoSuchElementException() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            // this should return "nothing" - there should be no exception
+            assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test

@@ -32,6 +32,16 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-inc
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+TraversalEngine Deprecation and GraphProvider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `TraversalSource` infrastructure has been completely rewritten. Fortunately, for users, their code is backwards compatible.
+Unfortunately, for graph system providers, a few tweaks to their implementation are in order.
+
+* If the graph system provides support for more than `Graph.compute()`, then it implement `GraphProvider.getGraphComputer()`.
+* In any custom `TraversalStrategies`, change `traverser.getEngine().isGraphComputer()` to `traversal.getStrategies().onGraphComputer()`.
+* In any custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
+
 GraphFilter and GraphComputer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

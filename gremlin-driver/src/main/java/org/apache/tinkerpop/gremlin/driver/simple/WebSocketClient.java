@@ -25,16 +25,11 @@ import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -42,31 +37,24 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
-import io.netty.util.ReferenceCountUtil;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.function.Consumer;
 
 /**
  * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class WebSocketClient implements SimpleClient {
+public class WebSocketClient extends AbstractClient {
     private final Channel channel;
-
-    private final EventLoopGroup group;
-    private final CallbackResponseHandler callbackResponseHandler = new CallbackResponseHandler();
 
     public WebSocketClient() {
         this(URI.create("ws://localhost:8182"));
     }
 
     public WebSocketClient(final URI uri) {
-        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("ws-client-%d").build();
-        group = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), threadFactory);
+        super("ws-client-%d");
         final Bootstrap b = new Bootstrap().group(group);
         b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
@@ -103,8 +91,7 @@ public class WebSocketClient implements SimpleClient {
     }
 
     @Override
-    public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
-        callbackResponseHandler.callback = callback;
+    public void writeAndFlush(final RequestMessage requestMessage) throws Exception {
         channel.writeAndFlush(requestMessage).get();
     }
 
@@ -116,19 +103,6 @@ public class WebSocketClient implements SimpleClient {
 
         } finally {
             group.shutdownGracefully().awaitUninterruptibly();
-        }
-    }
-
-    static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
-        public Consumer<ResponseMessage> callback;
-
-        @Override
-        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-            try {
-                callback.accept(response);
-            } finally {
-                ReferenceCountUtil.release(response);
-            }
         }
     }
 }

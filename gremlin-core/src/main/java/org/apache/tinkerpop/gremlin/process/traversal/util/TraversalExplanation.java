@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.javatuples.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,10 +38,14 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalExplanation {
+public class TraversalExplanation implements Serializable {
 
-    private final Traversal.Admin<?, ?> traversal;
-    private final List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = new ArrayList<>();
+    private Traversal.Admin<?, ?> traversal;
+    private List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = new ArrayList<>();
+
+    private TraversalExplanation() {
+        // no arg constructor for serialization
+    }
 
     public TraversalExplanation(final Traversal.Admin<?, ?> traversal) {
         this.traversal = traversal.clone();

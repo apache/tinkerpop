@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.script;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -43,6 +44,7 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Optional;
@@ -55,12 +57,15 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
 
     protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
     //protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
+    private final static String GRAPH = "graph";
     private final static String LINE = "line";
     private final static String FACTORY = "factory";
     private final static String READ_CALL = "parse(" + LINE + "," + FACTORY + ")";
     private final VertexWritable vertexWritable = new VertexWritable();
     private final LineRecordReader lineRecordReader;
+
     private ScriptEngine engine;
+    private String parse;
 
     private GraphFilter graphFilter = new GraphFilter();
 
@@ -77,10 +82,9 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
         this.engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
         //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
-        try {
-            this.engine.eval(new InputStreamReader(fs.open(new Path(configuration.get(SCRIPT_FILE)))));
-        } catch (final ScriptException e) {
-            throw new IOException(e.getMessage(), e);
+        try (final InputStream stream = fs.open(new Path(configuration.get(SCRIPT_FILE)));
+             final InputStreamReader reader = new InputStreamReader(stream)) {
+            this.parse = String.join("\n", IOUtils.toString(reader), READ_CALL);
         }
     }
 
@@ -90,12 +94,18 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
             if (!this.lineRecordReader.nextKeyValue()) return false;
             try {
                 final Bindings bindings = this.engine.createBindings();
+                final StarGraph graph = StarGraph.open();
+                final ScriptElementFactory factory = new ScriptElementFactory(graph);
+                bindings.put(GRAPH, graph);
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
-                bindings.put(FACTORY, new ScriptElementFactory());
-                final Optional<StarGraph.StarVertex> vertex = ((StarGraph.StarVertex) engine.eval(READ_CALL, bindings)).applyGraphFilter(this.graphFilter);
-                if (vertex.isPresent()) {
-                    this.vertexWritable.set(vertex.get());
-                    return true;
+                bindings.put(FACTORY, factory);
+                final StarGraph.StarVertex sv = (StarGraph.StarVertex) engine.eval(this.parse, bindings);
+                if (sv != null) {
+                    final Optional<StarGraph.StarVertex> vertex = sv.applyGraphFilter(this.graphFilter);
+                    if (vertex.isPresent()) {
+                        this.vertexWritable.set(vertex.get());
+                        return true;
+                    }
                 }
             } catch (final ScriptException e) {
                 throw new IOException(e.getMessage(), e);
@@ -123,12 +133,17 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
         this.lineRecordReader.close();
     }
 
+    @Deprecated
     protected class ScriptElementFactory {
 
         private final StarGraph graph;
 
         public ScriptElementFactory() {
-            this.graph = StarGraph.open();
+            this(StarGraph.open());
+        }
+
+        public ScriptElementFactory(final StarGraph graph) {
+            this.graph = graph;
         }
 
         public Vertex vertex(final Object id) {
