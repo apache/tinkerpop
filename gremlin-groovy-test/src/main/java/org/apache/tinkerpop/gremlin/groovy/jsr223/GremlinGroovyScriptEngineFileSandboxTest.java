@@ -74,7 +74,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest extends AbstractGremlinTes
             assertThat(Arrays.equals("test".getBytes(), (byte[]) engine.eval("'test'.bytes")), is(true));
         }
     }
-/*
+
     @Test
     public void shouldPreventMaliciousStuffWithSystemButAllowSomeMethodsOnSystem() throws Exception {
         final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
@@ -89,7 +89,7 @@ public class GremlinGroovyScriptEngineFileSandboxTest extends AbstractGremlinTes
             assertThat(ex.getCause().getMessage(), containsString("Not authorized to call this method"));
         }
     }
-*/
+
     @Test
     public void shouldPreventMaliciousStuffWithFile() throws Exception {
         final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
