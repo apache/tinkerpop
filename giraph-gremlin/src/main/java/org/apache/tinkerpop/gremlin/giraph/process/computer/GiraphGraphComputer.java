@@ -123,7 +123,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
 
     private Future<ComputerResult> submitWithExecutor(final Executor exec) {
         final long startTime = System.currentTimeMillis();
-        final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
@@ -133,9 +132,8 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 //e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
-
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
-            return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), this.memory.asImmutable());
+            return new DefaultComputerResult(InputOutputHelper.getOutputGraph(ConfUtil.makeApacheConfiguration(this.giraphConfiguration), this.resultGraph, this.persist), this.memory.asImmutable());
         }, exec);
     }
 
@@ -155,7 +153,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 // a way to verify in Giraph whether the traversal will go over the wire or not
                 try {
                     VertexProgram.createVertexProgram(this.hadoopGraph, ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
-                } catch (IllegalStateException e) {
+                } catch (final IllegalStateException e) {
                     if (e.getCause() instanceof NumberFormatException)
                         throw new NotSerializableException("The provided traversal is not serializable and thus, can not be distributed across the cluster");
                 }
@@ -174,8 +172,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                         this.giraphConfiguration.setNumComputeThreads(threadsPerMapper);
                     }
                 }
-                // prepare the giraph vertex-centric computing job
-                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // handle input paths (if any)
                 String inputLocation = this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION, null);
                 if (null != inputLocation && FileInputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
@@ -185,6 +181,8 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 }
                 // handle output paths
                 final Path outputPath = new Path(Constants.getGraphLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)));
+                // prepare the giraph vertex-centric computing job
+                final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 FileOutputFormat.setOutputPath(job.getInternalJob(), outputPath);
                 job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 this.logger.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
