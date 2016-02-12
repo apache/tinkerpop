@@ -77,7 +77,8 @@ import static org.junit.Assert.fail;
         "vertexPropertiesCanNotBeUpdatedInMapReduce",
         "computerRequiresMoreWorkersThanSupported",
         "vertexFilterAccessesIncidentEdges",
-        "edgeFilterAccessesAdjacentVertices"
+        "edgeFilterAccessesAdjacentVertices",
+        "mapReduceJobsMustHaveAMapStage"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
@@ -100,6 +101,35 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
         } catch (Exception ex) {
             validateException(GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers(), ex);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldNotAllowMapReduceJobsWithoutAMapStage() throws Exception {
+        try {
+            graphProvider.getGraphComputer(graph).mapReduce(new BadMapReduce()).submit().get();
+            fail("Should throw an IllegalStateException saying that MapReduce jobs must have a map stage");
+        } catch (Exception e) {
+            assertTrue(true);
+        }
+    }
+
+    public static class BadMapReduce extends StaticMapReduce {
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return false;
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return "nothing";
+        }
+
+        @Override
+        public Object generateFinalResult(final Iterator keyValues) {
+            return new Object();
         }
     }
 
@@ -1859,8 +1889,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
         //
+        // TODO: Need to solve the chicken and the egg problem with how TraversalVertexPrograms and strategies play on each other.
         final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass())
-                .program(TraversalVertexProgram.build().traversal(graph2.traversal().V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
+                .program(TraversalVertexProgram.build().traversal(__.V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
         final Graph graph3 = result3.graph();
         final Memory memory3 = result3.memory();
         assertTrue(memory3.keys().contains("m"));

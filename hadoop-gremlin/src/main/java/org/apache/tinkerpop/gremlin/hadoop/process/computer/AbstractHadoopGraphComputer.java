@@ -133,6 +133,11 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
         // if too many workers are requested, throw appropriate exception
         if (this.workers > this.features().getMaxWorkers())
             throw GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported(this.workers, this.features().getMaxWorkers());
+        // all map reducers must have a map stage
+        for (final MapReduce mapReduce : this.mapReducers) {
+            if (!mapReduce.doStage(MapReduce.Stage.MAP))
+                throw GraphComputer.Exceptions.mapReduceJobsMustHaveAMapStage(mapReduce);
+        }
     }
 
     @Override

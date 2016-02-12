@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -119,9 +120,11 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
 
     @Override
     public void map(final Vertex vertex, final MapEmitter<Comparable, Traverser<?>> emitter) {
-        vertex.<TraverserSet<Object>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> IteratorUtils.removeOnNext(traverserSet.iterator()).forEachRemaining(traverser -> {
-            if (this.attachHaltedTraverser && !(traverser.get() instanceof Edge))
+        vertex.<TraverserSet<Object>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> {
+            if (this.attachHaltedTraverser && !(traverser.get() instanceof Edge)) {
+                traverser = traverser.clone().asAdmin();
                 traverser.attach(Attachable.Method.get(vertex));
+            }
             if (null != this.comparator)    // TODO: I think we shouldn't ever single key it  -- always double emit to load balance the servers.
                 emitter.emit(traverser, traverser);
             else
@@ -136,7 +139,16 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
 
     @Override
     public void combine(final Comparable comparable, final Iterator<Traverser<?>> values, final ReduceEmitter<Comparable, Traverser<?>> emitter) {
-        this.reduce(comparable, values, emitter);
+        final TraverserSet<?> traverserSet = new TraverserSet<>();
+        while (values.hasNext()) {
+            traverserSet.add((Traverser.Admin) values.next().asAdmin());
+        }
+        IteratorUtils.removeOnNext(traverserSet.iterator()).forEachRemaining(traverser -> {
+            if (null != this.comparator)
+                emitter.emit(traverser, traverser);
+            else
+                emitter.emit(traverser);
+        });
     }
 
     @Override
@@ -180,5 +192,10 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
     @Override
     public String getMemoryKey() {
         return TRAVERSERS;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.mapReduceString(this, this.traversal.toString());
     }
 }

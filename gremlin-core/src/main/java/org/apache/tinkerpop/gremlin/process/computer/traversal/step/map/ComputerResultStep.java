@@ -107,4 +107,11 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
     public Set<TraverserRequirement> getRequirements() {
         return EnumSet.of(TraverserRequirement.OBJECT);
     }
+
+    @Override
+    public ComputerResultStep<S> clone() {
+        final ComputerResultStep<S> clone = (ComputerResultStep<S>)super.clone();
+        clone.currentIterator = EmptyIterator.instance();
+        return clone;
+    }
 }
