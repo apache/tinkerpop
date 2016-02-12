@@ -485,7 +485,7 @@ public class GremlinExecutor implements AutoCloseable {
         private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
         private List<List<String>> use = new ArrayList<>();
-        private Bindings globalBindings = new SimpleBindings();
+        private Bindings globalBindings = new ConcurrentBindings();
 
         private Builder() {
         }
@@ -512,10 +512,11 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * Bindings to apply to every script evaluated.
+         * Bindings to apply to every script evaluated. Note that the entries of the supplied {@code Bindings} object
+         * will be copied into a newly created {@link ConcurrentBindings} object at the call of this method.
          */
         public Builder globalBindings(final Bindings bindings) {
-            this.globalBindings = bindings;
+            this.globalBindings = new ConcurrentBindings(bindings);
             return this;
         }
 
