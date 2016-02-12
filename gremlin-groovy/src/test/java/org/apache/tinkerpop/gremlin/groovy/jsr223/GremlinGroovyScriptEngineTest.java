@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +37,11 @@ import javax.script.SimpleBindings;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -336,7 +337,7 @@ public class GremlinGroovyScriptEngineTest {
         final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
 
         final int max = 256;
-        final List<Pair<Integer, List<Integer>>> futures = new ArrayList<>(max);
+        final List<Pair<Integer, List<Integer>>> futures = Collections.synchronizedList(new ArrayList<>(max));
         IntStream.range(0, max).forEach(i -> {
             final int yValue = i * 2;
             final int zValue = i * -1;
