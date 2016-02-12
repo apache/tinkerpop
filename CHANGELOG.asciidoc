@@ -37,6 +37,7 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 * Improved reusability of unique test directory creation in `/target` for `AbstractGraphProvider`, which was formerly only available to Neo4j, by adding `makeTestDirectory()`.
 * Optimized memory-usage in `TraversalVertexProgram`.
 * `Graph` instances are not merely "closed" at the end of tests, they are "cleared" via `GraphProvider.clear()`, which should in turn cleans up old data for an implementation.
+* Expanded the Gremlin Server protocol to allow for transaction management on in-session requests and updated the `gremlin-driver` to take advantage of that.
 * Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
 * Improved messages for the different distinct "timeouts" that a user can encounter with Gremlin Server.
 

@@ -1178,7 +1178,7 @@ The parameter is called `#jsr223.groovy.engine.keep.globals` and has four option
 
 By specifying an option other than `hard`, an `OutOfMemoryError` in Gremlin Server should be avoided.  Of course,
 this approach will come with the downside that compiled scripts could be garbage collected and thus removed from the
-cache, forcing Gremlin Server to recompile later.
+cache, forcing Gremlin Server to recompile later if that script is later encountered.
 
 [[sessions]]
 Considering Sessions
@@ -1206,6 +1206,57 @@ boundaries are managed properly from one request to the next.
 server that the session was initialized in.  Gremlin Server does not share session state as the transactional context
 of a `Graph` is bound to the thread it was initialized in.
 
+To connect to a session with Java via the `gremlin-driver`, it is necessary to create a `SessionedClient` from the
+`Cluster` object:
+
+[source,java]
+----
+Cluster cluster = Cluster.open();  <1>
+Client client = cluster.connect("sessionName"); <2>
+----
+
+<1> Opens a reference to `localhost` as <<connecting-via-java,previously shown>>.
+<2> Creates a `SessionedClient` given the configuration options of the Cluster. The `connect()` method is given a
+`String` value that becomes the unique name of the session. It is often best to simply use a `UUID` to represent
+the session.
+
+It is also possible to have Gremlin Server manage the transactions as is done with sessionless requests. The user is
+in control of enabling this feature when creating the `SessionedClient`:
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect("sessionName", true);
+----
+
+Specifying `true` to the `connect()` method signifies that the `client` should make each request as one encapsulated
+in a transaction. With this configuration of `client` there is no need to close a transaction manually.
+
+When using this mode of the `SessionedClient` it is important to recognize that global variable state for the session
+is not rolled-back on failure depending on where the failure occurs. For example, sending the following script would
+create a variable "x" in global session scope that would be acccessible on the next request:
+
+[source,groovy]
+x = 1
+
+However, sending this script which explicitly throws an exception:
+
+[source,groovy]
+y = 2
+throw new RuntimeException()
+
+will result in an obvious failure during script evaluation and "y" will not be available to the next request. The
+complication arises where the script evaluates successfully, but fails during result iteration or serialization. For
+example, this script:
+
+[source,groovy]
+a = 1
+g.addV()
+
+would sucessfully evaluate and return a `Traversal`.  The variable "a" would be available on the next request. However,
+if there was a failure in transaction management on the call to `commit()`, "a" would still be available to the next
+request.
+
 A session is a "heavier" approach to the simple "request/response" approach of sessionless requests, but is sometimes
 necessary for a given use case.
 
@@ -1213,8 +1264,9 @@ necessary for a given use case.
 Considering Transactions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Gremlin Server performs automated transaction handling for "sessionless" requests (i.e. no state between requests). It
-will automatically commit or rollback transactions depending on the success or failure of the request.
+Gremlin Server performs automated transaction handling for "sessionless" requests (i.e. no state between requests) and
+for "in-session" requests with that feature enabled. It will automatically commit or rollback transactions depending
+on the success or failure of the request.
 
 Another aspect of Transaction Management that should be considered is the usage of the `strictTransactionManagement`
 setting.  It is `false` by default, but when set to `true`, it forces the user to pass `aliases` for all requests.
@@ -1336,7 +1388,7 @@ Gremlin Server will send:
 |=========================================================
 |Code |Name |Description
 |200 |SUCCESS |The server successfully processed a request to completion - there are no messages remaining in this stream.
-|204 |NO CONTENT |The server processed the request but there is no result to return (e.g. an `Iterator` with no elements).
+|204 |NO CONTENT |The server processed the request but there is no result to return (e.g. an `Iterator` with no elements) - there are no messages remaining in this stream.
 |206 |PARTIAL CONTENT |The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
 |401 |UNAUTHORIZED |The request attempted to access resources that the requesting user did not have access to.
 |407 |AUTHENTICATE |A challenge from the server for the client to authenticate its request.
@@ -1347,16 +1399,6 @@ Gremlin Server will send:
 |598 |SERVER TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
-
-`SUCCESS` and `NO CONTENT` messages are terminating messages that indicate that a request was properly handled on the
-server and that there are no additional messages streaming in for that request.  When developing a driver, it is
-important to note the slight differences in semantics for these result codes when it comes to sessionless versus
-in-session requests.  For a sessionless request, which operates under automatic transaction management, Gremlin Server
-will only send one of these message types after result iteration and transaction `commit()`.  In other words, the
-driver could potentially expect to receive a number of "successful" `PARTIAL CONTENT` messages before ultimately
-ending in failure on `commit()`.  For in-session requests, the client is responsible for managing the transaction
-and therefore, a first request could receive multiple "success" related messages, only to fail on a future request
-that finally issues the `commit()`.
 
 OpProcessors Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -1386,12 +1428,12 @@ evaluated and is committed when the script completes (or rolled back if an error
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
 |Key |Description
-|processor |As this is the default `OpProcessor` this value can be set to an empty string
+|processor |As this is the default `OpProcessor` this value can be set to an empty string.
 |op |[width="100%",cols="3,10",options="header"]
 !=========================================================
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
-!`eval` !Evaluate a Gremlin script provided as a `String`
+!`eval` !Evaluate a Gremlin script provided as a `String`.
 !=========================================================
 |=========================================================
 
@@ -1406,9 +1448,9 @@ evaluated and is committed when the script completes (or rolled back if an error
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Key |Type |Description
-|gremlin |String | *Required* The Gremlin script to evaluate
-|bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script
-|language |String |The flavor used (e.g. `gremlin-groovy`)
+|gremlin |String | *Required* The Gremlin script to evaluate.
+|bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
+|language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`).
 |aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
 be aliased to different variable names for purposes of the current request.  The value represents the name the
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
@@ -1420,11 +1462,11 @@ Session OpProcessor
 +++++++++++++++++++
 
 The "session" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. It is
-like the "standard" `OpProcessor`, but instead maintains state between sessions and leaves all transaction management
-up to the calling client.  It is important that clients that open sessions, commit or roll them back, however Gremlin
-Server will try to clean up such things when a session is killed that has been abandoned.  It is important to consider
-that a session can only be maintained with a single machine.  In the event that multiple Gremlin Server are deployed,
-session state is not shared among them.
+like the "standard" `OpProcessor`, but instead maintains state between sessions and allows the option to leave all
+transaction management up to the calling client.  It is important that clients that open sessions, commit or roll
+them back, however Gremlin Server will try to clean up such things when a session is killed that has been abandoned.
+It is important to consider that a session can only be maintained with a single machine.  In the event that multiple
+Gremlin Server are deployed, session state is not shared among them.
 
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
@@ -1434,8 +1476,8 @@ session state is not shared among them.
 [cols="3,10",options="header"]
 !=========================================================
 !Key !Description
-!`authentication` !A request that contains the response to a server challenge for authentication
-!`eval` !Evaluate a Gremlin script provided as a `String`
+!`authentication` !A request that contains the response to a server challenge for authentication.
+!`eval` !Evaluate a Gremlin script provided as a `String`.
 !`close` !Close the specified session and rollback any open transactions.
 |=========================================================
 
@@ -1450,10 +1492,11 @@ session state is not shared among them.
 [width="100%",options="header"]
 |=========================================================
 |Key |Type |Description
-|gremlin |String | *Required* The Gremlin script to evaluate
-|session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist)
-|bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script
-|language |String |The flavor used (e.g. `gremlin-groovy`)
+|gremlin |String | *Required* The Gremlin script to evaluate.
+|session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist).
+|manageTransaction |Boolean |When set to `true` the transaction for the current request is auto-committed or rolled-back as are done with sessionless requests - defaulted to `false`.
+|bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
+|language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`)
 |=========================================================
 
 '`close` operation arguments'

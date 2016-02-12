@@ -490,12 +490,14 @@ public abstract class Client {
      */
     public final static class SessionedClient extends Client {
         private final String sessionId;
+        private final boolean manageTransactions;
 
         private ConnectionPool connectionPool;
 
-        SessionedClient(final Cluster cluster, final String sessionId) {
+        SessionedClient(final Cluster cluster, final String sessionId, final boolean manageTransactions) {
             super(cluster);
             this.sessionId = sessionId;
+            this.manageTransactions = manageTransactions;
         }
 
         String getSessionId() {
@@ -531,6 +533,7 @@ public abstract class Client {
         public RequestMessage buildMessage(final RequestMessage.Builder builder) {
             builder.processor("session");
             builder.addArg(Tokens.ARGS_SESSION, sessionId);
+            builder.addArg(Tokens.ARGS_MANAGE_TRANSACTION, manageTransactions);
             return builder.create();
         }
 

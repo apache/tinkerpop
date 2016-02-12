@@ -109,6 +109,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
             case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction":
+            case "shouldManageTransactionsInSession":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
@@ -729,11 +730,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         client.submit("v.property(\"color\",\"blue\")").all().get();
         client.submit("graph.tx().commit()").all().get();
-        
+
         // Run a sessionless request to change transaction.readWriteConsumer back to AUTO
         // The will make the next in session request fail if consumers aren't ThreadLocal
         sessionlessClient.submit("graph.vertices().next()").all().get();
-        
+
         client.submit("graph.tx().open()").all().get();
 
         final Vertex vertexAfterTx = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
@@ -748,28 +749,28 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction() throws Exception {
         assumeNeo4jIsPresent();
-        
+
         final Cluster cluster = Cluster.build().create();
         final Client sessionClient = cluster.connect(name.getMethodName());
         final Client sessionlessClient = cluster.connect();
-        
+
         //open transaction in session, then add vertex and commit
         sessionClient.submit("graph.tx().open()").all().get();
         final Vertex vertexBeforeTx = sessionClient.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
         assertEquals("stephen", vertexBeforeTx.values("name").next());
         sessionClient.submit("graph.tx().commit()").all().get();
-        
+
         // check that session transaction is closed
         final boolean isOpen = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
         assertTrue("Transaction should be closed", !isOpen);
-        
+
         //run a sessionless read
         sessionlessClient.submit("graph.traversal().V()").all().get();
-        
+
         // check that session transaction is still closed
         final boolean isOpenAfterSessionless = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
         assertTrue("Transaction should stil be closed", !isOpenAfterSessionless);
-        
+
     }
 
     @Test
@@ -1016,6 +1017,46 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client clientAliased = client.alias("g1");
         final Vertex v = clientAliased.submit("g.addV('name','jason')").all().get().get(0).getVertex();
         assertEquals("jason", v.value("name"));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldManageTransactionsInSession() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+        final Client sessionWithManagedTx = cluster.connect(name.getMethodName() + "-managed", true);
+        final Client sessionWithoutManagedTx = cluster.connect(name.getMethodName() + "-not-managed");
+
+        // this should auto-commit
+        final Vertex vStephen = sessionWithManagedTx.submit("v = g.addV('name','stephen').next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vStephen.value("name"));
+
+        // the other clients should see that change because of auto-commit
+        assertThat(client.submit("g.V().has('name','stephen').hasNext()").all().get().get(0).getBoolean(), is(true));
+        assertThat(sessionWithoutManagedTx.submit("g.V().has('name','stephen').hasNext()").all().get().get(0).getBoolean(), is(true));
+
+        // this should NOT auto-commit
+        final Vertex vDaniel = sessionWithoutManagedTx.submit("v = g.addV('name','daniel').next()").all().get().get(0).getVertex();
+        assertEquals("daniel", vDaniel.value("name"));
+
+        // the other clients should NOT see that change because of auto-commit
+        assertThat(client.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(false));
+        assertThat(sessionWithManagedTx.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(false));
+
+        // but "v" should still be there
+        final Vertex vDanielAgain = sessionWithoutManagedTx.submit("v").all().get().get(0).getVertex();
+        assertEquals("daniel", vDanielAgain.value("name"));
+
+        // now commit manually
+        sessionWithoutManagedTx.submit("g.tx().commit()").all().get();
+
+        // should be there for all now
+        assertThat(client.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(true));
+        assertThat(sessionWithManagedTx.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(true));
+        assertThat(sessionWithoutManagedTx.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(true));
 
         cluster.close();
     }

@@ -129,6 +129,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.processors.add(processorSettings);
                 break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
+            case "shouldExecuteInSessionWithTransactionManagement":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
@@ -687,6 +688,67 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> sessionlessResponses = client.submit(sessionlessRequest);
             assertEquals(1, sessionlessResponses.size());
             assertEquals(ResponseStatusCode.SUCCESS, sessionlessResponses.get(0).getStatus().getCode());
+
+            // Check to see if the transaction is still closed.
+            final RequestMessage checkAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                    .create();
+            final List<ResponseMessage> checkAgainstResponses = client.submit(checkAgainRequest);
+            assertEquals(1, checkAgainstResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, checkAgainstResponses.get(0).getStatus().getCode());
+            assertThat(((List<Boolean>) checkAgainstResponses.get(0).getResult().getData()).get(0), is(false));
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldExecuteInSessionWithTransactionManagement() throws Exception {
+        assumeNeo4jIsPresent();
+
+        try (final SimpleClient client = new WebSocketClient()) {
+            final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "v=graph.addVertex(\"name\",\"stephen\")")
+                    .addArg(Tokens.ARGS_MANAGE_TRANSACTION, true)
+                    .create();
+            final List<ResponseMessage> addResponses = client.submit(addRequest);
+            assertEquals(1, addResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, addResponses.get(0).getStatus().getCode());
+
+            // Check to see if the transaction is closed.
+            final RequestMessage checkRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                    .create();
+            final List<ResponseMessage> checkResponses = client.submit(checkRequest);
+            assertEquals(1, checkResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, checkResponses.get(0).getStatus().getCode());
+            assertThat(((List<Boolean>) checkResponses.get(0).getResult().getData()).get(0), is(false));
+
+            // lets run a sessionless read and validate that the transaction was managed
+            final RequestMessage sessionlessRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.traversal().V().values('name')")
+                    .create();
+            final List<ResponseMessage> sessionlessResponses = client.submit(sessionlessRequest);
+            assertEquals(1, sessionlessResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, sessionlessResponses.get(0).getStatus().getCode());
+            assertEquals("stephen", ((List<String>) sessionlessResponses.get(0).getResult().getData()).get(0));
+
+            // make sure the session is intact
+            final RequestMessage getRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "v.values(\"name\")")
+                    .addArg(Tokens.ARGS_MANAGE_TRANSACTION, true)
+                    .create();
+            final List<ResponseMessage> getResponses = client.submit(getRequest);
+            assertEquals(1, getResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, getResponses.get(0).getStatus().getCode());
+            assertEquals("stephen", ((List<String>) getResponses.get(0).getResult().getData()).get(0));
 
             // Check to see if the transaction is still closed.
             final RequestMessage checkAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)
