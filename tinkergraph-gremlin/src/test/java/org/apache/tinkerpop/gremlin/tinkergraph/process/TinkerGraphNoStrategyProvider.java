@@ -47,8 +47,7 @@ public class TinkerGraphNoStrategyProvider extends TinkerGraphProvider {
     private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(
             TinkerGraphStepStrategy.class,
             ProfileStrategy.class,
-            ConnectiveStrategy.class,
-            ComputerVerificationStrategy.class)); // why is this needed?
+            ConnectiveStrategy.class));
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
