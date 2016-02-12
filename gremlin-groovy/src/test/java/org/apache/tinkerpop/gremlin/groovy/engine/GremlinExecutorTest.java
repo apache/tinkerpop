@@ -22,6 +22,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.Test;
@@ -501,7 +502,7 @@ public class GremlinExecutorTest {
                 gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}").get();
                 fail("This should have timed out");
             } catch (Exception se) {
-                assertEquals(TimeoutException.class, se.getCause().getClass());
+                assertEquals(TimedInterruptTimeoutException.class, se.getCause().getClass());
             }
 
             // this script takes significantly less than the interruptionTimeout

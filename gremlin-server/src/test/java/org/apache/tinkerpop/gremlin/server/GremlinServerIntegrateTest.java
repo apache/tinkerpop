@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
@@ -61,9 +62,9 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
@@ -135,17 +136,34 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
             case "shouldUseSimpleSandbox":
-                final Map<String,Object> scriptEngineConf = new HashMap<>();
-                final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
-                final List<String> sandboxes = new ArrayList<>();
-                sandboxes.add(SimpleSandboxExtension.class.getName());
-                compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
-                scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
-                settings.scriptEngines.get("gremlin-groovy").config = scriptEngineConf;
+                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
+                break;
+            case "shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop":
+                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForTimedInterrupt();
                 break;
         }
 
         return settings;
+    }
+
+    private static Map<String, Object> getScriptEngineConfForSimpleSandbox() {
+        final Map<String,Object> scriptEngineConf = new HashMap<>();
+        final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
+        final List<String> sandboxes = new ArrayList<>();
+        sandboxes.add(SimpleSandboxExtension.class.getName());
+        compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
+        scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+        return scriptEngineConf;
+    }
+
+    private static Map<String, Object> getScriptEngineConfForTimedInterrupt() {
+        final Map<String,Object> scriptEngineConf = new HashMap<>();
+        final Map<String,Object> timedInterruptProviderConf = new HashMap<>();
+        final List<Object> config = new ArrayList<>();
+        config.add(1000);
+        timedInterruptProviderConf.put(TimedInterruptCustomizerProvider.class.getName(), config);
+        scriptEngineConf.put("compilerCustomizerProviders", timedInterruptProviderConf);
+        return scriptEngineConf;
     }
 
     @Test
@@ -405,7 +423,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = new WebSocketClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
-            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 200 ms for request"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
+        }
+    }
+
+    @Test
+    public void shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop() throws Exception {
+        try (SimpleClient client = new WebSocketClient()){
+            // timeout configured for 1 second so the timed interrupt should trigger prior to the
+            // scriptEvaluationTimeout which is at 30 seconds by default
+            final List<ResponseMessage> responses = client.submit("while(true){}");
+            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
@@ -419,7 +450,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> responses = client.submit("(0..<100000)");
 
             // the last message should contain the error
-            assertThat(responses.get(responses.size() - 1).getStatus().getMessage(), endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+            assertThat(responses.get(responses.size() - 1).getStatus().getMessage(), endsWith("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
