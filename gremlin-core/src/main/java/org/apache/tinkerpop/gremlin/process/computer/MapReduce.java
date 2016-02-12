@@ -87,12 +87,12 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
     /**
      * The map() method is logically executed at all vertices in the graph in parallel.
      * The map() method emits key/value pairs given some analysis of the data in the vertices (and/or its incident edges).
+     * All {@link MapReduce} classes must at least provide an implementation of {@code MapReduce#map(Vertex, MapEmitter)}.
      *
      * @param vertex  the current vertex being map() processed.
      * @param emitter the component that allows for key/value pairs to be emitted to the next stage.
      */
-    public default void map(final Vertex vertex, final MapEmitter<MK, MV> emitter) {
-    }
+    public void map(final Vertex vertex, final MapEmitter<MK, MV> emitter);
 
     /**
      * The combine() method is logically executed at all "machines" in parallel.

@@ -272,10 +272,6 @@ public interface GraphComputer {
         public static IllegalArgumentException edgeFilterAccessesAdjacentVertices(final Traversal<Vertex, Edge> edgeFilter) {
             return new IllegalArgumentException("The provided edge filter traversal accesses data on adjacent vertices: " + edgeFilter);
         }
-
-        public static IllegalStateException mapReduceJobsMustHaveAMapStage(final MapReduce mapReduce) {
-            throw new IllegalStateException("MapReduce jobs must have a map stage: " + mapReduce);
-        }
     }
 
 }

@@ -131,10 +131,6 @@ public final class TinkerGraphComputer implements GraphComputer {
         // ensure requested workers are not larger than supported workers
         if (this.workers > this.features().getMaxWorkers())
             throw GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported(this.workers, this.features().getMaxWorkers());
-        for (final MapReduce mapReduce : this.mapReducers) {
-            if (!mapReduce.doStage(MapReduce.Stage.MAP))
-                throw GraphComputer.Exceptions.mapReduceJobsMustHaveAMapStage(mapReduce);
-        }
 
         // initialize the memory
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);

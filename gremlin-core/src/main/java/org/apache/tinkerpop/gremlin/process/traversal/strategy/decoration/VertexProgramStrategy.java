@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -69,6 +70,8 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
                 pageRankVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
                 graphStep.getLabels().forEach(pageRankVertexProgramStep::addLabel);
                 traversal.removeStep(0);  // remove the graph step
+                if (traversal.getSteps().size() == 1) // todo: in the future, this should just be a mapreduce job added to the PageRankVertexProgram step
+                    traversal.addStep(new IdentityStep<>(traversal));
             }
             if (null != this.graphComputerFunction) {   // if the function is null, then its been serialized and thus, already in a graph computer
                 Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();

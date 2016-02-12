@@ -77,8 +77,7 @@ import static org.junit.Assert.fail;
         "vertexPropertiesCanNotBeUpdatedInMapReduce",
         "computerRequiresMoreWorkersThanSupported",
         "vertexFilterAccessesIncidentEdges",
-        "edgeFilterAccessesAdjacentVertices",
-        "mapReduceJobsMustHaveAMapStage"
+        "edgeFilterAccessesAdjacentVertices"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
@@ -101,35 +100,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             fail("Should throw an IllegalStateException when there is no vertex program nor map reducers");
         } catch (Exception ex) {
             validateException(GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers(), ex);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void shouldNotAllowMapReduceJobsWithoutAMapStage() throws Exception {
-        try {
-            graphProvider.getGraphComputer(graph).mapReduce(new BadMapReduce()).submit().get();
-            fail("Should throw an IllegalStateException saying that MapReduce jobs must have a map stage");
-        } catch (Exception e) {
-            assertTrue(true);
-        }
-    }
-
-    public static class BadMapReduce extends StaticMapReduce {
-
-        @Override
-        public boolean doStage(final Stage stage) {
-            return false;
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return "nothing";
-        }
-
-        @Override
-        public Object generateFinalResult(final Iterator keyValues) {
-            return new Object();
         }
     }
 
@@ -1909,5 +1879,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+
+        // TODO: add a test the shows DAG behavior -- splitting another TraversalVertexProgram off of the PeerPressureVertexProgram job.
     }
 }

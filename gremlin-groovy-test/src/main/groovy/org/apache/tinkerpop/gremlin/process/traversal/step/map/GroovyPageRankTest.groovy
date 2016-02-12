@@ -31,6 +31,12 @@ public abstract class GroovyPageRankTest {
     public static class Traversals extends PageRankTest {
 
         @Override
+        public Traversal<Vertex, Vertex> get_g_V_pageRank() {
+            TraversalScriptHelper.compute("g.V.pageRank", g)
+        }
+
+
+        @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name() {
             TraversalScriptHelper.compute("g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name", g)
         }

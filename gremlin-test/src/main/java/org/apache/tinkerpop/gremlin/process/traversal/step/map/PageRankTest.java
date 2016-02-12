@@ -41,9 +41,25 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_pageRank();
+
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X();
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_pageRank() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_pageRank();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            counter++;
+            assertTrue(vertex.property(PageRankVertexProgram.PAGE_RANK).isPresent());
+        }
+        assertEquals(6, counter);
+    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -72,6 +88,12 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     }
 
     public static class Traversals extends PageRankTest {
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_pageRank() {
+            return g.V().pageRank();
+        }
+
         @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name() {
             return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.decr).values("name");

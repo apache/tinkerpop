@@ -267,12 +267,6 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         };
     }
 
-    /*public <S, E> Traversal.Admin<S, E> computerResultTraversal(final ComputerResult result) {
-        final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) this.getTraversal();
-        ((ComputerResultStep) traversal.getEndStep()).populateTraversers(result);
-        return traversal;
-    }*/
-
     //////////////
 
     public static Builder build() {
