@@ -30,8 +30,8 @@ limitations under the License.
             </includes>
         </fileSet>
         <fileSet>
-            <directory>src/main/static/deps</directory>
-            <outputDirectory>deps</outputDirectory>
+            <directory>src/main/static/licenses</directory>
+            <outputDirectory>licenses</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/apache-${project.artifactId}-${project.version}-standalone/conf</directory>

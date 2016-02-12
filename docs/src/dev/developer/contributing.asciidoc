@@ -387,7 +387,7 @@ likely come from the addition of a source file from another library.
 
 * If the file being bundled is Apache licensed, then add an entry to NOTICE.
 * If the file being bundled is under a different approved license, then add an entry to LICENSE and include a copy of
-that LICENSE in the root `/deps` directory of the code repository.
+that LICENSE in the root `/licenses` directory of the code repository.
 
 Binary LICENSE and NOTICE
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -401,7 +401,7 @@ distributions, either:
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
 license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
-added to the `<project>/static/deps` directory of the code repository.
+added to the `<project>/static/licenses` directory of the code repository.
 
 To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
 found in `/META-INF` directory of the jar).
