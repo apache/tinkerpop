@@ -51,8 +51,6 @@ import java.util.Optional;
  */
 public final class TraverserMapReduce implements MapReduce<Comparable, Traverser<?>, Comparable, Traverser<?>, Iterator<Traverser<?>>> {
 
-    public static final String TRAVERSER_TRAVERSAL = "gremlin.traverserMapReduce.traversal";
-
     public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
 
     private Traversal.Admin<?, ?> traversal;
@@ -85,14 +83,8 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        this.traversal = VertexProgramHelper.deserialize(configuration, TRAVERSER_TRAVERSAL);
+        this.traversal = TraversalVertexProgram.getTraversal(graph, configuration);
         this.genericLoadState();
-    }
-
-    @Override
-    public void storeState(final Configuration configuration) {
-        MapReduce.super.storeState(configuration);
-        VertexProgramHelper.serialize(this.traversal, configuration, TRAVERSER_TRAVERSAL);
     }
 
     private void genericLoadState() {
