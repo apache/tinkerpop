@@ -336,7 +336,8 @@ public class GremlinGroovyScriptEngineTest {
         final ExecutorService service = Executors.newFixedThreadPool(8, testingThreadFactory);
         final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
 
-        final int max = 256;
+        final AtomicBoolean failed = new AtomicBoolean(false);
+        final int max = 512;
         final List<Pair<Integer, List<Integer>>> futures = Collections.synchronizedList(new ArrayList<>(max));
         IntStream.range(0, max).forEach(i -> {
             final int yValue = i * 2;
@@ -352,7 +353,7 @@ public class GremlinGroovyScriptEngineTest {
                         final List<Integer> result = (List<Integer>) scriptEngine.eval(script, b);
                         futures.add(Pair.with(i, result));
                     } catch (Exception ex) {
-                        throw new RuntimeException(ex);
+                        failed.set(true);
                     }
                 });
             } catch (Exception ex) {
@@ -363,6 +364,9 @@ public class GremlinGroovyScriptEngineTest {
         service.shutdown();
         assertThat(service.awaitTermination(120000, TimeUnit.MILLISECONDS), is(true));
 
+        // likely a concurrency exception if it occurs - and if it does then we've messed up because that's what this
+        // test is partially designed to protected against.
+        assertThat(failed.get(), is(false));
         assertEquals(max, futures.size());
         futures.forEach(t -> {
             assertEquals(t.getValue0(), t.getValue1().get(0));
