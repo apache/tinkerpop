@@ -276,6 +276,7 @@ limitations under the License.
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/main/ext/**</exclude>
+                        <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                     </excludes>

@@ -33,6 +33,10 @@ limitations under the License.
             <directory>conf</directory>
         </fileSet>
         <fileSet>
+            <directory>src/main/static/deps</directory>
+            <outputDirectory>deps</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>target/apache-${project.artifactId}-${project.version}-standalone/data</directory>
             <outputDirectory>data</outputDirectory>
         </fileSet>
@@ -58,11 +62,11 @@ limitations under the License.
     </fileSets>
     <files>
         <file>
-            <source>src/main/LICENSE</source>
+            <source>src/main/static/LICENSE</source>
             <outputDirectory></outputDirectory>
         </file>
         <file>
-            <source>src/main/NOTICE</source>
+            <source>src/main/static/NOTICE</source>
             <outputDirectory></outputDirectory>
         </file>
         <file>
