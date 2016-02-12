@@ -47,7 +47,8 @@ generate the docs to validate formatting by just doing `bin/process-docs.sh --dr
 please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  If no code changes were made,
 one can also use the `--noClean` option. This will prevent the processor from cleaning up the local Grapes directory and
 the Hadoop Gremlin Libs directory in HDFS, resulting in a slightly faster execution time. The documentation is generated
-to `/target/docs/htmlsingle`.
+to `/target/docs/htmlsingle`. Once a full run of the documentation is executed, it is possible to run just one file by
+deleting the file to regenerated from `target/postprocess-asciidoc` then re-executing `bin/process-docs.sh`.
 . If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
 operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
 a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -pl gremlin-server`.
