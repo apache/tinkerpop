@@ -113,6 +113,24 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         if (directory.exists()) logger.error("unable to delete directory " + directory.getAbsolutePath());
     }
 
+    /**
+     * Utility method to help produce an appropriate unique directory for a test. Designed to be called from
+     * {@link #getBaseConfiguration(String, Class, String, LoadGraphWith.GraphData)} for those graph providers that
+     * need a data directory for their {@link Graph} implementations.
+     */
+    protected String makeTestDirectory(final String graphName, final Class<?> test, final String testMethodName) {
+        return getWorkingDirectory() + File.separator
+                + TestHelper.cleanPathSegment(this.getClass().getSimpleName()) + File.separator
+                + TestHelper.cleanPathSegment(test.getSimpleName()) + File.separator
+                + TestHelper.cleanPathSegment(graphName) + File.separator
+                + cleanParameters(TestHelper.cleanPathSegment(testMethodName));
+    }
+
+    protected String cleanParameters(String methodName) {
+        int random = (int) (Math.random() * Integer.MAX_VALUE);
+        return methodName.replaceAll("[0-9, -]+$", String.valueOf(random));
+    }
+
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
         final GraphReader reader = GryoReader.build()
                 .mapper(g.io(GryoIo.build()).mapper().create())

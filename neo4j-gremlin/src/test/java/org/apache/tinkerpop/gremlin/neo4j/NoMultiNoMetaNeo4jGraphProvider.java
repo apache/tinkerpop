@@ -19,11 +19,9 @@
 package org.apache.tinkerpop.gremlin.neo4j;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,11 +31,7 @@ import java.util.Map;
 public class NoMultiNoMetaNeo4jGraphProvider extends AbstractNeo4jGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData graphData) {
-        final String directory = getWorkingDirectory() + File.separator
-                + TestHelper.cleanPathSegment(this.getClass().getSimpleName()) + File.separator
-                + TestHelper.cleanPathSegment(test.getSimpleName()) + File.separator
-                + TestHelper.cleanPathSegment(graphName) + File.separator
-                + cleanParameters(TestHelper.cleanPathSegment(testMethodName));
+        final String directory = makeTestDirectory(graphName, test, testMethodName);
 
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, Neo4jGraph.class.getName());
