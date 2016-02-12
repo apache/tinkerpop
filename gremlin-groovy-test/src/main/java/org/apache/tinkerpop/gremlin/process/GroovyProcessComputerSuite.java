@@ -23,10 +23,6 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgramTest;
-import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgramTest;
-import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgramTest;
-import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyBranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyLocalTest;
@@ -169,12 +165,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyStoreTest.Traversals.class,
             GroovySubgraphTest.Traversals.class,
             GroovyTreeTest.Traversals.class,
-
-            // algorithms
-            PageRankVertexProgramTest.class,
-            PeerPressureVertexProgramTest.class,
-            BulkLoaderVertexProgramTest.class,
-            BulkDumperVertexProgramTest.class,
     };
 
     public GroovyProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

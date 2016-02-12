@@ -121,7 +121,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             this.mapReducers.add(mapReducer.getMapReduce());
         }
         if (!(this.traversal.getEndStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep() instanceof ReducingBarrierStep))
-            this.mapReducers.add(new TraverserMapReduce(this.traversal));
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.clone()));
     }
 
     @Override

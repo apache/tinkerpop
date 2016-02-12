@@ -22,10 +22,15 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -43,6 +48,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -1828,5 +1834,49 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
     }
 
-
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportJobChaining() throws Exception {
+        final ComputerResult result1 = graphProvider.getGraphComputer(graph)
+                .program(PageRankVertexProgram.build().iterations(5).create(graph)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
+        final Graph graph1 = result1.graph();
+        final Memory memory1 = result1.memory();
+        assertEquals(5, memory1.getIteration());
+        assertEquals(6, graph1.traversal().V().count().next().intValue());
+        assertEquals(6, graph1.traversal().E().count().next().intValue());
+        assertEquals(6, graph1.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
+        assertEquals(6, graph1.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        //
+        final ComputerResult result2 = graph1.compute(graphProvider.getGraphComputer(graph1).getClass())
+                .program(PeerPressureVertexProgram.build().maxIterations(4).create(graph1)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
+        final Graph graph2 = result2.graph();
+        final Memory memory2 = result2.memory();
+        assertTrue(memory2.getIteration() <= 4);
+        assertEquals(6, graph2.traversal().V().count().next().intValue());
+        assertEquals(6, graph2.traversal().E().count().next().intValue());
+        assertEquals(6, graph2.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
+        assertEquals(6, graph2.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
+        assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
+        assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        //
+        final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass())
+                .program(TraversalVertexProgram.build().traversal(graph2.traversal().V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
+        final Graph graph3 = result3.graph();
+        final Memory memory3 = result3.memory();
+        assertTrue(memory3.keys().contains("m"));
+        assertTrue(memory3.keys().contains(TraverserMapReduce.TRAVERSERS));
+        assertEquals(1, memory3.<Map<Long, Long>>get("m").size());
+        assertEquals(6, memory3.<Map<Long, Long>>get("m").get(1l).intValue());
+        List<Traverser<String>> traversers = IteratorUtils.list(memory3.<Iterator<Traverser<String>>>get(TraverserMapReduce.TRAVERSERS));
+        assertEquals(6, traversers.size());
+        assertEquals(4l, traversers.stream().map(Traverser::get).filter(s -> s.equals("person")).count());
+        assertEquals(2l, traversers.stream().map(Traverser::get).filter(s -> s.equals("software")).count());
+        assertEquals(6, graph3.traversal().V().count().next().intValue());
+        assertEquals(6, graph3.traversal().E().count().next().intValue());
+        assertEquals(6, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());
+        assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
+        assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
+        assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
+        assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+    }
 }

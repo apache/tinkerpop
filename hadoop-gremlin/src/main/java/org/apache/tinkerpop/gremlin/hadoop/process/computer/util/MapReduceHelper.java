@@ -58,24 +58,23 @@ public final class MapReduceHelper {
     }
 
     public static void executeMapReduceJob(final MapReduce mapReduce, final Memory.Admin memory, final Configuration configuration) throws IOException, ClassNotFoundException, InterruptedException {
-        final boolean vertexProgramExists = configuration.get(VertexProgram.VERTEX_PROGRAM, null) != null;
         final Configuration newConfiguration = new Configuration(configuration);
+        final boolean vertexProgramExists = newConfiguration.get(VertexProgram.VERTEX_PROGRAM, null) != null;
+        if (vertexProgramExists) {
+            newConfiguration.set(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)).getCanonicalName());
+            newConfiguration.unset(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+        }
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         apacheConfiguration.setDelimiterParsingDisabled(true);
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
-            final Path memoryPath = new Path(Constants.getMemoryLocation(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), mapReduce.getMemoryKey()));
-            mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
+            final Path memoryPath = new Path(Constants.getMemoryLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), mapReduce.getMemoryKey()));
+            mapReduce.addResultToMemory(memory, new ObjectWritableIterator(newConfiguration, memoryPath));
         } else {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
-
             newConfiguration.setClass(Constants.GREMLIN_HADOOP_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
-            if (vertexProgramExists) {
-                newConfiguration.set(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)).getCanonicalName());
-                newConfiguration.unset(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
-            }
             final Job job = Job.getInstance(newConfiguration, mapReduce.toString());
             HadoopGraph.LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(HadoopGraph.class);
@@ -101,9 +100,13 @@ public final class MapReduceHelper {
             job.setInputFormatClass(GraphFilterInputFormat.class);
             job.setOutputFormatClass(SequenceFileOutputFormat.class);
             // if there is no vertex program, then grab the graph from the input location
-            final Path graphPath = vertexProgramExists ?
-                    new Path(Constants.getGraphLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))) :
-                    new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+            final Path graphPath;
+            if (vertexProgramExists) {
+                graphPath = new Path(Constants.getGraphLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)));
+            } else {
+                graphPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+            }
+
             Path memoryPath = new Path(Constants.getMemoryLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey())));
             if (FileSystem.get(newConfiguration).exists(memoryPath)) {
                 FileSystem.get(newConfiguration).delete(memoryPath, true);

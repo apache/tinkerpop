@@ -20,27 +20,22 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
@@ -53,16 +48,18 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traverser<?>, Comparable, Traverser<?>, Iterator<Traverser<?>>> {
+public final class TraverserMapReduce implements MapReduce<Comparable, Traverser<?>, Comparable, Traverser<?>, Iterator<Traverser<?>>> {
+
+    public static final String TRAVERSER_TRAVERSAL = "gremlin.traverserMapReduce.traversal";
 
     public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
 
     private Traversal.Admin<?, ?> traversal;
-    private Optional<Comparator<Comparable>> comparator = Optional.empty();
-    private Optional<CollectingBarrierStep<?>> collectingBarrierStep = Optional.empty();
+    private Comparator<Comparable> comparator = null;
+    private CollectingBarrierStep<?> collectingBarrierStep = null;
     private boolean attachHaltedTraverser = false;
-    private Optional<RangeGlobalStep<?>> rangeGlobalStep = Optional.empty();
-    private Optional<TailGlobalStep<?>> tailGlobalStep = Optional.empty();
+    private RangeGlobalStep<?> rangeGlobalStep = null;
+    private TailGlobalStep<?> tailGlobalStep = null;
     private boolean dedupGlobal = false;
 
     private TraverserMapReduce() {
@@ -74,23 +71,42 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     }
 
     @Override
+    public TraverserMapReduce clone() {
+        try {
+            final TraverserMapReduce clone = (TraverserMapReduce) super.clone();
+            clone.traversal = this.traversal.clone();
+            clone.genericLoadState();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        this.traversal = TraversalVertexProgram.getTraversal(graph, configuration);
+        this.traversal = VertexProgramHelper.deserialize(configuration, TRAVERSER_TRAVERSAL);
         this.genericLoadState();
+    }
+
+    @Override
+    public void storeState(final Configuration configuration) {
+        MapReduce.super.storeState(configuration);
+        VertexProgramHelper.serialize(this.traversal, configuration, TRAVERSER_TRAVERSAL);
     }
 
     private void genericLoadState() {
         final Step<?, ?> traversalEndStep = traversal.getEndStep();
-        this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
         if (traversalEndStep instanceof CollectingBarrierStep) {
-            this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep); // why no clone() like the others?
-            if (this.collectingBarrierStep.get() instanceof TraversalParent)
-                this.attachHaltedTraverser = ((TraversalParent) this.collectingBarrierStep.get()).getLocalChildren().stream().filter(TraverserMapReduce::isBeyondElementId).findAny().isPresent();
+            this.collectingBarrierStep = ((CollectingBarrierStep<?>) traversalEndStep).clone();
+            this.comparator = this.collectingBarrierStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) this.collectingBarrierStep).getComparators()) : null;
+            if (this.collectingBarrierStep instanceof TraversalParent) {
+                this.attachHaltedTraverser = ((TraversalParent) this.collectingBarrierStep).getLocalChildren().stream().filter(TraversalHelper::isBeyondElementId).findAny().isPresent();
+            }
         }
         if (traversalEndStep instanceof RangeGlobalStep)
-            this.rangeGlobalStep = Optional.of(((RangeGlobalStep) traversalEndStep).clone());
+            this.rangeGlobalStep = ((RangeGlobalStep) traversalEndStep).clone();
         if (traversalEndStep instanceof TailGlobalStep)
-            this.tailGlobalStep = Optional.of(((TailGlobalStep) traversalEndStep).clone());
+            this.tailGlobalStep = ((TailGlobalStep) traversalEndStep).clone();
         if (traversalEndStep instanceof DedupGlobalStep)
             this.dedupGlobal = true;
 
@@ -98,7 +114,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent() || this.rangeGlobalStep.isPresent() || this.tailGlobalStep.isPresent() || this.dedupGlobal;
+        return stage.equals(Stage.MAP) || null != this.collectingBarrierStep || null != this.rangeGlobalStep || null != this.tailGlobalStep || this.dedupGlobal;
     }
 
     @Override
@@ -106,7 +122,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
         vertex.<TraverserSet<Object>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> IteratorUtils.removeOnNext(traverserSet.iterator()).forEachRemaining(traverser -> {
             if (this.attachHaltedTraverser && !(traverser.get() instanceof Edge))
                 traverser.attach(Attachable.Method.get(vertex));
-            if (this.comparator.isPresent())    // TODO: I think we shouldn't ever single key it  -- always double emit to load balance the servers.
+            if (null != this.comparator)    // TODO: I think we shouldn't ever single key it  -- always double emit to load balance the servers.
                 emitter.emit(traverser, traverser);
             else
                 emitter.emit(traverser);
@@ -115,7 +131,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     @Override
     public Optional<Comparator<Comparable>> getMapKeySort() {
-        return this.comparator;
+        return Optional.ofNullable(this.comparator);
     }
 
     @Override
@@ -134,20 +150,20 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     @Override
     public Iterator<Traverser<?>> generateFinalResult(final Iterator<KeyValue<Comparable, Traverser<?>>> keyValues) {
-        if (this.collectingBarrierStep.isPresent()) {
+        if (null != this.collectingBarrierStep) {
             final TraverserSet<?> traverserSet = new TraverserSet<>();
             while (keyValues.hasNext()) {
                 traverserSet.add((Traverser.Admin) keyValues.next().getValue().asAdmin());
             }
-            this.collectingBarrierStep.get().barrierConsumer((TraverserSet) traverserSet);
+            this.collectingBarrierStep.barrierConsumer((TraverserSet) traverserSet);
             return (Iterator) traverserSet.iterator();
-        } else if (this.rangeGlobalStep.isPresent()) {
-            final RangeGlobalStep<?> rangeGlobalStep = this.rangeGlobalStep.get();
+        } else if (null != this.rangeGlobalStep) {
+            final RangeGlobalStep<?> rangeGlobalStep = this.rangeGlobalStep;
             rangeGlobalStep.setBypass(false);
             rangeGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
             return (Iterator) rangeGlobalStep;
-        } else if (this.tailGlobalStep.isPresent()) {
-            final TailGlobalStep<?> tailGlobalStep = this.tailGlobalStep.get();
+        } else if (null != this.tailGlobalStep) {
+            final TailGlobalStep<?> tailGlobalStep = this.tailGlobalStep;
             tailGlobalStep.setBypass(false);
             tailGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
             return (Iterator) tailGlobalStep;
@@ -164,24 +180,5 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     @Override
     public String getMemoryKey() {
         return TRAVERSERS;
-    }
-
-    /////////////////////
-    /////////////////////
-
-    /*
-   * THIS NEEDS TO GO INTO TRAVERSAL HELPER ONCE WE GET THIS ALL STRAIGHTENED OUT WITH THE INSTRUCTION SET OF GREMLIN (TODO:)
-   */
-    private static boolean isBeyondElementId(final Traversal.Admin<?, ?> traversal) {
-        return (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id)) || traversal instanceof ElementValueTraversal ||
-                traversal.getSteps().stream()
-                        .filter(step -> step instanceof VertexStep ||
-                                step instanceof EdgeVertexStep ||
-                                step instanceof PropertiesStep ||
-                                step instanceof PropertyMapStep ||
-                                (step instanceof TraversalParent &&
-                                        (((TraversalParent) step).getLocalChildren().stream().filter(TraverserMapReduce::isBeyondElementId).findAny().isPresent() ||
-                                                ((TraversalParent) step).getGlobalChildren().stream().filter(TraverserMapReduce::isBeyondElementId).findAny().isPresent())))
-                        .findAny().isPresent();
     }
 }
