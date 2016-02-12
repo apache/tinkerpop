@@ -21,10 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import java.io.File;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.apache.tinkerpop.gremlin.driver.Client;
-import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.*;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -566,6 +563,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail();
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause() instanceof ClosedChannelException);
+
+            //
+            // should recover when the server comes back
+            //
+
+            // restart server
+            this.startServer();
+            // the retry interval is 1 second, wait a bit longer
+            TimeUnit.SECONDS.sleep(5);
+
+            List<Result> results = client.submit("1+1").all().join();
+            assertEquals(1, results.size());
+            assertEquals(2, results.get(0).getInt());
+
         } finally {
             cluster.close();
         }
