@@ -253,7 +253,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         }));
 
                 evalFuture.exceptionally(t -> {
-                    sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0()));
+                    sendError(ctx, INTERNAL_SERVER_ERROR,
+                            String.format("Error encountered evaluating script: %s", requestArguments.getValue0()), Optional.of(t));
                     promise.setFailure(t);
                     return null;
                 });
@@ -437,8 +438,19 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             return node.asText();
     }
 
-    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
-        logger.warn("Invalid request - responding with {} and {}", status, message);
+
+    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
+                                  final String message) {
+        sendError(ctx, status, message, Optional.empty());
+    }
+
+    private static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
+                                  final String message, final Optional<Throwable> t) {
+        if (t.isPresent())
+            logger.warn(String.format("Invalid request - responding with %s and %s", status, message), t.get());
+        else
+            logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
+
         errorMeter.mark();
         final ObjectNode node = mapper.createObjectNode();
         node.put("message", message);
