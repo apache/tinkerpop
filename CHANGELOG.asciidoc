@@ -29,6 +29,7 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 * Fixed bug in "round robin" load balancing in `gremlin-driver` where requests were wrongly being sent to the same host.
 * Prevented the spawning of unneeded reconnect tasks in `gremlin-driver` when a host goes offline.
 * Fixed bug preventing `gremlin-driver` from reconnecting to Gremlin Server when it was restarted.
+* Better handled errors that occurred on commits and serialization in Gremlin Server to first break the result iteration loop and to ensure commit errors were reported to the client.
 * Added GraphSON serializers for the `java.time.*` classes.
 * Improved the logging of the Gremlin Server REST endpoint as it pertained to script execution failures.
 * `TraversalExplanation` is now `Serializable` and registered with `GryoMapper`.
