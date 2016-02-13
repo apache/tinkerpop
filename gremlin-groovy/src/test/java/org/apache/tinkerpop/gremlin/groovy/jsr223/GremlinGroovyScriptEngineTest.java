@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +37,11 @@ import javax.script.SimpleBindings;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -335,8 +336,9 @@ public class GremlinGroovyScriptEngineTest {
         final ExecutorService service = Executors.newFixedThreadPool(8, testingThreadFactory);
         final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
 
-        final int max = 256;
-        final List<Pair<Integer, List<Integer>>> futures = new ArrayList<>(max);
+        final AtomicBoolean failed = new AtomicBoolean(false);
+        final int max = 512;
+        final List<Pair<Integer, List<Integer>>> futures = Collections.synchronizedList(new ArrayList<>(max));
         IntStream.range(0, max).forEach(i -> {
             final int yValue = i * 2;
             final int zValue = i * -1;
@@ -351,7 +353,7 @@ public class GremlinGroovyScriptEngineTest {
                         final List<Integer> result = (List<Integer>) scriptEngine.eval(script, b);
                         futures.add(Pair.with(i, result));
                     } catch (Exception ex) {
-                        throw new RuntimeException(ex);
+                        failed.set(true);
                     }
                 });
             } catch (Exception ex) {
@@ -362,6 +364,9 @@ public class GremlinGroovyScriptEngineTest {
         service.shutdown();
         assertThat(service.awaitTermination(120000, TimeUnit.MILLISECONDS), is(true));
 
+        // likely a concurrency exception if it occurs - and if it does then we've messed up because that's what this
+        // test is partially designed to protected against.
+        assertThat(failed.get(), is(false));
         assertEquals(max, futures.size());
         futures.forEach(t -> {
             assertEquals(t.getValue0(), t.getValue1().get(0));

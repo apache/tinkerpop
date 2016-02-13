@@ -49,20 +49,27 @@ public final class Tokens {
     public static final String ARGS_LANGUAGE = "language";
 
     /**
-     * @deprecated As of release 3.1.0, replaced by {@link #ARGS_ALIASES}.
+     * @deprecated As of release 3.1.0-incubating, replaced by {@link #ARGS_ALIASES}.
      */
     @Deprecated
     public static final String ARGS_REBINDINGS = "rebindings";
     public static final String ARGS_SESSION = "session";
+    public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
 
     public static final String ARGS_COORDINATES_GROUP = "group";
     public static final String ARGS_COORDINATES_ARTIFACT = "artifact";
     public static final String ARGS_COORDINATES_VERSION = "version";
 
+    public static final String ARGS_INFO_TYPE_DEPENDENCIES = "dependencies";
+
+    /**
+     * @deprecated As of release 3.1.1-incubating, replaced by {@link #ARGS_INFO_TYPE_DEPENDENCIES}
+     */
+    @Deprecated
     public static final String ARGS_INFO_TYPE_DEPDENENCIES = "dependencies";
     public static final String ARGS_INFO_TYPE_IMPORTS = "imports";
 
-    public static final List<String> INFO_TYPES = Arrays.asList(ARGS_INFO_TYPE_DEPDENENCIES,
+    public static final List<String> INFO_TYPES = Arrays.asList(ARGS_INFO_TYPE_DEPENDENCIES,
             ARGS_INFO_TYPE_IMPORTS);
 }

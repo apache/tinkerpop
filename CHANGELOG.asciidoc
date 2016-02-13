@@ -56,10 +56,21 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed bug in "round robin" load balancing in `gremlin-driver` where requests were wrongly being sent to the same host.
+* Prevented the spawning of unneeded reconnect tasks in `gremlin-driver` when a host goes offline.
+* Fixed bug preventing `gremlin-driver` from reconnecting to Gremlin Server when it was restarted.
+* Better handled errors that occurred on commits and serialization in Gremlin Server to first break the result iteration loop and to ensure commit errors were reported to the client.
+* Added GraphSON serializers for the `java.time.*` classes.
+* Improved the logging of the Gremlin Server REST endpoint as it pertained to script execution failures.
 * `TraversalExplanation` is now `Serializable` and registered with `GryoMapper`.
+* Fixed a problem with global bindings in Gremlin Server which weren't properly designed to handle concurrent modification.
 * Deprecated `ScriptElementFactory` and made the local `StarGraph` globally available for `ScriptInputFormat`'s `parse()` method.
+* Improved reusability of unique test directory creation in `/target` for `AbstractGraphProvider`, which was formerly only available to Neo4j, by adding `makeTestDirectory()`.
 * Optimized memory-usage in `TraversalVertexProgram`.
+* `Graph` instances are not merely "closed" at the end of tests, they are "cleared" via `GraphProvider.clear()`, which should in turn cleans up old data for an implementation.
+* Expanded the Gremlin Server protocol to allow for transaction management on in-session requests and updated the `gremlin-driver` to take advantage of that.
 * Greatly reduced the amount of objects required in OLAP for the `ReducingBarrierStep` steps.
+* Improved messages for the different distinct "timeouts" that a user can encounter with Gremlin Server.
 
 [[release-3.1.1-incubating]]
 TinkerPop 3.1.1 (Release Date: February 8, 2016)

@@ -34,8 +34,9 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult":
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases":
             case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndAliases":
-                settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList("scripts/generate-classic.groovy");
+                settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList("scripts/generate-classic.groovy");
                 break;
             case "should200OnPOSTTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
@@ -424,6 +425,24 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get("data").get(0).intValue());
+        }
+    }
+
+    @Test
+    public void should200OnPOSTWithGremlinJsonEndcodedBodyForJavaTime() throws Exception {
+        // basic test of java.time.* serialization over JSON from the server perspective. more complete tests
+        // exist in gremlin-core
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"java.time.Instant.MAX\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(Instant.MAX, Instant.parse(node.get("result").get("data").get(0).asText()));
         }
     }
 

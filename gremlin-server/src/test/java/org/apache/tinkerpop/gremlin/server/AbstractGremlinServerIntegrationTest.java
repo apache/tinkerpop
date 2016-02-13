@@ -58,6 +58,10 @@ public abstract class AbstractGremlinServerIntegrationTest {
         logger.info("* Testing: " + name.getMethodName());
         logger.info("* Epoll option enabled:" + GREMLIN_SERVER_EPOLL);
 
+        startServer();
+    }
+
+    public void startServer() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
         final Settings overridenSettings = overrideSettings(settings);

@@ -1,0 +1,133 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.structure.io.graphson;
+
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.junit.Test;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.MonthDay;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static org.junit.Assert.assertEquals;
+
+public class GraphSONMapperTest {
+    private final ObjectMapper mapper = GraphSONMapper.build().embedTypes(false).create().createMapper();
+
+    @Test
+    public void shouldHandleDuration()throws Exception  {
+        final Duration o = Duration.ZERO;
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleInstant()throws Exception  {
+        final Instant o = Instant.ofEpochMilli(System.currentTimeMillis());
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleLocalDate()throws Exception  {
+        final LocalDate o = LocalDate.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleLocalDateTime()throws Exception  {
+        final LocalDateTime o = LocalDateTime.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleLocalTime()throws Exception  {
+        final LocalTime o = LocalTime.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleMonthDay()throws Exception  {
+        final MonthDay o = MonthDay.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleOffsetDateTime()throws Exception  {
+        final OffsetDateTime o = OffsetDateTime.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleOffsetTime()throws Exception  {
+        final OffsetTime o = OffsetTime.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandlePeriod()throws Exception  {
+        final Period o = Period.ofDays(3);
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleYear()throws Exception  {
+        final Year o = Year.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleYearMonth()throws Exception  {
+        final YearMonth o = YearMonth.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleZonedDateTime()throws Exception  {
+        final ZonedDateTime o = ZonedDateTime.now();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleZoneOffset()throws Exception  {
+        final ZoneOffset o = ZonedDateTime.now().getOffset();
+        final String json = mapper.writeValueAsString(o);
+        assertEquals("\"" + o.toString() + "\"", json);
+    }
+}

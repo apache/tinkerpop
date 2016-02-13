@@ -1,22 +1,8 @@
-Apache TinkerPop
-Copyright 2015 The Apache Software Foundation.
+Apache TinkerPop (incubating)
+Copyright 2015-2016 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
-
-=======================================================================
-
-Apache TinkerPop contains subcomponents with separate copyright notices and
-license terms. Your use of the source code for the these subcomponents
-is subject to the terms and conditions of their respective licenses.
-
-See the LICENSE file for a list of subcomponents and dependencies and
-their respective licenses.
-
-========================================================================
- NOTICE files corresponding to section 4(d) of the Apache License,
- for bundled components and dependencies
-========================================================================
 
 ------------------------------------------------------------------------
 Activiti

@@ -157,12 +157,18 @@ Release & Promote
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
-Example `[VOTE]` email:
+Email Templates
+---------------
+
+Release VOTE
+~~~~~~~~~~~~
 
 ```
-[VOTE] TinkerPop xx.yy.zz Release
+Subject: [VOTE] TinkerPop xx.yy.zz Release
 
 Hello,
+
+We are happy to announce that TinkerPop xx.yy.zz is ready for release.
 
 The release artifacts can be found at this location:
 	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/xx.yy.zz/
@@ -173,6 +179,9 @@ The source distribution is provided by:
 Two binary distributions are provided for user convenience:
 	apache-gremlin-console-xx.yy.zz-bin.zip
 	apache-gremlin-server-xx.yy.zz-bin.zip
+
+The GPG key used to sign the release artifacts is available at:
+    https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/KEYS
 
 The online docs can be found here:
 	http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
@@ -189,6 +198,43 @@ The release notes are available here:
 The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
 
 My vote is +1.
+
+Thank you very much,
+<TinkerPop Committer Name>
+```
+
+If the above email template is used for the "Incubator Vote", then it should include the following just after the
+"release notes":
+
+```
+Finally, the dev@tinkerpop [VOTE] thread can be found at this location:
+
+    https://pony-poc.apache.org/thread.html/...
+
+Result summary: +X (Y binding, Z non-binding), 0 (0), -1 (0)
+```
+
+where this link should point to the result of the VOTE.
+
+Dev Release RESULT VOTE
+~~~~~~~~~~~~~~~~~~~~~~~
+
+```
+Subject: [RESULT][VOTE] TinkerPop xx.yy.zz Release
+
+This vote is now closed with a total of X +1s, no +0s and no -1s. The results are:
+
+BINDING VOTES:
+
++1  (X -- list of voters)
+0   (0)
+-1  (0)
+
+NON-BINDING VOTES:
+
++1 (X -- list of voters)
+0  (0)
+-1 (0)
 
 Thank you very much,
 <TinkerPop Committer Name>

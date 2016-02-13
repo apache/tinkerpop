@@ -42,7 +42,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -263,7 +262,7 @@ public class IoTest {
             v1.addEdge("SELF-LOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
-            final Graph target = GraphFactory.open(targetConf);
+            final Graph target = graphProvider.openTestGraph(targetConf);
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 source.io(IoCore.graphml()).writer().create().writeGraph(os, source);
                 try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
@@ -292,7 +291,7 @@ public class IoTest {
             v1.addEdge("SELF-LOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
-            final Graph target = GraphFactory.open(targetConf);
+            final Graph target = graphProvider.openTestGraph(targetConf);;
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 source.io(IoCore.gryo()).writer().create().writeGraph(os, source);
                 try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
@@ -437,7 +436,7 @@ public class IoTest {
             v1.addEdge("SELF-LOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
-            final Graph target = GraphFactory.open(targetConf);
+            final Graph target = graphProvider.openTestGraph(targetConf);
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 source.io(IoCore.graphson()).writer().create().writeGraph(os, source);
                 try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {

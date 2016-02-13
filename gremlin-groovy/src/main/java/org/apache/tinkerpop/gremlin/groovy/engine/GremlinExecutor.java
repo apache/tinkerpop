@@ -277,7 +277,7 @@ public class GremlinExecutor implements AutoCloseable {
                 // check for that situation and convert to TimeoutException
                 if (root instanceof InterruptedException)
                     evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
+                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
                 else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
@@ -485,7 +485,7 @@ public class GremlinExecutor implements AutoCloseable {
         private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
         private List<List<String>> use = new ArrayList<>();
-        private Bindings globalBindings = new SimpleBindings();
+        private Bindings globalBindings = new ConcurrentBindings();
 
         private Builder() {
         }
@@ -512,10 +512,11 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * Bindings to apply to every script evaluated.
+         * Bindings to apply to every script evaluated. Note that the entries of the supplied {@code Bindings} object
+         * will be copied into a newly created {@link ConcurrentBindings} object at the call of this method.
          */
         public Builder globalBindings(final Bindings bindings) {
-            this.globalBindings = bindings;
+            this.globalBindings = new ConcurrentBindings(bindings);
             return this;
         }
 

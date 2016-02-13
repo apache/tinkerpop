@@ -135,8 +135,8 @@ public abstract class AbstractGremlinTest {
             // All GraphProvider objects should be an instance of ManagedGraphProvider, as this is handled by GraphManager
             // which wraps injected GraphProviders with a ManagedGraphProvider instance. If this doesn't happen, there
             // is no way to trace open graphs.
-            if (graphProvider instanceof GraphManager.ManagedGraphProvider)
-                ((GraphManager.ManagedGraphProvider) graphProvider).tryCloseGraphs();
+            if(graphProvider instanceof GraphManager.ManagedGraphProvider)
+                ((GraphManager.ManagedGraphProvider)graphProvider).tryClearGraphs();
             else
                 logger.warn("The {} is not of type ManagedGraphProvider and therefore graph instances may leak between test cases.", graphProvider.getClass());
 

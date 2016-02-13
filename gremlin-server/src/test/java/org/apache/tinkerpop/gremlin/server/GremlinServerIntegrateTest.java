@@ -21,10 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import java.io.File;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.apache.tinkerpop.gremlin.driver.Client;
-import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.*;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -36,6 +33,7 @@ import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
@@ -61,9 +59,9 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
@@ -131,21 +129,39 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.processors.add(processorSettings);
                 break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
+            case "shouldExecuteInSessionWithTransactionManagement":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
             case "shouldUseSimpleSandbox":
-                final Map<String,Object> scriptEngineConf = new HashMap<>();
-                final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
-                final List<String> sandboxes = new ArrayList<>();
-                sandboxes.add(SimpleSandboxExtension.class.getName());
-                compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
-                scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
-                settings.scriptEngines.get("gremlin-groovy").config = scriptEngineConf;
+                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
+                break;
+            case "shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop":
+                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForTimedInterrupt();
                 break;
         }
 
         return settings;
+    }
+
+    private static Map<String, Object> getScriptEngineConfForSimpleSandbox() {
+        final Map<String,Object> scriptEngineConf = new HashMap<>();
+        final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
+        final List<String> sandboxes = new ArrayList<>();
+        sandboxes.add(SimpleSandboxExtension.class.getName());
+        compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
+        scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+        return scriptEngineConf;
+    }
+
+    private static Map<String, Object> getScriptEngineConfForTimedInterrupt() {
+        final Map<String,Object> scriptEngineConf = new HashMap<>();
+        final Map<String,Object> timedInterruptProviderConf = new HashMap<>();
+        final List<Object> config = new ArrayList<>();
+        config.add(1000);
+        timedInterruptProviderConf.put(TimedInterruptCustomizerProvider.class.getName(), config);
+        scriptEngineConf.put("compilerCustomizerProviders", timedInterruptProviderConf);
+        return scriptEngineConf;
     }
 
     @Test
@@ -405,7 +421,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = new WebSocketClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
-            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 200 ms for request"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
+        }
+    }
+
+    @Test
+    public void shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop() throws Exception {
+        try (SimpleClient client = new WebSocketClient()){
+            // timeout configured for 1 second so the timed interrupt should trigger prior to the
+            // scriptEvaluationTimeout which is at 30 seconds by default
+            final List<ResponseMessage> responses = client.submit("while(true){}");
+            assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
@@ -419,7 +448,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> responses = client.submit("(0..<100000)");
 
             // the last message should contain the error
-            assertThat(responses.get(responses.size() - 1).getStatus().getMessage(), endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+            assertThat(responses.get(responses.size() - 1).getStatus().getMessage(), endsWith("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
@@ -535,6 +564,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail();
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause() instanceof ClosedChannelException);
+
+            //
+            // should recover when the server comes back
+            //
+
+            // restart server
+            this.startServer();
+            // the retry interval is 1 second, wait a bit longer
+            TimeUnit.SECONDS.sleep(5);
+
+            List<Result> results = client.submit("1+1").all().join();
+            assertEquals(1, results.size());
+            assertEquals(2, results.get(0).getInt());
+
         } finally {
             cluster.close();
         }
@@ -645,6 +688,67 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final List<ResponseMessage> sessionlessResponses = client.submit(sessionlessRequest);
             assertEquals(1, sessionlessResponses.size());
             assertEquals(ResponseStatusCode.SUCCESS, sessionlessResponses.get(0).getStatus().getCode());
+
+            // Check to see if the transaction is still closed.
+            final RequestMessage checkAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                    .create();
+            final List<ResponseMessage> checkAgainstResponses = client.submit(checkAgainRequest);
+            assertEquals(1, checkAgainstResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, checkAgainstResponses.get(0).getStatus().getCode());
+            assertThat(((List<Boolean>) checkAgainstResponses.get(0).getResult().getData()).get(0), is(false));
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldExecuteInSessionWithTransactionManagement() throws Exception {
+        assumeNeo4jIsPresent();
+
+        try (final SimpleClient client = new WebSocketClient()) {
+            final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "v=graph.addVertex(\"name\",\"stephen\")")
+                    .addArg(Tokens.ARGS_MANAGE_TRANSACTION, true)
+                    .create();
+            final List<ResponseMessage> addResponses = client.submit(addRequest);
+            assertEquals(1, addResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, addResponses.get(0).getStatus().getCode());
+
+            // Check to see if the transaction is closed.
+            final RequestMessage checkRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                    .create();
+            final List<ResponseMessage> checkResponses = client.submit(checkRequest);
+            assertEquals(1, checkResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, checkResponses.get(0).getStatus().getCode());
+            assertThat(((List<Boolean>) checkResponses.get(0).getResult().getData()).get(0), is(false));
+
+            // lets run a sessionless read and validate that the transaction was managed
+            final RequestMessage sessionlessRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "graph.traversal().V().values('name')")
+                    .create();
+            final List<ResponseMessage> sessionlessResponses = client.submit(sessionlessRequest);
+            assertEquals(1, sessionlessResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, sessionlessResponses.get(0).getStatus().getCode());
+            assertEquals("stephen", ((List<String>) sessionlessResponses.get(0).getResult().getData()).get(0));
+
+            // make sure the session is intact
+            final RequestMessage getRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                    .processor("session")
+                    .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                    .addArg(Tokens.ARGS_GREMLIN, "v.values(\"name\")")
+                    .addArg(Tokens.ARGS_MANAGE_TRANSACTION, true)
+                    .create();
+            final List<ResponseMessage> getResponses = client.submit(getRequest);
+            assertEquals(1, getResponses.size());
+            assertEquals(ResponseStatusCode.SUCCESS, getResponses.get(0).getStatus().getCode());
+            assertEquals("stephen", ((List<String>) getResponses.get(0).getResult().getData()).get(0));
 
             // Check to see if the transaction is still closed.
             final RequestMessage checkAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)

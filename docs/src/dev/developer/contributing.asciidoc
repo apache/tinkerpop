@@ -47,7 +47,8 @@ generate the docs to validate formatting by just doing `bin/process-docs.sh --dr
 please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  If no code changes were made,
 one can also use the `--noClean` option. This will prevent the processor from cleaning up the local Grapes directory and
 the Hadoop Gremlin Libs directory in HDFS, resulting in a slightly faster execution time. The documentation is generated
-to `/target/docs/htmlsingle`.
+to `/target/docs/htmlsingle`. Once a full run of the documentation is executed, it is possible to run just one file by
+deleting the file to regenerated from `target/postprocess-asciidoc` then re-executing `bin/process-docs.sh`.
 . If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
 operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
 a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -pl gremlin-server`.
@@ -385,7 +386,8 @@ if the distribution has a file added to it.  Such a situation may arise from sev
 likely come from the addition of a source file from another library.
 
 * If the file being bundled is Apache licensed, then add an entry to NOTICE.
-* If the file being bundled is under a different approved license, then add an entry to LICENSE.
+* If the file being bundled is under a different approved license, then add an entry to LICENSE and include a copy of
+that LICENSE in the root `/licenses` directory of the code repository.
 
 Binary LICENSE and NOTICE
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -398,7 +400,8 @@ distributions, either:
 * target/apache-gremlin-server-x.y.z-distribution.zip
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
-license (e.g. BSD, MIT) then it should be added in the pattern already defined.
+license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
+added to the `<project>/static/licenses` directory of the code repository.
 
 To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
 found in `/META-INF` directory of the jar).

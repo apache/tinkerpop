@@ -57,6 +57,7 @@ public class TimedInterruptCustomizerProvider implements CompilerCustomizerProvi
         timedInterruptAnnotationParams.put("value", interruptionTimeout);
         timedInterruptAnnotationParams.put("unit", GeneralUtils.propX(GeneralUtils.classX(TimeUnit.class), TimeUnit.MILLISECONDS.toString()));
         timedInterruptAnnotationParams.put("checkOnMethodStart", false);
+        timedInterruptAnnotationParams.put("thrown", GeneralUtils.classX(TimedInterruptTimeoutException.class));
         return new ASTTransformationCustomizer(timedInterruptAnnotationParams, TimedInterrupt.class);
     }
 }
