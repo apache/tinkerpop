@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -73,6 +74,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_out_out_profile_simple() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
@@ -289,6 +291,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileStrategyCallback() {
         final Traversal<Vertex, Vertex> t = get_g_V_out_out_profile();
         MockStep mockStep = new MockStep(t.asAdmin());
@@ -296,7 +299,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         t.iterate();
         assertTrue(mockStep.callbackCalled);
 
-        if (!t.asAdmin().getStrategies().onGraphComputer()) {
+        if (!TraversalHelper.onGraphComputer(t.asAdmin())) {
             final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }

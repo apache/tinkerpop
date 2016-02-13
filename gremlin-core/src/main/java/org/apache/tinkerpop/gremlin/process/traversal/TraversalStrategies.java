@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
@@ -60,10 +59,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
      */
     public List<TraversalStrategy<?>> toList();
-
-    public default boolean onGraphComputer() {
-        return toList().stream().filter(strategy -> strategy instanceof TraversalVertexProgramStrategy).findAny().isPresent();
-    }
 
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.

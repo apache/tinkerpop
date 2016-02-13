@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.RequirementsStep
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,5 +56,9 @@ public final class RequirementsStrategy extends AbstractTraversalStrategy<Traver
         for (final TraverserRequirement requirement : requirements) {
             strategy.requirements.add(requirement);
         }
+    }
+
+    public Set<Class<? extends DecorationStrategy>> applyPost() {
+        return Collections.singleton(VertexProgramStrategy.class);
     }
 }

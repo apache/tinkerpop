@@ -18,13 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -34,12 +33,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
@@ -49,7 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,40 +61,71 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             InjectStep.class, Mutating.class, SubgraphStep.class
     ));
 
+    public static final Set<Class<? extends Step>> END_STEPS = new HashSet<>(Arrays.asList(
+            ReducingBarrierStep.class,
+            SupplyingBarrierStep.class,
+            OrderGlobalStep.class,
+            RangeGlobalStep.class,
+            TailGlobalStep.class,
+            DedupGlobalStep.class));
+
     private ComputerVerificationStrategy() {
+    }
+
+    public static boolean isStepInstanceOfEndStep(final Step<?, ?> step) {
+        final Class<? extends Step> stepClass = step.getClass();
+        for (final Class<? extends Step> endClass : END_STEPS) {
+            if (endClass.isAssignableFrom(stepClass))
+                return true;
+        }
+        return false;
+    }
+
+
+    private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof GraphComputing)
+                ((GraphComputing) step).onGraphComputer();
+            if (step instanceof TraversalParent) {
+                ((TraversalParent) step).getGlobalChildren().forEach(ComputerVerificationStrategy::onlyGlobalChildren);
+            }
+        }
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
 
-        if (traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
+        if (!TraversalHelper.onGraphComputer(traversal) || traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
             return;
 
         Step<?, ?> endStep = traversal.getEndStep();
-        while (endStep instanceof ComputerAwareStep.EndStep || endStep instanceof ComputerResultStep) {
+        while (endStep instanceof ComputerAwareStep.EndStep) {
             endStep = endStep.getPreviousStep();
         }
 
-        if (traversal.getParent() instanceof EmptyStep) {
-            if (!(traversal.getStartStep() instanceof GraphStep))
-                throw new VerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
-            ///
-            if (traversal.getSteps().stream().filter(step -> step instanceof GraphStep).count() > 1)
+        if (traversal.getParent() instanceof TraversalVertexProgramStep) {
+            if (traversal.getStartStep() instanceof GraphStep && traversal.getSteps().stream().filter(step -> step instanceof GraphStep).count() > 1)
                 throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
             ///
             if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
-                if (((TraversalParent) endStep).getLocalChildren().stream().filter(t -> !ComputerVerificationStrategy.isNotBeyondElementId(t)).findAny().isPresent())
-                    throw new VerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
+                if (((TraversalParent) endStep).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
+                    throw new VerificationException("A final CollectingBarrierStep can not process the incident edges of a vertex: " + endStep, traversal);
+                if (!((TraversalParent) endStep).getLocalChildren().isEmpty() && TraversalHelper.getLastElementClass(traversal).equals(Edge.class))
+                    throw new VerificationException("The final CollectingBarrierStep can not operate on edges or their properties:" + endStep, traversal);
             }
             ///
             if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
                 ((Bypassing) endStep).setBypass(true);
             if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
                 throw new VerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
+
+            ComputerVerificationStrategy.onlyGlobalChildren(traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep
+                    || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep)
+                    && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
                 throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())
@@ -123,29 +149,16 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if (step instanceof PathProcessor && ((PathProcessor) step).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
                 throw new VerificationException("The following path processor step requires more than the element id: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
         }
+
+        Step<?, ?> nextParentStep = traversal.getParent().asStep();
+        while (!(nextParentStep instanceof EmptyStep)) {
+            if (nextParentStep instanceof PathProcessor && ((PathProcessor) nextParentStep).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
+                throw new VerificationException("The following path processor step requires more than the element id: " + nextParentStep + " requires " + ((PathProcessor) nextParentStep).getMaxRequirement(), traversal);
+            nextParentStep = nextParentStep.getNextStep();
+        }
     }
 
     public static ComputerVerificationStrategy instance() {
         return INSTANCE;
-    }
-
-    /*
-     * THIS NEEDS TO GO INTO TRAVERSAL HELPER ONCE WE GET THIS ALL STRAIGHTENED OUT WITH THE INSTRUCTION SET OF GREMLIN (TODO:)
-     */
-    private static boolean isNotBeyondElementId(final Traversal.Admin<?, ?> traversal) {
-        if (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id))
-            return false;
-        else if (traversal instanceof ElementValueTraversal)
-            return false;
-        else
-            return !traversal.getSteps().stream()
-                    .filter(step -> step instanceof VertexStep ||
-                            step instanceof EdgeVertexStep ||
-                            step instanceof PropertiesStep ||
-                            step instanceof PropertyMapStep ||
-                            (step instanceof TraversalParent &&
-                                    (((TraversalParent) step).getLocalChildren().stream().filter(t -> !ComputerVerificationStrategy.isNotBeyondElementId(t)).findAny().isPresent() ||
-                                            ((TraversalParent) step).getGlobalChildren().stream().filter(t -> !ComputerVerificationStrategy.isNotBeyondElementId(t)).findAny().isPresent())))
-                    .findAny().isPresent();
     }
 }

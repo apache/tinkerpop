@@ -66,7 +66,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getStrategies().onGraphComputer())
+        if (TraversalHelper.onGraphComputer(traversal))
             return
 
         // only apply these strategies if the traversal was :submit to the acceptor - otherwise process as usual

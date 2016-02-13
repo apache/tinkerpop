@@ -39,7 +39,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getStrategies().onGraphComputer())
+        if (TraversalHelper.onGraphComputer(traversal))
             return;
 
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {

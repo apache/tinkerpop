@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.TraversalVertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -99,7 +99,7 @@ public class GraphTraversalSource implements TraversalSource {
     @Override
     public GraphTraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
         final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(new TraversalVertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
+        clone.strategies.addStrategies(new VertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
         return clone;
     }
 

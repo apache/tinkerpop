@@ -21,17 +21,14 @@ package org.apache.tinkerpop.gremlin.process.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -39,13 +36,26 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TraversalHelperTest {
+
+    @Test
+    public void shouldIdentifyScopeOfAccess() {
+        assertFalse(TraversalHelper.isBeyondElementId(__.identity().asAdmin()));
+        assertFalse(TraversalHelper.isBeyondElementId(__.id().asAdmin()));
+        assertTrue(TraversalHelper.isBeyondElementId(__.label().asAdmin()));
+        assertTrue(TraversalHelper.isBeyondElementId(__.values("name").asAdmin()));
+        assertTrue(TraversalHelper.isBeyondElementId(__.outE("knows").asAdmin()));
+        // assertTrue(TraversalHelper.isBeyondElementId(((TraversalParent) __.order().asAdmin().getStartStep()).getLocalChildren().get(0)));
+    }
 
     @Test
     public void shouldNotFindStepOfClassInTraversal() {
