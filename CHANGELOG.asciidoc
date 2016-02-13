@@ -24,6 +24,16 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in both `SparkGraphComputer` and `GiraphGraphComputer` regarding source data access in job chains.
+* Expanded job chaining test coverage for `GraphComputer` providers.
+* Added `TraversalHelper.onGraphComputer(traversal)`.
+* `MapReduce.map()` no longer has a default implementation. This method must be implemented. (*breaking*)
+* `TraversalVertexProgram` can work without a `GraphStep` start.
+* Fixed a severe serialization bug in `TraverserMapReduce.combine()`.
+* Added `PageRankVertexProgramStep` and `GraphTraversal.pageRank()`.
+* Added `TraversalVertexProgramStep` to support OLAP traversal job chaining.
+* Added `VertexProgramStrategy` which compiles multiple OLAP jobs into a single traversal.
+* Simplified the comparator model in `OrderGlobalStep` and `OrderLocalStep`.
 * Refactored `TraversalSource` model to allow fluent-method construction of `TraversalSources`.
 * Deprecated the concept of a `TraversalSource.Builder`.
 * Removed the concept of a `TraversalEngine`. All `Traversal` modulations are now mediated by `TraversalStrategies`. (*breaking*)
@@ -34,7 +44,7 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Renamed step interface `EngineDependent` to `GraphComputing` with method `onGraphComputer()`. (*breaking*)
 * Cleaned up various `TraversalStrategy` tests now that `TraversalEngine` no longer exists.
 * Added `GraphFilter` to support filtering out vertices and edges that won't be touched by an OLAP job.
-* Added `GraphComputer.vertices()` and `GraphComputer.edges()` for `GraphFilter` construction *(breaking)*.
+* Added `GraphComputer.vertices()` and `GraphComputer.edges()` for `GraphFilter` construction. (*breaking*)
 * `SparkGraphComputer`, `GiraphGraphComputer`, and `TinkerGraphComputer` all support `GraphFilter`.
 * Added `GraphComputerTest.shouldSupportGraphFilter()` which verifies all filtered graphs have the same topology.
 * Added `GraphFilterAware` interface to `hadoop-gremlin/` which tells the OLAP engine that the `InputFormat` handles filtering.

@@ -35,12 +35,12 @@ Upgrading for Providers
 TraversalEngine Deprecation and GraphProvider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `TraversalSource` infrastructure has been completely rewritten. Fortunately, for users, their code is backwards compatible.
-Unfortunately, for graph system providers, a few tweaks to their implementation are in order.
+The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards compatible.
+Unfortunately for graph system providers, a few tweaks to their implementation are in order.
 
-* If the graph system provides support for more than `Graph.compute()`, then it implement `GraphProvider.getGraphComputer()`.
-* In any custom `TraversalStrategies`, change `traverser.getEngine().isGraphComputer()` to `traversal.getStrategies().onGraphComputer()`.
-* In any custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
+* If the graph system supports for more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
+* For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer()`.
+* For custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
 
 GraphFilter and GraphComputer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
