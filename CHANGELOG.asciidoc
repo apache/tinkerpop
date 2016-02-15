@@ -66,6 +66,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a pom.xml bug where Gremlin Console/Server were not pulling the latest Neo4j 2.3.2.
 * Fixed bug in "round robin" load balancing in `gremlin-driver` where requests were wrongly being sent to the same host.
 * Prevented the spawning of unneeded reconnect tasks in `gremlin-driver` when a host goes offline.
 * Fixed bug preventing `gremlin-driver` from reconnecting to Gremlin Server when it was restarted.
