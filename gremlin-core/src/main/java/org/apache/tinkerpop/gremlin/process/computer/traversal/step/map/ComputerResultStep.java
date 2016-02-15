@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
@@ -60,7 +61,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
     public Iterator<Traverser.Admin<S>> attach(final Iterator<Traverser.Admin<S>> iterator, final Graph graph) {
         return IteratorUtils.map(iterator, traverser -> {
             traverser.setSideEffects(this.getTraversal().getSideEffects());   // necessary to ensure no NPE
-            if (this.attachElements && (traverser.get() instanceof Attachable))
+            if (this.attachElements && (traverser.get() instanceof Attachable) && !(traverser.get() instanceof Property))
                 traverser.set((S) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
             return traverser;
         });
@@ -110,7 +111,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
 
     @Override
     public ComputerResultStep<S> clone() {
-        final ComputerResultStep<S> clone = (ComputerResultStep<S>)super.clone();
+        final ComputerResultStep<S> clone = (ComputerResultStep<S>) super.clone();
         clone.currentIterator = EmptyIterator.instance();
         return clone;
     }

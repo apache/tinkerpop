@@ -87,7 +87,7 @@ final class GryoSerializers {
 
         @Override
         public void write(final Kryo kryo, final Output output, final Property property) {
-            kryo.writeClassAndObject(output, DetachedFactory.detach(property));
+            kryo.writeClassAndObject(output, property instanceof VertexProperty ? DetachedFactory.detach((VertexProperty) property, true) : DetachedFactory.detach(property));
         }
 
         @Override
