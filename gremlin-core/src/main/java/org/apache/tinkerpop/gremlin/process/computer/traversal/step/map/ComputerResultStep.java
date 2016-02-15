@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -85,7 +86,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> implements B
         }
 
         final Traverser.Admin<S> traverser = this.traversers.next();
-        if (this.attachElements && (traverser.get() instanceof Attachable))
+        if (this.attachElements && (traverser.get() instanceof Attachable) && !(traverser.get() instanceof Property))
             traverser.set((S) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
         return traverser;
     }
