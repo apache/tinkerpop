@@ -110,7 +110,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
 
     @Override
     public ComputerResultStep<S> clone() {
-        final ComputerResultStep<S> clone = (ComputerResultStep<S>)super.clone();
+        final ComputerResultStep<S> clone = (ComputerResultStep<S>) super.clone();
         clone.currentIterator = EmptyIterator.instance();
         return clone;
     }
