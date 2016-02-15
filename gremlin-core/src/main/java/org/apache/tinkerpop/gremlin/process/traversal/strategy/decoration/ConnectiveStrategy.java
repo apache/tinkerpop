@@ -104,8 +104,10 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
             }
             processConnectiveMarker(leftTraversal);
 
-            connectiveStep.addLocalChild(leftTraversal);
-            connectiveStep.addLocalChild(rightTraversal);
+            TraversalHelper.replaceStep(connectiveStep,
+                    connectiveStep instanceof AndStep ?
+                            new AndStep(traversal, leftTraversal, rightTraversal) :
+                            new OrStep(traversal, leftTraversal, rightTraversal), traversal);
         });
     }
 

@@ -33,6 +33,7 @@ public final class TraversalScriptHelper {
     private TraversalScriptHelper() {
     }
 
+    @Deprecated
     public static <S, E> Traversal.Admin<S, E> compute(
             final Graph graph,
             final TraversalSource traversalSource,

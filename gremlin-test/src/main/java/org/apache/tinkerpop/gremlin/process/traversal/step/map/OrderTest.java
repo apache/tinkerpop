@@ -82,6 +82,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX();
 
+    public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name();
+
+    public abstract Traversal<Vertex, String> get_g_V_properties_order_byXkey_decrX_key();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
@@ -319,6 +323,39 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertEquals(convertToVertex(graph, "peter"), list.get(3));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name();
+        printTraversalForm(traversal);
+        assertEquals("peter", traversal.next());
+        assertEquals("josh", traversal.next());
+        assertEquals("marko", traversal.next());
+        assertEquals("vadas", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_properties_order_byXkey_decrX_key() {
+        final Traversal<Vertex, String> traversal = get_g_V_properties_order_byXkey_decrX_key();
+        printTraversalForm(traversal);
+        assertEquals("name", traversal.next());
+        assertEquals("name", traversal.next());
+        assertEquals("name", traversal.next());
+        assertEquals("name", traversal.next());
+        assertEquals("name", traversal.next());
+        assertEquals("name", traversal.next());
+        assertEquals("lang", traversal.next());
+        assertEquals("lang", traversal.next());
+        assertEquals("age", traversal.next());
+        assertEquals("age", traversal.next());
+        assertEquals("age", traversal.next());
+        assertEquals("age", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+
     public static class Traversals extends OrderTest {
 
         @Override
@@ -398,6 +435,16 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX() {
             return g.V().hasLabel("person").fold().order(Scope.local).by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name() {
+            return g.V().hasLabel("person").order().<Vertex>by(v -> v.value("age"), Order.decr).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_properties_order_byXkey_decrX_key() {
+            return g.V().properties().order().by(T.key, Order.decr).key();
         }
     }
 }

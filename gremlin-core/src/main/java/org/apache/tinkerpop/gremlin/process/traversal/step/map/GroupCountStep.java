@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
@@ -47,7 +48,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements MapReducer, TraversalParent {
+public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements MapReducer, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, E> groupTraversal = null;
 
@@ -59,8 +60,8 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> groupTraversal) {
-        this.groupTraversal = this.integrateChild(groupTraversal);
+    public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) {
+        this.groupTraversal = this.integrateChild(keyTraversal);
     }
 
     @Override

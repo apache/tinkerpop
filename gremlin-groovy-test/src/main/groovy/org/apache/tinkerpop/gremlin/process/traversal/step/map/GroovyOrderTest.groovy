@@ -106,5 +106,15 @@ public abstract class GroovyOrderTest {
         public Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').fold.order(local).by('age')")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').order.by({it.age},decr).name")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_properties_order_byXkey_decrX_key() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.properties().order.by(key, decr).key")
+        }
     }
 }

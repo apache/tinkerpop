@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -56,7 +57,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Deprecated
-public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements MapReducer, GraphComputing, TraversalParent {
+public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements MapReducer, ByModulating, GraphComputing, TraversalParent {
 
     private char state = 'k';
 
@@ -93,7 +94,7 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> kvrTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> kvrTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvrTraversal);
             this.state = 'v';

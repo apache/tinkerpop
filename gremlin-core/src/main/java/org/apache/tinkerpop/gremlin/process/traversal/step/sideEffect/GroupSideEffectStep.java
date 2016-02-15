@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
@@ -55,7 +56,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, GraphComputing, MapReducer<K, Collection<?>, K, V, Map<K, V>> {
+public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, GraphComputing, MapReducer<K, Collection<?>, K, V, Map<K, V>> {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
@@ -75,7 +76,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> kvTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';

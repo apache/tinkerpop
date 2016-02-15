@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -39,13 +40,17 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends CollectingBarrierStep<S> implements SideEffectCapable, TraversalParent, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
+public final class AggregateStep<S> extends CollectingBarrierStep<S> implements SideEffectCapable, TraversalParent, ByModulating, MapReducer<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Collection> {
 
     private Traversal.Admin<S, Object> aggregateTraversal = null;
     private String sideEffectKey;
@@ -72,7 +77,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> aggregateTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> aggregateTraversal) {
         this.aggregateTraversal = this.integrateChild(aggregateTraversal);
     }
 

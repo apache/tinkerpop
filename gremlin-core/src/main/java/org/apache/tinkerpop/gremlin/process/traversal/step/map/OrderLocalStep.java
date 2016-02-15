@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
@@ -41,7 +42,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderLocalStep<S, M> extends MapStep<S, S> implements ComparatorHolder<M>, TraversalParent {
+public final class OrderLocalStep<S, M> extends MapStep<S, S> implements ComparatorHolder<M>, ByModulating, TraversalParent {
 
     private List<Comparator<M>> comparators = new ArrayList<>();
     private ChainedComparator<M> chainedComparator = null;
@@ -68,6 +69,16 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
         this.comparators.add(comparator);
         if (comparator instanceof TraversalComparator)
             this.integrateChild(((TraversalComparator) comparator).getTraversal());
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> traversal) {
+        this.addComparator(new TraversalComparator(traversal, Order.incr));
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> traversal, final Comparator comparator) {
+        this.addComparator(new TraversalComparator(traversal, comparator));
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -48,7 +49,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements MapReducer, TraversalParent, PathProcessor {
+public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements MapReducer, TraversalParent, ByModulating, PathProcessor {
 
     private TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
 
@@ -65,7 +66,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> treeTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> treeTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(treeTraversal));
     }
 

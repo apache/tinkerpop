@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
@@ -46,7 +47,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, PathProcessor, MapReducer<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> {
+public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, PathProcessor, MapReducer<MapReduce.NullObject, Tree, MapReduce.NullObject, Tree, Tree> {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
@@ -111,7 +112,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> treeTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> treeTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(treeTraversal));
     }
 

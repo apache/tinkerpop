@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -33,7 +34,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements TraversalParent {
+public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements TraversalParent, ByModulating {
 
     private Traversal.Admin<S, B> sackTraversal = null;
 
@@ -45,7 +46,7 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> sackTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> sackTraversal) {
         this.sackTraversal = this.integrateChild(sackTraversal);
     }
 

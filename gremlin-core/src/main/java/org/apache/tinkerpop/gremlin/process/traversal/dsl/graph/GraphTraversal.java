@@ -27,17 +27,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
@@ -126,9 +122,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -1180,63 +1174,57 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
 
-    //// PROJECTION BY-MODULATORS
+    //// BY-MODULATORS
 
-    public default GraphTraversal<S, E> by(final Traversal<?, ?> byTraversal) {
-        ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(byTraversal.asAdmin());
+    public default GraphTraversal<S, E> by() {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy();
         return this;
     }
 
-    public default GraphTraversal<S, E> by() {
-        return this.by(new IdentityTraversal<>());
+    public default GraphTraversal<S, E> by(final Traversal<?, ?> traversal) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin());
+        return this;
     }
 
-    public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
-        return functionProjection instanceof T ?
-                this.by((T) functionProjection) :
-                this.by(__.map(new FunctionTraverser<>(functionProjection)));
+    public default GraphTraversal<S, E> by(final T token) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(token);
+        return this;
     }
 
-    public default GraphTraversal<S, E> by(final T tokenProjection) {
-        return this.by(new TokenTraversal<>(tokenProjection));
+    public default GraphTraversal<S, E> by(final String key) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key);
+        return this;
     }
 
-    public default GraphTraversal<S, E> by(final String elementPropertyKey) {
-        return this.by(new ElementValueTraversal<>(elementPropertyKey));
+    public default <V> GraphTraversal<S, E> by(final Function<V, Object> function) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function);
+        return this;
     }
 
     //// COMPARATOR BY-MODULATORS
 
+    public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> comparator) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin(), comparator);
+        return this;
+    }
+
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
-        this.by(new IdentityTraversal<>(), comparator);
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(comparator);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final Order order) {
-        return this.by((Comparator) order);
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(order);
+        return this;
     }
 
-    public default <V> GraphTraversal<S, E> by(final Column column, final Comparator<V> objectComparator) {
-        return this.by(new FunctionComparator<>((Function) column, objectComparator));
+    public default <V> GraphTraversal<S, E> by(final String key, final Comparator<V> comparator) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key, comparator);
+        return this;
     }
 
-    public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection,
-                                               final Comparator<V> elementFunctionValueComparator) {
-        if (((Function) elementFunctionProjection) instanceof Column)
-            return this.by((Column) ((Function) elementFunctionProjection), elementFunctionValueComparator);
-        else if (elementFunctionProjection instanceof T)
-            return this.by(new TokenTraversal<>((T) elementFunctionProjection), elementFunctionValueComparator);
-        else
-            return this.by(__.map((Function) elementFunctionProjection), elementFunctionValueComparator);
-    }
-
-    public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection,
-                                               final Comparator<V> propertyValueComparator) {
-        return this.by(new ElementValueTraversal<>(elementPropertyProjection), propertyValueComparator);
-    }
-
-    public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> endComparator) {
-        ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(new TraversalComparator(traversal.asAdmin(), endComparator));
+    public default <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function, comparator);
         return this;
     }
 

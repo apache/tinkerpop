@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -36,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent {
+public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating {
 
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
     private final int amountToSample;
@@ -53,7 +54,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> probabilityTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> probabilityTraversal) {
         this.probabilityTraversal = this.integrateChild(probabilityTraversal);
     }
 

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -44,7 +45,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements VertexComputing, TraversalParent {
+public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements VertexComputing, TraversalParent, ByModulating {
 
     private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
 
@@ -55,7 +56,7 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
 
     public PageRankVertexProgramStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.addLocalChild(__.<Vertex>outE().asAdmin());
+        this.modulateBy(__.<Vertex>outE().asAdmin());
     }
 
     @Override
@@ -78,7 +79,7 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> localChildTraversal) {
         this.pageRankTraversal = this.integrateChild((Traversal.Admin) localChildTraversal);
         this.purePageRankTraversal = this.pageRankTraversal.clone();
     }

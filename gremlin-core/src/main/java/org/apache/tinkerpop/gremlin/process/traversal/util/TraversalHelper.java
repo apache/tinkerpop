@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
@@ -69,11 +70,12 @@ public final class TraversalHelper {
     public static boolean isBeyondElementId(final Traversal.Admin<?, ?> traversal) {
         if (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id))
             return true;
-        if (traversal instanceof ElementValueTraversal)
+        else if (traversal instanceof ElementValueTraversal)
             return true;
         else
             return traversal.getSteps().stream()
                     .filter(step -> step instanceof VertexStep ||
+                            step instanceof LambdaHolder || // if we don't know, then yes.
                             step instanceof LabelStep ||
                             step instanceof EdgeVertexStep ||
                             step instanceof PropertiesStep ||
