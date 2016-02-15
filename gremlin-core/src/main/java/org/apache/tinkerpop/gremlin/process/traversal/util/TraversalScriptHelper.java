@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -29,6 +31,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 public final class TraversalScriptHelper {
 
     private TraversalScriptHelper() {
+    }
+
+    public static <S, E> Traversal.Admin<S, E> compute(
+            final Graph graph,
+            final TraversalSource traversalSource,
+            final String scriptEngineName,
+            final String traversalScript,
+            final Object... bindings) {
+
+        try {
+            return new TraversalScriptFunction<S, E>(traversalSource, scriptEngineName, traversalScript, bindings).apply(graph);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Deprecated
