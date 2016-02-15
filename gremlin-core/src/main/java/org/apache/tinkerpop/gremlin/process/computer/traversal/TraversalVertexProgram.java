@@ -40,11 +40,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -280,8 +280,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
 
         public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(traversalSource, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
-            return this;
+            return this.traversal(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
         }
 
         public Builder traversal(final Traversal.Admin<?, ?> traversal) {
@@ -293,8 +292,6 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             ConfigurationTraversal.storeState(new TraversalClassFunction(traversalClass), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
-
-        // TODO Builder resolveElements(boolean) to be fed to ComputerResultStep
     }
 
 }

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -33,24 +33,24 @@ public abstract class GroovyLoopsTest {
         @Override
         Traversal<Vertex, Path> get_g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX3XX_hasXname_peterX_path_byXnameX(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).repeat(__.both.simplePath).until(has('name', 'peter').or.loops.is(3)).has('name', 'peter').path.by('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(__.both.simplePath).until(has('name', 'peter').or.loops.is(3)).has('name', 'peter').path.by('name')", "v1Id", v1Id)
         }
 
         @Override
         Traversal<Vertex, Path> get_g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX2XX_hasXname_peterX_path_byXnameX(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).repeat(__.both.simplePath).until(has('name', 'peter').or.loops.is(2)).has('name', 'peter').path.by('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(__.both.simplePath).until(has('name', 'peter').or.loops.is(2)).has('name', 'peter').path.by('name')", "v1Id", v1Id)
         }
 
         @Override
         Traversal<Vertex, Path> get_g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_and_loops_isX3XX_hasXname_peterX_path_byXnameX(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).repeat(__.both.simplePath).until(has('name', 'peter').and.loops.is(3)).has('name', 'peter').path.by('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(__.both.simplePath).until(has('name', 'peter').and.loops.is(3)).has('name', 'peter').path.by('name')", "v1Id", v1Id)
         }
 
         @Override
         Traversal<Vertex, String> get_g_V_emitXhasXname_markoX_or_loops_isX2XX_repeatXoutX_valuesXnameX() {
-            TraversalScriptHelper.compute("g.V.emit(has('name', 'marko').or.loops.is(2)).repeat(__.out).name", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.emit(has('name', 'marko').or.loops.is(2)).repeat(__.out).name")
         }
     }
 }

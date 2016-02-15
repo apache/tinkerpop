@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -33,52 +33,52 @@ public abstract class GroovyDedupTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
-            TraversalScriptHelper.compute("g.V.both.dedup.name", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.dedup.name");
         }
 
         @Override
         public Traversal<Vertex, Map<String, List<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_dedup_foldX() {
-            TraversalScriptHelper.compute("g.V.group.by(label).by(__.bothE.weight.dedup.fold)", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group.by(label).by(__.bothE.weight.dedup.fold)");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-            TraversalScriptHelper.compute("g.V.both.has(label, 'software').dedup.by('lang').name", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.has(label, 'software').dedup.by('lang').name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_name_order_byXa_bX_dedup_value() {
-            TraversalScriptHelper.compute("g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value");
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_both_both_dedup() {
-            TraversalScriptHelper.compute("g.V.both.both.dedup", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.dedup")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_both_both_dedup_byXlabelX() {
-            TraversalScriptHelper.compute("g.V.both.both.dedup.by(label)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.dedup.by(label)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_both_name_dedup() {
-            TraversalScriptHelper.compute("g.V.both.both.name.dedup", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.name.dedup")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX() {
-            TraversalScriptHelper.compute("g.V.as('a').both.as('b').dedup('a', 'b').by(label).select('a','b')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').both.as('b').dedup('a', 'b').by(label).select('a','b')")
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').dedup('a','b').path", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').as('b').in('created').as('c').dedup('a','b').path")
         }
 
         @Override
         Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
-            TraversalScriptHelper.compute("g.V.outE.as('e').inV.as('v').select('e').order.by('weight', incr).select('v').values('name').dedup", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.outE.as('e').inV.as('v').select('e').order.by('weight', incr).select('v').values('name').dedup")
         }
     }
 }

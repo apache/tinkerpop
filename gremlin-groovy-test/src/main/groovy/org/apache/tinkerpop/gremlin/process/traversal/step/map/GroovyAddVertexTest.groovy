@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,60 +31,61 @@ public abstract class GroovyAddVertexTest {
     public static class Traversals extends AddVertexTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).as('a').addV('animal').property('age', select('a').by('age')).property('name', 'puppy')", g, "v1Id", v1Id);
+        public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(
+                final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).as('a').addV('animal').property('age', select('a').by('age')).property('name', 'puppy')", "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X() {
-            TraversalScriptHelper.compute("g.V().addV('animal').property('age', 0)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().addV('animal').property('age', 0)")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
-            TraversalScriptHelper.compute("g.addV(label, 'person', 'name', 'stephen')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV(label, 'person', 'name', 'stephen')")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
-            TraversalScriptHelper.compute("g.addV('person').property('name', 'stephen').property('name', 'stephenm')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV('person').property('name', 'stephen').property('name', 'stephenm')")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX() {
-            TraversalScriptHelper.compute("g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm')")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X() {
-            TraversalScriptHelper.compute("g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm', 'since', 2010)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm', 'since', 2010)")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
-            TraversalScriptHelper.compute("g.V.has('name', 'marko').property('friendWeight', outE('knows').weight.sum(), 'acl', 'private')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('name', 'marko').property('friendWeight', outE('knows').weight.sum(), 'acl', 'private')")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X() {
-            TraversalScriptHelper.compute("g.addV('animal').property('name', 'mateo').property('name', 'gateo').property('name', 'cateo').property('age', 5)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV('animal').property('name', 'mateo').property('name', 'gateo').property('name', 'cateo').property('age', 5)")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX() {
-            TraversalScriptHelper.compute("g.V.addV('animal').property('name', values('name')).property('name', 'an animal').property(values('name'), label())", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.addV('animal').property('name', values('name')).property('name', 'an animal').property(values('name'), label())")
         }
 
         ///////// DEPRECATED BELOW
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
-            TraversalScriptHelper.compute("g.V.addV(label, 'animal', 'age', 0)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.addV(label, 'animal', 'age', 0)")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
-            TraversalScriptHelper.compute("g.addV(label, 'person', 'name', 'stephen')", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.addV(label, 'person', 'name', 'stephen')")
         }
     }
 }

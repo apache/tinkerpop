@@ -19,10 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,62 +31,62 @@ public abstract class GroovyGroupTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
-            TraversalScriptHelper.compute("g.V.group.by('name')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group.by('name')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX_by() {
-            TraversalScriptHelper.compute("g.V.group.by('name').by", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group.by('name').by")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX() {
-            TraversalScriptHelper.compute("g.V.group('a').by('name').cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group('a').by('name').cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            TraversalScriptHelper.compute("g.V.has('lang').group('a').by('lang').by('name').out.cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('lang').group('a').by('lang').by('name').out.cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byXcountX() {
-            TraversalScriptHelper.compute("g.V.has('lang').group.by('lang').by(count())", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('lang').group.by('lang').by(count())")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX() {
-            TraversalScriptHelper.compute("g.V.repeat(__.out.group('a').by('name').by(count())).times(2).cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.out.group('a').by('name').by(count())).times(2).cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            TraversalScriptHelper.compute("g.V.group.by(__.outE.count).by('name')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group.by(__.outE.count).by('name')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX() {
-            TraversalScriptHelper.compute("g.V.group('a').by(label).by(outE().weight.sum).cap('a')", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group('a').by(label).by(outE().weight.sum).cap('a')");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
-            TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).group.by('songType').by(count())", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(both('followedBy')).times(2).group.by('songType').by(count())")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
-            TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).group('a').by('songType').by(count()).cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(both('followedBy')).times(2).group('a').by('songType').by(count()).cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX() {
-            TraversalScriptHelper.compute("g.V.group.by{it.name[0]}.by(constant(1l))", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group.by{it.name[0]}.by(constant(1l))")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
-            TraversalScriptHelper.compute("g.V.group('a').by{it.name[0]}.by(constant(1l)).cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group('a').by{it.name[0]}.by(constant(1l)).cap('a')")
         }
     }
 }

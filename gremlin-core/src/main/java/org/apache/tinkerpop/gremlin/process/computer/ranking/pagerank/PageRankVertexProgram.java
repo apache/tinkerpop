@@ -30,9 +30,9 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -179,8 +179,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         }
 
         public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(traversalSource, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
-            return this;
+            return this.traversal(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
         }
 
         public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {

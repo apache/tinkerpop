@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -33,27 +33,27 @@ public abstract class GroovyCoalesceTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX() {
-            TraversalScriptHelper.compute("g.V().coalesce(out('foo'), out('bar'))", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().coalesce(out('foo'), out('bar'))")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).coalesce(out('knows'), out('created')).values('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).coalesce(out('knows'), out('created')).values('name')", "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).coalesce(out('created'), out('knows')).values('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).coalesce(out('created'), out('knows')).values('name')", "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-            TraversalScriptHelper.compute("g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().coalesce(out('likes'), out('knows'), out('created')).groupCount().by('name')")
         }
 
         @Override
         Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
-            TraversalScriptHelper.compute("g.V.coalesce(outE('knows'), outE('created')).otherV.path.by('name').by(T.label)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.coalesce(outE('knows'), outE('created')).otherV.path.by('name').by(T.label)")
         }
     }
 }

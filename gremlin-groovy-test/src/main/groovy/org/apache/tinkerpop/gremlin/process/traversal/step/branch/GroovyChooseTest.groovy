@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,12 +31,12 @@ public abstract class GroovyChooseTest {
     public static class Traversals extends ChooseTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
-            TraversalScriptHelper.compute("g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name() {
-            TraversalScriptHelper.compute("g.V.choose({it.label() == 'person'}, out('knows'), __.in('created')).name",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose({it.label() == 'person'}, out('knows'), __.in('created')).name")
         }
     }
 }

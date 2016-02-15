@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,18 +32,18 @@ public abstract class GroovyPageRankTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_pageRank() {
-            TraversalScriptHelper.compute("g.V.pageRank", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank")
         }
 
 
         @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name() {
-            TraversalScriptHelper.compute("g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X() {
-            TraversalScriptHelper.compute("g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name.limit(2)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name.limit(2)")
         }
     }
 }

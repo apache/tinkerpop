@@ -16,56 +16,58 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import java.io.Serializable;
-import java.util.function.Function;
 
 /**
+ * ScriptTraversal encapsulates a {@link ScriptEngine} and a script which is compiled into a {@link Traversal} at {@link Admin#applyStrategies()}.
+ * This is useful for serializing traversals as the compilation can happen on the remote end where the traversal will ultimately be processed.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @deprecated As of release 3.2.0, replaced by {@link ScriptTraversal}.
  */
-public final class TraversalScriptFunction<S, E> implements Function<Graph, Traversal.Admin<S, E>>, Serializable {
+public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
 
-    private final TraversalSourceFactory traversalSourceFactory;
-    private final String scriptEngineName;
-    private final String traversalScript;
+    private final TraversalSourceFactory factory;
+    private final String script;
+    private final String scriptEngine;
     private final Object[] bindings;
 
-    public TraversalScriptFunction(final TraversalSource traversalSource, final String scriptEngineName, final String traversalScript, final Object... bindings) {
-        this.traversalSourceFactory = new TraversalSourceFactory<>(traversalSource);
-        this.scriptEngineName = scriptEngineName;
-        this.traversalScript = traversalScript;
+    public ScriptTraversal(final TraversalSource traversalSource, final String scriptEngine, final String script, final Object... bindings) {
+        super();
+        this.graph = traversalSource.getGraph();
+        this.factory = new TraversalSourceFactory<>(traversalSource);
+        this.scriptEngine = scriptEngine;
+        this.script = script;
         this.bindings = bindings;
         if (this.bindings.length % 2 != 0)
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
     }
 
-    public Traversal.Admin<S, E> apply(final Graph graph) {
+    @Override
+    public void applyStrategies() throws IllegalStateException {
         try {
-            final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngineName);
+            final TraversalSource source = this.factory.createTraversalSource(this.graph);
+            final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngine);
             final Bindings engineBindings = engine.createBindings();
-            engineBindings.put("g", this.traversalSourceFactory.createTraversalSource(graph));
+            engineBindings.put("g", source);
             for (int i = 0; i < this.bindings.length; i = i + 2) {
                 engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
             }
-            final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) engine.eval(this.traversalScript, engineBindings);
-            if (!traversal.isLocked()) traversal.applyStrategies();
-            return traversal;
+            final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) engine.eval(this.script, engineBindings);
+            traversal.getSteps().forEach(this::addStep);
+            this.strategies = traversal.getStrategies();
+            this.sideEffects = traversal.getSideEffects();
+            super.applyStrategies();
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    public String toString() {
-        return this.traversalScript;
     }
 }

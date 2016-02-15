@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,17 +30,17 @@ public abstract class GroovyValueMapTest {
     public static class Traversals extends ValueMapTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
-            TraversalScriptHelper.compute("g.V.valueMap", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap");
         }
 
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
-            TraversalScriptHelper.compute("g.V.valueMap('name', 'age')", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap('name', 'age')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out('created').valueMap", g, "v1Id", v1Id);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out('created').valueMap", "v1Id", v1Id)
         }
     }
 }

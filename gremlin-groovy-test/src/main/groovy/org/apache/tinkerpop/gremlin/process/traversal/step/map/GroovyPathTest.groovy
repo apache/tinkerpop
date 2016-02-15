@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,27 +32,27 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).name.path", g, "v1Id", v1Id);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).name.path", "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_out_path_byXageX_byXnameX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out.path.by('age').by('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out.path.by('age').by('name')", "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX() {
-            TraversalScriptHelper.compute("g.V.repeat(__.out).times(2).path.by.by('name').by('lang')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.out).times(2).path.by.by('name').by('lang')")
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_out_out_path_byXnameX_byXageX() {
-            TraversalScriptHelper.compute("g.V.out.out.path.by('name').by('age')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.out.path.by('name').by('age')")
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_hasXname_markoX_asXbX_hasXage_29X_asXcX_path() {
-            TraversalScriptHelper.compute("g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').has('name', 'marko').as('b').has('age', 29).as('c').path")
         }
     }
 }
