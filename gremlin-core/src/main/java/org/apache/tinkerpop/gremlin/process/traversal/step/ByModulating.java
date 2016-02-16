@@ -22,10 +22,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.Comparator;
@@ -81,9 +83,15 @@ public interface ByModulating {
         this.modulateBy(new TokenTraversal<>(t), comparator);
     }
 
+    public default void modulateBy(final Column column, final Comparator comparator) {
+        this.modulateBy(new ColumnTraversal(column), comparator);
+    }
+
     public default void modulateBy(final Function function, final Comparator comparator) {
         if (function instanceof T)
             this.modulateBy((T) function, comparator);
+        else if (function instanceof Column)
+            this.modulateBy((Column) function, comparator);
         else
             this.modulateBy(__.map(new FunctionTraverser<>(function)).asAdmin(), comparator);
     }

@@ -1223,6 +1223,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    /*public default <V> GraphTraversal<S, E> by(final Column column, final Comparator<V> comparator) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(column, comparator);
+        return this;
+    }
+
+    public default <V> GraphTraversal<S, E> by(final T token, final Comparator<V> comparator) {
+        ((ByModulating) this.asAdmin().getEndStep()).modulateBy(token, comparator);
+        return this;
+    }*/
+
     public default <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function, comparator);
         return this;
