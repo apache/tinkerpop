@@ -35,6 +35,7 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -50,6 +51,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X();
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX();
+
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -114,6 +117,28 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         assertEquals("ripple", names.get(1));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        double lastPageRank = Double.MIN_VALUE;
+        while (traversal.hasNext()) {
+            final Map<String, List<Object>> map = traversal.next();
+            assertEquals(2, map.size());
+            assertEquals(1, map.get("name").size());
+            assertEquals(1, map.get("pageRank").size());
+            String name = (String) map.get("name").get(0);
+            double pageRank = (Double) map.get("pageRank").get(0);
+            assertTrue(pageRank >= lastPageRank);
+            lastPageRank = pageRank;
+            assertFalse(name.equals("lop") || name.equals("ripple"));
+            counter++;
+        }
+        assertEquals(4, counter);
+    }
+
     public static class Traversals extends PageRankTest {
 
         @Override
@@ -134,6 +159,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X() {
             return g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK, Order.decr).<String>values("name").limit(2);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
+            return g.V().hasLabel("person").pageRank().by("pageRank").order().by("pageRank").valueMap("name", "pageRank");
         }
     }
 }

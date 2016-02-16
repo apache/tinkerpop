@@ -67,13 +67,13 @@ public final class TraversalVertexProgramStep extends AbstractStep<ComputerResul
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
+                final GraphComputer graphComputer = this.getComputer(graph);
                 final ComputerResult result = graphComputer.program(TraversalVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get();
                 return this.getTraversal().getTraverserGenerator().generate(result, (Step) this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
-                final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
+                final GraphComputer graphComputer = this.getComputer(graph);
                 final ComputerResult result = graphComputer.program(TraversalVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get();
                 return traverser.split(result, this);
             }
@@ -98,6 +98,13 @@ public final class TraversalVertexProgramStep extends AbstractStep<ComputerResul
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return TraversalParent.super.getSelfAndChildRequirements(TraverserRequirement.BULK);
+    }
+
+    private final GraphComputer getComputer(final Graph graph) {
+        final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
+        if (!(this.getNextStep() instanceof ComputerResultStep))
+            graphComputer.persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
+        return graphComputer;
     }
 
     private final Traversal.Admin<?, ?> compileTraversal(final Graph graph) {

@@ -49,5 +49,10 @@ public abstract class GroovyPageRankTest {
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name_limitX2X() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.order.by(PageRankVertexProgram.PAGE_RANK, decr).name.limit(2)")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').pageRank.by('pageRank').order.by('pageRank').valueMap('name', 'pageRank')")
+        }
     }
 }

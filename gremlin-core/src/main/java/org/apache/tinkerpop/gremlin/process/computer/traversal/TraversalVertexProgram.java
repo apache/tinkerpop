@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -136,49 +135,55 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
         this.traversal.getSideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {    // ITERATION 1
-            final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
-            vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
-
-            /*if (!(this.traversal.getStartStep() instanceof GraphStep)) {  // TODO: support reactivating halted traversers
-                final TraverserSet<Object> aliveTraverses = new TraverserSet<>();
-                aliveTraverses.addAll(haltedTraversers);
-                haltedTraversers.clear();
-                if (!haltedTraversers.isEmpty())
-                    messenger.sendMessage(MessageScope.Global.of(vertex), aliveTraverses);
-            }*/
-            final GraphStep<Element, Element> graphStep = (this.traversal.getStartStep() instanceof GraphStep) ?
-                    (GraphStep<Element, Element>) this.traversal.getStartStep() :
-                    new GraphStep((Traversal.Admin) EmptyTraversal.instance(), Vertex.class, true); // if no start vertices, then do all vertices
-            final String future = (this.traversal.getStartStep() instanceof GraphStep) ? graphStep.getNextStep().getId() : this.traversal.getStartStep().getId();
-            final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
-            if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)
-                if (ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
-                    final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, graphStep, 1l);
-                    traverser.setStepId(future);
-                    traverser.detach();
-                    if (traverser.isHalted())
-                        haltedTraversers.add((Traverser.Admin) traverser);
-                    else
-                        memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, new TraverserSet<>(traverser)), this.traversalMatrix));
+            if (!(this.traversal.getStartStep() instanceof GraphStep)) {  // NOT A GRAPH-STEP TRAVERSAL
+                final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
+                if (haltedTraversers.isEmpty()) {
+                    memory.and(VOTE_TO_HALT, true);
+                } else {
+                    vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
+                    final TraverserSet<Object> aliveTraverses = new TraverserSet<>();
+                    haltedTraversers.forEach(traverser -> {
+                        traverser.setStepId(this.traversal.getStartStep().getId());
+                        aliveTraverses.add(traverser);
+                    });
+                    haltedTraversers.clear();
+                    memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, aliveTraverses), this.traversalMatrix));
                 }
-            } else {  // EDGES (process the first step via a message pass)
-                boolean voteToHalt = true;
-                final Iterator<Edge> starts = vertex.edges(Direction.OUT);
-                while (starts.hasNext()) {
-                    final Edge start = starts.next();
-                    if (ElementHelper.idExists(start.id(), graphStep.getIds())) {
-                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, graphStep, 1l);
+            } else {                                                     // A GRAPH-STEP TRAVERSAL
+                final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
+                vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
+                final GraphStep<Element, Element> graphStep = (GraphStep<Element, Element>) this.traversal.getStartStep();
+                final String future = (this.traversal.getStartStep() instanceof GraphStep) ? graphStep.getNextStep().getId() : this.traversal.getStartStep().getId();
+                final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
+                if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)
+                    if (ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
+                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, graphStep, 1l);
                         traverser.setStepId(future);
-                        traverser.detach(); // TODO: bad
+                        traverser.detach();  // TODO: bad?
                         if (traverser.isHalted())
                             haltedTraversers.add((Traverser.Admin) traverser);
-                        else {
-                            voteToHalt = false;
-                            messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                        else
+                            memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, new TraverserSet<>(traverser)), this.traversalMatrix));
+                    }
+                } else {  // EDGES (process the first step via a message pass)
+                    boolean voteToHalt = true;
+                    final Iterator<Edge> starts = vertex.edges(Direction.OUT);
+                    while (starts.hasNext()) {
+                        final Edge start = starts.next();
+                        if (ElementHelper.idExists(start.id(), graphStep.getIds())) {
+                            final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, graphStep, 1l);
+                            traverser.setStepId(future);
+                            traverser.detach(); // TODO: bad?
+                            if (traverser.isHalted())
+                                haltedTraversers.add((Traverser.Admin) traverser);
+                            else {
+                                voteToHalt = false;
+                                messenger.sendMessage(MessageScope.Global.of(vertex), new TraverserSet<>(traverser));
+                            }
                         }
                     }
+                    memory.and(VOTE_TO_HALT, voteToHalt);
                 }
-                memory.and(VOTE_TO_HALT, voteToHalt);
             }
         } else {  // ITERATION 1+
             memory.and(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix));

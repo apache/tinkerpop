@@ -28,12 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
@@ -65,38 +63,45 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
         traversal.addTraverserRequirement(TraverserRequirement.BULK); // all graph computations require bulk
 
-        if (traversal.getStartStep() instanceof GraphStep && (traversal.getStartStep().getNextStep() instanceof PageRankVertexProgramStep)) {
-            final GraphStep<?, ?> graphStep = (GraphStep) traversal.getStartStep();
-            final PageRankVertexProgramStep pageRankVertexProgramStep = (PageRankVertexProgramStep) traversal.getStartStep().getNextStep();
-            if (!graphStep.returnsVertex())
-                throw new VerificationException("The GraphStep previous to PageRankVertexStep must emit vertices: " + graphStep, traversal);
-            pageRankVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
-            graphStep.getLabels().forEach(pageRankVertexProgramStep::addLabel);
-            traversal.removeStep(0);  // remove the graph step
-            if (traversal.getSteps().size() == 1) // todo: in the future, this should just be a mapreduce job added to the PageRankVertexProgram step
-                traversal.addStep(new IdentityStep<>(traversal));
+        if (null == this.graphComputerFunction) { // TOTAL HACK!
+            traversal.setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance()));
+            ComputerVerificationStrategy.instance().apply(traversal);
+            traversal.setParent(EmptyStep.instance());
+            return;
         }
-        if (null != this.graphComputerFunction) {   // if the function is null, then its been serialized and thus, already in a graph computer
+
+        Step<?, ?> currentStep = traversal.getStartStep();
+        while (!(currentStep instanceof EmptyStep)) {
             Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
-            Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(traversal.getStartStep());
-            Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(traversal.getStartStep());
+            Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);
+            Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(currentStep);
             if (!(firstLegalOLAPStep instanceof EmptyStep)) {
                 int index = TraversalHelper.stepIndex(firstLegalOLAPStep, traversal);
                 TraversalHelper.removeToTraversal(firstLegalOLAPStep, lastLegalOLAPStep.getNextStep(), (Traversal.Admin) computerTraversal);
                 final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, computerTraversal);
-                traversalVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
-                final ComputerResultStep computerResultStep = new ComputerResultStep(traversal, true);
-                if (!lastLegalOLAPStep.getLabels().isEmpty())
-                    lastLegalOLAPStep.getLabels().forEach(computerResultStep::addLabel);
                 traversal.addStep(index, traversalVertexProgramStep);
-                traversal.addStep(index + 1, computerResultStep);
             }
-        } else {  // this is a total hack to trick the difference between TraversalVertexProgram via GraphComputer and via TraversalSource. :|
-            traversal.setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance()));
-            ComputerVerificationStrategy.instance().apply(traversal);
-            traversal.setParent(EmptyStep.instance());
+            currentStep = traversal.getStartStep();
+            while (!(currentStep instanceof EmptyStep)) {
+                if (!(currentStep instanceof VertexComputing) && !lastTraversalVertexProgramDone(traversal))
+                    break;
+                currentStep = currentStep.getNextStep();
+            }
         }
-
+        TraversalHelper.getLastStepOfAssignableClass(VertexComputing.class, traversal).ifPresent(step -> {
+            if (step instanceof TraversalVertexProgramStep) {
+                final ComputerResultStep computerResultStep = new ComputerResultStep<>(traversal, true);
+                ((TraversalVertexProgramStep) step).getGlobalChildren().get(0).getEndStep().getLabels().forEach(computerResultStep::addLabel);
+                // labeling should happen in TraversalVertexProgram (perhaps MapReduce)
+                TraversalHelper.insertAfterStep(computerResultStep, (Step) step, traversal);
+            }
+        });
+        if (traversal.getEndStep() instanceof PageRankVertexProgramStep) {
+            final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, __.identity().asAdmin());
+            traversal.addStep(traversalVertexProgramStep);
+            traversal.addStep(new ComputerResultStep<>(traversal, true));
+        }
+        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.graphComputerFunction));
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {
@@ -112,9 +117,19 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         while (!(currentStep instanceof EmptyStep)) {
             if (ComputerVerificationStrategy.isStepInstanceOfEndStep(currentStep))
                 return currentStep;
+            if (currentStep instanceof VertexComputing)
+                return currentStep.getPreviousStep();
             currentStep = currentStep.getNextStep();
         }
         return EmptyStep.instance();
+    }
+
+    private static boolean lastTraversalVertexProgramDone(final Traversal.Admin<?, ?> traversal) {
+        Optional<TraversalVertexProgramStep> optional = TraversalHelper.getLastStepOfAssignableClass(TraversalVertexProgramStep.class, traversal);
+        if (!optional.isPresent())
+            return false;
+        else
+            return ComputerVerificationStrategy.isStepInstanceOfEndStep(optional.get().getGlobalChildren().get(0).getEndStep());
     }
 
     public static Optional<GraphComputer> getGraphComputer(final Graph graph, final TraversalStrategies strategies) {

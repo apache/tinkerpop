@@ -95,7 +95,10 @@ public final class TinkerGraphComputerView {
     }
 
     public List<VertexProperty<?>> getProperty(final TinkerVertex vertex, final String key) {
-        return isComputeKey(key) ? this.getValue(vertex, key) : (List) TinkerHelper.getProperties(vertex).getOrDefault(key, Collections.emptyList());
+        // if the vertex property is already on the vertex, use that.
+        final List<VertexProperty<?>> vertexProperty = this.getValue(vertex, key);
+        return vertexProperty.isEmpty() ? (List) TinkerHelper.getProperties(vertex).getOrDefault(key, Collections.emptyList()) : vertexProperty;
+        //return isComputeKey(key) ? this.getValue(vertex, key) : (List) TinkerHelper.getProperties(vertex).getOrDefault(key, Collections.emptyList());
     }
 
     public List<Property> getProperties(final TinkerVertex vertex) {
