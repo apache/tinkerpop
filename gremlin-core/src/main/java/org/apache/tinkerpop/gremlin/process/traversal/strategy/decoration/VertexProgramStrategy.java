@@ -60,39 +60,41 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (!(traversal.getParent() instanceof EmptyStep))   // VertexPrograms can only execute at the root level of a Traversal
+            return;
+
         traversal.addTraverserRequirement(TraverserRequirement.BULK); // all graph computations require bulk
-        if (traversal.getParent() instanceof EmptyStep) {  // VertexPrograms can only execute at the root level of a Traversal
-            if (traversal.getStartStep() instanceof GraphStep && (traversal.getStartStep().getNextStep() instanceof PageRankVertexProgramStep)) {
-                final GraphStep<?, ?> graphStep = (GraphStep) traversal.getStartStep();
-                final PageRankVertexProgramStep pageRankVertexProgramStep = (PageRankVertexProgramStep) traversal.getStartStep().getNextStep();
-                if (!graphStep.returnsVertex())
-                    throw new VerificationException("The GraphStep previous to PageRankVertexStep must emit vertices: " + graphStep, traversal);
-                pageRankVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
-                graphStep.getLabels().forEach(pageRankVertexProgramStep::addLabel);
-                traversal.removeStep(0);  // remove the graph step
-                if (traversal.getSteps().size() == 1) // todo: in the future, this should just be a mapreduce job added to the PageRankVertexProgram step
-                    traversal.addStep(new IdentityStep<>(traversal));
+
+        if (traversal.getStartStep() instanceof GraphStep && (traversal.getStartStep().getNextStep() instanceof PageRankVertexProgramStep)) {
+            final GraphStep<?, ?> graphStep = (GraphStep) traversal.getStartStep();
+            final PageRankVertexProgramStep pageRankVertexProgramStep = (PageRankVertexProgramStep) traversal.getStartStep().getNextStep();
+            if (!graphStep.returnsVertex())
+                throw new VerificationException("The GraphStep previous to PageRankVertexStep must emit vertices: " + graphStep, traversal);
+            pageRankVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
+            graphStep.getLabels().forEach(pageRankVertexProgramStep::addLabel);
+            traversal.removeStep(0);  // remove the graph step
+            if (traversal.getSteps().size() == 1) // todo: in the future, this should just be a mapreduce job added to the PageRankVertexProgram step
+                traversal.addStep(new IdentityStep<>(traversal));
+        }
+        if (null != this.graphComputerFunction) {   // if the function is null, then its been serialized and thus, already in a graph computer
+            Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
+            Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(traversal.getStartStep());
+            Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(traversal.getStartStep());
+            if (!(firstLegalOLAPStep instanceof EmptyStep)) {
+                int index = TraversalHelper.stepIndex(firstLegalOLAPStep, traversal);
+                TraversalHelper.removeToTraversal(firstLegalOLAPStep, lastLegalOLAPStep.getNextStep(), (Traversal.Admin) computerTraversal);
+                final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, computerTraversal);
+                traversalVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
+                final ComputerResultStep computerResultStep = new ComputerResultStep(traversal, true);
+                if (!lastLegalOLAPStep.getLabels().isEmpty())
+                    lastLegalOLAPStep.getLabels().forEach(computerResultStep::addLabel);
+                traversal.addStep(index, traversalVertexProgramStep);
+                traversal.addStep(index + 1, computerResultStep);
             }
-            if (null != this.graphComputerFunction) {   // if the function is null, then its been serialized and thus, already in a graph computer
-                Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
-                Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(traversal.getStartStep());
-                Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(traversal.getStartStep());
-                if (!(firstLegalOLAPStep instanceof EmptyStep)) {
-                    int index = TraversalHelper.stepIndex(firstLegalOLAPStep, traversal);
-                    TraversalHelper.removeToTraversal(firstLegalOLAPStep, lastLegalOLAPStep.getNextStep(), (Traversal.Admin) computerTraversal);
-                    final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, computerTraversal);
-                    traversalVertexProgramStep.setGraphComputerFunction(this.graphComputerFunction);
-                    final ComputerResultStep computerResultStep = new ComputerResultStep(traversal, true);
-                    if (!lastLegalOLAPStep.getLabels().isEmpty())
-                        lastLegalOLAPStep.getLabels().forEach(computerResultStep::addLabel);
-                    traversal.addStep(index, traversalVertexProgramStep);
-                    traversal.addStep(index + 1, computerResultStep);
-                }
-            } else {  // this is a total hack to trick the difference between TraversalVertexProgram via GraphComputer and via TraversalSource. :|
-                traversal.setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance()));
-                ComputerVerificationStrategy.instance().apply(traversal);
-                traversal.setParent(EmptyStep.instance());
-            }
+        } else {  // this is a total hack to trick the difference between TraversalVertexProgram via GraphComputer and via TraversalSource. :|
+            traversal.setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance()));
+            ComputerVerificationStrategy.instance().apply(traversal);
+            traversal.setParent(EmptyStep.instance());
         }
 
     }

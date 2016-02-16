@@ -54,6 +54,7 @@ public class LambdaRestrictionStrategyTest {
                 {"order().by((a,b)->a.compareTo(b))", __.order().by((a, b) -> ((Integer) a).compareTo((Integer) b)), false},
                 {"order(local).by((a,b)->a.compareTo(b))", __.order(Scope.local).by((a, b) -> ((Integer) a).compareTo((Integer) b)), false},
                 {"__.choose(v->v.toString().equals(\"marko\"),__.out(),__.in())", __.choose(v -> v.toString().equals("marko"), __.out(), __.in()), false},
+                {"order(local).by(values,decr)", __.order(Scope.local).by(Column.values, (a, b) -> ((Double) a).compareTo((Double) b)), false},
                 //
                 {"order(local).by(values,decr)", __.order(Scope.local).by(Column.values, Order.decr), true},
                 {"order().by(label,decr)", __.order().by(T.label, Order.decr), true},
