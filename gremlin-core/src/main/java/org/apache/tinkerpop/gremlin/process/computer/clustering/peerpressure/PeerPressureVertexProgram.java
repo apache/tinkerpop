@@ -24,15 +24,13 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -48,7 +46,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -65,10 +62,10 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
-    private static final String TRAVERSAL_SUPPLIER = "gremlin.peerPressureVertexProgram.traversalSupplier";
+    private static final String EDGE_TRAVERSAL = "gremlin.peerPressureVertexProgram.edgeTraversal";
     private static final String VOTE_TO_HALT = "gremlin.peerPressureVertexProgram.voteToHalt";
 
-    private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
+    private PureTraversal<Vertex, Edge> edgeTraversal = null;
     private int maxIterations = 30;
     private boolean distributeVote = false;
 
@@ -81,9 +78,9 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
-            this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
-            this.voteScope = MessageScope.Local.of(this.configurationTraversal);
+        if (configuration.containsKey(EDGE_TRAVERSAL)) {
+            this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
+            this.voteScope = MessageScope.Local.of(() -> this.edgeTraversal.getCompiled().clone());
             this.countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
         }
         this.maxIterations = configuration.getInt(MAX_ITERATIONS, 30);
@@ -95,9 +92,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
         super.storeState(configuration);
         configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
         configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
-        if (null != this.configurationTraversal) {
-            this.configurationTraversal.storeState(configuration);
-        }
+        if (null != this.edgeTraversal)
+            this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
     }
 
     @Override
@@ -220,17 +216,10 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             return this.traversal(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
         }
 
-        public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
-            ConfigurationTraversal.storeState(new TraversalObjectFunction<>(traversal), this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder traversal(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
+            PureTraversal.storeState(this.configuration, EDGE_TRAVERSAL, edgeTraversal);
             return this;
         }
-
-
-        public Builder traversal(final Class<? extends Supplier<Traversal.Admin<?, ?>>> traversalClass) {
-            ConfigurationTraversal.storeState(new TraversalClassFunction(traversalClass), this.configuration, TRAVERSAL_SUPPLIER);
-            return this;
-        }
-
     }
 
     ////////////////////////////

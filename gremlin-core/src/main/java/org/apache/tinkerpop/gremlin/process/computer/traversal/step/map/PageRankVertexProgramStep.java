@@ -51,6 +51,7 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
 
     private Traversal.Admin<Vertex, Edge> pageRankTraversal;
     private Traversal.Admin<Vertex, Edge> purePageRankTraversal;
+    private String pageRankProperty = PageRankVertexProgram.PAGE_RANK;
     private boolean first = true;
 
 
@@ -66,12 +67,12 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
                 final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
-                return this.traversal.getTraverserGenerator().generate(graphComputer.program(PageRankVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get(), this, 1l);
+                return this.traversal.getTraverserGenerator().generate(graphComputer.program(this.generateProgram(graph)).submit().get(), this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
                 final GraphComputer graphComputer = this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
-                return traverser.split(graphComputer.program(PageRankVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get(), this);
+                return traverser.split(graphComputer.program(this.generateProgram(graph)).submit().get(), this);
             }
         } catch (final InterruptedException | ExecutionException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -82,6 +83,11 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
     public void modulateBy(final Traversal.Admin<?, ?> localChildTraversal) {
         this.pageRankTraversal = this.integrateChild((Traversal.Admin) localChildTraversal);
         this.purePageRankTraversal = this.pageRankTraversal.clone();
+    }
+
+    @Override
+    public void modulateBy(final String pageRankProperty) {
+        this.pageRankProperty = pageRankProperty;
     }
 
     @Override
@@ -97,6 +103,13 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
     @Override
     public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
         this.graphComputerFunction = graphComputerFunction;
+    }
+
+    private PageRankVertexProgram generateProgram(final Graph graph) {
+        return PageRankVertexProgram.build()
+                .pageRankProperty(this.pageRankProperty)
+                .edges(this.compileTraversal(graph))
+                .create(graph);
     }
 
     private final Traversal.Admin<Vertex, Edge> compileTraversal(final Graph graph) {

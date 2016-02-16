@@ -68,7 +68,7 @@ public final class TraversalVertexProgramStep extends AbstractStep<ComputerResul
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
                 final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
-                final ComputerResult result = graphComputer.program(TraversalVertexProgram.build().traversal(this.compileTraversal(graph)).create(this.getTraversal().getGraph().get())).submit().get();
+                final ComputerResult result = graphComputer.program(TraversalVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get();
                 return this.getTraversal().getTraverserGenerator().generate(result, (Step) this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();

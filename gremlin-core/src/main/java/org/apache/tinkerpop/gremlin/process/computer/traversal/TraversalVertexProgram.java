@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -40,11 +39,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -60,7 +58,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 
 /**
@@ -78,14 +75,14 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     public static final String HALTED_TRAVERSERS = "gremlin.traversalVertexProgram.haltedTraversers";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
-    public static final String TRAVERSAL_SUPPLIER = "gremlin.traversalVertexProgram.traversalSupplier";
+    public static final String TRAVERSAL = "gremlin.traversalVertexProgram.traversal";
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
     private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(VOTE_TO_HALT));
 
-    private ConfigurationTraversal<?, ?> configurationTraversal;
+    private PureTraversal<?, ?> pureTraversal;
     private Traversal.Admin<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
 
@@ -98,36 +95,31 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      * A helper method to yield a {@link Traversal} from the {@link Graph} and provided {@link Configuration}.
      *
      * @param graph         the graph that the traversal will run against
-     * @param configuration The configuration containing the TRAVERSAL_SUPPLIER key.
+     * @param configuration The configuration containing the TRAVERSAL key.
      * @return the traversal supplied by the configuration
      */
     public static Traversal.Admin<?, ?> getTraversal(final Graph graph, final Configuration configuration) {
-        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).getTraversal();
-    }
-
-    public Traversal.Admin<?, ?> getTraversal() {
-        return this.traversal;
+        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).traversal;
     }
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
-        if (null == this.configurationTraversal) {
-            throw new IllegalArgumentException("The configuration does not have a traversal supplier:" + TRAVERSAL_SUPPLIER);
-        }
-        this.traversal = this.configurationTraversal.get();
+        if (!configuration.containsKey(TRAVERSAL))
+            throw new IllegalArgumentException("The configuration does not have a traversal supplier: " + TRAVERSAL);
+        this.pureTraversal = PureTraversal.loadState(configuration, TRAVERSAL, graph);
+        this.traversal = this.pureTraversal.getCompiled();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
             this.mapReducers.add(mapReducer.getMapReduce());
         }
         if (!(this.traversal.getEndStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep() instanceof ReducingBarrierStep))
-            this.mapReducers.add(new TraverserMapReduce(this.traversal.clone()));
+            this.mapReducers.add(new TraverserMapReduce(this.traversal));
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         VertexProgram.super.storeState(configuration);
-        this.configurationTraversal.storeState(configuration);
+        this.pureTraversal.storeState(configuration, TRAVERSAL);
     }
 
     @Override
@@ -157,7 +149,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final GraphStep<Element, Element> graphStep = (this.traversal.getStartStep() instanceof GraphStep) ?
                     (GraphStep<Element, Element>) this.traversal.getStartStep() :
                     new GraphStep((Traversal.Admin) EmptyTraversal.instance(), Vertex.class, true); // if no start vertices, then do all vertices
-            final String future = graphStep.getNextStep().getId();
+            final String future = (this.traversal.getStartStep() instanceof GraphStep) ? graphStep.getNextStep().getId() : this.traversal.getStartStep().getId();
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)
                 if (ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
@@ -284,12 +276,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
 
         public Builder traversal(final Traversal.Admin<?, ?> traversal) {
-            ConfigurationTraversal.storeState(new TraversalObjectFunction<>(traversal), this.configuration, TRAVERSAL_SUPPLIER);
-            return this;
-        }
-
-        public Builder traversal(final Class<? extends Supplier<Traversal.Admin<?, ?>>> traversalClass) {
-            ConfigurationTraversal.storeState(new TraversalClassFunction(traversalClass), this.configuration, TRAVERSAL_SUPPLIER);
+            PureTraversal.storeState(this.configuration, TRAVERSAL, traversal);
             return this;
         }
     }

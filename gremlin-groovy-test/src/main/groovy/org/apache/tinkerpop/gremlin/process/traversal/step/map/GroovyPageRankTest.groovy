@@ -35,6 +35,10 @@ public abstract class GroovyPageRankTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank")
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_pageRank_byXoutEXknowsXX_byXfriendRankX_valueMapXname_friendRankX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.by(outE('knows')).by('friendRank').valueMap('name','friendRank')")
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name() {
