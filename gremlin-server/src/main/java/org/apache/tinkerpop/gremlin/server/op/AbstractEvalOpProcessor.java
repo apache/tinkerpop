@@ -200,7 +200,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     try {
                         b.putAll(bindingsSupplier.get());
                     } catch (OpProcessorException ope) {
-                        ope.printStackTrace();
+                        // this should bubble up in the GremlinExecutor properly as the RuntimeException will be
+                        // unwrapped and the root cause thrown
+                        throw new RuntimeException(ope);
                     }
                 })
                 .withResult(o -> {
