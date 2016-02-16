@@ -1882,4 +1882,67 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         // TODO: add a test the shows DAG behavior -- splitting another TraversalVertexProgram off of the PeerPressureVertexProgram job.
     }
+
+    ///////////////////////////////////
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportPreExistingComputeKeys() throws Exception {
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new VertexProgramN()).submit().get();
+        result.graph().vertices().forEachRemaining(vertex -> {
+            if (vertex.label().equals("person")) {
+                if (vertex.value("name").equals("marko"))
+                    assertEquals(32, vertex.<Integer>value("age").intValue());
+                else if (vertex.value("name").equals("peter"))
+                    assertEquals(38, vertex.<Integer>value("age").intValue());
+                else if (vertex.value("name").equals("vadas"))
+                    assertEquals(30, vertex.<Integer>value("age").intValue());
+                else if (vertex.value("name").equals("josh"))
+                    assertEquals(35, vertex.<Integer>value("age").intValue());
+                else
+                    throw new IllegalStateException("This vertex should not have been accessed: " + vertex);
+            }
+        });
+    }
+
+    private static class VertexProgramN extends StaticVertexProgram {
+
+        @Override
+        public void setup(final Memory memory) {
+
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            if (vertex.label().equals("person"))
+                vertex.property(VertexProperty.Cardinality.single, "age", vertex.<Integer>value("age") + 1);
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return memory.getIteration() > 1;
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getElementComputeKeys() {
+            return Collections.singleton("age");
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+    }
+
+
 }

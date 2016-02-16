@@ -137,10 +137,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         if (memory.isInitialIteration()) {    // ITERATION 1
             if (!(this.traversal.getStartStep() instanceof GraphStep)) {  // NOT A GRAPH-STEP TRAVERSAL
                 final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
+                vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
                 if (haltedTraversers.isEmpty()) {
                     memory.and(VOTE_TO_HALT, true);
                 } else {
-                    vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
                     final TraverserSet<Object> aliveTraverses = new TraverserSet<>();
                     haltedTraversers.forEach(traverser -> {
                         traverser.setStepId(this.traversal.getStartStep().getId());
