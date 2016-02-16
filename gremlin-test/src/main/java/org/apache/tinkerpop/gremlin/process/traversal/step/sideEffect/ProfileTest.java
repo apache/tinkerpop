@@ -68,6 +68,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
 
+    public abstract Traversal<Vertex, TraversalMetrics>  get_g_V_profile_capXmetricsX();
+
     /**
      * Many of the tests in this class are coupled to not-totally-generic vendor behavior. However, this test is intended to provide
      * fully generic validation.
@@ -313,6 +315,16 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         traversal.iterate();
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void testTraversalMetricsCapStepExclusion() {
+        // https://issues.apache.org/jira/browse/TINKERPOP-1078.
+        // Exclude '.cap(TraversalMetrics.METRICS_KEY)' step from profiling.
+        final Traversal<Vertex, TraversalMetrics> t = get_g_V_profile_capXmetricsX();
+        TraversalMetrics traversalMetrics = t.next();
+        assertEquals("There should be 1 top-level metrics.", 1, traversalMetrics.getMetrics().size());
+    }
+
     /**
      * Traversals
      */
@@ -353,6 +365,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
             return g.V().match(__.as("a").out("created").as("b"), __.as("b").in().count().is(P.eq(1))).<String>select("a", "b").by("name").profile();
+        }
+
+        @Override
+        public Traversal<Vertex, TraversalMetrics> get_g_V_profile_capXmetricsX() {
+            return g.V().profile().cap(TraversalMetrics.METRICS_KEY);
         }
     }
 }
