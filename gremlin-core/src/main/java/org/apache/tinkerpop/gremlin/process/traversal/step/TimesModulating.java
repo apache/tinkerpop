@@ -17,22 +17,12 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.computer.traversal.step;
-
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-
-import java.util.function.Function;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface VertexComputing {
+public interface TimesModulating {
 
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction);
-
-    public VertexProgram generateProgram(final Graph graph);
-
-    public GraphComputer generateComputer(final Graph graph);
+    public void modulateTimes(final int times);
 }

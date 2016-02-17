@@ -80,7 +80,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             this.vertexTraversal = PureTraversal.loadState(configuration, VERTEX_TRAVERSAL, graph);
         if (configuration.containsKey(EDGE_TRAVERSAL)) {
             this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
-            this.incidentMessageScope = MessageScope.Local.of(() -> this.edgeTraversal.getCompiled().clone());
+            this.incidentMessageScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
             this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
         }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
@@ -146,7 +146,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else {
-            if (2 == memory.getIteration() && null != this.vertexTraversal && !TraversalUtil.test(vertex, this.vertexTraversal.getCompiled()))
+            if (2 == memory.getIteration() && null != this.vertexTraversal && !TraversalUtil.test(vertex, this.vertexTraversal.get()))
                 return;
             double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);

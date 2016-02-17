@@ -29,27 +29,25 @@ import java.io.Serializable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PureTraversal<S, E> implements Serializable {
+public final class PureTraversal<S, E> implements Serializable, Cloneable {
 
-    private final Traversal.Admin<S, E> pureTraversal;
-    private transient Traversal.Admin<S, E> compiledTraversal;
+    private Traversal.Admin<S, E> pureTraversal;
+    private transient Traversal.Admin<S, E> cachedTraversal;
 
     public PureTraversal(final Traversal.Admin<S, E> pureTraversal) {
         this.pureTraversal = pureTraversal;
     }
 
-    public Traversal.Admin<S, E> getPure() {
-        return this.pureTraversal;
+    public void reset() {
+        this.cachedTraversal = null;
     }
 
-    public Traversal.Admin<S, E> getCompiled() {
-        if (null == this.compiledTraversal) {
-            this.compiledTraversal = this.pureTraversal.clone();
-            this.pureTraversal.getGraph().ifPresent(this.compiledTraversal::setGraph);
-            if (!this.compiledTraversal.isLocked())
-                this.compiledTraversal.applyStrategies();
+    public Traversal.Admin<S, E> get() {
+        if (null == this.cachedTraversal) {
+            this.cachedTraversal = this.pureTraversal.clone();
+            this.pureTraversal.getGraph().ifPresent(this.cachedTraversal::setGraph);
         }
-        return this.compiledTraversal;
+        return this.cachedTraversal;
     }
 
     public void storeState(final Configuration configuration, final String configurationKey) {
@@ -71,5 +69,24 @@ public final class PureTraversal<S, E> implements Serializable {
         final PureTraversal<S, E> pureTraversal = (configValue instanceof String ? (PureTraversal<S, E>) VertexProgramHelper.deserialize(configuration, configurationKey) : ((PureTraversal<S, E>) configValue));
         pureTraversal.pureTraversal.setGraph(graph);
         return pureTraversal;
+    }
+
+    ///////////
+
+    @Override
+    public String toString() {
+        return this.get().toString();
+    }
+
+    @Override
+    public PureTraversal<S, E> clone() {
+        try {
+            final PureTraversal<S, E> clone = (PureTraversal<S, E>) super.clone();
+            clone.pureTraversal = this.pureTraversal.clone();
+            clone.cachedTraversal = null;
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

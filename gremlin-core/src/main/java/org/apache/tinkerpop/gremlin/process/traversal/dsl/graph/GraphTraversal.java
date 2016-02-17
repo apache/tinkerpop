@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
@@ -1135,7 +1136,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {
-        return this.until(new LoopTraversal<>(maxLoops));
+        if (this.asAdmin().getEndStep() instanceof TimesModulating) {
+            ((TimesModulating) this.asAdmin().getEndStep()).modulateTimes(maxLoops);
+            return this;
+        } else
+            return this.until(new LoopTraversal<>(maxLoops));
     }
 
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {

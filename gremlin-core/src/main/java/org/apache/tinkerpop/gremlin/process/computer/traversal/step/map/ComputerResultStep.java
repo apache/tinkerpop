@@ -76,7 +76,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
                 final ComputerResult result = this.starts.next().get();
                 result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
                 final Step endStep = this.getPreviousStep() instanceof TraversalVertexProgramStep ?
-                        ((TraversalVertexProgramStep) this.getPreviousStep()).computerTraversal.getEndStep() :
+                        ((TraversalVertexProgramStep) this.getPreviousStep()).computerTraversal.get().getEndStep() :
                         EmptyStep.instance();   // TODO: need to be selective and smart
                 if (endStep instanceof SideEffectCapStep) {
                     final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();

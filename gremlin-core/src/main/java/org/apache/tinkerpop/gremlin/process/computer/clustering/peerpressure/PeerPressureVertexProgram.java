@@ -80,7 +80,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     public void loadState(final Graph graph, final Configuration configuration) {
         if (configuration.containsKey(EDGE_TRAVERSAL)) {
             this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
-            this.voteScope = MessageScope.Local.of(() -> this.edgeTraversal.getCompiled().clone());
+            this.voteScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
             this.countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
         }
         this.maxIterations = configuration.getInt(MAX_ITERATIONS, 30);

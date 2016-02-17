@@ -19,79 +19,49 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements TraversalParent, VertexComputing {
+public final class TraversalVertexProgramStep extends VertexProgramStep implements TraversalParent {
 
     private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
-    public Traversal.Admin<?, ?> computerTraversal;
-    public Traversal.Admin<?, ?> pureComputerTraversal;
-
-    private boolean first = true;
+    public PureTraversal<?, ?> computerTraversal;
 
     public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<?, ?> computerTraversal) {
         super(traversal);
-        this.pureComputerTraversal = computerTraversal.clone();
-        this.computerTraversal = this.integrateChild(computerTraversal);
+        this.computerTraversal = new PureTraversal<>(computerTraversal);
+        this.integrateChild(this.computerTraversal.get());
     }
 
     public List<Traversal.Admin<?, ?>> getGlobalChildren() {
-        return Collections.singletonList(this.computerTraversal);
-    }
-
-    @Override
-    protected Traverser<ComputerResult> processNextStart() {
-        try {
-            if (this.first && this.getPreviousStep() instanceof EmptyStep) {
-                this.first = false;
-                final Graph graph = this.getTraversal().getGraph().get();
-                final GraphComputer graphComputer = this.getComputer(graph);
-                final ComputerResult result = graphComputer.program(TraversalVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get();
-                return this.getTraversal().getTraverserGenerator().generate(result, (Step) this, 1l);
-            } else {
-                final Traverser.Admin<ComputerResult> traverser = this.starts.next();
-                final Graph graph = traverser.get().graph();
-                final GraphComputer graphComputer = this.getComputer(graph);
-                final ComputerResult result = graphComputer.program(TraversalVertexProgram.build().traversal(this.compileTraversal(graph)).create(graph)).submit().get();
-                return traverser.split(result, this);
-            }
-        } catch (final InterruptedException | ExecutionException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        return Collections.singletonList(this.computerTraversal.get());
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.computerTraversal);
+        return StringFactory.stepString(this, this.computerTraversal.get());
     }
 
     @Override
     public TraversalVertexProgramStep clone() {
         final TraversalVertexProgramStep clone = (TraversalVertexProgramStep) super.clone();
-        clone.computerTraversal = this.integrateChild(this.computerTraversal.clone());
-        clone.pureComputerTraversal = this.pureComputerTraversal.clone();
+        clone.computerTraversal = this.computerTraversal.clone();
+        clone.integrateChild(this.computerTraversal.get());
         return clone;
     }
 
@@ -100,25 +70,30 @@ public final class TraversalVertexProgramStep extends AbstractStep<ComputerResul
         return TraversalParent.super.getSelfAndChildRequirements(TraverserRequirement.BULK);
     }
 
-    private final GraphComputer getComputer(final Graph graph) {
+    @Override
+    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
+        this.graphComputerFunction = graphComputerFunction;
+    }
+
+    @Override
+    public TraversalVertexProgram generateProgram(final Graph graph) {
+        this.computerTraversal.reset();
+        final Traversal.Admin<?, ?> compiledComputerTraversal = this.computerTraversal.get();
+        compiledComputerTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
+        this.getTraversal().getStrategies().toList().forEach(compiledComputerTraversal.getStrategies()::addStrategies);
+        compiledComputerTraversal.setSideEffects(this.getTraversal().getSideEffects());
+        compiledComputerTraversal.setParent(this);
+        compiledComputerTraversal.applyStrategies();
+        return TraversalVertexProgram.build()
+                .traversal(compiledComputerTraversal)
+                .create(graph);
+    }
+
+    @Override
+    public GraphComputer generateComputer(final Graph graph) {
         final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
         if (!(this.getNextStep() instanceof ComputerResultStep))
             graphComputer.persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
         return graphComputer;
-    }
-
-    private final Traversal.Admin<?, ?> compileTraversal(final Graph graph) {
-        final Traversal.Admin<?, ?> compiledComputerTraversal = this.pureComputerTraversal.clone();
-        compiledComputerTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
-        this.getTraversal().getStrategies().toList().forEach(compiledComputerTraversal.getStrategies()::addStrategies);
-        compiledComputerTraversal.setParent(this);
-        compiledComputerTraversal.setSideEffects(this.computerTraversal.getSideEffects());
-        compiledComputerTraversal.applyStrategies();
-        return compiledComputerTraversal;
-    }
-
-    @Override
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
-        this.graphComputerFunction = graphComputerFunction;
     }
 }
