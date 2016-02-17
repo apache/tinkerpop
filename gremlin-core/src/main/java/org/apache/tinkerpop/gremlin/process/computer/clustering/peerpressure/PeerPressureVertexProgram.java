@@ -60,6 +60,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     public static final String CLUSTER = "gremlin.peerPressureVertexProgram.cluster";
     public static final String VOTE_STRENGTH = "gremlin.peerPressureVertexProgram.voteStrength";
 
+    public static final String PROPERTY = "gremlin.peerPressureVertexProgram.property";
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
     private static final String EDGE_TRAVERSAL = "gremlin.peerPressureVertexProgram.edgeTraversal";
@@ -68,8 +69,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     private PureTraversal<Vertex, Edge> edgeTraversal = null;
     private int maxIterations = 30;
     private boolean distributeVote = false;
+    private String property = CLUSTER;
 
-    private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(CLUSTER, VOTE_STRENGTH));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(VOTE_TO_HALT));
 
     private PeerPressureVertexProgram() {
@@ -83,6 +84,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             this.voteScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
             this.countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
         }
+        this.property = configuration.getString(PROPERTY, CLUSTER);
         this.maxIterations = configuration.getInt(MAX_ITERATIONS, 30);
         this.distributeVote = configuration.getBoolean(DISTRIBUTE_VOTE, false);
     }
@@ -98,7 +100,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public Set<String> getElementComputeKeys() {
-        return ELEMENT_COMPUTE_KEYS;
+        return new HashSet<>(Arrays.asList(this.property, VOTE_STRENGTH));
     }
 
     @Override
@@ -133,25 +135,25 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
                 messenger.sendMessage(this.countScope, Pair.with('c', 1.0d));
             } else {
                 double voteStrength = 1.0d;
-                vertex.property(VertexProperty.Cardinality.single, CLUSTER, vertex.id());
+                vertex.property(VertexProperty.Cardinality.single, this.property, vertex.id());
                 vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
                 messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
                 memory.and(VOTE_TO_HALT, false);
             }
         } else if (1 == memory.getIteration() && this.distributeVote) {
             double voteStrength = 1.0d / IteratorUtils.reduce(IteratorUtils.map(messenger.receiveMessages(), Pair::getValue1), 0.0d, (a, b) -> a + b);
-            vertex.property(VertexProperty.Cardinality.single, CLUSTER, vertex.id());
+            vertex.property(VertexProperty.Cardinality.single, this.property, vertex.id());
             vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
             memory.and(VOTE_TO_HALT, false);
         } else {
             final Map<Serializable, Double> votes = new HashMap<>();
-            votes.put(vertex.value(CLUSTER), vertex.<Double>value(VOTE_STRENGTH));
+            votes.put(vertex.value(this.property), vertex.<Double>value(VOTE_STRENGTH));
             messenger.receiveMessages().forEachRemaining(message -> MapHelper.incr(votes, message.getValue0(), message.getValue1()));
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
-            memory.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
-            vertex.property(VertexProperty.Cardinality.single, CLUSTER, cluster);
+            memory.and(VOTE_TO_HALT, vertex.value(this.property).equals(cluster));
+            vertex.property(VertexProperty.Cardinality.single, this.property, cluster);
             messenger.sendMessage(this.voteScope, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
     }
@@ -202,6 +204,11 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             super(PeerPressureVertexProgram.class);
         }
 
+        public Builder property(final String key) {
+            this.configuration.setProperty(PROPERTY, key);
+            return this;
+        }
+
         public Builder maxIterations(final int iterations) {
             this.configuration.setProperty(MAX_ITERATIONS, iterations);
             return this;
@@ -212,14 +219,27 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             return this;
         }
 
-        public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            return this.traversal(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
-        }
-
-        public Builder traversal(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
+        public Builder edges(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
             PureTraversal.storeState(this.configuration, EDGE_TRAVERSAL, edgeTraversal);
             return this;
         }
+
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link PeerPressureVertexProgram.Builder#edges(Traversal.Admin)}
+         */
+        @Deprecated
+        public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            return this.edges(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
+        }
+
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link PeerPressureVertexProgram.Builder#edges(Traversal.Admin)}
+         */
+        @Deprecated
+        public Builder traversal(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
+            return this.edges(edgeTraversal);
+        }
+
     }
 
     ////////////////////////////

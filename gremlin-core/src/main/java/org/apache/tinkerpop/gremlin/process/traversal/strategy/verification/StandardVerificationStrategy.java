@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,6 +38,11 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (!traversal.getStrategies().toList().contains(ComputerVerificationStrategy.instance())) {
+            if (!TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal).isEmpty())
+                throw new VerificationException("VertexComputing steps must be executing with a GraphComputer: " + TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal), traversal);
+        }
+
         traversal.getSteps().forEach(step -> {
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
                 throw new VerificationException("The direct parent of a ReducingBarrierStep can not be a RepeatStep: " + step, traversal);

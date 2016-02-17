@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -1150,7 +1151,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /////////////////// VERTEX PROGRAM STEPS ////////////////
 
     public default GraphTraversal<S, E> pageRank() {
-        return this.asAdmin().addStep((Step<?, E>) new PageRankVertexProgramStep(this.asAdmin()));
+        return this.pageRank(0.85d);
+    }
+
+    public default GraphTraversal<S, E> pageRank(final double alpha) {
+        return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), alpha));
+    }
+
+    public default GraphTraversal<S, E> peerPressure() {
+        return this.asAdmin().addStep((Step<E, E>) new PeerPressureVertexProgramStep(this.asAdmin()));
     }
 
 

@@ -130,7 +130,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
     }
 
     private static Step<?, ?> getLastLegalOLAPStep(Step<?, ?> currentStep) {
-        if (currentStep instanceof VertexComputing)
+        while (currentStep instanceof VertexComputing)
             currentStep = currentStep.getNextStep();
         while (!(currentStep instanceof EmptyStep)) {
             if (ComputerVerificationStrategy.isStepInstanceOfEndStep(currentStep))

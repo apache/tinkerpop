@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -42,18 +42,16 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PageRankVertexProgramStep extends VertexProgramStep implements TraversalParent, ByModulating, TimesModulating {
+public final class PeerPressureVertexProgramStep extends VertexProgramStep implements TraversalParent, ByModulating, TimesModulating {
 
     private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
 
     private PureTraversal<Vertex, Edge> edgeTraversal;
-    private String pageRankProperty = PageRankVertexProgram.PAGE_RANK;
+    private String clusterProperty = PeerPressureVertexProgram.CLUSTER;
     private int times = 30;
-    private final double alpha;
 
-    public PageRankVertexProgramStep(final Traversal.Admin traversal, final double alpha) {
+    public PeerPressureVertexProgramStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.alpha = alpha;
         this.modulateBy(__.<Vertex>outE().asAdmin());
     }
 
@@ -64,8 +62,8 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public void modulateBy(final String pageRankProperty) {
-        this.pageRankProperty = pageRankProperty;
+    public void modulateBy(final String clusterProperty) {
+        this.clusterProperty = clusterProperty;
     }
 
     @Override
@@ -80,7 +78,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.edgeTraversal.get(), this.pageRankProperty, this.times);
+        return StringFactory.stepString(this, this.edgeTraversal.get(), this.clusterProperty, this.times);
     }
 
     @Override
@@ -89,14 +87,13 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public PageRankVertexProgram generateProgram(final Graph graph) {
+    public PeerPressureVertexProgram generateProgram(final Graph graph) {
         this.edgeTraversal.reset();
         final Traversal.Admin<Vertex, Edge> compiledTraversal = this.edgeTraversal.get();
         compiledTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
-        return PageRankVertexProgram.build()
-                .property(this.pageRankProperty)
-                .iterations(this.times)
-                .alpha(this.alpha)
+        return PeerPressureVertexProgram.build()
+                .property(this.clusterProperty)
+                .maxIterations(this.times)
                 .edges(compiledTraversal)
                 .create(graph);
     }
@@ -112,8 +109,8 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public PageRankVertexProgramStep clone() {
-        final PageRankVertexProgramStep clone = (PageRankVertexProgramStep) super.clone();
+    public PeerPressureVertexProgramStep clone() {
+        final PeerPressureVertexProgramStep clone = (PeerPressureVertexProgramStep) super.clone();
         clone.edgeTraversal = this.edgeTraversal.clone();
         this.integrateChild(this.edgeTraversal.get());
         return clone;
