@@ -1859,9 +1859,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
         //
-        // TODO: Need to solve the chicken and the egg problem with how TraversalVertexPrograms and strategies play on each other.
         final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass())
-                .program(TraversalVertexProgram.build().traversal(__.V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
+                .program(TraversalVertexProgram.build().traversal(g.V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
         final Graph graph3 = result3.graph();
         final Memory memory3 = result3.memory();
         assertTrue(memory3.keys().contains("m"));

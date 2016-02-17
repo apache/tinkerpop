@@ -74,11 +74,12 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer(); //GraphTraversalSource.computer());
+        GraphTraversalSource g = graph.traversal(); //GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        System.out.println(g.V().hasLabel("person").pageRank().by("pageRank").order().by("pageRank").valueMap("name", "pageRank").iterate().toString());
-        System.out.println(g.V().hasLabel("person").pageRank().by("pageRank").order().by("pageRank").valueMap("name", "pageRank").toList());
+        System.out.println(g.V().out("knows").V().values("name").toString());
+        System.out.println(g.V().out("knows").V().values("name").iterate().toString());
+        System.out.println(g.V().out("knows").V().values("name").toList());
         //System.out.println(g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK).valueMap().toList());
 
     }

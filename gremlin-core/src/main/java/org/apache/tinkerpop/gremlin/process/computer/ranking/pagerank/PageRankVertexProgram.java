@@ -53,7 +53,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
     public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
 
-    public static final String PAGE_RANK_PROPERTY = "gremlin.pageRankVertexProgram.pageRankProperty";
+    public static final String PROPERTY = "gremlin.pageRankVertexProgram.property";
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
@@ -67,7 +67,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
-    private String pageRankProperty = PAGE_RANK;
+    private String property = PAGE_RANK;
     private Set<String> computeKeys;
 
     private PageRankVertexProgram() {
@@ -86,9 +86,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
-        this.pageRankProperty = configuration.getString(PAGE_RANK_PROPERTY, PAGE_RANK);
-        this.computeKeys = new HashSet<>(Arrays.asList(this.pageRankProperty, EDGE_COUNT));
-
+        this.property = configuration.getString(PROPERTY, PAGE_RANK);
+        this.computeKeys = new HashSet<>(Arrays.asList(this.property, EDGE_COUNT));
     }
 
     @Override
@@ -97,7 +96,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
-        configuration.setProperty(PAGE_RANK_PROPERTY, this.pageRankProperty);
+        configuration.setProperty(PROPERTY, this.property);
         if (null != this.edgeTraversal)
             this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
         if (null != this.vertexTraversal)
@@ -143,7 +142,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         } else if (1 == memory.getIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
-            vertex.property(VertexProperty.Cardinality.single, this.pageRankProperty, initialPageRank);
+            vertex.property(VertexProperty.Cardinality.single, this.property, initialPageRank);
             vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else {
@@ -151,7 +150,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
                 return;
             double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(VertexProperty.Cardinality.single, this.pageRankProperty, newPageRank);
+            vertex.property(VertexProperty.Cardinality.single, this.property, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }
@@ -188,8 +187,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             return this;
         }
 
-        public Builder pageRankProperty(final String key) {
-            this.configuration.setProperty(PAGE_RANK_PROPERTY, key);
+        public Builder property(final String key) {
+            this.configuration.setProperty(PROPERTY, key);
             return this;
         }
 
@@ -208,11 +207,17 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             return this;
         }
 
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#edges(Traversal.Admin)}
+         */
         @Deprecated
         public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
             return this.edges(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
         }
 
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#edges(Traversal.Admin)}
+         */
         @Deprecated
         public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
             return this.edges(traversal);

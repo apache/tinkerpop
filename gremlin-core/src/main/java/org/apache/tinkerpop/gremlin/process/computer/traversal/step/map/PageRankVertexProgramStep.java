@@ -107,7 +107,7 @@ public final class PageRankVertexProgramStep extends AbstractStep<ComputerResult
 
     private PageRankVertexProgram generateProgram(final Graph graph) {
         return PageRankVertexProgram.build()
-                .pageRankProperty(this.pageRankProperty)
+                .property(this.pageRankProperty)
                 .edges(this.compileTraversal(graph))
                 .create(graph);
     }

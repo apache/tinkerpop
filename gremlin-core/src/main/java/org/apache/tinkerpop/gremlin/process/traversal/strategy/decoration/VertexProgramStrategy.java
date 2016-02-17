@@ -96,7 +96,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
                 TraversalHelper.insertAfterStep(computerResultStep, (Step) step, traversal);
             }
         });
-        if (traversal.getEndStep() instanceof PageRankVertexProgramStep) {
+        if (traversal.getEndStep() instanceof PageRankVertexProgramStep) {  // TODO: VertexComputing but not TraversalVertexProgramStep
             final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, __.identity().asAdmin());
             traversal.addStep(traversalVertexProgramStep);
             traversal.addStep(new ComputerResultStep<>(traversal, true));

@@ -131,6 +131,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     public void reset() {
         super.reset();
         this.head = null;
+        this.done = false;
         this.iterator = EmptyIterator.instance();
     }
 

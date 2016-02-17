@@ -37,6 +37,11 @@ public abstract class GroovyGraphTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_V_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('knows').V.name")
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('name','Garcia').in('sungBy').as('song').V.has('name','Willie_Dixon').in('writtenBy').where(eq('song')).name")
         }
