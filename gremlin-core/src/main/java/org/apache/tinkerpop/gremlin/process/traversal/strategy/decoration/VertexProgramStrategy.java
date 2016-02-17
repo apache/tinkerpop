@@ -38,7 +38,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -70,8 +72,22 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             return;
         }
 
+        // back propagate as()-labels off of vertex computing steps
+        Step<?, ?> currentStep = traversal.getEndStep();
+        final Set<String> currentLabels = new HashSet<>();
+        while (!(currentStep instanceof EmptyStep)) {
+            if (currentStep instanceof VertexComputing) {
+                currentLabels.addAll(currentStep.getLabels());
+                currentStep.getLabels().forEach(currentStep::removeLabel);
+            } else {
+                currentLabels.forEach(currentStep::addLabel);
+                currentLabels.clear();
+            }
+            currentStep = currentStep.getPreviousStep();
+        }
+
         // push GraphStep forward in the chain to reduce the number of TraversalVertexProgram compilations
-        Step<?, ?> currentStep = traversal.getStartStep();
+        currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {
             if (currentStep instanceof GraphStep && currentStep.getNextStep() instanceof VertexComputing) {
                 int index = TraversalHelper.stepIndex(currentStep.getNextStep(), traversal);
@@ -80,6 +96,8 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             }
             currentStep = currentStep.getNextStep();
         }
+
+
         // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
         currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {

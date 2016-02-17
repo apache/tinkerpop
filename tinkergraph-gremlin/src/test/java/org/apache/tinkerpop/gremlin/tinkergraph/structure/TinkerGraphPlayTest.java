@@ -66,12 +66,12 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal();//.withComputer(); //GraphTraversalSource.computer());
+        GraphTraversalSource g = graph.traversal().withComputer(); //GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        System.out.println(g.V().peerPressure().toString());
-        System.out.println(g.V().peerPressure().iterate().toString());
-        System.out.println(g.V().peerPressure().toList());
+        System.out.println(g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").toString());
+        System.out.println(g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").iterate().toString());
+        System.out.println(g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").toList());
         //System.out.println(g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK).valueMap().toList());
     }
 

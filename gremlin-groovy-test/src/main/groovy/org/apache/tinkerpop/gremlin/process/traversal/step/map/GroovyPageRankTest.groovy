@@ -54,5 +54,10 @@ public abstract class GroovyPageRankTest {
         public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').pageRank.by('pageRank').order.by('pageRank').valueMap('name', 'pageRank')")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.by('pageRank').as('a').out('knows').values('pageRank').as('b').select('a', 'b')")
+        }
     }
 }

@@ -54,6 +54,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX();
 
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_pageRank() {
@@ -139,6 +141,24 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         assertEquals(4, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            final Map<String, Object> map = traversal.next();
+            assertEquals(2, map.size());
+            Vertex vertex = (Vertex) map.get("a");
+            double pageRank = (Double) map.get("b");
+            assertEquals(convertToVertexId("marko"), vertex.id());
+            assertTrue(pageRank > 0.15d);
+            counter++;
+        }
+        assertEquals(2, counter);
+    }
+
     public static class Traversals extends PageRankTest {
 
         @Override
@@ -164,6 +184,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX() {
             return g.V().hasLabel("person").pageRank().by("pageRank").order().by("pageRank").valueMap("name", "pageRank");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX() {
+            return g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b");
         }
     }
 }
