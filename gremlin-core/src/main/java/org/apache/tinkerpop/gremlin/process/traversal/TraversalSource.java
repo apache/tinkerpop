@@ -19,7 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
@@ -62,13 +65,40 @@ public interface TraversalSource extends Cloneable {
     /////////////////////////////
 
     /**
+     * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
+     *
+     * @param traversalStrategies a colleciton of traversal strategies to add
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(traversalStrategies);
+        return clone;
+    }
+
+    /**
+     * Remove an arbitrary collection of {@link TraversalStrategy} classes from the traversal source.
+     *
+     * @param traversalStrategyClasses a collection of traversal strategy classes to remove
+     * @return a new traversal source with updated strategies
+     */
+    @SuppressWarnings({"unchecked", "varargs"})
+    public default TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().removeStrategies(traversalStrategyClasses);
+        return clone;
+    }
+
+    /**
      * Add a {@link Function} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
      * This adds a {@link VertexProgramStrategy} to the strategies.
      *
      * @param graphComputerFunction a function to generate a graph computer from the graph
      * @return a new traversal source with updated strategies
      */
-    public TraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction);
+    public default TraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
+        return this.withStrategies(new VertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
+    }
 
     /**
      * Add a {@link GraphComputer} class used to execute the traversal.
@@ -92,23 +122,6 @@ public interface TraversalSource extends Cloneable {
     }
 
     /**
-     * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
-     *
-     * @param traversalStrategies a colleciton of traversal strategies to add
-     * @return a new traversal source with updated strategies
-     */
-    public TraversalSource withStrategies(final TraversalStrategy... traversalStrategies);
-
-    /**
-     * Remove an arbitrary collection of {@link TraversalStrategy} classes from the traversal source.
-     *
-     * @param traversalStrategyClasses a collection of traversal strategy classes to remove
-     * @return a new traversal source with updated strategies
-     */
-    @SuppressWarnings({"unchecked", "varargs"})
-    public TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses);
-
-    /**
      * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
      * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy} to the strategies.
      *
@@ -116,7 +129,11 @@ public interface TraversalSource extends Cloneable {
      * @param initialValue a supplier that produces the initial value of the sideEffect
      * @return a new traversal source with updated strategies
      */
-    public TraversalSource withSideEffect(final String key, final Supplier initialValue);
+    public default TraversalSource withSideEffect(final String key, final Supplier initialValue) {
+        final TraversalSource clone = this.clone();
+        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue);
+        return clone;
+    }
 
     /**
      * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
@@ -139,7 +156,9 @@ public interface TraversalSource extends Cloneable {
      * @param mergeOperator the sack merge operator
      * @return a new traversal source with updated strategies
      */
-    public <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator);
+    public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        return this.withStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
+    }
 
     /**
      * Add a sack to be used throughout the life of a spawned {@link Traversal}.

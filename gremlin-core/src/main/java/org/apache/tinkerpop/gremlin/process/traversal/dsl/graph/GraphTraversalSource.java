@@ -28,10 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -98,9 +94,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public GraphTraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
-        final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(new VertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
-        return clone;
+        return (GraphTraversalSource) TraversalSource.super.withComputer(graphComputerFunction);
     }
 
     @Override
@@ -115,24 +109,18 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
-        final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(traversalStrategies);
-        return clone;
+        return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategies);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
     public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
-        final GraphTraversalSource clone = this.clone();
-        clone.strategies.removeStrategies(traversalStrategyClasses);
-        return clone;
+        return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyClasses);
     }
 
     @Override
     public GraphTraversalSource withSideEffect(final String key, final Supplier initialValue) {
-        final GraphTraversalSource clone = this.clone();
-        SideEffectStrategy.addSideEffect(clone.strategies, key, initialValue);
-        return clone;
+        return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
     }
 
     @Override
@@ -142,9 +130,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        final GraphTraversalSource clone = this.clone();
-        clone.strategies.addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        return clone;
+        return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, splitOperator, mergeOperator);
     }
 
     @Override
