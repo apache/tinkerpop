@@ -22,13 +22,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -70,7 +70,18 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             return;
         }
 
+        // push GraphStep forward in the chain to reduce the number of TraversalVertexProgram compilations
         Step<?, ?> currentStep = traversal.getStartStep();
+        while (!(currentStep instanceof EmptyStep)) {
+            if (currentStep instanceof GraphStep && currentStep.getNextStep() instanceof VertexComputing) {
+                int index = TraversalHelper.stepIndex(currentStep.getNextStep(), traversal);
+                traversal.removeStep(currentStep);
+                traversal.addStep(index, currentStep);
+            }
+            currentStep = currentStep.getNextStep();
+        }
+        // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
+        currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {
             Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
             Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);
@@ -88,6 +99,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
                 currentStep = currentStep.getNextStep();
             }
         }
+        // if the last vertex computing step is a TraversalVertexProgramStep convert to OLTP with ComputerResultStep
         TraversalHelper.getLastStepOfAssignableClass(VertexComputing.class, traversal).ifPresent(step -> {
             if (step instanceof TraversalVertexProgramStep) {
                 final ComputerResultStep computerResultStep = new ComputerResultStep<>(traversal, true);
@@ -96,12 +108,16 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
                 TraversalHelper.insertAfterStep(computerResultStep, (Step) step, traversal);
             }
         });
-        if (traversal.getEndStep() instanceof PageRankVertexProgramStep) {  // TODO: VertexComputing but not TraversalVertexProgramStep
+        // if there is a dangling vertex computing step, add an identity traversal (solve this in the future with a specialized MapReduce)
+        if (traversal.getEndStep() instanceof VertexComputing && !(traversal.getEndStep() instanceof TraversalVertexProgramStep)) {
             final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, __.identity().asAdmin());
             traversal.addStep(traversalVertexProgramStep);
             traversal.addStep(new ComputerResultStep<>(traversal, true));
         }
+        // all vertex computing steps needs the graph computer function
         traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.graphComputerFunction));
+
+        //System.out.println(traversal + "!!!!!!!!!!!");
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {
@@ -114,6 +130,8 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
     }
 
     private static Step<?, ?> getLastLegalOLAPStep(Step<?, ?> currentStep) {
+        if (currentStep instanceof VertexComputing)
+            currentStep = currentStep.getNextStep();
         while (!(currentStep instanceof EmptyStep)) {
             if (ComputerVerificationStrategy.isStepInstanceOfEndStep(currentStep))
                 return currentStep;
