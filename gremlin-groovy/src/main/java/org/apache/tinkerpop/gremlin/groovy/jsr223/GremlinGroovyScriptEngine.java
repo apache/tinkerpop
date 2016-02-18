@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
@@ -125,6 +126,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      */
     public static final String REFERENCE_TYPE_HARD = "hard";
 
+    /**
+     * Name of variable that holds local variables to be globally bound if "interpreter mode" is enabled with
+     * {@link InterpreterModeCustomizerProvider}.
+     */
+    public static final String COLLECTED_BOUND_VARS_MAP_VARNAME = "gremlin_script_engine_collected_boundvars";
+
     private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
     public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>(){
@@ -146,7 +153,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private GremlinGroovyClassLoader loader;
 
-    private AtomicLong counter = new AtomicLong(0l);
+    private AtomicLong counter = new AtomicLong(0L);
 
     /**
      * The list of loaded plugins for the console.
@@ -164,6 +171,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private final List<CompilerCustomizerProvider> customizerProviders;
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
+    private final boolean interpreterModeEnabled;
 
     /**
      * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
@@ -193,9 +201,14 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 .map(p -> (ImportCustomizerProvider) p)
                 .findFirst().orElse(NoImportCustomizerProvider.INSTANCE);
 
+        // determine if interpreter mode should be enabled
+        interpreterModeEnabled = providers.stream()
+                .anyMatch(p -> p.getClass().equals(InterpreterModeCustomizerProvider.class));
+
         // remove used providers as the rest will be applied directly
         customizerProviders = providers.stream()
-                .filter(p -> p != null && !(p instanceof ImportCustomizerProvider))
+                .filter(p -> p != null &&
+                             !((p instanceof ImportCustomizerProvider)))
                 .collect(Collectors.toList());
 
         createClassLoader();
@@ -531,7 +544,28 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                     }
                 }
             });
-            return scriptObject.run();
+
+            final Object o = scriptObject.run();
+
+            // if interpreter mode is enable then local vars of the script are promoted to engine scope bindings.
+            if (interpreterModeEnabled) {
+                final Map<String, Object> localVars = (Map<String, Object>) context.getAttribute(COLLECTED_BOUND_VARS_MAP_VARNAME);
+                if (localVars != null) {
+                    localVars.entrySet().forEach(e -> {
+                        // closures need to be cached for later use
+                        if (e.getValue() instanceof Closure)
+                            globalClosures.put(e.getKey(), (Closure) e.getValue());
+
+                        context.setAttribute(e.getKey(), e.getValue(), ScriptContext.ENGINE_SCOPE);
+                    });
+
+                    // get rid of the temporary collected vars
+                    context.removeAttribute(COLLECTED_BOUND_VARS_MAP_VARNAME, ScriptContext.ENGINE_SCOPE);
+                    localVars.clear();
+                }
+            }
+
+            return o;
         } catch (Exception e) {
             throw new ScriptException(e);
         }
@@ -642,5 +676,4 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
         return buf.toString();
     }
-
 }

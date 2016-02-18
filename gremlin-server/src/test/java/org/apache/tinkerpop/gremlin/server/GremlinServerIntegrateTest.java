@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -45,6 +46,7 @@ import org.junit.Test;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +138,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
                 break;
+            case "shouldUseInterpreterMode":
+                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForInterpreterMode();
+                break;
             case "shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForTimedInterrupt();
                 break;
@@ -162,6 +167,58 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         timedInterruptProviderConf.put(TimedInterruptCustomizerProvider.class.getName(), config);
         scriptEngineConf.put("compilerCustomizerProviders", timedInterruptProviderConf);
         return scriptEngineConf;
+    }
+
+    private static Map<String, Object> getScriptEngineConfForInterpreterMode() {
+        final Map<String,Object> scriptEngineConf = new HashMap<>();
+        final Map<String,Object> interpreterProviderConf = new HashMap<>();
+        interpreterProviderConf.put(InterpreterModeCustomizerProvider.class.getName(), Collections.EMPTY_LIST);
+        scriptEngineConf.put("compilerCustomizerProviders", interpreterProviderConf);
+        return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldUseInterpreterMode() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        client.submit("def subtractAway(x,y){x-y};[]").all().get();
+        client.submit("multiplyIt = { x,y -> x * y};[]").all().get();
+
+        assertEquals(2, client.submit("x = 1 + 1").all().get().get(0).getInt());
+        assertEquals(3, client.submit("int y = x + 1").all().get().get(0).getInt());
+        assertEquals(5, client.submit("def z = x + y").all().get().get(0).getInt());
+
+        final Map<String,Object> m = new HashMap<>();
+        m.put("x", 10);
+        assertEquals(-5, client.submit("z - x", m).all().get().get(0).getInt());
+        assertEquals(15, client.submit("addItUp(x,z)", m).all().get().get(0).getInt());
+        assertEquals(5, client.submit("subtractAway(x,z)", m).all().get().get(0).getInt());
+        assertEquals(50, client.submit("multiplyIt(x,z)", m).all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldNotUseInterpreterMode() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        client.submit("def subtractAway(x,y){x-y};[]").all().get();
+        client.submit("multiplyIt = { x,y -> x * y};[]").all().get();
+
+        assertEquals(2, client.submit("x = 1 + 1").all().get().get(0).getInt());
+        assertEquals(3, client.submit("y = x + 1").all().get().get(0).getInt());
+        assertEquals(5, client.submit("z = x + y").all().get().get(0).getInt());
+
+        final Map<String,Object> m = new HashMap<>();
+        m.put("x", 10);
+        assertEquals(-5, client.submit("z - x", m).all().get().get(0).getInt());
+        assertEquals(15, client.submit("addItUp(x,z)", m).all().get().get(0).getInt());
+        assertEquals(5, client.submit("subtractAway(x,z)", m).all().get().get(0).getInt());
+        assertEquals(50, client.submit("multiplyIt(x,z)", m).all().get().get(0).getInt());
+
+        cluster.close();
     }
 
     @Test

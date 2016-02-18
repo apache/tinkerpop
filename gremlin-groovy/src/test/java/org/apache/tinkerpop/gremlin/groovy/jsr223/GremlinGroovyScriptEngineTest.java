@@ -22,6 +22,7 @@ import groovy.lang.Closure;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
@@ -85,7 +86,33 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldEvalWithNoBindings() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        engine.eval("def addItUp(x,y){x+y}");
         assertEquals(3, engine.eval("1+2"));
+        assertEquals(3, engine.eval("addItUp(1,2)"));
+    }
+
+    @Test
+    public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindings() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeCustomizerProvider());
+        engine.eval("def addItUp = { x, y -> x + y }");
+        assertEquals(3, engine.eval("int xxx = 1 + 2"));
+        assertEquals(4, engine.eval("yyy = xxx + 1"));
+        assertEquals(7, engine.eval("def zzz = yyy + xxx"));
+        assertEquals(4, engine.eval("zzz - xxx"));
+        assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
+    }
+
+    @Test
+    public void shouldPromoteDefinedVarsInInterpreterModeWithBindings() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeCustomizerProvider());
+        final Bindings b = new SimpleBindings();
+        b.put("x", 2);
+        engine.eval("def addItUp = { x, y -> x + y }", b);
+        assertEquals(3, engine.eval("int xxx = 1 + x", b));
+        assertEquals(4, engine.eval("yyy = xxx + 1", b));
+        assertEquals(7, engine.eval("def zzz = yyy + xxx", b));
+        assertEquals(4, engine.eval("zzz - xxx", b));
+        assertEquals(10, engine.eval("addItUp(zzz,xxx)", b));
     }
 
     @Test
