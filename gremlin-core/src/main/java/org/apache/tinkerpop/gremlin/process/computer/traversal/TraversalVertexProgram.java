@@ -81,8 +81,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(VOTE_TO_HALT));
 
-    private PureTraversal<?, ?> pureTraversal;
-    private Traversal.Admin<?, ?> traversal;
+    private PureTraversal<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
 
     private final Set<MapReduce> mapReducers = new HashSet<>();
@@ -98,29 +97,28 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      * @return the traversal supplied by the configuration
      */
     public static Traversal.Admin<?, ?> getTraversal(final Graph graph, final Configuration configuration) {
-        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).traversal;
+        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).traversal.get();
     }
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
         if (!configuration.containsKey(TRAVERSAL))
             throw new IllegalArgumentException("The configuration does not have a traversal supplier: " + TRAVERSAL);
-        this.pureTraversal = PureTraversal.loadState(configuration, TRAVERSAL, graph);
-        this.traversal = this.pureTraversal.get();
-        if (!this.traversal.isLocked())
-            this.traversal.applyStrategies();
-        this.traversalMatrix = new TraversalMatrix<>(this.traversal);
-        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
+        this.traversal = PureTraversal.loadState(configuration, TRAVERSAL, graph);
+        if (!this.traversal.get().isLocked())
+            this.traversal.get().applyStrategies();
+        this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
+        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal.get())) {
             this.mapReducers.add(mapReducer.getMapReduce());
         }
-        if (!(this.traversal.getEndStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep() instanceof ReducingBarrierStep))
-            this.mapReducers.add(new TraverserMapReduce(this.traversal));
+        if (!(this.traversal.get().getEndStep() instanceof SideEffectCapStep) && !(this.traversal.get().getEndStep() instanceof ReducingBarrierStep))
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
     }
 
     @Override
     public void storeState(final Configuration configuration) {
         VertexProgram.super.storeState(configuration);
-        this.pureTraversal.storeState(configuration, TRAVERSAL);
+        this.traversal.storeState(configuration, TRAVERSAL);
     }
 
     @Override
@@ -135,18 +133,18 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
-        this.traversal.getSideEffects().setLocalVertex(vertex);
+        this.traversal.get().getSideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
             vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
             final TraverserSet<Object> aliveTraverses = new TraverserSet<>();
             IteratorUtils.removeOnNext(haltedTraversers.iterator()).forEachRemaining(traverser -> {
-                traverser.setStepId(this.traversal.getStartStep().getId());
+                traverser.setStepId(this.traversal.get().getStartStep().getId());
                 aliveTraverses.add((Traverser.Admin) traverser);
             });
             assert haltedTraversers.isEmpty();
-            if (this.traversal.getStartStep() instanceof GraphStep) {
-                final GraphStep<?, ?> graphStep = (GraphStep<Element, Element>) this.traversal.getStartStep();
+            if (this.traversal.get().getStartStep() instanceof GraphStep) {
+                final GraphStep<?, ?> graphStep = (GraphStep<Element, Element>) this.traversal.get().getStartStep();
                 graphStep.reset();
                 aliveTraverses.forEach(traverser -> graphStep.addStart((Traverser.Admin) traverser));
                 aliveTraverses.clear();
@@ -204,7 +202,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         try {
             final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
             clone.traversal = this.traversal.clone();
-            clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
+            if (!clone.traversal.get().isLocked())
+                clone.traversal.get().applyStrategies();
+            clone.traversalMatrix = new TraversalMatrix<>(clone.traversal.get());
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -223,7 +223,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public String toString() {
-        final String traversalString = this.traversal.toString().substring(1);
+        final String traversalString = this.traversal.get().toString().substring(1);
         return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
     }
 

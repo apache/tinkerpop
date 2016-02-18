@@ -23,11 +23,15 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.Map;
+
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -36,6 +40,8 @@ import static org.junit.Assert.assertTrue;
 public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_peerPressure();
+
+    public abstract Traversal<Vertex, Map<Object, Number>> get_g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X();
 
 
     @Test
@@ -52,12 +58,31 @@ public abstract class PeerPressureTest extends AbstractGremlinProcessTest {
         assertEquals(6, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX() {
+        final Traversal<Vertex, Map<Object, Number>> traversal = get_g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X();
+        printTraversalForm(traversal);
+        final Map<Object, Number> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(4, map.size());
+        assertEquals(1.0d, (double) map.get(convertToVertexId("marko")), 0.001d);
+        assertEquals(0.0d, (double) map.get(convertToVertexId("lop")), 0.001d);
+        assertEquals(0.0d, (double) map.get(convertToVertexId("ripple")), 0.001d);
+        assertEquals(0.0d, (double) map.get(convertToVertexId("peter")), 0.001d);
+    }
+
 
     public static class Traversals extends PeerPressureTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_peerPressure() {
             return g.V().peerPressure();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, Number>> get_g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X() {
+            return g.V().peerPressure().by("cluster").by(__.outE("knows")).pageRank(1.0d).by("rank").by(__.outE("knows")).times(1).<Object, Number>group().by("cluster").by(__.values("rank").sum()).limit(100);
         }
     }
 }

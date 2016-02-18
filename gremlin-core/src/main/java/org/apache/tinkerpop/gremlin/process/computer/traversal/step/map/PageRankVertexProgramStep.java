@@ -90,14 +90,13 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
 
     @Override
     public PageRankVertexProgram generateProgram(final Graph graph) {
-        this.edgeTraversal.reset();
-        final Traversal.Admin<Vertex, Edge> compiledTraversal = this.edgeTraversal.get();
-        compiledTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
+        final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
+        detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
         return PageRankVertexProgram.build()
                 .property(this.pageRankProperty)
-                .iterations(this.times)
+                .iterations(this.times + 1)
                 .alpha(this.alpha)
-                .edges(compiledTraversal)
+                .edges(detachedTraversal)
                 .create(graph);
     }
 

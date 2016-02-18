@@ -88,13 +88,12 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
 
     @Override
     public PeerPressureVertexProgram generateProgram(final Graph graph) {
-        this.edgeTraversal.reset();
-        final Traversal.Admin<Vertex, Edge> compiledTraversal = this.edgeTraversal.get();
-        compiledTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
+        final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
+        detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
         return PeerPressureVertexProgram.build()
                 .property(this.clusterProperty)
                 .maxIterations(this.times)
-                .edges(compiledTraversal)
+                .edges(detachedTraversal)
                 .create(graph);
     }
 

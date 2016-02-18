@@ -38,15 +38,13 @@ public final class PureTraversal<S, E> implements Serializable, Cloneable {
         this.pureTraversal = pureTraversal;
     }
 
-    public void reset() {
-        this.cachedTraversal = null;
+    public Traversal.Admin<S, E> getPure() {
+        return this.pureTraversal.clone();
     }
 
     public Traversal.Admin<S, E> get() {
-        if (null == this.cachedTraversal) {
+        if (null == this.cachedTraversal)
             this.cachedTraversal = this.pureTraversal.clone();
-            this.pureTraversal.getGraph().ifPresent(this.cachedTraversal::setGraph);
-        }
         return this.cachedTraversal;
     }
 

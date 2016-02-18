@@ -77,15 +77,13 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
 
     @Override
     public TraversalVertexProgram generateProgram(final Graph graph) {
-        this.computerTraversal.reset();
-        final Traversal.Admin<?, ?> compiledComputerTraversal = this.computerTraversal.get();
-        compiledComputerTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
-        this.getTraversal().getStrategies().toList().forEach(compiledComputerTraversal.getStrategies()::addStrategies);
-        compiledComputerTraversal.setSideEffects(this.getTraversal().getSideEffects());
-        compiledComputerTraversal.setParent(this);
-        compiledComputerTraversal.applyStrategies();
+        final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
+        computerSpecificTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
+        this.getTraversal().getStrategies().toList().forEach(computerSpecificTraversal.getStrategies()::addStrategies);
+        computerSpecificTraversal.setSideEffects(this.getTraversal().getSideEffects());
+        computerSpecificTraversal.setParent(this);
         return TraversalVertexProgram.build()
-                .traversal(compiledComputerTraversal)
+                .traversal(computerSpecificTraversal)
                 .create(graph);
     }
 

@@ -35,5 +35,9 @@ public abstract class GroovyPeerPressureTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.peerPressure")
         }
 
+        @Override
+        public Traversal<Vertex, Map<Object, Number>> get_g_V_peerPressure_byXclusterX_byXoutEXknowsXX_pageRankX1X_byXrankX_byXoutEXknowsXX_timesX2X_group_byXclusterX_byXrank_sumX_limitX100X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.peerPressure.by('cluster').by(outE('knows')).pageRank(1.0).by('rank').by(outE('knows')).times(1).group.by('cluster').by(values('rank').sum).limit(100)")
+        }
     }
 }

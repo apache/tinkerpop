@@ -92,6 +92,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     @Override
     public void storeState(final Configuration configuration) {
         super.storeState(configuration);
+        configuration.setProperty(PROPERTY, this.property);
         configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
         configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
         if (null != this.edgeTraversal)
