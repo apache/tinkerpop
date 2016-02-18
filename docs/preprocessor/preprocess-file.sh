@@ -37,7 +37,7 @@ fi
 trap cleanup INT
 
 function cleanup {
-  rm -rf ${output}
+  rm -rf ${output} ${CONSOLE_HOME}/.ext
   exit 255
 }
 
@@ -57,6 +57,27 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   fi
   pushd "${CONSOLE_HOME}" > /dev/null
 
+  doc=`basename ${input} .asciidoc`
+
+  case "${doc}" in
+    "implementations-neo4j")
+      # deactivate Spark plugin to prevent version conflicts between TinkerPop's Spark jars and Neo4j's Spark jars
+      mkdir .ext
+      mv ext/spark-gremlin .ext/
+      cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'SparkGremlinPlugin' > .ext/plugins.txt
+      ;;
+    "implementations-hadoop")
+      # deactivate Neo4j plugin to prevent version conflicts between TinkerPop's Spark jars and Neo4j's Spark jars
+      mkdir .ext
+      mv ext/neo4j-gremlin .ext/
+      cat ext/plugins.txt | tee .ext/plugins.all | grep -Fv 'Neo4jGremlinPlugin' > .ext/plugins.txt
+      ;;
+  esac
+
+  if [ -d ".ext" ]; then
+    mv .ext/plugins.txt ext/
+  fi
+
   awk -f ${AWK_SCRIPTS}/prepare.awk ${input} |
   awk -f ${AWK_SCRIPTS}/init-code-blocks.awk |
   awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template | HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
@@ -69,6 +90,12 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
     ec=${ps[i]}
     [ ${ec} -eq 0 ] || break
   done
+
+  if [ -d ".ext" ]; then
+    mv .ext/plugins.all ext/plugins.txt
+    mv .ext/* ext/
+    rm -r .ext/
+  fi
 
   if [ ${ec} -eq 0 ]; then
     ec=`grep -c '\bpb([0-9][0-9]*);' ${output}`
