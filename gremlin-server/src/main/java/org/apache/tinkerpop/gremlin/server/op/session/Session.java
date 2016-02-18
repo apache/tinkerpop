@@ -122,8 +122,10 @@ public class Session {
                 // that thread of execution from this session
                 try {
                     executor.submit(() -> {
-                        logger.info("Rolling back open transactions on {} before killing session: {}", kv.getKey(), session);
-                        if (g.tx().isOpen()) g.tx().rollback();
+                        if (g.tx().isOpen()) {
+                            logger.info("Rolling back open transactions on {} before killing session: {}", kv.getKey(), session);
+                            g.tx().rollback();
+                        }
                     }).get(30000, TimeUnit.MILLISECONDS);
                 } catch (Exception ex) {
                     logger.warn("An error occurred while attempting rollback when closing session: " + session, ex);
