@@ -140,9 +140,9 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         if (memory.isInitialIteration()) {
             messenger.sendMessage(this.countMessageScope, 1.0d);
         } else if (1 == memory.getIteration()) {
-            double initialPageRank = null == this.initialRankTraversal ?
+            double initialPageRank = (null == this.initialRankTraversal ?
                     1.0d :
-                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue() / this.vertexCountAsDouble;
+                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue()) / this.vertexCountAsDouble;
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             vertex.property(VertexProperty.Cardinality.single, this.property, initialPageRank);
             vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
@@ -194,11 +194,6 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             return this;
         }
 
-        public Builder vertexCount(final long vertexCount) {
-            this.configuration.setProperty(VERTEX_COUNT, (double) vertexCount);
-            return this;
-        }
-
         public Builder edges(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
             PureTraversal.storeState(this.configuration, EDGE_TRAVERSAL, edgeTraversal);
             return this;
@@ -206,6 +201,15 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
         public Builder initialRank(final Traversal.Admin<Vertex, ? extends Number> initialRankTraversal) {
             PureTraversal.storeState(this.configuration, INITIAL_RANK_TRAVERSAL, initialRankTraversal);
+            return this;
+        }
+
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#initialRank(Traversal.Admin)}
+         */
+        @Deprecated
+        public Builder vertexCount(final long vertexCount) {
+            this.configuration.setProperty(VERTEX_COUNT, (double) vertexCount);
             return this;
         }
 

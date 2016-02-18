@@ -117,7 +117,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     public PageRankVertexProgramStep clone() {
         final PageRankVertexProgramStep clone = (PageRankVertexProgramStep) super.clone();
         clone.edgeTraversal = this.edgeTraversal.clone();
-        this.integrateChild(this.edgeTraversal.get());
+        clone.integrateChild(clone.edgeTraversal.get());
         return clone;
     }
 }
