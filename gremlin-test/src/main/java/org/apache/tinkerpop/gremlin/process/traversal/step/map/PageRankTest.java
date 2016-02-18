@@ -37,6 +37,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -55,6 +56,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_pageRank_byXpageRankX_order_byXpageRankX_valueMapXname_pageRankX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX();
+
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -159,6 +162,25 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            final Map<String, List<Object>> map = traversal.next();
+            assertEquals(2, map.size());
+            String name = (String) map.get("name").get(0);
+            double pageRank = (Double) map.get("priors").get(0);
+            assertEquals(name.equals("josh") ? 1.0d : 0.0d, pageRank, 0.0001d);
+            if (name.equals("peter") || name.equals("vadas"))
+                fail("Peter or Vadas should not have been accessed");
+            counter++;
+        }
+        assertEquals(4, counter);
+    }
+
     public static class Traversals extends PageRankTest {
 
         @Override
@@ -189,6 +211,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX() {
             return g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
+            return g.V().hasLabel("software").has("name", "ripple").pageRank(1.0).by(__.inE("created")).times(1).by("priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors");
         }
     }
 }

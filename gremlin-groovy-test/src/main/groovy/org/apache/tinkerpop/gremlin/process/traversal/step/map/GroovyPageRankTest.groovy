@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -58,6 +59,11 @@ public abstract class GroovyPageRankTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.pageRank.by('pageRank').as('a').out('knows').values('pageRank').as('b').select('a', 'b')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('software').has('name', 'ripple').pageRank(1.0).by(inE('created')).times(1).by('priors').in('created').union(identity(),both()).valueMap('name', 'priors')")
         }
     }
 }

@@ -58,12 +58,12 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String EDGE_TRAVERSAL = "gremlin.pageRankVertexProgram.edgeTraversal";
-    private static final String VERTEX_TRAVERSAL = "gremlin.pageRankVertexProgram.vertexTraversal";
+    private static final String INITIAL_RANK_TRAVERSAL = "gremlin.pageRankVertexProgram.initialRankTraversal";
 
     private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE);
     private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
     private PureTraversal<Vertex, Edge> edgeTraversal = null;
-    private PureTraversal<Vertex, Vertex> vertexTraversal = null;
+    private PureTraversal<Vertex, ? extends Number> initialRankTraversal = null;
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
@@ -76,8 +76,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        if (configuration.containsKey(VERTEX_TRAVERSAL))
-            this.vertexTraversal = PureTraversal.loadState(configuration, VERTEX_TRAVERSAL, graph);
+        if (configuration.containsKey(INITIAL_RANK_TRAVERSAL))
+            this.initialRankTraversal = PureTraversal.loadState(configuration, INITIAL_RANK_TRAVERSAL, graph);
         if (configuration.containsKey(EDGE_TRAVERSAL)) {
             this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
             this.incidentMessageScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
@@ -99,8 +99,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         configuration.setProperty(PROPERTY, this.property);
         if (null != this.edgeTraversal)
             this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
-        if (null != this.vertexTraversal)
-            this.vertexTraversal.storeState(configuration, VERTEX_TRAVERSAL);
+        if (null != this.initialRankTraversal)
+            this.initialRankTraversal.storeState(configuration, INITIAL_RANK_TRAVERSAL);
     }
 
     @Override
@@ -140,18 +140,20 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         if (memory.isInitialIteration()) {
             messenger.sendMessage(this.countMessageScope, 1.0d);
         } else if (1 == memory.getIteration()) {
-            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+            double initialPageRank = null == this.initialRankTraversal ?
+                    1.0d :
+                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue() / this.vertexCountAsDouble;
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             vertex.property(VertexProperty.Cardinality.single, this.property, initialPageRank);
             vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
-            messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
+            if (!this.terminate(memory)) // don't send messages if this is the last iteration
+                messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else {
-            if (2 == memory.getIteration() && null != this.vertexTraversal && !TraversalUtil.test(vertex, this.vertexTraversal.get()))
-                return;
             double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.property(VertexProperty.Cardinality.single, this.property, newPageRank);
-            messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
+            if (!this.terminate(memory)) // don't send messages if this is the last iteration
+                messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }
 
@@ -202,8 +204,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             return this;
         }
 
-        public Builder vertices(final Traversal.Admin<Vertex, Vertex> vertexTraversal) {
-            PureTraversal.storeState(this.configuration, VERTEX_TRAVERSAL, vertexTraversal);
+        public Builder initialRank(final Traversal.Admin<Vertex, ? extends Number> initialRankTraversal) {
+            PureTraversal.storeState(this.configuration, INITIAL_RANK_TRAVERSAL, initialRankTraversal);
             return this;
         }
 

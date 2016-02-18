@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTraversersCountTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -92,12 +93,14 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     public PageRankVertexProgram generateProgram(final Graph graph) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
-        return PageRankVertexProgram.build()
+        final PageRankVertexProgram.Builder builder = PageRankVertexProgram.build()
                 .property(this.pageRankProperty)
                 .iterations(this.times + 1)
                 .alpha(this.alpha)
-                .edges(detachedTraversal)
-                .create(graph);
+                .edges(detachedTraversal);
+        if (this.previousTraversalVertexProgram())
+            builder.initialRank(new HaltedTraversersCountTraversal());
+        return builder.create(graph);
     }
 
     @Override

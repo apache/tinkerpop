@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -56,5 +57,15 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
         } catch (final InterruptedException | ExecutionException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    protected boolean previousTraversalVertexProgram() {
+        Step<?, ?> currentStep = this;
+        while (!(currentStep instanceof EmptyStep)) {
+            if (currentStep instanceof TraversalVertexProgramStep)
+                return true;
+            currentStep = currentStep.getPreviousStep();
+        }
+        return false;
     }
 }
