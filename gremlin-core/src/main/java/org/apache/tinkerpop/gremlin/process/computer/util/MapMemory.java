@@ -45,9 +45,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
     }
 
     public MapMemory(final Memory otherMemory) {
-        otherMemory.keys().forEach(key -> {
-            this.memoryMap.put(key, otherMemory.get(key));
-        });
+        otherMemory.keys().forEach(key -> this.memoryMap.put(key, otherMemory.get(key)));
         this.iteration = otherMemory.getIteration();
     }
 
@@ -56,7 +54,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
     }
 
     public void addMapReduceMemoryKey(final MapReduce mapReduce) {
-        //this.memoryComputeKeys.add(mapReduce.getMemoryKey());
+       this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(),false));
     }
 
     @Override

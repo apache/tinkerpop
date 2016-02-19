@@ -109,8 +109,8 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         return null == this.t;
     }
 
-    public static ObjectWritable empty() {
-        return new ObjectWritable(null);
+    public static <A> ObjectWritable<A> empty() {
+        return new ObjectWritable<>(null);
     }
 
     @Override

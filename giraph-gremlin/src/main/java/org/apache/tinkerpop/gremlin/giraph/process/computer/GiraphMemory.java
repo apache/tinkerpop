@@ -34,16 +34,15 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.javatuples.Pair;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -86,7 +85,6 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             try {
                 for (final MemoryComputeKey key : this.memoryKeys.values()) {
                     this.registerPersistentAggregator(key.getKey(), MemoryAggregator.class);
-                    this.setAggregatedValue(key.getKey(), new ObjectWritable(key));
                 }
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -135,7 +133,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public Set<String> keys() {
-        return this.memoryKeys.keySet();
+        return this.memoryKeys.values().stream().filter(key -> this.exists(key.getKey())).map(MemoryComputeKey::getKey).collect(Collectors.toSet());
     }
 
     @Override
@@ -147,59 +145,43 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
-        final Object value = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
-        if (null == value)
+        final ObjectWritable<Pair<BinaryOperator, Object>> value = this.isMasterCompute ?
+                this.<ObjectWritable<Pair<BinaryOperator, Object>>>getAggregatedValue(key) :
+                this.worker.<ObjectWritable<Pair<BinaryOperator, Object>>>getAggregatedValue(key);
+        if (null == value || value.isEmpty())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
-            return (R) value;
+            return (R) value.get().getValue1();
     }
 
     @Override
     public void set(final String key, final Object value) {
         this.checkKeyValue(key, value);
-        if (this.isMasterCompute)
-            this.setAggregatedValue(key, new ObjectWritable<>(value));
-        else
-            this.worker.aggregate(key, new ObjectWritable<>(value));
+        if (this.isMasterCompute) {  // only called on setup() and terminate()
+            this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
+        } else {
+            this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
+        }
     }
 
     @Override
     public void add(final String key, final Object value) {
         this.checkKeyValue(key, value);
         if (this.isMasterCompute) {  // only called on setup() and terminate()
-            this.setAggregatedValue(key, new ObjectWritable<>(value));
+            this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
         } else {
-            this.worker.aggregate(key, new ObjectWritable<>(value));
+            this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
         }
     }
 
     @Override
     public void write(final DataOutput output) {
-        try {
-            final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            final ObjectOutputStream objects = new ObjectOutputStream(bytes);
-            output.writeInt(bytes.size());
-            objects.writeObject(this.memoryKeys);
-            objects.flush();
-            output.write(bytes.toByteArray());
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        // all aggregator data is propagated through writables
     }
 
     @Override
     public void readFields(final DataInput input) {
-        try {
-            final byte[] in = new byte[input.readInt()];
-            for (int i = 0; i < in.length; i++) {
-                in[i] = input.readByte();
-            }
-            final ByteArrayInputStream bytes = new ByteArrayInputStream(in);
-            final ObjectInputStream objects = new ObjectInputStream(bytes);
-            this.memoryKeys = (Map<String, MemoryComputeKey>) objects.readObject();
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        // all aggregator data is propagated through writables
     }
 
     @Override
