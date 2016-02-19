@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -68,7 +69,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     private double alpha = 0.85d;
     private int totalIterations = 30;
     private String property = PAGE_RANK;
-    private Set<String> computeKeys;
+    private Set<VertexComputeKey> vertexComputeKeys;
 
     private PageRankVertexProgram() {
 
@@ -87,7 +88,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
         this.property = configuration.getString(PROPERTY, PAGE_RANK);
-        this.computeKeys = new HashSet<>(Arrays.asList(this.property, EDGE_COUNT));
+        this.vertexComputeKeys = new HashSet<>(Arrays.asList(VertexComputeKey.of(this.property, false), VertexComputeKey.of(EDGE_COUNT, true)));
     }
 
     @Override
@@ -114,8 +115,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
     }
 
     @Override
-    public Set<String> getElementComputeKeys() {
-        return this.computeKeys;
+    public Set<VertexComputeKey> getVertexComputeKeys() {
+        return this.vertexComputeKeys;
     }
 
     @Override

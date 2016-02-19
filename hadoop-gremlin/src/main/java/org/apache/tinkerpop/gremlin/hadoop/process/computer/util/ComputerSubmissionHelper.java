@@ -31,7 +31,7 @@ import com.google.common.base.Function;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 
-public class ComputerSubmissionHelper {
+public final class ComputerSubmissionHelper {
 
     /**
      * Creates a {@link Executors#newSingleThreadExecutor(ThreadFactory)} configured

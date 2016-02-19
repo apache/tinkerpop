@@ -21,8 +21,10 @@ package org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -71,7 +73,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     private boolean distributeVote = false;
     private String property = CLUSTER;
 
-    private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(VOTE_TO_HALT));
+    private static final Set<MemoryComputeKey> MEMORY_COMPUTE_KEYS = Collections.singleton(MemoryComputeKey.of(VOTE_TO_HALT, MemoryComputeKey.andOperator(), true));
 
     private PeerPressureVertexProgram() {
 
@@ -100,12 +102,12 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     }
 
     @Override
-    public Set<String> getElementComputeKeys() {
-        return new HashSet<>(Arrays.asList(this.property, VOTE_STRENGTH));
+    public Set<VertexComputeKey> getVertexComputeKeys() {
+        return new HashSet<>(Arrays.asList(VertexComputeKey.of(this.property, false), VertexComputeKey.of(VOTE_STRENGTH, true)));
     }
 
     @Override
-    public Set<String> getMemoryComputeKeys() {
+    public Set<MemoryComputeKey> getMemoryComputeKeys() {
         return MEMORY_COMPUTE_KEYS;
     }
 
@@ -139,21 +141,21 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
                 vertex.property(VertexProperty.Cardinality.single, this.property, vertex.id());
                 vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
                 messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
-                memory.and(VOTE_TO_HALT, false);
+                memory.add(VOTE_TO_HALT, false);
             }
         } else if (1 == memory.getIteration() && this.distributeVote) {
             double voteStrength = 1.0d / IteratorUtils.reduce(IteratorUtils.map(messenger.receiveMessages(), Pair::getValue1), 0.0d, (a, b) -> a + b);
             vertex.property(VertexProperty.Cardinality.single, this.property, vertex.id());
             vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
-            memory.and(VOTE_TO_HALT, false);
+            memory.add(VOTE_TO_HALT, false);
         } else {
             final Map<Serializable, Double> votes = new HashMap<>();
             votes.put(vertex.value(this.property), vertex.<Double>value(VOTE_STRENGTH));
             messenger.receiveMessages().forEachRemaining(message -> MapHelper.incr(votes, message.getValue0(), message.getValue1()));
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
-            memory.and(VOTE_TO_HALT, vertex.value(this.property).equals(cluster));
+            memory.add(VOTE_TO_HALT, vertex.value(this.property).equals(cluster));
             vertex.property(VertexProperty.Cardinality.single, this.property, cluster);
             messenger.sendMessage(this.voteScope, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
@@ -165,7 +167,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
         if (voteToHalt) {
             return true;
         } else {
-            memory.or(VOTE_TO_HALT, true);
+            memory.set(VOTE_TO_HALT, true);
             return false;
         }
     }

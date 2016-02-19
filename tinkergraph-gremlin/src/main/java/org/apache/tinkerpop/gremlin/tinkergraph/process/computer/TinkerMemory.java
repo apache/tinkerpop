@@ -21,11 +21,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class TinkerMemory implements Memory.Admin {
 
-    public final Set<String> memoryKeys = new HashSet<>();
+    public final Map<String, MemoryComputeKey> memoryKeys = new HashMap<>();
     public Map<String, Object> previousMap;
     public Map<String, Object> currentMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
@@ -47,13 +48,13 @@ public final class TinkerMemory implements Memory.Admin {
         this.currentMap = new ConcurrentHashMap<>();
         this.previousMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {
-            for (final String key : vertexProgram.getMemoryComputeKeys()) {
-                MemoryHelper.validateKey(key);
-                this.memoryKeys.add(key);
+            for (final MemoryComputeKey key : vertexProgram.getMemoryComputeKeys()) {
+                MemoryHelper.validateKey(key.getKey());
+                this.memoryKeys.put(key.getKey(), key);
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.memoryKeys.add(mapReduce.getMemoryKey());
+            this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), (a, b) -> b, false));
         }
     }
 
@@ -90,11 +91,11 @@ public final class TinkerMemory implements Memory.Admin {
     protected void complete() {
         this.iteration.decrementAndGet();
         this.previousMap = this.currentMap;
+        this.memoryKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(key -> this.previousMap.remove(key.getKey()));
     }
 
     protected void completeSubRound() {
         this.previousMap = new ConcurrentHashMap<>(this.currentMap);
-
     }
 
     @Override
@@ -112,27 +113,15 @@ public final class TinkerMemory implements Memory.Admin {
     }
 
     @Override
-    public void incr(final String key, final long delta) {
-        checkKeyValue(key, delta);
-        this.currentMap.compute(key, (k, v) -> null == v ? delta : delta + (Long) v);
-    }
-
-    @Override
-    public void and(final String key, final boolean bool) {
-        checkKeyValue(key, bool);
-        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool && (Boolean) v);
-    }
-
-    @Override
-    public void or(final String key, final boolean bool) {
-        checkKeyValue(key, bool);
-        this.currentMap.compute(key, (k, v) -> null == v ? bool : bool || (Boolean) v);
-    }
-
-    @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
         this.currentMap.put(key, value);
+    }
+
+    @Override
+    public void add(final String key, final Object value) {
+        checkKeyValue(key, value);
+        this.currentMap.compute(key, (k, v) -> null == v ? value : this.memoryKeys.get(key).getReducer().apply(v, value));
     }
 
     @Override
@@ -141,7 +130,7 @@ public final class TinkerMemory implements Memory.Admin {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryKeys.contains(key))
+        if (!this.memoryKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }

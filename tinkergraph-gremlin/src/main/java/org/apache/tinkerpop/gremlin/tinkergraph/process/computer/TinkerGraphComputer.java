@@ -138,7 +138,7 @@ public final class TinkerGraphComputer implements GraphComputer {
             final long time = System.currentTimeMillis();
             try (final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers)) {
                 if (null != this.vertexProgram) {
-                    TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getElementComputeKeys());
+                    TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getVertexComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     this.memory.completeSubRound();
@@ -215,6 +215,7 @@ public final class TinkerGraphComputer implements GraphComputer {
                 this.memory.complete();
                 // determine the resultant graph based on the result graph/persist state
                 final TinkerGraphComputerView view = TinkerHelper.getGraphComputerView(this.graph);
+                view.complete(); // drop all transient properties
                 final Graph resultGraph = null == view ? this.graph : view.processResultGraphPersist(this.resultGraph, this.persist);
                 TinkerHelper.dropGraphComputerView(this.graph);
                 return new DefaultComputerResult(resultGraph, this.memory.asImmutable());

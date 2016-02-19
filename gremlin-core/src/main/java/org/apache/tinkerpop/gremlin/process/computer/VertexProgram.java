@@ -133,7 +133,7 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @return the set of element keys that will be mutated during the vertex program's execution
      */
-    public default Set<String> getElementComputeKeys() {
+    public default Set<VertexComputeKey> getVertexComputeKeys() {
         return Collections.emptySet();
     }
 
@@ -144,7 +144,7 @@ public interface VertexProgram<M> extends Cloneable {
      *
      * @return the set of memory keys that will be read/written
      */
-    public default Set<String> getMemoryComputeKeys() {
+    public default Set<MemoryComputeKey> getMemoryComputeKeys() {
         return Collections.emptySet();
     }
 

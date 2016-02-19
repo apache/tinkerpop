@@ -103,6 +103,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
     }
 
+
     /////////////////////////////////////////////
     @Test
     @LoadGraphWith(MODERN)
@@ -178,19 +179,19 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         try {
-            results.memory().incr("incr", 1);
+            results.memory().add("incr", 1);
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
-            results.memory().and("and", true);
+            results.memory().add("and", true);
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
 
         try {
-            results.memory().or("or", false);
+            results.memory().add("or", false);
         } catch (Exception ex) {
             validateException(Memory.Exceptions.memoryIsCurrentlyImmutable(), ex);
         }
@@ -217,8 +218,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList("set", "incr", "and", "or"));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList(
+                    MemoryComputeKey.of("set", MemoryComputeKey.setOperator(), false),
+                    MemoryComputeKey.of("incr", MemoryComputeKey.sumLongOperator(), false),
+                    MemoryComputeKey.of("and", MemoryComputeKey.andOperator(), false),
+                    MemoryComputeKey.of("or", MemoryComputeKey.orOperator(), false)));
         }
 
         @Override
@@ -266,8 +271,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList(null));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return Collections.singleton(null);
         }
 
         @Override
@@ -316,8 +321,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList(""));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return Collections.singleton(MemoryComputeKey.of("", MemoryComputeKey.orOperator(), false));
         }
 
         @Override
@@ -456,8 +461,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertTrue(results.memory().keys().contains("b"));
         assertTrue(results.memory().getRuntime() >= 0);
 
-        assertEquals(Long.valueOf(12), results.memory().<Long>get("a"));   // 2 iterations
-        assertEquals(Long.valueOf(28), results.memory().<Long>get("b"));
+        assertEquals(12, results.memory().<Integer>get("a").intValue());   // 2 iterations
+        assertEquals(28, results.memory().<Integer>get("b").intValue());
         try {
             results.memory().get("BAD");
             fail("Should throw an IllegalArgumentException");
@@ -490,10 +495,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 fail("Should throw an IllegalArgumentException: " + e);
             }
 
-            memory.incr("a", 1);
+            memory.add("a", 1);
             if (memory.isInitialIteration()) {
                 vertex.property(VertexProperty.Cardinality.single, "nameLengthCounter", vertex.<String>value("name").length());
-                memory.incr("b", vertex.<String>value("name").length());
+                memory.add("b", vertex.<String>value("name").length());
             } else {
                 vertex.property(VertexProperty.Cardinality.single, "nameLengthCounter", vertex.<String>value("name").length() + vertex.<Integer>value("nameLengthCounter"));
             }
@@ -505,13 +510,15 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getElementComputeKeys() {
-            return new HashSet<>(Arrays.asList("nameLengthCounter"));
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return Collections.singleton(VertexComputeKey.of("nameLengthCounter", false));
         }
 
         @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList("a", "b"));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList(
+                    MemoryComputeKey.of("a", MemoryComputeKey.sumIntegerOperator(), false),
+                    MemoryComputeKey.of("b", MemoryComputeKey.sumIntegerOperator(), false)));
         }
 
         @Override
@@ -582,12 +589,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(memory.getIteration(), memory.<Integer>get("f").intValue());
 
             // update current step values
-            memory.incr("a", 1l);
-            memory.incr("b", 1l);
-            memory.and("c", false);
-            memory.or("d", true);
-            memory.and("e", false);
-            memory.set("f", memory.getIteration() + 1);
+            memory.add("a", 1l);
+            memory.add("b", 1l);
+            memory.add("c", false);
+            memory.add("d", true);
+            memory.add("e", false);
+            memory.add("f", memory.getIteration() + 1);
 
             // test current step values, should be the same as previous prior to update
             assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
@@ -617,13 +624,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getElementComputeKeys() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList("a", "b", "c", "d", "e", "f"));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList(
+                    MemoryComputeKey.of("a", MemoryComputeKey.sumLongOperator(), false),
+                    MemoryComputeKey.of("b", MemoryComputeKey.sumLongOperator(), false),
+                    MemoryComputeKey.of("c", MemoryComputeKey.andOperator(), false),
+                    MemoryComputeKey.of("d", MemoryComputeKey.orOperator(), false),
+                    MemoryComputeKey.of("e", MemoryComputeKey.andOperator(), false),
+                    MemoryComputeKey.of("f", MemoryComputeKey.setOperator(), false)));
         }
 
         @Override
@@ -713,13 +721,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getElementComputeKeys() {
-            return new HashSet<>(Arrays.asList("counter"));
-        }
-
-        @Override
-        public Set<String> getMemoryComputeKeys() {
-            return Collections.emptySet();
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return Collections.singleton(VertexComputeKey.of("counter", false));
         }
 
         @Override
@@ -1131,8 +1134,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList("test"));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return Collections.singleton(MemoryComputeKey.of("test", MemoryComputeKey.setOperator(), false));
         }
 
         @Override
@@ -1378,8 +1381,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getElementComputeKeys() {
-            return Collections.singleton("money");
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return Collections.singleton(VertexComputeKey.of("money", false));
         }
 
         @Override
@@ -1438,7 +1441,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             if (!this.announced) {
-                memory.incr("workerCount", 1l);
+                memory.add("workerCount", 1l);
                 this.announced = true;
             }
         }
@@ -1449,8 +1452,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList("workerCount"));
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return Collections.singleton(MemoryComputeKey.<Long>of("workerCount", MemoryComputeKey.sumLongOperator(), false));
         }
 
         /*public void workerIterationStart(final Memory memory) {
@@ -1928,8 +1931,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Set<String> getElementComputeKeys() {
-            return Collections.singleton("age");
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return Collections.singleton(VertexComputeKey.of("age", false));
         }
 
         @Override
@@ -1942,6 +1945,4 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             return GraphComputer.Persist.VERTEX_PROPERTIES;
         }
     }
-
-
 }

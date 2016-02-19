@@ -24,22 +24,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.util.HashSet;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,7 +52,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     private VertexProgram<?> vertexProgram;
     private GiraphWorkerContext worker;
-    private Set<String> memoryKeys;
+    private Map<String, MemoryComputeKey> memoryKeys;
     private boolean isMasterCompute = true;
     private long startTime = System.currentTimeMillis();
 
@@ -59,7 +63,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     public GiraphMemory(final GiraphWorkerContext worker, final VertexProgram<?> vertexProgram) {
         this.worker = worker;
         this.vertexProgram = vertexProgram;
-        this.memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
+        this.memoryKeys = new HashMap<>();
+        this.vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryKeys.put(key.getKey(), key));
         this.isMasterCompute = false;
     }
 
@@ -76,11 +81,12 @@ public final class GiraphMemory extends MasterCompute implements Memory {
         if (0 == this.getSuperstep()) { // setup
             final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.getConf());
             this.vertexProgram = VertexProgram.createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
-            this.memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
+            this.memoryKeys = new HashMap<>();
+            this.vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryKeys.put(key.getKey(), key));
             try {
-                for (final String key : this.memoryKeys) {
-                    MemoryHelper.validateKey(key);
-                    this.registerPersistentAggregator(key, MemoryAggregator.class);
+                for (final MemoryComputeKey key : this.memoryKeys.values()) {
+                    this.registerPersistentAggregator(key.getKey(), MemoryAggregator.class);
+                    this.setAggregatedValue(key.getKey(), new ObjectWritable(key));
                 }
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -129,80 +135,71 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public Set<String> keys() {
-        return this.memoryKeys.stream().filter(this::exists).collect(Collectors.toSet());
+        return this.memoryKeys.keySet();
     }
 
     @Override
     public boolean exists(final String key) {
-        final Rule rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
-        return null != rule.getObject();
+        final Object value = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
+        return null != value;
     }
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
-        final Rule rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
-        if (null == rule.getObject())
+        final Object value = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
+        if (null == value)
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
-            return rule.getObject();
+            return (R) value;
     }
 
     @Override
-    public void set(final String key, Object value) {
+    public void set(final String key, final Object value) {
         this.checkKeyValue(key, value);
         if (this.isMasterCompute)
-            this.setAggregatedValue(key, new Rule(Rule.Operation.SET, value));
+            this.setAggregatedValue(key, new ObjectWritable<>(value));
         else
-            this.worker.aggregate(key, new Rule(Rule.Operation.SET, value));
+            this.worker.aggregate(key, new ObjectWritable<>(value));
     }
 
     @Override
-    public void and(final String key, final boolean bool) {
-        this.checkKeyValue(key, bool);
+    public void add(final String key, final Object value) {
+        this.checkKeyValue(key, value);
         if (this.isMasterCompute) {  // only called on setup() and terminate()
-            Boolean value = this.<Rule>getAggregatedValue(key).<Boolean>getObject();
-            value = null == value ? bool : bool && value;
-            this.setAggregatedValue(key, new Rule(Rule.Operation.AND, value));
+            this.setAggregatedValue(key, new ObjectWritable<>(value));
         } else {
-            this.worker.aggregate(key, new Rule(Rule.Operation.AND, bool));
-        }
-    }
-
-    @Override
-    public void or(final String key, final boolean bool) {
-        this.checkKeyValue(key, bool);
-        if (this.isMasterCompute) {   // only called on setup() and terminate()
-            Boolean value = this.<Rule>getAggregatedValue(key).<Boolean>getObject();
-            value = null == value ? bool : bool || value;
-            this.setAggregatedValue(key, new Rule(Rule.Operation.OR, value));
-        } else {
-            this.worker.aggregate(key, new Rule(Rule.Operation.OR, bool));
-        }
-    }
-
-    @Override
-    public void incr(final String key, final long delta) {
-        this.checkKeyValue(key, delta);
-        if (this.isMasterCompute) {   // only called on setup() and terminate()
-            Number value = this.<Rule>getAggregatedValue(key).<Number>getObject();
-            value = null == value ? delta : value.longValue() + delta;
-            this.setAggregatedValue(key, new Rule(Rule.Operation.INCR, value));
-        } else {
-            this.worker.aggregate(key, new Rule(Rule.Operation.INCR, delta));
+            this.worker.aggregate(key, new ObjectWritable<>(value));
         }
     }
 
     @Override
     public void write(final DataOutput output) {
-        // no need to serialize the master compute as it gets its data from aggregators
-        // is this true?
+        try {
+            final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            final ObjectOutputStream objects = new ObjectOutputStream(bytes);
+            output.writeInt(bytes.size());
+            objects.writeObject(this.memoryKeys);
+            objects.flush();
+            output.write(bytes.toByteArray());
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
     public void readFields(final DataInput input) {
-        // no need to serialize the master compute as it gets its data from aggregators
-        // is this true?
+        try {
+            final byte[] in = new byte[input.readInt()];
+            for (int i = 0; i < in.length; i++) {
+                in[i] = input.readByte();
+            }
+            final ByteArrayInputStream bytes = new ByteArrayInputStream(in);
+            final ObjectInputStream objects = new ObjectInputStream(bytes);
+            this.memoryKeys = (Map<String, MemoryComputeKey>) objects.readObject();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -211,7 +208,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryKeys.contains(key))
+        if (!this.memoryKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }

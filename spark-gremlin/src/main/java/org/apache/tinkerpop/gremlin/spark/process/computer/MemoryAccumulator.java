@@ -16,40 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.spark.AccumulatorParam;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RuleAccumulator implements AccumulatorParam<Rule> {
+public final class MemoryAccumulator<A> implements AccumulatorParam<A> {
 
-    @Override
-    public Rule addAccumulator(final Rule a, final Rule b) {
-        if (a.getOperation().equals(Rule.Operation.NO_OP))
-            return b;
-        if (b.getOperation().equals(Rule.Operation.NO_OP))
-            return a;
-        else
-            return new Rule(b.getOperation(), b.getOperation().compute(a.getObject(), b.getObject()));
+    private final MemoryComputeKey<A> memoryComputeKey;
+
+    public MemoryAccumulator(final MemoryComputeKey<A> memoryComputeKey) {
+        this.memoryComputeKey = memoryComputeKey;
     }
 
     @Override
-    public Rule addInPlace(final Rule a, final Rule b) {
-        if (a.getOperation().equals(Rule.Operation.NO_OP))
-            return b;
-        if (b.getOperation().equals(Rule.Operation.NO_OP))
-            return a;
-        else
-            return new Rule(b.getOperation(), b.getOperation().compute(a.getObject(), b.getObject()));
+    public A addAccumulator(final A a, final A b) {
+        return null == a ? b : this.memoryComputeKey.getReducer().apply(a, b);
     }
 
     @Override
-    public Rule zero(final Rule rule) {
-        return new Rule(Rule.Operation.NO_OP, null);
+    public A addInPlace(final A a, final A b) {
+        return null == a ? b : this.memoryComputeKey.getReducer().apply(a, b);
     }
 
-
+    @Override
+    public A zero(final A a) {
+        return null;
+    }
 }

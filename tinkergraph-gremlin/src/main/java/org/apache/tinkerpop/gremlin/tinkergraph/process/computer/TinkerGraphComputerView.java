@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -51,15 +52,16 @@ import java.util.stream.Stream;
 public final class TinkerGraphComputerView {
 
     private final TinkerGraph graph;
-    protected final Set<String> computeKeys;
+    protected final Map<String, VertexComputeKey> computeKeys;
     private Map<Element, Map<String, List<VertexProperty<?>>>> computeProperties;
     private final Set<Object> legalVertices = new HashSet<>();
     private final Map<Object, Set<Object>> legalEdges = new HashMap<>();
     private final GraphFilter graphFilter;
 
-    public TinkerGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<String> computeKeys) {
+    public TinkerGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
         this.graph = graph;
-        this.computeKeys = computeKeys;
+        this.computeKeys = new HashMap<>();
+        computeKeys.forEach(key -> this.computeKeys.put(key.getKey(), key));
         this.computeProperties = new ConcurrentHashMap<>();
         this.graphFilter = graphFilter;
         if (this.graphFilter.hasFilter()) {
@@ -123,6 +125,11 @@ public final class TinkerGraphComputerView {
 
     public boolean legalEdge(final Vertex vertex, final Edge edge) {
         return !this.graphFilter.hasEdgeFilter() || this.legalEdges.get(vertex.id()).contains(edge.id());
+    }
+
+    protected void complete() {
+    //    this.computeKeys.values().stream().filter(ComputeKey.Vertex::isTransient).forEach(key ->
+    //            this.computeProperties.values().stream().flatMap(map -> map.get(key.getKey()).stream()).forEach(VertexProperty::remove));
     }
 
     //////////////////////
@@ -195,7 +202,7 @@ public final class TinkerGraphComputerView {
     //////////////////////
 
     private boolean isComputeKey(final String key) {
-        return this.computeKeys.contains(key);
+        return this.computeKeys.containsKey(key);
     }
 
     private void addValue(final Vertex vertex, final String key, final VertexProperty property) {
