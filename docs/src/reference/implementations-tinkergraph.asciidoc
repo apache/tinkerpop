@@ -1,0 +1,144 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[tinkergraph-gremlin]]
+TinkerGraph-Gremlin
+-------------------
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>tinkergraph-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
+persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with
+TinkerPop3 and serves as the reference implementation for other providers to study in order to understand the
+semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+
+[source,java]
+Graph g = TinkerGraph.open();
+Vertex marko = g.addVertex("name","marko","age",29);
+Vertex lop = g.addVertex("name","lop","lang","java");
+marko.addEdge("created",lop,"weight",0.6d);
+
+The above graph creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
+property. Next, the graph can be queried as such.
+
+[source,java]
+g.V().has("name","marko").out("created").values("name")
+
+The `g.V().has("name","marko")` part of the query can be executed in two ways.
+
+ * A linear scan of all vertices filtering out those vertices that don't have the name "marko"
+ * A `O(log(|V|))` index lookup for all vertices with the name "marko"
+
+Given the initial graph construction in the first code block, no index was defined and thus, a linear scan is executed.
+However, if the graph was constructed as such, then an index lookup would be used.
+
+[source,java]
+Graph g = TinkerGraph.open();
+g.createIndex("name",Vertex.class)
+
+The execution times for a vertex lookup by property is provided below for both no-index and indexed version of
+TinkerGraph over the Grateful Dead graph.
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = graph.traversal()
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+clock(1000) {g.V().has('name','Garcia').iterate()} <1>
+graph = TinkerGraph.open()
+g = graph.traversal()
+graph.createIndex('name',Vertex.class)
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+clock(1000){g.V().has('name','Garcia').iterate()} <2>
+----
+
+<1> Determine the average runtime of 1000 vertex lookups when no `name`-index is defined.
+<2> Determine the average runtime of 1000 vertex lookups when a `name`-index is defined.
+
+IMPORTANT: Each graph system will have different mechanism by which indices and schemas are defined. TinkerPop3
+does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other
+graph systems, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding
+data to the graph.
+
+NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
+
+Configuration
+~~~~~~~~~~~~~
+
+TinkerGraph has several settings that can be provided on creation via `Configuration` object:
+
+[width="100%",cols="2,10",options="header"]
+|=========================================================
+|Property |Description
+|gremlin.graph |`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph`
+|gremlin.tinkergraph.vertexIdManager |The `IdManager` implementation to use for vertices.
+|gremlin.tinkergraph.edgeIdManager |The `IdManager` implementation to use for edges.
+|gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
+|gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
+|gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a
+value is specified here, the the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
+included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
+|gremlin.tinkergraph.graphFormat |The format to use to serialize the graph which may be one of the following:
+`graphml`, `graphson`, `gryo`, or a fully qualified class name that implements Io.Builder interface (which allows for
+external third party graph reader/writer formats to be used for persistence).
+If a value is specified here, then the `gremlin.tinkergraph.graphLocation` should
+also be specified.  If this value is not included (default), then the graph will stay in-memory and not be
+loaded/persisted to disk.
+|=========================================================
+
+The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex
+properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, or the fully
+qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values
+for all settings is `ANY`, meaning that the graph will work with any object on the JVM as the identifier and will
+generate new identifiers from `Long` when the identifier is not user supplied.  TinkerGraph will also expect the
+user to understand the types used for identifiers when querying, meaning that `g.V(1)` and `g.V(1L)` could return
+two different vertices.  `LONG`, `INTEGER` and `UUID` settings will try to coerce identifier values to the expected
+type as well as generate new identifiers with that specified type.
+
+If the TinkerGraph is configured for persistence with `gremlin.tinkergraph.graphLocation` and
+`gremlin.tinkergraph.graphFormat`, then the graph will be written to the specified location with the specified
+format when `Graph.close()` is called.  In addition, if these settings are present, TinkerGraph will attempt to
+load the graph from the specified location.
+
+IMPORTANT: If choosing `graphson` as the `gremlin.tinkergraph.graphFormat`, be sure to also establish the  various
+`IdManager` settings as well to ensure that identifiers are properly coerced to the appropriate types as GraphSON
+can lose the identifier's type during serialization (i.e. it will assume `Integer` when the default for TinkerGraph
+is `Long`, which could lead to load errors that result in a message like, "Vertex with id already exists").
+
+It is important to consider the data being imported to TinkerGraph with respect to `defaultVertexPropertyCardinality`
+setting.  For example, if a `.gryo` file is known to contain multi-property data, be sure to set the default
+cardinality to `list` or else the data will import as `single`.  Consider the following:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+graph.io(gryo()).readGraph("data/tinkerpop-crew.kryo")
+g = graph.traversal()
+g.V().properties()
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality","list")
+graph = TinkerGraph.open(conf)
+graph.io(gryo()).readGraph("data/tinkerpop-crew.kryo")
+g = graph.traversal()
+g.V().properties()
+----
