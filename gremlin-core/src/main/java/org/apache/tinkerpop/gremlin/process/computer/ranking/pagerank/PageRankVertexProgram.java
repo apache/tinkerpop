@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankVertexProgram extends StaticVertexProgram<Double> {
+public class PageRankVertexProgram implements VertexProgram<Double> {
 
 
     public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
@@ -92,7 +92,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
     @Override
     public void storeState(final Configuration configuration) {
-        super.storeState(configuration);
+        VertexProgram.super.storeState(configuration);
         configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
@@ -128,6 +128,18 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         final Set<MessageScope> set = new HashSet<>();
         set.add(memory.isInitialIteration() ? this.countMessageScope : this.incidentMessageScope);
         return set;
+    }
+
+    @Override
+    public PageRankVertexProgram clone() {
+        try {
+            final PageRankVertexProgram clone = (PageRankVertexProgram) super.clone();
+            if (null != this.initialRankTraversal)
+                clone.initialRankTraversal = this.initialRankTraversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override

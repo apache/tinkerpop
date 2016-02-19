@@ -301,12 +301,12 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         if (bulkLoader != null) {
-            sb.append("bulkLoader=").append(bulkLoader.getClass().getSimpleName()).append(",");
-            sb.append("vertexIdProperty=").append(bulkLoader.getVertexIdProperty()).append(",");
-            sb.append("userSuppliedIds=").append(bulkLoader.useUserSuppliedIds()).append(",");
-            sb.append("keepOriginalIds=").append(bulkLoader.keepOriginalIds()).append(",");
+            sb.append("bulkLoader=").append(bulkLoader.getClass().getSimpleName()).append(", ");
+            sb.append("vertexIdProperty=").append(bulkLoader.getVertexIdProperty()).append(", ");
+            sb.append("userSuppliedIds=").append(bulkLoader.useUserSuppliedIds()).append(", ");
+            sb.append("keepOriginalIds=").append(bulkLoader.keepOriginalIds()).append(", ");
         } else {
-            sb.append("bulkLoader=").append(bulkLoader).append(",");
+            sb.append("bulkLoader=").append(bulkLoader).append(", ");
         }
         sb.append("batchSize=").append(intermediateBatchSize);
         return StringFactory.vertexProgramString(this, sb.toString());

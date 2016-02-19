@@ -189,7 +189,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, "distributeVote=" + this.distributeVote + ",maxIterations=" + this.maxIterations);
+        return StringFactory.vertexProgramString(this, "distributeVote=" + this.distributeVote + ", maxIterations=" + this.maxIterations);
     }
 
     //////////////////////////////

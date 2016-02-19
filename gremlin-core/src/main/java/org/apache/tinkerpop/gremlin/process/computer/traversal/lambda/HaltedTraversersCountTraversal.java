@@ -35,7 +35,7 @@ public final class HaltedTraversersCountTraversal extends AbstractLambdaTraversa
 
     @Override
     public Long next() {
-        return count;
+        return this.count;
     }
 
     @Override
@@ -46,7 +46,7 @@ public final class HaltedTraversersCountTraversal extends AbstractLambdaTraversa
 
     @Override
     public String toString() {
-        return "count(" + TraversalVertexProgram.HALTED_TRAVERSERS + ')';
+        return "count(" + TraversalVertexProgram.HALTED_TRAVERSERS + ")";
     }
 
     @Override
