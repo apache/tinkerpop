@@ -24,6 +24,15 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `PeerPressureVertexProgramStep` and `GraphTraversal.peerPressure()`.
+* Added `PureTraversal` for handling pure and compiled versions of a `Traversal`. Useful in OLAP.
+* Added `ScriptTraversal` which allows for delayed compilation of script-based `Traversals`.
+* Simplified `VertexProgram` implementations with a `PureTraversal`-model and deprecated `ConfigurationTraversal`.
+* Simplified script-based `Traversals` via `ScriptTraversal` and deprecated `TraversalScriptFunction` and `TraversalScriptHelper`.
+* Added `ByModulating` interface which allows the `Step` to decide how a `by()`-modulation should be handled. (*breaking*)
+* Simplified the `by()`-modulation patterns of `OrderGlobalStep` and `OrderLocalStep`.
+* Added `GraphComputerTest.shouldSupportPreExistingComputeKeys()` to ensure existing compute keys are "revived." (*breaking*)
+* Added `GraphComputerTest.shouldSupportJobChaining()` to ensure OLAP jobs can be linearly chained. (*breaking*)
 * Fixed a bug in both `SparkGraphComputer` and `GiraphGraphComputer` regarding source data access in job chains.
 * Expanded job chaining test coverage for `GraphComputer` providers.
 * Added `TraversalHelper.onGraphComputer(traversal)`.

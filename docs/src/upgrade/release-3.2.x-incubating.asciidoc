@@ -32,6 +32,22 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-inc
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+ScriptTraversal and Gremlin Language Variants
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called `ScriptTraversal`
+which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated to use this new class.
+The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
+`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network.
+
+ByModulating and Custom Steps
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the provider has custom steps that leverage `by()`-modulation, those will now need to implement `ByModulating`.
+Most of the methods in `ByModulating` are `default` and, for most situations, only `ByModulating.modulateBy(Traversal)`
+needs to be implemented. Note that this method's body will most like be identical the custom step's already existing
+`TraversalParent.addLocalChild()`.
+
 TraversalEngine Deprecation and GraphProvider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -59,3 +75,20 @@ and ensure that `GraphFilter` is processed correctly. There is a new test case c
 which ensures the semantics of `GraphFilter` are handled correctly. For a "quick and easy" way to move forward, look to
 `GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
 execution.
+
+Job Chaining and GraphComputer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TinkerPop 3.2.0 has integrated `VertexPrograms` into `GraphTraversal`. This means, that a single traversal can compile to multiple
+`GraphComputer` OLAP jobs. This requires that `ComputeResults` be chainable. There was never any explicit tests to verify if a
+providers `GraphComputer` could be chained, but now there are
+
+* For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportJobChaining()`.
+This tests verifies that the `ComputerResult` output of one job can be fed into the input of a subsequent job. Only linear chains are tested/required
+currently. In the future, branching DAGs may be required.
+
+* For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportPreExistingComputeKeys()`.
+When chaining OLAP jobs together, if an OLAP job requires the compute keys of a previous OLAP job, then the existing compute keys must be accessible.
+A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop.
+`GiraphGraphComputer` did not need an update as this feature was already naturally supported.
+
