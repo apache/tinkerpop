@@ -93,8 +93,8 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
                 int index = TraversalHelper.stepIndex(currentStep.getNextStep(), traversal);
                 traversal.removeStep(currentStep);
                 traversal.addStep(index, currentStep);
-            }
-            currentStep = currentStep.getNextStep();
+            } else
+                currentStep = currentStep.getNextStep();
         }
 
 
