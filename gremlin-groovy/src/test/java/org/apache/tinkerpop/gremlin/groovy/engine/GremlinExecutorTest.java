@@ -83,7 +83,7 @@ public class GremlinExecutorTest {
             e.printStackTrace();
         }
     }
-    /*
+
     @Test
     public void shouldEvalScript() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
@@ -600,7 +600,6 @@ public class GremlinExecutorTest {
         assertSame(service, gremlinExecutor.getScheduledExecutorService());
         gremlinExecutor.close();
     }
-    */
 
     @Test
     public void shouldAllowVariableReuseAcrossThreads() throws Exception {

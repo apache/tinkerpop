@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -188,36 +189,50 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
         final String script = (String) args.get(Tokens.ARGS_GREMLIN);
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : null;
-        final Bindings bindings = bindingsSupplier.get();
+        final Bindings bindings = new SimpleBindings();
 
         // sessionless requests are always transaction managed, but in-session requests are configurable.
         final boolean managedTransactionsForRequest = manageTransactions ?
                 true : (Boolean) args.getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
 
-        final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings, null, o -> {
-            final Iterator itty = IteratorUtils.asIterator(o);
+        final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
+                .beforeEval(b -> {
+                    try {
+                        b.putAll(bindingsSupplier.get());
+                    } catch (OpProcessorException ope) {
+                        // this should bubble up in the GremlinExecutor properly as the RuntimeException will be
+                        // unwrapped and the root cause thrown
+                        throw new RuntimeException(ope);
+                    }
+                })
+                .withResult(o -> {
+                    final Iterator itty = IteratorUtils.asIterator(o);
 
-            logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
+                    logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
 
-            try {
-                handleIterator(context, itty);
-            } catch (TimeoutException ex) {
-                final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
-                logger.warn(errorMessage);
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
-                if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
-            } catch (Exception ex) {
-                logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
-            }
-        });
+                    try {
+                        handleIterator(context, itty);
+                    } catch (TimeoutException ex) {
+                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
+                        logger.warn(errorMessage);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                    }
+                }).create();
+
+        final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings, lifeCycle);
 
         evalFuture.handle((v, t) -> {
             timerContext.stop();
 
             if (t != null) {
-                if (t instanceof TimedInterruptTimeoutException) {
+                if (t instanceof OpProcessorException) {
+                    ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
+                } else if (t instanceof TimedInterruptTimeoutException) {
                     // occurs when the TimedInterruptCustomizerProvider is in play
                     final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);

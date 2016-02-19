@@ -124,7 +124,7 @@ find "${TP_HOME}/docs/src/" -name index.asciidoc | xargs -n1 dirname | while rea
   if [ ${process_subdirs} -eq 1 ]; then
     find "${subdir}" -name "*.asciidoc" |
          xargs -n1 basename |
-         xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${subdir}/index.asciidoc || echo 0) | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
+         xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${subdir}/index.asciidoc || echo 0) | head -n1 | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
          xargs -n1 -I {} echo "${subdir}/{}" |
          xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
 

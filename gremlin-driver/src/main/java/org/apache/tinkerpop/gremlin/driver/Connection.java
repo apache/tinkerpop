@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -75,6 +76,7 @@ final class Connection {
     private final Channelizer channelizer;
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
+    private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
 
     public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
@@ -185,6 +187,9 @@ final class Connection {
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
                         readCompleted.thenAcceptAsync(v -> {
                             thisConnection.returnToPool();
+
+                            // close was signaled in closeAsync() but there were pending messages at that time. attempt
+                            // the shutdown if the returned result cleared up the last pending message
                             if (isClosed() && pending.isEmpty())
                                 shutdown(closeFuture.get());
                         }, cluster.executor());
@@ -209,35 +214,40 @@ final class Connection {
     }
 
     private void shutdown(final CompletableFuture<Void> future) {
-        if (client instanceof Client.SessionedClient) {
-            // maybe this should be delegated back to the Client implementation???
-            final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE));
-            final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
-            write(closeMessage, closed);
+        // shutdown can be called directly from closeAsync() or after write() and therefore this method should only
+        // be called once. once shutdown is initiated, it shoudln't be executed a second time or else it sends more
+        // messages at the server and leads to ugly log messages over there.
+        if (shutdownInitiated.compareAndSet(false, true)) {
+            if (client instanceof Client.SessionedClient) {
+                // maybe this should be delegated back to the Client implementation???
+                final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE));
+                final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
+                write(closeMessage, closed);
 
-            try {
-                // make sure we get a response here to validate that things closed as expected.  on error, we'll let
-                // the server try to clean up on its own.  the primary error here should probably be related to
-                // protocol issues which should not be something a user has to fuss with.
-                closed.get();
-            } catch (Exception ex) {
-                final String msg = String.format(
-                    "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or timeout.",
-                    ((Client.SessionedClient) client).getSessionId());
-                logger.warn(msg, ex);
+                try {
+                    // make sure we get a response here to validate that things closed as expected.  on error, we'll let
+                    // the server try to clean up on its own.  the primary error here should probably be related to
+                    // protocol issues which should not be something a user has to fuss with.
+                    closed.get();
+                } catch (Exception ex) {
+                    final String msg = String.format(
+                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or timeout.",
+                            ((Client.SessionedClient) client).getSessionId());
+                    logger.warn(msg, ex);
+                }
             }
+
+            channelizer.close(channel);
+            final ChannelPromise promise = channel.newPromise();
+            promise.addListener(f -> {
+                if (f.cause() != null)
+                    future.completeExceptionally(f.cause());
+                else
+                    future.complete(null);
+            });
+
+            channel.close(promise);
         }
-
-        channelizer.close(channel);
-        final ChannelPromise promise = channel.newPromise();
-        promise.addListener(f -> {
-            if (f.cause() != null)
-                future.completeExceptionally(f.cause());
-            else
-                future.complete(null);
-        });
-
-        channel.close(promise);
     }
 
     public String getConnectionInfo() {
