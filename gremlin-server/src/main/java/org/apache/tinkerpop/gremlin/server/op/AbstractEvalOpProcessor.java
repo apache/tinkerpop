@@ -230,7 +230,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             timerContext.stop();
 
             if (t != null) {
-                if (t instanceof TimedInterruptTimeoutException) {
+                if (t instanceof OpProcessorException) {
+                    ctx.writeAndFlush(((OpProcessorException) t).getResponseMessage());
+                } else if (t instanceof TimedInterruptTimeoutException) {
                     // occurs when the TimedInterruptCustomizerProvider is in play
                     final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);
