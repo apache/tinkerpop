@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.Closure;
+import groovy.lang.MissingPropertyException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
@@ -55,6 +57,7 @@ import java.util.stream.IntStream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -99,6 +102,17 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(4, engine.eval("yyy = xxx + 1"));
         assertEquals(7, engine.eval("def zzz = yyy + xxx"));
         assertEquals(4, engine.eval("zzz - xxx"));
+        assertEquals("accessible-globally", engine.eval("if (yyy > 0) { def inner = 'should-stay-local'; outer = 'accessible-globally' }\n outer"));
+        assertEquals("accessible-globally", engine.eval("outer"));
+
+        try {
+            engine.eval("inner");
+            fail("Should not have been able to access 'inner'");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingPropertyException.class));
+        }
+
         assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
     }
 
@@ -112,6 +126,17 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(4, engine.eval("yyy = xxx + 1", b));
         assertEquals(7, engine.eval("def zzz = yyy + xxx", b));
         assertEquals(4, engine.eval("zzz - xxx", b));
+        assertEquals("accessible-globally", engine.eval("if (yyy > 0) { def inner = 'should-stay-local'; outer = 'accessible-globally' }\n outer", b));
+        assertEquals("accessible-globally", engine.eval("outer", b));
+
+        try {
+            engine.eval("inner", b);
+            fail("Should not have been able to access 'inner'");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingPropertyException.class));
+        }
+
         assertEquals(10, engine.eval("addItUp(zzz,xxx)", b));
     }
 
