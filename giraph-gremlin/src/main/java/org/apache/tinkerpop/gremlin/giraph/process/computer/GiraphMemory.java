@@ -138,8 +138,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public boolean exists(final String key) {
-        final Object value = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
-        return null != value;
+        final ObjectWritable value = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
+        return null != value && !value.isEmpty();
     }
 
     @Override

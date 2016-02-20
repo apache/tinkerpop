@@ -949,7 +949,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public String getMemoryKey() {
-            return MapReduce.NullObject.instance().toString();
+            return "nothing";
         }
 
         @Override
