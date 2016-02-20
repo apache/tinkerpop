@@ -35,12 +35,20 @@ public final class MemoryAccumulator<A> implements AccumulatorParam<A> {
 
     @Override
     public A addAccumulator(final A a, final A b) {
-        return null == a ? b : this.memoryComputeKey.getReducer().apply(a, b);
+        if (null == a)
+            return b;
+        if (null == b)
+            return a;
+        return this.memoryComputeKey.getReducer().apply(a, b);
     }
 
     @Override
     public A addInPlace(final A a, final A b) {
-        return null == a ? b : this.memoryComputeKey.getReducer().apply(a, b);
+        if (null == a)
+            return b;
+        if (null == b)
+            return a;
+        return this.memoryComputeKey.getReducer().apply(a, b);
     }
 
     @Override
