@@ -463,3 +463,10 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The properties files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
+
+For Providers
+-------------
+
+Graph Providers are those who develop third-party systems and libraries on top of the various TinkerPop APIs and
+protocols. They manage their projects independently of TinkerPop in separate repositories. Additional details for
+providers can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
