@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a condition where `ConnectionPool` initialization in the driver would present a `NullPointerException` on initialization if there were errors constructing the pool in full.
+* Fixed a bug in the round-robin load balancing strategy in the driver would waste requests potentially sending messages to dead hosts.
 * Fixed a bug where multiple "close" requests were being sent by the driver on `Client.close()`.
 * Fixed an `Property` attach bug that shows up in serialization-based `GraphComputer` implementations.
 * Fixed a pom.xml bug where Gremlin Console/Server were not pulling the latest Neo4j 2.3.2.
