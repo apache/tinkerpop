@@ -32,6 +32,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +52,7 @@ import static org.junit.Assert.assertFalse;
 public final class TestHelper {
 
     private static final String SEP = File.separator;
+    private static final char URL_SEP = '/';
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
     private TestHelper() {
@@ -105,9 +108,14 @@ public final class TestHelper {
     }
 
     private static String computePath(final Class clazz) {
-        final String clsUri = clazz.getName().replace('.', SEP.charAt(0)) + ".class";
+        final String clsUri = clazz.getName().replace('.', URL_SEP) + ".class";
         final URL url = clazz.getClassLoader().getResource(clsUri);
-        final String clsPath = url.getPath();
+        String clsPath;
+		try {
+			clsPath = new File(url.toURI()).getAbsolutePath();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException("Unable to computePath for " + clazz, e);
+		}
         return clsPath.substring(0, clsPath.length() - clsUri.length());
     }
 
