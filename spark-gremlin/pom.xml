@@ -393,4 +393,25 @@
             </plugin>
         </plugins>
     </build>
+
+  <profiles>
+    <profile>
+      <id>appveyor</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkHadoopGremlinTest*</exclude>
+                <exclude>**/SparkGraphComputerGroovyProcessIntegrateTest*</exclude>
+                <exclude>**/SparkGraphComputerProcessIntegrateTest*</exclude>
+                <exclude>**/GryoSerializerIntegrateTest*</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

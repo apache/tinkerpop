@@ -80,7 +80,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic.kryo",
                     "tinkerpop-crew.kryo");
             for (final String fileName : kryoResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath());
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
 
             final List<String> graphsonResources = Arrays.asList(
@@ -89,7 +89,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic.json",
                     "tinkerpop-crew.json");
             for (final String fileName : graphsonResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
 
             final List<String> scriptResources = Arrays.asList(
@@ -100,7 +100,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "script-input-grateful-dead.groovy",
                     "script-output-grateful-dead.groovy");
             for (final String fileName : scriptResources) {
-                PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath());
+                PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath().replace('\\', '/'));
             }
         } catch (Exception e) {
             e.printStackTrace();
