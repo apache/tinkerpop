@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -40,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class TraverserExecutor {
 
-    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final TraversalMatrix<?, ?> traversalMatrix) {
+    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory) {
 
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
@@ -69,11 +71,11 @@ public final class TraverserExecutor {
                 traversers.remove();
                 final Step<?, ?> currentStep = traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()))
-                    TraverserExecutor.drainStep(previousStep, aliveTraversers, haltedTraversers);
+                    TraverserExecutor.drainStep(previousStep, aliveTraversers, haltedTraversers, memory);
                 currentStep.addStart((Traverser.Admin) traverser);
                 previousStep = currentStep;
             }
-            TraverserExecutor.drainStep(previousStep, aliveTraversers, haltedTraversers);
+            TraverserExecutor.drainStep(previousStep, aliveTraversers, haltedTraversers, memory);
             assert toProcessTraversers.isEmpty();
             // process all the local objects and send messages or store locally again
             if (!aliveTraversers.isEmpty()) {
@@ -102,14 +104,18 @@ public final class TraverserExecutor {
         return voteToHalt.get();
     }
 
-    private static void drainStep(final Step<?, ?> step, final TraverserSet<?> aliveTraversers, final TraverserSet<?> haltedTraversers) {
-        step.forEachRemaining(traverser -> {
-            if (traverser.asAdmin().isHalted()) {
-                traverser.asAdmin().detach();
-                haltedTraversers.add((Traverser.Admin) traverser);
-            } else
-                aliveTraversers.add((Traverser.Admin) traverser);
-        });
+    private static void drainStep(final Step<?, ?> step, final TraverserSet<?> aliveTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
+        if (step instanceof ReducingBarrierStep) {
+            memory.add(ReducingBarrierStep.REDUCING, step.next().get());
+        } else {
+            step.forEachRemaining(traverser -> {
+                if (traverser.asAdmin().isHalted()) {
+                    traverser.asAdmin().detach();
+                    haltedTraversers.add((Traverser.Admin) traverser);
+                } else
+                    aliveTraversers.add((Traverser.Admin) traverser);
+            });
+        }
     }
 
     private static Vertex getHostingVertex(final Object object) {

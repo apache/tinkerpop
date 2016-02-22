@@ -70,7 +70,12 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) new GroupStepHelper.GroupMapSupplier());
-        this.setBiFunction(new GroupBiFunction(this));
+        //this.setBiFunction(new GroupBiFunction(this));
+    }
+
+    @Override
+    public Map<K, V> projectTraverser(Traverser.Admin<S> traverser) {
+        return new HashMap<>();
     }
 
     @Override
@@ -90,7 +95,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
-    public void modulateBy(final Traversal.Admin<?,?> kvTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
@@ -118,7 +123,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         clone.valueReduceTraversal = clone.integrateChild(this.valueReduceTraversal.clone());
         clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
         clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
-        clone.setBiFunction(new GroupBiFunction<>((GroupStep) clone));
+        //clone.setBiFunction(new GroupBiFunction<>((GroupStep) clone));
         return clone;
     }
 

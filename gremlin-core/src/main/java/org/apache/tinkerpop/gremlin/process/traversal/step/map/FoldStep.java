@@ -25,10 +25,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
@@ -39,13 +41,18 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
 
     public FoldStep(final Traversal.Admin traversal) {
-        this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) ArrayListBiFunction.instance());
+        this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) new ListBiOperator<>());
+    }
+
+    @Override
+    public E projectTraverser(final Traverser.Admin<S> traverser) {
+        return (E) Collections.singletonList(traverser.get());
     }
 
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
         this.setSeedSupplier(seed);
-        this.setBiFunction(new FoldBiFunction<>(foldFunction));
+        this.setReducingBiOperator(new FoldBiOperator<>(foldFunction));
     }
 
     @Override
@@ -55,41 +62,29 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
     /////////
 
-    private static class ArrayListBiFunction<S> implements BiFunction<ArrayList<S>, S, ArrayList<S>>, Serializable {
-
-        private static final ArrayListBiFunction INSTANCE = new ArrayListBiFunction();
-
-        private ArrayListBiFunction() {
-
-        }
+    private static class ListBiOperator<S> implements BinaryOperator<List<S>>, Serializable {
 
         @Override
-        public ArrayList<S> apply(final ArrayList<S> mutatingSeed, final S traverser) {
-            mutatingSeed.add(traverser);
+        public List<S> apply(final List<S> mutatingSeed, final List<S> list) {
+            mutatingSeed.addAll(list);
             return mutatingSeed;
         }
 
-        public final static <S> ArrayListBiFunction<S> instance() {
-            return INSTANCE;
-        }
     }
 
     ///////
 
-    public static class FoldBiFunction<S, E> implements BiFunction<E, Traverser<S>, E>, Serializable {
+    public static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
 
-        private final BiFunction<E, S, E> biFunction;
+        private final BiFunction biFunction;
 
-        public FoldBiFunction(final BiFunction<E, S, E> biFunction) {
+        public FoldBiOperator(final BiFunction biFunction) {
             this.biFunction = biFunction;
         }
 
         @Override
-        public E apply(E seed, final Traverser<S> traverser) {
-            for (int i = 0; i < traverser.bulk(); i++) {
-                seed = this.biFunction.apply(seed, traverser.get());
-            }
-            return seed;
+        public E apply(E seed, E other) {
+            return (E) this.biFunction.apply(seed, other);
         }
 
     }

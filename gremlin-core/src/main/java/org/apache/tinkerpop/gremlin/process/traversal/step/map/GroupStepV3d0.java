@@ -69,7 +69,12 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
     public GroupStepV3d0(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) new GroupMapSupplierV3d0());
-        this.setBiFunction(new GroupBiFunction(this));
+       // this.setBiFunction(new GroupBiFunction(this));
+    }
+
+    @Override
+    public Map<K, R> projectTraverser(Traverser.Admin<S> traverser) {
+        return null;
     }
 
     @Override
@@ -123,7 +128,7 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
             clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
         if (null != this.reduceTraversal)
             clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
-        clone.setBiFunction(new GroupBiFunction<>((GroupStepV3d0) clone));
+       // clone.setBiFunction(new GroupBiFunction<>((GroupStepV3d0) clone));
         return clone;
     }
 

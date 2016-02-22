@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
@@ -80,7 +81,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
-    private static final Set<VertexComputeKey> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
+    private Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
+    private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
             VertexComputeKey.of(HALTED_TRAVERSERS, false),
             VertexComputeKey.of(TraversalSideEffects.SIDE_EFFECTS, false)));
 
@@ -110,11 +112,18 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         if (!this.traversal.get().isLocked())
             this.traversal.get().applyStrategies();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
+        this.memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, MemoryComputeKey.andOperator(), true));
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal.get())) {
             this.mapReducers.add(mapReducer.getMapReduce());
+            this.memoryComputeKeys.add(MemoryComputeKey.of(mapReducer.getMapReduce().getMemoryKey(), MemoryComputeKey.setOperator(), false));
         }
-        if (!(this.traversal.get().getEndStep() instanceof SideEffectCapStep) && !(this.traversal.get().getEndStep() instanceof ReducingBarrierStep))
+        if (!(this.traversal.get().getEndStep() instanceof SideEffectCapStep) && !(this.traversal.get().getEndStep() instanceof ReducingBarrierStep)) {
             this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
+            this.memoryComputeKeys.add(MemoryComputeKey.of(TraverserMapReduce.TRAVERSERS, MemoryComputeKey.setOperator(), false));
+        }
+        for (final ReducingBarrierStep<?, ?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(ReducingBarrierStep.class, this.traversal.get())) {
+            this.memoryComputeKeys.add(MemoryComputeKey.of(ReducingBarrierStep.REDUCING, reducingBarrierStep.getBiOperator(), false));
+        }
     }
 
     @Override
@@ -126,6 +135,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public void setup(final Memory memory) {
         memory.set(VOTE_TO_HALT, true);
+        for (final ReducingBarrierStep<?, ?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(ReducingBarrierStep.class, this.traversal.get())) {
+            memory.set(ReducingBarrierStep.REDUCING, reducingBarrierStep.getSeedSupplier().get());
+        }
     }
 
     @Override
@@ -162,9 +174,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                         aliveTraverses.add((Traverser.Admin) traverser);
                 });
             }
-            memory.add(VOTE_TO_HALT, aliveTraverses.isEmpty() || TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, aliveTraverses), this.traversalMatrix));
+            memory.add(VOTE_TO_HALT, aliveTraverses.isEmpty() || TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, aliveTraverses), this.traversalMatrix, memory));
         } else {  // ITERATION 1+
-            memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix));
+            memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix, memory));
         }
     }
 
@@ -172,6 +184,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public boolean terminate(final Memory memory) {
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         if (voteToHalt) {
+            if (memory.exists(ReducingBarrierStep.REDUCING))
+                memory.set(ReducingBarrierStep.REDUCING, FinalGet.tryFinalGet(memory.get(ReducingBarrierStep.REDUCING)));
             return true;
         } else {
             memory.set(VOTE_TO_HALT, true);
@@ -181,17 +195,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public Set<VertexComputeKey> getVertexComputeKeys() {
-        return ELEMENT_COMPUTE_KEYS;
+        return VERTEX_COMPUTE_KEYS;
     }
 
     @Override
     public Set<MemoryComputeKey> getMemoryComputeKeys() {
-        final Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
-        memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, MemoryComputeKey.andOperator(), true));
-        for (final MapReduce mapReduce : this.mapReducers) {
-            memoryComputeKeys.add(MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false));
-        }
-        return memoryComputeKeys;
+        return this.memoryComputeKeys;
     }
 
     @Override

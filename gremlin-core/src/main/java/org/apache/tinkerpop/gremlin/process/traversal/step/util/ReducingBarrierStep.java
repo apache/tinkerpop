@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -37,21 +36,21 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, Barrier {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
 
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
     protected Supplier<E> seedSupplier;
-    protected BiFunction<E, Traverser<S>, E> reducingBiFunction;
+    protected BinaryOperator<E> reducingBiOperator;
     private boolean done = false;
-
     private E seed = null;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
@@ -62,8 +61,18 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         this.seedSupplier = seedSupplier;
     }
 
-    public void setBiFunction(final BiFunction<E, Traverser<S>, E> reducingBiFunction) {
-        this.reducingBiFunction = reducingBiFunction;
+    public Supplier<E> getSeedSupplier() {
+        return this.seedSupplier;
+    }
+
+    public abstract E projectTraverser(final Traverser.Admin<S> traverser);
+
+    public void setReducingBiOperator(final BinaryOperator<E> reducingBiOperator) {
+        this.reducingBiOperator = reducingBiOperator;
+    }
+
+    public BinaryOperator<E> getBiOperator() {
+        return this.reducingBiOperator;
     }
 
     public void reset() {
@@ -90,7 +99,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     public void processAllStarts() {
         if (this.seed == null) this.seed = this.seedSupplier.get();
         while (this.starts.hasNext())
-            this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+            this.seed = this.reducingBiOperator.apply(this.seed, this.projectTraverser(this.starts.next()));
     }
 
     @Override
@@ -110,11 +119,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         clone.done = false;
         clone.seed = null;
         return clone;
-    }
-
-    @Override
-    public MapReduce getMapReduce() {
-        return new DefaultMapReduce(this.seedSupplier, this.reducingBiFunction);
     }
 
     ///////
@@ -163,7 +167,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         @Override
         public Object generateFinalResult(final Iterator keyValues) {
             return ((KeyValue) keyValues.next()).getValue();
-
         }
 
         @Override

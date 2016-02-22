@@ -18,36 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.min;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> implements MapReducer {
+public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
+
+    private static final Double NAN = Double.valueOf(Double.NaN);
 
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>(null));
-        this.setBiFunction(MinGlobalBiFunction.instance());
+        this.setSeedSupplier(new ConstantSupplier<>((S) NAN));
+        this.setReducingBiOperator(new MinGlobalBiOperator<>());
+    }
+
+    @Override
+    public S projectTraverser(final Traverser.Admin<S> traverser) {
+        return traverser.get();
     }
 
     @Override
@@ -55,85 +54,12 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    @Override
-    public MapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> getMapReduce() {
-        return MinGlobalMapReduce.instance();
-    }
-
     /////
 
-    private static class MinGlobalBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
-
-        private static final MinGlobalBiFunction INSTANCE = new MinGlobalBiFunction();
-
-        private MinGlobalBiFunction() {
-
-        }
-
+    private static class MinGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
         @Override
-        public S apply(final S mutatingSeed, final Traverser<S> traverser) {
-            final S value = traverser.get();
-            return mutatingSeed != null ? (S) min(mutatingSeed, traverser.get()) : value;
-        }
-
-        public static <S extends Number> MinGlobalBiFunction<S> instance() {
-            return INSTANCE;
-        }
-    }
-
-    ///////////
-
-    private static class MinGlobalMapReduce extends StaticMapReduce<MapReduce.NullObject, Number, MapReduce.NullObject, Number, Number> {
-
-        private static final MinGlobalMapReduce INSTANCE = new MinGlobalMapReduce();
-
-        private MinGlobalMapReduce() {
-
-        }
-
-        @Override
-        public boolean doStage(final MapReduce.Stage stage) {
-            return true;
-        }
-
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<NullObject, Number> emitter) {
-            final Iterator<Number> values = IteratorUtils.map(vertex.<Set<Traverser.Admin<Number>>>property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(Collections.emptySet()).iterator(), Traverser.Admin::get);
-            if (values.hasNext())
-                emitter.emit(getMin(values));
-        }
-
-        @Override
-        public void combine(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
-            this.reduce(key, values, emitter);
-        }
-
-        @Override
-        public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
-            if (values.hasNext()) emitter.emit(getMin(values));
-        }
-
-        private Number getMin(final Iterator<Number> numbers) {
-            Number min = null;
-            while (numbers.hasNext()) {
-                final Number value = numbers.next();
-                min = min != null ? min(value, min) : value;
-            }
-            return min;
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return REDUCING;
-        }
-
-        @Override
-        public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
-        }
-
-        public static MinGlobalMapReduce instance() {
-            return INSTANCE;
+        public S apply(final S mutatingSeed, final S number) {
+            return !NAN.equals(mutatingSeed) ? (S) min(mutatingSeed, number) : number;
         }
     }
 }
