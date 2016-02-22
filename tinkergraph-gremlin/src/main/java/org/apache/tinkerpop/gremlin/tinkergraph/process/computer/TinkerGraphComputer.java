@@ -136,9 +136,10 @@ public final class TinkerGraphComputer implements GraphComputer {
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
+            final TinkerGraphComputerView view;
             try (final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers)) {
                 if (null != this.vertexProgram) {
-                    TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getVertexComputeKeys());
+                    view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getVertexComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     while (true) {
@@ -167,9 +168,10 @@ public final class TinkerGraphComputer implements GraphComputer {
                             this.memory.incrIteration();
                         }
                     }
+                    view.complete(); // drop all transient vertex compute keys
                 } else {
                     // MapReduce only
-                    TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, Collections.emptySet());
+                    view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, Collections.emptySet());
                 }
 
                 // execute mapreduce jobs
@@ -212,9 +214,7 @@ public final class TinkerGraphComputer implements GraphComputer {
                 this.memory.setRuntime(System.currentTimeMillis() - time);
                 this.memory.complete(); // drop all transient properties and set iteration
                 // determine the resultant graph based on the result graph/persist state
-                final TinkerGraphComputerView view = TinkerHelper.getGraphComputerView(this.graph); // can return a null view if no vertexprogram is used
-                if (null != view) view.complete(); // drop all transient properties
-                final Graph resultGraph = null == view ? this.graph : view.processResultGraphPersist(this.resultGraph, this.persist);
+                final Graph resultGraph = view.processResultGraphPersist(this.resultGraph, this.persist);
                 TinkerHelper.dropGraphComputerView(this.graph); // drop the view from the original source graph
                 return new DefaultComputerResult(resultGraph, this.memory.asImmutable());
 

@@ -52,9 +52,8 @@ public class PageRankVertexProgram implements VertexProgram<Double> {
 
 
     public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
-    public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
-
-    public static final String PROPERTY = "gremlin.pageRankVertexProgram.property";
+    private static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
+    private static final String PROPERTY = "gremlin.pageRankVertexProgram.property";
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";

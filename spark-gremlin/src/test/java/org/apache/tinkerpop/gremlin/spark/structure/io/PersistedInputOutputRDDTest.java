@@ -209,7 +209,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(0l, g.E().count().next().longValue());
         assertEquals("marko", g.V().has("name", "marko").values("name").next());
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
         Spark.close();
     }
@@ -249,7 +248,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.E().count().next().longValue());
         assertEquals("marko", g.V().has("name", "marko").values("name").next());
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
         Spark.close();
     }
@@ -275,7 +273,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(6l, g.E().count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertEquals(1, Spark.getContext().getPersistentRDDs().size());
@@ -291,7 +288,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(6l, g.E().count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName2)));
@@ -304,7 +300,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(0l, g.E().count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName2)));
@@ -318,7 +313,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(0l, g.V().count().next().longValue());
         assertEquals(0l, g.E().count().next().longValue());
         assertEquals(0l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
-        assertEquals(0l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddName2)));

@@ -1866,7 +1866,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph1.traversal().V().count().next().intValue());
         assertEquals(6, graph1.traversal().E().count().next().intValue());
         assertEquals(6, graph1.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(0, graph1.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        assertEquals(18, graph1.traversal().V().values().count().next().intValue());
         //
         final ComputerResult result2 = graph1.compute(graphProvider.getGraphComputer(graph1).getClass())
                 .program(PeerPressureVertexProgram.build().maxIterations(4).create(graph1)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
@@ -1876,9 +1876,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph2.traversal().V().count().next().intValue());
         assertEquals(6, graph2.traversal().E().count().next().intValue());
         assertEquals(6, graph2.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
-        assertEquals(0, graph2.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(0, graph2.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        assertEquals(24, graph2.traversal().V().values().count().next().intValue());
         //
         final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass())
                 .program(TraversalVertexProgram.build().traversal(g.V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
@@ -1896,9 +1895,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph3.traversal().E().count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
-        assertEquals(0, graph3.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(0, graph3.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        assertEquals(36, graph3.traversal().V().values().count().next().intValue()); // traverser side-effects
 
         // TODO: add a test the shows DAG behavior -- splitting another TraversalVertexProgram off of the PeerPressureVertexProgram job.
     }
@@ -1969,7 +1967,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSupportTransientKeys() throws Exception {
-        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new VertexProgramO()).submit().get();
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new VertexProgramO()).mapReduce(new MapReduceK()).submit().get();
         result.graph().vertices().forEachRemaining(vertex -> {
             assertFalse(vertex.property("v1").isPresent());
             assertFalse(vertex.property("v2").isPresent());
@@ -1998,7 +1996,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertFalse(result.memory().exists("m2"));
         assertTrue(result.memory().exists("m3"));
         assertEquals(24l, result.memory().<Long>get("m3").longValue());
-        assertEquals(1, result.memory().keys().size());
+        assertEquals(2, result.memory().keys().size());  // mapReduceK
     }
 
     private static class VertexProgramO extends StaticVertexProgram {
@@ -2104,6 +2102,34 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public GraphComputer.Persist getPreferredPersist() {
             return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+    }
+
+    public static class MapReduceK extends StaticMapReduce {
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return stage.equals(Stage.MAP);
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter emitter) {
+            assertFalse(vertex.property("v1").isPresent());
+            assertFalse(vertex.property("v2").isPresent());
+            assertTrue(vertex.property("v3").isPresent());
+            assertTrue(vertex.property("name").isPresent());
+            assertEquals(3, IteratorUtils.count(vertex.properties()));
+            assertEquals(3, IteratorUtils.count(vertex.values()));
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return "mapReduceK";
+        }
+
+        @Override
+        public Object generateFinalResult(final Iterator keyValues) {
+            return "anObject";
         }
     }
 }

@@ -60,9 +60,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     private final Set<MessageScope> COUNT_SCOPE = new HashSet<>(Collections.singletonList(this.countScope));
 
     public static final String CLUSTER = "gremlin.peerPressureVertexProgram.cluster";
-    public static final String VOTE_STRENGTH = "gremlin.peerPressureVertexProgram.voteStrength";
-
-    public static final String PROPERTY = "gremlin.peerPressureVertexProgram.property";
+    private static final String VOTE_STRENGTH = "gremlin.peerPressureVertexProgram.voteStrength";
+    private static final String PROPERTY = "gremlin.peerPressureVertexProgram.property";
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
     private static final String EDGE_TRAVERSAL = "gremlin.peerPressureVertexProgram.edgeTraversal";

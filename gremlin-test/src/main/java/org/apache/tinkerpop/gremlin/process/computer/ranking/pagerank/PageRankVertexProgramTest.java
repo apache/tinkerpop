@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -43,7 +42,6 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
             result.graph().traversal().V().forEachRemaining(v -> {
                 assertEquals(3, v.keys().size()); // name, age/lang, pageRank
                 assertTrue(v.keys().contains("name"));
-                assertFalse(v.keys().contains(PageRankVertexProgram.EDGE_COUNT));
                 assertTrue(v.keys().contains(PageRankVertexProgram.PAGE_RANK));
                 assertEquals(1, IteratorUtils.count(v.values("name")));
                 assertEquals(1, IteratorUtils.count(v.values(PageRankVertexProgram.PAGE_RANK)));
