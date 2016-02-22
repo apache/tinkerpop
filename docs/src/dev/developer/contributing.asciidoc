@@ -217,6 +217,19 @@ Contributors should examine the current code base to determine what the code sty
 style to what is already present. Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
 be adjusted accordingly to not auto-wildcard the imports.
 
+Build Server
+~~~~~~~~~~~~
+
+TinkerPop uses both link:https://travis-ci.com/[Travis] and link:https://www.appveyor.com/[AppVeyor] for
+link:https://en.wikipedia.org/wiki/Continuous_integration[CI] services. Travis validates builds on Ubuntu, while
+AppVeyor validates builds on Windows.  The build statuses can be found here:
+
+* link:https://travis-ci.org/apache/incubator-tinkerpop[Travis Build Status]
+* link:https://ci.appveyor.com/project/ApacheSoftwareFoundation/incubator-tinkerpop[AppVeyor Build Status]
+
+Note that the CI process does not run integration tests or include Neo4j-related tests as those tests would likely
+exceed the allowable times for builds on these servers.
+
 Deprecation
 ~~~~~~~~~~~
 
