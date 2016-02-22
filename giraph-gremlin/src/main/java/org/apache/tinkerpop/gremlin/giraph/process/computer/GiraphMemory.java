@@ -100,10 +100,13 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 if (null != outputLocation) {
                     try {
                         for (final String key : this.keys()) {
-                            final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + key), ObjectWritable.class, ObjectWritable.class);
-                            writer.append(ObjectWritable.getNullObjectWritable(), new ObjectWritable<>(memory.get(key)));
-                            writer.close();
+                            if (!this.memoryKeys.get(key).isTransient()) { // do not write transient memory keys to disk
+                                final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + key), ObjectWritable.class, ObjectWritable.class);
+                                writer.append(ObjectWritable.getNullObjectWritable(), new ObjectWritable<>(memory.get(key)));
+                                writer.close();
+                            }
                         }
+                        // written for GiraphGraphComputer to read and then is deleted by GiraphGraphComputer
                         final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + Constants.HIDDEN_ITERATION), ObjectWritable.class, ObjectWritable.class);
                         writer.append(ObjectWritable.getNullObjectWritable(), new ObjectWritable<>(memory.getIteration()));
                         writer.close();
@@ -157,21 +160,17 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     @Override
     public void set(final String key, final Object value) {
         this.checkKeyValue(key, value);
-        if (this.isMasterCompute) {  // only called on setup() and terminate()
-            this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
-        } else {
-            this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
-        }
+        if (!this.isMasterCompute)   // only called on setup() and terminate()
+            throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
+        this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
     }
 
     @Override
     public void add(final String key, final Object value) {
         this.checkKeyValue(key, value);
-        if (this.isMasterCompute) {  // only called on setup() and terminate()
-            this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
-        } else {
-            this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
-        }
+        if (this.isMasterCompute)
+            throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
+        this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
     }
 
     @Override

@@ -199,7 +199,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                     throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");  // how do I get the exception that occured?
                 // add vertex program memory values to the return memory
                 for (final MemoryComputeKey memoryKey : this.vertexProgram.getMemoryComputeKeys()) {
-                    if (storage.exists(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey.getKey()))) {
+                    if (!memoryKey.isTransient() && storage.exists(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey.getKey()))) {
                         final ObjectWritableIterator iterator = new ObjectWritableIterator(this.giraphConfiguration, new Path(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey.getKey())));
                         if (iterator.hasNext()) {
                             this.memory.set(memoryKey.getKey(), iterator.next().getValue());

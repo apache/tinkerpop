@@ -71,7 +71,7 @@ public interface Memory {
      * @param key   they key to set a value for
      * @param value the value to set for the key
      */
-    public void add(final String key, final Object value);
+    public void add(final String key, final Object value) throws IllegalArgumentException, IllegalStateException;
 
     /**
      * A helper method that generates a {@link Map} of the memory key/values.
@@ -151,6 +151,14 @@ public interface Memory {
 
         public static IllegalArgumentException memoryDoesNotExist(final String key) {
             return new IllegalArgumentException("The memory does not have a value for provided key: " + key);
+        }
+
+        public static IllegalArgumentException memorySetOnlyDuringVertexProgramSetUpAndTerminate(final String key) {
+            return new IllegalArgumentException("The memory can only be set() during vertex program setup and terminate: " + key);
+        }
+
+        public static IllegalArgumentException memoryAddOnlyDuringVertexProgramExecute(final String key) {
+            return new IllegalArgumentException("The memory can only be add() during vertex program execute: " + key);
         }
 
         public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {

@@ -62,7 +62,6 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         }
         for (final MemoryComputeKey key : this.memoryKeys.values()) {
             this.memory.put(key.getKey(), sparkContext.accumulator(null, key.getKey(), new MemoryAccumulator<>(key)));
-
         }
         this.broadcast = sparkContext.broadcast(new HashMap<>());
     }
@@ -121,14 +120,14 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         if (this.inTask)
             this.memory.get(key).add(value);
         else
-            this.memory.get(key).setValue(value);
+            throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
     }
 
     @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
         if (this.inTask)
-            this.memory.get(key).add(value);
+            throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
         else
             this.memory.get(key).setValue(value);
     }
@@ -136,6 +135,10 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     @Override
     public String toString() {
         return StringFactory.memoryString(this);
+    }
+
+    protected void complete() {
+        this.memoryKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(memoryComputeKey -> this.memory.remove(memoryComputeKey.getKey()));
     }
 
     protected void setInTask(final boolean inTask) {

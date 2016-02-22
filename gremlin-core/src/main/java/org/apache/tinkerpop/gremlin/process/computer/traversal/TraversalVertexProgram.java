@@ -80,12 +80,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
-    private static final Set<VertexComputeKey> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VertexComputeKey.of(HALTED_TRAVERSERS, false), VertexComputeKey.of(TraversalSideEffects.SIDE_EFFECTS, true)));
-    private static final Set<MemoryComputeKey> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(MemoryComputeKey.of(VOTE_TO_HALT, MemoryComputeKey.andOperator(), true)));
+    private static final Set<VertexComputeKey> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
+            VertexComputeKey.of(HALTED_TRAVERSERS, false),
+            VertexComputeKey.of(TraversalSideEffects.SIDE_EFFECTS, false)));
 
     private PureTraversal<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
-
     private final Set<MapReduce> mapReducers = new HashSet<>();
 
     private TraversalVertexProgram() {
@@ -186,7 +186,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public Set<MemoryComputeKey> getMemoryComputeKeys() {
-        return MEMORY_COMPUTE_KEYS;
+        final Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
+        memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, MemoryComputeKey.andOperator(), true));
+        for (final MapReduce mapReduce : this.mapReducers) {
+            memoryComputeKeys.add(MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false));
+        }
+        return memoryComputeKeys;
     }
 
     @Override

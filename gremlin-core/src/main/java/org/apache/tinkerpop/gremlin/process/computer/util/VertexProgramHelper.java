@@ -48,6 +48,14 @@ public final class VertexProgramHelper {
         return set;
     }
 
+    public static boolean isTransientVertexComputeKey(final String key, final Set<VertexComputeKey> vertexComputeKeySet) {
+        for (final VertexComputeKey vertexComputeKey : vertexComputeKeySet) {
+            if (vertexComputeKey.getKey().equals(key))
+                return vertexComputeKey.isTransient();
+        }
+        throw new IllegalArgumentException("Could not find key in vertex compute key set: " + key);
+    }
+
     public static String[] vertexComputeKeysAsArray(final Set<VertexComputeKey> vertexComputeKeySet) {
         return VertexProgramHelper.vertexComputeKeysAsSet(vertexComputeKeySet).toArray(new String[vertexComputeKeySet.size()]);
     }

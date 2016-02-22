@@ -43,18 +43,18 @@ public final class TinkerMemory implements Memory.Admin {
     public Map<String, Object> currentMap;
     private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
+    private boolean inExecute = false;
 
     public TinkerMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers) {
         this.currentMap = new ConcurrentHashMap<>();
         this.previousMap = new ConcurrentHashMap<>();
         if (null != vertexProgram) {
-            for (final MemoryComputeKey key : vertexProgram.getMemoryComputeKeys()) {
-                MemoryHelper.validateKey(key.getKey());
-                this.memoryKeys.put(key.getKey(), key);
+            for (final MemoryComputeKey memoryComputeKey : vertexProgram.getMemoryComputeKeys()) {
+                this.memoryKeys.put(memoryComputeKey.getKey(), memoryComputeKey);
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), (a, b) -> b, false));
+            this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false));
         }
     }
 
@@ -91,11 +91,12 @@ public final class TinkerMemory implements Memory.Admin {
     protected void complete() {
         this.iteration.decrementAndGet();
         this.previousMap = this.currentMap;
-        this.memoryKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(key -> this.previousMap.remove(key.getKey()));
+        this.memoryKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(computeKey -> this.previousMap.remove(computeKey.getKey()));
     }
 
     protected void completeSubRound() {
         this.previousMap = new ConcurrentHashMap<>(this.currentMap);
+        this.inExecute = !this.inExecute;
     }
 
     @Override
@@ -115,12 +116,16 @@ public final class TinkerMemory implements Memory.Admin {
     @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
+        if (this.inExecute)
+            throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
         this.currentMap.put(key, value);
     }
 
     @Override
     public void add(final String key, final Object value) {
         checkKeyValue(key, value);
+        if (!this.inExecute)
+            throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
         this.currentMap.compute(key, (k, v) -> null == v ? value : this.memoryKeys.get(key).getReducer().apply(v, value));
     }
 

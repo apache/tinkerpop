@@ -19,10 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+
+import java.io.Serializable;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexComputeKey {
+public final class VertexComputeKey implements Serializable {
 
     private final String key;
     private final boolean isTransient;
@@ -30,6 +34,7 @@ public final class VertexComputeKey {
     private VertexComputeKey(final String key, final boolean isTransient) {
         this.key = key;
         this.isTransient = isTransient;
+        ElementHelper.validateProperty(key, key);
     }
 
     public String getKey() {

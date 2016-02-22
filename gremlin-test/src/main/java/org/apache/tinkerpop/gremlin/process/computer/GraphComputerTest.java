@@ -272,7 +272,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(null);
+            return Collections.singleton(MemoryComputeKey.of(null, MemoryComputeKey.orOperator(), false));
         }
 
         @Override
@@ -571,10 +571,16 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             memory.set("d", false);
             memory.set("e", true);
             memory.set("f", memory.getIteration());
+            try {
+                memory.add("a", 0l);
+                fail("Should only allow Memory.set() during VertexProgram.setup()");
+            } catch (final Exception e) {
+                validateException(Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute("a"), e);
+            }
         }
 
         @Override
-        public void execute(Vertex vertex, Messenger messenger, Memory memory) {
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
             // test current step values
             assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
             assertEquals(Long.valueOf(0), memory.get("b"));
@@ -608,6 +614,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             }
             assertTrue(memory.get("e"));
             assertEquals(memory.getIteration(), memory.<Integer>get("f").intValue());
+            try {
+                memory.set("a", 0l);
+                fail("Should only allow Memory.add() during VertexProgram.execute()");
+            } catch (final Exception e) {
+                validateException(Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate("a"), e);
+            }
         }
 
         @Override
@@ -620,6 +632,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(memory.getIteration() + 1, memory.<Integer>get("f").intValue());
             memory.set("b", 0l);
             memory.set("e", true);
+            try {
+                memory.add("a", 0l);
+                fail("Should only allow Memory.set() during VertexProgram.terminate()");
+            } catch (final Exception e) {
+                validateException(Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute("a"), e);
+            }
             return memory.getIteration() > 1;
         }
 
@@ -1102,9 +1120,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void workerIterationStart(final Memory memory) {
-            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
+            assertEquals(memory.getIteration() * 6, memory.<Integer>get("test").intValue());
             try {
-                memory.set("test", memory.getIteration());
+                memory.add("test", memory.getIteration());
                 fail("Should throw an immutable memory exception");
             } catch (IllegalStateException e) {
                 assertEquals(Memory.Exceptions.memoryIsCurrentlyImmutable().getMessage(), e.getMessage());
@@ -1113,8 +1131,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void execute(Vertex vertex, Messenger messenger, Memory memory) {
-            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
-            memory.set("test", memory.getIteration() + 1);
+            assertEquals(memory.getIteration() * 6, memory.<Integer>get("test").intValue());
+            memory.add("test", 1);
         }
 
         @Override
@@ -1124,7 +1142,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void workerIterationEnd(final Memory memory) {
-            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
+            assertEquals(memory.getIteration() * 6, memory.<Integer>get("test").intValue());
             try {
                 memory.set("test", memory.getIteration());
                 fail("Should throw an immutable memory exception");
@@ -1135,7 +1153,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of("test", MemoryComputeKey.setOperator(), false));
+            return Collections.singleton(MemoryComputeKey.of("test", MemoryComputeKey.sumIntegerOperator(), false));
         }
 
         @Override
@@ -1848,7 +1866,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph1.traversal().V().count().next().intValue());
         assertEquals(6, graph1.traversal().E().count().next().intValue());
         assertEquals(6, graph1.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(6, graph1.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        assertEquals(0, graph1.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
         //
         final ComputerResult result2 = graph1.compute(graphProvider.getGraphComputer(graph1).getClass())
                 .program(PeerPressureVertexProgram.build().maxIterations(4).create(graph1)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
@@ -1858,9 +1876,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph2.traversal().V().count().next().intValue());
         assertEquals(6, graph2.traversal().E().count().next().intValue());
         assertEquals(6, graph2.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
-        assertEquals(6, graph2.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
+        assertEquals(0, graph2.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        assertEquals(0, graph2.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
         //
         final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass())
                 .program(TraversalVertexProgram.build().traversal(g.V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
@@ -1878,9 +1896,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph3.traversal().E().count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
-        assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
+        assertEquals(0, graph3.traversal().V().values(PeerPressureVertexProgram.VOTE_STRENGTH).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
+        assertEquals(0, graph3.traversal().V().values(PageRankVertexProgram.EDGE_COUNT).count().next().intValue());
 
         // TODO: add a test the shows DAG behavior -- splitting another TraversalVertexProgram off of the PeerPressureVertexProgram job.
     }
@@ -1933,6 +1951,149 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<VertexComputeKey> getVertexComputeKeys() {
             return Collections.singleton(VertexComputeKey.of("age", false));
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
+        }
+    }
+
+    ///////////////////////////////////
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportTransientKeys() throws Exception {
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new VertexProgramO()).submit().get();
+        result.graph().vertices().forEachRemaining(vertex -> {
+            assertFalse(vertex.property("v1").isPresent());
+            assertFalse(vertex.property("v2").isPresent());
+            assertTrue(vertex.property("v3").isPresent());
+            assertEquals("shouldExist", vertex.value("v3"));
+            assertTrue(vertex.property("name").isPresent());
+            if (vertex.label().equals("software"))
+                assertTrue(vertex.property("lang").isPresent());
+            else
+                assertTrue(vertex.property("age").isPresent());
+            assertEquals(3, IteratorUtils.count(vertex.properties()));
+            assertEquals(0, IteratorUtils.count(vertex.properties("v1")));
+            assertEquals(0, IteratorUtils.count(vertex.properties("v2")));
+            assertEquals(1, IteratorUtils.count(vertex.properties("v3")));
+            assertEquals(1, IteratorUtils.count(vertex.properties("name")));
+        });
+        assertEquals(6l, result.graph().traversal().V().properties("name").count().next().longValue());
+        assertEquals(0l, result.graph().traversal().V().properties("v1").count().next().longValue());
+        assertEquals(0l, result.graph().traversal().V().properties("v2").count().next().longValue());
+        assertEquals(6l, result.graph().traversal().V().properties("v3").count().next().longValue());
+        assertEquals(6l, result.graph().traversal().V().<String>values("name").dedup().count().next().longValue());
+        assertEquals(1l, result.graph().traversal().V().<String>values("v3").dedup().count().next().longValue());
+        assertEquals("shouldExist", result.graph().traversal().V().<String>values("v3").dedup().next());
+        ///
+        assertFalse(result.memory().exists("m1"));
+        assertFalse(result.memory().exists("m2"));
+        assertTrue(result.memory().exists("m3"));
+        assertEquals(24l, result.memory().<Long>get("m3").longValue());
+        assertEquals(1, result.memory().keys().size());
+    }
+
+    private static class VertexProgramO extends StaticVertexProgram {
+
+        @Override
+        public void setup(final Memory memory) {
+            assertFalse(memory.exists("m1"));
+            assertFalse(memory.exists("m2"));
+            assertFalse(memory.exists("m3"));
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            if (memory.isInitialIteration()) {
+                assertFalse(vertex.property("v1").isPresent());
+                assertFalse(vertex.property("v2").isPresent());
+                assertFalse(vertex.property("v3").isPresent());
+                vertex.property("v1", "shouldNotExist");
+                vertex.property("v2", "shouldNotExist");
+                vertex.property("v3", "shouldExist");
+                assertTrue(vertex.property("v1").isPresent());
+                assertTrue(vertex.property("v2").isPresent());
+                assertTrue(vertex.property("v3").isPresent());
+                assertEquals("shouldNotExist", vertex.value("v1"));
+                assertEquals("shouldNotExist", vertex.value("v2"));
+                assertEquals("shouldExist", vertex.value("v3"));
+                //
+                assertFalse(memory.exists("m1"));
+                assertFalse(memory.exists("m2"));
+                assertFalse(memory.exists("m3"));
+                memory.add("m1", false);
+                memory.add("m2", true);
+                memory.add("m3", 2l);
+                // should still not exist as this pulls from the master memory
+                assertFalse(memory.exists("m1"));
+                assertFalse(memory.exists("m2"));
+                assertFalse(memory.exists("m3"));
+
+            } else {
+                assertTrue(vertex.property("v1").isPresent());
+                assertTrue(vertex.property("v2").isPresent());
+                assertTrue(vertex.property("v3").isPresent());
+                assertEquals("shouldNotExist", vertex.value("v1"));
+                assertEquals("shouldNotExist", vertex.value("v2"));
+                assertEquals("shouldExist", vertex.value("v3"));
+                //
+                assertTrue(memory.exists("m1"));
+                assertTrue(memory.exists("m2"));
+                assertTrue(memory.exists("m3"));
+                assertFalse(memory.get("m1"));
+                assertTrue(memory.get("m2"));
+                assertEquals(12l, memory.<Long>get("m3").longValue());
+                memory.add("m1", true);
+                memory.add("m2", true);
+                memory.add("m3", 2l);
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            assertTrue(memory.exists("m1"));
+            assertTrue(memory.exists("m2"));
+            assertTrue(memory.exists("m3"));
+            if (memory.isInitialIteration()) {
+                assertFalse(memory.get("m1"));
+                assertTrue(memory.get("m2"));
+                assertEquals(12l, memory.<Long>get("m3").longValue());
+                return false;
+            } else {
+                assertTrue(memory.get("m1"));
+                assertTrue(memory.get("m2"));
+                assertEquals(24l, memory.<Long>get("m3").longValue());
+                return true;
+            }
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList(
+                    MemoryComputeKey.of("m1", MemoryComputeKey.orOperator(), true),
+                    MemoryComputeKey.of("m2", MemoryComputeKey.andOperator(), true),
+                    MemoryComputeKey.of("m3", MemoryComputeKey.sumLongOperator(), false)));
+        }
+
+        @Override
+        public Set<VertexComputeKey> getVertexComputeKeys() {
+            return new HashSet<>(Arrays.asList(
+                    VertexComputeKey.of("v1", true),
+                    VertexComputeKey.of("v2", true),
+                    VertexComputeKey.of("v3", false)));
         }
 
         @Override
