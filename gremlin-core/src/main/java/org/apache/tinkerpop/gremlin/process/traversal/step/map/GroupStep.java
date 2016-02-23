@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -62,7 +61,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     @Override
     public void onGraphComputer() {
         super.onGraphComputer();
-        this.setReducingBiOperator(new GroupBiOperator<>(this));
+        this.setReducingBiOperator(new GroupBiOperator<>());
     }
 
     @Override
@@ -156,16 +155,22 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
-        private final GroupStep groupStep;
+        private transient GroupStep groupStep;
+        private final boolean onGraphComputer;
 
         public GroupBiOperator(final GroupStep groupStep) {
             this.groupStep = groupStep;
+            this.onGraphComputer = false;
+        }
+
+        public GroupBiOperator() {
+            this.onGraphComputer = true;
         }
 
         @Override
         public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
             for (final K key : map.keySet()) {
-                if (this.groupStep.onGraphComputer) {
+                if (this.onGraphComputer) {
                     TraverserSet<?> traverserSet = (TraverserSet) mutatingSeed.get(key);
                     if (null == traverserSet) {
                         traverserSet = new TraverserSet<>();

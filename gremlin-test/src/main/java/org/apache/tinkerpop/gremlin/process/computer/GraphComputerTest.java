@@ -220,10 +220,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("set", MemoryComputeKey.setOperator(), false),
-                    MemoryComputeKey.of("incr", MemoryComputeKey.sumLongOperator(), false),
-                    MemoryComputeKey.of("and", MemoryComputeKey.andOperator(), false),
-                    MemoryComputeKey.of("or", MemoryComputeKey.orOperator(), false)));
+                    MemoryComputeKey.of("set", MemoryComputeKey.setOperator(), true, false),
+                    MemoryComputeKey.of("incr", MemoryComputeKey.sumLongOperator(), true, false),
+                    MemoryComputeKey.of("and", MemoryComputeKey.andOperator(), true, false),
+                    MemoryComputeKey.of("or", MemoryComputeKey.orOperator(), true, false)));
         }
 
         @Override
@@ -272,7 +272,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of(null, MemoryComputeKey.orOperator(), false));
+            return Collections.singleton(MemoryComputeKey.of(null, MemoryComputeKey.orOperator(), true, false));
         }
 
         @Override
@@ -322,7 +322,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of("", MemoryComputeKey.orOperator(), false));
+            return Collections.singleton(MemoryComputeKey.of("", MemoryComputeKey.orOperator(), true, false));
         }
 
         @Override
@@ -345,7 +345,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     ////////////////////////////////////////////
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldNotAllowSettingUndeclaredMemoryKeys() throws Exception {
+    public void shouldHandleUndeclaredMemoryKeysCorrectly() throws Exception {
         graphProvider.getGraphComputer(graph).program(new VertexProgramE()).submit().get();
     }
 
@@ -353,23 +353,51 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void setup(final Memory memory) {
             try {
+                memory.get("a");
+                fail("The memory key does not exist and should fail");
+            } catch (Exception e) {
+                validateException(Memory.Exceptions.memoryDoesNotExist("a"), e);
+            }
+            try {
                 memory.set("a", true);
                 fail("Setting a memory key that wasn't declared should fail");
-            } catch (IllegalArgumentException e) {
-                assertEquals(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a").getMessage(), e.getMessage());
+            } catch (Exception e) {
+                validateException(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a"), e);
             }
         }
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
-
+            try {
+                memory.get("a");
+                fail("The memory key does not exist and should fail");
+            } catch (Exception e) {
+                validateException(Memory.Exceptions.memoryDoesNotExist("a"), e);
+            }
+            try {
+                memory.add("a", true);
+                fail("Setting a memory key that wasn't declared should fail");
+            } catch (Exception e) {
+                validateException(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a"), e);
+            }
         }
 
         @Override
         public boolean terminate(final Memory memory) {
+            try {
+                memory.get("a");
+                fail("The memory key does not exist and should fail");
+            } catch (Exception e) {
+                validateException(Memory.Exceptions.memoryDoesNotExist("a"), e);
+            }
+            try {
+                memory.set("a", true);
+               // fail("Setting a memory key that wasn't declared should fail");
+            } catch (Exception e) {
+                validateException(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a"), e);
+            }
             return true;
         }
-
 
         @Override
         public Set<MessageScope> getMessageScopes(final Memory memory) {
@@ -517,8 +545,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("a", MemoryComputeKey.sumIntegerOperator(), false),
-                    MemoryComputeKey.of("b", MemoryComputeKey.sumIntegerOperator(), false)));
+                    MemoryComputeKey.of("a", MemoryComputeKey.sumIntegerOperator(), true, false),
+                    MemoryComputeKey.of("b", MemoryComputeKey.sumIntegerOperator(), true, false)));
         }
 
         @Override
@@ -644,12 +672,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("a", MemoryComputeKey.sumLongOperator(), false),
-                    MemoryComputeKey.of("b", MemoryComputeKey.sumLongOperator(), false),
-                    MemoryComputeKey.of("c", MemoryComputeKey.andOperator(), false),
-                    MemoryComputeKey.of("d", MemoryComputeKey.orOperator(), false),
-                    MemoryComputeKey.of("e", MemoryComputeKey.andOperator(), false),
-                    MemoryComputeKey.of("f", MemoryComputeKey.setOperator(), false)));
+                    MemoryComputeKey.of("a", MemoryComputeKey.sumLongOperator(), true, false),
+                    MemoryComputeKey.of("b", MemoryComputeKey.sumLongOperator(), true, false),
+                    MemoryComputeKey.of("c", MemoryComputeKey.andOperator(), true, false),
+                    MemoryComputeKey.of("d", MemoryComputeKey.orOperator(), true, false),
+                    MemoryComputeKey.of("e", MemoryComputeKey.andOperator(), true, false),
+                    MemoryComputeKey.of("f", MemoryComputeKey.setOperator(), true, false)));
         }
 
         @Override
@@ -1153,7 +1181,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of("test", MemoryComputeKey.sumIntegerOperator(), false));
+            return Collections.singleton(MemoryComputeKey.of("test", MemoryComputeKey.sumIntegerOperator(), true, false));
         }
 
         @Override
@@ -1471,7 +1499,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.<Long>of("workerCount", MemoryComputeKey.sumLongOperator(), false));
+            return Collections.singleton(MemoryComputeKey.<Long>of("workerCount", MemoryComputeKey.sumLongOperator(), true, false));
         }
 
         /*public void workerIterationStart(final Memory memory) {
@@ -2081,9 +2109,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("m1", MemoryComputeKey.orOperator(), true),
-                    MemoryComputeKey.of("m2", MemoryComputeKey.andOperator(), true),
-                    MemoryComputeKey.of("m3", MemoryComputeKey.sumLongOperator(), false)));
+                    MemoryComputeKey.of("m1", MemoryComputeKey.orOperator(), true, true),
+                    MemoryComputeKey.of("m2", MemoryComputeKey.andOperator(), true, true),
+                    MemoryComputeKey.of("m3", MemoryComputeKey.sumLongOperator(), true, false)));
         }
 
         @Override
@@ -2130,6 +2158,121 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Object generateFinalResult(final Iterator keyValues) {
             return "anObject";
+        }
+    }
+
+    ///////////////////////////////////
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSupportBroadcastKeys() throws Exception {
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(new VertexProgramP()).submit().get();
+        assertTrue(result.memory().exists("m1"));
+        assertFalse(result.memory().exists("m2"));
+        assertFalse(result.memory().exists("m3"));
+        assertTrue(result.memory().exists("m4"));
+        assertTrue(result.memory().get("m1"));
+        assertEquals(-18, result.memory().<Integer>get("m4").intValue());
+        assertEquals(2, result.memory().keys().size());
+    }
+
+    private static class VertexProgramP extends StaticVertexProgram {
+
+        @Override
+        public void setup(final Memory memory) {
+            assertFalse(memory.exists("m1"));  // or
+            assertFalse(memory.exists("m2"));  // and
+            assertFalse(memory.exists("m3"));  // long
+            assertFalse(memory.exists("m4"));  // int
+            memory.set("m1", false);
+            memory.set("m2", true);
+            memory.set("m3", 0l);
+            memory.set("m4", 0);
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            if (memory.isInitialIteration()) {
+                assertFalse(memory.exists("m1"));
+                assertTrue(memory.exists("m2"));
+                assertTrue(memory.get("m2"));
+                assertFalse(memory.exists("m3"));
+                assertTrue(memory.exists("m4"));
+                assertEquals(0, memory.<Integer>get("m4").intValue());
+                memory.add("m1", false);
+                memory.add("m2", true);
+                memory.add("m3", 1l);
+                memory.add("m4", -1);
+            } else {
+                assertFalse(memory.exists("m1")); // no broadcast
+                assertTrue(memory.exists("m2"));
+                assertFalse(memory.exists("m3")); // no broadcast
+                assertTrue(memory.exists("m4"));
+                try {
+                    assertFalse(memory.get("m1"));
+                    fail();
+                } catch (final Exception e) {
+                    validateException(Memory.Exceptions.memoryDoesNotExist("m1"), e);
+                }
+                assertTrue(memory.get("m2"));
+                try {
+                    assertEquals(6l, memory.<Long>get("m3").longValue());
+                    fail();
+                } catch (final Exception e) {
+                    validateException(Memory.Exceptions.memoryDoesNotExist("m3"), e);
+                }
+                assertEquals(-6l, memory.<Integer>get("m4").intValue());
+                ///
+                memory.add("m1", true);
+                memory.add("m2", true);
+                memory.add("m3", 2l);
+                memory.add("m4", -2);
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            assertTrue(memory.exists("m1"));
+            assertTrue(memory.exists("m2"));
+            assertTrue(memory.exists("m3"));
+            assertTrue(memory.exists("m4"));
+            if (memory.isInitialIteration()) {
+                assertFalse(memory.get("m1"));
+                assertTrue(memory.get("m2"));
+                assertEquals(6l, memory.<Long>get("m3").longValue());
+                assertEquals(-6, memory.<Integer>get("m4").intValue());
+                return false;
+            } else {
+                assertTrue(memory.get("m1"));
+                assertTrue(memory.get("m2"));
+                assertEquals(18l, memory.<Long>get("m3").longValue());
+                assertEquals(-18, memory.<Integer>get("m4").intValue());
+                return true;
+            }
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(final Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<MemoryComputeKey> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList(
+                    MemoryComputeKey.of("m1", MemoryComputeKey.orOperator(), false, false),
+                    MemoryComputeKey.of("m2", MemoryComputeKey.andOperator(), true, true),
+                    MemoryComputeKey.of("m3", MemoryComputeKey.sumLongOperator(), false, true),
+                    MemoryComputeKey.of("m4", MemoryComputeKey.sumIntegerOperator(), true, false)));
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.VERTEX_PROPERTIES;
         }
     }
 }

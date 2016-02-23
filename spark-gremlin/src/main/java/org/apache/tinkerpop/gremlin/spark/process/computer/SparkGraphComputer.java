@@ -240,9 +240,9 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                     // execute the vertex program
                     while (true) {
-                        memory.setInTask(true);
+                        memory.setInExecute(true);
                         viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
-                        memory.setInTask(false);
+                        memory.setInExecute(false);
                         if (this.vertexProgram.terminate(memory))
                             break;
                         else {

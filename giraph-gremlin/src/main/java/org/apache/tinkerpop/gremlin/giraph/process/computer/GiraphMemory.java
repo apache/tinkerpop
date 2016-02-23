@@ -51,8 +51,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     private VertexProgram<?> vertexProgram;
     private GiraphWorkerContext worker;
-    private Map<String, MemoryComputeKey> memoryKeys;
-    private boolean isMasterCompute = true;
+    private Map<String, MemoryComputeKey> memoryComputeKeys;
+    private boolean inExecute = false;
     private long startTime = System.currentTimeMillis();
 
     public GiraphMemory() {
@@ -62,9 +62,9 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     public GiraphMemory(final GiraphWorkerContext worker, final VertexProgram<?> vertexProgram) {
         this.worker = worker;
         this.vertexProgram = vertexProgram;
-        this.memoryKeys = new HashMap<>();
-        this.vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryKeys.put(key.getKey(), key));
-        this.isMasterCompute = false;
+        this.memoryComputeKeys = new HashMap<>();
+        this.vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryComputeKeys.put(key.getKey(), key));
+        this.inExecute = true;
     }
 
 
@@ -76,14 +76,14 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public void compute() {
-        this.isMasterCompute = true;
+        this.inExecute = false;
         if (0 == this.getSuperstep()) { // setup
             final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.getConf());
             this.vertexProgram = VertexProgram.createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
-            this.memoryKeys = new HashMap<>();
-            this.vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryKeys.put(key.getKey(), key));
+            this.memoryComputeKeys = new HashMap<>();
+            this.vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryComputeKeys.put(key.getKey(), key));
             try {
-                for (final MemoryComputeKey key : this.memoryKeys.values()) {
+                for (final MemoryComputeKey key : this.memoryComputeKeys.values()) {
                     this.registerPersistentAggregator(key.getKey(), MemoryAggregator.class);
                 }
             } catch (final Exception e) {
@@ -96,11 +96,12 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 final MapMemory memory = new MapMemory(this);
                 // a hack to get the last iteration memory values to stick
                 this.vertexProgram.terminate(memory);
+
                 final String outputLocation = this.getConf().get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
                 if (null != outputLocation) {
                     try {
                         for (final String key : this.keys()) {
-                            if (!this.memoryKeys.get(key).isTransient()) { // do not write transient memory keys to disk
+                            if (!this.memoryComputeKeys.get(key).isTransient()) { // do not write transient memory keys to disk
                                 final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + key), ObjectWritable.class, ObjectWritable.class);
                                 writer.append(ObjectWritable.getNullObjectWritable(), new ObjectWritable<>(memory.get(key)));
                                 writer.close();
@@ -121,11 +122,11 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public int getIteration() {
-        if (this.isMasterCompute) {
+        if (this.inExecute) {
+            return (int) this.worker.getSuperstep();
+        } else {
             final int temp = (int) this.getSuperstep();
             return temp == 0 ? temp : temp - 1;
-        } else {
-            return (int) this.worker.getSuperstep();
         }
     }
 
@@ -136,21 +137,26 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public Set<String> keys() {
-        return this.memoryKeys.values().stream().filter(key -> this.exists(key.getKey())).map(MemoryComputeKey::getKey).collect(Collectors.toSet());
+        return this.memoryComputeKeys.values().stream().filter(key -> this.exists(key.getKey())).map(MemoryComputeKey::getKey).collect(Collectors.toSet());
     }
 
     @Override
     public boolean exists(final String key) {
-        final ObjectWritable value = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
+        if (this.inExecute && this.memoryComputeKeys.containsKey(key) && !this.memoryComputeKeys.get(key).isBroadcast())
+            return false;
+        final ObjectWritable value = this.inExecute ? this.worker.getAggregatedValue(key) : this.getAggregatedValue(key);
         return null != value && !value.isEmpty();
     }
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        //this.checkKey(key);
-        final ObjectWritable<Pair<BinaryOperator, Object>> value = this.isMasterCompute ?
-                this.<ObjectWritable<Pair<BinaryOperator, Object>>>getAggregatedValue(key) :
-                this.worker.<ObjectWritable<Pair<BinaryOperator, Object>>>getAggregatedValue(key);
+        if (!this.memoryComputeKeys.containsKey(key))
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        if (this.inExecute && !this.memoryComputeKeys.get(key).isBroadcast())
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        final ObjectWritable<Pair<BinaryOperator, Object>> value = this.inExecute ?
+                this.worker.<ObjectWritable<Pair<BinaryOperator, Object>>>getAggregatedValue(key) :
+                this.<ObjectWritable<Pair<BinaryOperator, Object>>>getAggregatedValue(key);
         if (null == value || value.isEmpty())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
@@ -160,17 +166,17 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     @Override
     public void set(final String key, final Object value) {
         this.checkKeyValue(key, value);
-        if (!this.isMasterCompute)   // only called on setup() and terminate()
+        if (this.inExecute)
             throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
-        this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
+        this.setAggregatedValue(key, new ObjectWritable<>(new Pair<>(this.memoryComputeKeys.get(key).getReducer(), value)));
     }
 
     @Override
     public void add(final String key, final Object value) {
         this.checkKeyValue(key, value);
-        if (this.isMasterCompute)
+        if (!this.inExecute)
             throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
-        this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryKeys.get(key).getReducer(), value)));
+        this.worker.aggregate(key, new ObjectWritable<>(new Pair<>(this.memoryComputeKeys.get(key).getReducer(), value)));
     }
 
     @Override
@@ -189,7 +195,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryKeys.containsKey(key))
+        if (!this.memoryComputeKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }

@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -41,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,13 +66,6 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
         final V value = TraversalUtil.applyNullable(traverser, this.valueTraversal);
         TraversalHelper.addToCollectionUnrollIterator(values, value, traverser.bulk());
         return Collections.singletonMap(key, (R) values);
-    }
-
-    @Override
-    public void onGraphComputer() {
-        super.onGraphComputer();
-        this.setSeedSupplier((Supplier) HashMapSupplier.instance());
-        this.setReducingBiOperator(new GroupBiOperatorV3d0<>());
     }
 
     @Override

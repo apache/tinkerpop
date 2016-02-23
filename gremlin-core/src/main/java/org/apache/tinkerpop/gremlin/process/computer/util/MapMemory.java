@@ -54,7 +54,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
     }
 
     public void addMapReduceMemoryKey(final MapReduce mapReduce) {
-       this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(),false));
+        this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false, false));
     }
 
     @Override
@@ -73,6 +73,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
 
     @Override
     public void set(final String key, Object value) {
+        // this.checkKeyValue(key, value);
         this.memoryMap.put(key, value);
     }
 

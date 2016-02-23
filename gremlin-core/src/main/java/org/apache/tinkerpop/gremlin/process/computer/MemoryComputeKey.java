@@ -32,11 +32,13 @@ public final class MemoryComputeKey<A> implements Serializable {
     private final String key;
     private final BinaryOperator<A> reducer;
     private final boolean isTransient;
+    private final boolean isBroadcast;
 
-    private MemoryComputeKey(final String key, final BinaryOperator<A> reducer, final boolean isTransient) {
+    private MemoryComputeKey(final String key, final BinaryOperator<A> reducer, final boolean isBroadcast, final boolean isTransient) {
         this.key = key;
         this.reducer = reducer;
         this.isTransient = isTransient;
+        this.isBroadcast = isBroadcast;
         MemoryHelper.validateKey(key);
     }
 
@@ -46,6 +48,10 @@ public final class MemoryComputeKey<A> implements Serializable {
 
     public boolean isTransient() {
         return this.isTransient;
+    }
+
+    public boolean isBroadcast() {
+        return this.isBroadcast;
     }
 
     public BinaryOperator<A> getReducer() {
@@ -62,8 +68,8 @@ public final class MemoryComputeKey<A> implements Serializable {
         return object instanceof MemoryComputeKey && ((MemoryComputeKey) object).key.equals(this.key);
     }
 
-    public static <A> MemoryComputeKey of(final String key, final BinaryOperator<A> reducer, final boolean isTransient) {
-        return new MemoryComputeKey<>(key, reducer, isTransient);
+    public static <A> MemoryComputeKey of(final String key, final BinaryOperator<A> reducer, final boolean isBroadcast, final boolean isTransient) {
+        return new MemoryComputeKey<>(key, reducer, isBroadcast, isTransient);
     }
 
     public static SetOperator setOperator() {

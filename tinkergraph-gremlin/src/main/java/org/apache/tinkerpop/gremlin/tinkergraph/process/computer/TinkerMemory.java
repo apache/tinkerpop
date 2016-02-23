@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,13 +55,13 @@ public final class TinkerMemory implements Memory.Admin {
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false));
+            this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false, false));
         }
     }
 
     @Override
     public Set<String> keys() {
-        return this.previousMap.keySet();
+        return this.previousMap.keySet().stream().filter(key -> !this.inExecute || this.memoryKeys.get(key).isBroadcast()).collect(Collectors.toSet());
     }
 
     @Override
@@ -108,6 +109,8 @@ public final class TinkerMemory implements Memory.Admin {
     public <R> R get(final String key) throws IllegalArgumentException {
         final R r = (R) this.previousMap.get(key);
         if (null == r)
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        else if (this.inExecute && !this.memoryKeys.get(key).isBroadcast())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
             return r;

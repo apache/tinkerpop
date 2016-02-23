@@ -44,37 +44,37 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class SparkMemory implements Memory.Admin, Serializable {
 
-    public final Map<String, MemoryComputeKey> memoryKeys = new HashMap<>();
-    private final AtomicInteger iteration = new AtomicInteger(0);   // do these need to be atomics?
+    public final Map<String, MemoryComputeKey> memoryComputeKeys = new HashMap<>();
+    private final Map<String, Accumulator<ObjectWritable>> sparkMemory = new HashMap<>();
+    private final AtomicInteger iteration = new AtomicInteger(0);
     private final AtomicLong runtime = new AtomicLong(0l);
-    private final Map<String, Accumulator<ObjectWritable>> memory = new HashMap<>();
     private Broadcast<Map<String, Object>> broadcast;
-    private boolean inTask = false;
+    private boolean inExecute = false;
 
     public SparkMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers, final JavaSparkContext sparkContext) {
         if (null != vertexProgram) {
             for (final MemoryComputeKey key : vertexProgram.getMemoryComputeKeys()) {
-                this.memoryKeys.put(key.getKey(), key);
+                this.memoryComputeKeys.put(key.getKey(), key);
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
-            this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false));
+            this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false, false));
         }
-        for (final MemoryComputeKey memoryComputeKey : this.memoryKeys.values()) {
-            this.memory.put(
+        for (final MemoryComputeKey memoryComputeKey : this.memoryComputeKeys.values()) {
+            this.sparkMemory.put(
                     memoryComputeKey.getKey(),
                     sparkContext.accumulator(ObjectWritable.empty(), memoryComputeKey.getKey(), new MemoryAccumulator<>(memoryComputeKey)));
         }
-        this.broadcast = sparkContext.broadcast(new HashMap<>());
+        this.broadcast = sparkContext.broadcast(Collections.emptyMap());
     }
 
     @Override
     public Set<String> keys() {
-        if (this.inTask)
+        if (this.inExecute)
             return this.broadcast.getValue().keySet();
         else {
             final Set<String> trueKeys = new HashSet<>();
-            this.memory.forEach((key, value) -> {
+            this.sparkMemory.forEach((key, value) -> {
                 if (!value.value().isEmpty())
                     trueKeys.add(key);
             });
@@ -109,8 +109,12 @@ public final class SparkMemory implements Memory.Admin, Serializable {
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        final ObjectWritable<R> r = (ObjectWritable<R>) (this.inTask ? this.broadcast.value().get(key) : this.memory.get(key).value());
-        if (r.isEmpty())
+        if (!this.memoryComputeKeys.containsKey(key))
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        if (this.inExecute && !this.memoryComputeKeys.get(key).isBroadcast())
+            throw Memory.Exceptions.memoryDoesNotExist(key);
+        final ObjectWritable<R> r = (ObjectWritable<R>) (this.inExecute ? this.broadcast.value().get(key) : this.sparkMemory.get(key).value());
+        if (null == r || r.isEmpty())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
             return r.get();
@@ -119,8 +123,8 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     @Override
     public void add(final String key, final Object value) {
         checkKeyValue(key, value);
-        if (this.inTask)
-            this.memory.get(key).add(new ObjectWritable<>(value));
+        if (this.inExecute)
+            this.sparkMemory.get(key).add(new ObjectWritable<>(value));
         else
             throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
     }
@@ -128,10 +132,10 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     @Override
     public void set(final String key, final Object value) {
         checkKeyValue(key, value);
-        if (this.inTask)
+        if (this.inExecute)
             throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
         else
-            this.memory.get(key).setValue(new ObjectWritable<>(value));
+            this.sparkMemory.get(key).setValue(new ObjectWritable<>(value));
     }
 
     @Override
@@ -140,25 +144,25 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     protected void complete() {
-        this.memoryKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(memoryComputeKey -> this.memory.remove(memoryComputeKey.getKey()));
+        this.memoryComputeKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(memoryComputeKey -> this.sparkMemory.remove(memoryComputeKey.getKey()));
     }
 
-    protected void setInTask(final boolean inTask) {
-        this.inTask = inTask;
+    protected void setInExecute(final boolean inExecute) {
+        this.inExecute = inExecute;
     }
 
     protected void broadcastMemory(final JavaSparkContext sparkContext) {
         this.broadcast.destroy(true); // do we need to block?
         final Map<String, Object> toBroadcast = new HashMap<>();
-        this.memory.forEach((key, object) -> {
-            if (!object.value().isEmpty())
+        this.sparkMemory.forEach((key, object) -> {
+            if (!object.value().isEmpty() && this.memoryComputeKeys.get(key).isBroadcast())
                 toBroadcast.put(key, object.value());
         });
         this.broadcast = sparkContext.broadcast(toBroadcast);
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryKeys.containsKey(key))
+        if (!this.memoryComputeKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }
