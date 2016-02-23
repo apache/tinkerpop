@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -39,11 +39,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements TraversalParent, ByModulating {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements TraversalParent, GraphComputing, ByModulating {
 
     private char state = 'k';
 
@@ -52,25 +53,33 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
     private Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
 
+    private boolean onComputer = false;
+
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(HashMapSupplier.instance());
-        this.setReducingBiOperator(new GroupBiOperator<>());
+        this.setSeedSupplier((Supplier) new GroupStepHelper.GroupMapSupplier());
+        this.setReducingBiOperator(new GroupStandardBiOperator<>(this));
     }
 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
-        final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-        this.valueTraversal.addStart(traverser);
-        final TraverserSet<?> value = new TraverserSet<>();
-        this.valueTraversal.forEachRemaining(t -> {
-            Traverser.Admin x = traverser.split(t, (Step) this);
-            x.setBulk(1l);
-            value.add(x);
-        });
-        final Map<K, V> map = new HashMap<>();
-        map.put(key, (V) value);
-        return map;
+           if(this.onComputer) {
+               final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+               this.valueTraversal.reset();
+               this.valueTraversal.addStart(traverser);
+               final TraverserSet traverserSet = new TraverserSet();
+               this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+               final Map<K, V> map = new HashMap<>();
+               map.put(key, (V) traverserSet);
+               return map;
+           } else {
+               final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+               final TraverserSet traverserSet = new TraverserSet();
+               traverserSet.add(traverser);
+               final Map<K, V> map = new HashMap<>();
+               map.put(key, (V) traverserSet);
+               return map;
+           }
     }
 
     @Override
@@ -139,6 +148,13 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         return reducedMap;
     }
 
+    @Override
+    public void onGraphComputer() {
+        this.onComputer = true;
+        this.setSeedSupplier(HashMapSupplier.instance());
+        this.setReducingBiOperator(new GroupBiOperator<>());
+    }
+
     ///////////
 
     private static class GroupBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
@@ -155,6 +171,28 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                     mutatingSeed.put(key, (V) traverserSet);
                 }
                 traverserSet.addAll((TraverserSet) map.get(key));
+            }
+            return mutatingSeed;
+        }
+    }
+
+    private static class GroupStandardBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+
+        private final GroupStep groupStep;
+
+        private GroupStandardBiOperator(final GroupStep groupStep) {
+            this.groupStep = groupStep;
+        }
+
+        @Override
+        public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
+            for (final K key : map.keySet()) {
+                Traversal.Admin reduce = (Traversal.Admin) mutatingSeed.get(key);
+                if (null == reduce) {
+                    reduce = this.groupStep.valueReduceTraversal.clone();
+                    mutatingSeed.put(key, (V) reduce);
+                }
+                ((TraverserSet<?>) map.get(key)).forEach(reduce::addStart);
             }
             return mutatingSeed;
         }

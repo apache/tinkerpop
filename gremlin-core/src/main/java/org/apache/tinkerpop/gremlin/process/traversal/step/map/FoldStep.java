@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -39,20 +39,30 @@ import java.util.function.Supplier;
 public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
+    private final boolean listFold;
 
     public FoldStep(final Traversal.Admin traversal) {
         this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) new ListBiOperator<>());
     }
 
-    @Override
-    public E projectTraverser(final Traverser.Admin<S> traverser) {
-        return (E) Collections.singletonList(traverser.get());
-    }
-
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
+        this.listFold = foldFunction instanceof ListBiOperator;
         this.setSeedSupplier(seed);
         this.setReducingBiOperator(new FoldBiOperator<>(foldFunction));
+    }
+
+    @Override
+    public E projectTraverser(final Traverser.Admin<S> traverser) {
+        if (this.listFold) {
+            final List<S> list = new ArrayList<>();
+            for (long i = 0; i < traverser.bulk(); i++) {
+                list.add(traverser.get());
+            }
+            return (E) list;
+        } else {
+            return (E) traverser.get();
+        }
     }
 
     @Override
@@ -63,18 +73,14 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
     /////////
 
     private static class ListBiOperator<S> implements BinaryOperator<List<S>>, Serializable {
-
         @Override
         public List<S> apply(final List<S> mutatingSeed, final List<S> list) {
             mutatingSeed.addAll(list);
             return mutatingSeed;
         }
-
     }
 
-    ///////
-
-    public static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
+    private static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
 
         private final BiFunction biFunction;
 

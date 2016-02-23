@@ -42,7 +42,7 @@ import java.util.function.BinaryOperator;
  */
 public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements TraversalParent, ByModulating {
 
-    private Traversal.Admin<S, E> groupTraversal = null;
+    private Traversal.Admin<S, E> keyTraversal = null;
 
     public GroupCountStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -53,17 +53,17 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) {
-        this.groupTraversal = this.integrateChild(keyTraversal);
+        this.keyTraversal = this.integrateChild(keyTraversal);
     }
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return null == this.groupTraversal ? Collections.emptyList() : Collections.singletonList(this.groupTraversal);
+        return null == this.keyTraversal ? Collections.emptyList() : Collections.singletonList(this.keyTraversal);
     }
 
     public Map<E, Long> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<E, Long> map = new HashMap<>(); // TODO: make singleton map
-        map.put(TraversalUtil.applyNullable(traverser, this.groupTraversal), traverser.bulk());
+        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
         return map;
     }
 
@@ -75,8 +75,8 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     @Override
     public GroupCountStep<S, E> clone() {
         final GroupCountStep<S, E> clone = (GroupCountStep<S, E>) super.clone();
-        if (null != this.groupTraversal)
-            clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
+        if (null != this.keyTraversal)
+            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
         return clone;
     }
 
@@ -91,7 +91,7 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.groupTraversal);
+        return StringFactory.stepString(this, this.keyTraversal);
     }
 
     ///////////
