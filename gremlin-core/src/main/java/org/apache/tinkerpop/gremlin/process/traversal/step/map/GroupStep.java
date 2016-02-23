@@ -62,24 +62,26 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
+    public void onGraphComputer() {
+        this.onComputer = true;
+        this.setSeedSupplier(HashMapSupplier.instance());
+        this.setReducingBiOperator(new GroupComputerBiOperator<>());
+    }
+
+    @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
-           if(this.onComputer) {
-               final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-               this.valueTraversal.reset();
-               this.valueTraversal.addStart(traverser);
-               final TraverserSet traverserSet = new TraverserSet();
-               this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
-               final Map<K, V> map = new HashMap<>();
-               map.put(key, (V) traverserSet);
-               return map;
-           } else {
-               final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-               final TraverserSet traverserSet = new TraverserSet();
-               traverserSet.add(traverser);
-               final Map<K, V> map = new HashMap<>();
-               map.put(key, (V) traverserSet);
-               return map;
-           }
+        final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+        final TraverserSet traverserSet = new TraverserSet();
+        if (this.onComputer) {
+            this.valueTraversal.reset();
+            this.valueTraversal.addStart(traverser);
+            this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+        } else
+            traverserSet.add(traverser);
+
+        final Map<K, V> map = new HashMap<>();
+        map.put(key, (V) traverserSet);
+        return map;
     }
 
     @Override
@@ -148,18 +150,11 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         return reducedMap;
     }
 
-    @Override
-    public void onGraphComputer() {
-        this.onComputer = true;
-        this.setSeedSupplier(HashMapSupplier.instance());
-        this.setReducingBiOperator(new GroupBiOperator<>());
-    }
-
     ///////////
 
-    private static class GroupBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+    private static class GroupComputerBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
-        private GroupBiOperator() {
+        private GroupComputerBiOperator() {
         }
 
         @Override
@@ -176,7 +171,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         }
     }
 
-    private static class GroupStandardBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+    private static class GroupStandardBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
         private final GroupStep groupStep;
 
@@ -187,12 +182,13 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         @Override
         public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
             for (final K key : map.keySet()) {
-                Traversal.Admin reduce = (Traversal.Admin) mutatingSeed.get(key);
-                if (null == reduce) {
-                    reduce = this.groupStep.valueReduceTraversal.clone();
-                    mutatingSeed.put(key, (V) reduce);
+                final TraverserSet<?> traverserSet = (TraverserSet<?>) map.get(key);
+                Traversal.Admin valueReduceTraversal = (Traversal.Admin) mutatingSeed.get(key);
+                if (null == valueReduceTraversal) {
+                    valueReduceTraversal = this.groupStep.valueReduceTraversal.clone();
+                    mutatingSeed.put(key, (V) valueReduceTraversal);
                 }
-                ((TraverserSet<?>) map.get(key)).forEach(reduce::addStart);
+                traverserSet.forEach(valueReduceTraversal::addStart);
             }
             return mutatingSeed;
         }
