@@ -59,6 +59,11 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         return REQUIREMENTS;
     }
 
+    @Override
+    public E generateFinalReduction(final Object reduction) {
+        return (E) ((MeanNumber) reduction).getFinal();
+    }
+
     /////
 
     public static final class MeanGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {

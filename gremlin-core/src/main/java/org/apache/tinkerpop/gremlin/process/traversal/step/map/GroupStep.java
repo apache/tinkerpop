@@ -40,12 +40,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements TraversalParent, GraphComputing, ByModulating {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements TraversalParent, ByModulating {
 
     private char state = 'k';
 
@@ -54,26 +53,23 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
     private Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
 
-    private boolean onComputer = false;
-
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier((Supplier) new GroupStepHelper.GroupMapSupplier());
-        this.setReducingBiOperator(new GroupStandardBiOperator<>(this));
+        this.setSeedSupplier(HashMapSupplier.instance());
+        this.setReducingBiOperator(new GroupBiOperator<>(this));
     }
 
     @Override
     public void onGraphComputer() {
-        this.onComputer = true;
-        this.setSeedSupplier(HashMapSupplier.instance());
-        this.setReducingBiOperator(new GroupComputerBiOperator<>());
+        super.onGraphComputer();
+        this.setReducingBiOperator(new GroupBiOperator<>(this));
     }
 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
         final TraverserSet traverserSet = new TraverserSet();
-        if (this.onComputer) {
+        if (this.onGraphComputer) {
             this.valueTraversal.reset();
             this.valueTraversal.addStart(traverser);
             this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
@@ -139,55 +135,52 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         return StringFactory.stepString(this, this.keyTraversal, this.valueReduceTraversal);
     }
 
-    public Map<K, V> getReducedMap(final Map<K, TraverserSet> traverserMap) {
+    @Override
+    public Map<K, V> generateFinalReduction(final Object traverserMap) {
         final Map<K, V> reducedMap = new HashMap<>();
-        for (final K key : traverserMap.keySet()) {
-            final Traversal.Admin<?, V> reduceClone = this.reduceTraversal.clone();
-            reduceClone.addStarts(traverserMap.get(key).iterator());
-            reducedMap.put(key, reduceClone.next());
+        if (this.onGraphComputer) {
+            for (final K key : ((Map<K, TraverserSet>) traverserMap).keySet()) {
+                final Traversal.Admin<?, V> reduceClone = this.reduceTraversal.clone();
+                reduceClone.addStarts(((Map<K, TraverserSet>) traverserMap).get(key).iterator());
+                reducedMap.put(key, reduceClone.next());
+            }
+        } else {
+            for (final K key : ((Map<K, Traversal.Admin>) traverserMap).keySet()) {
+                reducedMap.put(key, (V) (((Map<K, Traversal.Admin>) traverserMap).get(key)).next());
+            }
         }
         return reducedMap;
     }
 
     ///////////
 
-    public static final class GroupComputerBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
-
-        private GroupComputerBiOperator() {
-        }
-
-        @Override
-        public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
-            for (final K key : map.keySet()) {
-                TraverserSet<?> traverserSet = (TraverserSet) mutatingSeed.get(key);
-                if (null == traverserSet) {
-                    traverserSet = new TraverserSet<>();
-                    mutatingSeed.put(key, (V) traverserSet);
-                }
-                traverserSet.addAll((TraverserSet) map.get(key));
-            }
-            return mutatingSeed;
-        }
-    }
-
-    public static final class GroupStandardBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+    public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
         private final GroupStep groupStep;
 
-        public GroupStandardBiOperator(final GroupStep groupStep) {
+        public GroupBiOperator(final GroupStep groupStep) {
             this.groupStep = groupStep;
         }
 
         @Override
         public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
             for (final K key : map.keySet()) {
-                final TraverserSet<?> traverserSet = (TraverserSet<?>) map.get(key);
-                Traversal.Admin valueReduceTraversal = (Traversal.Admin) mutatingSeed.get(key);
-                if (null == valueReduceTraversal) {
-                    valueReduceTraversal = this.groupStep.valueReduceTraversal.clone();
-                    mutatingSeed.put(key, (V) valueReduceTraversal);
+                if (this.groupStep.onGraphComputer) {
+                    TraverserSet<?> traverserSet = (TraverserSet) mutatingSeed.get(key);
+                    if (null == traverserSet) {
+                        traverserSet = new TraverserSet<>();
+                        mutatingSeed.put(key, (V) traverserSet);
+                    }
+                    traverserSet.addAll((TraverserSet) map.get(key));
+                } else {
+                    final TraverserSet<?> traverserSet = (TraverserSet<?>) map.get(key);
+                    Traversal.Admin valueReduceTraversal = (Traversal.Admin) mutatingSeed.get(key);
+                    if (null == valueReduceTraversal) {
+                        valueReduceTraversal = this.groupStep.valueReduceTraversal.clone();
+                        mutatingSeed.put(key, (V) valueReduceTraversal);
+                    }
+                    traverserSet.forEach(valueReduceTraversal::addStart);
                 }
-                traverserSet.forEach(valueReduceTraversal::addStart);
             }
             return mutatingSeed;
         }

@@ -30,12 +30,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -94,11 +92,4 @@ public final class GroupStepHelper {
         }
     }
 
-    public static class GroupMapSupplier implements Supplier<GroupMap>, Serializable {
-
-        @Override
-        public GroupMap get() {
-            return new GroupMap<>(new HashMap<>());
-        }
-    }
 }

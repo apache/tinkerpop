@@ -18,24 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
@@ -43,13 +35,14 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier, GraphComputing {
 
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
     protected Supplier<E> seedSupplier;
     protected BinaryOperator<E> reducingBiOperator;
+    protected boolean onGraphComputer = false;
     private boolean done = false;
     private E seed = null;
 
@@ -102,13 +95,17 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             this.seed = this.reducingBiOperator.apply(this.seed, this.projectTraverser(this.starts.next()));
     }
 
+    public E generateFinalReduction(final Object reduction) {
+        return (E) reduction;
+    }
+
     @Override
     public Traverser<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
+        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.onGraphComputer ? this.seed : this.generateFinalReduction(this.seed), (Step) this, 1l);
         this.seed = null;
         return traverser;
     }
@@ -121,66 +118,8 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         return clone;
     }
 
-    ///////
-
-    public static class DefaultMapReduce extends StaticMapReduce<MapReduce.NullObject, Object, MapReduce.NullObject, Object, Object> {
-
-        private static final String REDUCING_BARRIER_STEP_SEED_SUPPLIER = "gremlin.reducingBarrierStep.seedSupplier";
-        private static final String REDUCING_BARRIER_STEP_BI_FUNCTION = "gremlin.reducingBarrierStep.biFunction";
-
-        private BiFunction biFunction;
-        private Supplier seedSupplier;
-
-        private DefaultMapReduce() {
-        }
-
-        public DefaultMapReduce(final Supplier seedSupplier, final BiFunction biFunction) {
-            this.seedSupplier = seedSupplier;
-            this.biFunction = biFunction;
-
-        }
-
-        @Override
-        public void storeState(final Configuration configuration) {
-            super.storeState(configuration);
-            VertexProgramHelper.serialize(this.seedSupplier, configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
-            VertexProgramHelper.serialize(this.biFunction, configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
-
-        }
-
-        @Override
-        public void loadState(final Graph graph, final Configuration configuration) {
-            this.seedSupplier = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
-            this.biFunction = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
-        }
-
-        @Override
-        public boolean doStage(final Stage stage) {
-            return !stage.equals(Stage.COMBINE);
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return REDUCING;
-        }
-
-        @Override
-        public Object generateFinalResult(final Iterator keyValues) {
-            return ((KeyValue) keyValues.next()).getValue();
-        }
-
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-            vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(emitter::emit));
-        }
-
-        @Override
-        public void reduce(final NullObject key, final Iterator<Object> values, final ReduceEmitter<NullObject, Object> emitter) {
-            Object mutatingSeed = this.seedSupplier.get();
-            while (values.hasNext()) {
-                mutatingSeed = this.biFunction.apply(mutatingSeed, values.next());
-            }
-            emitter.emit(FinalGet.tryFinalGet(mutatingSeed));
-        }
+    @Override
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
     }
 }

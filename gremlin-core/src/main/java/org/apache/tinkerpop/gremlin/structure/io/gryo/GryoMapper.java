@@ -333,15 +333,14 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(FoldStep.ListBiOperator.class, null, 113));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(FoldStep.FoldBiOperator.class, null, 114));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupCountStep.GroupCountBiOperator.class, null, 115));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupComputerBiOperator.class, null, 116));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupStandardBiOperator.class, null, 117));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MaxGlobalStep.MaxGlobalBiOperator.class, null, 118));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanGlobalBiOperator.class, null, 119));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanNumber.class, null, 120));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MinGlobalStep.MinGlobalBiOperator.class, null, 121));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(SumGlobalStep.SumGlobalBiOperator.class, null, 122));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 123));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 124)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupBiOperator.class, null, 116));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MaxGlobalStep.MaxGlobalBiOperator.class, null, 117));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanGlobalBiOperator.class, null, 118));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanNumber.class, null, 119));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MinGlobalStep.MinGlobalBiOperator.class, null, 120));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(SumGlobalStep.SumGlobalBiOperator.class, null, 121));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 122));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 123)); // ***LAST ID**
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();

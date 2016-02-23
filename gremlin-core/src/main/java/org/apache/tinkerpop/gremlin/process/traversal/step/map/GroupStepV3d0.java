@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -48,7 +47,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Deprecated
-public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements ByModulating, GraphComputing, TraversalParent {
+public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements ByModulating, TraversalParent {
 
     private char state = 'k';
 
@@ -58,7 +57,7 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
 
     public GroupStepV3d0(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier((Supplier) new GroupMapSupplierV3d0());
+        this.setSeedSupplier(HashMapSupplier.instance());
         this.setReducingBiOperator(new GroupBiOperatorV3d0<>());
     }
 
@@ -73,6 +72,7 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
 
     @Override
     public void onGraphComputer() {
+        super.onGraphComputer();
         this.setSeedSupplier((Supplier) HashMapSupplier.instance());
         this.setReducingBiOperator(new GroupBiOperatorV3d0<>());
     }
@@ -136,10 +136,11 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
         return StringFactory.stepString(this, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
     }
 
-    public Map<K, R> getReducedMap(final Map<K, Collection<V>> valueMap) {
+    @Override
+    public Map<K, R> generateFinalReduction(final Object valueMap) {
         final Map<K, R> reducedMap = new HashMap<>();
-        for (final K key : valueMap.keySet()) {
-            final R r = TraversalUtil.applyNullable(valueMap.get(key), this.reduceTraversal);
+        for (final K key : ((Map<K, Collection<V>>) valueMap).keySet()) {
+            final R r = TraversalUtil.applyNullable(((Map<K, Collection<V>>) valueMap).get(key), this.reduceTraversal);
             reducedMap.put(key, r);
         }
         return reducedMap;
@@ -165,27 +166,6 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
                 seedValues.addAll(values);
             }
             return mutatingSeed;
-        }
-    }
-
-    ////////
-
-    private class GroupMapV3d0 extends HashMap<K, Collection<V>> implements FinalGet<Map<K, R>> {
-
-        @Override
-        public Map<K, R> getFinal() {
-            return GroupStepV3d0.this.getReducedMap(this);
-        }
-    }
-
-    private class GroupMapSupplierV3d0 implements Supplier<GroupMapV3d0>, Serializable {
-
-        private GroupMapSupplierV3d0() {
-        }
-
-        @Override
-        public GroupMapV3d0 get() {
-            return new GroupMapV3d0();
         }
     }
 }
