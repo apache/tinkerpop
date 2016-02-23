@@ -26,6 +26,9 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added the `gremlin-archetype-driver` archetype that demonstrates
+* Added the `gremlin-archetype-tinkergraph` archetype that demonstrates a basic project that uses TinkerGraph.
+* Added `gremlin-archetype` module to house TinkerPop "examples".
 * Fixed a bug where multiple "close" requests were being sent by the driver on `Client.close()`.
 * Fixed an `Property` attach bug that shows up in serialization-based `GraphComputer` implementations.
 * Fixed a pom.xml bug where Gremlin Console/Server were not pulling the latest Neo4j 2.3.2.
