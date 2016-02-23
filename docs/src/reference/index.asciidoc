@@ -32,7 +32,10 @@ include::the-graphcomputer.asciidoc[]
 
 include::gremlin-applications.asciidoc[]
 
-include::implementations.asciidoc[]
+include::implementations-intro.asciidoc[]
+include::implementations-tinkergraph.asciidoc[]
+include::implementations-neo4j.asciidoc[]
+include::implementations-hadoop.asciidoc[]
 
 include::conclusion.asciidoc[]
 

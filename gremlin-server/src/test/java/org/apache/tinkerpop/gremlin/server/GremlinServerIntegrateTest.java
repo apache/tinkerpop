@@ -780,4 +780,31 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals("jason", v.value("name"));
         }
     }
+
+    @Test
+    public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        client.submitAsync("a=100;b=1000;c=10000;null");
+        final int requests = 1000;
+        final List<CompletableFuture<ResultSet>> futures = new ArrayList<>(requests);
+        IntStream.range(0, requests).forEach(i -> {
+            try {
+                futures.add(client.submitAsync("a+b+c"));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        assertEquals(requests, futures.size());
+
+        for(CompletableFuture<ResultSet> f : futures) {
+            final Result r = f.get().one();
+            assertEquals(11100, r.getInt());
+        }
+
+        client.close();
+        cluster.close();
+    }
 }

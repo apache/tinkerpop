@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import javax.script.SimpleBindings;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -149,7 +150,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         context.getChannelHandlerContext().channel().attr(StateKey.SESSION).set(session);
 
         evalOpInternal(context, session::getGremlinExecutor, () -> {
-            final Bindings bindings = session.getBindings();
+            final Bindings bindings = new SimpleBindings();
+            bindings.putAll(session.getBindings());
 
             // parameter bindings override session bindings if present
             Optional.ofNullable((Map<String, Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);

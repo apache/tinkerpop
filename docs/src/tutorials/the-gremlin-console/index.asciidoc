@@ -258,6 +258,8 @@ t = g.V(1).outE().group().by(label).by(inV());null
 t.next()
 ----
 
+TIP: In addition to "returning null", you could also return an empty list as in: `t = g.V(1);[]'.
+
 image:gremlin-console-ide.png[float=left,width=300] The first line assigns the `Traversal` to `t`, but the line itself
 is actually two lines of code as denoted by the semi-colon. The line of execution actually returns `null`, which is
 what the console actual auto-iterates. At that point you can work with `t` as you desire.
