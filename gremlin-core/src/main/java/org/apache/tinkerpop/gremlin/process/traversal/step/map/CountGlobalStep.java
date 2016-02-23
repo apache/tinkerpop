@@ -55,7 +55,7 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
 
     ///////////
 
-    private static class CountBiOperator implements BinaryOperator<Long>, Serializable {
+    public static class CountBiOperator implements BinaryOperator<Long>, Serializable {
 
         @Override
         public Long apply(final Long mutatingSeed, final Long count) {

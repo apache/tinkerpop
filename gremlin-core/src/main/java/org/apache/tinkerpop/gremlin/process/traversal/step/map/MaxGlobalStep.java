@@ -57,7 +57,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     /////
 
-    private static class MaxGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+    public static class MaxGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
         @Override
         public S apply(final S mutatingSeed, final S number) {
             return !NAN.equals(mutatingSeed) ? (S) max(mutatingSeed, number) : number;

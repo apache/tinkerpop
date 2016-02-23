@@ -56,7 +56,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     /////
 
-    private static class MinGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+    public static class MinGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
         @Override
         public S apply(final S mutatingSeed, final S number) {
             return !NAN.equals(mutatingSeed) ? (S) min(mutatingSeed, number) : number;

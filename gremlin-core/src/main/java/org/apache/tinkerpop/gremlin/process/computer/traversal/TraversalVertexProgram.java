@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -189,6 +190,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 if (memory.exists(ReducingBarrierStep.REDUCING)) {
                     if (reducingBarrierStep instanceof GroupStep)
                         memory.set(ReducingBarrierStep.REDUCING, ((GroupStep) reducingBarrierStep).getReducedMap(memory.get(ReducingBarrierStep.REDUCING)));
+                    else if(reducingBarrierStep instanceof GroupStepV3d0)
+                        memory.set(ReducingBarrierStep.REDUCING, ((GroupStepV3d0) reducingBarrierStep).getReducedMap(memory.get(ReducingBarrierStep.REDUCING)));
                     else
                         memory.set(ReducingBarrierStep.REDUCING, FinalGet.tryFinalGet(memory.get(ReducingBarrierStep.REDUCING)));
                 }

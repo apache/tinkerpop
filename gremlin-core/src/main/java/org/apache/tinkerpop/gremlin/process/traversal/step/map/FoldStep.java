@@ -72,7 +72,7 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
     /////////
 
-    private static class ListBiOperator<S> implements BinaryOperator<List<S>>, Serializable {
+    public static class ListBiOperator<S> implements BinaryOperator<List<S>>, Serializable {
         @Override
         public List<S> apply(final List<S> mutatingSeed, final List<S> list) {
             mutatingSeed.addAll(list);
@@ -80,7 +80,7 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
         }
     }
 
-    private static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
+    public static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
 
         private final BiFunction biFunction;
 

@@ -139,7 +139,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
     public void shouldPersistRDDAcrossJobs() throws Exception {
-
+        Spark.create("local[4]");
         final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDTest.class, UUID.randomUUID().toString());
         final String rddName2 = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDTest.class, UUID.randomUUID().toString());
         final Configuration configuration = super.getBaseConfiguration();
@@ -157,8 +157,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                                 "gremlin-groovy",
                                 "g.V().count()").create(graph)).submit().get();
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
-        assertTrue(Spark.hasRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("reducing"))));
-        assertEquals(2, Spark.getContext().getPersistentRDDs().size());
+        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
@@ -167,8 +166,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         graph = GraphFactory.open(configuration);
         assertEquals(6, graph.traversal().withComputer(SparkGraphComputer.class).V().out().count().next().longValue());
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
-        assertTrue(Spark.hasRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("reducing"))));
-        assertEquals(2, Spark.getContext().getPersistentRDDs().size());
+        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
         Spark.close();
     }
 

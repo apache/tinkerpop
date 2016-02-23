@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,9 +80,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         } else
             traverserSet.add(traverser);
 
-        final Map<K, V> map = new HashMap<>();
-        map.put(key, (V) traverserSet);
-        return map;
+        return Collections.singletonMap(key, (V) traverserSet);
     }
 
     @Override
@@ -152,7 +151,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     ///////////
 
-    private static class GroupComputerBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+    public static final class GroupComputerBiOperator<S, K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
         private GroupComputerBiOperator() {
         }
@@ -171,11 +170,11 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         }
     }
 
-    private static class GroupStandardBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+    public static final class GroupStandardBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
         private final GroupStep groupStep;
 
-        private GroupStandardBiOperator(final GroupStep groupStep) {
+        public GroupStandardBiOperator(final GroupStep groupStep) {
             this.groupStep = groupStep;
         }
 

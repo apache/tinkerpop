@@ -109,7 +109,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
 
     ///////////
 
-    private static class TreeBiOperator implements BinaryOperator<Tree>, Serializable {
+    public static final class TreeBiOperator implements BinaryOperator<Tree>, Serializable {
 
         @Override
         public Tree apply(final Tree mutatingSeed, final Tree tree) {

@@ -61,7 +61,7 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     /////
 
-    private static class SumGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+    public static class SumGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
 
         @Override
         public S apply(final S mutatingSeed, final S number) {

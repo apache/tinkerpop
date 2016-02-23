@@ -68,7 +68,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
                 // the type is embedded in the stream so it can just read it from there and return it as needed.
                 // presumably that will cast nicely to T
                 return (T) gryoReader.readObject(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input)), Object.class);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         });
@@ -81,7 +81,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 gryoWriter.writeObject(outputStream, this.t);
                 WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         });

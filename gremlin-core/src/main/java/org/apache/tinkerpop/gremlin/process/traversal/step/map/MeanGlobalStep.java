@@ -61,11 +61,19 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     /////
 
-    private static class MeanGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+    public static final class MeanGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
 
         @Override
         public S apply(final S mutatingSeed, final S number) {
-            return (S) (number instanceof MeanNumber ? ((MeanNumber) mutatingSeed).add((MeanNumber) number) : ((MeanNumber) mutatingSeed).add(number, 1l));
+            if (mutatingSeed instanceof MeanNumber) {
+                return (number instanceof MeanNumber) ?
+                        (S) ((MeanNumber) mutatingSeed).add((MeanNumber) number) :
+                        (S) ((MeanNumber) mutatingSeed).add(number, 1l);
+            } else {
+                return (number instanceof MeanNumber) ?
+                        (S) ((MeanNumber) number).add(mutatingSeed, 1l) :
+                        (S) new MeanNumber(number, 1l).add(mutatingSeed, 1l);
+            }
         }
     }
 

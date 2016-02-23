@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import org.apache.spark.Accumulator;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
@@ -46,22 +47,23 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     public final Map<String, MemoryComputeKey> memoryKeys = new HashMap<>();
     private final AtomicInteger iteration = new AtomicInteger(0);   // do these need to be atomics?
     private final AtomicLong runtime = new AtomicLong(0l);
-    private final Map<String, Accumulator> memory = new HashMap<>();
+    private final Map<String, Accumulator<ObjectWritable>> memory = new HashMap<>();
     private Broadcast<Map<String, Object>> broadcast;
     private boolean inTask = false;
 
     public SparkMemory(final VertexProgram<?> vertexProgram, final Set<MapReduce> mapReducers, final JavaSparkContext sparkContext) {
         if (null != vertexProgram) {
             for (final MemoryComputeKey key : vertexProgram.getMemoryComputeKeys()) {
-                MemoryHelper.validateKey(key.getKey());
                 this.memoryKeys.put(key.getKey(), key);
             }
         }
         for (final MapReduce mapReduce : mapReducers) {
             this.memoryKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), MemoryComputeKey.setOperator(), false));
         }
-        for (final MemoryComputeKey key : this.memoryKeys.values()) {
-            this.memory.put(key.getKey(), sparkContext.accumulator(null, key.getKey(), new MemoryAccumulator<>(key)));
+        for (final MemoryComputeKey memoryComputeKey : this.memoryKeys.values()) {
+            this.memory.put(
+                    memoryComputeKey.getKey(),
+                    sparkContext.accumulator(ObjectWritable.empty(), memoryComputeKey.getKey(), new MemoryAccumulator<>(memoryComputeKey)));
         }
         this.broadcast = sparkContext.broadcast(new HashMap<>());
     }
@@ -73,7 +75,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         else {
             final Set<String> trueKeys = new HashSet<>();
             this.memory.forEach((key, value) -> {
-                if (value.value() != null)
+                if (!value.value().isEmpty())
                     trueKeys.add(key);
             });
             return Collections.unmodifiableSet(trueKeys);
@@ -107,18 +109,18 @@ public final class SparkMemory implements Memory.Admin, Serializable {
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
-        final R r = this.getValue(key);
-        if (null == r)
+        final ObjectWritable<R> r = (ObjectWritable<R>) (this.inTask ? this.broadcast.value().get(key) : this.memory.get(key).value());
+        if (r.isEmpty())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
-            return r;
+            return r.get();
     }
 
     @Override
     public void add(final String key, final Object value) {
         checkKeyValue(key, value);
         if (this.inTask)
-            this.memory.get(key).add(value);
+            this.memory.get(key).add(new ObjectWritable<>(value));
         else
             throw Memory.Exceptions.memoryAddOnlyDuringVertexProgramExecute(key);
     }
@@ -129,7 +131,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         if (this.inTask)
             throw Memory.Exceptions.memorySetOnlyDuringVertexProgramSetUpAndTerminate(key);
         else
-            this.memory.get(key).setValue(value);
+            this.memory.get(key).setValue(new ObjectWritable<>(value));
     }
 
     @Override
@@ -149,7 +151,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         this.broadcast.destroy(true); // do we need to block?
         final Map<String, Object> toBroadcast = new HashMap<>();
         this.memory.forEach((key, object) -> {
-            if (null != object.value())
+            if (!object.value().isEmpty())
                 toBroadcast.put(key, object.value());
         });
         this.broadcast = sparkContext.broadcast(toBroadcast);
@@ -159,9 +161,5 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         if (!this.memoryKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
-    }
-
-    private <R> R getValue(final String key) {
-        return this.inTask ? (R) this.broadcast.value().get(key) : (R) this.memory.get(key).value();
     }
 }

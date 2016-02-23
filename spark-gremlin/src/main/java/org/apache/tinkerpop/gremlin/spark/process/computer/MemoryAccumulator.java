@@ -20,12 +20,13 @@
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.spark.AccumulatorParam;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MemoryAccumulator<A> implements AccumulatorParam<A> {
+public final class MemoryAccumulator<A> implements AccumulatorParam<ObjectWritable<A>> {
 
     private final MemoryComputeKey<A> memoryComputeKey;
 
@@ -34,25 +35,21 @@ public final class MemoryAccumulator<A> implements AccumulatorParam<A> {
     }
 
     @Override
-    public A addAccumulator(final A a, final A b) {
-        if (null == a)
+    public ObjectWritable<A> addAccumulator(final ObjectWritable<A> a, final ObjectWritable<A> b) {
+        if (a.isEmpty())
             return b;
-        if (null == b)
+        if (b.isEmpty())
             return a;
-        return this.memoryComputeKey.getReducer().apply(a, b);
+        return new ObjectWritable<>(this.memoryComputeKey.getReducer().apply(a.get(), b.get()));
     }
 
     @Override
-    public A addInPlace(final A a, final A b) {
-        if (null == a)
-            return b;
-        if (null == b)
-            return a;
-        return this.memoryComputeKey.getReducer().apply(a, b);
+    public ObjectWritable<A> addInPlace(final ObjectWritable<A> a, final ObjectWritable<A> b) {
+        return this.addAccumulator(a, b);
     }
 
     @Override
-    public A zero(final A a) {
-        return null;
+    public ObjectWritable<A> zero(final ObjectWritable<A> a) {
+        return ObjectWritable.empty();
     }
 }
