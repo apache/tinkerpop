@@ -35,15 +35,14 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-server</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-server</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -71,7 +70,7 @@ limitations under the License.
                 <version>2.17</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <log4j.configuration>file:conf/log4j.properties</log4j.configuration>
+                        <log4j.configuration>file:conf/log4j-test.properties</log4j.configuration>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

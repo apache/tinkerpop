@@ -1897,7 +1897,7 @@ You can use Maven to generate these example projects with a command like:
 
 [source,shell]
 $ mvn archetype:generate -DarchetypeGroupId=org.apache.tinkerpop -DarchetypeArtifactId=gremlin-archetype-server
-      -DarchetypeVersion=3.1.2-incubating -DgroupId=com.my -DartifactId=app
+      -DarchetypeVersion=x.y.z -DgroupId=com.my -DartifactId=app -Dversion=0.1 -DinteractiveMode=false
 
 This command will generate a new Maven project in a directory called "app" with a `pom.xml` specifying a `groupId` of
 `com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and

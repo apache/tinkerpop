@@ -37,10 +37,10 @@ limitations under the License.
             <directory>src/main/java</directory>
         </fileSet>
         <fileSet filtered="true" packaged="true">
-            <directory>src/main/resources</directory>
+            <directory>src/test/java</directory>
         </fileSet>
         <fileSet filtered="true" packaged="true">
-            <directory>src/test/java</directory>
+            <directory>src/test/resources</directory>
         </fileSet>
     </fileSets>
 

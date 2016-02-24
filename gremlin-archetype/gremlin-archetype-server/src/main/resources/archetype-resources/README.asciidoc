@@ -33,6 +33,11 @@ Prerequisites
 Building and Running
 --------------------
 
+Build the project as follows:
+
+[source,text]
+mvn clean package
+
 Start Gremlin Server in the directory it was unpackaged and specify usage of the "modern" graph configuration:
 
 [source,text]
@@ -60,8 +65,7 @@ $ bin/gremlin-server.sh  conf/gremlin-server-modern.yaml
 [INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
 
-Build and run this project as follows:
+Run this project as follows:
 
 [source,text]
-mvn clean package
-mvn exec:java -Dexec.mainClass="${package}.App"
+mvn exec:java -Dexec.mainClass="${package}.App" -Dlog4j.configuration=file:conf/log4j.properties
