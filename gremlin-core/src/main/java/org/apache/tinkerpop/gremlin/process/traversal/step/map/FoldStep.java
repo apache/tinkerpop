@@ -82,7 +82,11 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
 
     public static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {
 
-        private final BiFunction biFunction;
+        private BiFunction biFunction;
+
+        private FoldBiOperator() {
+            // for serialization purposes
+        }
 
         public FoldBiOperator(final BiFunction biFunction) {
             this.biFunction = biFunction;
