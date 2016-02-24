@@ -388,7 +388,7 @@ public class ScriptEngines implements AutoCloseable {
                         providers.add((CompilerCustomizerProvider) providerClass.newInstance());
                     }
                 } catch(Exception ex) {
-                    logger.warn("Could not instantiate CompilerCustomizerProvider implementation [{}].  It will not be applied.", k);
+                    logger.warn(String.format("Could not instantiate CompilerCustomizerProvider implementation [%s].  It will not be applied.", k), ex);
                 }
             });
 

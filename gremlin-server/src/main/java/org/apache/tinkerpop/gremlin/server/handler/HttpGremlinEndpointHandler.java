@@ -180,7 +180,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             final String origin = req.headers().get(ORIGIN);
-            final boolean keepAlive = !isKeepAlive(req);
+            final boolean keepAlive = isKeepAlive(req);
 
             // not using the req any where below here - assume it is safe to release at this point.
             ReferenceCountUtil.release(msg);
