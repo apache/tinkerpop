@@ -118,6 +118,7 @@ limitations under the License.
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
+        <module>gremlin-archetype</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</connection>
@@ -277,6 +278,7 @@ limitations under the License.
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
+                        <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/main/ext/**</exclude>
