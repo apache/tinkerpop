@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
+import java.util.Iterator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -36,6 +38,19 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
     }
 
     protected abstract E supply();
+
+    @Override
+    public void addStarts(final Iterator<Traverser<S>> starts) {
+        if (starts.hasNext())
+            this.done = false;
+        super.addStarts(starts);
+    }
+
+    @Override
+    public void addStart(final Traverser<S> start) {
+        this.done = false;
+        super.addStart(start);
+    }
 
     @Override
     public void reset() {

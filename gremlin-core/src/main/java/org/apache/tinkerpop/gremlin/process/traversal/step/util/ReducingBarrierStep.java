@@ -94,17 +94,13 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             this.seed = this.reducingBiOperator.apply(this.seed, this.projectTraverser(this.starts.next()));
     }
 
-    public E generateFinalReduction(final Object reduction) {
-        return (E) reduction;
-    }
-
     @Override
     public Traverser<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.onGraphComputer ? this.seed : this.generateFinalReduction(this.seed), (Step) this, 1l);
+        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.onGraphComputer ? this.seed : FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
         this.seed = null;
         return traverser;
     }

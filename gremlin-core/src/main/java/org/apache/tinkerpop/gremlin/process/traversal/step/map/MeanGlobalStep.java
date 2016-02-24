@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -28,6 +29,7 @@ import org.apache.tinkerpop.gremlin.util.function.MeanNumberSupplier;
 
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -46,7 +48,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     public MeanGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) MeanNumberSupplier.instance());
-        this.setReducingBiOperator(new MeanGlobalBiOperator<>());
+        this.setReducingBiOperator(MeanGlobalBiOperator.INSTANCE);
     }
 
     @Override
@@ -60,13 +62,20 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     }
 
     @Override
-    public E generateFinalReduction(final Object reduction) {
-        return (E) ((MeanNumber) reduction).getFinal();
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(REDUCING, MeanGlobalBiOperator.INSTANCE, false, false));
+    }
+
+    @Override
+    public Object generateFinalResult(final Object a) {
+        return ((MeanNumber) a).getFinal();
     }
 
     /////
 
     public static final class MeanGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+
+        private static MeanGlobalBiOperator INSTANCE = new MeanGlobalBiOperator();
 
         @Override
         public S apply(final S mutatingSeed, final S number) {

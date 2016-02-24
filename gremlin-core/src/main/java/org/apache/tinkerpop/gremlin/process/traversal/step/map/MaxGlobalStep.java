@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -46,8 +48,13 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
     }
 
     @Override
-    public S projectTraverser(final Traverser.Admin<S> traverser) {
+    public S projectTraverser(Traverser.Admin<S> traverser) {
         return traverser.get();
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(REDUCING, MaxGlobalBiOperator.INSTANCE, false, false));
     }
 
     @Override
@@ -58,6 +65,9 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
     /////
 
     public static class MaxGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+
+        private static final MaxGlobalBiOperator INSTANCE = new MaxGlobalBiOperator();
+
         @Override
         public S apply(final S mutatingSeed, final S number) {
             return !NAN.equals(mutatingSeed) ? (S) max(mutatingSeed, number) : number;

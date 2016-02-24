@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+
+import java.util.Optional;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -25,4 +29,11 @@ public interface GraphComputing {
 
     public void onGraphComputer();
 
+    public default Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.empty();
+    }
+
+    public default Object generateFinalResult(final Object a) {
+        return a;
+    }
 }

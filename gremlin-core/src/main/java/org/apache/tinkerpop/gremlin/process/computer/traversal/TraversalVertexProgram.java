@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -57,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -81,6 +83,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
     private Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
+    private Set<String> sideEffectKeys = new HashSet<>();
     private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
             VertexComputeKey.of(HALTED_TRAVERSERS, false),
             VertexComputeKey.of(TraversalSideEffects.SIDE_EFFECTS, false)));
@@ -120,8 +123,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
             this.memoryComputeKeys.add(MemoryComputeKey.of(TraverserMapReduce.TRAVERSERS, MemoryComputeKey.setOperator(), false, false));
         }
-        for (final ReducingBarrierStep<?, ?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(ReducingBarrierStep.class, this.traversal.get())) {
-            this.memoryComputeKeys.add(MemoryComputeKey.of(ReducingBarrierStep.REDUCING, reducingBarrierStep.getBiOperator(), false, false));
+        for (final GraphComputing graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
+            graphComputing.getMemoryComputeKey().ifPresent(this.memoryComputeKeys::add);
+            graphComputing.getMemoryComputeKey().ifPresent(x -> this.sideEffectKeys.add(x.getKey()));
         }
     }
 
@@ -177,15 +181,24 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         } else {  // ITERATION 1+
             memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix, memory));
         }
+        this.traversal.get().getSideEffects().forEach((key, value) -> {
+            if (this.sideEffectKeys.contains(key) &&
+                    vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().containsKey(key)) {
+                memory.add(key, value);
+                vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().remove(key);
+            }
+        });
+
     }
 
     @Override
     public boolean terminate(final Memory memory) {
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         if (voteToHalt) {
-            for (final ReducingBarrierStep<?, ?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(ReducingBarrierStep.class, this.traversal.get())) {
-                if (memory.exists(ReducingBarrierStep.REDUCING))
-                    memory.set(ReducingBarrierStep.REDUCING, reducingBarrierStep.generateFinalReduction(memory.get(ReducingBarrierStep.REDUCING)));
+            for (final GraphComputing graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
+                graphComputing.getMemoryComputeKey().ifPresent(key -> {
+                    memory.set(key.getKey(), graphComputing.generateFinalResult(memory.get(key.getKey())));
+                });
             }
             return true;
         } else {

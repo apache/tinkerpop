@@ -19,9 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -34,9 +37,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
+public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> implements ByModulating, GraphComputing {
 
     private List<String> sideEffectKeys;
+    private transient Map<String, GraphComputing> sideEffectFinalizer;
+    private boolean onGraphComputer = false;
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
         super(traversal);
@@ -71,17 +76,52 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
     }
 
     @Override
+    public Traverser<E> processNextStart() {
+        if (null == this.sideEffectFinalizer) {  // and NOT onGraphComputer
+            this.sideEffectFinalizer = new HashMap<>();
+            for (final String key : this.sideEffectKeys) {
+                for (final GraphComputing graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, TraversalHelper.getRootTraversal(this.getTraversal()))) {
+                    if (graphComputing.getMemoryComputeKey().isPresent() && graphComputing.getMemoryComputeKey().get().getKey().equals(key)) {
+                        this.sideEffectFinalizer.put(key, graphComputing);
+                    }
+                }
+            }
+        }
+        return super.processNextStart();
+    }
+
+    @Override
     protected E supply() {
-        return this.sideEffectKeys.size() == 1 ?
-                FinalGet.tryFinalGet(this.getTraversal().asAdmin().getSideEffects().<E>get(this.sideEffectKeys.get(0)).get()) :
-                (E) this.getMapOfSideEffects();
+        if (this.sideEffectKeys.size() == 1) {
+            final String sideEffectKey = this.sideEffectKeys.get(0);
+            final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey).get();
+            if (!this.onGraphComputer && sideEffectKey.endsWith("destroy"))
+                this.getTraversal().getSideEffects().set(sideEffectKey, this.getTraversal().getSideEffects().getRegisteredSupplier(sideEffectKey).get().get());
+            final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
+            return (this.onGraphComputer || null == finalizer) ? result : (E) finalizer.generateFinalResult(result);
+        } else
+            return (E) this.getMapOfSideEffects();
     }
 
     public Map<String, Object> getMapOfSideEffects() {
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {
-            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> sideEffects.put(sideEffectKey, FinalGet.tryFinalGet(value)));
+            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> {
+                final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
+                sideEffects.put(sideEffectKey, (null == finalizer || this.onGraphComputer) ? value : finalizer.generateFinalResult(value));
+            });
         }
         return sideEffects;
+    }
+
+    // TODO: either expand or make this a strategy
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> traversal) throws UnsupportedOperationException {
+        ((ByModulating) this.getPreviousStep()).modulateBy(traversal);
+    }
+
+    @Override
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -48,7 +50,12 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
     public TreeStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) TreeSupplier.instance());
-        this.setReducingBiOperator(new TreeBiOperator());
+        this.setReducingBiOperator(TreeBiOperator.INSTANCE);
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(REDUCING, TreeBiOperator.INSTANCE, false, false));
     }
 
 
@@ -110,6 +117,8 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
     ///////////
 
     public static final class TreeBiOperator implements BinaryOperator<Tree>, Serializable {
+
+        private static final TreeBiOperator INSTANCE = new TreeBiOperator();
 
         @Override
         public Tree apply(final Tree mutatingSeed, final Tree tree) {

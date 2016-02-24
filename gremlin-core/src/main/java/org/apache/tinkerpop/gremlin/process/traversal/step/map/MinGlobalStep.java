@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -41,7 +43,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
     public MinGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>((S) NAN));
-        this.setReducingBiOperator(new MinGlobalBiOperator<>());
+        this.setReducingBiOperator(MinGlobalBiOperator.INSTANCE);
     }
 
     @Override
@@ -54,9 +56,17 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(REDUCING, MinGlobalBiOperator.INSTANCE, false, false));
+    }
+
     /////
 
     public static class MinGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
+
+        private static final MinGlobalBiOperator INSTANCE = new MinGlobalBiOperator();
+
         @Override
         public S apply(final S mutatingSeed, final S number) {
             return !NAN.equals(mutatingSeed) ? (S) min(mutatingSeed, number) : number;

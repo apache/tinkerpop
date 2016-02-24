@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -39,7 +41,7 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
     public CountGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(0L));
-        this.setReducingBiOperator(new CountBiOperator());
+        this.setReducingBiOperator(CountBiOperator.INSTANCE);
     }
 
     @Override
@@ -53,9 +55,16 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
         return REQUIREMENTS;
     }
 
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(REDUCING, CountBiOperator.INSTANCE, false, false));
+    }
+
     ///////////
 
     public static class CountBiOperator implements BinaryOperator<Long>, Serializable {
+
+        private static final CountBiOperator INSTANCE = new CountBiOperator();
 
         @Override
         public Long apply(final Long mutatingSeed, final Long count) {
