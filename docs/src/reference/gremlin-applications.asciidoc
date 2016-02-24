@@ -1186,7 +1186,7 @@ Considering Sessions
 
 The preferred approach for issuing requests to Gremlin Server is to do so in a sessionless manner.  The concept of
 "sessionless" refers to a request that is completely encapsulated within a single transaction, such that the script
-in the request starts with a new transaction and ends with closed transaction. Sessionless requests have automatic
+in the request starts with a new transaction and ends with a closed transaction. Sessionless requests have automatic
 transaction management handled by Gremlin Server, thus automatically opening and closing transactions as previously
 described.  The downside to the sessionless approach is that the entire script to be executed must be known at the
 time of submission so that it can all be executed at once.  This requirement makes it difficult for some use cases
