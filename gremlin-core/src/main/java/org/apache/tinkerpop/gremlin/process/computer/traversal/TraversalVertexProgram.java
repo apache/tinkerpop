@@ -125,7 +125,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
         for (final GraphComputing graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
             graphComputing.getMemoryComputeKey().ifPresent(this.memoryComputeKeys::add);
-            graphComputing.getMemoryComputeKey().ifPresent(x -> this.sideEffectKeys.add(x.getKey()));
+            graphComputing.getMemoryComputeKey().ifPresent(x -> this.sideEffectKeys.add(x.getKey())); // TODO: when no more MapReducers, you can remove this
         }
     }
 
@@ -182,8 +182,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix, memory));
         }
         this.traversal.get().getSideEffects().forEach((key, value) -> {
-            if (this.sideEffectKeys.contains(key) &&
-                    vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().containsKey(key)) {
+            if (this.sideEffectKeys.contains(key) && vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().containsKey(key)) {
                 memory.add(key, value);
                 vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().remove(key);
             }

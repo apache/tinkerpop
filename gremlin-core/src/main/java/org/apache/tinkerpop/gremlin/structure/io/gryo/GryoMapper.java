@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupStepV3d0;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
@@ -342,7 +343,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(SumGlobalStep.SumGlobalBiOperator.class, null, 121));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 122));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 123));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 124)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StoreStep.StoreBiOperator.class, null, 124));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 125)); // ***LAST ID**
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
