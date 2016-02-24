@@ -16,22 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Bob Briody (http://bobbriody.com)
  */
-public class ProfileStepTest extends StepTest {
+public final class ProfileMarkerStep<S> extends AbstractStep<S, S> {
+    public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
+
+    public ProfileMarkerStep(final Traversal.Admin traversal) {
+        super(traversal);
+    }
 
     @Override
-    protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.identity().profile());
+    protected Traverser<S> processNextStart() throws NoSuchElementException {
+        return this.starts.next();
     }
 }

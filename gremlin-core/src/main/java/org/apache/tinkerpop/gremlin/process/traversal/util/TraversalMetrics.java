@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.structure.Graph;
-
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -29,10 +27,6 @@ import java.util.concurrent.TimeUnit;
  * @author Bob Briody (http://bobbriody.com)
  */
 public interface TraversalMetrics {
-    /**
-     * The side-effect key used to store and retrieve the TraversalMetrics for a given Traversal.
-     */
-    public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
 
     /**
      * The MetricsId used to obtain the element count via Metrics.getCount(String countKey)

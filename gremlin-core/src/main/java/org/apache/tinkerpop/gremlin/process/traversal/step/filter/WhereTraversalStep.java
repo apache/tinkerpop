@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -135,7 +135,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
         protected Object map(final Traverser.Admin<S> traverser) {
             if (this.getTraversal().getEndStep() instanceof WhereEndStep)
                 ((WhereEndStep) this.getTraversal().getEndStep()).processStartTraverser(traverser);
-            else if (this.getTraversal().getEndStep() instanceof ProfileStep && this.getTraversal().getEndStep().getPreviousStep() instanceof WhereEndStep)     // TOTAL SUCKY HACK!
+            else if (this.getTraversal().getEndStep() instanceof ProfileSideEffectStep && this.getTraversal().getEndStep().getPreviousStep() instanceof WhereEndStep)     // TOTAL SUCKY HACK!
                 ((WhereEndStep) this.getTraversal().getEndStep().getPreviousStep()).processStartTraverser(traverser);
             return null == this.selectKey ? traverser.get() : this.getScopeValue(Pop.last, this.selectKey, traverser);
         }

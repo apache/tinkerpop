@@ -16,42 +16,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
+package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
-import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Bob Briody (http://bobbriody.com
  */
 public abstract class GroovyProfileTest {
 
     public static class Traversals extends ProfileTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_out_out_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
             g.V.out.out.profile() // locked traversal
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_repeatXbothX_timesX3X_profile() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.both()).times(3).profile()");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().where(__.in('created').count().is(1l)).values('name').profile()");
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().sideEffect{Thread.sleep(10)}.sideEffect{Thread.sleep(5)}.profile()")
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.match(__.as('a').out('created').as('b'), __.as('b').in.count.is(eq(1))).select('a', 'b').by('name').profile")
+        public Traversal<Vertex, TraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.match(__.as('a').out('created').as('b'), __.as('b').in.count.is(eq(1))).select('a', 'b').by('name').profile()")
         }
     }
 }
