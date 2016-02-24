@@ -84,7 +84,7 @@ public class TraversalExplanation implements Serializable {
     public String toString() {
         final String originalTraversal = "Original Traversal";
         final String finalTraversal = "Final Traversal";
-        final int maxStrategyColumnLength = this.strategyTraversals.stream().map(Pair::getValue0).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).get();
+        final int maxStrategyColumnLength = this.strategyTraversals.stream().map(Pair::getValue0).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).orElse(15);
         final int maxTraversalColumnLength = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream()).map(Pair::getValue1).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).get();
 
         final StringBuilder builder = new StringBuilder("Traversal Explanation\n");
@@ -115,7 +115,7 @@ public class TraversalExplanation implements Serializable {
         for (int i = 0; i < maxStrategyColumnLength - finalTraversal.length() + 7; i++) {
             builder.append(" ");
         }
-        builder.append(this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1());
+        builder.append(this.strategyTraversals.size() > 0 ? this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1() : this.traversal);
         return builder.toString();
     }
 
