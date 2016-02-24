@@ -130,6 +130,5 @@ final class GryoSerializers {
         public Path read(final Kryo kryo, final Input input, final Class<Path> pathClass) {
             return (Path) kryo.readClassAndObject(input);
         }
-
     }
 }
