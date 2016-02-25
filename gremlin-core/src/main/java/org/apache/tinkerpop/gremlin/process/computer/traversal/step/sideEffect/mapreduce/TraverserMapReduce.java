@@ -22,13 +22,11 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
@@ -57,7 +55,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
     private Comparator<Comparable> comparator = null;
     private CollectingBarrierStep<?> collectingBarrierStep = null;
     private boolean attachHaltedTraverser = false;
-    private RangeGlobalStep<?> rangeGlobalStep = null;
     private TailGlobalStep<?> tailGlobalStep = null;
     private boolean dedupGlobal = false;
 
@@ -96,8 +93,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
                 this.attachHaltedTraverser = ((TraversalParent) this.collectingBarrierStep).getLocalChildren().stream().filter(TraversalHelper::isBeyondElementId).findAny().isPresent();
             }
         }
-        if (traversalEndStep instanceof RangeGlobalStep)
-            this.rangeGlobalStep = ((RangeGlobalStep) traversalEndStep).clone();
         if (traversalEndStep instanceof TailGlobalStep)
             this.tailGlobalStep = ((TailGlobalStep) traversalEndStep).clone();
         if (traversalEndStep instanceof DedupGlobalStep)
@@ -107,7 +102,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || null != this.collectingBarrierStep || null != this.rangeGlobalStep || null != this.tailGlobalStep || this.dedupGlobal;
+        return stage.equals(Stage.MAP) || null != this.collectingBarrierStep || null != this.tailGlobalStep || this.dedupGlobal;
     }
 
     @Override
@@ -161,11 +156,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
             }
             this.collectingBarrierStep.barrierConsumer((TraverserSet) traverserSet);
             return (Iterator) traverserSet.iterator();
-        } else if (null != this.rangeGlobalStep) {
-            final RangeGlobalStep<?> rangeGlobalStep = this.rangeGlobalStep;
-            rangeGlobalStep.setBypass(false);
-            rangeGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
-            return (Iterator) rangeGlobalStep;
         } else if (null != this.tailGlobalStep) {
             final TailGlobalStep<?> tailGlobalStep = this.tailGlobalStep;
             tailGlobalStep.setBypass(false);

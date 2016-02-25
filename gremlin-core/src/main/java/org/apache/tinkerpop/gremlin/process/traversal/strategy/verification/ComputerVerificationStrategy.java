@@ -65,7 +65,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             ReducingBarrierStep.class,
             SupplyingBarrierStep.class,
             OrderGlobalStep.class,
-            RangeGlobalStep.class,
             TailGlobalStep.class,
             DedupGlobalStep.class));
 
@@ -114,7 +113,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                     throw new VerificationException("The final CollectingBarrierStep can not operate on edges or their properties:" + endStep, traversal);
             }
             ///
-            if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
+            if (endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
                 ((Bypassing) endStep).setBypass(true);
             if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
                 throw new VerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);

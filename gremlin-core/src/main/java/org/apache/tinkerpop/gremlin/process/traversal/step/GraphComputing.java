@@ -25,7 +25,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphComputing {
+public interface GraphComputing<R> {
 
     public void onGraphComputer();
 
@@ -33,7 +33,7 @@ public interface GraphComputing {
         return Optional.empty();
     }
 
-    public default Object generateFinalResult(final Object a) {
+    public default R generateFinalResult(final R a) {
         return a;
     }
 }

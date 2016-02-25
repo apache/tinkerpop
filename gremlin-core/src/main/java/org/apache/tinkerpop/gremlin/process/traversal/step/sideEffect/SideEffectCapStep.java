@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -37,7 +36,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> implements ByModulating, GraphComputing {
+public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> implements GraphComputing {
 
     private List<String> sideEffectKeys;
     private transient Map<String, GraphComputing> sideEffectFinalizer;
@@ -80,7 +79,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
         if (!this.onGraphComputer && null == this.sideEffectFinalizer) {
             this.sideEffectFinalizer = new HashMap<>();
             for (final String key : this.sideEffectKeys) {
-                for (final GraphComputing graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, TraversalHelper.getRootTraversal(this.getTraversal()))) {
+                for (final GraphComputing<?> graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, TraversalHelper.getRootTraversal(this.getTraversal()))) {
                     if (graphComputing.getMemoryComputeKey().isPresent() && graphComputing.getMemoryComputeKey().get().getKey().equals(key)) {
                         this.sideEffectFinalizer.put(key, graphComputing);
                     }
@@ -118,12 +117,6 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
             });
         }
         return sideEffects;
-    }
-
-    // TODO: either expand or make this a strategy
-    @Override
-    public void modulateBy(final Traversal.Admin<?, ?> traversal) throws UnsupportedOperationException {
-        ((ByModulating) this.getPreviousStep()).modulateBy(traversal);
     }
 
     @Override
