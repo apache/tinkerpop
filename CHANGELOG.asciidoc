@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Apache Groovy 2.4.6.
 * Added the `gremlin-archetype-server` archetype that demonstrates
 * Added the `gremlin-archetype-tinkergraph` archetype that demonstrates a basic project that uses TinkerGraph.
 * Added `gremlin-archetype` module to house TinkerPop "examples".
