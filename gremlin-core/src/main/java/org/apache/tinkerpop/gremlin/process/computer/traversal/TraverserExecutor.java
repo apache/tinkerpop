@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -108,8 +110,8 @@ public final class TraverserExecutor {
     private static void drainStep(final Step<?, ?> step, final TraverserSet<?> aliveTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
         if (step instanceof ReducingBarrierStep) {
             memory.add(ReducingBarrierStep.REDUCING, step.next().get());
-        } else if (step instanceof RangeGlobalStep) {
-            ((RangeGlobalStep) step).setBypass(true);
+        } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep) {
+            ((Bypassing) step).setBypass(true);
             final TraverserSet<?> traverserSet = new TraverserSet<>();
             step.forEachRemaining(traverser -> {
                 traverser.asAdmin().detach();

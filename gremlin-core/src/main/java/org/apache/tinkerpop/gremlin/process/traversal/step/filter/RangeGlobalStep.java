@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,7 +41,7 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, GraphComputing<TraverserSet>, Bypassing {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, GraphComputing<TraverserSet<S>>, Bypassing {
 
     private long low;
     private final long high;
@@ -139,9 +140,9 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     }
 
     @Override
-    public TraverserSet generateFinalResult(final TraverserSet traverserSet) {
-        final TraverserSet resultSet = new TraverserSet();
-        this.addStarts(traverserSet.iterator());
+    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
+        final TraverserSet<S> resultSet = new TraverserSet<>();
+        this.addStarts((Iterator) traverserSet.iterator());
         this.forEachRemaining(t -> resultSet.add(t.asAdmin()));
         return resultSet;
     }

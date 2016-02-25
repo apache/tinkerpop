@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -120,7 +121,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             this.mapReducers.add(mapReducer.getMapReduce());
             this.memoryComputeKeys.add(MemoryComputeKey.of(mapReducer.getMapReduce().getMemoryKey(), MemoryComputeKey.setOperator(), false, false));
         }
-        if (!(this.traversal.get().getEndStep() instanceof SideEffectCapStep) && !(this.traversal.get().getEndStep() instanceof ReducingBarrierStep) && !(this.traversal.get().getEndStep() instanceof RangeGlobalStep)) {
+        if (!(this.traversal.get().getEndStep() instanceof SideEffectCapStep) &&
+                !(this.traversal.get().getEndStep() instanceof ReducingBarrierStep) &&
+                !(this.traversal.get().getEndStep() instanceof RangeGlobalStep) &&
+                !(this.traversal.get().getEndStep() instanceof TailGlobalStep)) {
             this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
         }
 
@@ -204,8 +208,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 graphComputing.getMemoryComputeKey().ifPresent(memoryKey -> {
                     final String key = memoryKey.getKey();
                     if (memory.exists(key)) {
-                        if(graphComputing instanceof RangeGlobalStep) {
-                            memory.set(TraverserMapReduce.TRAVERSERS, ((TraverserSet)graphComputing.generateFinalResult(memory.get(key))).iterator());
+                        if (graphComputing instanceof RangeGlobalStep || graphComputing instanceof TailGlobalStep) {
+                            memory.set(TraverserMapReduce.TRAVERSERS, ((TraverserSet) graphComputing.generateFinalResult(memory.get(key))).iterator());
                         } else {
                             memory.set(key, graphComputing.generateFinalResult(memory.get(key)));
                         }

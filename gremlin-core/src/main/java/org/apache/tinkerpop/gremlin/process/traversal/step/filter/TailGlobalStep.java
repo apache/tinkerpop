@@ -18,22 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, GraphComputing<TraverserSet<S>> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
@@ -115,5 +122,41 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             this.tailBulk -= bulk;
         }
         this.tail.add(start);
+    }
+
+    @Override
+    public void onGraphComputer() {
+
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(this.getId(), new TailBiOperator(this.limit), false, true));
+    }
+
+    @Override
+    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
+        final TraverserSet<S> resultSet = new TraverserSet<>();
+        this.addStarts((Iterator) traverserSet.iterator());
+        this.forEachRemaining(t -> resultSet.add(t.asAdmin()));
+        return resultSet;
+    }
+
+    /////////////////////
+
+    public static final class TailBiOperator implements BinaryOperator<TraverserSet>, Serializable {
+
+        private final long limit;
+
+        public TailBiOperator(final long limit) {
+            this.limit = limit;
+        }
+
+        @Override
+        public TraverserSet apply(final TraverserSet mutatingSeed, final TraverserSet set) {
+            if (mutatingSeed.size() < this.limit)
+                mutatingSeed.addAll(set);
+            return mutatingSeed;
+        }
     }
 }
