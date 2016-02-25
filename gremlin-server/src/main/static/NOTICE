@@ -13,9 +13,6 @@ under the Apache License 2.0 (see: StringUtils.containsWhitespace())
 ------------------------------------------------------------------------
 Apache Groovy (AL ASF)
 ------------------------------------------------------------------------
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/).
-
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
 
