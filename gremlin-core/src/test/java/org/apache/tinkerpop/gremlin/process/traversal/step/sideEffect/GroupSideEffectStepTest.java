@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,20 +29,17 @@ import java.util.List;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class GroupCountStepTest extends StepTest {
+public class GroupSideEffectStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.groupCount("x"),
-                __.groupCount("x").by("name"),
-                __.groupCount("x").by("age"),
-                __.groupCount("y"),
-                __.groupCount("y").by("name"),
-                __.groupCount("y").by("age"),
-                __.groupCount(),
-                __.groupCount().by("name"),
-                __.groupCount().by("age")
+                __.group("x").by(T.label),
+                __.group("x").by(T.label).by("name"),
+                __.group("x").by(T.label).by(__.values("name").count()),
+                __.group("y").by(T.label),
+                __.group("y").by(T.label).by("name"),
+                __.group("y").by(T.label).by(__.values("name").count())
         );
     }
 }

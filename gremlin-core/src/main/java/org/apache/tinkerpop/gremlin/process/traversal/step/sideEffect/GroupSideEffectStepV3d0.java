@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -33,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,13 +41,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Deprecated
-public final class GroupStepV3d0<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, GraphComputing {
+public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, GraphComputing {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
@@ -55,7 +54,7 @@ public final class GroupStepV3d0<S, K, V, R> extends SideEffectStep<S> implement
     private Traversal.Admin<Collection<V>, R> reduceTraversal = null;
     private String sideEffectKey;
 
-    public GroupStepV3d0(final Traversal.Admin traversal, final String sideEffectKey) {
+    public GroupSideEffectStepV3d0(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
@@ -63,7 +62,7 @@ public final class GroupStepV3d0<S, K, V, R> extends SideEffectStep<S> implement
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getSideEffectKey(), GroupBiOperatorV3d0.INSTANCE, false, false));
+        return Optional.of(MemoryComputeKey.of(this.getSideEffectKey(), GroupStepV3d0.GroupBiOperatorV3d0.instance(), false, false));
     }
 
     @Override
@@ -137,8 +136,8 @@ public final class GroupStepV3d0<S, K, V, R> extends SideEffectStep<S> implement
     }
 
     @Override
-    public GroupStepV3d0<S, K, V, R> clone() {
-        final GroupStepV3d0<S, K, V, R> clone = (GroupStepV3d0<S, K, V, R>) super.clone();
+    public GroupSideEffectStepV3d0<S, K, V, R> clone() {
+        final GroupSideEffectStepV3d0<S, K, V, R> clone = (GroupSideEffectStepV3d0<S, K, V, R>) super.clone();
         if (null != this.keyTraversal)
             clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
         if (null != this.valueTraversal)
@@ -156,27 +155,4 @@ public final class GroupStepV3d0<S, K, V, R> extends SideEffectStep<S> implement
         if (this.reduceTraversal != null) result ^= this.reduceTraversal.hashCode();
         return result;
     }
-
-    //////////
-
-    @Deprecated
-    public static class GroupBiOperatorV3d0<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
-
-        private final static GroupBiOperatorV3d0 INSTANCE = new GroupBiOperatorV3d0();
-
-        @Override
-        public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
-            for (final K key : map.keySet()) {
-                final BulkSet<V> values = (BulkSet<V>) map.get(key);
-                BulkSet<V> seedValues = (BulkSet<V>) mutatingSeed.get(key);
-                if (null == seedValues) {
-                    seedValues = new BulkSet<>();
-                    mutatingSeed.put(key, (V) seedValues);
-                }
-                seedValues.addAll(values);
-            }
-            return mutatingSeed;
-        }
-    }
-
 }

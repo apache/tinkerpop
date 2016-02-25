@@ -100,7 +100,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.onGraphComputer ? this.seed : FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
+        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.onGraphComputer ? this.seed : this.generateFinalResult(this.seed), (Step) this, 1l);
         this.seed = null;
         return traverser;
     }

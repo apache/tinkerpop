@@ -79,8 +79,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         Spark.create("local[4]");
         int counter = 0;
         for (final String storageLevel : Arrays.asList("MEMORY_ONLY", "DISK_ONLY", "MEMORY_ONLY_SER", "MEMORY_AND_DISK_SER")) {
-            assertEquals(counter * 3, Spark.getRDDs().size());
-            assertEquals(counter * 3, Spark.getContext().getPersistentRDDs().size());
+            assertEquals(counter * 2, Spark.getRDDs().size());
+            assertEquals(counter * 2, Spark.getContext().getPersistentRDDs().size());
             counter++;
             final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDTest.class, UUID.randomUUID().toString());
             final Configuration configuration = super.getBaseConfiguration();
@@ -100,13 +100,11 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                                     "g.V().groupCount('m').by('name').out()").create(graph)).submit().get();
             ////////
             assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
-            assertTrue(Spark.hasRDD(Constants.getMemoryLocation(rddName, "m")));
             assertTrue(Spark.hasRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("traversers"))));
             assertEquals(StorageLevel.fromString(storageLevel), Spark.getRDD(Constants.getGraphLocation(rddName)).getStorageLevel());
-            assertEquals(StorageLevel.fromString(storageLevel), Spark.getRDD(Constants.getMemoryLocation(rddName, "m")).getStorageLevel());
             assertEquals(StorageLevel.fromString(storageLevel), Spark.getRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("traversers"))).getStorageLevel());
-            assertEquals(counter * 3, Spark.getRDDs().size());
-            assertEquals(counter * 3, Spark.getContext().getPersistentRDDs().size());
+            assertEquals(counter * 2, Spark.getRDDs().size());
+            assertEquals(counter * 2, Spark.getContext().getPersistentRDDs().size());
             //System.out.println(SparkContextStorage.open().ls());
         }
         Spark.close();

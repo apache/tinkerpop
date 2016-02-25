@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
+
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -42,31 +42,19 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountStep<S, E> extends SideEffectStep<S> implements SideEffectCapable, GraphComputing, TraversalParent, ByModulating {
+public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements TraversalParent, ByModulating {
 
     private Traversal.Admin<S, E> keyTraversal = null;
-    private String sideEffectKey;
 
-    public GroupCountStep(final Traversal.Admin traversal, final String sideEffectKey) {
+    public GroupCountStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.sideEffectKey = sideEffectKey;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
+        this.setSeedSupplier(HashMapSupplier.instance());
+        this.setReducingBiOperator(GroupCountBiOperator.instance());
     }
 
     @Override
-    protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final Map<Object, Long> groupCountMap = traverser.sideEffects(this.sideEffectKey);
-        MapHelper.incr(groupCountMap, TraversalUtil.applyNullable(traverser.asAdmin(), this.keyTraversal), traverser.bulk());
-    }
-
-    @Override
-    public String getSideEffectKey() {
-        return this.sideEffectKey;
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.stepString(this, this.sideEffectKey, this.keyTraversal);
+    public Map<E, Long> projectTraverser(final Traverser.Admin<S> traverser) {
+        return Collections.singletonMap(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
     }
 
     @Override
@@ -81,7 +69,17 @@ public final class GroupCountStep<S, E> extends SideEffectStep<S> implements Sid
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.BULK, TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(TraverserRequirement.BULK);
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(REDUCING, GroupCountBiOperator.instance(), false, false));
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
+        this.keyTraversal = this.integrateChild(keyTraversal);
     }
 
     @Override
@@ -94,41 +92,32 @@ public final class GroupCountStep<S, E> extends SideEffectStep<S> implements Sid
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.sideEffectKey.hashCode();
+        int result = super.hashCode();
         if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
         return result;
     }
 
     @Override
-    public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
-        this.keyTraversal = this.integrateChild(keyTraversal);
+    public String toString() {
+        return StringFactory.stepString(this, this.keyTraversal);
     }
 
-    @Override
-    public void onGraphComputer() {
-
-    }
-
-    @Override
-    public Object generateFinalResult(final Object map) {
-        return map;
-    }
-
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getSideEffectKey(), GroupCountBiOperator.INSTANCE, false, false));
-    }
-
-    ///////
+    ///////////////////////////
 
     public static final class GroupCountBiOperator<E> implements BinaryOperator<Map<E, Long>>, Serializable {
 
-        private static GroupCountBiOperator INSTANCE = new GroupCountBiOperator();
+        private static final GroupCountBiOperator INSTANCE = new GroupCountBiOperator();
 
         @Override
         public Map<E, Long> apply(final Map<E, Long> mutatingSeed, final Map<E, Long> map) {
-            map.forEach((k, v) -> MapHelper.incr(mutatingSeed, k, v));
+            for (final Map.Entry<E, Long> entry : map.entrySet()) {
+                MapHelper.incr(mutatingSeed, entry.getKey(), entry.getValue());
+            }
             return mutatingSeed;
+        }
+
+        public static final <E> GroupCountBiOperator<E> instance() {
+            return INSTANCE;
         }
     }
 }

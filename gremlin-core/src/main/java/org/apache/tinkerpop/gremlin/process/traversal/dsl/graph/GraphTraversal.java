@@ -72,6 +72,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
@@ -107,9 +110,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupStepV3d0;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
@@ -144,7 +147,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -638,8 +640,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
-        final String id = UUID.randomUUID().toString();
-        return this.asAdmin().addStep(new GroupStep<>(this.asAdmin(), id)).cap(id);
+        return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
     }
 
     /**
@@ -647,13 +648,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default <K, V> GraphTraversal<S, Map<K, V>> groupV3d0() {
-        final String id = UUID.randomUUID().toString();
-        return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin(), id)).cap(id);
+        return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin()));
     }
 
     public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
-        final String id = UUID.randomUUID().toString() + "destroy";
-        return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin(), id)).cap(id);
+        return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Tree> tree() {
@@ -989,18 +988,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
-        return this.asAdmin().addStep(new GroupStep<>(this.asAdmin(), sideEffectKey));
+        return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     /**
      * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
      */
     public default GraphTraversal<S, E> groupV3d0(final String sideEffectKey) {
-        return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin(), sideEffectKey));
+        return this.asAdmin().addStep(new GroupSideEffectStepV3d0<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
-        return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin(), sideEffectKey));
+        return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {

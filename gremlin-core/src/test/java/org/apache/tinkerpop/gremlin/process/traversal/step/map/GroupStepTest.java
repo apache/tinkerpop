@@ -17,9 +17,8 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -28,20 +27,17 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@Deprecated
-public class GroupStepV3d0Test extends StepTest {
+public class GroupStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.groupV3d0().by(T.label),
-                __.groupV3d0().by(T.label).by("name"),
-                __.groupV3d0().by(T.label).by("name").by(count(Scope.local))
+                __.group().by(T.label),
+                __.group().by(T.label).by("name"),
+                __.group().by(T.label).by(__.values("name").count())
         );
     }
 }

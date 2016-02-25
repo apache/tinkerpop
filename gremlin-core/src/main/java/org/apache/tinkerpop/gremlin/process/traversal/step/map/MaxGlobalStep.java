@@ -38,13 +38,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.max;
  */
 public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
 
-
     private static final Double NAN = Double.valueOf(Double.NaN);
 
     public MaxGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>((S) NAN));
-        this.setReducingBiOperator(new MaxGlobalBiOperator<>());
+        this.setReducingBiOperator(MaxGlobalBiOperator.INSTANCE);
     }
 
     @Override
