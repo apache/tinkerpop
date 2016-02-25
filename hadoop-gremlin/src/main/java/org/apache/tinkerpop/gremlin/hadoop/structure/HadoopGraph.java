@@ -152,16 +152,16 @@ import java.util.stream.Stream;
         method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectTest$Traversals",
-        method = "g_V_out_out_profile_grateful",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest$Traversals",
+        method = "g_V_out_out_profile_gratefulXmetrics_keyX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProfileTest$Traversals",
         method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyProfileSideEffectTest$Traversals",
-        method = "g_V_out_out_profile_grateful",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProfileTest$Traversals",
+        method = "g_V_out_out_profile_gratefulXmetrics_keyX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",

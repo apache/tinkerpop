@@ -73,7 +73,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGrou
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGroupTestV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyInjectTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyProfileSideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySideEffectCapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySideEffectTest;
@@ -162,7 +161,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyGroupTestV3d0.Traversals.class,
             GroovyGroupCountTest.Traversals.class,
             GroovyInjectTest.Traversals.class,
-            GroovyProfileSideEffectTest.Traversals.class,
             GroovySackTest.Traversals.class,
             GroovySideEffectCapTest.Traversals.class,
             GroovySideEffectTest.Traversals.class,

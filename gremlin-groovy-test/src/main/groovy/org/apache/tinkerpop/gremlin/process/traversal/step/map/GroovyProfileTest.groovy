@@ -54,6 +54,31 @@ public abstract class GroovyProfileTest {
         public Traversal<Vertex, TraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.match(__.as('a').out('created').as('b'), __.as('b').in.count.is(eq(1))).select('a', 'b').by('name').profile()")
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_out_out_profileXmetrics_keyX() {
+            g.V.out.out.profile('metrics_key') // locked traversal
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profileXmetrics_keyX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.both()).times(3).profile('metrics_key')");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profileXmetrics_keyX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().where(__.in('created').count().is(1l)).values('name').profile('metrics_key')");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().sideEffect{Thread.sleep(10)}.sideEffect{Thread.sleep(5)}.profile('metrics_key')")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profileXmetrics_keyX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.match(__.as('a').out('created').as('b'), __.as('b').in.count.is(eq(1))).select('a', 'b').by('name').profile('metrics_key')")
+        }
     }
 }
 
