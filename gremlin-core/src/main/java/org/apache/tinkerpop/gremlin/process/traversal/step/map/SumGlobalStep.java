@@ -61,11 +61,6 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
         return REQUIREMENTS;
     }
 
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, SumGlobalBiOperator.INSTANCE, false, false));
-    }
-
     /////
 
     public static class SumGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {

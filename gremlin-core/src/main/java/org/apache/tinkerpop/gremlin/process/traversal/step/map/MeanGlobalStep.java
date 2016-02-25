@@ -61,11 +61,6 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, MeanGlobalBiOperator.INSTANCE, false, false));
-    }
-
-    @Override
     public Object generateFinalResult(final Object a) {
         return ((MeanNumber) a).getFinal();
     }
@@ -74,7 +69,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
     public static final class MeanGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
 
-        private static MeanGlobalBiOperator INSTANCE = new MeanGlobalBiOperator();
+        private static final MeanGlobalBiOperator INSTANCE = new MeanGlobalBiOperator();
 
         @Override
         public S apply(final S mutatingSeed, final S number) {

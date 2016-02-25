@@ -49,15 +49,9 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
         return traverser.bulk();
     }
 
-
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, CountBiOperator.INSTANCE, false, false));
     }
 
     ///////////

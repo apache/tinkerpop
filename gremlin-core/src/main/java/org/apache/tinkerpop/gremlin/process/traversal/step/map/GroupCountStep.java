@@ -73,11 +73,6 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, GroupCountBiOperator.instance(), false, false));
-    }
-
-    @Override
     public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
         this.keyTraversal = this.integrateChild(keyTraversal);
     }

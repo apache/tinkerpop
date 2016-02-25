@@ -109,7 +109,7 @@ public final class TraverserExecutor {
 
     private static void drainStep(final Step<?, ?> step, final TraverserSet<?> aliveTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
         if (step instanceof ReducingBarrierStep) {
-            memory.add(ReducingBarrierStep.REDUCING, step.next().get());
+            memory.add(step.getId(), step.next().get());
         } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep) {
             ((Bypassing) step).setBypass(true);
             final TraverserSet<?> traverserSet = new TraverserSet<>();

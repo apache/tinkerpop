@@ -52,11 +52,6 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, MaxGlobalBiOperator.INSTANCE, false, false));
-    }
-
-    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -25,9 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
@@ -36,8 +37,6 @@ import java.util.function.Supplier;
  */
 
 public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier, GraphComputing {
-
-    public static final String REDUCING = Graph.Hidden.hide("reducing");
 
     protected Supplier<E> seedSupplier;
     protected BinaryOperator<E> reducingBiOperator;
@@ -116,5 +115,10 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     @Override
     public void onGraphComputer() {
         this.onGraphComputer = true;
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(this.getId(), this.getBiOperator(), false, true));
     }
 }

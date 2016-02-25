@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -35,7 +34,6 @@ import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -52,12 +50,6 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
         this.setSeedSupplier((Supplier) TreeSupplier.instance());
         this.setReducingBiOperator(TreeBiOperator.instance());
     }
-
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, TreeBiOperator.instance(), false, false));
-    }
-
 
     @Override
     public List<Traversal.Admin<Object, Object>> getLocalChildren() {

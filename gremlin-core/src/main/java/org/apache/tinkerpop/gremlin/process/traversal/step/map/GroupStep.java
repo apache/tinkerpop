@@ -92,11 +92,6 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, GroupBiOperator.computerInstance(), false, false));
-    }
-
-    @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         return GroupStep.doInitialProjection(traverser, (Traversal.Admin) this.keyTraversal, this.onGraphComputer ? this.valueTraversal : null);
     }

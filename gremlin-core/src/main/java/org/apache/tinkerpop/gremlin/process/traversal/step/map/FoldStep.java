@@ -55,12 +55,6 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, this.getBiOperator(), false, false));
-    }
-
-
-    @Override
     public E projectTraverser(final Traverser.Admin<S> traverser) {
         if (this.listFold) {
             final List<S> list = new ArrayList<>();

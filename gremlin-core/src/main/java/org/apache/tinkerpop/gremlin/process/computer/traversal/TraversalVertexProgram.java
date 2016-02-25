@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -146,10 +147,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void setup(final Memory memory) {
         memory.set(VOTE_TO_HALT, true);
         for (final ReducingBarrierStep<?, ?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(ReducingBarrierStep.class, this.traversal.get())) {
-            memory.set(ReducingBarrierStep.REDUCING, reducingBarrierStep.getSeedSupplier().get());
-        }
-        for (final RangeGlobalStep<?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(RangeGlobalStep.class, this.traversal.get())) {
-            memory.set(reducingBarrierStep.getId(), new TraverserSet<>());
+            memory.set(reducingBarrierStep.getId(), reducingBarrierStep.getSeedSupplier().get());
         }
     }
 
@@ -204,19 +202,22 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public boolean terminate(final Memory memory) {
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         if (voteToHalt) {
+            final TraverserSet<?> localTraversers = new TraverserSet<>();
             for (final GraphComputing<Object> graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
                 graphComputing.getMemoryComputeKey().ifPresent(memoryKey -> {
                     final String key = memoryKey.getKey();
                     if (memory.exists(key)) {
                         if (graphComputing instanceof RangeGlobalStep || graphComputing instanceof TailGlobalStep) {
-                            memory.set(TraverserMapReduce.TRAVERSERS, ((TraverserSet) graphComputing.generateFinalResult(memory.get(key))).iterator());
+                            localTraversers.addAll(((TraverserSet) graphComputing.generateFinalResult(memory.get(key))));
+                        } else if (graphComputing instanceof ReducingBarrierStep) {
+                            localTraversers.add(this.traversal.get().getTraverserGenerator().generate(graphComputing.generateFinalResult(memory.get(key)), (Step) graphComputing, 1l));
                         } else {
                             memory.set(key, graphComputing.generateFinalResult(memory.get(key)));
                         }
-
                     }
                 });
             }
+            memory.set(TraverserMapReduce.TRAVERSERS, localTraversers.iterator());
             return true;
         } else {
             memory.set(VOTE_TO_HALT, true);

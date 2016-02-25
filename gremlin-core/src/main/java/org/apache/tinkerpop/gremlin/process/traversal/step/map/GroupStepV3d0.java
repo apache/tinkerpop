@@ -60,11 +60,6 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, GroupBiOperatorV3d0.INSTANCE, false, false));
-    }
-
-    @Override
     public Map<K, R> projectTraverser(final Traverser.Admin<S> traverser) {
         final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
         final BulkSet<V> values = new BulkSet<>();

@@ -56,11 +56,6 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, MinGlobalBiOperator.INSTANCE, false, false));
-    }
-
     /////
 
     public static class MinGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
