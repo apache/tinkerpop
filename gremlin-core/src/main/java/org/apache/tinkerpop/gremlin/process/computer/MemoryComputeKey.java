@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.computer;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.function.BinaryOperator;
 
 /**
@@ -72,6 +73,10 @@ public final class MemoryComputeKey<A> implements Serializable {
         return new MemoryComputeKey<>(key, reducer, isBroadcast, isTransient);
     }
 
+    public static AddOperator addOperator() {
+        return AddOperator.INSTANCE;
+    }
+
     public static SetOperator setOperator() {
         return SetOperator.INSTANCE;
     }
@@ -93,6 +98,22 @@ public final class MemoryComputeKey<A> implements Serializable {
     }
 
     ///////////
+
+    public static class AddOperator implements BinaryOperator<Collection>, Serializable {
+
+        private static final AddOperator INSTANCE = new AddOperator();
+
+        private AddOperator() {
+
+        }
+
+        @Override
+        public Collection apply(final Collection first, final Collection second) {
+            first.addAll(second);
+            return first;
+        }
+    }
+
 
     public static class SetOperator implements BinaryOperator<Object>, Serializable {
 

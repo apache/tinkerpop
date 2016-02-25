@@ -24,9 +24,11 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +74,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
+
+    public abstract Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -194,6 +198,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(GRATEFUL)
     public void g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX();
+        printTraversalForm(traversal);
         checkMap(new HashMap<String, Long>() {{
             put("original", 771317l);
             put("", 160968l);
@@ -206,6 +211,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(GRATEFUL)
     public void g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX();
+        printTraversalForm(traversal);
         checkMap(new HashMap<String, Long>() {{
             put("original", 771317l);
             put("", 160968l);
@@ -218,6 +224,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_group_byXname_substring_1X_byXconstantX1XX() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_group_byXname_substring_1X_byXconstantX1XX();
+        printTraversalForm(traversal);
         checkMap(new HashMap<String, Long>() {{
             put("m", 1l);
             put("v", 1l);
@@ -233,6 +240,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
         final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
+        printTraversalForm(traversal);
         checkMap(new HashMap<String, Long>() {{
             put("m", 1l);
             put("v", 1l);
@@ -242,6 +250,15 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             put("j", 1l);
         }}, traversal.next());
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @Ignore
+    @LoadGraphWith(MODERN)
+    public void g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X() {
+        final Traversal<Vertex, String> traversal = get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("ripple", "lop"), traversal);
     }
 
 
@@ -305,6 +322,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
             return g.V().<String, Long>group("a").<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l)).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X() {
+            return g.V().out().<String, Vertex>group().by(T.label).select("person").unfold().out("created").<String>values("name").limit(2);
         }
     }
 }

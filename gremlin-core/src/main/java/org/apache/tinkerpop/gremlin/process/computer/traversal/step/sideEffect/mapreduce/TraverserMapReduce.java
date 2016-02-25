@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -49,13 +48,10 @@ import java.util.Optional;
  */
 public final class TraverserMapReduce implements MapReduce<Comparable, Traverser<?>, Comparable, Traverser<?>, Iterator<Traverser<?>>> {
 
-    public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
-
     private Traversal.Admin<?, ?> traversal;
     private Comparator<Comparable> comparator = null;
     private CollectingBarrierStep<?> collectingBarrierStep = null;
     private boolean attachHaltedTraverser = false;
-    private TailGlobalStep<?> tailGlobalStep = null;
     private boolean dedupGlobal = false;
 
     private TraverserMapReduce() {
@@ -93,8 +89,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
                 this.attachHaltedTraverser = ((TraversalParent) this.collectingBarrierStep).getLocalChildren().stream().filter(TraversalHelper::isBeyondElementId).findAny().isPresent();
             }
         }
-        if (traversalEndStep instanceof TailGlobalStep)
-            this.tailGlobalStep = ((TailGlobalStep) traversalEndStep).clone();
         if (traversalEndStep instanceof DedupGlobalStep)
             this.dedupGlobal = true;
 
@@ -102,7 +96,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || null != this.collectingBarrierStep || null != this.tailGlobalStep || this.dedupGlobal;
+        return stage.equals(Stage.MAP) || null != this.collectingBarrierStep || this.dedupGlobal;
     }
 
     @Override
@@ -156,11 +150,6 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
             }
             this.collectingBarrierStep.barrierConsumer((TraverserSet) traverserSet);
             return (Iterator) traverserSet.iterator();
-        } else if (null != this.tailGlobalStep) {
-            final TailGlobalStep<?> tailGlobalStep = this.tailGlobalStep;
-            tailGlobalStep.setBypass(false);
-            tailGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
-            return (Iterator) tailGlobalStep;
         } else if (this.dedupGlobal) {
             return IteratorUtils.map(keyValues, keyValue -> {
                 keyValue.getValue().asAdmin().setBulk(1l);
@@ -173,7 +162,7 @@ public final class TraverserMapReduce implements MapReduce<Comparable, Traverser
 
     @Override
     public String getMemoryKey() {
-        return TRAVERSERS;
+        return TraversalVertexProgram.HALTED_TRAVERSERS;
     }
 
     @Override

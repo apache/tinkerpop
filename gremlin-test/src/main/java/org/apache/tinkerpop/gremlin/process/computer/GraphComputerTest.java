@@ -392,7 +392,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             }
             try {
                 memory.set("a", true);
-               // fail("Setting a memory key that wasn't declared should fail");
+                // fail("Setting a memory key that wasn't declared should fail");
             } catch (Exception e) {
                 validateException(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a"), e);
             }
@@ -1912,13 +1912,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final Graph graph3 = result3.graph();
         final Memory memory3 = result3.memory();
         assertTrue(memory3.keys().contains("m"));
-        assertTrue(memory3.keys().contains(TraverserMapReduce.TRAVERSERS));
+        assertTrue(memory3.keys().contains(TraversalVertexProgram.HALTED_TRAVERSERS));
         assertEquals(1, memory3.<Map<Long, Long>>get("m").size());
         assertEquals(6, memory3.<Map<Long, Long>>get("m").get(1l).intValue());
-        List<Traverser<String>> traversers = IteratorUtils.list(memory3.<Iterator<Traverser<String>>>get(TraverserMapReduce.TRAVERSERS));
-        assertEquals(6, traversers.size());
-        assertEquals(4l, traversers.stream().map(Traverser::get).filter(s -> s.equals("person")).count());
-        assertEquals(2l, traversers.stream().map(Traverser::get).filter(s -> s.equals("software")).count());
+        List<Traverser<String>> traversers = IteratorUtils.list(memory3.<Iterator<Traverser<String>>>get(TraversalVertexProgram.HALTED_TRAVERSERS));
+        assertEquals(6l, traversers.stream().map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
+        assertEquals(4l, traversers.stream().filter(s -> s.get().equals("person")).map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
+        assertEquals(2l, traversers.stream().filter(s -> s.get().equals("software")).map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
         assertEquals(6, graph3.traversal().V().count().next().intValue());
         assertEquals(6, graph3.traversal().E().count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());

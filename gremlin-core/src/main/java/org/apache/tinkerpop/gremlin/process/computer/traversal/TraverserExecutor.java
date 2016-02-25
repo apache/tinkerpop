@@ -37,6 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,13 +49,25 @@ public final class TraverserExecutor {
 
     public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory) {
 
+        final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 
+        final TraverserSet<Object> maybeAliveTraversers = memory.get(TraversalVertexProgram.ALIVE_TRAVERSERS);
+        final Iterator<Traverser.Admin<Object>> iterator = maybeAliveTraversers.iterator();
+        while (iterator.hasNext()) {
+            final Traverser.Admin<Object> traverser = iterator.next();
+            if (vertex.equals(TraverserExecutor.getHostingVertex(traverser.get()))) {
+                // iterator.remove(); ConcurrentModificationException
+                traverser.setSideEffects(traversalSideEffects);
+                traverser.attach(Attachable.Method.get(vertex));
+                toProcessTraversers.add(traverser);
+            }
+        }
+
         final Iterator<TraverserSet<?>> messages = messenger.receiveMessages();
-        final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         while (messages.hasNext()) {
             final Iterator<Traverser.Admin<Object>> traversers = (Iterator) messages.next().iterator();
             while (traversers.hasNext()) {
@@ -110,6 +124,7 @@ public final class TraverserExecutor {
     private static void drainStep(final Step<?, ?> step, final TraverserSet<?> aliveTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
         if (step instanceof ReducingBarrierStep) {
             memory.add(step.getId(), step.next().get());
+            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
         } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep) {
             ((Bypassing) step).setBypass(true);
             final TraverserSet<?> traverserSet = new TraverserSet<>();
@@ -118,11 +133,13 @@ public final class TraverserExecutor {
                 traverserSet.add((Traverser.Admin) traverser);
             });
             memory.add(step.getId(), traverserSet);
+            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
         } else {
             step.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();
                     haltedTraversers.add((Traverser.Admin) traverser);
+                    memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
                 } else
                     aliveTraversers.add((Traverser.Admin) traverser);
             });

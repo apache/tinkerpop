@@ -88,5 +88,10 @@ public abstract class GroovyGroupTest {
         public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group('a').by{it.name[0]}.by(constant(1l)).cap('a')")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.group.by(label).select('person').unfold.out('created').name.limit(2)")
+        }
     }
 }

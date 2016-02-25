@@ -28,8 +28,10 @@ import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -37,10 +39,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
@@ -52,8 +55,10 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -83,6 +88,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL = "gremlin.traversalVertexProgram.traversal";
 
+    public static final String ALIVE_TRAVERSERS = Graph.Hidden.hide("aliveTraversers");
+    public static final String MUTATED_MEMORY_KEYS = Graph.Hidden.hide("mutatedMemoryKeys");
+
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
     private Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
@@ -94,6 +102,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private PureTraversal<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
     private final Set<MapReduce> mapReducers = new HashSet<>();
+    private boolean keepHaltedTraversersDistributed = true;
 
     private TraversalVertexProgram() {
     }
@@ -122,11 +131,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             this.mapReducers.add(mapReducer.getMapReduce());
             this.memoryComputeKeys.add(MemoryComputeKey.of(mapReducer.getMapReduce().getMemoryKey(), MemoryComputeKey.setOperator(), false, false));
         }
-        if (!(this.traversal.get().getEndStep() instanceof SideEffectCapStep) &&
-                !(this.traversal.get().getEndStep() instanceof ReducingBarrierStep) &&
-                !(this.traversal.get().getEndStep() instanceof RangeGlobalStep) &&
-                !(this.traversal.get().getEndStep() instanceof TailGlobalStep)) {
+
+        if (this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep)
+            this.keepHaltedTraversersDistributed = false;
+        if (this.traversal.get().getEndStep() instanceof CollectingBarrierStep || this.traversal.get().getEndStep() instanceof DedupGlobalStep) {
             this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
+            this.keepHaltedTraversersDistributed = true;
         }
 
         for (final GraphComputing<?> graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
@@ -134,7 +144,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             graphComputing.getMemoryComputeKey().ifPresent(x -> this.sideEffectKeys.add(x.getKey())); // TODO: when no more MapReducers, you can remove thisi
         }
 
-        this.memoryComputeKeys.add(MemoryComputeKey.of(TraverserMapReduce.TRAVERSERS, MemoryComputeKey.setOperator(), false, false));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, MemoryComputeKey.addOperator(), false, false));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(ALIVE_TRAVERSERS, MemoryComputeKey.addOperator(), true, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, MemoryComputeKey.addOperator(), false, true));
+
     }
 
     @Override
@@ -149,6 +162,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         for (final ReducingBarrierStep<?, ?> reducingBarrierStep : TraversalHelper.getStepsOfAssignableClassRecursively(ReducingBarrierStep.class, this.traversal.get())) {
             memory.set(reducingBarrierStep.getId(), reducingBarrierStep.getSeedSupplier().get());
         }
+        memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
+        memory.set(ALIVE_TRAVERSERS, new TraverserSet<>());
+        memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
     }
 
     @Override
@@ -181,6 +197,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                     if (traverser.asAdmin().isHalted()) {
                         traverser.asAdmin().detach();
                         haltedTraversers.add((Traverser.Admin) traverser);
+                        memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
                     } else
                         aliveTraverses.add((Traverser.Admin) traverser);
                 });
@@ -195,34 +212,82 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().remove(key);
             }
         });
-
+        if (!this.keepHaltedTraversersDistributed)
+            vertex.<TraverserSet>property(HALTED_TRAVERSERS).value().clear();
     }
 
     @Override
     public boolean terminate(final Memory memory) {
+        final Set<String> mutatedMemoryKeys = memory.get(MUTATED_MEMORY_KEYS);  // TODO: if not touched we still have to initialize the seeds
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
+        memory.set(VOTE_TO_HALT, true);
+        memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
+        memory.set(ALIVE_TRAVERSERS, new TraverserSet<>());
+        ///
         if (voteToHalt) {
-            final TraverserSet<?> localTraversers = new TraverserSet<>();
+            final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
             for (final GraphComputing<Object> graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
                 graphComputing.getMemoryComputeKey().ifPresent(memoryKey -> {
                     final String key = memoryKey.getKey();
                     if (memory.exists(key)) {
                         if (graphComputing instanceof RangeGlobalStep || graphComputing instanceof TailGlobalStep) {
-                            localTraversers.addAll(((TraverserSet) graphComputing.generateFinalResult(memory.get(key))));
+                            toProcessTraversers.addAll(((TraverserSet) graphComputing.generateFinalResult(memory.get(key))));
                         } else if (graphComputing instanceof ReducingBarrierStep) {
-                            localTraversers.add(this.traversal.get().getTraverserGenerator().generate(graphComputing.generateFinalResult(memory.get(key)), (Step) graphComputing, 1l));
+                            final Traverser.Admin traverser = this.traversal.get().getTraverserGenerator().generate(graphComputing.generateFinalResult(memory.get(key)), ((Step) graphComputing), 1l);
+                            if (((ReducingBarrierStep) graphComputing).hasNext())
+                                ((ReducingBarrierStep) graphComputing).next(); // or else you will get a seed
+                            traverser.setStepId(((Step) graphComputing).getNextStep().getId()); // should really for ReducingBarrierStep seed.
+                            toProcessTraversers.add(traverser);
                         } else {
-                            memory.set(key, graphComputing.generateFinalResult(memory.get(key)));
+                            memory.set(key, graphComputing.generateFinalResult(memory.get(key))); // XXXSideEffectSteps (may need to relocate this to post HALT)
                         }
                     }
                 });
             }
-            memory.set(TraverserMapReduce.TRAVERSERS, localTraversers.iterator());
-            return true;
+            final TraverserSet<?> localAliveTraversers = new TraverserSet<>();
+            final TraverserSet<?> remoteAliveTraversers = new TraverserSet<>();
+            final TraverserSet<?> haltedTraversers = memory.get(HALTED_TRAVERSERS);
+            while (!toProcessTraversers.isEmpty()) {
+                this.processTraversers(toProcessTraversers, localAliveTraversers, remoteAliveTraversers, haltedTraversers);
+                toProcessTraversers.clear();
+                toProcessTraversers.addAll((TraverserSet) localAliveTraversers);
+                localAliveTraversers.clear();
+            }
+            if (!remoteAliveTraversers.isEmpty()) {
+                memory.set(ALIVE_TRAVERSERS, remoteAliveTraversers);
+                return false;
+            } else {
+                memory.set(HALTED_TRAVERSERS, haltedTraversers.iterator());
+                return true;
+            }
         } else {
-            memory.set(VOTE_TO_HALT, true);
             return false;
         }
+    }
+
+    private void processTraversers(final TraverserSet<Object> toProcessTraversers, final TraverserSet<?> localAliveTraversers, final TraverserSet<?> remoteAliveTraversers, final TraverserSet<?> haltedTraversers) {
+        toProcessTraversers.forEach(traverser -> {
+                    traverser.set(ReferenceFactory.detach(traverser.get()));
+                    if (traverser.isHalted())
+                        haltedTraversers.add((Traverser.Admin) traverser);
+                    else if (traverser.get() instanceof Attachable && !(traverser.get() instanceof Path)) {
+                        remoteAliveTraversers.add((Traverser.Admin) traverser);
+                    } else {
+                        final Step<?, ?> step = this.traversalMatrix.getStepById(traverser.getStepId());
+                        step.addStart((Traverser.Admin) traverser);
+                        step.forEachRemaining(result -> {
+                            if (result.asAdmin().isHalted())
+                                haltedTraversers.add((Traverser.Admin) result);
+                            else {
+                                if (result.get() instanceof Attachable)
+                                    remoteAliveTraversers.add((Traverser.Admin) result);
+                                else
+                                    localAliveTraversers.add((Traverser.Admin) result);
+                            }
+                        });
+                    }
+                }
+        );
     }
 
     @Override

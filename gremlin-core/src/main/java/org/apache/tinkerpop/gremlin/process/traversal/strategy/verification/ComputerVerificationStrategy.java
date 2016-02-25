@@ -28,12 +28,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
@@ -62,7 +62,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     ));
 
     public static final Set<Class<? extends Step>> END_STEPS = new HashSet<>(Arrays.asList(
-            ReducingBarrierStep.class,
             SupplyingBarrierStep.class,
             OrderGlobalStep.class,
             DedupGlobalStep.class));
@@ -121,8 +120,10 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep
-                    || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep)
+            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof UnionStep)
+                throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
+
+            if ((step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof DedupGlobalStep || step instanceof LambdaCollectingBarrierStep)
                     && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
                 throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -69,9 +70,13 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal().withComputer(); //GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        System.out.println(g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").toString());
-        System.out.println(g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").iterate().toString());
-        System.out.println(g.V().pageRank().by("pageRank").as("a").out("knows").values("pageRank").as("b").select("a", "b").toList());
+        final Traversal<?,?> traversal = g.V().outE().values("weight").groupCount().unfold(); // unfold.select(values)
+
+        System.out.println(traversal.asAdmin().clone().toString());
+        final Traversal<?,?> clone = traversal.asAdmin().clone();
+        clone.asAdmin().applyStrategies();
+        System.out.println(clone);
+        System.out.println(traversal.asAdmin().clone().toList());
         //System.out.println(g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK).valueMap().toList());
     }
 

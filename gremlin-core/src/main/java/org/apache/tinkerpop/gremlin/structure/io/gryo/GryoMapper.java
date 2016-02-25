@@ -325,11 +325,13 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZonedDateTime.class, kryo -> new JavaTimeSerializers.ZonedDateTimeSerializer(), 104));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZoneOffset.class, kryo -> new JavaTimeSerializers.ZoneOffsetSerializer(), 105));
 
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MemoryComputeKey.AddOperator.class, null, 126));  // ***LAST ID**
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MemoryComputeKey.AndOperator.class, null, 107));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MemoryComputeKey.OrOperator.class, null, 108));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MemoryComputeKey.SetOperator.class, null, 109));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MemoryComputeKey.SumLongOperator.class, null, 110));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MemoryComputeKey.SumIntegerOperator.class, null, 111));
+
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(CountGlobalStep.CountBiOperator.class, null, 112));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(FoldStep.ListBiOperator.class, null, 113));
@@ -344,7 +346,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 122));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 123));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StoreStep.StoreBiOperator.class, null, 124));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 125)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 125));
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
