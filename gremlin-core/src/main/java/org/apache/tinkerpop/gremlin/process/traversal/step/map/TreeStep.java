@@ -50,12 +50,12 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
     public TreeStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) TreeSupplier.instance());
-        this.setReducingBiOperator(TreeBiOperator.INSTANCE);
+        this.setReducingBiOperator(TreeBiOperator.instance());
     }
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(REDUCING, TreeBiOperator.INSTANCE, false, false));
+        return Optional.of(MemoryComputeKey.of(REDUCING, TreeBiOperator.instance(), false, false));
     }
 
 
@@ -124,6 +124,10 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
         public Tree apply(final Tree mutatingSeed, final Tree tree) {
             mutatingSeed.addTree(tree);
             return mutatingSeed;
+        }
+
+        public static final TreeBiOperator instance() {
+            return INSTANCE;
         }
     }
 }

@@ -77,7 +77,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
 
     @Override
     public Traverser<E> processNextStart() {
-        if (null == this.sideEffectFinalizer) {  // and NOT onGraphComputer
+        if (!this.onGraphComputer && null == this.sideEffectFinalizer) {
             this.sideEffectFinalizer = new HashMap<>();
             for (final String key : this.sideEffectKeys) {
                 for (final GraphComputing graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, TraversalHelper.getRootTraversal(this.getTraversal()))) {
@@ -95,10 +95,12 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
         if (this.sideEffectKeys.size() == 1) {
             final String sideEffectKey = this.sideEffectKeys.get(0);
             final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey).get();
-            if (!this.onGraphComputer && sideEffectKey.endsWith("destroy"))
-                this.getTraversal().getSideEffects().set(sideEffectKey, this.getTraversal().getSideEffects().getRegisteredSupplier(sideEffectKey).get().get());
-            final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
-            return (this.onGraphComputer || null == finalizer) ? result : (E) finalizer.generateFinalResult(result);
+            if (this.onGraphComputer)
+                return result;
+            else {
+                final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
+                return null == finalizer ? result : (E) finalizer.generateFinalResult(result);
+            }
         } else
             return (E) this.getMapOfSideEffects();
     }
@@ -107,8 +109,12 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {
             this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> {
-                final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
-                sideEffects.put(sideEffectKey, (null == finalizer || this.onGraphComputer) ? value : finalizer.generateFinalResult(value));
+                if (this.onGraphComputer) {
+                    sideEffects.put(sideEffectKey, value);
+                } else {
+                    final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
+                    sideEffects.put(sideEffectKey, null == finalizer ? value : finalizer.generateFinalResult(value));
+                }
             });
         }
         return sideEffects;

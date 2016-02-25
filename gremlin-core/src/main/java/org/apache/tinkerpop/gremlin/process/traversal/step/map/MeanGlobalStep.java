@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.function.MeanNumberSupplier;
@@ -91,7 +90,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         }
     }
 
-    public static final class MeanNumber extends Number implements Comparable<Number>, FinalGet<Number> {
+    public static final class MeanNumber extends Number implements Comparable<Number> {
 
         private long count;
         private Number sum;
@@ -158,7 +157,6 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
             return Double.valueOf(this.doubleValue()).hashCode();
         }
 
-        @Override
         public Number getFinal() {
             return div(this.sum, this.count, true);
         }
