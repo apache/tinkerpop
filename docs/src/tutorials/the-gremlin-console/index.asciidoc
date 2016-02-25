@@ -18,7 +18,7 @@ limitations under the License.
 image::apache-tinkerpop-logo.png[width=500]
 
 The Gremlin Console
-===================
+-------------------
 
 In link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_first_five_minutes["The First Five Minutes"]
 of the link:http://tinkerpop.apache.org[Apache TinkerPop] tutorial on how to
