@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Tra
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DependantMutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
@@ -296,7 +297,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 88));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalExplanation.class, null, 106)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalExplanation.class, null, 106));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Duration.class, kryo -> new JavaTimeSerializers.DurationSerializer(), 93));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Instant.class, kryo -> new JavaTimeSerializers.InstantSerializer(), 94));
@@ -311,6 +312,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(YearMonth.class, kryo -> new JavaTimeSerializers.YearMonthSerializer(), 103));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZonedDateTime.class, kryo -> new JavaTimeSerializers.ZonedDateTimeSerializer(), 104));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZoneOffset.class, kryo -> new JavaTimeSerializers.ZoneOffsetSerializer(), 105));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ImmutableMetrics.class, null, 107)); // ***LAST ID***
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();

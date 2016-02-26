@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
@@ -36,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DependantMutableMetri
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -205,6 +207,8 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
 
     public static final class ProfileMapReduce extends StaticMapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
 
+        public static final String PROFILE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.profileSideEffectStep.sideEffectKey";
+
         private String sideEffectKey;
 
         private ProfileMapReduce() {
@@ -212,6 +216,17 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
 
         private ProfileMapReduce(final ProfileSideEffectStep step) {
             this.sideEffectKey = step.getSideEffectKey();
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            super.storeState(configuration);
+            configuration.setProperty(PROFILE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        }
+
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
+            this.sideEffectKey = configuration.getString(PROFILE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
         }
 
         @Override
