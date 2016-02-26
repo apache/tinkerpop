@@ -27,10 +27,23 @@ TinkerPop 3.1.2
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-XXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-XXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
+
+TinkerPop Archetypes
+^^^^^^^^^^^^^^^^^^^^
+
+TinkerPop now offers link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes],
+which provide example project templates to quickly get started with TinkerPop. The available archetypes are as follows:
+
+* `gremlin-archetype-server` - An example project that demonstrates the basic structure of a Gremlin Server project,
+how to connect with the Gremlin Driver, and how to embed Gremlin Server in a testing framework.
+* `gremlin-archetype-tinkergraph` - A basic example of how to structure a TinkerPop project with Maven.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1085[TINKERPOP-1085],
+link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#gremlin-archetypes[Reference Documentation - Archetypes]
 
 Session Transaction Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -55,6 +68,18 @@ Upgrading for Providers
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
+
+All Providers
+^^^^^^^^^^^^^
+
+Provider Documentation
+++++++++++++++++++++++
+
+Documentation related to the lower-level APIs used by a provider, that was formerly in the reference documentation,
+has been moved to its own documentation set that is now referred to as the
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-937[TINKERPOP-937]
 
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^

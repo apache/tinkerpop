@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -90,7 +92,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 try {
                     final String p = TestHelper.generateTempFileFromResource(
                             GremlinDriverIntegrateTest.class, "generate-shouldRebindTraversalSourceVariables.groovy", "").getAbsolutePath();
-                    settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList(p);
+                    settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList(p);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -124,6 +126,47 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldEventuallySucceedOnSameServer() throws Exception {
+        stopServer();
+
+        final Cluster cluster = Cluster.build().addContactPoint("localhost").create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all().join().get(0).getInt();
+            fail("Should not have gone through because the server is not running");
+        } catch (Exception i) {
+            final Throwable root = ExceptionUtils.getRootCause(i);
+            assertThat(root, instanceOf(TimeoutException.class));
+        }
+
+        startServer();
+
+        // default reconnect time is 1 second so wait some extra time to be sure it has time to try to bring it
+        // back to life
+        TimeUnit.SECONDS.sleep(3);
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldEventuallySucceedWithRoundRobin() throws Exception {
+        final String noGremlinServer = "74.125.225.19";
+        final Cluster cluster = Cluster.build(noGremlinServer).addContactPoint("localhost").create();
+        final Client client = cluster.connect();
+
+        // the first host is dead on init.  request should succeed on localhost
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+        cluster.close();
     }
 
     @Test
@@ -393,19 +436,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
     }
 
-    /**
-     * This test arose from this issue: https://github.org/apache/tinkerpop/tinkerpop3/issues/515
-     * <p/>
-     * ResultSet.all returns a CompletableFuture that blocks on the worker pool until isExhausted returns false.
-     * isExhausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
-     * threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
-     * isExhausted to run.
-     * <p/>
-     * Note that all() doesn't work as described above anymore.  It waits for callback on readComplete rather
-     * than blocking on isExhausted.
-     */
     @Test
     public void shouldAvoidDeadlockOnCallToResultSetDotAll() throws Exception {
+
+        // This test arose from this issue: https://github.org/apache/tinkerpop/tinkerpop3/issues/515
+        //
+        // ResultSet.all returns a CompletableFuture that blocks on the worker pool until isExhausted returns false.
+        // isExhausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
+        // threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
+        // isExhausted to run.
+        //
+        // Note that all() doesn't work as described above anymore.  It waits for callback on readComplete rather
+        // than blocking on isExhausted.
         final int workerPoolSizeForDriver = 2;
 
         // the number of requests 4 times the size of the worker pool as this originally did produce the problem
@@ -457,27 +499,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         cluster.connect().init();
         assertEquals(0, cluster.availableHosts().size());
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldHandleRequestSentThatNeverReturns() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("Thread.sleep(10000); 'should-not-ever-get-back-coz-we-killed-the-server'");
-
-        stopServer();
-
-        try {
-            results.getAvailableItemCount();
-            fail("Server was stopped before the request could execute");
-        } catch (Exception ex) {
-            final Throwable cause = ex.getCause();
-            assertThat(cause, instanceOf(ResponseException.class));
-            assertThat(cause.getMessage(), containsString("rejected from java.util.concurrent.ThreadPoolExecutor"));
-        }
 
         cluster.close();
     }
@@ -575,17 +596,26 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedWithRoundRobin() throws Exception {
-        final String noGremlinServer = "74.125.225.19";
-        final Cluster cluster = Cluster.build(noGremlinServer).addContactPoint("localhost").create();
+    public void shouldHandleRequestSentThatNeverReturns() throws Exception {
+        final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        // the first host is dead on init.  request should succeed on localhost
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        final ResultSet results = client.submit("Thread.sleep(10000); 'should-not-ever-get-back-coz-we-killed-the-server'");
+
+        stopServer();
+
+        // give the server a chance to kill everything
+        Thread.sleep(1000);
+
+        try {
+            results.all().get(10000, TimeUnit.MILLISECONDS);
+            fail("Server was stopped before the request could execute");
+        } catch (TimeoutException toe) {
+            fail("Should not have tossed a TimeOutException getting the result");
+        } catch (Exception ex) {
+            final Throwable cause = ExceptionUtils.getCause(ex);
+            assertThat(cause.getMessage(), containsString("rejected from java.util.concurrent.ThreadPoolExecutor"));
+        }
 
         cluster.close();
     }

@@ -53,6 +53,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -105,9 +106,19 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexResult() throws Exception {
-        final ResultSet results = client.submit("g.V().next()");
+        final ResultSet results = client.submit("g.V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
+
+        assertEquals("marko", v.properties("name").next().value());
+        v.properties().forEachRemaining(p -> {
+            if (p.key().equals("name"))
+                assertEquals("marko", p.value());
+            else if (p.key().equals("age"))
+                assertEquals(29, p.value());
+            else
+                fail("Should not have any other keys besides 'name' and 'age'");
+        });
     }
 
     @Test
