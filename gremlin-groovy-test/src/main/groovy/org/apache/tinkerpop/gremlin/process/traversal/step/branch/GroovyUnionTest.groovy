@@ -29,22 +29,27 @@ public abstract class GroovyUnionTest {
 
     public static class Traversals extends UnionTest {
 
+        @Override
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.union(__.out, __.in).name")
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).union(repeat(__.out).times(2), __.out).name", "v1Id", v1Id)
         }
 
+        @Override
         public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label)")
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label).groupCount")
         }
 
+        @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
             new ScriptTraversal<>(g, "gremlin-groovy", """
             g.V.union(
