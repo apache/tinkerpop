@@ -91,12 +91,9 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             }
             this.vertexProgram.setup(this);
         } else {
-            if (this.vertexProgram.terminate(this)) { // terminate
-                // write the memory to HDFS
-                final MapMemory memory = new MapMemory(this);
-                // a hack to get the last iteration memory values to stick
-                this.vertexProgram.terminate(memory);
-
+            // a hack to get the last iteration memory values to stick
+            final MapMemory memory = new MapMemory(this);
+            if (this.vertexProgram.terminate(memory)) { // terminate
                 final String outputLocation = this.getConf().get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
                 if (null != outputLocation) {
                     try {
@@ -117,6 +114,8 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 }
                 this.haltComputation();
             }
+            // to ensure proper terminate that is not the "hack" above
+            this.vertexProgram.terminate(this);
         }
     }
 

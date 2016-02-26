@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
@@ -326,7 +327,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanGlobalBiOperator.class, null, 110));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanNumber.class, null, 111));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 112));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 113));  // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 113));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(RangeGlobalStep.RangeBiOperator.class, null, 114)); // ***LAST ID**
 
 
         }};
