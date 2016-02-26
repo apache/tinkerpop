@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * A TraversalExplanation takes a {@link Traversal} and, for each registered {@link TraversalStrategy}, it creates a mapping reflecting how each strategy alters the traversal.
- * This is useful for understanding how each traversal strategy mutates the traversal.
- * This is useful in debugging and analysis of traversal compilation.
- * The {@link TraversalExplanation#toString()} has a pretty-print representation that is useful in the Gremlin Console.
+ * A TraversalExplanation takes a {@link Traversal} and, for each registered {@link TraversalStrategy}, it creates a
+ * mapping reflecting how each strategy alters the traversal. This is useful for understanding how each traversal
+ * strategy mutates the traversal. This is useful in debugging and analysis of traversal compilation. The
+ * {@link TraversalExplanation#toString()} has a pretty-print representation that is useful in the Gremlin Console.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
