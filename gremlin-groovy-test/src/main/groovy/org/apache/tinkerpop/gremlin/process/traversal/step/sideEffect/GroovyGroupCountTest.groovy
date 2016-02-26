@@ -82,5 +82,10 @@ public abstract class GroovyGroupCountTest {
         public Traversal<Vertex, Map<Long, Long>> get_g_V_groupCount_byXbothE_countX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.groupCount.by(bothE().count)")
         }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.union(out('knows'), out('created').in('created')).groupCount.select(values).unfold.sum");
+        }
     }
 }

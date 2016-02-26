@@ -64,7 +64,6 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(GRATEFUL)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name();
         printTraversalForm(traversal);
@@ -73,7 +72,6 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX() {
         final Traversal<Vertex, Edge> traversal = get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX();

@@ -273,7 +273,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                             ((ReducingBarrierStep) graphComputing).next(); // or else you will get a seed
                         traverser.setStepId(((Step) graphComputing).getNextStep().getId()); // should really for ReducingBarrierStep seed.
                         traverserSet.add(traverser);
-                       // memory.set(graphComputing.getMemoryComputeKey().get().getKey(), ((ReducingBarrierStep) graphComputing).getSeedSupplier().get());
+                        memory.set(key, ((ReducingBarrierStep) graphComputing).getSeedSupplier().get());
                     } else {
                         memory.set(key, graphComputing.generateFinalResult(memory.get(key))); // XXXSideEffectSteps (may need to relocate this to post HALT)
                     }
@@ -298,6 +298,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             } else {
                 final Step<?, ?> currentStep = this.traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep)) {
+                    if (currentStep instanceof GraphComputing)
+                        ((GraphComputing<?>) currentStep).getMemoryComputeKey().ifPresent(memoryComputeKey -> this.neverTouchedMemoryKeys.remove(memoryComputeKey.getKey()));
                     currentStep.forEachRemaining(result -> {
                         if (result.asAdmin().isHalted())
                             haltedTraversers.add((Traverser.Admin) result);
@@ -313,14 +315,16 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 previousStep = currentStep;
             }
         }
-        previousStep.forEachRemaining(result -> {
-            if (result.asAdmin().isHalted())
-                haltedTraversers.add((Traverser.Admin) result);
+        if (previousStep instanceof GraphComputing)
+            ((GraphComputing<?>) previousStep).getMemoryComputeKey().ifPresent(memoryComputeKey -> this.neverTouchedMemoryKeys.remove(memoryComputeKey.getKey()));
+        previousStep.forEachRemaining(traverser -> {
+            if (traverser.asAdmin().isHalted())
+                haltedTraversers.add((Traverser.Admin) traverser);
             else {
-                if (result.get() instanceof Attachable)
-                    remoteAliveTraversers.add((Traverser.Admin) result);
+                if (traverser.get() instanceof Attachable)
+                    remoteAliveTraversers.add((Traverser.Admin) traverser);
                 else
-                    localAliveTraversers.add((Traverser.Admin) result);
+                    localAliveTraversers.add((Traverser.Admin) traverser);
             }
         });
     }

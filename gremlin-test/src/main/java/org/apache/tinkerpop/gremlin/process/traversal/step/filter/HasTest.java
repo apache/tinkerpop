@@ -172,7 +172,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VXv1X_hasXage_gt_30X() {
         final Traversal<Vertex,Vertex> traversalMarko = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("marko"));
         printTraversalForm(traversalMarko);
