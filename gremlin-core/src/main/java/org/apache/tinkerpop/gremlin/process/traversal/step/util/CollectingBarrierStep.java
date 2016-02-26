@@ -18,21 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier {
+public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier, GraphComputing<TraverserSet<S>>, Bypassing {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
+    private boolean bypass = false;
 
     private int maxBarrierSize;
 
@@ -57,12 +63,14 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
         if (this.starts.hasNext()) {
             if (Integer.MAX_VALUE == this.maxBarrierSize) {
                 this.starts.forEachRemaining(this.traverserSet::add);
-                this.barrierConsumer(this.traverserSet);
+                if (!this.bypass)
+                    this.barrierConsumer(this.traverserSet);
             } else {
                 while (this.starts.hasNext() && this.traverserSet.size() < this.maxBarrierSize) {
                     this.traverserSet.add(this.starts.next());
                 }
-                this.barrierConsumer(this.traverserSet);
+                if (!this.bypass)
+                    this.barrierConsumer(this.traverserSet);
             }
         }
     }
@@ -98,5 +106,26 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     public void reset() {
         super.reset();
         this.traverserSet.clear();
+    }
+
+    @Override
+    public void onGraphComputer() {
+
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.addAll, false, true));
+    }
+
+    @Override
+    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
+        this.barrierConsumer(traverserSet);
+        return traverserSet;
+    }
+
+    @Override
+    public void setBypass(final boolean bypass) {
+        this.bypass = bypass;
     }
 }

@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -42,12 +41,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
@@ -135,13 +132,6 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
         // if results will be serialized out, don't save halted traversers across the cluster
         this.keepDistributedHaltedTraversers = !(this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep);
-        // dangling MapReduces left
-        if (this.traversal.get().getEndStep() instanceof SampleGlobalStep ||
-                this.traversal.get().getEndStep() instanceof LambdaCollectingBarrierStep ||
-                this.traversal.get().getEndStep() instanceof AggregateStep) {
-            this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
-            this.keepDistributedHaltedTraversers = true;
-        }
         // register MapReducer memory compute keys
         this.memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, Operator.and, false, true));
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal.get())) {
@@ -207,7 +197,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                     if (traverser.asAdmin().isHalted()) {
                         traverser.asAdmin().detach();
                         haltedTraversers.add((Traverser.Admin) traverser);
-                        memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                        memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin()));
                     } else
                         aliveTraverses.add((Traverser.Admin) traverser);
                 });
@@ -268,7 +258,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             graphComputing.getMemoryComputeKey().ifPresent(memoryKey -> {
                 final String key = memoryKey.getKey();
                 if (memory.exists(key) && toProcessMemoryKeys.contains(key)) {
-                    if (graphComputing instanceof RangeGlobalStep || graphComputing instanceof TailGlobalStep || graphComputing instanceof OrderGlobalStep || graphComputing instanceof DedupGlobalStep) {
+                    if (graphComputing instanceof RangeGlobalStep || graphComputing instanceof TailGlobalStep || (graphComputing instanceof CollectingBarrierStep && !(graphComputing instanceof AggregateStep)) || graphComputing instanceof DedupGlobalStep) {
                         traverserSet.addAll(((TraverserSet) graphComputing.generateFinalResult(memory.get(key))));
                     } else if (graphComputing instanceof ReducingBarrierStep || graphComputing instanceof SupplyingBarrierStep) {
                         final Traverser.Admin traverser = this.traversal.get().getTraverserGenerator().generate(graphComputing.generateFinalResult(memory.get(key)), ((Step) graphComputing), 1l);

@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
@@ -131,13 +131,12 @@ public final class TraverserExecutor {
         } else if (step instanceof SupplyingBarrierStep) {
             memory.add(step.getId(), true);
             memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
-        } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof OrderGlobalStep) {
+        } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof CollectingBarrierStep && !(step instanceof AggregateStep)) {
             ((Bypassing) step).setBypass(true);
             final TraverserSet<?> traverserSet = new TraverserSet<>();
             step.forEachRemaining(traverser -> {
-                if (!(step instanceof OrderGlobalStep)) //  TODO: this is so we get the properties as DetachedElement will be used, not ReferenceElement
+                if (!(step instanceof CollectingBarrierStep)) //  TODO: this is so we get the properties as DetachedElement will be used, not ReferenceElement
                     traverser.asAdmin().detach();
-
                 traverserSet.add((Traverser.Admin) traverser);
             });
             memory.add(step.getId(), traverserSet);

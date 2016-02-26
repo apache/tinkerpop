@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -32,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
@@ -55,7 +56,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class
     ));
 
     private ComputerVerificationStrategy() {
@@ -101,8 +102,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof UnionStep)
                 throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
 
-            if ((step instanceof LambdaCollectingBarrierStep) && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
-                throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal LambdaCollectingBarrierSteps: " + step, traversal);
+            if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
+                throw new VerificationException("One bulk us currently not supported: " + step, traversal);
 
             if (step instanceof DedupGlobalStep && (!((DedupGlobalStep) step).getLocalChildren().isEmpty() || !((DedupGlobalStep) step).getScopeKeys().isEmpty()))
                 throw new VerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
