@@ -28,8 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -56,7 +58,7 @@ public final class TraverserExecutor {
         final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 
-        final TraverserSet<Object> maybeAliveTraversers = memory.get(TraversalVertexProgram.ALIVE_TRAVERSERS);
+        final TraverserSet<Object> maybeAliveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
         final Iterator<Traverser.Admin<Object>> iterator = maybeAliveTraversers.iterator();
         while (iterator.hasNext()) {
             final Traverser.Admin<Object> traverser = iterator.next();
@@ -126,6 +128,9 @@ public final class TraverserExecutor {
         if (step instanceof ReducingBarrierStep) {
             memory.add(step.getId(), step.next().get());
             memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
+        } else if (step instanceof SupplyingBarrierStep) {
+            memory.add(step.getId(), true);
+            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
         } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof OrderGlobalStep) {
             ((Bypassing) step).setBypass(true);
             final TraverserSet<?> traverserSet = new TraverserSet<>();
@@ -137,7 +142,7 @@ public final class TraverserExecutor {
             });
             memory.add(step.getId(), traverserSet);
             memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
-        } else {
+        } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();

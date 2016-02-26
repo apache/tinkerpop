@@ -158,6 +158,10 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
         private final long highRange;
 
+        private RangeBiOperator() {
+            this.highRange = Long.MAX_VALUE;
+        }
+
         public RangeBiOperator(final long highRange) {
             this.highRange = highRange;
         }

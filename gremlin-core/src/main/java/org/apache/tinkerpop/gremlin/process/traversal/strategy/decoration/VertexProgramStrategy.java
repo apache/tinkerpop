@@ -112,7 +112,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             }
             currentStep = traversal.getStartStep();
             while (!(currentStep instanceof EmptyStep)) {
-                if (!(currentStep instanceof VertexComputing) && !lastTraversalVertexProgramDone(traversal))
+                if (!(currentStep instanceof VertexComputing))
                     break;
                 currentStep = currentStep.getNextStep();
             }
@@ -134,8 +134,6 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         }
         // all vertex computing steps needs the graph computer function
         traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.graphComputerFunction));
-
-        //System.out.println(traversal + "!!!!!!!!!!!");
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {
@@ -151,21 +149,11 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         while (currentStep instanceof VertexComputing)
             currentStep = currentStep.getNextStep();
         while (!(currentStep instanceof EmptyStep)) {
-            if (ComputerVerificationStrategy.isStepInstanceOfEndStep(currentStep))
-                return currentStep;
             if (currentStep instanceof VertexComputing)
                 return currentStep.getPreviousStep();
             currentStep = currentStep.getNextStep();
         }
         return EmptyStep.instance();
-    }
-
-    private static boolean lastTraversalVertexProgramDone(final Traversal.Admin<?, ?> traversal) {
-        Optional<TraversalVertexProgramStep> optional = TraversalHelper.getLastStepOfAssignableClass(TraversalVertexProgramStep.class, traversal);
-        if (!optional.isPresent())
-            return false;
-        else
-            return ComputerVerificationStrategy.isStepInstanceOfEndStep(optional.get().getGlobalChildren().get(0).getEndStep());
     }
 
     public static Optional<GraphComputer> getGraphComputer(final Graph graph, final TraversalStrategies strategies) {

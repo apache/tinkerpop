@@ -68,6 +68,8 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum();
 
+    public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_groupCount_byXnameX() {
@@ -212,6 +214,23 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
+        final Traversal<Vertex, Map<Vertex, Long>> traversal = get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+        printTraversalForm(traversal);
+        //  [{v[1]=6, v[2]=2, v[3]=6, v[4]=6, v[5]=2, v[6]=2}]
+        final Map<Vertex, Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(6, map.size());
+        assertEquals(6l, map.get(convertToVertex(graph, "marko")).longValue());
+        assertEquals(2l, map.get(convertToVertex(graph, "vadas")).longValue());
+        assertEquals(6l, map.get(convertToVertex(graph, "lop")).longValue());
+        assertEquals(6l, map.get(convertToVertex(graph, "josh")).longValue());
+        assertEquals(2l, map.get(convertToVertex(graph, "ripple")).longValue());
+        assertEquals(6l, map.get(convertToVertex(graph, "marko")).longValue());
+    }
+
     public static class Traversals extends GroupCountTest {
 
         @Override
@@ -269,6 +288,11 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum() {
             return g.V().union(out("knows"), out("created").in("created")).groupCount().select(Column.values).unfold().sum();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
+            return g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a");
         }
     }
 }

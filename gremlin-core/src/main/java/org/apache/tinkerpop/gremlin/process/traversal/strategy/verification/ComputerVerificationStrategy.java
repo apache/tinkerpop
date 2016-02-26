@@ -39,7 +39,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrie
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -59,20 +58,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             InjectStep.class, Mutating.class, SubgraphStep.class
     ));
 
-    public static final Set<Class<? extends Step>> END_STEPS = new HashSet<>(Arrays.asList(SupplyingBarrierStep.class));
-
     private ComputerVerificationStrategy() {
     }
-
-    public static boolean isStepInstanceOfEndStep(final Step<?, ?> step) {
-        final Class<? extends Step> stepClass = step.getClass();
-        for (final Class<? extends Step> endClass : END_STEPS) {
-            if (endClass.isAssignableFrom(stepClass))
-                return true;
-        }
-        return false;
-    }
-
 
     private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
         for (final Step step : traversal.getSteps()) {
@@ -114,9 +101,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof UnionStep)
                 throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
 
-            if ((step instanceof SupplyingBarrierStep || step instanceof LambdaCollectingBarrierStep)
-                    && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
-                throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
+            if ((step instanceof LambdaCollectingBarrierStep) && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
+                throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal LambdaCollectingBarrierSteps: " + step, traversal);
 
             if (step instanceof DedupGlobalStep && (!((DedupGlobalStep) step).getLocalChildren().isEmpty() || !((DedupGlobalStep) step).getScopeKeys().isEmpty()))
                 throw new VerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);

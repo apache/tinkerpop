@@ -50,6 +50,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
@@ -89,12 +90,11 @@ import java.util.Set;
  */
 public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
 
-    public static final String HALTED_TRAVERSERS = "gremlin.traversalVertexProgram.haltedTraversers";
-    private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
     public static final String TRAVERSAL = "gremlin.traversalVertexProgram.traversal";
-
-    public static final String ALIVE_TRAVERSERS = Graph.Hidden.hide("aliveTraversers");
-    public static final String MUTATED_MEMORY_KEYS = Graph.Hidden.hide("mutatedMemoryKeys");
+    public static final String HALTED_TRAVERSERS = "gremlin.traversalVertexProgram.haltedTraversers";
+    public static final String ACTIVE_TRAVERSERS = "gremlin.traversalVertexProgram.activeTraversers";
+    protected static final String MUTATED_MEMORY_KEYS = "gremlin.traversalVertexProgram.mutatedMemoryKeys";
+    private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
@@ -102,12 +102,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private Set<String> sideEffectKeys = new HashSet<>();
     private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
             VertexComputeKey.of(HALTED_TRAVERSERS, false),
-            VertexComputeKey.of(TraversalSideEffects.SIDE_EFFECTS, false)));
+            VertexComputeKey.of(TraversalSideEffects.SIDE_EFFECTS, false))); // TODO: when MapReducers are not longer, remove this
 
     private PureTraversal<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
     private final Set<MapReduce> mapReducers = new HashSet<>();
-    private boolean keepHaltedTraversersDistributed = true;
+    private boolean keepDistributedHaltedTraversers = true;
     private Set<String> neverTouchedMemoryKeys = new HashSet<>();
 
     private TraversalVertexProgram() {
@@ -131,32 +131,33 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         this.traversal = PureTraversal.loadState(configuration, TRAVERSAL, graph);
         if (!this.traversal.get().isLocked())
             this.traversal.get().applyStrategies();
+        /// traversal is compiled and ready to be introspected
         this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
+        // if results will be serialized out, don't save halted traversers across the cluster
+        this.keepDistributedHaltedTraversers = !(this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep);
+        // dangling MapReduces left
+        if (this.traversal.get().getEndStep() instanceof SampleGlobalStep ||
+                this.traversal.get().getEndStep() instanceof LambdaCollectingBarrierStep ||
+                this.traversal.get().getEndStep() instanceof AggregateStep) {
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
+            this.keepDistributedHaltedTraversers = true;
+        }
+        // register MapReducer memory compute keys
         this.memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, Operator.and, false, true));
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal.get())) {
             this.mapReducers.add(mapReducer.getMapReduce());
             this.memoryComputeKeys.add(MemoryComputeKey.of(mapReducer.getMapReduce().getMemoryKey(), Operator.assign, false, false));
         }
-
-        if (this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep)
-            this.keepHaltedTraversersDistributed = false;
-        if (this.traversal.get().getEndStep() instanceof SampleGlobalStep ||
-                this.traversal.get().getEndStep() instanceof LambdaCollectingBarrierStep ||
-                this.traversal.get().getEndStep() instanceof AggregateStep) {
-            this.mapReducers.add(new TraverserMapReduce(this.traversal.get()));
-            this.keepHaltedTraversersDistributed = true;
-        }
-
+        // register GraphComputing memory compute keys
         for (final GraphComputing<?> graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, this.traversal.get())) {
             graphComputing.getMemoryComputeKey().ifPresent(this.memoryComputeKeys::add);
+            graphComputing.getMemoryComputeKey().ifPresent(memoryComputeKey -> this.neverTouchedMemoryKeys.add(memoryComputeKey.getKey()));
             graphComputing.getMemoryComputeKey().ifPresent(x -> this.sideEffectKeys.add(x.getKey())); // TODO: when no more MapReducers, you can remove this
-            graphComputing.getMemoryComputeKey().ifPresent(x -> this.neverTouchedMemoryKeys.add(x.getKey()));
         }
-
+        // register TraversalVertexProgram specific memory compute keys
         this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, false));
-        this.memoryComputeKeys.add(MemoryComputeKey.of(ALIVE_TRAVERSERS, Operator.addAll, true, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(ACTIVE_TRAVERSERS, Operator.addAll, true, true));
         this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.addAll, false, true));
-
     }
 
     @Override
@@ -172,7 +173,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             memory.set(reducingBarrierStep.getId(), reducingBarrierStep.getSeedSupplier().get());
         }
         memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
-        memory.set(ALIVE_TRAVERSERS, new TraverserSet<>());
+        memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
     }
 
@@ -221,7 +222,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 vertex.<Map<String, Object>>property(VertexTraversalSideEffects.SIDE_EFFECTS).value().remove(key);
             }
         });
-        if (!this.keepHaltedTraversersDistributed)
+        if (!this.keepDistributedHaltedTraversers)
             vertex.<TraverserSet>property(HALTED_TRAVERSERS).value().clear();
     }
 
@@ -232,14 +233,16 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         memory.set(VOTE_TO_HALT, true);
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
-        memory.set(ALIVE_TRAVERSERS, new TraverserSet<>());
+        memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
         ///
         if (voteToHalt) {
+            memory.keys().forEach(key -> this.traversal.get().getSideEffects().set(key, memory.get(key)));
             final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
             final TraverserSet<?> localAliveTraversers = new TraverserSet<>();
             final TraverserSet<?> remoteAliveTraversers = new TraverserSet<>();
             final TraverserSet<?> haltedTraversers = memory.get(HALTED_TRAVERSERS);
             this.processMemory(memory, mutatedMemoryKeys, toProcessTraversers);
+            memory.keys().forEach(key -> this.traversal.get().getSideEffects().set(key, memory.get(key)));
             while (!toProcessTraversers.isEmpty()) {
                 this.processTraversers(toProcessTraversers, localAliveTraversers, remoteAliveTraversers, haltedTraversers);
                 toProcessTraversers.clear();
@@ -247,7 +250,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 localAliveTraversers.clear();
             }
             if (!remoteAliveTraversers.isEmpty()) {
-                memory.set(ALIVE_TRAVERSERS, remoteAliveTraversers);
+                memory.set(ACTIVE_TRAVERSERS, remoteAliveTraversers);
                 return false;
             } else {
                 if (!this.neverTouchedMemoryKeys.isEmpty())
@@ -267,13 +270,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 if (memory.exists(key) && toProcessMemoryKeys.contains(key)) {
                     if (graphComputing instanceof RangeGlobalStep || graphComputing instanceof TailGlobalStep || graphComputing instanceof OrderGlobalStep || graphComputing instanceof DedupGlobalStep) {
                         traverserSet.addAll(((TraverserSet) graphComputing.generateFinalResult(memory.get(key))));
-                    } else if (graphComputing instanceof ReducingBarrierStep) {
+                    } else if (graphComputing instanceof ReducingBarrierStep || graphComputing instanceof SupplyingBarrierStep) {
                         final Traverser.Admin traverser = this.traversal.get().getTraverserGenerator().generate(graphComputing.generateFinalResult(memory.get(key)), ((Step) graphComputing), 1l);
-                        if (((ReducingBarrierStep) graphComputing).hasNext())
-                            ((ReducingBarrierStep) graphComputing).next(); // or else you will get a seed
-                        traverser.setStepId(((Step) graphComputing).getNextStep().getId()); // should really for ReducingBarrierStep seed.
+                        if (((Step) graphComputing).hasNext())
+                            ((Step) graphComputing).next(); // or else you will get a seed
+                        traverser.setStepId(((Step) graphComputing).getNextStep().getId());
                         traverserSet.add(traverser);
-                        memory.set(key, ((ReducingBarrierStep) graphComputing).getSeedSupplier().get());
                     } else {
                         memory.set(key, graphComputing.generateFinalResult(memory.get(key))); // XXXSideEffectSteps (may need to relocate this to post HALT)
                     }
