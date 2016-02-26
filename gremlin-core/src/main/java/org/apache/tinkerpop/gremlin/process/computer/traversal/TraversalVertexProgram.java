@@ -153,9 +153,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             graphComputing.getMemoryComputeKey().ifPresent(x -> this.neverTouchedMemoryKeys.add(x.getKey()));
         }
 
-        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.add, false, false));
-        this.memoryComputeKeys.add(MemoryComputeKey.of(ALIVE_TRAVERSERS, Operator.add, true, true));
-        this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.add, false, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, false));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(ALIVE_TRAVERSERS, Operator.addAll, true, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.addAll, false, true));
 
     }
 

@@ -71,7 +71,7 @@ public enum Operator implements BinaryOperator<Object> {
             return ((boolean) a) || ((boolean) b);
         }
     },
-    add {
+    addAll {
         public Object apply(final Object a, final Object b) {
             ((Collection) a).addAll((Collection) b);
             return a;

@@ -43,12 +43,12 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
     private final boolean listFold;
 
     public FoldStep(final Traversal.Admin traversal) {
-        this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) Operator.add);
+        this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) Operator.addAll);
     }
 
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
-        this.listFold = Operator.add.equals(foldFunction);
+        this.listFold = Operator.addAll.equals(foldFunction);
         this.setSeedSupplier(seed);
         this.setReducingBiOperator(new FoldBiOperator<>(foldFunction));
     }

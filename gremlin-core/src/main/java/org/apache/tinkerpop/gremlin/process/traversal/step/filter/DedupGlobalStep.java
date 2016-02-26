@@ -137,7 +137,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.add, false, true));
+        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.addAll, false, true));
     }
 
     @Override

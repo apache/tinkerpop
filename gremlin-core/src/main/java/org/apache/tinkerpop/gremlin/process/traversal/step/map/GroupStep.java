@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -46,7 +45,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -249,6 +247,6 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
             return Collections.singletonMap(key, traverserSet);
         } else
-            return Collections.singletonMap(key,traverser);
+            return Collections.singletonMap(key, traverser);
     }
 }

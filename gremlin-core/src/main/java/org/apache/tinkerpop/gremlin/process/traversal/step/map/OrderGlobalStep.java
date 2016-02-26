@@ -142,7 +142,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.add, false, true));
+        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.addAll, false, true));
     }
 
     @Override

@@ -108,6 +108,6 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.sideEffectKey, Operator.add, false, false));
+        return Optional.of(MemoryComputeKey.of(this.sideEffectKey, Operator.addAll, false, false));
     }
 }
