@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -141,7 +142,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), MemoryComputeKey.addOperator(), false, true));
+        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.add, false, true));
     }
 
     @Override

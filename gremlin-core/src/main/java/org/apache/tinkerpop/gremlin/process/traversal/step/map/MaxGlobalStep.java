@@ -18,32 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
-import java.io.Serializable;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
-
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.max;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> {
 
-    private static final Double NAN = Double.valueOf(Double.NaN);
-
     public MaxGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>((S) NAN));
-        this.setReducingBiOperator(MaxGlobalBiOperator.INSTANCE);
+        this.setSeedSupplier(new ConstantSupplier<>((S) Integer.valueOf(Integer.MIN_VALUE)));
+        this.setReducingBiOperator((BinaryOperator) Operator.max);
     }
 
     @Override
@@ -56,15 +50,4 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    /////
-
-    public static class MaxGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
-
-        private static final MaxGlobalBiOperator INSTANCE = new MaxGlobalBiOperator();
-
-        @Override
-        public S apply(final S mutatingSeed, final S number) {
-            return !NAN.equals(mutatingSeed) ? (S) max(mutatingSeed, number) : number;
-        }
-    }
 }

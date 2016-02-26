@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -89,7 +90,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
                         this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of((S) sideEffects), (Step) this, 1l);
                     }
                 } else {
-                    this.currentIterator = result.memory().get(TraversalVertexProgram.HALTED_TRAVERSERS);
+                    this.currentIterator = result.memory().<TraverserSet<S>>get(TraversalVertexProgram.HALTED_TRAVERSERS).iterator();
                 }
                 this.currentIterator = attach(this.currentIterator, result.graph());
             }

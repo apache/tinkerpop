@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -131,10 +132,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         if (!this.traversal.get().isLocked())
             this.traversal.get().applyStrategies();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
-        this.memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, MemoryComputeKey.andOperator(), false, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(VOTE_TO_HALT, Operator.and, false, true));
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal.get())) {
             this.mapReducers.add(mapReducer.getMapReduce());
-            this.memoryComputeKeys.add(MemoryComputeKey.of(mapReducer.getMapReduce().getMemoryKey(), MemoryComputeKey.setOperator(), false, false));
+            this.memoryComputeKeys.add(MemoryComputeKey.of(mapReducer.getMapReduce().getMemoryKey(), Operator.assign, false, false));
         }
 
         if (this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep)
@@ -152,9 +153,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             graphComputing.getMemoryComputeKey().ifPresent(x -> this.neverTouchedMemoryKeys.add(x.getKey()));
         }
 
-        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, MemoryComputeKey.addOperator(), false, false));
-        this.memoryComputeKeys.add(MemoryComputeKey.of(ALIVE_TRAVERSERS, MemoryComputeKey.addOperator(), true, true));
-        this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, MemoryComputeKey.addOperator(), false, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.add, false, false));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(ALIVE_TRAVERSERS, Operator.add, true, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.add, false, true));
 
     }
 
@@ -251,7 +252,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             } else {
                 if (!this.neverTouchedMemoryKeys.isEmpty())
                     this.processMemory(memory, this.neverTouchedMemoryKeys, haltedTraversers);
-                memory.set(HALTED_TRAVERSERS, haltedTraversers.iterator());
+                memory.set(HALTED_TRAVERSERS, haltedTraversers);
                 return true;
             }
         } else {

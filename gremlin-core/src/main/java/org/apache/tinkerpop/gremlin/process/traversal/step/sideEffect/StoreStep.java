@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -31,13 +32,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
-import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -110,18 +108,6 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.sideEffectKey, StoreBiOperator.INSTANCE, false, false));
+        return Optional.of(MemoryComputeKey.of(this.sideEffectKey, Operator.add, false, false));
     }
-
-    public static class StoreBiOperator<A> implements BinaryOperator<Collection<A>>, Serializable {
-
-        private final static StoreBiOperator INSTANCE = new StoreBiOperator();
-
-        @Override
-        public Collection<A> apply(final Collection<A> mutatingSeed, final Collection<A> collection) {
-            mutatingSeed.addAll(collection);
-            return mutatingSeed;
-        }
-    }
-
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -44,12 +43,12 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
     private final boolean listFold;
 
     public FoldStep(final Traversal.Admin traversal) {
-        this(traversal, (Supplier) ArrayListSupplier.instance(), ListBiOperator.INSTANCE);
+        this(traversal, (Supplier) ArrayListSupplier.instance(), (BiFunction) Operator.add);
     }
 
     public FoldStep(final Traversal.Admin traversal, final Supplier<E> seed, final BiFunction<E, S, E> foldFunction) {
         super(traversal);
-        this.listFold = foldFunction instanceof ListBiOperator;
+        this.listFold = Operator.add.equals(foldFunction);
         this.setSeedSupplier(seed);
         this.setReducingBiOperator(new FoldBiOperator<>(foldFunction));
     }
@@ -70,19 +69,6 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    /////////
-
-    public static class ListBiOperator<S> implements BinaryOperator<List<S>>, Serializable {
-
-        private static final ListBiOperator INSTANCE = new ListBiOperator();
-
-        @Override
-        public List<S> apply(final List<S> mutatingSeed, final List<S> list) {
-            mutatingSeed.addAll(list);
-            return mutatingSeed;
-        }
     }
 
     public static class FoldBiOperator<E> implements BinaryOperator<E>, Serializable {

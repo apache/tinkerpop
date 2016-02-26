@@ -18,20 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
-import java.io.Serializable;
 import java.util.EnumSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.add;
 import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
 
 /**
@@ -47,7 +44,7 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
     public SumGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>((S) Integer.valueOf(0)));
-        this.setReducingBiOperator(SumGlobalBiOperator.INSTANCE);
+        this.setReducingBiOperator((BinaryOperator) Operator.sum);
     }
 
     @Override
@@ -59,17 +56,5 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
-    }
-
-    /////
-
-    public static class SumGlobalBiOperator<S extends Number> implements BinaryOperator<S>, Serializable {
-
-        private static final SumGlobalBiOperator INSTANCE = new SumGlobalBiOperator();
-
-        @Override
-        public S apply(final S mutatingSeed, final S number) {
-            return (S) add(mutatingSeed, number);
-        }
     }
 }

@@ -25,13 +25,14 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -220,10 +221,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("set", MemoryComputeKey.setOperator(), true, false),
-                    MemoryComputeKey.of("incr", MemoryComputeKey.sumLongOperator(), true, false),
-                    MemoryComputeKey.of("and", MemoryComputeKey.andOperator(), true, false),
-                    MemoryComputeKey.of("or", MemoryComputeKey.orOperator(), true, false)));
+                    MemoryComputeKey.of("set", Operator.assign, true, false),
+                    MemoryComputeKey.of("incr", Operator.sum, true, false),
+                    MemoryComputeKey.of("and", Operator.and, true, false),
+                    MemoryComputeKey.of("or", Operator.or, true, false)));
         }
 
         @Override
@@ -272,7 +273,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of(null, MemoryComputeKey.orOperator(), true, false));
+            return Collections.singleton(MemoryComputeKey.of(null, Operator.or, true, false));
         }
 
         @Override
@@ -322,7 +323,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of("", MemoryComputeKey.orOperator(), true, false));
+            return Collections.singleton(MemoryComputeKey.of("", Operator.or, true, false));
         }
 
         @Override
@@ -545,8 +546,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("a", MemoryComputeKey.sumIntegerOperator(), true, false),
-                    MemoryComputeKey.of("b", MemoryComputeKey.sumIntegerOperator(), true, false)));
+                    MemoryComputeKey.of("a", Operator.sum, true, false),
+                    MemoryComputeKey.of("b", Operator.sum, true, false)));
         }
 
         @Override
@@ -672,12 +673,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("a", MemoryComputeKey.sumLongOperator(), true, false),
-                    MemoryComputeKey.of("b", MemoryComputeKey.sumLongOperator(), true, false),
-                    MemoryComputeKey.of("c", MemoryComputeKey.andOperator(), true, false),
-                    MemoryComputeKey.of("d", MemoryComputeKey.orOperator(), true, false),
-                    MemoryComputeKey.of("e", MemoryComputeKey.andOperator(), true, false),
-                    MemoryComputeKey.of("f", MemoryComputeKey.setOperator(), true, false)));
+                    MemoryComputeKey.of("a", Operator.sum, true, false),
+                    MemoryComputeKey.of("b", Operator.sum, true, false),
+                    MemoryComputeKey.of("c", Operator.and, true, false),
+                    MemoryComputeKey.of("d", Operator.or, true, false),
+                    MemoryComputeKey.of("e", Operator.and, true, false),
+                    MemoryComputeKey.of("f", Operator.assign, true, false)));
         }
 
         @Override
@@ -1181,7 +1182,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.of("test", MemoryComputeKey.sumIntegerOperator(), true, false));
+            return Collections.singleton(MemoryComputeKey.of("test", Operator.sum, true, false));
         }
 
         @Override
@@ -1499,7 +1500,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
-            return Collections.singleton(MemoryComputeKey.<Long>of("workerCount", MemoryComputeKey.sumLongOperator(), true, false));
+            return Collections.singleton(MemoryComputeKey.of("workerCount", Operator.sum, true, false));
         }
 
         /*public void workerIterationStart(final Memory memory) {
@@ -1915,7 +1916,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertTrue(memory3.keys().contains(TraversalVertexProgram.HALTED_TRAVERSERS));
         assertEquals(1, memory3.<Map<Long, Long>>get("m").size());
         assertEquals(6, memory3.<Map<Long, Long>>get("m").get(1l).intValue());
-        List<Traverser<String>> traversers = IteratorUtils.list(memory3.<Iterator<Traverser<String>>>get(TraversalVertexProgram.HALTED_TRAVERSERS));
+        List<Traverser<String>> traversers = IteratorUtils.list(memory3.<TraverserSet>get(TraversalVertexProgram.HALTED_TRAVERSERS).iterator());
         assertEquals(6l, traversers.stream().map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
         assertEquals(4l, traversers.stream().filter(s -> s.get().equals("person")).map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
         assertEquals(2l, traversers.stream().filter(s -> s.get().equals("software")).map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
@@ -2109,9 +2110,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("m1", MemoryComputeKey.orOperator(), true, true),
-                    MemoryComputeKey.of("m2", MemoryComputeKey.andOperator(), true, true),
-                    MemoryComputeKey.of("m3", MemoryComputeKey.sumLongOperator(), true, false)));
+                    MemoryComputeKey.of("m1", Operator.or, true, true),
+                    MemoryComputeKey.of("m2", Operator.and, true, true),
+                    MemoryComputeKey.of("m3", Operator.sum, true, false)));
         }
 
         @Override
@@ -2259,10 +2260,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public Set<MemoryComputeKey> getMemoryComputeKeys() {
             return new HashSet<>(Arrays.asList(
-                    MemoryComputeKey.of("m1", MemoryComputeKey.orOperator(), false, false),
-                    MemoryComputeKey.of("m2", MemoryComputeKey.andOperator(), true, true),
-                    MemoryComputeKey.of("m3", MemoryComputeKey.sumLongOperator(), false, true),
-                    MemoryComputeKey.of("m4", MemoryComputeKey.sumIntegerOperator(), true, false)));
+                    MemoryComputeKey.of("m1", Operator.or, false, false),
+                    MemoryComputeKey.of("m2", Operator.and, true, true),
+                    MemoryComputeKey.of("m3", Operator.sum, false, true),
+                    MemoryComputeKey.of("m4", Operator.sum, true, false)));
         }
 
         @Override
