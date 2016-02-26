@@ -71,7 +71,7 @@ public class VertexProgramStrategyTest {
                 {__.V().pageRank().out().count(), start().pageRank().asAdmin().addStep(traversal(__.V().out().count())).addStep(computerResultStep)},
                 {__.V().out().pageRank(), start().addStep(traversal(__.V().out())).pageRank().asAdmin().addStep(traversal(__.identity())).addStep(computerResultStep)},
                 {__.V().out().pageRank().count(), start().addStep(traversal(__.V().out())).pageRank().asAdmin().addStep(traversal(__.count())).addStep(computerResultStep)},
-                {__.V().pageRank().order().limit(1), start().pageRank().asAdmin().addStep(traversal(__.V().order())).addStep(computerResultStep).limit(1)}
+                {__.V().pageRank().order().limit(1), start().pageRank().asAdmin().addStep(traversal(__.V().order().limit(1))).addStep(computerResultStep)}
         });
     }
 
