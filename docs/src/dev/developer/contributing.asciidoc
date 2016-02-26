@@ -78,7 +78,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
-* Build AsciiDocs (Hadoop must be running): `bin/process-docs.sh`
+* Build AsciiDocs (Hadoop must be running and link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
 ** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
 * Build JavaDocs: `mvn process-resources -Djavadoc`
@@ -463,3 +463,10 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The properties files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
+
+For Providers
+-------------
+
+Graph Providers are those who develop third-party systems and libraries on top of the various TinkerPop APIs and
+protocols. They manage their projects independently of TinkerPop in separate repositories. Additional details for
+providers can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].

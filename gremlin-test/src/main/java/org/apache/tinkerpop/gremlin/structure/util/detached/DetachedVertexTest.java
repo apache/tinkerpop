@@ -39,12 +39,34 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DetachedVertexTest extends AbstractGremlinTest {
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldIteratePropertiesOnDetached() {
+        final Vertex v = graph.addVertex("name", "daniel", "favoriteColor", "red", "state", "happy");
+        final Vertex detached = DetachedFactory.detach(v, true);
+        assertEquals("daniel", detached.properties("name").next().value());
+        detached.properties().forEachRemaining(p -> {
+            if (p.key().equals("name"))
+                assertEquals("daniel", p.value());
+            else if (p.key().equals("favoriteColor"))
+                assertEquals("red", p.value());
+            else if (p.key().equals("state"))
+                assertEquals("happy", p.value());
+            else
+                fail("Should be one of the expected keys");
+        });
+    }
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)

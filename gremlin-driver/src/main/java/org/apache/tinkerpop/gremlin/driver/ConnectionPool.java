@@ -89,19 +89,18 @@ final class ConnectionPool {
         this.maxSimultaneousUsagePerConnection = settings.maxSimultaneousUsagePerConnection;
         this.minInProcess = settings.minInProcessPerConnection;
 
-        final List<Connection> l = new ArrayList<>(minPoolSize);
+        this.connections = new CopyOnWriteArrayList<>();
 
         try {
             for (int i = 0; i < minPoolSize; i++)
-                l.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+                this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
         } catch (ConnectionException ce) {
             // ok if we don't get it initialized here - when a request is attempted in a connection from the
             // pool it will try to create new connections as needed.
-            logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, l.size());
+            logger.debug("Could not initialize connections in pool for {} - pool size at {}", host, this.connections.size());
             considerUnavailable();
         }
 
-        this.connections = new CopyOnWriteArrayList<>(l);
         this.open = new AtomicInteger(connections.size());
 
         logger.info("Opening connection pool on {} with core size of {}", host, minPoolSize);

@@ -126,7 +126,7 @@ limitations under the License.
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git</url>
     </scm>
     <properties>
-        <groovy.version>2.4.5</groovy.version>
+        <groovy.version>2.4.6</groovy.version>
         <junit.version>4.12</junit.version>
         <metrics.version>3.0.2</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -728,6 +728,31 @@ limitations under the License.
                                     <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <outputDirectory>${htmlsingle.output.dir}/dev/developer</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>3</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>provider-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/provider</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/dev/provider</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
