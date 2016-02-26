@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -70,7 +71,7 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal().withComputer(); //GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        final Traversal<?,?> traversal = g.V().outE().values("weight").groupCount().unfold(); // unfold.select(values)
+        final Traversal<?,?> traversal = g.V().outE().values("weight").groupCount().select(Column.values).unfold().groupCount().select(Column.values).unfold(); // unfold.select(values)
 
         System.out.println(traversal.asAdmin().clone().toString());
         final Traversal<?,?> clone = traversal.asAdmin().clone();

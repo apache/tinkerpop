@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -125,11 +126,13 @@ public final class TraverserExecutor {
         if (step instanceof ReducingBarrierStep) {
             memory.add(step.getId(), step.next().get());
             memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
-        } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep) {
+        } else if (step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof OrderGlobalStep) {
             ((Bypassing) step).setBypass(true);
             final TraverserSet<?> traverserSet = new TraverserSet<>();
             step.forEachRemaining(traverser -> {
-                traverser.asAdmin().detach();
+                if (!(step instanceof OrderGlobalStep)) //  TODO: this is so we get the properties as DetachedElement will be used, not ReferenceElement
+                    traverser.asAdmin().detach();
+
                 traverserSet.add((Traverser.Admin) traverser);
             });
             memory.add(step.getId(), traverserSet);

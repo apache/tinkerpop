@@ -263,6 +263,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER) // FOLD NEEDS TO BE SEEDED
     public void g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
         final Traversal<Vertex, List<Double>> traversal = get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX();
         final List<List<Double>> list = traversal.toList();

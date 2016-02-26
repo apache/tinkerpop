@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,7 @@ public abstract class MapValuesTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @Ignore // TODO
     public void g_V_outE_valuesXweightX_groupCount_mapValues_groupCount_mapValues() {
         final Traversal<Vertex, Long> traversal = get_g_V_outE_valuesXweightX_groupCount_mapValues_groupCount_mapValues();
         printTraversalForm(traversal);

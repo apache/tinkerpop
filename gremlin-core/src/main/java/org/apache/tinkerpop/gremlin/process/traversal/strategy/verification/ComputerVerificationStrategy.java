@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
@@ -34,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicate
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
@@ -61,10 +59,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             InjectStep.class, Mutating.class, SubgraphStep.class
     ));
 
-    public static final Set<Class<? extends Step>> END_STEPS = new HashSet<>(Arrays.asList(
-            SupplyingBarrierStep.class,
-            OrderGlobalStep.class,
-            DedupGlobalStep.class));
+    public static final Set<Class<? extends Step>> END_STEPS = new HashSet<>(Arrays.asList(SupplyingBarrierStep.class));
 
     private ComputerVerificationStrategy() {
     }
@@ -103,31 +98,27 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (traversal.getParent() instanceof TraversalVertexProgramStep) {
             if (traversal.getStartStep() instanceof GraphStep && traversal.getSteps().stream().filter(step -> step instanceof GraphStep).count() > 1)
                 throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
-            ///
-            if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
-                if (((TraversalParent) endStep).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
-                    throw new VerificationException("A final CollectingBarrierStep can not process the incident edges of a vertex: " + endStep, traversal);
-                if (!((TraversalParent) endStep).getLocalChildren().isEmpty() && TraversalHelper.getLastElementClass(traversal).equals(Edge.class))
-                    throw new VerificationException("The final CollectingBarrierStep can not operate on edges or their properties:" + endStep, traversal);
-            }
-            ///
-            if (endStep instanceof DedupGlobalStep)
-                ((Bypassing) endStep).setBypass(true);
-            if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
-                throw new VerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
 
             ComputerVerificationStrategy.onlyGlobalChildren(traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
+
+            if (step instanceof CollectingBarrierStep && step instanceof TraversalParent) {
+                if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
+                    throw new VerificationException("A final CollectingBarrierStep can not process the incident edges of a vertex: " + step, traversal);
+                if (!((TraversalParent) step).getLocalChildren().isEmpty() && TraversalHelper.getLastElementClass(traversal).equals(Edge.class))
+                    throw new VerificationException("The final CollectingBarrierStep can not operate on edges or their properties:" + step, traversal);
+            }
+
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof UnionStep)
                 throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
 
-            if ((step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof DedupGlobalStep || step instanceof LambdaCollectingBarrierStep)
+            if ((step instanceof SupplyingBarrierStep || step instanceof LambdaCollectingBarrierStep)
                     && (step != endStep || !(traversal.getParent() instanceof TraversalVertexProgramStep)))
                 throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
-            if (step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())
+            if (step instanceof DedupGlobalStep && (!((DedupGlobalStep) step).getLocalChildren().isEmpty() || !((DedupGlobalStep) step).getScopeKeys().isEmpty()))
                 throw new VerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
 
             if (step instanceof TraversalParent) {

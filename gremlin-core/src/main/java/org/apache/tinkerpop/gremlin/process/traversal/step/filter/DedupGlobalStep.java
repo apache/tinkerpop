@@ -18,15 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -35,12 +38,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, Bypassing, Barrier, ByModulating {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, Bypassing, Barrier, ByModulating, GraphComputing<TraverserSet<S>> {
 
     private Traversal.Admin<S, Object> dedupTraversal = null;
     private Set<Object> duplicateSet = new HashSet<>();
@@ -71,7 +75,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
-    public void modulateBy(final Traversal.Admin<?,?> dedupTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> dedupTraversal) {
         this.dedupTraversal = this.integrateChild(dedupTraversal);
     }
 
@@ -124,4 +128,21 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     public void processAllStarts() {
 
     }
+
+    @Override
+    public void onGraphComputer() {
+
+    }
+
+    @Override
+    public Optional<MemoryComputeKey> getMemoryComputeKey() {
+        return Optional.of(MemoryComputeKey.of(this.getId(), MemoryComputeKey.addOperator(), false, true));
+    }
+
+    @Override
+    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
+        traverserSet.forEach(t -> t.setBulk(1l));
+        return traverserSet;
+    }
+
 }

@@ -53,8 +53,6 @@ import java.util.Set;
  */
 public final class SparkExecutor {
 
-    private static final String[] EMPTY_ARRAY = new String[0];
-
     private SparkExecutor() {
     }
 
