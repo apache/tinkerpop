@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -42,7 +41,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -92,22 +90,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
         for (final Step<?, ?> step : traversal.getSteps()) {
 
-            if (step instanceof CollectingBarrierStep && step instanceof TraversalParent) {
-                if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
-                    throw new VerificationException("A final CollectingBarrierStep can not process the incident edges of a vertex: " + step, traversal);
-                if (!((TraversalParent) step).getLocalChildren().isEmpty() && TraversalHelper.getLastElementClass(traversal).equals(Edge.class))
-                    throw new VerificationException("The final CollectingBarrierStep can not operate on edges or their properties:" + step, traversal);
-            }
-
-            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof UnionStep)
-                throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
-
-            if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
-                throw new VerificationException("One bulk us currently not supported: " + step, traversal);
-
-            if (step instanceof DedupGlobalStep && (!((DedupGlobalStep) step).getLocalChildren().isEmpty() || !((DedupGlobalStep) step).getScopeKeys().isEmpty()))
-                throw new VerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
-
+            // you can not traverser past the local star graph with localChildren (e.g. by()-modulators).
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
@@ -115,6 +98,26 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                 if (traversalOptional.isPresent())
                     throw new VerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
             }
+
+            // collecting barriers and dedup global use can only operate on the element and its properties (no incidences)
+            if ((step instanceof CollectingBarrierStep || step instanceof DedupGlobalStep) && step instanceof TraversalParent) {
+                if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
+                    throw new VerificationException("A CollectingBarrierStep can not process the incident edges of a vertex: " + step, traversal);
+            }
+
+            // this is due to how reducing works and can be fixed by generalizing the current simple model
+            // we need to make it so dedup global does its project post reduction (easy to do, just do it)
+            if ((step instanceof DedupGlobalStep) && (!((DedupGlobalStep) step).getScopeKeys().isEmpty() || !((DedupGlobalStep) step).getLocalChildren().isEmpty())) {
+                throw new VerificationException("A dedup()-step can not process scoped elements: " + step, traversal);
+            }
+
+            // this is a problem with global parents and reseting reducers back to their seeds (this is more complicated than just an OLAP issue)
+            if (step instanceof ReducingBarrierStep && !(step.getTraversal().getParent() instanceof TraversalVertexProgramStep || step.getTraversal().getParent() instanceof EmptyStep))
+                throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
+
+            // this is a problem because sideEffect.merge() is transient on the OLAP reduction
+            if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
+                throw new VerificationException("One bulk us currently not supported: " + step, traversal);
 
             if ((step instanceof WherePredicateStep && ((WherePredicateStep) step).getStartKey().isPresent()) ||
                     (step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
