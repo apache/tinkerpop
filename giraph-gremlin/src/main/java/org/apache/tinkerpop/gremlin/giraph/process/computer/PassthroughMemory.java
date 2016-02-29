@@ -16,14 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+package org.apache.tinkerpop.gremlin.giraph.process.computer;
+
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
-import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
@@ -34,28 +30,17 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MapMemory implements Memory.Admin, Serializable {
+public final class PassThroughMemory implements Memory.Admin, Serializable {
 
+    private final GiraphMemory giraphMemory;
     private long runtime = 0l;
     private int iteration = -1;
     private final Map<String, Object> memoryMap = new HashMap<>();
-    private final Map<String, MemoryComputeKey> memoryComputeKeys = new HashMap<>();
 
-    public MapMemory() {
-
-    }
-
-    public MapMemory(final Memory otherMemory) {
-        otherMemory.keys().forEach(key -> this.memoryMap.put(key, otherMemory.get(key)));
-        this.iteration = otherMemory.getIteration();
-    }
-
-    public void addVertexProgramMemoryComputeKeys(final VertexProgram<?> vertexProgram) {
-        vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryComputeKeys.put(key.getKey(), key));
-    }
-
-    public void addMapReduceMemoryKey(final MapReduce mapReduce) {
-        this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), Operator.assign, false, false));
+    public PassThroughMemory(final GiraphMemory giraphMemory) {
+        this.giraphMemory = giraphMemory;
+        giraphMemory.keys().forEach(key -> this.memoryMap.put(key, giraphMemory.get(key)));
+        this.iteration = giraphMemory.getIteration();
     }
 
     @Override
@@ -74,8 +59,8 @@ public final class MapMemory implements Memory.Admin, Serializable {
 
     @Override
     public void set(final String key, Object value) {
-        this.checkKeyValue(key, value);
         this.memoryMap.put(key, value);
+        this.giraphMemory.set(key, value);
     }
 
     @Override
@@ -90,13 +75,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
 
     @Override
     public void add(final String key, final Object value) {
-        this.checkKeyValue(key, value);
-        if (this.memoryMap.containsKey(key)) {
-            final Object newValue = this.memoryComputeKeys.get(key).getReducer().apply(this.memoryMap.get(key), value);
-            this.memoryMap.put(key, newValue);
-        } else {
-            this.memoryMap.put(key, value);
-        }
+        this.giraphMemory.add(key, value);
     }
 
     @Override
@@ -117,11 +96,5 @@ public final class MapMemory implements Memory.Admin, Serializable {
     @Override
     public void setRuntime(long runtime) {
         this.runtime = runtime;
-    }
-
-    private final void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryComputeKeys.containsKey(key))
-            throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
-        MemoryHelper.validateValue(value);
     }
 }

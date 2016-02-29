@@ -286,7 +286,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 haltedTraversers.add((Traverser.Admin) traverser);
             } else if (traverser.get() instanceof Attachable &&
                     !(traverser.get() instanceof Path) &&
-                    !TraversalHelper.isLocalElement(this.traversalMatrix.getStepById(traverser.getStepId()))) {
+                    !TraversalHelper.isLocalElement(this.traversalMatrix.getStepById(traverser.getStepId()))) {  // this is so that patterns like order().name work as expected.
                 remoteActiveTraversers.add((Traverser.Admin) traverser);
             } else {
                 final Step<?, ?> currentStep = this.traversalMatrix.getStepById(traverser.getStepId());

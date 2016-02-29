@@ -53,8 +53,8 @@ public final class TraverserExecutor {
         final TraverserSet<Object> activeTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 
-        final TraverserSet<Object> maybeAliveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
-        final Iterator<Traverser.Admin<Object>> iterator = maybeAliveTraversers.iterator();
+        final TraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
+        final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
         while (iterator.hasNext()) {
             final Traverser.Admin<Object> traverser = iterator.next();
             if (vertex.equals(TraverserExecutor.getHostingVertex(traverser.get()))) {

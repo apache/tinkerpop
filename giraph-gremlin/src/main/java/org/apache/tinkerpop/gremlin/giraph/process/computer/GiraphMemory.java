@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Pair;
@@ -92,7 +91,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
             this.vertexProgram.setup(this);
         } else {
             // a hack to get the last iteration memory values to stick
-            final MapMemory memory = new MapMemory(this);
+            final PassThroughMemory memory = new PassThroughMemory(this);
             if (this.vertexProgram.terminate(memory)) { // terminate
                 final String outputLocation = this.getConf().get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
                 if (null != outputLocation) {
@@ -114,8 +113,6 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 }
                 this.haltComputation();
             }
-            // to ensure proper terminate that is not the "hack" above
-            this.vertexProgram.terminate(this);
         }
     }
 
