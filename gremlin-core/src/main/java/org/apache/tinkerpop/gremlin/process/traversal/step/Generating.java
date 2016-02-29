@@ -20,10 +20,19 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
+ * A {@code Generating} step is one that has a side-effect that needs post-processing prior to being returned.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Generating<S, E> {
 
+    /**
+     * Post-process the side-effect and return the post-processed side-effect.
+     * The default implementation is simply the identity function and returns the argument.
+     *
+     * @param preCap the pre-processed side-effect.
+     * @return the post-processed side-effect.
+     */
     public default E generateFinalResult(final S preCap) {
         return (E) preCap;
     }

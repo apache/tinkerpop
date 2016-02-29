@@ -18,15 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
-
-import java.util.Optional;
-
 /**
+ * A {@code GraphComputing} step is one that will change its behavior whether its on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} or not.
+ * {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy} is responsible for calling the {@link GraphComputing#onGraphComputer()} method.
+ * This method is only called for global children steps of a {@link TraversalParent}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface GraphComputing<R> {
 
+    /**
+     * The step will be executing on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
+     */
     public void onGraphComputer();
 
 }

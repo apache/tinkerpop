@@ -92,7 +92,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public static final String ACTIVE_TRAVERSERS = "gremlin.traversalVertexProgram.activeTraversers";
     protected static final String MUTATED_MEMORY_KEYS = "gremlin.traversalVertexProgram.mutatedMemoryKeys";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
-    private static final String COMPLETED_BARRIERS = "gremlin.travesalVertexProgram.completedBarriers";
+    private static final String COMPLETED_BARRIERS = "gremlin.traversalVertexProgram.completedBarriers";
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));

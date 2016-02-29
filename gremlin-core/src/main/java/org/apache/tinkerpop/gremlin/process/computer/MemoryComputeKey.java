@@ -25,6 +25,11 @@ import java.io.Serializable;
 import java.util.function.BinaryOperator;
 
 /**
+ * A {@code MemoryComputeKey} specifies what keys will be used by a {@link Memory} during a {@link GraphComputer} computation.
+ * A MemoryComputeKey maintains a {@link BinaryOperator} which specifies how to reduce parallel values into a single value.
+ * A MemoryComputeKey can be broadcasted and as such, the workers will receive mutations to the {@link Memory} value.
+ * A MemoryComputeKey can be transient and thus, will not be accessible once the {@link GraphComputer} computation is complete.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class MemoryComputeKey<A> implements Serializable {

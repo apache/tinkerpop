@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import java.io.Serializable;
 
 /**
+ * A {@code VertexComputeKey} specifies a property of a vertex that will be used to store {@link GraphComputer} data.
+ * If the VertexComputeKey is specified as transient, it will be dropped from the vertex prior to returning the {@link ComputerResult} graph.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class VertexComputeKey implements Serializable {

@@ -65,13 +65,6 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
         traversal.addTraverserRequirement(TraverserRequirement.BULK); // all graph computations require bulk
 
-        if (null == this.graphComputerFunction) { // TOTAL HACK!
-            traversal.setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance()));
-            ComputerVerificationStrategy.instance().apply(traversal);
-            traversal.setParent(EmptyStep.instance());
-            return;
-        }
-
         // back propagate as()-labels off of vertex computing steps
         Step<?, ?> currentStep = traversal.getEndStep();
         final Set<String> currentLabels = new HashSet<>();
@@ -96,7 +89,6 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             } else
                 currentStep = currentStep.getNextStep();
         }
-
 
         // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
         currentStep = traversal.getStartStep();

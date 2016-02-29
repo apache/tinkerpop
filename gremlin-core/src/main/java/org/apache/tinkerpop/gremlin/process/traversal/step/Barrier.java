@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 /**
  * A Barrier is any step that requires all left traversers to be processed prior to emitting result traversers to the right.
  * Note that some barrier steps may be "lazy" in that if their algorithm permits, they can emit right traversers prior to all traversers being aggregated.
+ * A barrier is the means by which a distributed step in {@link org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram} is synchronized and made to behave a single step.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -35,14 +36,36 @@ public interface Barrier<B> extends MemoryComputing<B> {
      */
     public void processAllStarts();
 
+    /**
+     * Whether or not the step has an accessible barrier.
+     *
+     * @return whether a barrier exists or not
+     */
     public boolean hasNextBarrier();
 
+    /**
+     * Get the next barrier within this step.
+     * Barriers from parallel steps can be the be merged to create a single step with merge barriers.
+     *
+     * @return the next barrier of the step
+     * @throws NoSuchElementException
+     */
     public B nextBarrier() throws NoSuchElementException;
 
+    /**
+     * Add a barrier to the step.
+     * This typically happens when multiple parallel barriers need to become one barrier at a single step.
+     *
+     * @param barrier the barrier to merge in
+     */
     public void addBarrier(final B barrier);
 
+    /**
+     * A way to hard set that the barrier is complete.
+     * This is necessary when parallel barriers don't all have barriers and need hard resetting.
+     * The default implementation does nothing.
+     */
     public default void done() {
 
     }
-
 }

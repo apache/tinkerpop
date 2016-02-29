@@ -22,9 +22,16 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 
 /**
+ * A {@code MemoryComputing} step uses {@link org.apache.tinkerpop.gremlin.process.computer.Memory} to effect its computation on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface MemoryComputing<M> {
 
+    /**
+     * The {@link MemoryComputeKey} that will be used by this step.
+     *
+     * @return the MemoryComputeKey to use
+     */
     public MemoryComputeKey<M> getMemoryComputeKey();
 }
