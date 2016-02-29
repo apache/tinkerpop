@@ -81,6 +81,11 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
+    public void done() {
+        this.done = true;
+    }
+
+    @Override
     public void addStart(final Traverser<S> start) {
         this.done = false;
         super.addStart(start);

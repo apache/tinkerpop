@@ -100,6 +100,11 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
     }
 
     @Override
+    public void done() {
+        this.done = true;
+    }
+
+    @Override
     public MemoryComputeKey<Boolean> getMemoryComputeKey() {
         return MemoryComputeKey.of(this.getId(), Operator.and, false, true);
     }

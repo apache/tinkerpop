@@ -92,10 +92,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public static final String ACTIVE_TRAVERSERS = "gremlin.traversalVertexProgram.activeTraversers";
     protected static final String MUTATED_MEMORY_KEYS = "gremlin.traversalVertexProgram.mutatedMemoryKeys";
     private static final String VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
+    private static final String COMPLETED_BARRIERS = "gremlin.travesalVertexProgram.completedBarriers";
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
-    private static final Set<String> PROGRAM_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, ACTIVE_TRAVERSERS, MUTATED_MEMORY_KEYS, VOTE_TO_HALT));
+    private static final Set<String> PROGRAM_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, ACTIVE_TRAVERSERS, MUTATED_MEMORY_KEYS, COMPLETED_BARRIERS, VOTE_TO_HALT));
     private Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
     private Set<String> sideEffectKeys = new HashSet<>();
     private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
@@ -147,6 +148,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, false));
         this.memoryComputeKeys.add(MemoryComputeKey.of(ACTIVE_TRAVERSERS, Operator.addAll, true, true));
         this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.addAll, false, true));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(COMPLETED_BARRIERS, Operator.addAll, true, true));
     }
 
     @Override
@@ -161,6 +163,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
+        memory.set(COMPLETED_BARRIERS, new HashSet<>());
     }
 
     @Override
@@ -171,6 +174,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final Memory memory) {
         this.traversal.get().getSideEffects().setLocalVertex(vertex);
+        // if a barrier was completed in another worker, it is also completed here
+        final Set<String> completedBarriers = memory.get(COMPLETED_BARRIERS);
+        for (final String stepId : completedBarriers) {
+            ((Barrier) this.traversalMatrix.getStepById(stepId)).done();
+        }
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
             vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
@@ -219,6 +227,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         memory.set(VOTE_TO_HALT, true);
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
+
         // put all side-effect memory into traversal side-effects
         if (voteToHalt) {
             // put all memory side-effects into the traversal side-effects
@@ -230,7 +239,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             TraverserSet<Object> localActiveTraversers = new TraverserSet<>();
             final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
             final TraverserSet<Object> haltedTraversers = memory.get(HALTED_TRAVERSERS);
-            this.processMemory(memory, mutatedMemoryKeys, toProcessTraversers);
+            final Set<String> completedBarriers = new HashSet<>();
+            this.processMemory(memory, mutatedMemoryKeys, toProcessTraversers, completedBarriers);
             while (!toProcessTraversers.isEmpty()) {
                 this.processTraversers(toProcessTraversers, localActiveTraversers, remoteActiveTraversers, haltedTraversers);
                 toProcessTraversers = localActiveTraversers;
@@ -241,6 +251,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 if (memory.exists(key))
                     memory.set(key, this.traversal.get().getSideEffects().get(key).get());
             });
+            memory.set(COMPLETED_BARRIERS, completedBarriers);
             if (!remoteActiveTraversers.isEmpty()) {
                 memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
                 return false;
@@ -258,7 +269,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
     }
 
-    private void processMemory(final Memory memory, final Set<String> toProcessMemoryKeys, final TraverserSet<Object> traverserSet) {
+    private void processMemory(final Memory memory, final Set<String> toProcessMemoryKeys, final TraverserSet<Object> traverserSet, final Set<String> completedBarriers) {
         for (final String key : toProcessMemoryKeys) {
             final Step<Object, Object> step = this.traversalMatrix.getStepById(key);
             if (null == step) continue;
@@ -268,6 +279,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             while (step.hasNext()) {
                 traverserSet.add(step.next().asAdmin());
             }
+            completedBarriers.add(step.getId());
             if (step instanceof ReducingBarrierStep)
                 memory.set(step.getId(), ((ReducingBarrierStep) step).getSeedSupplier().get());
         }

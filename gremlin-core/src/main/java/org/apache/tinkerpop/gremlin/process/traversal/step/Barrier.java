@@ -41,4 +41,8 @@ public interface Barrier<B> extends MemoryComputing<B> {
 
     public void addBarrier(final B barrier);
 
+    public default void done() {
+
+    }
+
 }
