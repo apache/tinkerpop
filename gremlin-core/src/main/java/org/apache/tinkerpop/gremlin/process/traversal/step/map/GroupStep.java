@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -51,13 +52,14 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent, GraphComputing {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
     private Traversal.Admin<S, ?> valueTraversal = this.integrateChild(__.identity().asAdmin());   // used in OLAP
     private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
     public Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
+    private boolean onGraphComputer = false;
 
 
     public GroupStep(final Traversal.Admin traversal) {
@@ -68,7 +70,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public void onGraphComputer() {
-        super.onGraphComputer();
+        this.onGraphComputer = true;
         this.setReducingBiOperator(GroupBiOperator.computerInstance());
     }
 
@@ -135,7 +137,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
-    public Object generateFinalResult(final Object object) {
+    public Map<K, V> generateFinalResult(final Map<K, V> object) {
         return GroupStep.doFinalReduction((Map<K, Object>) object, this.onGraphComputer ? this.reduceTraversal : null);
     }
 

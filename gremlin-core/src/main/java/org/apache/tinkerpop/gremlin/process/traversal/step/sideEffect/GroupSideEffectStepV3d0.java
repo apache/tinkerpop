@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
@@ -39,14 +39,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Deprecated
-public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, GraphComputing {
+public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S> implements SideEffectCapable<Map<K, Collection<V>>, Map<K, R>>, MemoryComputing<Map<K, R>>, TraversalParent, ByModulating {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
@@ -61,8 +60,8 @@ public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S>
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getSideEffectKey(), GroupStepV3d0.GroupBiOperatorV3d0.instance(), false, false));
+    public MemoryComputeKey<Map<K, R>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getSideEffectKey(), GroupStepV3d0.GroupBiOperatorV3d0.instance(), false, false);
     }
 
     @Override
@@ -84,19 +83,15 @@ public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S>
     }
 
     @Override
-    public void onGraphComputer() {
-    }
-
-    @Override
     public String toString() {
         return StringFactory.stepString(this, this.sideEffectKey, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
     }
 
     @Override
-    public Map<K, R> generateFinalResult(final Object valueMap) {
+    public Map<K, R> generateFinalResult(final Map<K, Collection<V>> valueMap) {
         final Map<K, R> reducedMap = new HashMap<>();
-        for (final K key : ((Map<K, Collection<V>>) valueMap).keySet()) {
-            final R r = TraversalUtil.applyNullable(((Map<K, Collection<V>>) valueMap).get(key), this.reduceTraversal);
+        for (final K key : valueMap.keySet()) {
+            final R r = TraversalUtil.applyNullable(valueMap.get(key), this.reduceTraversal);
             reducedMap.put(key, r);
         }
         return reducedMap;

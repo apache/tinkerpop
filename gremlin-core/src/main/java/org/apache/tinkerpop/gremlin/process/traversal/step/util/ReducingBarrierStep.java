@@ -23,12 +23,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Generating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
@@ -36,13 +36,13 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier, GraphComputing {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier<E>, Generating<E, E> {
 
     protected Supplier<E> seedSupplier;
     protected BinaryOperator<E> reducingBiOperator;
-    protected boolean onGraphComputer = false;
     private boolean done = false;
     private E seed = null;
+    protected boolean onGraphComputer = false;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -94,12 +94,38 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
+    public boolean hasNextBarrier() {
+        return !this.done;
+    }
+
+    @Override
+    public E nextBarrier() {
+        if (this.done)
+            throw FastNoSuchElementException.instance();
+        else {
+            processAllStarts();
+            final E temp = this.seed;
+            this.seed = null;
+            this.done = true;
+            return temp;
+        }
+    }
+
+    @Override
+    public void addBarrier(final E barrier) {
+        this.done = false;
+        this.seed = null == this.seed ?
+                barrier :
+                this.reducingBiOperator.apply(this.seed, barrier);
+    }
+
+    @Override
     public Traverser<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.onGraphComputer ? this.seed : this.generateFinalResult(this.seed), (Step) this, 1l);
+        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.generateFinalResult(this.seed), (Step) this, 1l);
         this.seed = null;
         return traverser;
     }
@@ -113,12 +139,8 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
-    public void onGraphComputer() {
-        this.onGraphComputer = true;
+    public MemoryComputeKey<E> getMemoryComputeKey() {
+        return MemoryComputeKey.<E>of(this.getId(), this.getBiOperator(), false, true);
     }
 
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), this.getBiOperator(), false, true));
-    }
 }

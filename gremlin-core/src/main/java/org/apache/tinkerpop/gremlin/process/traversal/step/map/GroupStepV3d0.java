@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -39,7 +38,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -74,9 +72,9 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
     }
 
     @Override
-    public Map<K, R> generateFinalResult(final Object valueMap) {
+    public Map<K, R> generateFinalResult(final Map<K, R> valueMap) {
         final Map<K, R> reducedMap = new HashMap<>();
-        for (final K key : ((Map<K, Collection<V>>) valueMap).keySet()) {
+        for (final K key : valueMap.keySet()) {
             final R r = TraversalUtil.applyNullable(((Map<K, Collection<V>>) valueMap).get(key), this.reduceTraversal);
             reducedMap.put(key, r);
         }

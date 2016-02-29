@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -42,7 +43,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, PathProcessor, GraphComputing {
+public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree,Tree>, MemoryComputing<Tree>, TraversalParent, ByModulating, PathProcessor {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
@@ -112,12 +113,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
-    public void onGraphComputer() {
-
-    }
-
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getSideEffectKey(), TreeStep.TreeBiOperator.instance(), false, false));
+    public MemoryComputeKey<Tree> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getSideEffectKey(), TreeStep.TreeBiOperator.instance(), false, false);
     }
 }

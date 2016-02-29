@@ -24,14 +24,9 @@ import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -55,7 +50,7 @@ public final class TraverserExecutor {
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
-        final TraverserSet<Object> aliveTraversers = new TraverserSet<>();
+        final TraverserSet<Object> activeTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 
         final TraverserSet<Object> maybeAliveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
@@ -90,16 +85,16 @@ public final class TraverserExecutor {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
                 final Step<?, ?> currentStep = traversalMatrix.getStepById(traverser.getStepId());
-                if (!currentStep.getId().equals(previousStep.getId()))
-                    TraverserExecutor.drainStep(previousStep, aliveTraversers, haltedTraversers, memory);
+                if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
+                    TraverserExecutor.drainStep(previousStep, activeTraversers, haltedTraversers, memory);
                 currentStep.addStart((Traverser.Admin) traverser);
                 previousStep = currentStep;
             }
-            TraverserExecutor.drainStep(previousStep, aliveTraversers, haltedTraversers, memory);
+            TraverserExecutor.drainStep(previousStep, activeTraversers, haltedTraversers, memory);
             assert toProcessTraversers.isEmpty();
             // process all the local objects and send messages or store locally again
-            if (!aliveTraversers.isEmpty()) {
-                traversers = aliveTraversers.iterator();
+            if (!activeTraversers.isEmpty()) {
+                traversers = activeTraversers.iterator();
                 while (traversers.hasNext()) {
                     final Traverser.Admin<Object> traverser = traversers.next();
                     traversers.remove();
@@ -118,39 +113,30 @@ public final class TraverserExecutor {
                     } else                                                                              // STANDARD OBJECT
                         toProcessTraversers.add(traverser);
                 }
-                assert aliveTraversers.isEmpty();
+                assert activeTraversers.isEmpty();
             }
         }
         return voteToHalt.get();
     }
 
-    private static void drainStep(final Step<?, ?> step, final TraverserSet<?> aliveTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
-        if (step instanceof ReducingBarrierStep) {
-            memory.add(step.getId(), step.next().get());
-            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
-        } else if (step instanceof SupplyingBarrierStep) {
-            memory.add(step.getId(), true);
-            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
-        } else if (step instanceof RangeGlobalStep || // TODO: DedupGlobalStep
-                step instanceof TailGlobalStep ||
-                step instanceof CollectingBarrierStep && !(step instanceof AggregateStep)) {
-            ((Bypassing) step).setBypass(true);
-            final TraverserSet<?> traverserSet = new TraverserSet<>();
-            step.forEachRemaining(traverser -> {
-                if (!(step instanceof CollectingBarrierStep)) //  TODO: this is so we get the properties as DetachedElement will be used, not ReferenceElement
-                    traverser.asAdmin().detach();
-                traverserSet.add((Traverser.Admin) traverser);
-            });
-            memory.add(step.getId(), traverserSet);
-            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
+    private static void drainStep(final Step<?, ?> step, final TraverserSet<?> activeTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
+        if (step instanceof Barrier) {
+            if (step instanceof Bypassing)
+                ((Bypassing) step).setBypass(true);
+            final Barrier barrier = (Barrier) step;
+            while (barrier.hasNextBarrier()) {
+                memory.add(step.getId(), barrier.nextBarrier());
+                memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
+            }
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();
                     haltedTraversers.add((Traverser.Admin) traverser);
                     memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
-                } else
-                    aliveTraversers.add((Traverser.Admin) traverser);
+                } else {
+                    activeTraversers.add((Traverser.Admin) traverser);
+                }
             });
         }
     }

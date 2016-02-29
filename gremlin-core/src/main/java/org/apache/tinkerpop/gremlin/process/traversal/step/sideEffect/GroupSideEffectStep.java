@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
@@ -34,13 +35,12 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, GraphComputing {
+public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, MemoryComputing<Map<K, V>>, TraversalParent, ByModulating, GraphComputing {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
@@ -49,7 +49,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     private Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
     ///
     private String sideEffectKey;
-    private boolean onGraphComputer = false;
+    public boolean onGraphComputer = false;
     private GroupStep.GroupBiOperator<K, V> standardOperator = new GroupStep.GroupBiOperator<>(this.valueReduceTraversal);
 
     public GroupSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
@@ -76,8 +76,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getSideEffectKey(), new GroupStep.GroupBiOperator<>(), false, false));
+    public MemoryComputeKey<Map<K, V>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.sideEffectKey, new GroupStep.GroupBiOperator<>(), false, false);
     }
 
     @Override
@@ -141,7 +141,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public Object generateFinalResult(final Object object) {
-        return GroupStep.doFinalReduction((Map<K, Object>) object, this.onGraphComputer ? this.reduceTraversal : null);
+    public Map<K, V> generateFinalResult(final Map<K, ?> unGroupedMap) {
+        return GroupStep.doFinalReduction((Map<K, Object>) unGroupedMap, this.onGraphComputer ? this.reduceTraversal : null);
     }
 }

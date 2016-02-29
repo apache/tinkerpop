@@ -113,7 +113,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
             // this is a problem with global parents and reseting reducers back to their seeds (this is more complicated than just an OLAP issue)
             if (step instanceof ReducingBarrierStep && !(step.getTraversal().getParent() instanceof TraversalVertexProgramStep || step.getTraversal().getParent() instanceof EmptyStep))
-                throw new VerificationException("Reducing barriers within union()-step are not allowed: " + step, traversal);
+                throw new VerificationException("Reducing barriers withing global children are not allowed: " + step, traversal);
 
             // this is a problem because sideEffect.merge() is transient on the OLAP reduction
             if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))

@@ -29,11 +29,4 @@ public interface GraphComputing<R> {
 
     public void onGraphComputer();
 
-    public default Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.empty();
-    }
-
-    public default R generateFinalResult(final R a) {
-        return a;
-    }
 }

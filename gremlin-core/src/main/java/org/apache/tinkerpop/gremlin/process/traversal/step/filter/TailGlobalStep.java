@@ -21,24 +21,25 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, GraphComputing<TraverserSet<S>> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, Barrier<TraverserSet<S>> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
@@ -122,21 +123,38 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
         this.tail.add(start);
     }
 
+
     @Override
-    public void onGraphComputer() {
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator(this.limit), false, true);
+    }
+
+    @Override
+    public void processAllStarts() {
 
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator(this.limit), false, true));
+    public boolean hasNextBarrier() {
+        return this.starts.hasNext();
     }
 
     @Override
-    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
-        final TraverserSet<S> resultSet = new TraverserSet<>();
-        this.addStarts((Iterator) traverserSet.iterator());
-        this.forEachRemaining(t -> resultSet.add(t.asAdmin()));
-        return resultSet;
+    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        if (!this.starts.hasNext())
+            throw FastNoSuchElementException.instance();
+        final TraverserSet<S> barrier = new TraverserSet<>();
+        while (this.starts.hasNext()) {
+            barrier.add(this.starts.next().asAdmin());
+        }
+        return barrier;
+    }
+
+    @Override
+    public void addBarrier(final TraverserSet<S> barrier) {
+        barrier.iterator().forEachRemaining(traverser -> {
+            traverser.setSideEffects(this.getTraversal().getSideEffects());
+            this.addStart(traverser);
+        });
     }
 }

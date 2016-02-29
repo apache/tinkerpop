@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -28,7 +27,6 @@ import org.apache.tinkerpop.gremlin.util.function.MeanNumberSupplier;
 
 import java.io.Serializable;
 import java.util.EnumSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -61,8 +59,8 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     }
 
     @Override
-    public Object generateFinalResult(final Object a) {
-        return ((MeanNumber) a).getFinal();
+    public E generateFinalResult(final E meanNumber) {
+        return (E) ((MeanNumber) meanNumber).getFinal();
     }
 
     /////

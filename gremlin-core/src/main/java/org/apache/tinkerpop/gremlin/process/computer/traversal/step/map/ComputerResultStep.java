@@ -20,12 +20,9 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -37,10 +34,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -74,25 +68,10 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
                 return this.currentIterator.next();
             else {
                 final ComputerResult result = this.starts.next().get();
-                result.memory().keys().forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
-                final Step endStep = this.getPreviousStep() instanceof TraversalVertexProgramStep ?
-                        ((TraversalVertexProgramStep) this.getPreviousStep()).computerTraversal.get().getEndStep() :
-                        EmptyStep.instance();   // TODO: need to be selective and smart
-                if (endStep instanceof SideEffectCapStep) {
-                    final List<String> sideEffectKeys = ((SideEffectCapStep<?, ?>) endStep).getSideEffectKeys();
-                    if (sideEffectKeys.size() == 1)
-                        this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of(result.memory().get(sideEffectKeys.get(0))), (Step) this, 1l);
-                    else {
-                        final Map<String, Object> sideEffects = new HashMap<>();
-                        for (final String sideEffectKey : sideEffectKeys) {
-                            sideEffects.put(sideEffectKey, result.memory().get(sideEffectKey));
-                        }
-                        this.currentIterator = this.getTraversal().getTraverserGenerator().generateIterator(IteratorUtils.of((S) sideEffects), (Step) this, 1l);
-                    }
-                } else {
-                    this.currentIterator = result.memory().<TraverserSet<S>>get(TraversalVertexProgram.HALTED_TRAVERSERS).iterator();
-                }
-                this.currentIterator = attach(this.currentIterator, result.graph());
+                result.memory().keys().stream().
+                        filter(key -> !key.equals(TraversalVertexProgram.HALTED_TRAVERSERS)).
+                        forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
+                this.currentIterator = attach(result.memory().<TraverserSet<S>>get(TraversalVertexProgram.HALTED_TRAVERSERS).iterator(), result.graph());
             }
         }
     }

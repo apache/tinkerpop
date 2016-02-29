@@ -24,14 +24,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +43,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, ByModulating, GraphComputing {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection,Collection>, MemoryComputing<Collection>, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, Object> storeTraversal = null;
     private String sideEffectKey;
@@ -102,12 +105,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     }
 
     @Override
-    public void onGraphComputer() {
-
-    }
-
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.sideEffectKey, Operator.addAll, false, false));
+    public MemoryComputeKey<Collection> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.sideEffectKey, Operator.addAll, false, false);
     }
 }

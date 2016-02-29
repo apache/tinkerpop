@@ -19,26 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import java.util.NoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 
 /**
- * A Barrier is any step that requires all left traversers to be processed prior to emitting result traversers to the right.
- * Note that some barrier steps may be "lazy" in that if their algorithm permits, they can emit right traversers prior to all traversers being aggregated.
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Barrier<B> extends MemoryComputing<B> {
+public interface MemoryComputing<M> {
 
-    /**
-     * Process all left traversers by do not yield the resultant output.
-     * This method is useful for steps like {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep}, where traversers can be processed "on the fly" and thus, reduce memory consumption.
-     */
-    public void processAllStarts();
-
-    public boolean hasNextBarrier();
-
-    public B nextBarrier() throws NoSuchElementException;
-
-    public void addBarrier(final B barrier);
-
+    public MemoryComputeKey<M> getMemoryComputeKey();
 }

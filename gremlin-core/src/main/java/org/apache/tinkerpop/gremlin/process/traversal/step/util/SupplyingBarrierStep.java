@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -25,11 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
+public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier<Boolean> {
 
     private boolean done = false;
 
@@ -77,5 +80,27 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
     public void processAllStarts() {
         while (this.starts.hasNext())
             this.starts.next();
+    }
+
+    @Override
+    public boolean hasNextBarrier() {
+        return !this.done;
+    }
+
+    @Override
+    public Boolean nextBarrier() throws NoSuchElementException {
+        this.processAllStarts();
+        this.done = true;
+        return true;
+    }
+
+    @Override
+    public void addBarrier(final Boolean barrier) {
+       this.done = false;
+    }
+
+    @Override
+    public MemoryComputeKey<Boolean> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), Operator.and, false, true);
     }
 }

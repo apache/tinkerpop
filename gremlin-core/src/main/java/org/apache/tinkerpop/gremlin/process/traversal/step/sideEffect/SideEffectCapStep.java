@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -32,17 +30,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> implements GraphComputing<E> {
+public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     private List<String> sideEffectKeys;
-    private transient Map<String, GraphComputing> sideEffectFinalizer;
-    private boolean onGraphComputer = false;
+    public transient Map<String, SideEffectCapable<Object, E>> sideEffectFinalizer;
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
         super(traversal);
@@ -78,46 +74,12 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
 
     @Override
     protected E supply() {
-        if (this.onGraphComputer)
-            return null;
-        else
-            return this.generateFinalResult(null);
-    }
-
-    private Map<String, Object> getMapOfSideEffects() {
-        final Map<String, Object> sideEffects = new HashMap<>();
-        for (final String sideEffectKey : this.sideEffectKeys) {
-            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> {
-                if (this.onGraphComputer) {
-                    sideEffects.put(sideEffectKey, value);
-                } else {
-                    final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
-                    sideEffects.put(sideEffectKey, null == finalizer ? value : finalizer.generateFinalResult(value));
-                }
-            });
-        }
-        return sideEffects;
-    }
-
-    @Override
-    public void onGraphComputer() {
-        this.onGraphComputer = true;
-    }
-
-    @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.assign, false, true));
-    }
-
-    @Override
-    public E generateFinalResult(final E nothing) {
-        if (!this.onGraphComputer && null == this.sideEffectFinalizer) {
+        if (null == this.sideEffectFinalizer) {
             this.sideEffectFinalizer = new HashMap<>();
             for (final String key : this.sideEffectKeys) {
-                for (final GraphComputing<?> graphComputing : TraversalHelper.getStepsOfAssignableClassRecursively(GraphComputing.class, TraversalHelper.getRootTraversal(this.getTraversal()))) {
-                    if (graphComputing.getMemoryComputeKey().isPresent() && graphComputing.getMemoryComputeKey().get().getKey().equals(key)) {
-                        this.sideEffectFinalizer.put(key, graphComputing);
-                    }
+                // TODO: TraversalHelper.getRootTraversal() -- or SideEffectCapStepStrategy
+                for (final SideEffectCapable<Object, E> sideEffectStep : TraversalHelper.getStepsOfAssignableClassRecursively(SideEffectCapable.class, this.getTraversal())) {
+                    this.sideEffectFinalizer.put(key, sideEffectStep);
                 }
             }
         }
@@ -125,13 +87,27 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> im
         if (this.sideEffectKeys.size() == 1) {
             final String sideEffectKey = this.sideEffectKeys.get(0);
             final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey).get();
-            if (this.onGraphComputer)
-                return result;
-            else {
-                final GraphComputing finalizer = this.sideEffectFinalizer.get(sideEffectKey);
-                return null == finalizer ? result : (E) finalizer.generateFinalResult(result);
-            }
+            final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectFinalizer.get(sideEffectKey);
+            return null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result);
         } else
             return (E) this.getMapOfSideEffects();
+    }
+
+    private Map<String, Object> getMapOfSideEffects() {
+        final Map<String, Object> sideEffects = new HashMap<>();
+        for (final String sideEffectKey : this.sideEffectKeys) {
+            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> {
+                final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectFinalizer.get(sideEffectKey);
+                sideEffects.put(sideEffectKey, null == sideEffectCapable ? value : sideEffectCapable.generateFinalResult(value));
+            });
+        }
+        return sideEffects;
+    }
+
+    @Override
+    public SideEffectCapStep<S, E> clone() {
+        final SideEffectCapStep<S, E> clone = (SideEffectCapStep<S, E>) super.clone();
+        clone.sideEffectFinalizer = null;
+        return clone;
     }
 }

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface SideEffectCapable {
+public interface SideEffectCapable<S, E> extends Generating<S,E>{
 
     public String getSideEffectKey();
 

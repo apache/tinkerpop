@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,7 +43,7 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, GraphComputing<TraverserSet<S>>, Bypassing {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, Barrier<TraverserSet<S>> {
 
     private long low;
     private final long high;
@@ -129,27 +131,44 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         return Collections.singleton(TraverserRequirement.BULK);
     }
 
-    @Override
-    public void onGraphComputer() {
-
-    }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), new RangeBiOperator(this.high), false, true));
-    }
-
-    @Override
-    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
-        final TraverserSet<S> resultSet = new TraverserSet<>();
-        this.addStarts((Iterator) traverserSet.iterator());
-        this.forEachRemaining(t -> resultSet.add(t.asAdmin()));
-        return resultSet;
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), new RangeBiOperator(this.high), false, true);
     }
 
     @Override
     public void setBypass(final boolean bypass) {
         this.bypass = bypass;
+    }
+
+    @Override
+    public void processAllStarts() {
+
+    }
+
+    @Override
+    public boolean hasNextBarrier() {
+        return this.starts.hasNext();
+    }
+
+    @Override
+    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        if(!this.starts.hasNext())
+            throw FastNoSuchElementException.instance();
+        final TraverserSet<S> barrier = new TraverserSet<>();
+        while (this.starts.hasNext()) {
+            barrier.add(this.starts.next().asAdmin());
+        }
+        return barrier;
+    }
+
+    @Override
+    public void addBarrier(final TraverserSet<S> barrier) {
+        barrier.iterator().forEachRemaining(traverser -> {
+            traverser.setSideEffects(this.getTraversal().getSideEffects());
+            this.addStart(traverser);
+        });
     }
 
     ////////////////

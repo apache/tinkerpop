@@ -244,6 +244,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER) // TODO: need to broadcast aggregate
     public void g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path() {
         final Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(convertToVertexId("marko"));
         printTraversalForm(traversal);

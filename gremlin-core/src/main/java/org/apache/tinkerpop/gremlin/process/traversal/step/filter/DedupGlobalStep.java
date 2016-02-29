@@ -26,26 +26,27 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, Bypassing, Barrier, ByModulating, GraphComputing<TraverserSet<S>> {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, Bypassing, Barrier<TraverserSet<S>>, ByModulating {
 
     private Traversal.Admin<S, Object> dedupTraversal = null;
     private Set<Object> duplicateSet = new HashSet<>();
@@ -131,19 +132,35 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
-    public void onGraphComputer() {
-
+    public boolean hasNextBarrier() {
+        return this.starts.hasNext();
     }
 
     @Override
-    public Optional<MemoryComputeKey> getMemoryComputeKey() {
-        return Optional.of(MemoryComputeKey.of(this.getId(), Operator.addAll, false, true));
+    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        final TraverserSet<S> traverserSet = new TraverserSet<>();
+        while (this.starts.hasNext()) {
+            final Traverser.Admin<S> traverser = this.starts.next();
+            traverser.set(DetachedFactory.detach(traverser.get(), true));
+            traverserSet.add(traverser);
+        }
+        if (traverserSet.isEmpty())
+            throw FastNoSuchElementException.instance();
+        else
+            return traverserSet;
     }
 
     @Override
-    public TraverserSet<S> generateFinalResult(final TraverserSet<S> traverserSet) {
-        traverserSet.forEach(t -> t.setBulk(1l));
-        return traverserSet;
+    public void addBarrier(final TraverserSet<S> barrier) {
+        barrier.iterator().forEachRemaining(traverser -> {
+            traverser.setSideEffects(this.getTraversal().getSideEffects());
+            this.addStart(traverser);
+        });
+    }
+
+    @Override
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), Operator.addAll, false, true);
     }
 
 }
