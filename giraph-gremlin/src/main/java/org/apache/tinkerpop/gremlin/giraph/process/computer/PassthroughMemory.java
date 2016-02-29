@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.giraph.process.computer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +29,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PassThroughMemory implements Memory.Admin, Serializable {
+public final class PassThroughMemory implements Memory.Admin {
 
     private final GiraphMemory giraphMemory;
     private long runtime = 0l;

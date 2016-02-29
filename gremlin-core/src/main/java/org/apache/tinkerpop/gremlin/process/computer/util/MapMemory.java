@@ -74,7 +74,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
 
     @Override
     public void set(final String key, Object value) {
-        this.checkKeyValue(key, value);
+        // this.checkKeyValue(key, value);
         this.memoryMap.put(key, value);
     }
 
