@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -38,7 +39,7 @@ import java.util.Set;
 public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     private List<String> sideEffectKeys;
-    public transient Map<String, SideEffectCapable<Object, E>> sideEffectFinalizer;
+    public transient Map<String, SideEffectCapable<Object, E>> sideEffectCapableSteps;
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
         super(traversal);
@@ -74,20 +75,24 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     @Override
     protected E supply() {
-        if (null == this.sideEffectFinalizer) {
-            this.sideEffectFinalizer = new HashMap<>();
-            for (final String key : this.sideEffectKeys) {
-                // TODO: TraversalHelper.getRootTraversal() -- or SideEffectCapStepStrategy
-                for (final SideEffectCapable<Object, E> sideEffectStep : TraversalHelper.getStepsOfAssignableClassRecursively(SideEffectCapable.class, this.getTraversal())) {
-                    this.sideEffectFinalizer.put(key, sideEffectStep);
+        if (null == this.sideEffectCapableSteps) {
+            this.sideEffectCapableSteps = new HashMap<>();
+            Traversal.Admin<?, ?> parentTraversal = this.getTraversal();
+            while (!(parentTraversal instanceof EmptyTraversal)) {
+                for (final SideEffectCapable<Object, E> capableStep : TraversalHelper.getStepsOfAssignableClassRecursively(SideEffectCapable.class, parentTraversal)) {
+                    if (this.sideEffectKeys.contains(capableStep.getSideEffectKey()) && !this.sideEffectCapableSteps.containsKey(capableStep.getSideEffectKey()))
+                        this.sideEffectCapableSteps.put(capableStep.getSideEffectKey(), capableStep);
                 }
+                if (this.sideEffectKeys.size() == this.sideEffectCapableSteps.size())
+                    break;
+                parentTraversal = parentTraversal.getParent().asStep().getTraversal();
             }
         }
         ////////////
         if (this.sideEffectKeys.size() == 1) {
             final String sideEffectKey = this.sideEffectKeys.get(0);
             final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey).get();
-            final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectFinalizer.get(sideEffectKey);
+            final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectCapableSteps.get(sideEffectKey);
             return null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result);
         } else
             return (E) this.getMapOfSideEffects();
@@ -97,7 +102,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {
             this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> {
-                final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectFinalizer.get(sideEffectKey);
+                final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectCapableSteps.get(sideEffectKey);
                 sideEffects.put(sideEffectKey, null == sideEffectCapable ? value : sideEffectCapable.generateFinalResult(value));
             });
         }
@@ -107,7 +112,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
     @Override
     public SideEffectCapStep<S, E> clone() {
         final SideEffectCapStep<S, E> clone = (SideEffectCapStep<S, E>) super.clone();
-        clone.sideEffectFinalizer = null;
+        clone.sideEffectCapableSteps = null;
         return clone;
     }
 }

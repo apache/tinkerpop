@@ -54,4 +54,8 @@ public final class StepPosition implements Serializable {
     public String toString() {
         return this.x + DOT + this.y + DOT + this.z + LEFT_PARENTHESES + this.parentId + RIGHT_PARENTHESES;
     }
+
+    public static boolean isStepId(final String maybeAStepId) {
+        return maybeAStepId.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\([0-9\\.\\(\\)]*\\)");
+    }
 }

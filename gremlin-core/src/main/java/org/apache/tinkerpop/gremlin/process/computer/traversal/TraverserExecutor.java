@@ -45,11 +45,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class TraverserExecutor {
 
-    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory) {
+    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory) {
 
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
-        final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
+        final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final TraverserSet<Object> activeTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 
@@ -65,29 +65,29 @@ public final class TraverserExecutor {
             }
         }
 
-        final Iterator<TraverserSet<?>> messages = messenger.receiveMessages();
+        final Iterator<TraverserSet<Object>> messages = messenger.receiveMessages();
         while (messages.hasNext()) {
-            final Iterator<Traverser.Admin<Object>> traversers = (Iterator) messages.next().iterator();
+            final Iterator<Traverser.Admin<Object>> traversers = messages.next().iterator();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
                 traverser.setSideEffects(traversalSideEffects);
                 traverser.attach(Attachable.Method.get(vertex));
-                toProcessTraversers.add((Traverser.Admin) traverser);
+                toProcessTraversers.add(traverser);
             }
         }
         // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
         while (!toProcessTraversers.isEmpty()) {
             // process local traversers and if alive, repeat, else halt.
-            Step<?, ?> previousStep = EmptyStep.instance();
+            Step<Object, Object> previousStep = EmptyStep.instance();
             Iterator<Traverser.Admin<Object>> traversers = toProcessTraversers.iterator();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
-                final Step<?, ?> currentStep = traversalMatrix.getStepById(traverser.getStepId());
+                final Step<Object, Object> currentStep = traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
                     TraverserExecutor.drainStep(previousStep, activeTraversers, haltedTraversers, memory);
-                currentStep.addStart((Traverser.Admin) traverser);
+                currentStep.addStart(traverser);
                 previousStep = currentStep;
             }
             TraverserExecutor.drainStep(previousStep, activeTraversers, haltedTraversers, memory);
@@ -119,7 +119,7 @@ public final class TraverserExecutor {
         return voteToHalt.get();
     }
 
-    private static void drainStep(final Step<?, ?> step, final TraverserSet<?> activeTraversers, final TraverserSet<?> haltedTraversers, final Memory memory) {
+    private static void drainStep(final Step<Object, Object> step, final TraverserSet<Object> activeTraversers, final TraverserSet<Object> haltedTraversers, final Memory memory) {
         if (step instanceof Barrier) {
             if (step instanceof Bypassing)
                 ((Bypassing) step).setBypass(true);
@@ -132,10 +132,10 @@ public final class TraverserExecutor {
             step.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();
-                    haltedTraversers.add((Traverser.Admin) traverser);
+                    haltedTraversers.add(traverser.asAdmin());
                     memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
                 } else {
-                    activeTraversers.add((Traverser.Admin) traverser);
+                    activeTraversers.add(traverser.asAdmin());
                 }
             });
         }

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Messenger;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -41,12 +42,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.StepPosition;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -81,7 +85,7 @@ import java.util.Set;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVertexProgram implements VertexProgram<TraverserSet<?>> {
+public final class TraversalVertexProgram implements VertexProgram<TraverserSet<Object>> {
 
     public static final String TRAVERSAL = "gremlin.traversalVertexProgram.traversal";
     public static final String HALTED_TRAVERSERS = "gremlin.traversalVertexProgram.haltedTraversers";
@@ -91,7 +95,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
-    private static final Set<String> PROGRAM_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, ACTIVE_TRAVERSERS, VOTE_TO_HALT, MUTATED_MEMORY_KEYS));
+    private static final Set<String> PROGRAM_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, ACTIVE_TRAVERSERS, MUTATED_MEMORY_KEYS, VOTE_TO_HALT));
     private Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
     private Set<String> sideEffectKeys = new HashSet<>();
     private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(
@@ -165,7 +169,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
+    public void execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final Memory memory) {
         this.traversal.get().getSideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
@@ -173,11 +177,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final TraverserSet<Object> activeTraversers = new TraverserSet<>();
             IteratorUtils.removeOnNext(haltedTraversers.iterator()).forEachRemaining(traverser -> {
                 traverser.setStepId(this.traversal.get().getStartStep().getId());
-                activeTraversers.add((Traverser.Admin) traverser);
+                activeTraversers.add(traverser);
             });
             assert haltedTraversers.isEmpty();
             if (this.traversal.get().getStartStep() instanceof GraphStep) {
-                final GraphStep<?, ?> graphStep = (GraphStep<Element, Element>) this.traversal.get().getStartStep();
+                final GraphStep<Element, Element> graphStep = (GraphStep<Element, Element>) this.traversal.get().getStartStep();
                 graphStep.reset();
                 activeTraversers.forEach(traverser -> graphStep.addStart((Traverser.Admin) traverser));
                 activeTraversers.clear();
@@ -210,29 +214,29 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public boolean terminate(final Memory memory) {
-        final Set<String> mutatedMemoryKeys = memory.get(MUTATED_MEMORY_KEYS);  // TODO: if not touched we still have to initialize the seeds
+        final Set<String> mutatedMemoryKeys = memory.get(MUTATED_MEMORY_KEYS);  // TODO: if not touched we still have to initialize the seeds?
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         memory.set(VOTE_TO_HALT, true);
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
         // put all side-effect memory into traversal side-effects
         if (voteToHalt) {
+            // put all memory side-effects into the traversal side-effects
             memory.keys().stream().
                     filter(key -> !PROGRAM_KEYS.contains(key)).
-                    filter(key -> !key.contains("(")).
+                    filter(key -> !StepPosition.isStepId(key)).
                     forEach(key -> this.traversal.get().getSideEffects().set(key, memory.get(key)));
-            final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
-            final TraverserSet<?> localActiveTraversers = new TraverserSet<>();
-            final TraverserSet<?> remoteActiveTraversers = new TraverserSet<>();
-            final TraverserSet<?> haltedTraversers = memory.get(HALTED_TRAVERSERS);
+            TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
+            TraverserSet<Object> localActiveTraversers = new TraverserSet<>();
+            final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
+            final TraverserSet<Object> haltedTraversers = memory.get(HALTED_TRAVERSERS);
             this.processMemory(memory, mutatedMemoryKeys, toProcessTraversers);
             while (!toProcessTraversers.isEmpty()) {
                 this.processTraversers(toProcessTraversers, localActiveTraversers, remoteActiveTraversers, haltedTraversers);
-                toProcessTraversers.clear();
-                toProcessTraversers.addAll((TraverserSet) localActiveTraversers);
-                localActiveTraversers.clear();
+                toProcessTraversers = localActiveTraversers;
+                localActiveTraversers = new TraverserSet<>();
             }
-            // put all traversal side-effects into memory
+            // pull all traversal side-effects into memory
             this.traversal.get().getSideEffects().keys().forEach(key -> {
                 if (memory.exists(key))
                     memory.set(key, this.traversal.get().getSideEffects().get(key).get());
@@ -241,14 +245,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
                 return false;
             } else {
-                // TODO: generalize for TraversalVertexProgramStep and TraversalVertexProgram direct.
-                if (this.traversal.get().getEndStep() instanceof ReducingBarrierStep ||
-                        this.traversal.get().getEndStep() instanceof SideEffectCapStep) {
-                    while (this.traversal.get().getEndStep().hasNext()) {
-                        final Traverser.Admin traverser = this.traversal.get().getEndStep().next().asAdmin();
-                        traverser.detach();
-                        haltedTraversers.add(traverser);
-                    }
+                while (this.traversal.get().getEndStep().hasNext()) {
+                    final Traverser.Admin<Object> traverser = (Traverser.Admin) this.traversal.get().getEndStep().next().asAdmin();
+                    traverser.detach();
+                    haltedTraversers.add(traverser);
                 }
                 memory.set(HALTED_TRAVERSERS, haltedTraversers);
                 return true;
@@ -258,12 +258,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
     }
 
-    private void processMemory(final Memory memory, final Set<String> toProcessMemoryKeys, final TraverserSet traverserSet) {
+    private void processMemory(final Memory memory, final Set<String> toProcessMemoryKeys, final TraverserSet<Object> traverserSet) {
         for (final String key : toProcessMemoryKeys) {
-            final Step<?, ?> step = this.traversalMatrix.getStepById(key);
+            final Step<Object, Object> step = this.traversalMatrix.getStepById(key);
             if (null == step) continue;
             assert step instanceof Barrier;
-            final Barrier barrier = (Barrier) step;
+            final Barrier<Object> barrier = (Barrier<Object>) step;
             barrier.addBarrier(memory.get(key));
             while (step.hasNext()) {
                 traverserSet.add(step.next().asAdmin());
@@ -273,8 +273,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
     }
 
-    private void processTraversers(final TraverserSet<Object> toProcessTraversers, final TraverserSet<?> localActiveTraversers, final TraverserSet<?> remoteActiveTraversers, final TraverserSet<?> haltedTraversers) {
-        Step<?, ?> previousStep = EmptyStep.instance();
+    private void processTraversers(final TraverserSet<Object> toProcessTraversers, final TraverserSet<Object> localActiveTraversers, final TraverserSet<Object> remoteActiveTraversers, final TraverserSet<Object> haltedTraversers) {
+        Step<Object, Object> previousStep = EmptyStep.instance();
         final Iterator<Traverser.Admin<Object>> traversers = toProcessTraversers.iterator();
         while (traversers.hasNext()) {
             final Traverser.Admin<Object> traverser = traversers.next();
@@ -283,27 +283,27 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             traverser.setSideEffects(this.traversal.get().getSideEffects());
             if (traverser.isHalted()) {
                 traverser.asAdmin().detach();
-                haltedTraversers.add((Traverser.Admin) traverser);
+                haltedTraversers.add(traverser);
             } else if (traverser.get() instanceof Attachable &&
                     !(traverser.get() instanceof Path) &&
                     !TraversalHelper.isLocalElement(this.traversalMatrix.getStepById(traverser.getStepId()))) {  // this is so that patterns like order().name work as expected.
-                remoteActiveTraversers.add((Traverser.Admin) traverser);
+                remoteActiveTraversers.add(traverser);
             } else {
-                final Step<?, ?> currentStep = this.traversalMatrix.getStepById(traverser.getStepId());
+                final Step<Object, Object> currentStep = this.traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep)) {
                     currentStep.forEachRemaining(result -> {
                         if (result.asAdmin().isHalted()) {
                             result.asAdmin().detach();
-                            haltedTraversers.add((Traverser.Admin) result);
+                            haltedTraversers.add(result.asAdmin());
                         } else {
                             if (result.get() instanceof Attachable)
-                                remoteActiveTraversers.add((Traverser.Admin) result);
+                                remoteActiveTraversers.add(result.asAdmin());
                             else
-                                localActiveTraversers.add((Traverser.Admin) result);
+                                localActiveTraversers.add(result.asAdmin());
                         }
                     });
                 }
-                currentStep.addStart((Traverser.Admin) traverser);
+                currentStep.addStart(traverser);
                 previousStep = currentStep;
             }
         }
@@ -311,12 +311,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             previousStep.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();
-                    haltedTraversers.add((Traverser.Admin) traverser);
+                    haltedTraversers.add(traverser.asAdmin());
                 } else {
                     if (traverser.get() instanceof Attachable)
-                        remoteActiveTraversers.add((Traverser.Admin) traverser);
+                        remoteActiveTraversers.add(traverser.asAdmin());
                     else
-                        localActiveTraversers.add((Traverser.Admin) traverser);
+                        localActiveTraversers.add(traverser.asAdmin());
                 }
             });
         }
@@ -339,7 +339,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public Optional<MessageCombiner<TraverserSet<?>>> getMessageCombiner() {
+    public Optional<MessageCombiner<TraverserSet<Object>>> getMessageCombiner() {
         return (Optional) TraversalVertexProgramMessageCombiner.instance();
     }
 
@@ -404,7 +404,16 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             return this.traversal(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
         }
 
-        public Builder traversal(final Traversal.Admin<?, ?> traversal) {
+        public Builder traversal(Traversal.Admin<?, ?> traversal) {
+            // this is necessary if the job was submitted via TraversalVertexProgram.build() instead of TraversalVertexProgramStep.
+            if (!(traversal.getParent() instanceof TraversalVertexProgramStep)) {
+                final Traversal.Admin<?, ?> parentTraversal = new DefaultTraversal<>();
+                traversal.getGraph().ifPresent(parentTraversal::setGraph);
+                parentTraversal.setStrategies(traversal.getStrategies());
+                parentTraversal.getStrategies().addStrategies(ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Graph::compute));
+                parentTraversal.addStep(new TraversalVertexProgramStep(parentTraversal, traversal));
+                traversal = ((TraversalVertexProgramStep) parentTraversal.getStartStep()).getGlobalChildren().get(0);
+            }
             PureTraversal.storeState(this.configuration, TRAVERSAL, traversal);
             return this;
         }
