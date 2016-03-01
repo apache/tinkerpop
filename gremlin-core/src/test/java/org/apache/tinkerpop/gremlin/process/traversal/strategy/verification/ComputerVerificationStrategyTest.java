@@ -42,7 +42,6 @@ public class ComputerVerificationStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"__.out().union(__.out().count(),__.in().count())", __.out().union(__.out().count(), __.in().count())},
                 {"__.where(__.out().values(\"name\"))", __.where(__.out().values("name"))}
         });
     }
