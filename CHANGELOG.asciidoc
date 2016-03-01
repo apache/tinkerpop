@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Improved the recovery options for Gremlin Driver after failed requests to Gremlin Server.
 * Bumped to Netty 4.0.34.Final.
 * Added "interpreter mode" for the `ScriptEngine` and Gremlin Server which allows variables defined with `def` or a type to be recognized as "global".
 * Bumped to Apache Groovy 2.4.6.
