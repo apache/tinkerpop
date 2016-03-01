@@ -29,8 +29,62 @@ TinkerPop 3.2.0
 
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+VertexProgram and MemoryComputeKey and VertexComputeKey
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Users that have custom `VertexProgram` implementations will need to change their implementations to support the new
+`VertexComputeKey` and `MemoryComputeKey` classes. In the `VertexPrograms` provided by TinkerPop, these changes were trivial,
+taking less than 5 minutes to make all the requisite updates.
+
+* `VertexProgram.getVertexComputeKeys()` returns a `Set<VertexComputeKey>`. No longer a `Set<String>`.
+Use `VertexComputeKey.of(String key,boolean transient)` to generate a `VertexComputeKey`.
+Transient keys were not supported in the past, so to make the implementation semantically equivalent,
+the boolean transient should be false.
+
+* `VertexProgram.getMemoryComputeKeys()` returns a `Set<MemoryComputeKey>`. No longer a `Set<String>`.
+Use `MemoryComputeKey.of(String key, BinaryOperator reducer, boolean broadcast, boolean transient)` to generate a `MemoryComputeKey`.
+Broadcasting and transients were not supported in the past so to make the implementation semantically equivalent,
+to boolean broadcast should be true and the boolean transient should be false.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1162[TINKERPOP-1162]
+
+SparkGraphComputer and GiraphGraphComputer Persistence
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `MapReduce`-based steps in `TraversalVertexProgram` have been removed and replaced using the new `Memory`-reduction model.
+`MapReduce` jobs always created a persistence footprint (e.g. in HDFS). Memory data was never persisted to HDFS.
+As such, there will not be data on the disk that is accessible. For instance, no more `~reducing`, `~traversers`, and specially
+named side-effects such as those from `groupCount('m')`. The data is still accessible via `ComputerResult.memory()`,
+it just simply does not have a corresponding on-disk representation.
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+GraphComputer Semantics and API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Providers that have a custom `GraphComputer` implementation will have a lot to handle.
+Note that if the graph system simply uses `SparkGraphComputer` or `GiraphGraphComputer` provided by TinkerPop, then no updates are required.
+
+`Memory` updates:
+
+* Any `BinaryOperator` can be used for reduction and is made explicit in the `MemoryComputeKey`.
+* `MemoryComputeKeys` can be marked transient and must be removed from the resultant `ComputerResult.memory()`.
+* `MemoryComputeKeys` can be specified to not broadcast and thus, must not be available to workers to read in `VertexProgram.execute()`.
+* The `Memory` API has been changed. No more `incr()`, `and()`, etc. Now its just `set()` (setup/terminate) and `add()` (execute).
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
+
+Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above behaviors are implemented correctly.
+
+Providers that have a custom `ReducingBarrierStep` implementation will need to adjust their implementation slightly to
+accommodate a new API that reflects the `Memory` updates above. This should be a simple change. Note that `FinalGet`
+no longer exists and such post-reduction processing is handled by the reducing step (via the new `Generating` interface).
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
 ScriptTraversal and Gremlin Language Variants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
