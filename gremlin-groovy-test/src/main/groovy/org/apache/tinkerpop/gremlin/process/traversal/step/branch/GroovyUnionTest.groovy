@@ -67,5 +67,11 @@ public abstract class GroovyUnionTest {
                 final Object v1Id, final Object v2Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum)", "v1Id", v1Id, "v2Id", v2Id);
         }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(
+                final Object v1Id, final Object v2Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id, v2Id).local(union(outE().count, inE().count, outE().weight.sum))", "v1Id", v1Id, "v2Id", v2Id);
+        }
     }
 }

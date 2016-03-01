@@ -94,5 +94,6 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     public void reset() {
         super.reset();
         this.first = true;
+        this.localTraversal.reset();
     }
 }

@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -44,8 +44,8 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
         }
 
         traversal.getSteps().forEach(step -> {
-            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
-                throw new VerificationException("The direct parent of a ReducingBarrierStep can not be a RepeatStep: " + step, traversal);
+            if (step instanceof Barrier && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
+                throw new VerificationException("The parent of barrier can not be repeat()-step: " + step, traversal);
         });
     }
 

@@ -23,10 +23,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -86,22 +93,24 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             }
             this.first = false;
             ///
-            final Traverser.Admin<S> start = this.starts.next();
-            final M choice = TraversalUtil.apply(start, this.branchTraversal);
-            final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
-            if (null != branch) {
-                branch.forEach(traversal -> {
-                    traversal.reset();
-                    traversal.addStart(start.split());
-                });
-            }
-            if (choice != Pick.any) {
-                final List<Traversal.Admin<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
-                if (null != anyBranch)
-                    anyBranch.forEach(traversal -> {
-                        traversal.reset();
+            if(!this.starts.hasNext())
+                throw FastNoSuchElementException.instance();
+            while (this.starts.hasNext()) {
+                final Traverser.Admin<S> start = this.starts.next();
+                final M choice = TraversalUtil.apply(start, this.branchTraversal);
+                final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);
+                if (null != branch) {
+                    branch.forEach(traversal -> {
                         traversal.addStart(start.split());
                     });
+                }
+                if (choice != Pick.any) {
+                    final List<Traversal.Admin<S, E>> anyBranch = this.traversalOptions.get(Pick.any);
+                    if (null != anyBranch)
+                        anyBranch.forEach(traversal -> {
+                            traversal.addStart(start.split());
+                        });
+                }
             }
         }
     }
@@ -173,6 +182,8 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     @Override
     public void reset() {
         super.reset();
+        this.getGlobalChildren().forEach(Traversal.Admin::reset);
+        this.branchTraversal.reset();
         this.first = true;
     }
 }

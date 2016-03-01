@@ -82,7 +82,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Elemen
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
@@ -176,7 +176,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CoreTraversalTest.class,
 
             // strategy
-            ComputerVerificationStrategyProcessTest.StandardTraversals.class,
+            VerificationStrategyProcessTest.StandardVerificationStrategyTest.class,
 
             // algorithms
             // PageRankVertexProgramTest.class

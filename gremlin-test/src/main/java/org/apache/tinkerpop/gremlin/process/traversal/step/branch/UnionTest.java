@@ -22,17 +22,24 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -51,6 +58,8 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount();
 
     public abstract Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Number> get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(final Object v1Id, final Object v2Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -127,29 +136,18 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    // NEED TO DETERMINE IF TRAVERSAL IS LOCAL AND THEN ALLOW COUNT ON LOCALS
+    public void g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX() {
+        final Traversal<Vertex, Number> traversal = get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0l, 0l, 0, 3l, 1l, 1.9d), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX() {
         final Traversal<Vertex, Number> traversal = get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
-        final Number startNumber = traversal.next();
-        assertTrue(traversal.hasNext());
-        if (startNumber.longValue() == 3l) {
-            assertEquals(0l, traversal.next().longValue());
-            assertEquals(1.9d, traversal.next().doubleValue(), 0.1d);
-            //
-            assertEquals(0l, traversal.next().longValue());
-            assertEquals(1l, traversal.next().longValue());
-            assertEquals(0.0d, traversal.next().doubleValue(), 0.1d);
-        } else {
-            assertEquals(1l, traversal.next().longValue());
-            assertEquals(0.0d, traversal.next().doubleValue(), 0.1d);
-            //
-            assertEquals(3l, traversal.next().longValue());
-            assertEquals(0l, traversal.next().longValue());
-            assertEquals(1.9d, traversal.next().doubleValue(), 0.1d);
-        }
-        assertFalse(traversal.hasNext());
+        checkResults(Arrays.asList(3l, 1.9d, 1l), traversal);
     }
 
     public static class Traversals extends UnionTest {
@@ -188,6 +186,11 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(final Object v1Id, final Object v2Id) {
             return g.V(v1Id, v2Id).union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum());
+        }
+
+        @Override
+        public Traversal<Vertex, Number> get_g_VX1_2X_localXunionXoutE_count__inE_count__outE_weight_sumXX(final Object v1Id, final Object v2Id) {
+            return g.V(v1Id, v2Id).local(union(outE().count(), inE().count(), (Traversal) outE().values("weight").sum()));
         }
     }
 }

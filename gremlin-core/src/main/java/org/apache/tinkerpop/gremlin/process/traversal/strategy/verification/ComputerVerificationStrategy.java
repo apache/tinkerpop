@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -90,7 +89,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
         for (final Step<?, ?> step : traversal.getSteps()) {
 
-            // you can not traverser past the local star graph with localChildren (e.g. by()-modulators).
+            // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
@@ -111,16 +110,11 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                 throw new VerificationException("A dedup()-step can not process scoped elements: " + step, traversal);
             }
 
-            // this is a problem with global parents and reseting reducers back to their seeds (this is more complicated than just an OLAP issue)
-            if (step instanceof ReducingBarrierStep && !(step.getTraversal().getParent() instanceof TraversalVertexProgramStep || step.getTraversal().getParent() instanceof EmptyStep))
-                throw new VerificationException("Reducing barriers withing global children are not allowed: " + step, traversal);
-
             // this is a problem because sideEffect.merge() is transient on the OLAP reduction
             if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
                 throw new VerificationException("One bulk us currently not supported: " + step, traversal);
 
-            if ((step instanceof WherePredicateStep && ((WherePredicateStep) step).getStartKey().isPresent()) ||
-                    (step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
+            if ((step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
                 throw new VerificationException("A where()-step that has a start variable is not allowed because the variable value is retrieved from the path: " + step, traversal);
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
