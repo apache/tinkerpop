@@ -1123,6 +1123,7 @@ public interface Graph extends AutoCloseable, Host {
             return new UnsupportedOperationException("Graph does not support graph computer");
         }
 
+        @Deprecated
         public static IllegalArgumentException traversalEngineNotSupported(final TraversalEngine engine) {
             return new IllegalArgumentException("Graph does not support the provided traversal engine: " + engine.getClass().getCanonicalName());
         }

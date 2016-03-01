@@ -80,6 +80,16 @@ import static org.junit.Assert.fail;
         "vertexFilterAccessesIncidentEdges",
         "edgeFilterAccessesAdjacentVertices"
 })
+@ExceptionCoverage(exceptionClass = Memory.Exceptions.class, methods = {
+        "memoryKeyCanNotBeEmpty",
+        "memoryKeyCanNotBeNull",
+        "memoryValueCanNotBeNull",
+        "memoryIsCurrentlyImmutable",
+        "memoryDoesNotExist",
+        "memorySetOnlyDuringVertexProgramSetUpAndTerminate",
+        "memoryAddOnlyDuringVertexProgramExecute",
+        "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated"
+})
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
 })

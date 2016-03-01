@@ -160,10 +160,6 @@ public interface Memory {
         public static IllegalArgumentException memoryAddOnlyDuringVertexProgramExecute(final String key) {
             return new IllegalArgumentException("The memory can only be add() during vertex program execute: " + key);
         }
-
-        public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
-            return new UnsupportedOperationException(String.format("Graph computer memory value [%s] is of type %s is not supported", val, val.getClass()));
-        }
     }
 
 }
