@@ -75,6 +75,15 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Netty 4.0.34.Final.
+* Added "interpreter mode" for the `ScriptEngine` and Gremlin Server which allows variables defined with `def` or a type to be recognized as "global".
+* Bumped to Apache Groovy 2.4.6.
+* Added the `gremlin-archetype-server` archetype that demonstrates
+* Added the `gremlin-archetype-tinkergraph` archetype that demonstrates a basic project that uses TinkerGraph.
+* Added `gremlin-archetype` module to house TinkerPop "examples".
+* Fixed a condition where `ConnectionPool` initialization in the driver would present a `NullPointerException` on initialization if there were errors constructing the pool in full.
+* Fixed a bug in the round-robin load balancing strategy in the driver would waste requests potentially sending messages to dead hosts.
+* Added new Provider Documentation book - content for this book was extracted from the reference documentation.
 * Fixed a bug where multiple "close" requests were being sent by the driver on `Client.close()`.
 * Fixed an `Property` attach bug that shows up in serialization-based `GraphComputer` implementations.
 * Fixed a pom.xml bug where Gremlin Console/Server were not pulling the latest Neo4j 2.3.2.
@@ -84,7 +93,7 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 * Better handled errors that occurred on commits and serialization in Gremlin Server to first break the result iteration loop and to ensure commit errors were reported to the client.
 * Added GraphSON serializers for the `java.time.*` classes.
 * Improved the logging of the Gremlin Server REST endpoint as it pertained to script execution failures.
-* `TraversalExplanation` is now `Serializable` and registered with `GryoMapper`.
+* `TraversalExplanation` is now `Serializable` and compatible with GraphSON and Gryo serialization.
 * Fixed a problem with global bindings in Gremlin Server which weren't properly designed to handle concurrent modification.
 * Deprecated `ScriptElementFactory` and made the local `StarGraph` globally available for `ScriptInputFormat`'s `parse()` method.
 * Improved reusability of unique test directory creation in `/target` for `AbstractGraphProvider`, which was formerly only available to Neo4j, by adding `makeTestDirectory()`.

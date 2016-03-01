@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +62,14 @@ public interface LoadBalancingStrategy extends Host.Listener {
 
         @Override
         public Iterator<Host> select(final RequestMessage msg) {
-            final List<Host> hosts = (List<Host>) availableHosts.clone();
+            final List<Host> hosts = new ArrayList<>();
+
+            // a host could be marked as dead in which case we dont need to send messages to it - just skip it for
+            // now. it might come back online later
+            availableHosts.iterator().forEachRemaining(host -> {
+                if (host.isAvailable()) hosts.add(host);
+            });
+
             final int startIndex = index.getAndIncrement();
 
             if (startIndex > Integer.MAX_VALUE - 10000)

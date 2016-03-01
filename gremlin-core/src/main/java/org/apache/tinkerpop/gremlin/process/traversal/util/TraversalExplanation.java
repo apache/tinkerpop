@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * A TraversalExplanation takes a {@link Traversal} and, for each registered {@link TraversalStrategy}, it creates a mapping reflecting how each strategy alters the traversal.
- * This is useful for understanding how each traversal strategy mutates the traversal.
- * This is useful in debugging and analysis of traversal compilation.
- * The {@link TraversalExplanation#toString()} has a pretty-print representation that is useful in the Gremlin Console.
+ * A TraversalExplanation takes a {@link Traversal} and, for each registered {@link TraversalStrategy}, it creates a
+ * mapping reflecting how each strategy alters the traversal. This is useful for understanding how each traversal
+ * strategy mutates the traversal. This is useful in debugging and analysis of traversal compilation. The
+ * {@link TraversalExplanation#toString()} has a pretty-print representation that is useful in the Gremlin Console.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -84,7 +84,7 @@ public class TraversalExplanation implements Serializable {
     public String toString() {
         final String originalTraversal = "Original Traversal";
         final String finalTraversal = "Final Traversal";
-        final int maxStrategyColumnLength = this.strategyTraversals.stream().map(Pair::getValue0).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).get();
+        final int maxStrategyColumnLength = this.strategyTraversals.stream().map(Pair::getValue0).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).orElse(15);
         final int maxTraversalColumnLength = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream()).map(Pair::getValue1).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).get();
 
         final StringBuilder builder = new StringBuilder("Traversal Explanation\n");
@@ -115,7 +115,7 @@ public class TraversalExplanation implements Serializable {
         for (int i = 0; i < maxStrategyColumnLength - finalTraversal.length() + 7; i++) {
             builder.append(" ");
         }
-        builder.append(this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1());
+        builder.append(this.strategyTraversals.size() > 0 ? this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1() : this.traversal);
         return builder.toString();
     }
 

@@ -44,6 +44,15 @@ public final class GraphSONTokens {
     public static final String OBJECTS = "objects";
     public static final String IN_LABEL = "inVLabel";
     public static final String OUT_LABEL = "outVLabel";
+
+    // TraversalExplanation Tokens
+    public static final String ORIGINAL = "original";
+    public static final String FINAL = "final";
+    public static final String INTERMEDIATE = "intermediate";
+    public static final String CATEGORY = "category";
+    public static final String TRAVERSAL = "traversal";
+    public static final String STRATEGY = "strategy";
+
     // TraversalMetrics Tokens
     public static final String METRICS = "metrics";
     public static final String DURATION = "dur";

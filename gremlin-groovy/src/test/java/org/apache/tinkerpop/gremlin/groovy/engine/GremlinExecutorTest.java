@@ -631,11 +631,12 @@ public class GremlinExecutorTest {
             }
         });
 
+        service.shutdown();
+        assertThat(service.awaitTermination(60000, TimeUnit.MILLISECONDS), is(true));
+
         // likely a concurrency exception if it occurs - and if it does then we've messed up because that's what this
         // test is partially designed to protected against.
         assertThat(failed.get(), is(false));
-        service.shutdown();
-        assertThat(service.awaitTermination(30000, TimeUnit.MILLISECONDS), is(true));
 
         assertEquals(max, futures.size());
         futures.forEach(t -> {
@@ -685,11 +686,12 @@ public class GremlinExecutorTest {
             }
         });
 
+        service.shutdown();
+        assertThat(service.awaitTermination(60000, TimeUnit.MILLISECONDS), is(true));
+
         // likely a concurrency exception if it occurs - and if it does then we've messed up because that's what this
         // test is partially designed to protected against.
         assertThat(failed.get(), is(false));
-        service.shutdown();
-        assertThat(service.awaitTermination(30000, TimeUnit.MILLISECONDS), is(true));
 
         assertEquals(max, futures.size());
         futures.forEach(t -> {

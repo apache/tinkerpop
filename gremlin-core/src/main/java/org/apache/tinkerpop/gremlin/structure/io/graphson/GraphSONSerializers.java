@@ -19,7 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -36,6 +39,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -275,6 +279,54 @@ final class GraphSONSerializers {
                 jsonGenerator.writeFieldName((((Element) o).id()).toString());
             else
                 super.serialize(o, jsonGenerator, serializerProvider);
+        }
+    }
+
+    final static class TraversalExplanationJacksonSerializer extends StdSerializer<TraversalExplanation> {
+        public TraversalExplanationJacksonSerializer() {
+            super(TraversalExplanation.class);
+        }
+
+        @Override
+        public void serialize(final TraversalExplanation traversalExplanation, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            ser(traversalExplanation, jsonGenerator);
+        }
+
+        @Override
+        public void serializeWithType(final TraversalExplanation value, final JsonGenerator gen,
+                                      final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            ser(value, gen);
+        }
+
+        public void ser(final TraversalExplanation te, final JsonGenerator jsonGenerator) throws IOException {
+            final Map<String, Object> m = new HashMap<>();
+            m.put(GraphSONTokens.ORIGINAL, getStepsAsList(te.getOriginalTraversal()));
+
+            final List<Pair<TraversalStrategy, Traversal.Admin<?,?>>> strategyTraversals = te.getStrategyTraversals();
+
+            final List<Map<String,Object>> intermediates = new ArrayList<>();
+            for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pair : strategyTraversals) {
+                final Map<String,Object> intermediate = new HashMap<>();
+                intermediate.put(GraphSONTokens.STRATEGY, pair.getValue0().toString());
+                intermediate.put(GraphSONTokens.CATEGORY, pair.getValue0().getTraversalCategory().getSimpleName());
+                intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
+                intermediates.add(intermediate);
+            }
+            m.put(GraphSONTokens.INTERMEDIATE, intermediates);
+
+            if (strategyTraversals.isEmpty())
+                m.put(GraphSONTokens.FINAL, getStepsAsList(te.getOriginalTraversal()));
+            else
+                m.put(GraphSONTokens.FINAL, getStepsAsList(strategyTraversals.get(strategyTraversals.size() - 1).getValue1()));
+
+            jsonGenerator.writeObject(m);
+        }
+
+        private List<String> getStepsAsList(final Traversal.Admin<?,?> t) {
+            final List<String> steps = new ArrayList<>();
+            t.getSteps().iterator().forEachRemaining(s -> steps.add(s.toString()));
+            return steps;
         }
     }
 
