@@ -20,6 +20,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
+ * A {@code TimesModulating} step is one that can do something with {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal#times(int)}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TimesModulating {

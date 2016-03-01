@@ -25,7 +25,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface GraphComputing<R> {
+public interface GraphComputing {
 
     /**
      * The step will be executing on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
