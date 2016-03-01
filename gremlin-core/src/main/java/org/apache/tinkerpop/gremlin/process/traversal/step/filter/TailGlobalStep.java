@@ -28,11 +28,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -152,7 +152,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
 
     @Override
     public void addBarrier(final TraverserSet<S> barrier) {
-        barrier.iterator().forEachRemaining(traverser -> {
+        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });

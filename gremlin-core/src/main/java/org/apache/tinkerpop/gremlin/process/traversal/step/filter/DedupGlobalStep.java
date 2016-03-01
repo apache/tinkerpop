@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,7 +153,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public void addBarrier(final TraverserSet<S> barrier) {
-        barrier.iterator().forEachRemaining(traverser -> {
+        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });

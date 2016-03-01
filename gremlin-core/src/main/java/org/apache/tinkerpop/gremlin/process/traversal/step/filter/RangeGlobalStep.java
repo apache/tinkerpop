@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -165,7 +166,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public void addBarrier(final TraverserSet<S> barrier) {
-        barrier.iterator().forEachRemaining(traverser -> {
+        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });

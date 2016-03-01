@@ -101,12 +101,12 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             // collecting barriers and dedup global use can only operate on the element and its properties (no incidences)
             if ((step instanceof CollectingBarrierStep || step instanceof DedupGlobalStep) && step instanceof TraversalParent) {
                 if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
-                    throw new VerificationException("A CollectingBarrierStep can not process the incident edges of a vertex: " + step, traversal);
+                    throw new VerificationException("A barrier-steps can not process the incident edges of a vertex: " + step, traversal);
             }
 
             // this is due to how reducing works and can be fixed by generalizing the current simple model
             // we need to make it so dedup global does its project post reduction (easy to do, just do it)
-            if ((step instanceof DedupGlobalStep) && (!((DedupGlobalStep) step).getScopeKeys().isEmpty() || !((DedupGlobalStep) step).getLocalChildren().isEmpty())) {
+            if ((step instanceof DedupGlobalStep) && (!((DedupGlobalStep) step).getScopeKeys().isEmpty())) {
                 throw new VerificationException("A dedup()-step can not process scoped elements: " + step, traversal);
             }
 
@@ -117,11 +117,12 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if ((step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
                 throw new VerificationException("A where()-step that has a start variable is not allowed because the variable value is retrieved from the path: " + step, traversal);
 
+            if (step instanceof PathProcessor && ((PathProcessor) step).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
+                throw new VerificationException("The following path processor step requires more than the element id: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
+
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
                 throw new VerificationException("The following step is currently not supported by GraphComputer traversals: " + step, traversal);
 
-            if (step instanceof PathProcessor && ((PathProcessor) step).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
-                throw new VerificationException("The following path processor step requires more than the element id: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
         }
 
         Step<?, ?> nextParentStep = traversal.getParent().asStep();

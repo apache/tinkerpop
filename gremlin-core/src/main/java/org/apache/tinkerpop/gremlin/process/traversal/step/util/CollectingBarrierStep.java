@@ -97,7 +97,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     public void addBarrier(final TraverserSet<S> barrier) {
         this.traverserSet = barrier;
         this.traverserSet.forEach(traverser -> traverser.setSideEffects(this.getTraversal().getSideEffects()));
-        this.barrierConsumer(barrier);
+        this.barrierConsumer(this.traverserSet);
     }
 
     @Override

@@ -430,6 +430,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 traversal.getGraph().ifPresent(parentTraversal::setGraph);
                 parentTraversal.setStrategies(traversal.getStrategies());
                 parentTraversal.getStrategies().addStrategies(ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Graph::compute));
+                parentTraversal.setSideEffects(traversal.getSideEffects());
                 parentTraversal.addStep(new TraversalVertexProgramStep(parentTraversal, traversal));
                 traversal = ((TraversalVertexProgramStep) parentTraversal.getStartStep()).getGlobalChildren().get(0);
             }
