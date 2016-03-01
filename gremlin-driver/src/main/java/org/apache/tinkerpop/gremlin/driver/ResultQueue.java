@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.javatuples.Pair;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -110,9 +111,7 @@ final class ResultQueue {
 
     void markError(final Throwable throwable) {
         error.set(throwable);
-
-        // unsure if this should really complete exceptionally rather than just complete.
-        this.readComplete.complete(null);
+        this.readComplete.completeExceptionally(throwable);
         this.flushWaiting();
     }
 
