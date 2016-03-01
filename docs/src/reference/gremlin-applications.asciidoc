@@ -517,8 +517,8 @@ CompletableFuture<List<Result>> results = client.submit("[1,2,3,4]").all();  <3>
 
 CompletableFuture<ResultSet> future = client.submitAsync("[1,2,3,4]"); <4>
 
-Map<String,Object> params = new HashMap<>()
-params.put("x",4)
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
 client.submit("[1,2,3,x]", params); <5>
 ----
 
