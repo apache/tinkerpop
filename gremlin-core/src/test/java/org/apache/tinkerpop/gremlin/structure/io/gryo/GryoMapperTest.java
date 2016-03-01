@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
 import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
@@ -293,6 +295,12 @@ public class GryoMapperTest {
     public void shouldHandleZonedOffset()throws Exception  {
         final ZoneOffset o  = ZonedDateTime.now().getOffset();
         assertEquals(o, serializeDeserialize(o, ZoneOffset.class));
+    }
+
+    @Test
+    public void shouldHandleTraversalExplanation()throws Exception  {
+        final TraversalExplanation te = __().out().outV().outE().explain();
+        assertEquals(te.toString(), serializeDeserialize(te, TraversalExplanation.class).toString());
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
