@@ -488,8 +488,6 @@ g = graph.traversal().withComputer(GiraphGraphComputer)
 :> g.V().group().by{it.value('name')[1]}.by('name')
 result
 result.memory.runtime
-result.memory.keys()
-result.memory.get('~reducing')
 ----
 
 NOTE: If the user explicitly specifies `giraph.maxWorkers` and/or `giraph.numComputeThreads` in the configuration,
