@@ -191,11 +191,7 @@ final class Connection {
                         // was called
                         readCompleted.thenAcceptAsync(v -> {
                             thisConnection.returnToPool();
-
-                            // close was signaled in closeAsync() but there were pending messages at that time. attempt
-                            // the shutdown if the returned result cleared up the last pending message
-                            if (isClosed() && pending.isEmpty())
-                                shutdown(closeFuture.get());
+                            tryShutdown();
                         }, cluster.executor());
 
                         // the callback for when the read failed. a failed read means the request went to the server
@@ -218,8 +214,7 @@ final class Connection {
 
                             // close was signaled in closeAsync() but there were pending messages at that time. attempt
                             // the shutdown if the returned result cleared up the last pending message
-                            if (isClosed() && pending.isEmpty())
-                                shutdown(closeFuture.get());
+                            tryShutdown();
 
                             return null;
                         });
@@ -241,6 +236,15 @@ final class Connection {
             if (logger.isDebugEnabled())
                 logger.debug("Returned {} connection to {} but an error occurred - {}", this.getConnectionInfo(), pool, ce.getMessage());
         }
+    }
+
+    /**
+     * Close was signaled in closeAsync() but there were pending messages at that time. This method attempts the
+     * shutdown if the returned result cleared up the last pending message.
+     */
+    private void tryShutdown() {
+        if (isClosed() && pending.isEmpty())
+            shutdown(closeFuture.get());
     }
 
     private void shutdown(final CompletableFuture<Void> future) {
