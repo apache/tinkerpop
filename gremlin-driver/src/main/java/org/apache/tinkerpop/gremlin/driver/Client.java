@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -339,7 +340,11 @@ public abstract class Client {
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
-            if (!possibleHosts.hasNext()) throw new TimeoutException("Timed out waiting for an available host.");
+
+            // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
+            // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
+            if (!possibleHosts.hasNext())
+                throw new TimeoutException("Timed out while waiting for an available host - check the client configuration and connectivity to the server if this message persists");
 
             final Host bestHost = possibleHosts.next();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
