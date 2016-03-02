@@ -43,6 +43,8 @@ For instance, if a traversal is of the form  `g.V().union(out().count(),both().c
 For instance, `g.V().union(out(),both())` does not need to be updated. Moreover, if the user's traversal already used
 the `local()`-form, then no change are required either.
 
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1188[TINKERPOP-1188]
+
 MemoryComputeKey and VertexComputeKey
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
