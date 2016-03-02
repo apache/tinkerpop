@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,9 @@ public final class GroupSideEffectStepV3d0<S, K, V, R> extends SideEffectStep<S>
         final V value = TraversalUtil.applyNullable(traverser, valueTraversal);
         BulkSet<V> values = new BulkSet<>();
         values.add(value, traverser.bulk());
-        this.getTraversal().getSideEffects().add(this.sideEffectKey, Collections.singletonMap(key, values));
+        final Map<K, Object> map = new HashMap<>();
+        map.put(key, values);
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 
     @Override

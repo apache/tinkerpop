@@ -18,15 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
@@ -40,15 +42,17 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends CollectingBarrierStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
+public final class AggregateStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier {
 
     private Traversal.Admin<S, Object> aggregateTraversal = null;
     private String sideEffectKey;
+    private boolean onGraphComputer = false;
+    private final TraverserSet<S> barrier = new TraverserSet<>();
 
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.assign);
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
     }
 
     @Override
@@ -69,15 +73,6 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     @Override
     public List<Traversal.Admin<S, Object>> getLocalChildren() {
         return null == this.aggregateTraversal ? Collections.emptyList() : Collections.singletonList(this.aggregateTraversal);
-    }
-
-    @Override
-    public void barrierConsumer(final TraverserSet<S> traverserSet) {
-        traverserSet.forEach(traverser ->
-                TraversalHelper.addToCollection(
-                        traverser.getSideEffects().<Collection<Object>>get(this.sideEffectKey).get(),
-                        TraversalUtil.applyNullable(traverser, this.aggregateTraversal),
-                        traverser.bulk()));
     }
 
     @Override
@@ -105,5 +100,36 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
         if (this.aggregateTraversal != null)
             result ^= this.aggregateTraversal.hashCode();
         return result;
+    }
+
+    @Override
+    protected void sideEffect(final Traverser.Admin<S> traverser) {
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        bulkSet.add(TraversalUtil.applyNullable(traverser, this.aggregateTraversal), traverser.bulk());
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);
+    }
+
+    @Override
+    protected Traverser<S> processNextStart() {
+        if (this.onGraphComputer)
+            return super.processNextStart();
+        else {
+            while (this.starts.hasNext()) {
+                final Traverser.Admin<S> traverser = this.starts.next();
+                this.sideEffect(traverser);
+                this.barrier.add(traverser);
+            }
+            return this.barrier.remove();
+        }
+    }
+
+    @Override
+    public MemoryComputeKey<Boolean> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), Operator.and, false, true);
+    }
+
+    @Override
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
     }
 }

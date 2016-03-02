@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,7 +30,6 @@ import org.junit.runner.RunWith;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
@@ -129,7 +127,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
-            return g.withSideEffect("a", (Supplier) HashSetSupplier.instance(), Operator.addAll).V().both().<String>values("name").store("a").cap("a");
+            return g.withSideEffect("a", HashSetSupplier.instance()).V().both().<String>values("name").store("a").cap("a");
         }
 
         @Override

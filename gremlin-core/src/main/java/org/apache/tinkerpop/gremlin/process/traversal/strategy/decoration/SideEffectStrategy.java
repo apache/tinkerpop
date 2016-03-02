@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.javatuples.Triplet;
@@ -43,7 +44,11 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        this.sideEffects.forEach(triplet -> traversal.getSideEffects().register(triplet.getValue0(), triplet.getValue1(), triplet.getValue2()));
+        if (traversal.getParent() instanceof EmptyStep)
+            this.sideEffects.forEach(triplet -> traversal.getSideEffects().register(
+                    triplet.getValue0(),
+                    null == triplet.getValue1() ? traversal.getSideEffects().getSupplier(triplet.getValue0()) : triplet.getValue1(),
+                    null == triplet.getValue2() ? traversal.getSideEffects().getReducer(triplet.getValue0()) : triplet.getValue2()));
     }
 
     public static <A> void addSideEffect(final TraversalStrategies traversalStrategies, final String key, final A value, final BinaryOperator<A> reducer) {

@@ -42,7 +42,6 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,15 +92,17 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
+        final Map<K, V> map = new HashMap<>();
         final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
         if (this.onGraphComputer) {
             final TraverserSet traverserSet = new TraverserSet();
             this.valueTraversal.reset();
             this.valueTraversal.addStart(traverser);
             this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
-            return Collections.singletonMap(key, (V) traverserSet);
+            map.put(key, (V) traverserSet);
         } else
-            return Collections.singletonMap(key, (V) traverser);
+            map.put(key, (V) traverser);
+        return map;
     }
 
     @Override

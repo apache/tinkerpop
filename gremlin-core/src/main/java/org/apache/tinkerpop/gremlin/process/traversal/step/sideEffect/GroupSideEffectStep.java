@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,15 +78,17 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
+        final Map<K, Object> map = new HashMap<>();
         final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
         if (this.onGraphComputer) {
             final TraverserSet traverserSet = new TraverserSet();
             valueTraversal.reset();
             valueTraversal.addStart(traverser);
             valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
-            this.getTraversal().getSideEffects().add(this.sideEffectKey, Collections.singletonMap(key, traverserSet));
+            map.put(key, traverserSet);
         } else
-            this.getTraversal().getSideEffects().add(this.sideEffectKey, Collections.singletonMap(key, traverser.split()));
+            map.put(key, traverser.split());
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 
     @Override

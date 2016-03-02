@@ -60,8 +60,12 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
-        if (!this.supplierMap.containsKey(key))
-            this.register(key, initialValue, reducer);
+        if (null == this.supplierMap.get(key)) {
+            this.supplierMap.put(key, initialValue);
+        }
+        if (null == this.reducerMap.get(key)) {
+            this.reducerMap.put(key, reducer);
+        }
     }
 
     @Override
@@ -122,7 +126,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public void add(final String key, final Object value) {
-        this.set(key, this.reducerMap.get(key).apply(this.get(key).get(), value));
+        this.set(key, this.reducerMap.getOrDefault(key, Operator.assign).apply(this.get(key).get(), value));
     }
 
     /**
@@ -183,7 +187,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     @Override
     public void mergeInto(final TraversalSideEffects sideEffects) {
         this.objectMap.keySet().stream().filter(key -> !sideEffects.keys().contains(key)).forEach(key -> sideEffects.set(key, this.objectMap.get(key)));
-        this.reducerMap.keySet().stream().filter(key -> !sideEffects.keys().contains(key)).forEach(key -> sideEffects.register(key, this.supplierMap.get(key), this.reducerMap.get(key)));
+        this.supplierMap.keySet().stream().forEach(key -> sideEffects.register(key, this.supplierMap.get(key), this.reducerMap.get(key)));
         // TODO: add sack information?
     }
 

@@ -47,7 +47,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.getTraversal().asAdmin().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
     }
 
     @Override

@@ -22,5 +22,5 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface LocalBarrier {
+public interface LocalBarrier extends MemoryComputing<Boolean>, GraphComputing {
 }

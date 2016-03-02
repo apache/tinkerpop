@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,29 +55,48 @@ public final class TraverserExecutor {
         final TraverserSet<Object> activeTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
 
+        ////////////////////////////////
+        // GENERATE LOCAL TRAVERSERS //
+        ///////////////////////////////
+
+        // these are traversers that are going from OLTP to OLAP
         final TraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
         final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
         while (iterator.hasNext()) {
             final Traverser.Admin<Object> traverser = iterator.next();
             if (vertex.equals(TraverserExecutor.getHostingVertex(traverser.get()))) {
                 // iterator.remove(); ConcurrentModificationException
-                traverser.setSideEffects(traversalSideEffects);
                 traverser.attach(Attachable.Method.get(vertex));
+                traverser.setSideEffects(traversalSideEffects);
                 toProcessTraversers.add(traverser);
             }
         }
-
+        // these are traversers that exist from from a local barrier
+        vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).ifPresent(previousActiveTraversers -> {
+            IteratorUtils.removeOnNext(previousActiveTraversers.iterator()).forEachRemaining(traverser -> {
+                traverser.attach(Attachable.Method.get(vertex));
+                traverser.setSideEffects(traversalSideEffects);
+                toProcessTraversers.add(traverser);
+            });
+            vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS).remove();
+        });
+        // these are traversers that have been messaged to the vertex
         final Iterator<TraverserSet<Object>> messages = messenger.receiveMessages();
         while (messages.hasNext()) {
             final Iterator<Traverser.Admin<Object>> traversers = messages.next().iterator();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
-                traverser.setSideEffects(traversalSideEffects);
                 traverser.attach(Attachable.Method.get(vertex));
+                traverser.setSideEffects(traversalSideEffects);
                 toProcessTraversers.add(traverser);
             }
         }
+
+        ///////////////////////////////
+        // PROCESS LOCAL TRAVERSERS //
+        //////////////////////////////
+
         // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
         while (!toProcessTraversers.isEmpty()) {
             // process local traversers and if alive, repeat, else halt.
@@ -86,11 +107,11 @@ public final class TraverserExecutor {
                 traversers.remove();
                 final Step<Object, Object> currentStep = traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
-                    TraverserExecutor.drainStep(previousStep, activeTraversers, haltedTraversers, memory);
+                    TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory);
                 currentStep.addStart(traverser);
                 previousStep = currentStep;
             }
-            TraverserExecutor.drainStep(previousStep, activeTraversers, haltedTraversers, memory);
+            TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory);
             assert toProcessTraversers.isEmpty();
             // process all the local objects and send messages or store locally again
             if (!activeTraversers.isEmpty()) {
@@ -119,7 +140,7 @@ public final class TraverserExecutor {
         return voteToHalt.get();
     }
 
-    private static void drainStep(final Step<Object, Object> step, final TraverserSet<Object> activeTraversers, final TraverserSet<Object> haltedTraversers, final Memory memory) {
+    private static void drainStep(final Vertex vertex, final Step<Object, Object> step, final TraverserSet<Object> activeTraversers, final TraverserSet<Object> haltedTraversers, final Memory memory) {
         if (step instanceof Barrier) {
             if (step instanceof Bypassing)
                 ((Bypassing) step).setBypass(true);
@@ -128,6 +149,21 @@ public final class TraverserExecutor {
                 memory.add(step.getId(), barrier.nextBarrier());
                 memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
             }
+        } else if (step instanceof LocalBarrier) {
+            final TraverserSet<Object> traverserSet = vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).orElse(new TraverserSet<>());
+            vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS, traverserSet);
+            step.forEachRemaining(traverser -> {
+                if (traverser.asAdmin().isHalted()) {
+                    traverser.asAdmin().detach();
+                    haltedTraversers.add(traverser.asAdmin());
+                    memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                } else {
+                    traverser.asAdmin().detach();
+                    traverserSet.add(traverser.asAdmin());
+                }
+            });
+            memory.add(step.getId(), true);
+            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {

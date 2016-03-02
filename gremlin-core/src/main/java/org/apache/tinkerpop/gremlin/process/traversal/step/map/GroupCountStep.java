@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +53,9 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
     @Override
     public Map<E, Long> projectTraverser(final Traverser.Admin<S> traverser) {
-        return Collections.singletonMap(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
+        final Map<E, Long> map = new HashMap<>();
+        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
+        return map;
     }
 
     @Override

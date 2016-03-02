@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -94,9 +95,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     // TODO: if not an adjacent traversal, use Local message scope -- a dual messaging system.
     private static final Set<MessageScope> MESSAGE_SCOPES = new HashSet<>(Collections.singletonList(MessageScope.Global.instance()));
-    private static final Set<String> PROGRAM_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, ACTIVE_TRAVERSERS, MUTATED_MEMORY_KEYS, COMPLETED_BARRIERS, VOTE_TO_HALT));
     private Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
-    private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS = new HashSet<>(Arrays.asList(VertexComputeKey.of(HALTED_TRAVERSERS, false)));
+    private static final Set<VertexComputeKey> VERTEX_COMPUTE_KEYS =
+            new HashSet<>(Arrays.asList(VertexComputeKey.of(HALTED_TRAVERSERS, false), VertexComputeKey.of(ACTIVE_TRAVERSERS, true)));
 
     private PureTraversal<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
@@ -162,7 +163,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(COMPLETED_BARRIERS, new HashSet<>());
         final TraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).getSideEffects();
-        sideEffects.keys().forEach(key -> sideEffects.getRegisteredSupplier(key).ifPresent(supplier -> memory.set(key, supplier.get())));
+        sideEffects.keys().forEach(key -> memory.set(key, sideEffects.getSupplier(key).get()));
         ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).setMemory(memory, false);
     }
 
@@ -178,7 +179,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         // if a barrier was completed in another worker, it is also completed here (ensure distributed barries are synchronized)
         final Set<String> completedBarriers = memory.get(COMPLETED_BARRIERS);
         for (final String stepId : completedBarriers) {
-            ((Barrier) this.traversalMatrix.getStepById(stepId)).done();
+            final Step<?, ?> step = this.traversalMatrix.getStepById(stepId);
+            if (step instanceof Barrier)
+                ((Barrier) this.traversalMatrix.getStepById(stepId)).done();
         }
         //////////////////
         if (memory.isInitialIteration()) {    // ITERATION 1
@@ -241,7 +244,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             }
             // tell parallel barriers that might not have been active in the last round that they are no longer active
             memory.set(COMPLETED_BARRIERS, completedBarriers);
-            if (!remoteActiveTraversers.isEmpty()) {
+            if (!remoteActiveTraversers.isEmpty() ||
+                    completedBarriers.stream().map(this.traversalMatrix::getStepById).filter(step -> step instanceof LocalBarrier).findAny().isPresent()) {
                 // send active traversers back to workers
                 memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
                 return false;
@@ -265,15 +269,17 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         for (final String key : toProcessMemoryKeys) {
             final Step<Object, Object> step = this.traversalMatrix.getStepById(key);
             if (null == step) continue;
-            assert step instanceof Barrier;
-            final Barrier<Object> barrier = (Barrier<Object>) step;
-            barrier.addBarrier(memory.get(key));
-            while (step.hasNext()) {
-                traverserSet.add(step.next().asAdmin());
-            }
+            assert step instanceof Barrier || step instanceof LocalBarrier;
             completedBarriers.add(step.getId());
-            if (step instanceof ReducingBarrierStep)
-                memory.set(step.getId(), ((ReducingBarrierStep) step).getSeedSupplier().get());
+            if (step instanceof Barrier) {
+                final Barrier<Object> barrier = (Barrier<Object>) step;
+                barrier.addBarrier(memory.get(key));
+                while (step.hasNext()) {
+                    traverserSet.add(step.next().asAdmin());
+                }
+                if (step instanceof ReducingBarrierStep)
+                    memory.set(step.getId(), ((ReducingBarrierStep) step).getSeedSupplier().get());
+            }
         }
     }
 

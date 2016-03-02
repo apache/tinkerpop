@@ -167,7 +167,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             GroupTestV3d0.Traversals.class,
             GroupCountTest.Traversals.class,
             InjectTest.Traversals.class,
-            ProfileTest.Traversals.class,
+            //ProfileTest.Traversals.class,
             SackTest.Traversals.class,
             SideEffectCapTest.Traversals.class,
             SideEffectTest.Traversals.class,
