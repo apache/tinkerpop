@@ -32,8 +32,19 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
-VertexProgram and MemoryComputeKey and VertexComputeKey
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BranchStep Bug Fix
+^^^^^^^^^^^^^^^^^^
+
+There was a bug in `BranchStep` that also rears itself in subclass steps such as `UnionStep` and `ChooseStep`.
+For traversals with branches that have barriers (e.g. `count()`, `max()`, `groupCount()`, etc.), the traversal needs to be updated.
+For instance, if a traversal is of the form  `g.V().union(out().count(),both().count())`, the result is now different
+(the bug fix yields a different output). In order to yield the same result, the traversal should be rewritten as
+`g.V().local(union(out().count(),both().count()))`. Note that if a branch does not have a barrier, then no changes are required.
+For instance, `g.V().union(out(),both())` does not need to be updated. Moreover, if the user's traversal already used
+the `local()`-form, then no change are required either.
+
+MemoryComputeKey and VertexComputeKey
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Users that have custom `VertexProgram` implementations will need to change their implementations to support the new
 `VertexComputeKey` and `MemoryComputeKey` classes. In the `VertexPrograms` provided by TinkerPop, these changes were trivial,
@@ -47,18 +58,39 @@ the boolean transient should be false.
 * `VertexProgram.getMemoryComputeKeys()` returns a `Set<MemoryComputeKey>`. No longer a `Set<String>`.
 Use `MemoryComputeKey.of(String key, BinaryOperator reducer, boolean broadcast, boolean transient)` to generate a `MemoryComputeKey`.
 Broadcasting and transients were not supported in the past so to make the implementation semantically equivalent,
-to boolean broadcast should be true and the boolean transient should be false.
+the boolean broadcast should be true and the boolean transient should be false.
+
+An example migration looks as follows. What might currently look like:
+
+```
+public Set<String> getMemoryComputeKeys() {
+   return new HashSet<>(Arrays.asList("a","b","c"))
+}
+```
+
+Should now look like:
+
+```
+public Set<MemoryComputeKey> getMemoryComputeKeys() {
+  return new HashSet<>(Arrays.asList(
+    MemoryComputeKey.of("a", Operator.and, true, false),
+    MemoryComputeKey.of("b", Operator.sum, true, false),
+    MemoryComputeKey.of("c", Operator.or, true, false)))
+}
+```
+
+A similar patterns should also be used for `VertexProgram.getVertexComputeKeys()`.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1162[TINKERPOP-1162]
 
 SparkGraphComputer and GiraphGraphComputer Persistence
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `MapReduce`-based steps in `TraversalVertexProgram` have been removed and replaced using the new `Memory`-reduction model.
-`MapReduce` jobs always created a persistence footprint (e.g. in HDFS). Memory data was never persisted to HDFS.
-As such, there will not be data on the disk that is accessible. For instance, no more `~reducing`, `~traversers`, and specially
-named side-effects such as those from `groupCount('m')`. The data is still accessible via `ComputerResult.memory()`,
-it just simply does not have a corresponding on-disk representation.
+The `MapReduce`-based steps in `TraversalVertexProgram` have been removed and replaced using a new `Memory`-reduction model.
+`MapReduce` jobs always created a persistence footprint, e.g. in HDFS. `Memory` data was never persisted to HDFS.
+As such, there will be no data on the disk that is accessible. For instance, there is no more `~reducing`, `~traversers`,
+and specially named side-effects such as `m` from a `groupCount('m')`. The data is still accessible via `ComputerResult.memory()`,
+it simply does not have a corresponding on-disk representation.
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,8 +98,9 @@ Upgrading for Providers
 GraphComputer Semantics and API
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Providers that have a custom `GraphComputer` implementation will have a lot to handle.
-Note that if the graph system simply uses `SparkGraphComputer` or `GiraphGraphComputer` provided by TinkerPop, then no updates are required.
+Providers that have a custom `GraphComputer` implementation will have a lot to handle. Note that if the graph system
+simply uses `SparkGraphComputer` or `GiraphGraphComputer` provided by TinkerPop, then no updates are required. This
+only effects providers that have their own custom `GraphComputer` implementations.
 
 `Memory` updates:
 
@@ -76,11 +109,23 @@ Note that if the graph system simply uses `SparkGraphComputer` or `GiraphGraphCo
 * `MemoryComputeKeys` can be specified to not broadcast and thus, must not be available to workers to read in `VertexProgram.execute()`.
 * The `Memory` API has been changed. No more `incr()`, `and()`, etc. Now its just `set()` (setup/terminate) and `add()` (execute).
 
+`VertexProgram` updates:
+
+* `VertexComputeKeys` can be marked transient and must be removed from the resultant `ComputerResult.graph()`.
+
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
 
-Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above behaviors are implemented correctly.
+Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above are implemented correctly.
 
-Providers that have a custom `ReducingBarrierStep` implementation will need to adjust their implementation slightly to
+Barrier Step Updates
+^^^^^^^^^^^^^^^^^^^^
+
+The `Barrier` interface use to simply be a marker interface. Now it has methods and it is the primary means by which
+distributed steps across an OLAP job are aggregated and distributed. It is unlikely that `Barrier` was ever used
+directly by a provider's custom step. Instead, a provider most likely extended `SupplyingBarrierStep`, `CollectingBarrierStep`,
+and/or `ReducingBarrierStep`.
+
+Providers that have custom extensions to these steps or that use `Barrier` directly will need to adjust their implementation slightly to
 accommodate a new API that reflects the `Memory` updates above. This should be a simple change. Note that `FinalGet`
 no longer exists and such post-reduction processing is handled by the reducing step (via the new `Generating` interface).
 
@@ -92,7 +137,7 @@ ScriptTraversal and Gremlin Language Variants
 Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called `ScriptTraversal`
 which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated to use this new class.
 The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
-`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network.
+`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network moving forward.
 
 ByModulating and Custom Steps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -100,7 +145,9 @@ ByModulating and Custom Steps
 If the provider has custom steps that leverage `by()`-modulation, those will now need to implement `ByModulating`.
 Most of the methods in `ByModulating` are `default` and, for most situations, only `ByModulating.modulateBy(Traversal)`
 needs to be implemented. Note that this method's body will most like be identical the custom step's already existing
-`TraversalParent.addLocalChild()`.
+`TraversalParent.addLocalChild()`. It is recommended that the custom step not use `TraversalParent.addLocalChild()`
+as this method may be deprecated in a future release. Instead, barring any complex usages, simply rename the
+`CustomStep.addLocalChild(Traversal)` to `CustomStep.modulateBy(Traversal)`.
 
 TraversalEngine Deprecation and GraphProvider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -108,8 +155,8 @@ TraversalEngine Deprecation and GraphProvider
 The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards compatible.
 Unfortunately for graph system providers, a few tweaks to their implementation are in order.
 
-* If the graph system supports for more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
-* For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer()`.
+* If the graph system supports more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
+* For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer(Traversal)`.
 * For custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
 
 GraphFilter and GraphComputer
@@ -135,7 +182,8 @@ Job Chaining and GraphComputer
 
 TinkerPop 3.2.0 has integrated `VertexPrograms` into `GraphTraversal`. This means, that a single traversal can compile to multiple
 `GraphComputer` OLAP jobs. This requires that `ComputeResults` be chainable. There was never any explicit tests to verify if a
-providers `GraphComputer` could be chained, but now there are
+provider's `GraphComputer` could be chained, but now there are. Given a reasonable implementation, it is likely that no changes
+are required of the provider. However, to ensure the implementation is "reasonable" `GraphComputerTests` have been added.
 
 * For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportJobChaining()`.
 This tests verifies that the `ComputerResult` output of one job can be fed into the input of a subsequent job. Only linear chains are tested/required
@@ -143,6 +191,6 @@ currently. In the future, branching DAGs may be required.
 
 * For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportPreExistingComputeKeys()`.
 When chaining OLAP jobs together, if an OLAP job requires the compute keys of a previous OLAP job, then the existing compute keys must be accessible.
-A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop.
-`GiraphGraphComputer` did not need an update as this feature was already naturally supported.
+A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop. `GiraphGraphComputer` did not need an update as
+this feature was already naturally supported.
 
