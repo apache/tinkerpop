@@ -61,7 +61,7 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     public TraversalVertexProgramStep clone() {
         final TraversalVertexProgramStep clone = (TraversalVertexProgramStep) super.clone();
         clone.computerTraversal = this.computerTraversal.clone();
-        clone.integrateChild(this.computerTraversal.get());
+        clone.integrateChild(clone.computerTraversal.get());
         return clone;
     }
 

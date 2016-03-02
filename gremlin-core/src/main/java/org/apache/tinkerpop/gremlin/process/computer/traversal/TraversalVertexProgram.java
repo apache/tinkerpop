@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
@@ -142,6 +143,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         // register memory computing steps that use memory compute keys
         for (final MemoryComputing<?> memoryComputing : TraversalHelper.getStepsOfAssignableClassRecursively(MemoryComputing.class, this.traversal.get())) {
             this.memoryComputeKeys.add(memoryComputing.getMemoryComputeKey());
+            if (memoryComputing instanceof AggregateStep) {  // hack -- aggregate-step should really be store().barrier()
+                this.memoryComputeKeys.add(MemoryComputeKey.of(((AggregateStep) memoryComputing).getSideEffectKey(), Operator.addAll, true, false));
+            }
             this.sideEffectKeys.add(memoryComputing.getMemoryComputeKey().getKey()); // TODO: when no more MapReducers, you can remove this
         }
         // register TraversalVertexProgram specific memory compute keys
@@ -173,12 +177,19 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final Memory memory) {
+        // use the vertex to store side-effects
         this.traversal.get().getSideEffects().setLocalVertex(vertex);
         // if a barrier was completed in another worker, it is also completed here
         final Set<String> completedBarriers = memory.get(COMPLETED_BARRIERS);
         for (final String stepId : completedBarriers) {
             ((Barrier) this.traversalMatrix.getStepById(stepId)).done();
         }
+        // add all side-effects from memory
+        memory.keys().stream().
+                filter(key -> !PROGRAM_KEYS.contains(key)).
+                filter(key -> !StepPosition.isStepId(key)).
+                forEach(key -> this.traversal.get().getSideEffects().set(key, memory.get(key)));
+        //////////////////
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> haltedTraversers = vertex.<TraverserSet<Object>>property(HALTED_TRAVERSERS).orElse(new TraverserSet<>());
             vertex.property(VertexProperty.Cardinality.single, HALTED_TRAVERSERS, haltedTraversers);
@@ -278,6 +289,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private void processMemory(final Memory memory, final Set<String> toProcessMemoryKeys, final TraverserSet<Object> traverserSet, final Set<String> completedBarriers) {
         for (final String key : toProcessMemoryKeys) {
             final Step<Object, Object> step = this.traversalMatrix.getStepById(key);
+            step.getTraversal().setSideEffects(this.traversalMatrix.getTraversal().getSideEffects()); // side-effects are lost at some point
             if (null == step) continue;
             assert step instanceof Barrier;
             final Barrier<Object> barrier = (Barrier<Object>) step;
