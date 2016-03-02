@@ -119,12 +119,17 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
-    public GraphTraversalSource withSideEffect(final String key, final Supplier initialValue) {
-        return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
+    public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
+        return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue, reducer);
     }
 
     @Override
     public GraphTraversalSource withSideEffect(final String key, final Object initialValue) {
+        return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
+    }
+
+    @Override
+    public GraphTraversalSource withSideEffect(final String key, final Supplier initialValue) {
         return (GraphTraversalSource) TraversalSource.super.withSideEffect(key, initialValue);
     }
 

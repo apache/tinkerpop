@@ -18,13 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -37,13 +34,13 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree,Tree>, MemoryComputing<Tree>, TraversalParent, ByModulating, PathProcessor {
+public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree, Tree>, TraversalParent, ByModulating, PathProcessor {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
@@ -52,12 +49,13 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.traversalRing = new TraversalRing<>();
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, TreeSupplier.instance());
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) TreeSupplier.instance(), TreeStep.TreeBiOperator.instance());
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        Tree depth = traverser.sideEffects(this.sideEffectKey);
+        final Tree root = new Tree();
+        Tree depth = root;
         final Path path = traverser.path();
         for (int i = 0; i < path.size(); i++) {
             final Object object = TraversalUtil.apply(path.<Object>get(i), this.traversalRing.next());
@@ -66,6 +64,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
             depth = (Tree) depth.get(object);
         }
         this.traversalRing.reset();
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, root);
     }
 
     @Override
@@ -88,8 +87,13 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     public TreeSideEffectStep<S> clone() {
         final TreeSideEffectStep<S> clone = (TreeSideEffectStep<S>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
-        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -110,10 +114,5 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
-    }
-
-    @Override
-    public MemoryComputeKey<Tree> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getSideEffectKey(), TreeStep.TreeBiOperator.instance(), false, false);
     }
 }

@@ -83,11 +83,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.setStrategies(this.strategies);
+                    globalChild.setSideEffects(this.sideEffects);
                     if (hasGraph) globalChild.setGraph(this.graph);
                     globalChild.applyStrategies();
                 }
                 for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
                     localChild.setStrategies(this.strategies);
+                    localChild.setSideEffects(this.sideEffects);
                     if (hasGraph) localChild.setGraph(this.graph);
                     localChild.applyStrategies();
                 }

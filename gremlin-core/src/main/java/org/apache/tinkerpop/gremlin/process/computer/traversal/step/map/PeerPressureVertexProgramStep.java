@@ -111,7 +111,12 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
     public PeerPressureVertexProgramStep clone() {
         final PeerPressureVertexProgramStep clone = (PeerPressureVertexProgramStep) super.clone();
         clone.edgeTraversal = this.edgeTraversal.clone();
-        clone.integrateChild(clone.edgeTraversal.get());
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.edgeTraversal.get());
     }
 }

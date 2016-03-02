@@ -216,10 +216,18 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         final MatchStep<S, E> clone = (MatchStep<S, E>) super.clone();
         clone.matchTraversals = new ArrayList<>();
         for (final Traversal.Admin<Object, Object> traversal : this.matchTraversals) {
-            clone.matchTraversals.add(clone.integrateChild(traversal.clone()));
+            clone.matchTraversals.add(traversal.clone());
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        for (final Traversal.Admin<Object, Object> traversal : this.matchTraversals) {
+            this.integrateChild(traversal);
+        }
     }
 
     public void setDedupLabels(final Set<String> labels) {

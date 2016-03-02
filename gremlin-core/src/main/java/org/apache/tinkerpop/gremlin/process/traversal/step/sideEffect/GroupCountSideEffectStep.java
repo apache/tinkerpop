@@ -18,15 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -40,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable<Map<E, Long>, Map<E, Long>>, TraversalParent, ByModulating, MemoryComputing<Map<E, Long>> {
+public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable<Map<E, Long>, Map<E, Long>>, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, E> keyTraversal = null;
     private String sideEffectKey;
@@ -48,13 +45,12 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     public GroupCountSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
+        this.getTraversal().asAdmin().getSideEffects().registerIfAbsent(this.sideEffectKey, HashMapSupplier.instance(), GroupCountStep.GroupCountBiOperator.instance());
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final Map<E, Long> groupCountMap = traverser.sideEffects(this.sideEffectKey);
-        MapHelper.incr(groupCountMap, TraversalUtil.applyNullable(traverser.asAdmin(), this.keyTraversal), traverser.bulk());
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, Collections.singletonMap(TraversalUtil.applyNullable(traverser.asAdmin(), this.keyTraversal), traverser.bulk()));
     }
 
     @Override
@@ -86,8 +82,14 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     public GroupCountSideEffectStep<S, E> clone() {
         final GroupCountSideEffectStep<S, E> clone = (GroupCountSideEffectStep<S, E>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
+            clone.keyTraversal = this.keyTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.keyTraversal);
     }
 
     @Override
@@ -100,10 +102,5 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
         this.keyTraversal = this.integrateChild(keyTraversal);
-    }
-
-    @Override
-    public MemoryComputeKey<Map<E, Long>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getSideEffectKey(), GroupCountStep.GroupCountBiOperator.instance(), false, false);
     }
 }

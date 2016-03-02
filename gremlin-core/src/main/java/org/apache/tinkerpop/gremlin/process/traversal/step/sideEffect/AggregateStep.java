@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
@@ -34,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,7 +48,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.getTraversal().asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.assign);
     }
 
     @Override
@@ -87,8 +89,14 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     public AggregateStep<S> clone() {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
         if (null != this.aggregateTraversal)
-            clone.aggregateTraversal = clone.integrateChild(this.aggregateTraversal.clone());
+            clone.aggregateTraversal = this.aggregateTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.aggregateTraversal);
     }
 
     @Override

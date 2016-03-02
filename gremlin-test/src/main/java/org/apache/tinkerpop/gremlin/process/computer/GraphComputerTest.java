@@ -1935,7 +1935,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(36, graph3.traversal().V().values().count().next().intValue()); // traverser side-effects
+        assertEquals(30, graph3.traversal().V().values().count().next().intValue());
 
         // TODO: add a test the shows DAG behavior -- splitting another TraversalVertexProgram off of the PeerPressureVertexProgram job.
     }

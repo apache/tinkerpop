@@ -79,8 +79,14 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     public GroupCountStep<S, E> clone() {
         final GroupCountStep<S, E> clone = (GroupCountStep<S, E>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
+            clone.keyTraversal = this.keyTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
     }
 
     @Override

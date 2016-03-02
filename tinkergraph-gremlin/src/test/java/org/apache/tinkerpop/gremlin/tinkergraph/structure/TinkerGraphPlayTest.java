@@ -72,10 +72,10 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer();//GraphTraversalSource.computer());
+        GraphTraversalSource g = graph.traversal();//GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        final Traversal<?,?> traversal = g.V(1).repeat(bothE("created").where(without("e")).aggregate("e").otherV()).emit().path();
+        final Traversal<?,?> traversal = g.V().repeat(both().groupCount("m")).times(3).cap("m");
 
         System.out.println(traversal.asAdmin().clone().toString());
         final Traversal<?,?> clone = traversal.asAdmin().clone();

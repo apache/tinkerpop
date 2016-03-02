@@ -43,6 +43,7 @@ import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated Since 3.1.0 -- use {@link GroupStep}
  */
 public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R>> implements TraversalParent, ByModulating {
 
@@ -118,12 +119,20 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
     public GroupStepV3d0<S, K, V, R> clone() {
         final GroupStepV3d0<S, K, V, R> clone = (GroupStepV3d0<S, K, V, R>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
+            clone.keyTraversal = this.keyTraversal.clone();
         if (null != this.valueTraversal)
-            clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
+            clone.valueTraversal = this.valueTraversal.clone();
         if (null != this.reduceTraversal)
-            clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
+            clone.reduceTraversal = this.reduceTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
+        integrateChild(this.valueTraversal);
+        integrateChild(this.reduceTraversal);
     }
 
     @Override

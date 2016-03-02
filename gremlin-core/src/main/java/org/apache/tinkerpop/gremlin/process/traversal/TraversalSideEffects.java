@@ -18,13 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -36,8 +33,6 @@ import java.util.function.UnaryOperator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalSideEffects extends Cloneable, Serializable {
-
-    public static final String SIDE_EFFECTS = "gremlin.traversal.sideEffects";
 
     /**
      * Set the specified key to the specified value.
@@ -75,37 +70,15 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
      */
     public Set<String> keys();
 
-    ////////////
+    public void add(final String key, final Object value);
 
-    /**
-     * Register a {@link java.util.function.Supplier} with the provided key.
-     * When sideEffects get() are called, if no object exists and there exists a registered supplier for the key, the object is generated.
-     * Registered suppliers are used for the lazy generation of sideEffect data.
-     *
-     * @param key      the key to register the supplier with
-     * @param supplier the supplier that will generate an object when get() is called if it hasn't already been created
-     */
-    public void registerSupplier(final String key, final Supplier supplier);
+    public <V> void register(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer);
 
-    /**
-     * Get the registered {@link java.util.function.Supplier} associated with the specified key.
-     *
-     * @param key the key associated with the supplier
-     * @param <V> The object type of the supplier
-     * @return A non-empty optional if the supplier exists
-     */
-    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key);
+    public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer);
 
-    /**
-     * A helper method to register a {@link java.util.function.Supplier} if it has not already been registered.
-     *
-     * @param key      the key of the supplier to register
-     * @param supplier the supplier to register if the key has not already been registered
-     */
-    public default void registerSupplierIfAbsent(final String key, final Supplier supplier) {
-        if (!this.getRegisteredSupplier(key).isPresent())
-            this.registerSupplier(key, supplier);
-    }
+    public <V> BinaryOperator<V> getReducer(final String key);
+
+    public <V> Supplier<V> getSupplier(final String key);
 
     /**
      * Set the initial value of each {@link Traverser} "sack" along with the operators for splitting and merging sacks.
@@ -180,15 +153,6 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     }
 
     /**
-     * In a distributed {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} traversal, the sideEffects of the traversal are not a single object within a single JVM.
-     * Instead, the sideEffects are distributed across the graph and the pieces are stored on the computing vertices.
-     * This method is necessary to call when the {@link Traversal} is processing the {@link Traverser}s at a particular {@link org.apache.tinkerpop.gremlin.structure.Vertex}.
-     *
-     * @param vertex the vertex where the traversal is currently executing.
-     */
-    public void setLocalVertex(final Vertex vertex);
-
-    /**
      * Cloning is used to duplicate the sideEffects typically in OLAP environments.
      *
      * @return The cloned sideEffects
@@ -221,4 +185,42 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
             return new UnsupportedOperationException(String.format("Side effect value [%s] is of type %s is not supported", val, val.getClass()));
         }
     }
+
+    ///////////////////
+
+    /**
+     * Register a {@link java.util.function.Supplier} with the provided key.
+     * When sideEffects get() are called, if no object exists and there exists a registered supplier for the key, the object is generated.
+     * Registered suppliers are used for the lazy generation of sideEffect data.
+     *
+     * @param key      the key to register the supplier with
+     * @param supplier the supplier that will generate an object when get() is called if it hasn't already been created
+     */
+    @Deprecated
+    public void registerSupplier(final String key, final Supplier supplier);
+
+
+    /**
+     * A helper method to register a {@link java.util.function.Supplier} if it has not already been registered.
+     *
+     * @param key      the key of the supplier to register
+     * @param supplier the supplier to register if the key has not already been registered
+     */
+    @Deprecated
+    public default void registerSupplierIfAbsent(final String key, final Supplier supplier) {
+        if (!this.getRegisteredSupplier(key).isPresent())
+            this.registerSupplier(key, supplier);
+    }
+
+    /**
+     * Get the registered {@link java.util.function.Supplier} associated with the specified key.
+     *
+     * @param key the key associated with the supplier
+     * @param <V> The object type of the supplier
+     * @return A non-empty optional if the supplier exists
+     */
+    @Deprecated
+    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key);
+
+    ///////////////////
 }

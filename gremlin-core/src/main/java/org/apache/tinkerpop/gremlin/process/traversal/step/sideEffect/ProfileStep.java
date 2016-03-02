@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -208,7 +207,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, StandardTraversalMetrics> emitter) {
-            VertexTraversalSideEffects.of(vertex).<StandardTraversalMetrics>get(TraversalMetrics.METRICS_KEY).ifPresent(emitter::emit);
+
         }
 
         @Override

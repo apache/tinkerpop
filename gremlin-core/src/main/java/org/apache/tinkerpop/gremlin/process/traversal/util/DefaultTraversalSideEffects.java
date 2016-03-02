@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -41,6 +39,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
 
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
+    protected Map<String, BinaryOperator> reducerMap = new HashMap<>();
     protected UnaryOperator sackSplitOperator = null;
     protected BinaryOperator sackMergeOperator = null;
     protected Supplier sackInitialValue = null;
@@ -53,29 +52,31 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      * {@inheritDoc}
      */
     @Override
-    public void registerSupplier(final String key, final Supplier supplier) {
-        this.supplierMap.put(key, supplier);
+    public <V> void register(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
+        SideEffectHelper.validateSideEffect(key, initialValue);
+        this.supplierMap.put(key, initialValue);
+        this.reducerMap.put(key, reducer);
+    }
+
+    @Override
+    public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
+        if (!this.supplierMap.containsKey(key))
+            this.register(key, initialValue, reducer);
+    }
+
+    @Override
+    public <V> BinaryOperator<V> getReducer(final String key) {
+        return this.reducerMap.get(key);
+    }
+
+    @Override
+    public <V> Supplier<V> getSupplier(final String key) {
+        return this.supplierMap.get(key);
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
-        return Optional.ofNullable(this.supplierMap.get(key));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void registerSupplierIfAbsent(final String key, final Supplier supplier) {
-        if (!this.supplierMap.containsKey(key)) {
-            SideEffectHelper.validateSideEffect(key, supplier);
-            this.supplierMap.put(key, supplier);
-        }
-    }
-
     @Override
     public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
         this.sackInitialValue = initialValue;
@@ -83,16 +84,25 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
         this.sackMergeOperator = mergeOperator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <S> Supplier<S> getSackInitialValue() {
         return this.sackInitialValue;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <S> UnaryOperator<S> getSackSplitter() {
         return this.sackSplitOperator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <S> BinaryOperator<S> getSackMerger() {
         return this.sackMergeOperator;
@@ -105,6 +115,14 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
         this.objectMap.put(key, value);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void add(final String key, final Object value) {
+        this.set(key, this.reducerMap.get(key).apply(this.get(key).get(), value));
     }
 
     /**
@@ -148,6 +166,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     public void remove(final String key) {
         this.objectMap.remove(key);
         this.supplierMap.remove(key);
+        this.reducerMap.remove(key);
     }
 
     /**
@@ -161,24 +180,10 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
         return Collections.unmodifiableSet(keys);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setLocalVertex(final Vertex vertex) {
-        final Property<Map<String, Object>> property = vertex.property(SIDE_EFFECTS);
-        if (property.isPresent()) {
-            this.objectMap = property.value();
-        } else {
-            this.objectMap = new HashMap<>();
-            vertex.property(VertexProperty.Cardinality.single, SIDE_EFFECTS, this.objectMap);
-        }
-    }
-
     @Override
     public void mergeInto(final TraversalSideEffects sideEffects) {
-        this.objectMap.forEach(sideEffects::set);
-        this.supplierMap.forEach(sideEffects::registerSupplierIfAbsent);
+        this.objectMap.keySet().stream().filter(key -> !sideEffects.keys().contains(key)).forEach(key -> sideEffects.set(key, this.objectMap.get(key)));
+        this.reducerMap.keySet().stream().filter(key -> !sideEffects.keys().contains(key)).forEach(key -> sideEffects.register(key, this.supplierMap.get(key), this.reducerMap.get(key)));
         // TODO: add sack information?
     }
 
@@ -194,9 +199,44 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
             final DefaultTraversalSideEffects sideEffects = (DefaultTraversalSideEffects) super.clone();
             sideEffects.objectMap = new HashMap<>(this.objectMap);
             sideEffects.supplierMap = new HashMap<>(this.supplierMap);
+            sideEffects.reducerMap = new HashMap<>(this.reducerMap);
             return sideEffects;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+    //////////
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    @Override
+    public void registerSupplier(final String key, final Supplier supplier) {
+        this.register(key, supplier, Operator.assign);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    @Override
+    public void registerSupplierIfAbsent(final String key, final Supplier supplier) {
+        if (!this.supplierMap.containsKey(key)) {
+            this.register(key, supplier, Operator.assign);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Deprecated
+    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
+        return Optional.ofNullable(this.supplierMap.get(key));
+    }
+
+
 }

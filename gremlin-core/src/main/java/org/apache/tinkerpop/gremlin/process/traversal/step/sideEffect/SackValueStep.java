@@ -80,7 +80,13 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     public SackValueStep<S, A, B> clone() {
         final SackValueStep<S, A, B> clone = (SackValueStep<S, A, B>) super.clone();
         if (null != this.sackTraversal)
-            clone.sackTraversal = clone.integrateChild(this.sackTraversal.clone());
+            clone.sackTraversal = this.sackTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.sackTraversal);
     }
 }

@@ -56,8 +56,14 @@ public final class TraversalSideEffectStep<S> extends SideEffectStep<S> implemen
     @Override
     public TraversalSideEffectStep<S> clone() {
         final TraversalSideEffectStep<S> clone = (TraversalSideEffectStep<S>) super.clone();
-        clone.sideEffectTraversal = clone.integrateChild(this.sideEffectTraversal.clone());
+        clone.sideEffectTraversal = this.sideEffectTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.sideEffectTraversal);
     }
 
     @Override

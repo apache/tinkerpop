@@ -64,9 +64,17 @@ public abstract class ConnectiveStep<S> extends AbstractStep<S, S> implements Tr
         final ConnectiveStep<S> clone = (ConnectiveStep<S>) super.clone();
         clone.traversals = new ArrayList<>();
         for (final Traversal.Admin<S, ?> traversal : this.traversals) {
-            clone.traversals.add(clone.integrateChild(traversal.clone()));
+            clone.traversals.add(traversal.clone());
         }
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        for (final Traversal.Admin<S, ?> traversal : this.traversals) {
+            integrateChild(traversal);
+        }
     }
 
     @Override

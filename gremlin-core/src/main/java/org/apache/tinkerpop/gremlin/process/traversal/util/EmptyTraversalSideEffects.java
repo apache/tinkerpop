@@ -60,6 +60,31 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
+    public void add(final String key, final Object value) {
+
+    }
+
+    @Override
+    public <V> void register(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
+
+    }
+
+    @Override
+    public <V> void registerIfAbsent(String key, Supplier<V> initialValue, BinaryOperator<V> reducer) {
+
+    }
+
+    @Override
+    public <V> BinaryOperator<V> getReducer(String key) {
+        return null;
+    }
+
+    @Override
+    public <V> Supplier<V> getSupplier(String key) {
+        return null;
+    }
+
+    @Override
     public void registerSupplier(final String key, final Supplier supplier) {
 
     }
@@ -87,11 +112,6 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     @Override
     public <S> BinaryOperator<S> getSackMerger() {
         return null;
-    }
-
-    @Override
-    public void setLocalVertex(final Vertex vertex) {
-
     }
 
     @SuppressWarnings("CloneDoesntCallSuperClone")

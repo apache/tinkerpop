@@ -16,21 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
-import org.apache.tinkerpop.gremlin.structure.Vertex
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
- * @author Matt Frantz (http://github.com/mhfrantz)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class GroovyFlatMapTest {
-
-    public static class Traversals extends FlatMapTest {
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_asXaX_flatMapXselectXaXX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').flatMap(select('a'))")
-        }
-    }
+public interface LocalBarrier {
 }

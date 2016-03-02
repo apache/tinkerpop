@@ -104,8 +104,14 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
     @Override
     public WhereTraversalStep<S> clone() {
         final WhereTraversalStep<S> clone = (WhereTraversalStep<S>) super.clone();
-        clone.whereTraversal = clone.integrateChild(this.whereTraversal.clone());
+        clone.whereTraversal = this.whereTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.whereTraversal);
     }
 
     @Override

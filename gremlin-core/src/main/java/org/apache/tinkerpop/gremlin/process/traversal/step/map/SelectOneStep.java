@@ -69,6 +69,12 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.selectTraversal);
+    }
+
+    @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.selectKey.hashCode();
         if (null != this.selectTraversal)

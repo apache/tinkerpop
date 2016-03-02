@@ -93,7 +93,15 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
-        return GroupStep.doInitialProjection(traverser, (Traversal.Admin) this.keyTraversal, this.onGraphComputer ? this.valueTraversal : null);
+        final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+        if (this.onGraphComputer) {
+            final TraverserSet traverserSet = new TraverserSet();
+            this.valueTraversal.reset();
+            this.valueTraversal.addStart(traverser);
+            this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+            return Collections.singletonMap(key, (V) traverserSet);
+        } else
+            return Collections.singletonMap(key, (V) traverser);
     }
 
     @Override
@@ -121,11 +129,20 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public GroupStep<S, K, V> clone() {
         final GroupStep<S, K, V> clone = (GroupStep<S, K, V>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
-        clone.valueReduceTraversal = clone.integrateChild(this.valueReduceTraversal.clone());
-        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
-        clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
+            clone.keyTraversal = this.keyTraversal.clone();
+        clone.valueReduceTraversal = this.valueReduceTraversal.clone();
+        clone.valueTraversal = this.valueTraversal.clone();
+        clone.reduceTraversal = this.reduceTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
+        integrateChild(this.valueReduceTraversal);
+        integrateChild(this.valueTraversal);
+        integrateChild(this.reduceTraversal);
     }
 
     @Override
@@ -238,17 +255,5 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         } else
             map.forEach((key, traversal) -> reducedMap.put(key, ((Traversal.Admin<?, V>) traversal).next()));
         return reducedMap;
-    }
-
-    public static <S, K> Map<K, Object> doInitialProjection(final Traverser.Admin<S> traverser, final Traversal.Admin<S, K> keyTraversal, final Traversal.Admin<S, ?> valueTraversal) {
-        final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
-        if (null != valueTraversal) {
-            final TraverserSet traverserSet = new TraverserSet();
-            valueTraversal.reset();
-            valueTraversal.addStart(traverser);
-            valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
-            return Collections.singletonMap(key, traverserSet);
-        } else
-            return Collections.singletonMap(key, traverser);
     }
 }

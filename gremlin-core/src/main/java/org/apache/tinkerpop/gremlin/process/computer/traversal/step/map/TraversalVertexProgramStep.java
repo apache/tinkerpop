@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -58,14 +59,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public TraversalVertexProgramStep clone() {
-        final TraversalVertexProgramStep clone = (TraversalVertexProgramStep) super.clone();
-        clone.computerTraversal = this.computerTraversal.clone();
-        clone.integrateChild(clone.computerTraversal.get());
-        return clone;
-    }
-
-    @Override
     public Set<TraverserRequirement> getRequirements() {
         return TraversalParent.super.getSelfAndChildRequirements(TraverserRequirement.BULK);
     }
@@ -80,7 +73,7 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
         computerSpecificTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
         this.getTraversal().getStrategies().toList().forEach(computerSpecificTraversal.getStrategies()::addStrategies);
-        computerSpecificTraversal.setSideEffects(this.getTraversal().getSideEffects());
+        computerSpecificTraversal.setSideEffects(new MemoryTraversalSideEffects(this.getTraversal().getSideEffects()));
         computerSpecificTraversal.setParent(this);
         return TraversalVertexProgram.build()
                 .traversal(computerSpecificTraversal)
@@ -94,4 +87,18 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
             graphComputer.persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
         return graphComputer;
     }
+
+    @Override
+    public TraversalVertexProgramStep clone() {
+        final TraversalVertexProgramStep clone = (TraversalVertexProgramStep) super.clone();
+        clone.computerTraversal = this.computerTraversal.clone();
+        return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.computerTraversal.get());
+    }
+
 }
