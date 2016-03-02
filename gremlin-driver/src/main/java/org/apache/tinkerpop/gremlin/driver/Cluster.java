@@ -278,6 +278,7 @@ public final class Cluster {
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
+        private int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
         private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
@@ -442,6 +443,16 @@ public final class Cluster {
         }
 
         /**
+         * If the connection is using a "session" this setting represents the amount of time in milliseconds to wait
+         * for that session to close before timing out where the default value is 3000. Note that the server will
+         * eventually clean up dead sessions itself on expiration of the session or during shutdown.
+         */
+        public Builder maxWaitForSessionClose(final int maxWait) {
+            this.maxWaitForSessionClose = maxWait;
+            return this;
+        }
+
+        /**
          * The maximum size in bytes of any request sent to the server.   This number should not exceed the same
          * setting defined on the server.
          */
@@ -569,6 +580,7 @@ public final class Cluster {
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;
+            connectionPoolSettings.maxWaitForSessionClose = this.maxWaitForSessionClose;
             connectionPoolSettings.maxContentLength = this.maxContentLength;
             connectionPoolSettings.reconnectInitialDelay = this.reconnectInitialDelay;
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
