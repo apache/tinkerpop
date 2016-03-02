@@ -31,28 +31,62 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
+ * Settings for the {@link Cluster} and its related components.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class Settings {
 
+    /**
+     * The port of the Gremlin Server to connect to which defaults to {@code 8192}. The same port will be applied for
+     * all {@link #hosts}.
+     */
     public int port = 8182;
 
+    /**
+     * The list of hosts that the driver will connect to.
+     */
     public List<String> hosts = new ArrayList<>();
 
+    /**
+     * The serializer that will be used when communicating with the server. Note that serializer settings should match
+     * what is available on the server.
+     */
     public SerializerSettings serializer = new SerializerSettings();
 
+    /**
+     * Settings for connections and connection pool.
+     */
     public ConnectionPoolSettings connectionPool = new ConnectionPoolSettings();
 
+    /**
+     * The size of the thread pool defaulted to the number of available processors.
+     */
     public int nioPoolSize = Runtime.getRuntime().availableProcessors();
 
+    /**
+     * The number of worker threads defaulted to the number of available processors * 2.
+     */
     public int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
+    /**
+     * The username to submit on requests that require authentication.
+     */
     public String username = null;
 
+    /**
+     * The password to submit on requests that require authentication.
+     */
     public String password = null;
 
+    /**
+     * The JAAS to submit on requests that require authentication.
+     */
     public String jaasEntry = null;
 
+    /**
+     * The JAAS protocol to submit on requests that require authentication.
+     */
     public String protocol = null;
 
     /**
@@ -74,19 +108,93 @@ final class Settings {
     }
 
     static class ConnectionPoolSettings {
+        /**
+         * Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client.
+         */
         public boolean enableSsl = false;
+
+        /**
+         * The trusted certificate in PEM format.
+         */
         public String trustCertChainFile = null;
+
+        /**
+         * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
+         */
         public int minSize = ConnectionPool.MIN_POOL_SIZE;
+
+        /**
+         * The maximum size of a connection pool for a {@link Host}. By default this is set to 8.
+         */
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
+
+        /**
+         * A connection under low use can be destroyed. This setting determines the threshold for determining when
+         * that connection can be released and is defaulted to 8.
+         */
         public int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
+
+        /**
+         * If a connection is over used, then it might mean that is necessary to expand the pool by adding a new
+         * connection.  This setting determines the threshold for a connections over use and is defaulted to 16
+         */
         public int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
+
+        /**
+         * The maximum number of requests in flight on a connection where the default is 4.
+         */
         public int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
+
+        /**
+         * A connection has available in-process requests which is calculated by subtracting the number of current
+         * in-flight requests on a connection and subtracting that from the {@link #maxInProcessPerConnection}. When
+         * that number drops below this configuration setting, the connection is recommended for replacement. The
+         * default for this setting is 1.
+         */
         public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
+
+        /**
+         * The amount of time in milliseconds to wait for a new connection before timing out where the default value
+         * is 3000.
+         */
         public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
+
+        /**
+         * If the connection is using a "session" this setting represents the amount of time in milliseconds to wait
+         * for that session to close before timing out where the default value is 3000. Note that the server will
+         * eventually clean up dead sessions itself on expiration of the session or during shutdown.
+         */
+        public int maxWaitForSessionClose = Connection.MAX_WAIT_FOR_SESSION_CLOSE;
+
+        /**
+         * The maximum length in bytes that a message can be sent to the server. This number can be no greater than
+         * the setting of the same name in the server configuration. The default value is 65536.
+         */
         public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+
+        /**
+         * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is
+         * 1000. This interval occurs after the time specified by the {@link #reconnectInitialDelay}.
+         */
         public int reconnectInterval = Connection.RECONNECT_INTERVAL;
+
+        /**
+         * The amount of time in milliseconds to wait before trying to reconnect to a dead host for the first time.
+         * The default value is 1000.
+         */
         public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
+
+        /**
+         * The override value for the size of the result batches to be returned from the server. This value is set to
+         * 64 by default.
+         */
         public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+
+        /**
+         * The constructor for the channel that connects to the server. This value should be the fully qualified
+         * class name of a Gremlin Driver {@link Channelizer} implementation.  By default this value is set to
+         * {@link org.apache.tinkerpop.gremlin.driver.Channelizer.WebSocketChannelizer}.
+         */
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
 
         /**
@@ -107,7 +215,15 @@ final class Settings {
     }
 
     public static class SerializerSettings {
+        /**
+         * The fully qualified class name of the {@link MessageSerializer} that will be used to communicate with the
+         * server. Note that the serializer configured on the client should be supported by the server configuration.
+         */
         public String className = GraphSONMessageSerializerV1d0.class.getCanonicalName();
+
+        /**
+         * The configuration for the specified serializer with the {@link #className}.
+         */
         public Map<String, Object> config = null;
 
         public MessageSerializer create() throws Exception {
