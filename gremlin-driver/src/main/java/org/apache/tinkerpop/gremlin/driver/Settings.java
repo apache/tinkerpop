@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -219,7 +219,7 @@ final class Settings {
          * The fully qualified class name of the {@link MessageSerializer} that will be used to communicate with the
          * server. Note that the serializer configured on the client should be supported by the server configuration.
          */
-        public String className = GraphSONMessageSerializerV1d0.class.getCanonicalName();
+        public String className = GryoMessageSerializerV1d0.class.getCanonicalName();
 
         /**
          * The configuration for the specified serializer with the {@link #className}.
