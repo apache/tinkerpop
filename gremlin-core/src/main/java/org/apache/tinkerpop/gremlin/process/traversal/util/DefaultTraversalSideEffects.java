@@ -99,7 +99,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     public <V> void register(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
         SideEffectHelper.validateSideEffectKey(key);
         this.keys.add(key);
-        this.objectMap.remove(key);
+        //this.objectMap.remove(key);
         if (null != initialValue)
             this.supplierMap.put(key, initialValue);
         if (null != reducer)
@@ -113,7 +113,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
         SideEffectHelper.validateSideEffectKey(key);
         this.keys.add(key);
-        this.objectMap.remove(key);
+        //this.objectMap.remove(key);
         if (null == this.supplierMap.get(key) && null != initialValue) {
             this.supplierMap.put(key, initialValue);
         }
@@ -127,7 +127,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public <V> BinaryOperator<V> getReducer(final String key) throws IllegalArgumentException {
-        if (!this.supplierMap.containsKey(key))
+        if (!this.keys.contains(key))
             throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
         return this.reducerMap.getOrDefault(key, Operator.assign);
     }
@@ -192,23 +192,32 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public Set<String> keys() {
-        final Set<String> keys = new HashSet<>();
-        keys.addAll(this.objectMap.keySet());
-        keys.addAll(this.supplierMap.keySet());
-        return Collections.unmodifiableSet(keys);
+        return Collections.unmodifiableSet(this.keys);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void mergeInto(final TraversalSideEffects sideEffects) {
-        this.supplierMap.keySet().stream().forEach(key -> sideEffects.register(key, this.supplierMap.get(key), this.reducerMap.get(key)));
-        // TODO: add sack information?
+        for (final String key : this.keys) {
+            sideEffects.registerIfAbsent(key, this.supplierMap.get(key), this.reducerMap.get(key));
+            if (this.objectMap.containsKey(key))
+                sideEffects.set(key, this.objectMap.get(key));
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return StringFactory.traversalSideEffectsString(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public DefaultTraversalSideEffects clone() {

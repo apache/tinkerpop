@@ -145,7 +145,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertEquals(3, sideEffects.keys().size());
         assertTrue(sideEffects.keys().contains("a"));
         assertTrue(sideEffects.exists("a"));
-// TODO        assertTrue(sideEffects.get("a") instanceof LinkedHashMap);
+        assertTrue(sideEffects.get("a") instanceof LinkedHashMap);
         //
         assertTrue(sideEffects.keys().contains("b"));
         assertTrue(sideEffects.exists("b"));

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVe
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,8 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_pageRank_byXpageRankX_asXaX_outXknowsX_pageRank_asXbX_selectXa_bX();
 
     public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX();
+
+    public abstract Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -181,6 +184,39 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         assertEquals(4, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX() {
+        // [{2.0=[v[4], v[4], v[4], v[4]], 1.0=[v[6], v[6], v[6], v[1], v[1], v[1]], software=[v[5], v[3], v[3], v[3]]}]
+        final Traversal<Vertex, Map<Object, List<Vertex>>> traversal = get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX();
+        printTraversalForm(traversal);
+        final Map<Object, List<Vertex>> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(3, map.size());
+        assertTrue(map.containsKey("software"));
+        map.forEach((k, v) -> {
+            boolean found = false;
+            if (!k.equals("software") && v.size() == 4) {
+                assertEquals(2.0d, ((Number) k).doubleValue(), 0.01d);
+                assertEquals(4, v.stream().filter(vertex -> vertex.id().equals(convertToVertexId(graph, "josh"))).count());
+                found = true;
+            } else if (v.size() == 6) {
+                assertEquals(1.0d, ((Number) k).doubleValue(), 0.01d);
+                assertEquals(3, v.stream().filter(vertex -> vertex.id().equals(convertToVertexId(graph, "peter"))).count());
+                assertEquals(3, v.stream().filter(vertex -> vertex.id().equals(convertToVertexId(graph, "marko"))).count());
+                found = true;
+            } else if (v.size() == 4) {
+                assertEquals("software", k);
+                assertEquals(3, v.stream().filter(vertex -> vertex.id().equals(convertToVertexId(graph, "lop"))).count());
+                assertEquals(1, v.stream().filter(vertex -> vertex.id().equals(convertToVertexId(graph, "ripple"))).count());
+                found = true;
+            }
+
+            if (!found)
+                fail("There are too many key/values: " + k + "--" + v);
+        });
+    }
+
     public static class Traversals extends PageRankTest {
 
         @Override
@@ -216,6 +252,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXsoftwareX_hasXname_rippleX_pageRankX1X_byXinEXcreatedXX_timesX1X_byXpriorsX_inXcreatedX_unionXboth__identityX_valueMapXname_priorsX() {
             return g.V().hasLabel("software").has("name", "ripple").pageRank(1.0).by(__.inE("created")).times(1).by("priors").in("created").union(__.both(), __.identity()).valueMap("name", "priors");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Object, List<Vertex>>> get_g_V_outXcreatedX_groupXmX_byXlabelX_pageRankX1X_byXpageRankX_byXinEX_timesX1X_inXcreatedX_groupXmX_byXpageRankX_capXmX() {
+            return g.V().out("created").group("m").by(T.label).pageRank(1.0).by("pageRank").by(__.inE()).times(1).in("created").group("m").by("pageRank").cap("m");
         }
     }
 }

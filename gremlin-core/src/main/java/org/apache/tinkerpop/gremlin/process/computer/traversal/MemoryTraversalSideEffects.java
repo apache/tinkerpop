@@ -64,10 +64,7 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
-        if (this.memory.exists(key) && this.sideEffects.keys().contains(key))
-            return this.memory.get(key);
-        else
-            return this.sideEffects.get(key);
+        return null == this.memory ? this.sideEffects.get(key) : this.memory.get(key);
     }
 
     @Override

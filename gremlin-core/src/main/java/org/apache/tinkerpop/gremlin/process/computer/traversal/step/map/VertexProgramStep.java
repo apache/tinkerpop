@@ -20,9 +20,11 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -48,11 +50,15 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                return this.getTraversal().getTraverserGenerator().generate(this.generateComputer(graph).program(this.generateProgram(graph)).submit().get(), this, 1l);
+                final ComputerResult result = this.generateComputer(graph).program(this.generateProgram(graph)).submit().get();
+                this.processMemorySideEffects(result.memory());
+                return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
-                return traverser.split(this.generateComputer(graph).program(this.generateProgram(graph)).submit().get(), this);
+                final ComputerResult result = this.generateComputer(graph).program(this.generateProgram(graph)).submit().get();
+                this.processMemorySideEffects(result.memory());
+                return traverser.split(result, this);
             }
         } catch (final InterruptedException | ExecutionException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -68,4 +74,15 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
         }
         return false;
     }
+
+
+    private void processMemorySideEffects(final Memory memory) {
+        final TraversalSideEffects sideEffects = this.getTraversal().getSideEffects();
+        for (final String key : memory.keys()) {
+            if (sideEffects.exists(key)) {
+                sideEffects.set(key, memory.get(key));
+            }
+        }
+    }
+
 }

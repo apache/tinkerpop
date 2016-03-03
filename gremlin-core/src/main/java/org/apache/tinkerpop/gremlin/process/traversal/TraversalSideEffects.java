@@ -190,7 +190,9 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     public TraversalSideEffects clone();
 
     /**
-     * Add the current {@link TraversalSideEffects} data and suppliers to the provided {@link TraversalSideEffects}.
+     * Add the current {@link TraversalSideEffects} values, suppliers, and reducers to the provided {@link TraversalSideEffects}.
+     * The implementation should (under the hood), use {@link TraversalSideEffects#registerIfAbsent(String, Supplier, BinaryOperator)} so that
+     * if the argument {@link TraversalSideEffects} already has a registered supplier or binary operator, then don't overwrite it.
      *
      * @param sideEffects the sideEffects to add this traversal's sideEffect data to.
      */

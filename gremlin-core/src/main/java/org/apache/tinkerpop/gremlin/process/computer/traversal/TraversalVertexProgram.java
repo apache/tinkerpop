@@ -163,7 +163,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(COMPLETED_BARRIERS, new HashSet<>());
         final TraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).getSideEffects();
-        sideEffects.keys().forEach(key -> memory.set(key, sideEffects.getSupplier(key).get()));
+        sideEffects.keys().forEach(key -> memory.set(key, sideEffects.get(key)));
         ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).setMemory(memory, false);
     }
 
