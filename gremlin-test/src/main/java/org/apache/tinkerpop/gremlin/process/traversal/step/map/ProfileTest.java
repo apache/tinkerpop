@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
@@ -58,15 +58,27 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(GremlinProcessRunner.class)
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
-    public abstract Traversal<Vertex, Vertex> get_g_V_out_out_profile();
+    private static final String METRICS_KEY = "metrics_key";
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profile();
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_repeatXbothX_timesX3X_profile();
 
-    public abstract Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_out_out_profileXmetrics_keyX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profileXmetrics_keyX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX();
+
+    public abstract Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profileXmetrics_keyX();
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profileXmetrics_keyX();
 
     /**
      * Many of the tests in this class are coupled to not-totally-generic vendor behavior. However, this test is intended to provide
@@ -76,18 +88,40 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_out_out_profile_simple() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profile();
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
+        printTraversalForm(traversal);
+
+        final TraversalMetrics traversalMetrics = traversal.next();
+        traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        // Every other step should be a Profile step
+        List<Step> steps = traversal.asAdmin().getSteps();
+        for (int ii = 1; ii <= 6; ii += 2) {
+            assertEquals("Every other Step should be a ProfileStep.", ProfileSideEffectStep.class, steps.get(ii).getClass());
+        }
+
+        // Validate the last Metrics only, which must be consistent across vendors.
+        Metrics metrics = traversalMetrics.getMetrics(traversalMetrics.getMetrics().size() - 1);
+        assertEquals(2, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
+        assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_out_out_profile_simpleXmetrics_keyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetrics_keyX();
         printTraversalForm(traversal);
 
         traversal.iterate();
 
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         // Every other step should be a Profile step
         List<Step> steps = traversal.asAdmin().getSteps();
         for (int ii = 1; ii < steps.size(); ii += 2) {
-            assertEquals("Every other Step should be a ProfileStep.", ProfileStep.class, steps.get(ii).getClass());
+            assertEquals("Every other Step should be a ProfileStep.", ProfileSideEffectStep.class, steps.get(ii).getClass());
         }
 
         // Validate the last Metrics only, which must be consistent across vendors.
@@ -97,15 +131,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     }
 
 
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_out_out_profile_modern() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profile();
-        printTraversalForm(traversal);
-
-        traversal.iterate();
-
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+    private void validate_g_V_out_out_profile_modern(TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -121,15 +147,26 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_out_out_profile_modern() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
+        printTraversalForm(traversal);
+        final TraversalMetrics traversalMetrics = traversal.next();
+        validate_g_V_out_out_profile_modern(traversalMetrics);
+    }
 
     @Test
-    @LoadGraphWith(GRATEFUL)
-    public void g_V_out_out_profile_grateful() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profile();
+    @LoadGraphWith(MODERN)
+    public void g_V_out_out_profile_modernXmetrics_keyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetrics_keyX();
         printTraversalForm(traversal);
-
         traversal.iterate();
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
+        validate_g_V_out_out_profile_modern(traversalMetrics);
+    }
+
+    private void validate_g_V_out_out_profile_grateful(TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -158,17 +195,27 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_out_out_profile_grateful() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
+        printTraversalForm(traversal);
+
+        final TraversalMetrics traversalMetrics = traversal.next();
+        validate_g_V_out_out_profile_grateful(traversalMetrics);
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_out_out_profile_gratefulXmetrics_keyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetrics_keyX();
         printTraversalForm(traversal);
 
         traversal.iterate();
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
+        validate_g_V_out_out_profile_grateful(traversalMetrics);
+    }
 
-        assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
-
-        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+    private void validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         // Grab the second (sideEffect{sleep}) step and check the times.
@@ -192,13 +239,27 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_repeat_both_modern_profile() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_profile();
+    public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
         printTraversalForm(traversal);
+        TraversalMetrics traversalMetrics = traversal.next();
+        assertEquals("There should be 8 steps in this traversal (counting injected profile steps).", 8, traversal.asAdmin().getSteps().size());
+        validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
+    }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX();
+        printTraversalForm(traversal);
         traversal.iterate();
+        assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
+        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
+        validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
+    }
 
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+    private void validate_g_V_repeat_both_modern_profile(TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -235,13 +296,27 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
-        final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_repeat_both_modern_profile() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_repeatXbothX_timesX3X_profile();
         printTraversalForm(traversal);
 
-        traversal.iterate();
+        final TraversalMetrics traversalMetrics = traversal.next();
+        validate_g_V_repeat_both_modern_profile(traversalMetrics);
+    }
 
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_V_repeat_both_modern_profileXmetrics_keyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_profileXmetrics_keyX();
+        printTraversalForm(traversal);
+        traversal.iterate();
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
+        validate_g_V_repeat_both_modern_profile(traversalMetrics);
+    }
+
+    private void validate_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile(Traversal traversal, TraversalMetrics traversalMetrics) {
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         assertEquals("There should be 3 top-level metrics.", 3, traversalMetrics.getMetrics().size());
@@ -259,6 +334,28 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         } else {
             assertEquals("Metrics 1 should have 3 nested metrics.", 3, metrics.getNested().size());
         }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+        printTraversalForm(traversal);
+
+        final TraversalMetrics traversalMetrics = traversal.next();
+        validate_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile(traversal, traversalMetrics);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profileXmetrics_keyX() {
+        final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profileXmetrics_keyX();
+        printTraversalForm(traversal);
+
+        traversal.iterate();
+
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
+        validate_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile(traversal, traversalMetrics);
     }
 
     /**
@@ -293,14 +390,29 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileStrategyCallback() {
-        final Traversal<Vertex, Vertex> t = get_g_V_out_out_profile();
+        final Traversal<Vertex, TraversalMetrics> t = get_g_V_out_out_profile();
+        MockStep mockStep = new MockStep(t.asAdmin());
+        t.asAdmin().addStep(3, mockStep);
+        TraversalMetrics traversalMetrics = t.next();
+        assertTrue(mockStep.callbackCalled);
+
+        if (!TraversalHelper.onGraphComputer(t.asAdmin())) {
+            assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void testProfileStrategyCallbackSideEffect() {
+        final Traversal<Vertex, Vertex> t = get_g_V_out_out_profileXmetrics_keyX();
         MockStep mockStep = new MockStep(t.asAdmin());
         t.asAdmin().addStep(3, mockStep);
         t.iterate();
         assertTrue(mockStep.callbackCalled);
 
         if (!TraversalHelper.onGraphComputer(t.asAdmin())) {
-            final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+            final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY).get();
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }
     }
@@ -308,7 +420,15 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
+        printTraversalForm(traversal);
+        traversal.iterate();
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profileXmetrics_keyX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profileXmetrics_keyX();
         printTraversalForm(traversal);
         traversal.iterate();
     }
@@ -319,17 +439,17 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public static class Traversals extends ProfileTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_out_out_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_out_out_profile() {
             return g.V().out().out().profile();
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_repeatXbothX_timesX3X_profile() {
             return g.V().repeat(both()).times(3).profile();
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
             return g.V().sideEffect(v -> {
                 try {
                     Thread.sleep(10);
@@ -346,13 +466,50 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
             return g.V().where(__.in("created").count().is(1l)).<String>values("name").profile();
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
+        public Traversal<Vertex, TraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
             return g.V().match(__.as("a").out("created").as("b"), __.as("b").in().count().is(P.eq(1))).<String>select("a", "b").by("name").profile();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_out_out_profileXmetrics_keyX() {
+            return g.V().out().out().profile(METRICS_KEY);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profileXmetrics_keyX() {
+            return g.V().repeat(both()).times(3).profile(METRICS_KEY);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX() {
+            return g.V().sideEffect(v -> {
+                try {
+                    Thread.sleep(10);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).sideEffect(v -> {
+                try {
+                    Thread.sleep(5);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).profile(METRICS_KEY);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profileXmetrics_keyX() {
+            return g.V().where(__.in("created").count().is(1l)).<String>values("name").profile(METRICS_KEY);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profileXmetrics_keyX() {
+            return g.V().match(__.as("a").out("created").as("b"), __.as("b").in().count().is(P.eq(1))).<String>select("a", "b").by("name").profile(METRICS_KEY);
         }
     }
 }

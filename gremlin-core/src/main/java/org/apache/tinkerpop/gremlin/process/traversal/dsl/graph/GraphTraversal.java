@@ -117,7 +117,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideE
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
@@ -1023,8 +1023,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new StoreStep<>(this.asAdmin(), sideEffectKey));
     }
 
-    public default GraphTraversal<S, E> profile() {
-        return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
+    public default GraphTraversal<S, E> profile(final String sideEffectKey) {
+        return this.asAdmin().addStep(new ProfileSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     /**

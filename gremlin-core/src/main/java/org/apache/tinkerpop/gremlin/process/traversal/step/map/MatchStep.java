@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -513,7 +513,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         public static Optional<String> getEndLabel(final Traversal.Admin<Object, Object> traversal) {
             final Step<?, ?> endStep = traversal.getEndStep();
-            return endStep instanceof ProfileStep ?           // TOTAL HACK
+            return endStep instanceof ProfileSideEffectStep ?           // TOTAL HACK
                     ((MatchEndStep) endStep.getPreviousStep()).getMatchKey() :
                     ((MatchEndStep) endStep).getMatchKey();
         }

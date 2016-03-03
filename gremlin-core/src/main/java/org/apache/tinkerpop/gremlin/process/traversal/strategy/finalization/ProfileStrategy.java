@@ -22,7 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileMarkerStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -40,19 +41,18 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal)) {
-            // No ProfileStep present
-            return;
+        if (TraversalHelper.hasStepOfClass(ProfileSideEffectStep.class, traversal)) {
+            prepTraversalForProfiling(traversal, TraversalHelper.getFirstStepOfAssignableClass(ProfileSideEffectStep.class, traversal).get().getSideEffectKey());
+        } else if (TraversalHelper.hasStepOfClass(ProfileMarkerStep.class, traversal)) {
+            prepTraversalForProfiling(traversal, ProfileMarkerStep.METRICS_KEY);
         }
-
-        prepTraversalForProfiling(traversal);
     }
 
     // Walk the traversal steps and inject the .profile()-steps.
-    private void prepTraversalForProfiling(Traversal.Admin<?, ?> traversal) {
-        // Remove user-specified .profile() steps
-        final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
-        for (ProfileStep step : profileSteps) {
+    private void prepTraversalForProfiling(Traversal.Admin<?, ?> traversal, String sideEffectKey) {
+        // Remove user-specified ProfileSideEffectStep steps
+        final List<ProfileSideEffectStep> profileSideEffectSteps = TraversalHelper.getStepsOfClass(ProfileSideEffectStep.class, traversal);
+        for (ProfileSideEffectStep step : profileSideEffectSteps) {
             traversal.removeStep(step);
         }
 
@@ -63,17 +63,22 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
             // Get the original step
             Step step = steps.get(ii * 2);
 
+            // Do not inject profiling after ProfileStep
+            if (step instanceof ProfileMarkerStep) {
+                break;
+            }
+
             // Create and inject ProfileStep
-            ProfileStep profileStep = new ProfileStep(traversal);
-            traversal.addStep((ii * 2) + 1, profileStep);
+            ProfileSideEffectStep profileSideEffectStep = new ProfileSideEffectStep(traversal, sideEffectKey);
+            traversal.addStep((ii * 2) + 1, profileSideEffectStep);
 
             // Handle nested traversal
             if (step instanceof TraversalParent) {
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
-                    t.addStep(new ProfileStep(t));
+                    t.addStep(new ProfileSideEffectStep(t, sideEffectKey));
                 }
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
-                    t.addStep(new ProfileStep(t));
+                    t.addStep(new ProfileSideEffectStep(t, sideEffectKey));
                 }
             }
         }

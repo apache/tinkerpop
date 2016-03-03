@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
@@ -28,13 +29,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DependantMutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -45,20 +47,35 @@ import java.util.NoSuchElementException;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics>, GraphComputing {
+public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable, MapReducer<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics>, GraphComputing {
 
+    private String sideEffectKey;
     // Stored in the Traversal sideEffects but kept here as a reference for convenience.
     private StandardTraversalMetrics traversalMetrics;
     private boolean onGraphComputer = false;
 
-    public ProfileStep(final Traversal.Admin traversal) {
+    public ProfileSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
+        this.sideEffectKey = sideEffectKey;
     }
 
+    @Override
+    protected void sideEffect(Traverser.Admin<S> traverser) {
+    }
 
     @Override
     public MapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> getMapReduce() {
-        return ProfileMapReduce.instance();
+        return new ProfileMapReduce(this);
+    }
+
+    @Override
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
+    }
+
+    @Override
+    public String getSideEffectKey() {
+        return this.sideEffectKey;
     }
 
     @Override
@@ -107,12 +124,12 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
             while (!(t.asAdmin().getParent() instanceof TraversalVertexProgramStep)) {
                 t = t.asAdmin().getParent().asStep().getTraversal();
             }
-            traversalMetrics = t.asAdmin().getSideEffects().<StandardTraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+            traversalMetrics = t.asAdmin().getSideEffects().<StandardTraversalMetrics>get(this.sideEffectKey).get();
         }
     }
 
     private void createTraversalMetricsSideEffectIfNecessary() {
-        if (this.getTraversal().getSideEffects().get(TraversalMetrics.METRICS_KEY).isPresent()) {
+        if (this.getTraversal().getSideEffects().get(this.sideEffectKey).isPresent()) {
             // Already initialized
             return;
         }
@@ -125,7 +142,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
         // The following code is executed once per top-level (non-nested) Traversal for all Profile steps. (Technically,
         // once per thread if using Computer.)
 
-        traversalMetrics = this.getTraversal().getSideEffects().getOrCreate(TraversalMetrics.METRICS_KEY, StandardTraversalMetrics::new);
+        traversalMetrics = this.getTraversal().getSideEffects().getOrCreate(this.sideEffectKey, StandardTraversalMetrics::new);
         prepTraversalForProfiling(this.getTraversal().asAdmin(), null);
     }
 
@@ -136,7 +153,12 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
         final List<Step> steps = traversal.getSteps();
         for (int ii = 0; ii + 1 < steps.size(); ii = ii + 2) {
             Step step = steps.get(ii);
-            ProfileStep profileStep = (ProfileStep) steps.get(ii + 1);
+            Step nextStep = steps.get(ii+1);
+            // Do not inject profiling after ProfileStep
+            if (!(nextStep instanceof ProfileSideEffectStep)) {
+                break;
+            }
+            ProfileSideEffectStep profileSideEffectStep = (ProfileSideEffectStep) nextStep;
 
             // Create metrics
             MutableMetrics metrics;
@@ -163,10 +185,10 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
             }
 
             // The TraversalMetrics sideEffect is shared across all the steps.
-            profileStep.traversalMetrics = this.traversalMetrics;
+            profileSideEffectStep.traversalMetrics = this.traversalMetrics;
 
             // Add root metrics to traversalMetrics
-            this.traversalMetrics.addMetrics(metrics, step.getId(), ii / 2, parentMetrics == null, profileStep.getId());
+            this.traversalMetrics.addMetrics(metrics, step.getId(), ii / 2, parentMetrics == null, profileSideEffectStep.getId());
 
             // Handle nested traversal
             if (step instanceof TraversalParent) {
@@ -180,19 +202,30 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
         }
     }
 
-    @Override
-    public void onGraphComputer() {
-        this.onGraphComputer = true;
-    }
-
     //////////////////
 
     public static final class ProfileMapReduce extends StaticMapReduce<MapReduce.NullObject, StandardTraversalMetrics, MapReduce.NullObject, StandardTraversalMetrics, StandardTraversalMetrics> {
 
-        private static ProfileMapReduce INSTANCE = new ProfileMapReduce();
+        public static final String PROFILE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.profileSideEffectStep.sideEffectKey";
+
+        private String sideEffectKey;
 
         private ProfileMapReduce() {
+        }
 
+        private ProfileMapReduce(final ProfileSideEffectStep step) {
+            this.sideEffectKey = step.getSideEffectKey();
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            super.storeState(configuration);
+            configuration.setProperty(PROFILE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
+        }
+
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
+            this.sideEffectKey = configuration.getString(PROFILE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
         }
 
         @Override
@@ -202,7 +235,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
 
         @Override
         public String getMemoryKey() {
-            return TraversalMetrics.METRICS_KEY;
+            return this.sideEffectKey;
         }
 
         @Override
@@ -223,10 +256,6 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
         @Override
         public StandardTraversalMetrics generateFinalResult(final Iterator<KeyValue<NullObject, StandardTraversalMetrics>> keyValues) {
             return StandardTraversalMetrics.merge(IteratorUtils.map(keyValues, KeyValue::getValue));
-        }
-
-        public static ProfileMapReduce instance() {
-            return INSTANCE;
         }
     }
 }
