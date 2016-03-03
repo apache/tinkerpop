@@ -131,7 +131,7 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
      * Serializes the graph into an edge list format.  Edge list is a better choices than adjacency list (which is
      * typically standard from the {@link GraphReader} and {@link GraphWriter} perspective) in this case because
      * the use case for this isn't around massive graphs.  The use case is for "small" subgraphs that are being
-     * shipped over the wire from Gremlin Server. Edge list is format is a bit easier for non-JVM languages to work
+     * shipped over the wire from Gremlin Server. Edge list format is a bit easier for non-JVM languages to work
      * with as a format and doesn't require a cache for loading (as vertex labels are not serialized in adjacency
      * list).
      */
