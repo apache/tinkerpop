@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -91,7 +92,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
         ////////////
         if (this.sideEffectKeys.size() == 1) {
             final String sideEffectKey = this.sideEffectKeys.get(0);
-            final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey).get();
+            final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey);
             final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectCapableSteps.get(sideEffectKey);
             return null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result);
         } else
@@ -99,12 +100,14 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
     }
 
     private Map<String, Object> getMapOfSideEffects() {
+        final TraversalSideEffects temp = this.getTraversal().getSideEffects();
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {
-            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> {
+            if (temp.exists(sideEffectKey)) {
+                final E result = temp.get(sideEffectKey);
                 final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectCapableSteps.get(sideEffectKey);
-                sideEffects.put(sideEffectKey, null == sideEffectCapable ? value : sideEffectCapable.generateFinalResult(value));
-            });
+                sideEffects.put(sideEffectKey, null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result));
+            }
         }
         return sideEffects;
     }

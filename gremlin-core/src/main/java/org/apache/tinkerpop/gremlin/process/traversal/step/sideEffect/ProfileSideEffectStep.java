@@ -33,12 +33,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.util.function.StandardTraversalMetricsSupplier;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
@@ -47,8 +44,6 @@ import java.util.function.Supplier;
 public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<StandardTraversalMetrics, StandardTraversalMetrics>, GraphComputing {
 
     private String sideEffectKey;
-    // Stored in the Traversal sideEffects but kept here as a reference for convenience.
-    //private StandardTraversalMetrics traversalMetrics;
     private boolean onGraphComputer = false;
 
     public ProfileSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
@@ -73,7 +68,7 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
     }
 
     private StandardTraversalMetrics getMetrics() {
-        return this.getTraversal().getSideEffects().<StandardTraversalMetrics>get(this.sideEffectKey).get();
+        return this.getTraversal().getSideEffects().<StandardTraversalMetrics>get(this.sideEffectKey);
     }
 
     @Override

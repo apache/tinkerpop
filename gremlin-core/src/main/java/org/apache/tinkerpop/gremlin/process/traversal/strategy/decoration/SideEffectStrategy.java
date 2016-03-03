@@ -47,8 +47,8 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
         if (traversal.getParent() instanceof EmptyStep)
             this.sideEffects.forEach(triplet -> traversal.getSideEffects().register(
                     triplet.getValue0(),
-                    null == triplet.getValue1() ? traversal.getSideEffects().getSupplier(triplet.getValue0()) : triplet.getValue1(),
-                    null == triplet.getValue2() ? traversal.getSideEffects().getReducer(triplet.getValue0()) : triplet.getValue2()));
+                    null == triplet.getValue1() ? traversal.getSideEffects().exists(triplet.getValue0()) ? traversal.getSideEffects().getSupplier(triplet.getValue0()) : triplet.getValue1() : triplet.getValue1(),
+                    null == triplet.getValue2() ? traversal.getSideEffects().exists(triplet.getValue0()) ? traversal.getSideEffects().getReducer(triplet.getValue0()) : triplet.getValue2() : triplet.getValue2()));
     }
 
     public static <A> void addSideEffect(final TraversalStrategies traversalStrategies, final String key, final A value, final BinaryOperator<A> reducer) {

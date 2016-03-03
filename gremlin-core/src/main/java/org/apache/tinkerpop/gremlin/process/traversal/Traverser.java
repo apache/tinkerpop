@@ -102,8 +102,8 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      * @param <A>           the type of the returned object
      * @return the object in the sideEffects of the respective key
      */
-    public default <A> A sideEffects(final String sideEffectKey) {
-        return this.asAdmin().getSideEffects().<A>get(sideEffectKey).get();
+    public default <A> A sideEffects(final String sideEffectKey) throws IllegalArgumentException {
+        return this.asAdmin().getSideEffects().<A>get(sideEffectKey);
     }
 
     /**
@@ -112,7 +112,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      * @param sideEffectKey   the key of the value to set int the sideEffects
      * @param sideEffectValue the value to set for the sideEffect key
      */
-    public default void sideEffects(final String sideEffectKey, final Object sideEffectValue) {
+    public default void sideEffects(final String sideEffectKey, final Object sideEffectValue) throws IllegalArgumentException {
         this.asAdmin().getSideEffects().set(sideEffectKey, sideEffectValue);
     }
 

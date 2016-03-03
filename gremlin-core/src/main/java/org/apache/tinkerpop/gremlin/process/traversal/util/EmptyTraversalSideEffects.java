@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -40,18 +39,18 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public void set(final String key, final Object value) {
-
+    public void set(final String key, final Object value) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
-    public <V> Optional<V> get(final String key) throws IllegalArgumentException {
-        return Optional.empty();
+    public <V> V get(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
-    public void remove(final String key) {
-
+    public void remove(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
@@ -60,8 +59,8 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public void add(final String key, final Object value) {
-
+    public void add(final String key, final Object value) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
@@ -70,19 +69,21 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <V> void registerIfAbsent(String key, Supplier<V> initialValue, BinaryOperator<V> reducer) {
+    public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
 
     }
 
     @Override
-    public <V> BinaryOperator<V> getReducer(String key) {
-        return null;
+    public <V> BinaryOperator<V> getReducer(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
+
     @Override
-    public <V> Supplier<V> getSupplier(String key) {
-        return null;
+    public <V> Supplier<V> getSupplier(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
+
 
     @Override
     public void registerSupplier(final String key, final Supplier supplier) {

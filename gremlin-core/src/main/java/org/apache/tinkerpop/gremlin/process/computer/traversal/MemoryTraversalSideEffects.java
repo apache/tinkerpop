@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
 import java.util.Set;
@@ -64,9 +63,9 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <V> Optional<V> get(final String key) throws IllegalArgumentException {
-        if (this.memory.exists(key))
-            return Optional.of(this.memory.get(key));
+    public <V> V get(final String key) throws IllegalArgumentException {
+        if (this.memory.exists(key) && this.sideEffects.keys().contains(key))
+            return this.memory.get(key);
         else
             return this.sideEffects.get(key);
     }
@@ -95,32 +94,34 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <V> void registerIfAbsent(String key, Supplier<V> initialValue, BinaryOperator<V> reducer) {
+    public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
         this.sideEffects.registerIfAbsent(key, initialValue, reducer);
     }
 
     @Override
-    public <V> BinaryOperator<V> getReducer(String key) {
+    public <V> BinaryOperator<V> getReducer(final String key) {
         return this.sideEffects.getReducer(key);
     }
 
     @Override
-    public <V> Supplier<V> getSupplier(String key) {
+    public <V> Supplier<V> getSupplier(final String key) {
         return this.sideEffects.getSupplier(key);
     }
 
     @Override
-    public void registerSupplier(String key, Supplier supplier) {
+    @Deprecated
+    public void registerSupplier(final String key, final Supplier supplier) {
         this.sideEffects.registerSupplier(key, supplier);
     }
 
     @Override
-    public <V> Optional<Supplier<V>> getRegisteredSupplier(String key) {
+    @Deprecated
+    public <V> Optional<Supplier<V>> getRegisteredSupplier(final String key) {
         return this.sideEffects.getRegisteredSupplier(key);
     }
 
     @Override
-    public <S> void setSack(Supplier<S> initialValue, UnaryOperator<S> splitOperator, BinaryOperator<S> mergeOperator) {
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
         this.sideEffects.setSack(initialValue, splitOperator, mergeOperator);
     }
 
@@ -151,7 +152,7 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public void mergeInto(TraversalSideEffects sideEffects) {
+    public void mergeInto(final TraversalSideEffects sideEffects) {
         this.sideEffects.mergeInto(sideEffects);
     }
 }
