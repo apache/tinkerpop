@@ -85,7 +85,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(TimeoutException.class, root.getClass());
-            assertEquals("Timed out waiting for an available host.", root.getMessage());
+            assertThat(root.getMessage(), startsWith("Timed out while waiting for an available host"));
         } finally {
             cluster.close();
         }

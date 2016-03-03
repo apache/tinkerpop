@@ -517,8 +517,8 @@ CompletableFuture<List<Result>> results = client.submit("[1,2,3,4]").all();  <3>
 
 CompletableFuture<ResultSet> future = client.submitAsync("[1,2,3,4]"); <4>
 
-Map<String,Object> params = new HashMap<>()
-params.put("x",4)
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
 client.submit("[1,2,3,x]", params); <5>
 ----
 
@@ -1162,6 +1162,16 @@ all scripts that are passed to it.  The cache is keyed based on the a hash of th
 where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests
 on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
 
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
+client.submit("[1,2,3,x]", params);
+----
+
 Cache Management
 ^^^^^^^^^^^^^^^^
 
@@ -1277,6 +1287,67 @@ The aliases are then used to determine which graphs will have their transactions
 Gremlin Server in this configuration should be more efficient when there are multiple graphs being hosted as
 Gremlin Server will only close transactions on the graphs specified by the `aliases`. Keeping this setting `false`,
 will simply have Gremlin Server close transactions on all graphs for every request.
+
+[[considering-state]]
+Considering State
+^^^^^^^^^^^^^^^^^
+
+With REST and any sessionless requests, there is no variable state maintained between requests.  Therefore,
+when <<connecting-via-console,connecting with the console>>, for example, it is not possible to create a variable in
+one command and then expect to access it in the next:
+
+[source,groovy]
+----
+gremlin> :remote connect tinkerpop.server conf/remote.yaml
+==>Connected - localhost/127.0.0.1:8182
+gremlin> :> x = 2
+==>2
+gremlin> :> 2 + x
+No such property: x for class: Script4
+Display stack trace? [yN] n
+----
+
+The same behavior would be seen with REST or when using sessionless requests through one of the Gremlin Server drivers.
+If having this behavior is desireable, then <<considering-sessions,consider sessions>>.
+
+There is an exception to this notion of state not existing between requests and that is globally defined functions.
+All functions created via scripts are global to the server.
+
+[source,groovy]
+----
+gremlin> :> def subtractIt(int x, int y) { x - y }
+==>null
+gremlin> :> subtractIt(8,7)
+==>1
+----
+
+If this behavior is not desirable there are several options.  A first option would be to consider using sessions. Each
+session gets its own `ScriptEngine`, which maintains its own isolated cache of global functions, whereas sessionless
+requests uses a single function cache. A second option would be to define functions as closures:
+
+[source,groovy]
+----
+gremlin> :> multiplyIt = { int x, int y -> x * y }
+==>Script7$_run_closure1@6b24f3ab
+gremlin> :> multiplyIt(7, 8)
+No signature of method: org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine.multiplyIt() is applicable for argument types: (java.lang.Integer, java.lang.Integer) values: [7, 8]
+Display stack trace? [yN]
+----
+
+When the function is declared this way, the function is viewed by the `ScriptEngine` as a variable rather than a global
+function and since sessionless requests don't maintain state, the function is forgotten for the next request. A final
+option would be to manage the `ScriptEngine` cache manually:
+
+[source,bourne]
+----
+$ curl -X POST -d "{\"gremlin\":\"def divideIt(int x, int y){ x / y }\",\"bindings\":{\"#jsr223.groovy.engine.keep.globals\":\"phantom\"}}" "http://localhost:8182"
+{"requestId":"97fe1467-a943-45ea-8fd6-9e889a6c9381","status":{"message":"","code":200,"attributes":{}},"result":{"data":[null],"meta":{}}}
+$ curl -X POST -d "{\"gremlin\":\"divideIt(8, 2)\"}" "http://localhost:8182"
+{"message":"Error encountered evaluating script: divideIt(8, 2)"}
+----
+
+In the above REST-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
+immediately forget the script after execution. In this way, the function does not end up being globally available.
 
 [[gremlin-plugins]]
 Gremlin Plugins

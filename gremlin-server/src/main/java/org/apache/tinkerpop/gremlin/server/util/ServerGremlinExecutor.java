@@ -70,7 +70,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
     public ServerGremlinExecutor(final Settings settings, final Class<T> scheduleExecutorServiceClass) {
         this(settings, null, null, scheduleExecutorServiceClass);
     }
-
+    public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
+                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass) {
+        this(settings,
+             gremlinExecutorService,
+             scheduledExecutorService,
+             scheduleExecutorServiceClass,
+             new GraphManager(settings));
+    }
     /**
      * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
      * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
@@ -78,7 +85,8 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
      * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size.
      */
     public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
-                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass) {
+                                 final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass,
+                                 final GraphManager graphManager) {
         this.settings = settings;
 
         if (null == gremlinExecutorService) {
@@ -97,17 +105,17 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         }
 
         // initialize graphs from configuration
-        graphManager = new GraphManager(settings);
+        this.graphManager = graphManager;
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
-                .afterFailure((b, e) -> graphManager.rollbackAll())
-                .beforeEval(b -> graphManager.rollbackAll())
-                .afterTimeout(b -> graphManager.rollbackAll())
+                .afterFailure((b, e) -> this.graphManager.rollbackAll())
+                .beforeEval(b -> this.graphManager.rollbackAll())
+                .afterTimeout(b -> this.graphManager.rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
-                .globalBindings(graphManager.getAsBindings())
+                .globalBindings(this.graphManager.getAsBindings())
                 .executorService(this.gremlinExecutorService)
                 .scheduledExecutorService(this.scheduledExecutorService);
 
@@ -126,14 +134,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         // re-apply those references back
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
-                .forEach(kv -> graphManager.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
+                .forEach(kv -> this.graphManager.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof TraversalSource)
                 .forEach(kv -> {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    graphManager.getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
+                    this.graphManager.getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
                 });
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
