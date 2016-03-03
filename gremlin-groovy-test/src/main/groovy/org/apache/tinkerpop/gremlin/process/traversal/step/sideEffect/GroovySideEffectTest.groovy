@@ -56,6 +56,18 @@ public abstract class GroovySideEffectTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a'){[:] as LinkedHashMap}.V.out.groupCount('a').by(label).out.out.cap('a')");
         }
 
-
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_withSideEffectsXa__linkedhashmapX_withSideEffectXb__arraylist__addAllX_withSideEffectXc__arrayList__addAllX_V_groupXaX_byXlabelX_byXcountX_sideEffectXb__1_2_3X_out_out_out_sideEffectXc__bob_danielX_capXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+                   g.withSideEffect('a'){[:] as LinkedHashMap}
+                    .withSideEffect('b',{[:] as ArrayList},addAll)
+                    .withSideEffect('c',{[:] as ArrayList},addAll)
+                    .V.group('a').by(label).by(count())
+                    .sideEffect{it.sideEffects('b', [1,2,3] as LinkedList)}
+                    .out.out.out
+                    .sideEffect{it.sideEffect('c',['bob','daniel'] as LinkedList)}
+                    .cap('a');
+                """);
+        }
     }
 }

@@ -94,7 +94,9 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
             final String sideEffectKey = this.sideEffectKeys.get(0);
             final E result = this.getTraversal().getSideEffects().<E>get(sideEffectKey);
             final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectCapableSteps.get(sideEffectKey);
-            return null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result);
+            final E finalResult = null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result);
+            this.getTraversal().getSideEffects().set(sideEffectKey, finalResult);
+            return finalResult;
         } else
             return (E) this.getMapOfSideEffects();
     }
@@ -106,7 +108,9 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
             if (temp.exists(sideEffectKey)) {
                 final E result = temp.get(sideEffectKey);
                 final SideEffectCapable<Object, E> sideEffectCapable = this.sideEffectCapableSteps.get(sideEffectKey);
-                sideEffects.put(sideEffectKey, null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result));
+                final E finalResult = null == sideEffectCapable ? result : sideEffectCapable.generateFinalResult(result);
+                temp.set(sideEffectKey, finalResult);
+                sideEffects.put(sideEffectKey, finalResult);
             }
         }
         return sideEffects;

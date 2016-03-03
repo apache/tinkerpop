@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -70,7 +69,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             this.valueTraversal = this.integrateChild(splitTraversal.get(0));
             this.reduceTraversal = this.integrateChild(splitTraversal.get(1));
             this.state = 'x';
-            this.getTraversal().getSideEffects().register(this.sideEffectKey, this.getTraversal().getSideEffects().getRegisteredSupplier(this.sideEffectKey).get(), (BinaryOperator) new GroupStep.GroupBiOperator<>(this.valueReduceTraversal));
+            this.getTraversal().getSideEffects().register(this.sideEffectKey, null, new GroupStep.GroupBiOperator<>(this.valueReduceTraversal));
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
         }
@@ -99,7 +98,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     @Override
     public void onGraphComputer() {
         this.onGraphComputer = true;
-        this.getTraversal().getSideEffects().register(this.sideEffectKey, this.getTraversal().getSideEffects().getRegisteredSupplier(this.sideEffectKey).get(), (BinaryOperator) GroupStep.GroupBiOperator.computerInstance());
+        this.getTraversal().getSideEffects().register(this.sideEffectKey, null, GroupStep.GroupBiOperator.computerInstance());
     }
 
     @Override

@@ -37,6 +37,7 @@ import java.util.function.UnaryOperator;
  */
 public class DefaultTraversalSideEffects implements TraversalSideEffects {
 
+    protected Set<String> keys = new HashSet<>();
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
     protected Map<String, BinaryOperator> reducerMap = new HashMap<>();
@@ -53,7 +54,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public boolean exists(final String key) {
-        return this.supplierMap.containsKey(key);
+        return this.keys.contains(key);
     }
 
     /**
@@ -76,8 +77,8 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public void set(final String key, final Object value) throws IllegalArgumentException {
-        SideEffectHelper.validateSideEffect(key, value);
-        if (!this.supplierMap.containsKey(key))
+        SideEffectHelper.validateSideEffectValue(value);
+        if (!this.keys.contains(key))
             throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
         this.objectMap.put(key, value);
     }
@@ -87,6 +88,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public void add(final String key, final Object value) throws IllegalArgumentException {
+        SideEffectHelper.validateSideEffectValue(value);
         this.set(key, this.getReducer(key).apply(this.get(key), value));
     }
 
@@ -95,9 +97,13 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public <V> void register(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
-        SideEffectHelper.validateSideEffect(key, initialValue);
-        this.supplierMap.put(key, initialValue);
-        this.reducerMap.put(key, reducer);
+        SideEffectHelper.validateSideEffectKey(key);
+        this.keys.add(key);
+        this.objectMap.remove(key);
+        if (null != initialValue)
+            this.supplierMap.put(key, initialValue);
+        if (null != reducer)
+            this.reducerMap.put(key, reducer);
     }
 
     /**
@@ -105,10 +111,13 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
-        if (null == this.supplierMap.get(key)) {
+        SideEffectHelper.validateSideEffectKey(key);
+        this.keys.add(key);
+        this.objectMap.remove(key);
+        if (null == this.supplierMap.get(key) && null != initialValue) {
             this.supplierMap.put(key, initialValue);
         }
-        if (null == this.reducerMap.get(key)) {
+        if (null == this.reducerMap.get(key) && null != reducer) {
             this.reducerMap.put(key, reducer);
         }
     }
@@ -205,6 +214,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     public DefaultTraversalSideEffects clone() {
         try {
             final DefaultTraversalSideEffects sideEffects = (DefaultTraversalSideEffects) super.clone();
+            sideEffects.keys = new HashSet<>(this.keys);
             sideEffects.objectMap = new HashMap<>(this.objectMap);
             sideEffects.supplierMap = new HashMap<>(this.supplierMap);
             sideEffects.reducerMap = new HashMap<>(this.reducerMap);
@@ -222,7 +232,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     @Deprecated
     @Override
     public void registerSupplier(final String key, final Supplier supplier) {
-        this.register(key, supplier, Operator.assign);
+        this.register(key, supplier, null);
 
     }
 
@@ -232,9 +242,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     @Deprecated
     @Override
     public void registerSupplierIfAbsent(final String key, final Supplier supplier) {
-        if (!this.supplierMap.containsKey(key)) {
-            this.register(key, supplier, Operator.assign);
-        }
+        this.registerIfAbsent(key, supplier, null);
     }
 
     /**
@@ -252,15 +260,13 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     @Override
     @Deprecated
     public <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-        final Optional<V> optional = this.get(key);
-        if (optional.isPresent())
-            return optional.get();
-        else {
-            final V value = orCreate.get();
-            this.objectMap.put(key, value);
+        final V value = this.exists(key) ? this.get(key) : null;
+        if (null != value)
             return value;
+        else {
+            final V newValue = orCreate.get();
+            this.objectMap.put(key, newValue);
+            return newValue;
         }
     }
-
-
 }

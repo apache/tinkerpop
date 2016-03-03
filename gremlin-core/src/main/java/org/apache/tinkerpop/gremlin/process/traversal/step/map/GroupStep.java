@@ -246,15 +246,16 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> reduceTraversal) {
-        final Map<K, V> reducedMap = new HashMap<>();
+        final Map<K, Object> tempMap = new HashMap<>(map);
+        map.clear();
         if (null != reduceTraversal) {
-            for (final K key : map.keySet()) {
+            for (final K key : tempMap.keySet()) {
                 final Traversal.Admin<?, V> reduceClone = reduceTraversal.clone();
-                reduceClone.addStarts(((TraverserSet) map.get(key)).iterator());
-                reducedMap.put(key, reduceClone.next());
+                reduceClone.addStarts(((TraverserSet) tempMap.get(key)).iterator());
+                map.put(key, reduceClone.next());
             }
         } else
-            map.forEach((key, traversal) -> reducedMap.put(key, ((Traversal.Admin<?, V>) traversal).next()));
-        return reducedMap;
+            tempMap.forEach((key, traversal) -> map.put(key, ((Traversal.Admin<?, V>) traversal).next()));
+        return (Map<K, V>) map;
     }
 }

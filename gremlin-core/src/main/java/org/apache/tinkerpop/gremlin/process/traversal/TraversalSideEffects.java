@@ -84,6 +84,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
 
     /**
      * Register a side-effect with the {@link TraversalSideEffects} providing a {@link Supplier} and a {@link BinaryOperator}.
+     * If a null value is provided for the supplier or reducer, then it no supplier or reducer is registered.
      *
      * @param key          the key of the side-effect value
      * @param initialValue the initial value supplier
@@ -95,6 +96,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     /**
      * Register a side-effect with the {@link TraversalSideEffects} providing a {@link Supplier} and a {@link BinaryOperator}.
      * The registration will only overwrite a supplier or reducer if no supplier or reducer existed prior.
+     * If a null value is provided for the supplier or reducer, then it no supplier or reducer is registered.
      *
      * @param key          the key of the side-effect value
      * @param initialValue the initial value supplier
@@ -267,9 +269,9 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
      */
     @Deprecated
     public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-        final Optional<V> optional = this.get(key);
-        if (optional.isPresent())
-            return optional.get();
+        final V value = this.exists(key) ? this.get(key) : null;
+        if (null != value)
+            return value;
         final Optional<Supplier<V>> with = this.getRegisteredSupplier(key);
         if (with.isPresent()) {
             final V v = with.get().get();
