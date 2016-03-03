@@ -160,7 +160,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyGroupTestV3d0.Traversals.class,
             GroovyGroupCountTest.Traversals.class,
             GroovyInjectTest.Traversals.class,
-            GroovyProfileTest.Traversals.class,
+            // GroovyProfileTest.Traversals.class,
             GroovySackTest.Traversals.class,
             GroovySideEffectCapTest.Traversals.class,
             GroovySideEffectTest.Traversals.class,

@@ -421,13 +421,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         public Builder traversal(Traversal.Admin<?, ?> traversal) {
             // this is necessary if the job was submitted via TraversalVertexProgram.build() instead of TraversalVertexProgramStep.
             if (!(traversal.getParent() instanceof TraversalVertexProgramStep)) {
+                final MemoryTraversalSideEffects memoryTraversalSideEffects = new MemoryTraversalSideEffects(traversal.getSideEffects());
                 final Traversal.Admin<?, ?> parentTraversal = new DefaultTraversal<>();
                 traversal.getGraph().ifPresent(parentTraversal::setGraph);
                 parentTraversal.setStrategies(traversal.getStrategies());
                 parentTraversal.getStrategies().addStrategies(ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Graph::compute));
-                parentTraversal.setSideEffects(new MemoryTraversalSideEffects(traversal.getSideEffects()));
+                parentTraversal.setSideEffects(memoryTraversalSideEffects);
                 parentTraversal.addStep(new TraversalVertexProgramStep(parentTraversal, traversal));
                 traversal = ((TraversalVertexProgramStep) parentTraversal.getStartStep()).getGlobalChildren().get(0);
+                traversal.setSideEffects(memoryTraversalSideEffects);
             }
             PureTraversal.storeState(this.configuration, TRAVERSAL, traversal);
             return this;
