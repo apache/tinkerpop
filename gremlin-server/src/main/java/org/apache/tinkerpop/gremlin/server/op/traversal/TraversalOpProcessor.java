@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.traversal;
 
+import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -25,10 +26,12 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 /**
@@ -125,9 +129,41 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }
 
         try {
+            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+            final GraphManager graphManager = context.getGraphManager();
             final String graphName = aliases.entrySet().iterator().next().getValue();
-            traversal.asAdmin().setGraph(context.getGraphManager().getGraphs().get(graphName));
-            handleIterator(context, traversal);
+            final Graph graph = graphManager.getGraphs().get(graphName);
+            final boolean supportsTransactions = graph.features().graph().supportsTransactions();
+
+            traversal.asAdmin().setGraph(graph);
+
+            context.getGremlinExecutor().getExecutorService().submit(() -> {
+                try {
+                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+
+                    try {
+                        handleIterator(context, traversal);
+                    } catch (TimeoutException ex) {
+                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
+                        logger.warn(errorMessage);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        return;
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        return;
+                    }
+
+                    if (graph.features().graph().supportsTransactions()) graph.tx().commit();
+                } catch (Exception ex) {
+                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                    if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+                }
+            });
+
         } catch (Exception ex) {
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
