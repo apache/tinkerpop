@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +33,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -75,10 +80,26 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         }
     }
 
+    public static void checkSideEffects(final TraversalSideEffects sideEffects, final Object... keysClasses) {
+        int counter = 0;
+        for (int i = 0; i < keysClasses.length; i = i + 2) {
+            counter++;
+            final String key = (String) keysClasses[i];
+            final Class clazz = (Class) keysClasses[i + 1];
+            assertTrue(sideEffects.keys().contains(key));
+            assertTrue(sideEffects.exists(key));
+            assertEquals(clazz, sideEffects.get((String) keysClasses[i]).getClass());
+            assertFalse(sideEffects.exists(UUID.randomUUID().toString()));
+        }
+        assertEquals(sideEffects.keys().size(), counter);
+        assertFalse(sideEffects.keys().contains(UUID.randomUUID().toString()));
+        assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
+    }
+
     public static <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
         final List<T> results = traversal.toList();
         assertFalse(traversal.hasNext());
-        if(expectedResults.size() != results.size()) {
+        if (expectedResults.size() != results.size()) {
             logger.error("Expected results: " + expectedResults);
             logger.error("Actual results:   " + results);
             assertEquals("Checking result size", expectedResults.size(), results.size());

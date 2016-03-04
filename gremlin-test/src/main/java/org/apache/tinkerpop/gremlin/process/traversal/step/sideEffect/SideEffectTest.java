@@ -77,6 +77,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
         assertEquals(convertToVertexId("marko"), traversal.asAdmin().getSideEffects().<List<Vertex>>get("a").get(0).id());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", ArrayList.class);
     }
 
     @Test
@@ -87,6 +88,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
         assertEquals(new Integer(3), traversal.asAdmin().getSideEffects().<List<Integer>>get("c").get(0));
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "c", ArrayList.class);
     }
 
     private void assert_g_v1_out_sideEffectXincr_cX_valueXnameX(final Iterator<String> traversal) {
@@ -128,6 +130,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertTrue(sideEffects.keys().contains("a"));
         assertTrue(sideEffects.exists("a"));
         assertTrue(sideEffects.get("a") instanceof LinkedHashMap);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", LinkedHashMap.class);
     }
 
     @Test
@@ -163,6 +166,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertTrue(sideEffects.exists("c"));
         assertTrue(sideEffects.get("c") instanceof ArrayList);
         assertEquals(0, sideEffects.<List>get("c").size());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", LinkedHashMap.class, "b", ArrayList.class, "c", ArrayList.class);
     }
 
     @Test
@@ -173,6 +177,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
         assertEquals(6, traversal.asAdmin().getSideEffects().<Integer>get("a").intValue());
         assertEquals(1, traversal.asAdmin().getSideEffects().keys().size());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", Integer.class);
     }
 
     @Test
@@ -183,6 +188,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
         assertEquals(1, traversal.asAdmin().getSideEffects().<Integer>get("a").intValue());
         assertEquals(1, traversal.asAdmin().getSideEffects().keys().size());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", Integer.class);
     }
 
     public static class Traversals extends SideEffectTest {

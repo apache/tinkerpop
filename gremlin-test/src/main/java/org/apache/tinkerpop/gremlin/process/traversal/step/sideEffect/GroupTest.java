@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -83,6 +82,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal = get_g_V_group_byXnameX();
         printTraversalForm(traversal);
         assertCommonA(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
 
@@ -92,6 +92,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal = get_g_V_group_byXnameX_by();
         printTraversalForm(traversal);
         assertCommonA(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -100,6 +101,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal = get_g_V_groupXaX_byXnameX_capXaX();
         printTraversalForm(traversal);
         assertCommonA(traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     private void assertCommonA(Traversal<Vertex, Map<String, Collection<Vertex>>> traversal) {
@@ -124,6 +126,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(2, map.get("java").size());
         assertTrue(map.get("java").contains("ripple"));
         assertTrue(map.get("java").contains("lop"));
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     @Test
@@ -136,6 +139,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(map.containsKey("java"));
         assertEquals(Long.valueOf(2), map.get("java"));
         assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -154,6 +158,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(Long.valueOf(4), map.get("lop"));
         assertTrue(map.containsKey("ripple"));
         assertEquals(Long.valueOf(2), map.get("ripple"));
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     @Test
@@ -179,6 +184,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(map.get(1l).contains("peter"));
         assertTrue(map.get(2l).contains("josh"));
         assertTrue(map.get(3l).contains("marko"));
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -192,6 +198,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(2, map.size());
         assertEquals(0, map.get("software"));
         assertEquals(3.5d, (double) map.get("person"), 0.01d);
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     @Test
@@ -205,6 +212,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             put("cover", 368579l);
         }}, traversal.next());
         assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -218,6 +226,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             put("cover", 368579l);
         }}, traversal.next());
         assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     @Test
@@ -234,6 +243,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             put("j", 1l);
         }}, traversal.next());
         assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
     @Test
@@ -250,6 +260,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             put("j", 1l);
         }}, traversal.next());
         assertFalse(traversal.hasNext());
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
     }
 
     @Test
@@ -258,6 +269,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("ripple", "lop"), traversal);
+        checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
 

@@ -32,17 +32,18 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
-TraversalSideEffect Update
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+TraversalSideEffects Update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There were changes to `TraversalSideEffect` both at the semantic level and at the API level. Users that have traversals
 of the form `sideEffect{...}` that leverage global side-effects should read the following carefully. If the user's traversals do
 not use lambda-based side-effect steps (e.g. `groupCount("m")`), then the changes below will not effect them. Moreover, if user's
-traversal only uses `sideEffect{...}` with closure (non-`TraversalSideEffect`) data references, then changes below will not effect them.
-Finally, providers should not be effected by the changes save any tests cases.
+traversal only uses `sideEffect{...}` with closure (non-`TraversalSideEffect`) data references, then the changes below will not effect them.
+If the user's traversal uses sideEffects in OLTP only, the changes below will not effect them. Finally, providers should not be
+effected by the changes save any tests cases.
 
-TraversalSideEffect Get API Change
-++++++++++++++++++++++++++++++++++
+TraversalSideEffects Get API Change
++++++++++++++++++++++++++++++++++++
 
 `TraversalSideEffects` can now logically operate within a distributed OLAP environment. In order to make this possible,
 it is necessary that each side-effect be registered with a reducing `BinaryOperator`. This binary operator will combine
@@ -59,8 +60,8 @@ traversal.getSideEffects().get("m").get()
 traversal.getSideEffects().get("m")
 ```
 
-TraversalSideEffect Registration Requirement
-++++++++++++++++++++++++++++++++++++++++++++
+TraversalSideEffects Registration Requirement
++++++++++++++++++++++++++++++++++++++++++++++
 
 All `TraversalSideEffects` must be registered upfront. This is because, in OLAP, side-effects map to `Memory` compute keys
 and as such, must be declared prior to the execution of the `TraversalVertexProgram`. If a user's traversal creates a
@@ -68,8 +69,8 @@ side-effect mid-traversal, it will fail. The traversal must use `GraphTraversalS
 the side-effects it will use during its execution lifetime. If the user's traversals use standard side-effect Gremlin
 steps (e.g. `group("m")`), then no changes are required.
 
-TraversalSideEffect Add Requirement
-+++++++++++++++++++++++++++++++++++
+TraversalSideEffects Add Requirement
+++++++++++++++++++++++++++++++++++++
 
 In a distributed environment, a side-effect can not be mutated and be expected to exist in the mutated form at the final,
 aggregated, master traversal. For instance, if the side-effect "myCount" references a `Long`, the `Long` can not be updated
@@ -88,6 +89,15 @@ gremlin> traversal = g.withSideEffect('a',0,sum).V().out().sideEffect{it.sideEff
 ==>v[3]
 gremlin> traversal.getSideEffects().get('a')
 ==>6
+gremlin> traversal = g.withSideEffect('a',0).V().out().sideEffect{it.sideEffects('a',1)}
+==>v[3]
+==>v[2]
+==>v[4]
+==>v[5]
+==>v[3]
+==>v[3]
+gremlin> traversal.getSideEffects().get('a')
+==>1
 ```
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
