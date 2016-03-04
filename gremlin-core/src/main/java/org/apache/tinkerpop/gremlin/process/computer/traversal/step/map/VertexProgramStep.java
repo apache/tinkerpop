@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -77,6 +78,8 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
 
 
     private void processMemorySideEffects(final Memory memory) {
+        // unfortunately there is no easy way to test this in a test case
+        assert this.getNextStep() instanceof ComputerResultStep == memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
         final TraversalSideEffects sideEffects = this.getTraversal().getSideEffects();
         for (final String key : memory.keys()) {
             if (sideEffects.exists(key)) {
