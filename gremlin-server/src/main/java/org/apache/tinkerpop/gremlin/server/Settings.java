@@ -102,13 +102,13 @@ public class Settings {
     /**
      * Time in milliseconds to wait for a script to complete execution.  Defaults to 30000.
      */
-    public long scriptEvaluationTimeout = 30000l;
+    public long scriptEvaluationTimeout = 30000L;
 
     /**
      * Time in milliseconds to wait while an evaluated script serializes its results. This value represents the
      * total serialization time for the request.  Defaults to 30000.
      */
-    public long serializedResponseTimeout = 30000l;
+    public long serializedResponseTimeout = 30000L;
 
     /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire

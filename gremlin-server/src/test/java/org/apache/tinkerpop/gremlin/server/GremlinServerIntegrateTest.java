@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringEndsWith.endsWith;
@@ -267,17 +268,16 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @org.junit.Ignore("This test hangs - not sure why")
     public void shouldEnableSslButFailIfClientConnectsWithoutIt() {
-        // todo: need to get this to pass somehow - should just error out.
         final Cluster cluster = Cluster.build().enableSsl(false).create();
         final Client client = cluster.connect();
 
         try {
-            // this should return "nothing" - there should be no exception
-            assertEquals("test", client.submit("'test'").one().getString());
+            client.submit("'test'").one();
+            fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
-            x.printStackTrace();
+            final Throwable root = ExceptionUtils.getRootCause(x);
+            assertThat(root, instanceOf(TimeoutException.class));
         } finally {
             cluster.close();
         }
