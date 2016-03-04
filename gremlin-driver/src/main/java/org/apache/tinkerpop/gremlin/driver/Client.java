@@ -128,7 +128,22 @@ public abstract class Client {
     /**
      * Submit a {@link Traversal} to the server for remote execution.
      */
-    public abstract ResultSet submit(final Traversal traversal);
+    public ResultSet submit(final Traversal traversal) {
+        try {
+            return submitAsync(traversal).get();
+        } catch (UnsupportedOperationException uoe) {
+            throw uoe;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * An asynchronous version of {@link #submit(Traversal)}.
+     */
+    public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+    }
 
     /**
      * Initializes the client which typically means that a connection is established to the server.  Depending on the
@@ -302,11 +317,6 @@ public abstract class Client {
             super(cluster);
         }
 
-        @Override
-        public ResultSet submit(final Traversal traversal) {
-            throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
-        }
-
         /**
          * Submits a Gremlin script to the server and returns a {@link ResultSet} once the write of the request is
          * complete.
@@ -422,7 +432,7 @@ public abstract class Client {
         }
 
         @Override
-        public ResultSet submit(final Traversal traversal) {
+        public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
             final byte[] serializedTraversal;
             try {
                 serializedTraversal = Serializer.serializeObject(traversal);
@@ -432,7 +442,7 @@ public abstract class Client {
 
             try {
                 return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_TRAVERSE)
-                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal))).get();
+                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal)));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -520,11 +530,6 @@ public abstract class Client {
 
         String getSessionId() {
             return sessionId;
-        }
-
-        @Override
-        public ResultSet submit(final Traversal traversal) {
-            throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
         }
 
         /**

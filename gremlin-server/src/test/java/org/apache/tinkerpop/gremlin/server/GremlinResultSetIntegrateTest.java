@@ -91,8 +91,8 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldHandleVertexResultFromTraversal() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        final Client alised = client.alias("graph");
-        final ResultSet results = alised.submit(g.V(1));
+        final Client aliased = client.alias("graph");
+        final ResultSet results = aliased.submit(g.V(1));
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
 
