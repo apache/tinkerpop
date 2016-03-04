@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 
 import java.io.Serializable;
 import java.util.*;
@@ -53,6 +54,10 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     public void stop(final String metricsId) {
         dirty = true;
         allMetrics.get(metricsId).stop();
+    }
+
+    public boolean wasInitialized() {
+        return !this.allMetrics.isEmpty();
     }
 
     public void finish(final String metricsId, final long bulk) {

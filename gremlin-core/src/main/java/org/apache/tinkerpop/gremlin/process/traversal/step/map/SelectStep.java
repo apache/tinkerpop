@@ -89,8 +89,13 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     public SelectStep<S, E> clone() {
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
-        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
     }
 
     @Override

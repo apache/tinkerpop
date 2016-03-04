@@ -54,17 +54,16 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
     @Override
     public void applyStrategies() throws IllegalStateException {
         try {
-            final TraversalSource source = this.factory.createTraversalSource(this.graph);
             final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngine);
             final Bindings engineBindings = engine.createBindings();
-            engineBindings.put("g", source);
+            engineBindings.put("g", this.factory.createTraversalSource(this.graph));
             for (int i = 0; i < this.bindings.length; i = i + 2) {
                 engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
             }
             final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) engine.eval(this.script, engineBindings);
+            traversal.getSideEffects().mergeInto(this.sideEffects);
             traversal.getSteps().forEach(this::addStep);
             this.strategies = traversal.getStrategies();
-            this.sideEffects = traversal.getSideEffects();
             super.applyStrategies();
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);

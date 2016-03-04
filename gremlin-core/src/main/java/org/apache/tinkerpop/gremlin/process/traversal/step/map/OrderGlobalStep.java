@@ -124,4 +124,14 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
         clone.chainedComparator = null;
         return clone;
     }
+
+    /*@Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
+        integrateChild(this.valueTraversal);
+        integrateChild(this.reduceTraversal);
+    }*/
+
+
 }

@@ -136,12 +136,20 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @Override
     public RepeatStep<S> clone() {
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
-        clone.repeatTraversal = clone.integrateChild(this.repeatTraversal.clone());
+        clone.repeatTraversal = this.repeatTraversal.clone();
         if (null != this.untilTraversal)
-            clone.untilTraversal = clone.integrateChild(this.untilTraversal.clone());
+            clone.untilTraversal = this.untilTraversal.clone();
         if (null != this.emitTraversal)
-            clone.emitTraversal = clone.integrateChild(this.emitTraversal.clone());
+            clone.emitTraversal = this.emitTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.repeatTraversal);
+        this.integrateChild(this.untilTraversal);
+        this.integrateChild(this.emitTraversal);
     }
 
     @Override

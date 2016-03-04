@@ -81,6 +81,8 @@ public interface TraversalParent {
     }
 
     public default <S, E> Traversal.Admin<S, E> integrateChild(final Traversal.Admin<?, ?> childTraversal) {
+        if (null == childTraversal)
+            return null;
         childTraversal.setParent(this);
         childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
         childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());

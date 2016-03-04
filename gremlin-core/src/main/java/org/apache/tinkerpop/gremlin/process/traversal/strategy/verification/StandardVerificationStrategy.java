@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileMarkerStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -48,6 +49,14 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
                 throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);
         });
+
+        if (TraversalHelper.hasStepOfClass(ProfileMarkerStep.class, traversal) && traversal.asAdmin().getEndStep() instanceof ProfileMarkerStep) {
+            throw new VerificationException("When specified, the .profile()-Step must be the last step.", traversal);
+        }
+
+        if (TraversalHelper.getStepsOfClass(ProfileMarkerStep.class, traversal).size() > 1) {
+            throw new VerificationException("The .profile()-Step cannot be specified multiple times.", traversal);
+        }
     }
 
     public static StandardVerificationStrategy instance() {

@@ -133,10 +133,10 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertFalse(storage.exists(outputLocation));
         assertFalse(storage.exists(Constants.getGraphLocation(outputLocation)));
         ///
-        assertEquals(3, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().size());
-        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(27).longValue());
-        assertEquals(2, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(29).longValue());
-        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(32).longValue());
+        assertEquals(3, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").size());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get(27).longValue());
+        assertEquals(2, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get(29).longValue());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get(32).longValue());
     }
 
     public void checkFileDirectoryDistinction(final Storage storage, final String directory1, final String directory2) throws Exception {

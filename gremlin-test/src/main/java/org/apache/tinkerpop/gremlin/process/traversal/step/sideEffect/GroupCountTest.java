@@ -22,15 +22,19 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
@@ -69,6 +73,8 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum();
 
     public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+
+    public abstract Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -231,6 +237,14 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         assertEquals(6l, map.get(convertToVertex(graph, "marko")).longValue());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("lop", "lop", "lop", "peter", "marko", "marko", "marko", "ripple", "vadas", "josh", "josh", "josh"), traversal);
+    }
+
     public static class Traversals extends GroupCountTest {
 
         @Override
@@ -293,6 +307,11 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
             return g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
+            return g.V().both().groupCount("a").by(T.label).as("b").barrier().where(__.select("a").select("software").is(gt(2))).select("b").values("name");
         }
     }
 }

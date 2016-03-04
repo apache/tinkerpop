@@ -92,5 +92,10 @@ public abstract class GroovyGroupCountTest {
         public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.groupCount('a').out.cap('a').select(keys).unfold.both.groupCount('a').cap('a')")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.groupCount('a').by(label).as('b').barrier.where(select('a').select('software').is(gt(2))).select('b').name")
+        }
     }
 }

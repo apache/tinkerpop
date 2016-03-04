@@ -60,6 +60,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyOrderTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovySelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovySumTest;
@@ -72,7 +73,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGrou
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGroupTestV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyInjectTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySideEffectCapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySideEffectTest;
@@ -145,6 +145,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyPageRankTest.Traversals.class,
             GroovyPathTest.Traversals.class,
             GroovyPeerPressureTest.Traversals.class,
+            GroovyProfileTest.Traversals.class,
             GroovyPropertiesTest.Traversals.class,
             GroovySelectTest.Traversals.class,
             GroovySumTest.Traversals.class,

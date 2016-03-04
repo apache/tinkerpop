@@ -18,18 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
@@ -37,13 +33,13 @@ import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection,Collection>, MemoryComputing<Collection>, TraversalParent, ByModulating {
+public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, Object> storeTraversal = null;
     private String sideEffectKey;
@@ -51,15 +47,14 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, BulkSetSupplier.instance());
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, (Supplier) BulkSetSupplier.instance(), Operator.addAll);
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        TraversalHelper.addToCollection(
-                traverser.sideEffects(this.sideEffectKey),
-                TraversalUtil.applyNullable(traverser.asAdmin(), this.storeTraversal),
-                traverser.bulk());
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        bulkSet.add(TraversalUtil.applyNullable(traverser.asAdmin(), this.storeTraversal), traverser.bulk());
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);
     }
 
     @Override
@@ -71,7 +66,6 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public String toString() {
         return StringFactory.stepString(this, this.sideEffectKey, this.storeTraversal);
     }
-
 
     @Override
     public List<Traversal.Admin<S, Object>> getLocalChildren() {
@@ -92,8 +86,14 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     public StoreStep<S> clone() {
         final StoreStep<S> clone = (StoreStep<S>) super.clone();
         if (null != this.storeTraversal)
-            clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone());
+            clone.storeTraversal = this.storeTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.storeTraversal);
     }
 
     @Override
@@ -102,10 +102,5 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
         if (this.storeTraversal != null)
             result ^= this.storeTraversal.hashCode();
         return result;
-    }
-
-    @Override
-    public MemoryComputeKey<Collection> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.sideEffectKey, Operator.addAll, false, false);
     }
 }

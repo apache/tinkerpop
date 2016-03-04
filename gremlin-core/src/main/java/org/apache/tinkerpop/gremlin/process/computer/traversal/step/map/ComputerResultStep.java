@@ -68,9 +68,6 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
                 return this.currentIterator.next();
             else {
                 final ComputerResult result = this.starts.next().get();
-                result.memory().keys().stream().
-                        filter(key -> !key.equals(TraversalVertexProgram.HALTED_TRAVERSERS)).
-                        forEach(key -> this.getTraversal().getSideEffects().set(key, result.memory().get(key)));
                 this.currentIterator = attach(result.memory().<TraverserSet<S>>get(TraversalVertexProgram.HALTED_TRAVERSERS).iterator(), result.graph());
             }
         }

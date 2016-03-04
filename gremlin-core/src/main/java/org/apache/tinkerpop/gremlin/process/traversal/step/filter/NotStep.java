@@ -52,8 +52,14 @@ public final class NotStep<S> extends FilterStep<S> implements TraversalParent {
     @Override
     public NotStep<S> clone() {
         final NotStep<S> clone = (NotStep<S>) super.clone();
-        clone.notTraversal = clone.integrateChild(this.notTraversal.clone());
+        clone.notTraversal = this.notTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.notTraversal);
     }
 
     @Override

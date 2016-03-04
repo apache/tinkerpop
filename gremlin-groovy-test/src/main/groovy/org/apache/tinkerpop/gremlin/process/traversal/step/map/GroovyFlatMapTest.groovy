@@ -29,7 +29,7 @@ public abstract class GroovyFlatMapTest {
 
     public static class Traversals extends FlatMapTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_flatMapXselectXaXX() {
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_flatMapXselectXaXX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').flatMap(select('a'))")
         }
     }

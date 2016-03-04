@@ -112,8 +112,14 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     @Override
     public SampleGlobalStep<S> clone() {
         final SampleGlobalStep<S> clone = (SampleGlobalStep<S>) super.clone();
-        clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone());
+        clone.probabilityTraversal = this.probabilityTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.probabilityTraversal);
     }
 
     @Override

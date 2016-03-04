@@ -131,7 +131,7 @@ public final class TinkerGraphComputerView {
         // remove all transient properties from the vertices
         for (final VertexComputeKey computeKey : this.computeKeys.values()) {
             if (computeKey.isTransient()) {
-                final List<VertexProperty<?>> toRemove = this.computeProperties.values().stream().flatMap(map -> map.get(computeKey.getKey()).stream()).collect(Collectors.toList());
+                final List<VertexProperty<?>> toRemove = this.computeProperties.values().stream().flatMap(map -> map.getOrDefault(computeKey.getKey(), Collections.emptyList()).stream()).collect(Collectors.toList());
                 toRemove.forEach(VertexProperty::remove);
             }
         }

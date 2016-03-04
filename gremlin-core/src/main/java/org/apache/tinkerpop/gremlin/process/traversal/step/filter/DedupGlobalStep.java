@@ -87,8 +87,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
         final DedupGlobalStep<S> clone = (DedupGlobalStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
         if (null != this.dedupTraversal)
-            clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone());
+            clone.dedupTraversal = this.dedupTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.dedupTraversal);
     }
 
     @Override

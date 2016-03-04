@@ -41,6 +41,7 @@ public class ImmutableMetrics implements Metrics, Serializable {
     protected final Map<String, ImmutableMetrics> nested = new LinkedHashMap<>();
 
     protected ImmutableMetrics() {
+        // necessary for gryo serialization
     }
 
     @Override

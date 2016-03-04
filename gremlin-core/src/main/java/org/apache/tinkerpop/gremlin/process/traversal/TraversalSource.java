@@ -121,17 +121,9 @@ public interface TraversalSource extends Cloneable {
         return this.withComputer(Graph::compute);
     }
 
-    /**
-     * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
-     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy} to the strategies.
-     *
-     * @param key          the key of the sideEffect
-     * @param initialValue a supplier that produces the initial value of the sideEffect
-     * @return a new traversal source with updated strategies
-     */
-    public default TraversalSource withSideEffect(final String key, final Supplier initialValue) {
+    public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
-        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue);
+        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, reducer);
         return clone;
     }
 
@@ -145,6 +137,18 @@ public interface TraversalSource extends Cloneable {
      */
     public default TraversalSource withSideEffect(final String key, final Object initialValue) {
         return this.withSideEffect(key, new ConstantSupplier<>(initialValue));
+    }
+
+    /**
+     * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
+     * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy} to the strategies.
+     *
+     * @param key          the key of the sideEffect
+     * @param initialValue a supplier that produces the initial value of the sideEffect
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withSideEffect(final String key, final Supplier initialValue) {
+        return this.withSideEffect(key, initialValue, null);
     }
 
     /**

@@ -42,7 +42,6 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +92,17 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
-        return GroupStep.doInitialProjection(traverser, (Traversal.Admin) this.keyTraversal, this.onGraphComputer ? this.valueTraversal : null);
+        final Map<K, V> map = new HashMap<>();
+        final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+        if (this.onGraphComputer) {
+            final TraverserSet traverserSet = new TraverserSet();
+            this.valueTraversal.reset();
+            this.valueTraversal.addStart(traverser);
+            this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+            map.put(key, (V) traverserSet);
+        } else
+            map.put(key, (V) traverser);
+        return map;
     }
 
     @Override
@@ -121,11 +130,20 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public GroupStep<S, K, V> clone() {
         final GroupStep<S, K, V> clone = (GroupStep<S, K, V>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
-        clone.valueReduceTraversal = clone.integrateChild(this.valueReduceTraversal.clone());
-        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
-        clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
+            clone.keyTraversal = this.keyTraversal.clone();
+        clone.valueReduceTraversal = this.valueReduceTraversal.clone();
+        clone.valueTraversal = this.valueTraversal.clone();
+        clone.reduceTraversal = this.reduceTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
+        integrateChild(this.valueReduceTraversal);
+        integrateChild(this.valueTraversal);
+        integrateChild(this.reduceTraversal);
     }
 
     @Override
@@ -228,27 +246,16 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> reduceTraversal) {
-        final Map<K, V> reducedMap = new HashMap<>();
+        final Map<K, Object> tempMap = new HashMap<>(map);
+        map.clear();
         if (null != reduceTraversal) {
-            for (final K key : map.keySet()) {
+            for (final K key : tempMap.keySet()) {
                 final Traversal.Admin<?, V> reduceClone = reduceTraversal.clone();
-                reduceClone.addStarts(((TraverserSet) map.get(key)).iterator());
-                reducedMap.put(key, reduceClone.next());
+                reduceClone.addStarts(((TraverserSet) tempMap.get(key)).iterator());
+                map.put(key, reduceClone.next());
             }
         } else
-            map.forEach((key, traversal) -> reducedMap.put(key, ((Traversal.Admin<?, V>) traversal).next()));
-        return reducedMap;
-    }
-
-    public static <S, K> Map<K, Object> doInitialProjection(final Traverser.Admin<S> traverser, final Traversal.Admin<S, K> keyTraversal, final Traversal.Admin<S, ?> valueTraversal) {
-        final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
-        if (null != valueTraversal) {
-            final TraverserSet traverserSet = new TraverserSet();
-            valueTraversal.reset();
-            valueTraversal.addStart(traverser);
-            valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
-            return Collections.singletonMap(key, traverserSet);
-        } else
-            return Collections.singletonMap(key, traverser);
+            tempMap.forEach((key, traversal) -> map.put(key, ((Traversal.Admin<?, V>) traversal).next()));
+        return (Map<K, V>) map;
     }
 }

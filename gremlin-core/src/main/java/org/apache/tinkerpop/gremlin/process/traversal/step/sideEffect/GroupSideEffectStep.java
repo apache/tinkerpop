@@ -18,21 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, MemoryComputing<Map<K, V>>, TraversalParent, ByModulating, GraphComputing {
+public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating, GraphComputing {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
@@ -50,12 +51,11 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     ///
     private String sideEffectKey;
     public boolean onGraphComputer = false;
-    private GroupStep.GroupBiOperator<K, V> standardOperator = new GroupStep.GroupBiOperator<>(this.valueReduceTraversal);
 
     public GroupSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
+        this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, HashMapSupplier.instance(), new GroupStep.GroupBiOperator<>(this.valueReduceTraversal));
     }
 
     @Override
@@ -69,25 +69,25 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             this.valueTraversal = this.integrateChild(splitTraversal.get(0));
             this.reduceTraversal = this.integrateChild(splitTraversal.get(1));
             this.state = 'x';
-            this.standardOperator = new GroupStep.GroupBiOperator<>(this.valueReduceTraversal);
+            this.getTraversal().getSideEffects().register(this.sideEffectKey, null, new GroupStep.GroupBiOperator<>(this.valueReduceTraversal));
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
         }
     }
 
     @Override
-    public MemoryComputeKey<Map<K, V>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.sideEffectKey, new GroupStep.GroupBiOperator<>(), false, false);
-    }
-
-    @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final Map<K, Object> groupMap = traverser.sideEffects(this.sideEffectKey);
-        final Map<K, Object> map = GroupStep.doInitialProjection(traverser.split(), this.keyTraversal, this.onGraphComputer ? this.valueTraversal : null);
-        if (this.onGraphComputer)
-            GroupStep.GroupBiOperator.computerInstance().apply((Map) groupMap, (Map) map);
-        else
-            this.standardOperator.apply((Map) groupMap, (Map) map);
+        final Map<K, Object> map = new HashMap<>();
+        final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
+        if (this.onGraphComputer) {
+            final TraverserSet traverserSet = new TraverserSet();
+            valueTraversal.reset();
+            valueTraversal.addStart(traverser);
+            valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+            map.put(key, traverserSet);
+        } else
+            map.put(key, traverser.split());
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 
     @Override
@@ -98,6 +98,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     @Override
     public void onGraphComputer() {
         this.onGraphComputer = true;
+        this.getTraversal().getSideEffects().register(this.sideEffectKey, null, GroupStep.GroupBiOperator.computerInstance());
     }
 
     @Override
@@ -125,11 +126,20 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     public GroupSideEffectStep<S, K, V> clone() {
         final GroupSideEffectStep<S, K, V> clone = (GroupSideEffectStep<S, K, V>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
-        clone.valueReduceTraversal = clone.integrateChild(this.valueReduceTraversal.clone());
-        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
-        clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
+            clone.keyTraversal = this.keyTraversal.clone();
+        clone.valueReduceTraversal = this.valueReduceTraversal.clone();
+        clone.valueTraversal = this.valueTraversal.clone();
+        clone.reduceTraversal = this.reduceTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.keyTraversal);
+        this.integrateChild(this.valueReduceTraversal);
+        this.integrateChild(this.valueTraversal);
+        this.integrateChild(this.reduceTraversal);
     }
 
     @Override
