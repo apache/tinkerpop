@@ -99,21 +99,38 @@ public class Session {
     public void touch() {
         // if the task of killing is cancelled successfully then reset the session monitor. otherwise this session
         // has already been killed and there's nothing left to do with this session.
-        final ScheduledFuture killFuture = kill.get();
-        if (null == killFuture || !killFuture.isDone()) {
-            if (killFuture != null) killFuture.cancel(false);
-            kill.set(this.scheduledExecutorService.schedule(() -> {
-                logger.info("Session {} has been idle for more than {} milliseconds - preparing to close",
-                        this.session, this.configuredSessionTimeout);
-                kill();
-            }, this.configuredSessionTimeout, TimeUnit.MILLISECONDS));
-        }
+        kill.updateAndGet(future -> {
+            if (null == future || !future.isDone()) {
+                if (future != null) future.cancel(false);
+                return this.scheduledExecutorService.schedule(() -> {
+                        logger.info("Session {} has been idle for more than {} milliseconds - preparing to close",
+                                this.session, this.configuredSessionTimeout);
+                        kill();
+                    }, this.configuredSessionTimeout, TimeUnit.MILLISECONDS);
+            }
+
+            return future;
+        });
+    }
+
+    /**
+     * Stops the session with call to {@link #kill()} but also stops the session expiration call which ensures that
+     * the session is only killed once.
+     */
+    public void manualKill() {
+        kill.get().cancel(true);
+        kill();
     }
 
     /**
      * Kills the session and rollback any uncommitted changes on transactional graphs.
      */
-    public void kill() {
+    public synchronized void kill() {
+        // if the session has already been removed then there's no need to do this process again.  it's possible that
+        // the manuallKill and the kill future could have both called kill at roughly the same time. this prevents
+        // kill() from being called more than once
+        if (!sessions.containsKey(session)) return;
+
         // when the session is killed open transaction should be rolled back
         graphManager.getGraphs().entrySet().forEach(kv -> {
             final Graph g = kv.getValue();
