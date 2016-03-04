@@ -1367,11 +1367,11 @@ A side effect key can also be passed to the `profile()`-step for situations when
 results of the Traversal and retrieve the `TraversalMetrics` afterwards, as shown here:
 
 [gremlin-groovy,modern]
----
+----
 t = g.V().out('created').profile('metrics')
 t.iterate()
-metrics = t.asAdmin().getSideEffects().get('metrics')
----
+metrics = t.getSideEffects().get('metrics')
+----
 
 For traversal compilation information, please see <<explain-step,`explain()`>>-step.
 
@@ -1776,8 +1776,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').get().traversal().E()
-t.sideEffects.get('createdG').get().traversal().E()
+t.sideEffects.get('knowsG').traversal().E()
+t.sideEffects.get('createdG').traversal().E()
 ----
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover,
@@ -2266,7 +2266,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSideEffects().onGraphComputer())
+        if (TraversalHelper.onGraphComputer(traversal))
             return;
 
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
