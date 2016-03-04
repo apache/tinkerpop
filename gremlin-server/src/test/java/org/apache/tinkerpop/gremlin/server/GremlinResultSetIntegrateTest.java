@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -44,7 +43,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +66,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Override
     public Settings overrideSettings(final Settings settings) {
-        settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList("scripts/generate-modern.groovy");
+        settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList("scripts/generate-modern.groovy");
         return settings;
     }
 
@@ -75,8 +74,8 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void beforeTest() {
         final MessageSerializer serializer = new GryoMessageSerializerV1d0();
         final Map<String,Object> c = new HashMap<>();
-        c.put("ioRegistries", Arrays.asList(TinkerIoRegistry.class.getName()));
-        c.put("custom", Arrays.asList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
+        c.put("ioRegistries", Collections.singletonList(TinkerIoRegistry.class.getName()));
+        c.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
 
         serializer.configure(c, null);
         cluster = Cluster.build().serializer(serializer).create();
@@ -108,7 +107,6 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         });
     }
 
-    /*
     @Test
     public void shouldHandleNullResult() throws Exception {
         final ResultSet results = client.submit("g.V().drop().iterate();null");
@@ -189,8 +187,8 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final List<Result> resultList = results.all().get();
         final Map m = resultList.get(0).get(HashMap.class);
         assertEquals(2, m.size());
-        assertEquals(3l, m.get(1l));
-        assertEquals(3l, m.get(3l));
+        assertEquals(3L, m.get(1L));
+        assertEquals(3L, m.get(3L));
     }
 
     @Test
@@ -200,10 +198,9 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         assertEquals(2, resultList.size());
         final Map.Entry firstEntry = resultList.get(0).get(HashMap.Entry.class);
         final Map.Entry secondEntry = resultList.get(1).get(HashMap.Entry.class);
-        assertThat(firstEntry.getKey(), anyOf(is(3l), is(1l)));
-        assertThat(firstEntry.getValue(), is(3l));
-        assertThat(secondEntry.getKey(), anyOf(is(3l), is(1l)));
-        assertThat(secondEntry.getValue(), is(3l));
+        assertThat(firstEntry.getKey(), anyOf(is(3L), is(1L)));
+        assertThat(firstEntry.getValue(), is(3L));
+        assertThat(secondEntry.getKey(), anyOf(is(3L), is(1L)));
+        assertThat(secondEntry.getValue(), is(3L));
     }
-    */
 }
