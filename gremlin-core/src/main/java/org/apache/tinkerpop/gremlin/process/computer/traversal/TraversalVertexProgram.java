@@ -128,7 +128,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         /// traversal is compiled and ready to be introspected
         this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
         // if results will be serialized out, don't save halted traversers across the cluster
-        this.keepDistributedHaltedTraversers = !(this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep);
+        this.keepDistributedHaltedTraversers =
+                !(this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep || // if its just going to stream it out, don't distribute
+                        this.traversal.get().getParent().asStep().getNextStep() instanceof EmptyStep);  // same as above, but if using TraversalVertexProgramStep directly
         // register traversal side-effects in memory
         final TraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).getSideEffects();
         sideEffects.keys().forEach(key -> this.memoryComputeKeys.add(MemoryComputeKey.of(key, sideEffects.getReducer(key), true, false)));
@@ -143,7 +145,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             this.memoryComputeKeys.add(memoryComputing.getMemoryComputeKey());
         }
         // register TraversalVertexProgram specific memory compute keys
-        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, false));
+        this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, this.keepDistributedHaltedTraversers)); // only keep if it will be preserved
         this.memoryComputeKeys.add(MemoryComputeKey.of(ACTIVE_TRAVERSERS, Operator.addAll, true, true));
         this.memoryComputeKeys.add(MemoryComputeKey.of(MUTATED_MEMORY_KEYS, Operator.addAll, false, true));
         this.memoryComputeKeys.add(MemoryComputeKey.of(COMPLETED_BARRIERS, Operator.addAll, true, true));
@@ -206,14 +208,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                     if (traverser.asAdmin().isHalted()) {
                         traverser.asAdmin().detach();
                         haltedTraversers.add((Traverser.Admin) traverser);
-                        memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin()));
+                        if (!this.keepDistributedHaltedTraversers)
+                            memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin()));
                     } else
                         activeTraversers.add((Traverser.Admin) traverser);
                 });
             }
-            memory.add(VOTE_TO_HALT, activeTraversers.isEmpty() || TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, activeTraversers), this.traversalMatrix, memory));
+            memory.add(VOTE_TO_HALT, activeTraversers.isEmpty() || TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, activeTraversers), this.traversalMatrix, memory, !this.keepDistributedHaltedTraversers));
         } else {  // ITERATION 1+
-            memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix, memory));
+            memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix, memory, !this.keepDistributedHaltedTraversers));
         }
         if (!this.keepDistributedHaltedTraversers)
             vertex.<TraverserSet>property(HALTED_TRAVERSERS).value().clear();

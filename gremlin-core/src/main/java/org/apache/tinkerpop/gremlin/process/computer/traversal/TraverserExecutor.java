@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class TraverserExecutor {
 
-    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory) {
+    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final boolean returnHaltedTraversers) {
 
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
@@ -107,11 +107,11 @@ public final class TraverserExecutor {
                 traversers.remove();
                 final Step<Object, Object> currentStep = traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
-                    TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory);
+                    TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
                 currentStep.addStart(traverser);
                 previousStep = currentStep;
             }
-            TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory);
+            TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
             assert toProcessTraversers.isEmpty();
             // process all the local objects and send messages or store locally again
             if (!activeTraversers.isEmpty()) {
@@ -140,7 +140,7 @@ public final class TraverserExecutor {
         return voteToHalt.get();
     }
 
-    private static void drainStep(final Vertex vertex, final Step<Object, Object> step, final TraverserSet<Object> activeTraversers, final TraverserSet<Object> haltedTraversers, final Memory memory) {
+    private static void drainStep(final Vertex vertex, final Step<Object, Object> step, final TraverserSet<Object> activeTraversers, final TraverserSet<Object> haltedTraversers, final Memory memory, final boolean returnHaltedTraversers) {
         if (step instanceof Barrier) {
             if (step instanceof Bypassing)
                 ((Bypassing) step).setBypass(true);
@@ -156,7 +156,8 @@ public final class TraverserExecutor {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();
                     haltedTraversers.add(traverser.asAdmin());
-                    memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                    if (returnHaltedTraversers)
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
                 } else {
                     traverser.asAdmin().detach();
                     traverserSet.add(traverser.asAdmin());
@@ -169,7 +170,8 @@ public final class TraverserExecutor {
                 if (traverser.asAdmin().isHalted()) {
                     traverser.asAdmin().detach();
                     haltedTraversers.add(traverser.asAdmin());
-                    memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                    if (returnHaltedTraversers)
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
                 } else {
                     activeTraversers.add(traverser.asAdmin());
                 }
