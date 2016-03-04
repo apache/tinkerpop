@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -84,6 +86,25 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     @After
     public void afterTest() {
         cluster.close();
+    }
+
+    @Test
+    public void shouldHandleVertexResultFromTraversal() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final ResultSet results = client.submit(g.V(1));
+        final Vertex v = results.all().get().get(0).getVertex();
+        assertThat(v, instanceOf(DetachedVertex.class));
+
+        assertEquals("marko", v.properties("name").next().value());
+        v.properties().forEachRemaining(p -> {
+            if (p.key().equals("name"))
+                assertEquals("marko", p.value());
+            else if (p.key().equals("age"))
+                assertEquals(29, p.value());
+            else
+                fail("Should not have any other keys besides 'name' and 'age'");
+        });
     }
 
     @Test

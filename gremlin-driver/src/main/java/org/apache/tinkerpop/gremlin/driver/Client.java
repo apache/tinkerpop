@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,6 +151,22 @@ public abstract class Client {
      */
     public ResultSet submit(final String gremlin) {
         return submit(gremlin, null);
+    }
+
+    public ResultSet submit(final Traversal traversal) {
+        final byte[] serializedTraversal;
+        try {
+            serializedTraversal = Serializer.serializeObject(traversal);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
+        try {
+            return submitAsync(RequestMessage.build(Tokens.OPS_TRAVERSE)
+                    .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal).create()).get();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
