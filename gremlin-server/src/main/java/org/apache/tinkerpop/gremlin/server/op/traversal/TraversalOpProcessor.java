@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -74,6 +75,24 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_TRAVERSE, Tokens.ARGS_GREMLIN);
                     throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
+
+                final Optional<Map<String,String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
+                if (!aliases.isPresent()) {
+                    final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_TRAVERSE, Tokens.ARGS_ALIASES);
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
+                if (aliases.get().size() != 1) {
+                    final String msg = String.format("A message with an [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_TRAVERSE, Tokens.ARGS_ALIASES);
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
+                final Map.Entry<String,String> kv = aliases.get().entrySet().iterator().next();
+                if (!ctx.getGraphManager().getGraphs().containsKey(kv.getValue())) {
+                    final String msg = String.format("The graph [%s] for alias [%s] is not configured on the server.", kv.getValue(), kv.getKey());
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
                 op = this::iterateOp;
                 break;
             case Tokens.OPS_INVALID:
@@ -94,9 +113,14 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final byte[] serializedTraversal = (byte[]) msg.getArgs().get(Tokens.ARGS_GREMLIN);
 
+        // earlier validation in selection of this op method should free us to cast this without worry
+        final Map<String,String> aliases = (Map<String,String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
+
+
         try {
             final Traversal traversal = (Traversal) Serializer.deserializeObject(serializedTraversal);
-            traversal.asAdmin().setGraph(TinkerFactory.createModern());
+            final String graphName = aliases.entrySet().iterator().next().getValue();
+            traversal.asAdmin().setGraph(context.getGraphManager().getGraphs().get(graphName));
             handleIterator(context, traversal);
         } catch (Exception ex) {
             throw new OpProcessorException("blah", ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).statusMessage("blah").create());
