@@ -116,14 +116,21 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String,String> aliases = (Map<String,String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
 
+        final Traversal traversal;
+        try {
+            traversal = (Traversal) Serializer.deserializeObject(serializedTraversal);
+        } catch (Exception ex) {
+            throw new OpProcessorException("Could not deserialize the Traversal instance",
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).statusMessage(ex.getMessage()).create());
+        }
 
         try {
-            final Traversal traversal = (Traversal) Serializer.deserializeObject(serializedTraversal);
             final String graphName = aliases.entrySet().iterator().next().getValue();
             traversal.asAdmin().setGraph(context.getGraphManager().getGraphs().get(graphName));
             handleIterator(context, traversal);
         } catch (Exception ex) {
-            throw new OpProcessorException("blah", ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).statusMessage("blah").create());
+            throw new OpProcessorException("Could not iterate the Traversal instance",
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }
     }
 }
