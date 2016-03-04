@@ -64,6 +64,10 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_withSideEffectsXa__linkedhashmapX_withSideEffectXb__arraylist__addAllX_withSideEffectXc__arrayList__addAllX_V_groupXaX_byXlabelX_byXcountX_sideEffectXb__1_2_3X_out_out_out_sideEffectXc__bob_danielX_capXaX();
 
+    public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0_sumX_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
+
+    public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
+
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
@@ -161,6 +165,26 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assertEquals(0, sideEffects.<List>get("c").size());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXa_0_sumX_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
+        final Traversal<Vertex, Integer> traversal = get_g_withSideEffectXa_0_sumX_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
+        assertEquals(6, traversal.next().intValue());
+        assertFalse(traversal.hasNext());
+        assertEquals(6, traversal.asAdmin().getSideEffects().<Integer>get("a").intValue());
+        assertEquals(1, traversal.asAdmin().getSideEffects().keys().size());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
+        final Traversal<Vertex, Integer> traversal = get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
+        assertEquals(1, traversal.next().intValue());
+        assertFalse(traversal.hasNext());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Integer>get("a").intValue());
+        assertEquals(1, traversal.asAdmin().getSideEffects().keys().size());
+    }
+
     public static class Traversals extends SideEffectTest {
 
         @Override
@@ -198,13 +222,23 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_withSideEffectsXa__linkedhashmapX_withSideEffectXb__arraylist__addAllX_withSideEffectXc__arrayList__addAllX_V_groupXaX_byXlabelX_byXcountX_sideEffectXb__1_2_3X_out_out_out_sideEffectXc__bob_danielX_capXaX() {
             return g.withSideEffect("a", new LinkedHashMapSupplier())
-                    .withSideEffect("b", (Supplier) ArrayListSupplier.instance(), Operator.addAll)
-                    .withSideEffect("c", (Supplier) ArrayListSupplier.instance(), Operator.addAll)
+                    .withSideEffect("b", ArrayListSupplier.instance(), Operator.addAll)
+                    .withSideEffect("c", ArrayListSupplier.instance(), Operator.addAll)
                     .V().group("a").by(T.label).by(__.count())
                     .sideEffect(t -> t.sideEffects("b", new LinkedList<>(Arrays.asList(1, 2, 3))))
                     .out().out().out()
                     .sideEffect(t -> t.sideEffects("c", new LinkedList<>(Arrays.asList("bob", "daniel"))))
                     .cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_withSideEffectXa_0_sumX_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
+            return g.withSideEffect("a", 0, Operator.sum).V().out().sideEffect(t -> t.sideEffects("a", (int) t.bulk())).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
+            return g.withSideEffect("a", 0).V().out().sideEffect(t -> t.sideEffects("a", (int) t.bulk())).cap("a");
         }
     }
 

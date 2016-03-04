@@ -32,6 +32,77 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+TraversalSideEffect Update
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There were changes to `TraversalSideEffect` both at the semantic level and at the API level. Users that have traversals
+of the form `sideEffect{...}` that leverage global side-effects should read the following carefully. If the user's traversals do
+not use lambda-based side-effect steps (e.g. `groupCount("m")`), then the changes below will not effect them. Moreover, if user's
+traversal only uses `sideEffect{...}` with closure (non-`TraversalSideEffect`) data references, then changes below will not effect them.
+Finally, providers should not be effected by the changes save any tests cases.
+
+TraversalSideEffect Get API Change
+++++++++++++++++++++++++++++++++++
+
+`TraversalSideEffects` can now logically operate within a distributed OLAP environment. In order to make this possible,
+it is necessary that each side-effect be registered with a reducing `BinaryOperator`. This binary operator will combine
+distributed updates into a single global side-effect at the master traversal. Many of the methods in `TraversalSideEffect`
+have been `Deprecated`, but they are backwards compatible save that `TraversalSideEffects.get()` no longer returns an `Optional`,
+but instead throws an `IllegalArgumentException`. While the `Optional` semantics could have remained, it was deemed best to
+directly return the side-effect value to reduce object creation costs and because all side-effects must be registered apriori,
+there is never a reason why an unknown side-effect key would be used. In short:
+
+```
+// change
+traversal.getSideEffects().get("m").get()
+// to
+traversal.getSideEffects().get("m")
+```
+
+TraversalSideEffect Registration Requirement
+++++++++++++++++++++++++++++++++++++++++++++
+
+All `TraversalSideEffects` must be registered upfront. This is because, in OLAP, side-effects map to `Memory` compute keys
+and as such, must be declared prior to the execution of the `TraversalVertexProgram`. If a user's traversal creates a
+side-effect mid-traversal, it will fail. The traversal must use `GraphTraversalSource.withSideEffect()` to declare
+the side-effects it will use during its execution lifetime. If the user's traversals use standard side-effect Gremlin
+steps (e.g. `group("m")`), then no changes are required.
+
+TraversalSideEffect Add Requirement
++++++++++++++++++++++++++++++++++++
+
+In a distributed environment, a side-effect can not be mutated and be expected to exist in the mutated form at the final,
+aggregated, master traversal. For instance, if the side-effect "myCount" references a `Long`, the `Long` can not be updated
+directly via `sideEffects.set("myCount", sideEffects.get("myCount") + 1)`. Instead, it must rely on the registered reducer
+to do the merging and thus, the `Step` must do `sideEffect.add("mySet",1)`, where the registered reducer is `Operator.sum`.
+Thus, the below will increment "a". If no operator was provided, then the operator is assumed `Operator.assign` and the
+final result of "a" would be 1. Note that `Traverser.sideEffects(key,value)` uses `TraversalSideEffect.add()`.
+
+```
+gremlin> traversal = g.withSideEffect('a',0,sum).V().out().sideEffect{it.sideEffects('a',1)}
+==>v[3]
+==>v[2]
+==>v[4]
+==>v[5]
+==>v[3]
+==>v[3]
+gremlin> traversal.getSideEffects().get('a')
+==>6
+```
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
+
+ProfileStep Update and GraphTraversal API Change
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `profile()`-step has been refactored into 2 steps -- `ProfileStep` and `ProfileSideEffectStep`. Users who previously
+used the `profile()` in conjunction with `cap(TraversalMetrics.METRICS_KEY)` can now simply omit the cap step. Users who
+retrieved `TraversalMetrics` from the side-effects after iteration can still do so, but will need to specify a side-effect
+key when using the `profile()`. For example, `profile("myMetrics")`.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-958[TINKERPOP-958]
+
+
 BranchStep Bug Fix
 ^^^^^^^^^^^^^^^^^^
 

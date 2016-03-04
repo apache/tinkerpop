@@ -24,6 +24,17 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a severe `Traversal` cloning issue that caused inconsistent `TraversalSideEffects`.
+* `TraversalSideEffects` remain consistent and usable across multiple chained OLAP jobs.
+* Added `MemoryTraversalSideEffects` which wraps `Memory` in a `TraversalSideEffects` for use in OLAP.
+* `TraversalSideEffects` are now fully functional in OLAP save that an accurate global view is possible at the start of an iteration (not during).
+* Updated the `TraversalSideEffects` API to support registered reducers and updated `get()`-semantics. (*breaking*)
+* Split existing `profile()` into `ProfileStep` and `ProfileSideEffectStep`.
+* The `profile()`-step acts like a reducing barrier and emits `TraversalMetrics` without the need for `cap()`. (*breaking*)
+* Added `LocalBarrier` interface to allow traversers to remain distributed during an iteration so as to reduce cluster traffic.
+* Added `NoOpBarrierStep` as a `LocalBarrier` implementation of `LambdaCollectingBarrierStep(noOp)`.
+* `AggregateStep` implements `LocalBarrier` and thus, doesn't needlessly communicate its barrier traversers.
+* Fixed an OLAP-based `Barrier` synchronization bug.
 * Fixed a semantic bug in `BranchStep` (and inheriting steps) where barriers reacted locally. (*breaking*)
 * Added `MemoryComputeKey` for specification of `Memory` keys in `VertexProgram`. (*breaking*)
 * Added `VertexComputeKey` for specification of vertex compute properties in `VertexProgram`. (*breaking*)

@@ -37,6 +37,16 @@ class StepLoader {
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? closure as Function : closure as Comparator);
         }
 
+        TraversalSource.metaClass.withSideEffect = {
+            final String key, final Closure initialValue, final Closure reducer ->
+                return ((TraversalSource) delegate).withSideEffect(key, initialValue as Supplier, reducer as BinaryOperator);
+        }
+
+        TraversalSource.metaClass.withSideEffect = {
+            final String key, final Closure initialValue, final BinaryOperator reducer ->
+                return ((TraversalSource) delegate).withSideEffect(key, initialValue as Supplier, reducer);
+        }
+
         TraversalSource.metaClass.withSideEffect = { final String key, final Closure object ->
             return ((TraversalSource) delegate).withSideEffect(key, object as Supplier);
         }
