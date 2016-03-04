@@ -70,6 +70,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
     public ServerGremlinExecutor(final Settings settings, final Class<T> scheduleExecutorServiceClass) {
         this(settings, null, null, scheduleExecutorServiceClass);
     }
+
+    /**
+     * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
+     * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
+     * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.  If either of the {@link ExecutorService}
+     * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size. The
+     * {@link GraphManager} will be constructed from the {@link Settings}.
+     */
     public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
                                  final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass) {
         this(settings,
@@ -104,7 +112,6 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
             this.scheduledExecutorService = scheduledExecutorService;
         }
 
-        // initialize graphs from configuration
         this.graphManager = graphManager;
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
