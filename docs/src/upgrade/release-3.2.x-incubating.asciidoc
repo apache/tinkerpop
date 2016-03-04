@@ -97,8 +97,11 @@ it simply does not have a corresponding on-disk representation.
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
 GraphComputer Semantics and API
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++++++++++++++++++++++++++++++++
 
 Providers that have a custom `GraphComputer` implementation will have a lot to handle. Note that if the graph system
 simply uses `SparkGraphComputer` or `GiraphGraphComputer` provided by TinkerPop, then no updates are required. This
@@ -120,7 +123,7 @@ See link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
 Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above are implemented correctly.
 
 Barrier Step Updates
-^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++
 
 The `Barrier` interface use to simply be a marker interface. Now it has methods and it is the primary means by which
 distributed steps across an OLAP job are aggregated and distributed. It is unlikely that `Barrier` was ever used
@@ -133,36 +136,11 @@ no longer exists and such post-reduction processing is handled by the reducing s
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
-ScriptTraversal and Gremlin Language Variants
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called `ScriptTraversal`
-which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated to use this new class.
-The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
-`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network moving forward.
-
-ByModulating and Custom Steps
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If the provider has custom steps that leverage `by()`-modulation, those will now need to implement `ByModulating`.
-Most of the methods in `ByModulating` are `default` and, for most situations, only `ByModulating.modulateBy(Traversal)`
-needs to be implemented. Note that this method's body will most like be identical the custom step's already existing
-`TraversalParent.addLocalChild()`. It is recommended that the custom step not use `TraversalParent.addLocalChild()`
-as this method may be deprecated in a future release. Instead, barring any complex usages, simply rename the
-`CustomStep.addLocalChild(Traversal)` to `CustomStep.modulateBy(Traversal)`.
-
-TraversalEngine Deprecation and GraphProvider
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards compatible.
-Unfortunately for graph system providers, a few tweaks to their implementation are in order.
-
-* If the graph system supports more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
-* For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer(Traversal)`.
-* For custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
+Graph Processor Providers
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 GraphFilter and GraphComputer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++++++++++++++++++++++++++++++
 
 The `GraphComputer` API has changed with the addition of `GraphComputer.vertices(Traversal)` and `GraphComputer.edges(Traversal)`.
 These methods construct a `GraphFilter` object which is also new to TinkerPop 3.2.0. `GraphFilter` is a "push-down predicate"
@@ -180,7 +158,7 @@ which ensures the semantics of `GraphFilter` are handled correctly. For a "quick
 execution.
 
 Job Chaining and GraphComputer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++++++++++++
 
 TinkerPop 3.2.0 has integrated `VertexPrograms` into `GraphTraversal`. This means, that a single traversal can compile to multiple
 `GraphComputer` OLAP jobs. This requires that `ComputeResults` be chainable. There was never any explicit tests to verify if a
@@ -195,4 +173,35 @@ currently. In the future, branching DAGs may be required.
 When chaining OLAP jobs together, if an OLAP job requires the compute keys of a previous OLAP job, then the existing compute keys must be accessible.
 A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop. `GiraphGraphComputer` did not need an update as
 this feature was already naturally supported.
+
+Graph Language Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+ScriptTraversal
++++++++++++++++
+
+Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called `ScriptTraversal`
+which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated to use this new class.
+The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
+`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network moving forward.
+
+ByModulating and Custom Steps
++++++++++++++++++++++++++++++
+
+If the provider has custom steps that leverage `by()`-modulation, those will now need to implement `ByModulating`.
+Most of the methods in `ByModulating` are `default` and, for most situations, only `ByModulating.modulateBy(Traversal)`
+needs to be implemented. Note that this method's body will most like be identical the custom step's already existing
+`TraversalParent.addLocalChild()`. It is recommended that the custom step not use `TraversalParent.addLocalChild()`
+as this method may be deprecated in a future release. Instead, barring any complex usages, simply rename the
+`CustomStep.addLocalChild(Traversal)` to `CustomStep.modulateBy(Traversal)`.
+
+TraversalEngine Deprecation and GraphProvider
++++++++++++++++++++++++++++++++++++++++++++++
+
+The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards compatible.
+Unfortunately for graph system providers, a few tweaks to their implementation are in order.
+
+* If the graph system supports more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
+* For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer(Traversal)`.
+* For custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
 
