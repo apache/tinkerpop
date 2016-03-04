@@ -19,8 +19,18 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface LocalBarrier extends MemoryComputing<Boolean>, GraphComputing {
+public interface LocalBarrier<S> extends Barrier<TraverserSet<S>> {
+
+    public default MemoryComputeKey getMemoryComputeKey() {
+        return MemoryComputeKey.of(((Step) this).getId(), Operator.and, false, true);
+    }
+
 }

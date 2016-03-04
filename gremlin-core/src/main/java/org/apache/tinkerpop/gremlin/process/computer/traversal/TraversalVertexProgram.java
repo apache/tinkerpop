@@ -272,9 +272,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         for (final String key : toProcessMemoryKeys) {
             final Step<Object, Object> step = this.traversalMatrix.getStepById(key);
             if (null == step) continue;
-            assert step instanceof Barrier || step instanceof LocalBarrier;
+            assert step instanceof Barrier;
             completedBarriers.add(step.getId());
-            if (step instanceof Barrier) {
+            if (!(step instanceof LocalBarrier)) {  // local barriers don't do any processing on the master traversal (they just lock on the workers)
                 final Barrier<Object> barrier = (Barrier<Object>) step;
                 barrier.addBarrier(memory.get(key));
                 while (step.hasNext()) {

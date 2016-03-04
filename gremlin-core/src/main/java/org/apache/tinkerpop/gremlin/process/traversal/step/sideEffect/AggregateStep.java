@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -26,9 +25,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
@@ -36,18 +37,18 @@ import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AggregateStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier {
+public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating, LocalBarrier<S> {
 
     private Traversal.Admin<S, Object> aggregateTraversal = null;
     private String sideEffectKey;
-    private boolean onGraphComputer = false;
-    private final TraverserSet<S> barrier = new TraverserSet<>();
+    private TraverserSet<S> barrier = new TraverserSet<>();
 
     public AggregateStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
@@ -83,6 +84,7 @@ public final class AggregateStep<S> extends SideEffectStep<S> implements SideEff
     @Override
     public AggregateStep<S> clone() {
         final AggregateStep<S> clone = (AggregateStep<S>) super.clone();
+        clone.barrier = new TraverserSet<>();
         if (null != this.aggregateTraversal)
             clone.aggregateTraversal = this.aggregateTraversal.clone();
         return clone;
@@ -103,33 +105,51 @@ public final class AggregateStep<S> extends SideEffectStep<S> implements SideEff
     }
 
     @Override
-    protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final BulkSet<Object> bulkSet = new BulkSet<>();
-        bulkSet.add(TraversalUtil.applyNullable(traverser, this.aggregateTraversal), traverser.bulk());
-        this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);
+    protected Traverser<S> processNextStart() {
+        this.processAllStarts();
+        return this.barrier.remove();
     }
 
     @Override
-    protected Traverser<S> processNextStart() {
-        if (this.onGraphComputer)
-            return super.processNextStart();
-        else {
+    public void processAllStarts() {
+        if (this.starts.hasNext()) {
+            final BulkSet<Object> bulkSet = new BulkSet<>();
             while (this.starts.hasNext()) {
                 final Traverser.Admin<S> traverser = this.starts.next();
-                this.sideEffect(traverser);
+                bulkSet.add(TraversalUtil.applyNullable(traverser, this.aggregateTraversal), traverser.bulk());
+                traverser.setStepId(this.getNextStep().getId()); // when barrier is reloaded, the traversers should be at the next step
                 this.barrier.add(traverser);
             }
-            return this.barrier.remove();
+            this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);
         }
     }
 
     @Override
-    public MemoryComputeKey<Boolean> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), Operator.and, false, true);
+    public boolean hasNextBarrier() {
+        this.processAllStarts();
+        return !this.barrier.isEmpty();
     }
 
     @Override
-    public void onGraphComputer() {
-        this.onGraphComputer = true;
+    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        this.processAllStarts();
+        if (this.barrier.isEmpty())
+            throw FastNoSuchElementException.instance();
+        else {
+            final TraverserSet<S> temp = this.barrier;
+            this.barrier = new TraverserSet<>();
+            return temp;
+        }
+    }
+
+    @Override
+    public void addBarrier(final TraverserSet<S> barrier) {
+        this.barrier.addAll(barrier);
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.barrier.clear();
     }
 }

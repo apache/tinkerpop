@@ -144,27 +144,32 @@ public final class TraverserExecutor {
         if (step instanceof Barrier) {
             if (step instanceof Bypassing)
                 ((Bypassing) step).setBypass(true);
-            final Barrier barrier = (Barrier) step;
-            while (barrier.hasNextBarrier()) {
-                memory.add(step.getId(), barrier.nextBarrier());
+            if (step instanceof LocalBarrier) {
+                final LocalBarrier<Object> barrier = (LocalBarrier<Object>) step;
+                final TraverserSet<Object> traverserSet = vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).orElse(new TraverserSet<>());
+                vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS, traverserSet);
+                while (barrier.hasNextBarrier()) {
+                    final TraverserSet<Object> barrierSet = barrier.nextBarrier();
+                    IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
+                        if (traverser.asAdmin().isHalted()) {
+                            traverser.asAdmin().detach();
+                            haltedTraversers.add(traverser.asAdmin());
+                            if (returnHaltedTraversers)
+                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                        } else {
+                            traverser.asAdmin().detach();
+                            traverserSet.add(traverser.asAdmin());
+                        }
+                    });
+                }
+                memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
+            } else {
+                final Barrier barrier = (Barrier) step;
+                while (barrier.hasNextBarrier()) {
+                    memory.add(step.getId(), barrier.nextBarrier());
+                }
                 memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
             }
-        } else if (step instanceof LocalBarrier) {
-            final TraverserSet<Object> traverserSet = vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).orElse(new TraverserSet<>());
-            vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS, traverserSet);
-            step.forEachRemaining(traverser -> {
-                if (traverser.asAdmin().isHalted()) {
-                    traverser.asAdmin().detach();
-                    haltedTraversers.add(traverser.asAdmin());
-                    if (returnHaltedTraversers)
-                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
-                } else {
-                    traverser.asAdmin().detach();
-                    traverserSet.add(traverser.asAdmin());
-                }
-            });
-            memory.add(step.getId(), true);
-            memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
                 if (traverser.asAdmin().isHalted()) {
