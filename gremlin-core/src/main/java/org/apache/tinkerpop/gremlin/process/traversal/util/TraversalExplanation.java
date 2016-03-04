@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.javatuples.Pair;
 
@@ -49,11 +50,13 @@ public class TraversalExplanation implements Serializable {
 
     public TraversalExplanation(final Traversal.Admin<?, ?> traversal) {
         this.traversal = traversal.clone();
-        Traversal.Admin<?, ?> mutatingTraversal = this.traversal.clone();
+        TraversalStrategies mutatingStrategies = new DefaultTraversalStrategies();
         for (final TraversalStrategy strategy : this.traversal.getStrategies().toList()) {
-            strategy.apply(mutatingTraversal);
+            final Traversal.Admin<?, ?> mutatingTraversal = this.traversal.clone();
+            mutatingStrategies.addStrategies(strategy);
+            mutatingTraversal.setStrategies(mutatingStrategies);
+            mutatingTraversal.applyStrategies();
             this.strategyTraversals.add(Pair.with(strategy, mutatingTraversal));
-            mutatingTraversal = mutatingTraversal.clone();
         }
     }
 
