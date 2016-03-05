@@ -76,8 +76,8 @@ public abstract class GroovySideEffectTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', 0).V.out.sideEffect{it.sideEffects('a', it.bulk() as int)}.cap('a')")
+        public Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a', 0).V.out.sideEffect{it.sideEffects('a', 1)}.cap('a')")
         }
     }
 }

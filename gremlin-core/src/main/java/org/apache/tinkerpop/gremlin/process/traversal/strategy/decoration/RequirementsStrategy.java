@@ -52,12 +52,16 @@ public final class RequirementsStrategy extends AbstractTraversalStrategy<Traver
         if (null == strategy) {
             strategy = new RequirementsStrategy();
             traversalStrategies.addStrategies(strategy);
+        } else {
+            final RequirementsStrategy cloneStrategy = new RequirementsStrategy();
+            cloneStrategy.requirements.addAll(strategy.requirements);
+            strategy = cloneStrategy;
+            traversalStrategies.addStrategies(strategy);
         }
-        for (final TraverserRequirement requirement : requirements) {
-            strategy.requirements.add(requirement);
-        }
+        Collections.addAll(strategy.requirements, requirements);
     }
 
+    @Override
     public Set<Class<? extends DecorationStrategy>> applyPost() {
         return Collections.singleton(VertexProgramStrategy.class);
     }

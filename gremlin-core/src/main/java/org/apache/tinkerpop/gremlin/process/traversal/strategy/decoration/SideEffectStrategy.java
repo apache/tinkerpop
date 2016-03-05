@@ -54,6 +54,11 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
         if (null == strategy) {
             strategy = new SideEffectStrategy();
             traversalStrategies.addStrategies(strategy);
+        } else {
+            final SideEffectStrategy cloneStrategy = new SideEffectStrategy();
+            cloneStrategy.sideEffects.addAll(strategy.sideEffects);
+            strategy = cloneStrategy;
+            traversalStrategies.addStrategies(strategy);
         }
         strategy.sideEffects.add(new Triplet<>(key, null == value ? null : value instanceof Supplier ? (Supplier) value : new ConstantSupplier<>(value), reducer));
     }

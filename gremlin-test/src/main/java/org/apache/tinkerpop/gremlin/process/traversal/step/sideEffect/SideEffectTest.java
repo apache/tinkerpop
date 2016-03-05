@@ -66,7 +66,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0_sumX_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
 
-    public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
+    public abstract Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -182,8 +182,8 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
-        final Traversal<Vertex, Integer> traversal = get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX();
+    public void g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX() {
+        final Traversal<Vertex, Integer> traversal = get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX();
         assertEquals(1, traversal.next().intValue());
         assertFalse(traversal.hasNext());
         assertEquals(1, traversal.asAdmin().getSideEffects().<Integer>get("a").intValue());
@@ -243,8 +243,8 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_bulkXX_capXaX() {
-            return g.withSideEffect("a", 0).V().out().sideEffect(t -> t.sideEffects("a", (int) t.bulk())).cap("a");
+        public Traversal<Vertex, Integer> get_g_withSideEffectXa_0X_V_out_sideEffectXsideEffectsXa_1XX_capXaX() {
+            return g.withSideEffect("a", 0).V().out().sideEffect(t -> t.sideEffects("a", 1)).cap("a");
         }
     }
 

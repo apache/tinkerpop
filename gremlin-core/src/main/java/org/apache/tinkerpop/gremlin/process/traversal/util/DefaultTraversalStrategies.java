@@ -39,20 +39,20 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
 
     @Override
+    @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
-        boolean added = false;
-        for (final TraversalStrategy strategy : strategies) {
-            if (!this.traversalStrategies.contains(strategy)) {
-                this.traversalStrategies.add(strategy);
-                added = true;
-            }
+        final Class<? extends TraversalStrategy>[] classes = new Class[strategies.length];
+        for (int i = 0; i < strategies.length; i++) {
+            classes[i] = strategies[i].getClass();
         }
-        if (added) this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
+        this.removeStrategies(classes);  // todo: do a remove with no sort
+        Collections.addAll(this.traversalStrategies, strategies);
+        this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses) {
         boolean removed = false;
         for (final Class<? extends TraversalStrategy> strategyClass : strategyClasses) {

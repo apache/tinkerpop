@@ -60,7 +60,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public DefaultTraversal() {
         this.graph = null;
         // necessary for anonymous traversals without a graph start (rethink how this works in the future)
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class));
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
     }
 
     public DefaultTraversal(final Graph graph) {
@@ -191,7 +191,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             clone.steps = new ArrayList<>();
             clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
-            clone.strategies = this.strategies.clone();
+            clone.strategies = this.strategies;
             clone.lastEnd = null;
             clone.lastEndCount = 0l;
             for (final Step<?, ?> step : this.steps) {
@@ -226,7 +226,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        this.strategies = strategies.clone(); // todo: why do we clone this?
+        this.strategies = strategies;
     }
 
     @Override
