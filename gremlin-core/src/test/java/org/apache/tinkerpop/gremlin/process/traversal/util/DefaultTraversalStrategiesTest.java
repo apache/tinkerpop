@@ -19,11 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.TraversalStrategiesTest;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -152,6 +155,54 @@ public class DefaultTraversalStrategiesTest {
         assertEquals(d, s.toList().get(2));
         assertEquals(c, s.toList().get(3));
         assertEquals(e, s.toList().get(4));
+    }
+
+    @Test
+    public void testCloningAndStatefulStrategies() {
+        final DefaultTraversal firstTraversal = new DefaultTraversal();
+        final DefaultTraversalStrategies first = new DefaultTraversalStrategies();
+        assertEquals(0, first.traversalStrategies.size());
+        SideEffectStrategy.addSideEffect(first, "a", 2, Operator.sum);
+        assertEquals(1, first.traversalStrategies.size());
+        firstTraversal.setStrategies(first);
+        firstTraversal.applyStrategies();
+        assertEquals(1, firstTraversal.getSideEffects().keys().size());
+        assertEquals(2, firstTraversal.getSideEffects().<Integer>get("a").intValue());
+        final DefaultTraversalStrategies second = first.clone();
+        SideEffectStrategy.addSideEffect(second, "b", "marko", Operator.assign);
+
+        final DefaultTraversal secondTraversal = new DefaultTraversal();
+        secondTraversal.setStrategies(first);
+        secondTraversal.applyStrategies();
+        assertEquals(1, secondTraversal.getSideEffects().keys().size());
+        assertEquals(2, secondTraversal.getSideEffects().<Integer>get("a").intValue());
+
+        final DefaultTraversal thirdTraversal = new DefaultTraversal();
+        thirdTraversal.setStrategies(second);
+        thirdTraversal.applyStrategies();
+        assertEquals(2, thirdTraversal.getSideEffects().keys().size());
+        assertEquals(2, thirdTraversal.getSideEffects().<Integer>get("a").intValue());
+        assertEquals("marko", thirdTraversal.getSideEffects().get("b"));
+
+        SideEffectStrategy.addSideEffect(second, "c", "hello", Operator.assign);
+        final DefaultTraversal forthTraversal = new DefaultTraversal();
+        forthTraversal.setStrategies(second);
+        forthTraversal.applyStrategies();
+        assertEquals(3, forthTraversal.getSideEffects().keys().size());
+        assertEquals(2, forthTraversal.getSideEffects().<Integer>get("a").intValue());
+        assertEquals("marko", forthTraversal.getSideEffects().get("b"));
+        assertEquals("hello", forthTraversal.getSideEffects().get("c"));
+
+        final DefaultTraversal fifthTraversal = new DefaultTraversal();
+        fifthTraversal.setStrategies(first);
+        fifthTraversal.applyStrategies();
+        assertEquals(1, fifthTraversal.getSideEffects().keys().size());
+        assertEquals(2, fifthTraversal.getSideEffects().<Integer>get("a").intValue());
+
+        assertTrue(firstTraversal.getStrategies() == secondTraversal.getStrategies());
+        assertTrue(firstTraversal.getStrategies() != thirdTraversal.getStrategies());
+        assertTrue(forthTraversal.getStrategies() == thirdTraversal.getStrategies());
+        assertTrue(fifthTraversal.getStrategies() == firstTraversal.getStrategies());
     }
 }
 
