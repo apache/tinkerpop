@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -39,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,19 +94,38 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
         final Client aliased = client.alias("graph");
-        final ResultSet results = aliased.submit(g.V(1));
-        final Vertex v = results.all().get().get(0).getVertex();
-        assertThat(v, instanceOf(DetachedVertex.class));
+        final ResultSet resultSet = aliased.submit(g.V().both().both());
+        final List<Result> results = resultSet.all().get();
 
-        assertEquals("marko", v.properties("name").next().value());
-        v.properties().forEachRemaining(p -> {
-            if (p.key().equals("name"))
-                assertEquals("marko", p.value());
-            else if (p.key().equals("age"))
-                assertEquals(29, p.value());
-            else
-                fail("Should not have any other keys besides 'name' and 'age'");
-        });
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
+        assertEquals(30, results.size());
+    }
+
+    @Test
+    public void shouldHandleVertexResultFromTraversalAsTraversersUnrolled() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final Client aliased = client.alias("graph");
+        final ResultSet resultSetUnrolled = aliased.submit(g.V().both().barrier().both().barrier());
+        final List<Result> results = resultSetUnrolled.all().get();
+
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
+        assertEquals(30, results.size());
+    }
+
+    @Test
+    public void shouldHandleVertexResultFromTraversalAsTraversers() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final Client clientWithUnrolling = cluster.connect(Client.Settings.build().unrollTraversers(false).create());
+        final Client aliased = clientWithUnrolling.alias("graph");
+        final ResultSet resultSet = aliased.submit(g.V().both().barrier().both().barrier());
+        final List<Result> results = resultSet.all().get();
+
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
+        assertEquals(6, results.size());
+
+        aliased.close();
     }
 
     @Test

@@ -705,7 +705,7 @@ public abstract class Client {
          * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
          * and it will be up to the user to work with that component directly.
          */
-        public boolean isUnrollTraversers() {
+        public boolean unrollTraversers() {
             return unrollTraversers;
         }
 
