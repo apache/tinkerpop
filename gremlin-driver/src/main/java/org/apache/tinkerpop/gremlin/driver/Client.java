@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -55,9 +58,11 @@ public abstract class Client {
 
     protected final Cluster cluster;
     protected volatile boolean initialized;
+    protected final Client.Settings settings;
 
-    Client(final Cluster cluster) {
+    Client(final Cluster cluster, final Client.Settings settings) {
         this.cluster = cluster;
+        this.settings = settings;
     }
 
     /**
@@ -102,8 +107,8 @@ public abstract class Client {
      *
      * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
      */
-    public Client alias(String graphOrTraversalSource) {
-        return new AliasClusteredClient(this, graphOrTraversalSource);
+    public Client alias(final String graphOrTraversalSource) {
+        return alias(makeDefaultAliasMap(graphOrTraversalSource));
     }
 
     /**
@@ -117,13 +122,13 @@ public abstract class Client {
     }
 
     /**
-     * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
-     * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
-     * the created {@code Client}.
+     * Create a a new {@code Client} that aliases against multiple {@link Graph} or {@link TraversalSource} instances,
+     * where the key to the supplied {@link Map} is the "alias" and the value is the name of the {@link Graph} or
+     * {@link TraversalSource} on the server.
+     *
+     * @param aliases one or more aliases
      */
-    public Client alias(final Map<String,String> aliases) {
-        return new AliasClusteredClient(this, aliases);
-    }
+    public abstract Client alias(final Map<String,String> aliases);
 
     /**
      * Submit a {@link Traversal} to the server for remote execution.
@@ -234,7 +239,7 @@ public abstract class Client {
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
 
         if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
-            request.addArg(Tokens.ARGS_ALIASES, makeAliases(graphOrTraversalSource));
+            request.addArg(Tokens.ARGS_ALIASES, makeDefaultAliasMap(graphOrTraversalSource));
 
         return submitAsync(buildMessage(request).create());
     }
@@ -298,10 +303,17 @@ public abstract class Client {
         closeAsync().join();
     }
 
-    private Map<String,String> makeAliases(final String graphOrTraversalSource) {
+    protected Map<String,String> makeDefaultAliasMap(final String graphOrTraversalSource) {
         final Map<String,String> aliases = new HashMap<>();
         aliases.put("g", graphOrTraversalSource);
         return aliases;
+    }
+
+    /**
+     * Gets the {@link Client.Settings}.
+     */
+    public Settings getSettings() {
+        return settings;
     }
 
     /**
@@ -313,8 +325,8 @@ public abstract class Client {
 
         private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
 
-        ClusteredClient(final Cluster cluster) {
-            super(cluster);
+        ClusteredClient(final Cluster cluster, final Client.Settings settings) {
+            super(cluster, settings);
         }
 
         /**
@@ -343,6 +355,89 @@ public abstract class Client {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        /**
+         * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
+         * write of the request completes.
+         *
+         * @param gremlin the gremlin script to execute
+         * @param parameters a map of parameters that will be bound to the script on execution
+         * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
+         */
+        public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
+                                                        final Map<String, Object> parameters) {
+            final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .add(Tokens.ARGS_GREMLIN, gremlin)
+                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+
+            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+
+            if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
+                request.addArg(Tokens.ARGS_ALIASES, makeDefaultAliasMap(graphOrTraversalSource));
+
+            return submitAsync(buildMessage(request).create());
+        }
+
+        /**
+         * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
+         * write of the request completes.
+         *
+         * @param gremlin the gremlin script to execute
+         * @param parameters a map of parameters that will be bound to the script on execution
+         * @param aliases aliases the specified global Gremlin Server variable some other name that then be used in the
+         *                script where the key is the alias name and the value represents the global variable on the
+         *                server
+         */
+        public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String,String> aliases,
+                                                        final Map<String, Object> parameters) {
+            final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .add(Tokens.ARGS_GREMLIN, gremlin)
+                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+
+            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+
+            if (aliases != null && !aliases.isEmpty())
+                request.addArg(Tokens.ARGS_ALIASES, aliases);
+
+            return submitAsync(buildMessage(request).create());
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        @Deprecated
+        public Client rebind(final String graphOrTraversalSource) {
+            return alias(graphOrTraversalSource);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Client alias(final String graphOrTraversalSource) {
+            final Map<String,String> aliases = new HashMap<>();
+            aliases.put("g", graphOrTraversalSource);
+            return alias(aliases);
+        }
+
+        /**
+         * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
+         * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
+         * the created {@code Client}.
+         */
+        @Deprecated
+        public Client rebind(final Map<String,String> rebindings) {
+            return alias(rebindings);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Client alias(final Map<String,String> aliases) {
+            return new AliasClusteredClient(this, aliases, settings);
         }
 
         /**
@@ -398,12 +493,9 @@ public abstract class Client {
      * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
      */
     public final static class AliasClusteredClient extends ReboundClusteredClient {
-        public AliasClusteredClient(Client clusteredClient, String graphOrTraversalSource) {
-            super(clusteredClient, graphOrTraversalSource);
-        }
-
-        public AliasClusteredClient(Client clusteredClient, Map<String, String> rebindings) {
-            super(clusteredClient, rebindings);
+        public AliasClusteredClient(final Client client, final Map<String, String> rebindings,
+                                    final Client.Settings settings) {
+            super(client, rebindings, settings);
         }
     }
 
@@ -419,14 +511,9 @@ public abstract class Client {
         private final Map<String,String> aliases = new HashMap<>();
         final CompletableFuture<Void> close = new CompletableFuture<>();
 
-        ReboundClusteredClient(final Client client, final String graphOrTraversalSource) {
-            super(client.cluster);
-            this.client = client;
-            aliases.put("g", graphOrTraversalSource);
-        }
-
-        ReboundClusteredClient(final Client client, final Map<String,String> rebindings) {
-            super(client.cluster);
+        ReboundClusteredClient(final Client client, final Map<String,String> rebindings,
+                               final Client.Settings settings) {
+            super(client.cluster, settings);
             this.client = client;
             this.aliases.putAll(rebindings);
         }
@@ -442,7 +529,7 @@ public abstract class Client {
 
             try {
                 return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_TRAVERSE)
-                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal)));
+                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal)).create());
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -505,9 +592,9 @@ public abstract class Client {
          * {@inheritDoc}
          */
         @Override
-        public Client alias(String graphOrTraversalSource) {
+        public Client alias(final Map<String, String> aliases) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
-            return new AliasClusteredClient(client, graphOrTraversalSource);
+            return new AliasClusteredClient(client, aliases, settings);
         }
     }
 
@@ -522,14 +609,36 @@ public abstract class Client {
 
         private ConnectionPool connectionPool;
 
-        SessionedClient(final Cluster cluster, final String sessionId, final boolean manageTransactions) {
-            super(cluster);
-            this.sessionId = sessionId;
-            this.manageTransactions = manageTransactions;
+        SessionedClient(final Cluster cluster, final Client.Settings settings) {
+            super(cluster, settings);
+            this.sessionId = settings.getSession().get().sessionId;
+            this.manageTransactions = settings.getSession().get().manageTransactions;
         }
 
         String getSessionId() {
             return sessionId;
+        }
+
+        /**
+         * The sessioned client does not support this feature.
+         *
+         * @throws UnsupportedOperationException
+         * @deprecated As of release 3.1.0, replaced by {@link #alias(String)}
+         */
+        @Deprecated
+        @Override
+        public Client rebind(final String graphOrTraversalSourceName){
+            throw new UnsupportedOperationException("Sessioned client does not support aliasing");
+        }
+
+        /**
+         * The sessioned client does not support this feature.
+         *
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public Client alias(final Map<String, String> aliases) {
+            throw new UnsupportedOperationException("Sessioned client does not support aliasing");
         }
 
         /**
@@ -570,6 +679,158 @@ public abstract class Client {
         @Override
         public CompletableFuture<Void> closeAsync() {
             return connectionPool.closeAsync();
+        }
+    }
+
+    /**
+     * Settings given to {@link Cluster#connect(Settings)} that configures how a {@link Client} will behave.
+     */
+    public static class Settings {
+        private final boolean unrollTraversers;
+        private final Optional<SessionSettings> session;
+
+        private Settings(final Builder builder) {
+            this.unrollTraversers = builder.unrollTraversers;
+            this.session = builder.session;
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        /**
+         * A request to Gremlin Server may return a {@link Traverser}. By default a {@link Traverser} is "unrolled"
+         * into an actual result on the client side. So, if the {@link Traverser} contained a {@link Vertex} then
+         * the {@link Vertex} would be extracted out of that {@link Traverser} for purposes of the result.  If this
+         * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
+         * and it will be up to the user to work with that component directly.
+         */
+        public boolean isUnrollTraversers() {
+            return unrollTraversers;
+        }
+
+        /**
+         * Determines if the {@link Client} is to be constructed with a session. If the value is present, then a
+         * session is expected.
+         */
+        public Optional<SessionSettings> getSession() {
+            return session;
+        }
+
+        public static class Builder {
+            private boolean unrollTraversers = true;
+            private Optional<SessionSettings> session = Optional.empty();
+
+            private Builder() {}
+
+            /**
+             * A request to Gremlin Server may return a {@link Traverser}. By default a {@link Traverser} is "unrolled"
+             * into an actual result on the client side. So, if the {@link Traverser} contained a {@link Vertex} then
+             * the {@link Vertex} would be extracted out of that {@link Traverser} for purposes of the result.  If this
+             * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
+             * and it will be up to the user to work with that component directly.
+             */
+            public Builder unrollTraversers(final boolean unrollTraversers) {
+                this.unrollTraversers = unrollTraversers;
+                return this;
+            }
+
+            /**
+             * Enables a session. By default this will create a random session name and configure transactions to be
+             * unmanaged. This method will override settings provided by calls to the other overloads of
+             * {@code useSession}.
+             */
+            public Builder useSession(final boolean enabled) {
+                session = enabled ? Optional.of(SessionSettings.build().create()) : Optional.empty();
+                return this;
+            }
+
+            /**
+             * Enables a session. By default this will create a session with the provided name and configure
+             * transactions to be unmanaged. This method will override settings provided by calls to the other
+             * overloads of {@code useSession}.
+             */
+            public Builder useSession(final String sessionId) {
+                session = sessionId != null && !sessionId.isEmpty() ?
+                        Optional.of(SessionSettings.build().sessionId(sessionId).create()) : Optional.empty();
+                return this;
+            }
+
+            /**
+             * Enables a session. This method will override settings provided by calls to the other overloads of
+             * {@code useSession}.
+             */
+            public Builder useSession(final SessionSettings settings) {
+                session = Optional.ofNullable(settings);
+                return this;
+            }
+
+            public Settings create() {
+                return new Settings(this);
+            }
+
+        }
+    }
+
+    /**
+     * Settings for a {@link Client} that involve a session.
+     */
+    public static class SessionSettings {
+        private final boolean manageTransactions;
+        private final String sessionId;
+
+        private SessionSettings(final Builder builder) {
+            manageTransactions = builder.manageTransactions;
+            sessionId = builder.sessionId;
+        }
+
+        /**
+         * If enabled, transactions will be "managed" such that each request will represent a complete transaction.
+         */
+        public boolean manageTransactions() {
+            return manageTransactions;
+        }
+
+        /**
+         * Provides the identifier of the session.
+         */
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public static SessionSettings.Builder build() {
+            return new SessionSettings.Builder();
+        }
+
+        public static class Builder {
+            private boolean manageTransactions = false;
+            private String sessionId = UUID.randomUUID().toString();
+
+            private Builder() {}
+
+            /**
+             * If enabled, transactions will be "managed" such that each request will represent a complete transaction.
+             * By default this value is {@code false}.
+             */
+            public Builder manageTransactions(final boolean manage) {
+                manageTransactions = manage;
+                return this;
+            }
+
+            /**
+             * Provides the identifier of the session. This value cannot be null or empty. By default it is set to
+             * a random {@code UUID}.
+             */
+            public Builder sessionId(final String sessionId) {
+                if (null == sessionId || sessionId.isEmpty())
+                    throw new IllegalArgumentException("sessionId cannot be null or empty");
+                this.sessionId = sessionId;
+                return this;
+            }
+
+            public SessionSettings create() {
+                return new SessionSettings(this);
+            }
         }
     }
 }

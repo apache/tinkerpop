@@ -79,7 +79,7 @@ public final class Cluster {
      * submitted or can be directly initialized via {@link Client#init()}.
      */
     public <T extends Client> T connect() {
-        return (T) new Client.ClusteredClient(this);
+        return (T) new Client.ClusteredClient(this, Client.Settings.build().create());
     }
 
     /**
@@ -116,9 +116,19 @@ public final class Cluster {
      * @param manageTransactions enables auto-transactions when set to true
      */
     public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
-        if (null == sessionId || sessionId.isEmpty())
-            throw new IllegalArgumentException("sessionId cannot be null or empty");
-        return (T) new Client.SessionedClient(this, sessionId, manageTransactions);
+        final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
+                .manageTransactions(manageTransactions)
+                .sessionId(sessionId).create();
+        final Client.Settings settings = Client.Settings.build().useSession(sessionSettings).create();
+        return connect(settings);
+    }
+
+    /**
+     * Creates a new {@link Client} based on the settings provided.
+     */
+    public <T extends Client> T connect(final Client.Settings settings) {
+        return settings.getSession().isPresent() ? (T) new Client.SessionedClient(this, settings) :
+                (T) new Client.ClusteredClient(this, settings);
     }
 
     @Override
