@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
@@ -38,6 +39,7 @@ import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -142,7 +144,11 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
 
                     try {
-                        handleIterator(context, traversal);
+                        // compile the traversal - without it getEndStep() has nothing in it
+                        traversal.hasNext();
+
+                        final Iterator<Traverser> itty = new DetachingIterator(traversal.asAdmin().getEndStep());
+                        handleIterator(context, itty);
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
@@ -167,6 +173,25 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         } catch (Exception ex) {
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+        }
+    }
+
+    static class DetachingIterator implements Iterator<Traverser> {
+
+        private Iterator<Traverser> inner;
+
+        public DetachingIterator(final Iterator<Traverser> toDetach) {
+            inner = toDetach;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return inner.hasNext();
+        }
+
+        @Override
+        public Traverser next() {
+            return inner.next().asAdmin().detach();
         }
     }
 }
