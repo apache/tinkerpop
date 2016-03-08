@@ -26,8 +26,10 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* The `:remote` for `tinkerpop.server` now includes an option to establish the connection as a "session".
+* Provided an implementation for calls to `SessionedClient.alias()`, which formerly threw an `UnsupportedOperationException`.
+* Bumped to commons-collections 3.2.2.
 * Fixed a bug where `OrderGlobalStep` and `OrderLocalStep` were not incorporating their children's traverser requirements.
-* Bump to commons-collections 3.2.2.
 * Fixed a compilation bug in `TraversalExplanation`.
 * Fixed bug where a session explicitly closed was being closed again by session expiration.
 * Improved the recovery options for Gremlin Driver after failed requests to Gremlin Server.
