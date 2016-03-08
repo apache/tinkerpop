@@ -304,12 +304,12 @@ on how to develop a driver for Gremlin Server.
 By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and
 exposes a custom sub-protocol for interacting with the server.
 
-[[connecting-via-console]]
-Connecting via Console
-~~~~~~~~~~~~~~~~~~~~~~
+[[starting-gremlin-server]]
+Starting Gremlin Server
+~~~~~~~~~~~~~~~~~~~~~~~
 
-The most direct way to get started with Gremlin Server is to issue it some remote Gremlin scripts from the Gremlin
-Console.  To do that, first start Gremlin Server:
+Gremlin Server comes packaged with a script called `bin/gremlin-server.sh` to get it started (use `gremlin-server.bat`
+on Windows):
 
 [source,text]
 ----
@@ -374,7 +374,12 @@ are global to all requests. In addition, any functions that are defined will be 
 WARNING: Transactions on graphs in initialization scripts are not closed automatically after the script finishes
 executing.  It is up to the script to properly commit or rollback transactions in the script itself.
 
-With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+[[connecting-via-console]]
+Connecting via Console
+~~~~~~~~~~~~~~~~~~~~~~
+
+With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as
+follows:
 
 [source,text]
 ----
@@ -467,6 +472,10 @@ The Gremlin Server `:remote` command has the following configuration options:
 |timeout |Specifies the length of time in milliseconds that the remote will wait for a response from the server.
 |=========================================================
 
+[[console-aliases]]
+Aliases
+^^^^^^^
+
 The `alias` configuration command for the Gremlin Server `:remote` can be useful in situations where there are
 multiple `Graph` or `TraversalSource` instances on the server, as it becomes possible to rename them from the client
 for purposes of execution within the context of a script.  Therefore, it becomes possible to submit commands this way:
@@ -477,6 +486,35 @@ for purposes of execution within the context of a script.  Therefore, it becomes
 :remote config alias x g
 :> x.E().label().groupCount()
 ----
+
+[[console-sessions]]
+Sessions
+^^^^^^^^
+
+A `:remote` created in the following fashion will be "sessionless", meaning each script issued to the server with
+`:>` will be encased in a transaction and no state will be maintained from one request to the next.
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote-objects.yaml
+----
+
+In other words, the transaction will be automatically committed (or rolledback on error) and any variables declared
+in that script will be forgotten for the next request. See the section on <<sessions, "Considering Sessions">>
+for more information on that topic.
+
+To enable the remote to connect with a session the `connect` argument takes another argument as follows:
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote.yaml session
+:> x = 1
+:> y = 2
+:> x + y
+----
+
+With the above command a session gets created with a random UUID for a session identifier. It is also possible to
+assign a custom session identifier by adding it as the last argument to `:remote` command above.
 
 [[connecting-via-java]]
 Connecting via Java
