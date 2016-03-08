@@ -61,11 +61,10 @@ public abstract class Client {
     /**
      * Makes any final changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
      * may choose to override this message to append data to the request before sending.  By default, this method
-     * will simply call the {@link org.apache.tinkerpop.gremlin.driver.message.RequestMessage.Builder#create()} and return
-     * the {@link RequestMessage}.
+     * will simply return the {@code builder} passed in by the caller.
      */
-    public RequestMessage buildMessage(final RequestMessage.Builder builder) {
-        return builder.create();
+    public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
+        return builder;
     }
 
     /**
@@ -193,7 +192,7 @@ public abstract class Client {
 
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
 
-        return submitAsync(buildMessage(request));
+        return submitAsync(buildMessage(request).create());
     }
 
     /**
@@ -215,7 +214,7 @@ public abstract class Client {
         if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
             request.addArg(Tokens.ARGS_ALIASES, makeAliases(graphOrTraversalSource));
 
-        return submitAsync(buildMessage(request));
+        return submitAsync(buildMessage(request).create());
     }
 
     /**
@@ -239,7 +238,7 @@ public abstract class Client {
         if (aliases != null && !aliases.isEmpty())
             request.addArg(Tokens.ARGS_ALIASES, aliases);
 
-        return submitAsync(buildMessage(request));
+        return submitAsync(buildMessage(request).create());
     }
 
     /**
@@ -421,12 +420,12 @@ public abstract class Client {
         }
 
         @Override
-        public RequestMessage buildMessage(final RequestMessage.Builder builder) {
+        public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             if (!aliases.isEmpty())
                 builder.addArg(Tokens.ARGS_ALIASES, aliases);
 
-            return builder.create();
+            return client.buildMessage(builder);
         }
 
         @Override
@@ -498,11 +497,11 @@ public abstract class Client {
          * Adds the {@link Tokens#ARGS_SESSION} value to every {@link RequestMessage}.
          */
         @Override
-        public RequestMessage buildMessage(final RequestMessage.Builder builder) {
+        public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
             builder.processor("session");
             builder.addArg(Tokens.ARGS_SESSION, sessionId);
             builder.addArg(Tokens.ARGS_MANAGE_TRANSACTION, manageTransactions);
-            return builder.create();
+            return builder;
         }
 
         /**
