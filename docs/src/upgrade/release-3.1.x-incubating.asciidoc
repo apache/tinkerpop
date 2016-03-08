@@ -32,6 +32,23 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.2-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Aliasing Sessions
+^^^^^^^^^^^^^^^^^
+
+Calls to `SessionedClient.alias()` used to throw `UnsupportedOperationException` and it was therefore not possible to
+use that capability with a session. That method is now properly implemented and aliasing is allowed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1096[TINKERPOP-1096]
+
+Console Remote Sessions
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The `:remote tinkerpop.server` command now allows for a "session" argument to be passed to `connect`. This argument,
+tells the remote to configure it with a Gremlin Server session. In this way, the console can act as a window to script
+exception on the server and behave more like a standard "local" console when it comes to script execution.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1097[TINKERPOP-1097]
+
 TinkerPop Archetypes
 ^^^^^^^^^^^^^^^^^^^^
 
