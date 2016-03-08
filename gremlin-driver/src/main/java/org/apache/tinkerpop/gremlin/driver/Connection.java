@@ -34,6 +34,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -56,6 +58,7 @@ final class Connection {
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 3000;
+    public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
     public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
@@ -249,7 +252,7 @@ final class Connection {
 
     private void shutdown(final CompletableFuture<Void> future) {
         // shutdown can be called directly from closeAsync() or after write() and therefore this method should only
-        // be called once. once shutdown is initiated, it shoudln't be executed a second time or else it sends more
+        // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
             if (client instanceof Client.SessionedClient) {
@@ -262,10 +265,15 @@ final class Connection {
                     // make sure we get a response here to validate that things closed as expected.  on error, we'll let
                     // the server try to clean up on its own.  the primary error here should probably be related to
                     // protocol issues which should not be something a user has to fuss with.
-                    closed.get();
+                    closed.get(cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException ex) {
+                    final String msg = String.format(
+                            "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
+                            ((Client.SessionedClient) client).getSessionId());
+                    logger.warn(msg, ex);
                 } catch (Exception ex) {
                     final String msg = String.format(
-                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or timeout.",
+                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
                             ((Client.SessionedClient) client).getSessionId());
                     logger.warn(msg, ex);
                 }

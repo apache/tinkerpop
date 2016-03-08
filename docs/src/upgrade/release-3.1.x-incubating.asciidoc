@@ -63,6 +63,15 @@ in a transaction. With this configuration of `client` there is no need to close 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1039[TINKERPOP-1039],
 link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
 
+Session Timeout Setting
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The `gremlin-driver` now has a setting called `maxWaitForSessionClose` that allows control of how long it will wait for
+an in-session connection to respond to a close request before it simply times-out and moves on.  When that happens,
+the server will either eventually close the connection via at session expiration or at the time of shutdown.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1160[TINKERPOP-1160]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
