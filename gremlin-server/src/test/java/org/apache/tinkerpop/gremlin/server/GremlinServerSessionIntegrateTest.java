@@ -160,8 +160,8 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             client.submit("x[1]+2").all().get();
             fail("Session should be dead");
         } catch (Exception ex) {
-            final Exception cause = (Exception) ex.getCause().getCause();
-            assertTrue(cause instanceof ResponseException);
+            final Throwable cause = ExceptionUtils.getCause(ex);
+            assertThat(cause, instanceOf(ResponseException.class));
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
 
             // validate that we can still send messages to the server

@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,8 +61,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -552,7 +553,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("def class C { def C getC(){return this}}; new C()").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
+            final Throwable root = ExceptionUtils.getRootCause(re);
+            assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -570,7 +572,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("java.awt.Color.RED").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Class is not registered: java.awt.Color"));
+            final Throwable root = ExceptionUtils.getRootCause(re);
+            assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Class is not registered: java.awt.Color"));
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -599,6 +602,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
             assertEquals("Connection reset by peer", root.getMessage());
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }

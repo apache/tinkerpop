@@ -27,6 +27,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -185,14 +186,38 @@ final class Connection {
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+
+                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+                        // was called
                         readCompleted.thenAcceptAsync(v -> {
                             thisConnection.returnToPool();
+                            tryShutdown();
+                        }, cluster.executor());
+
+                        // the callback for when the read failed. a failed read means the request went to the server
+                        // and came back with a server-side error of some sort.  it means the server is responsive
+                        // so this isn't going to be like a dead host situation which is handled above on a failed
+                        // write operation.
+                        //
+                        // in the event of an IOException, that will typically mean that the Connection might have
+                        // been closed from the server side. this is typical in situations like when a request is
+                        // sent that exceeds maxContentLength (the server closes the channel on its side).  if the
+                        // Connection is simply returned to the pool then it will be used again on a future request
+                        // and the server will refuse it and make it appear as a dead host as the write will not
+                        // succeed. instead, the Connection gets replaced which destroys the dead channel on the
+                        // client and allows a new one to be reconstructed.
+                        readCompleted.exceptionally(t -> {
+                            if (t instanceof IOException)
+                                if (pool != null) pool.replaceConnection(thisConnection);
+                            else
+                                thisConnection.returnToPool();
 
                             // close was signaled in closeAsync() but there were pending messages at that time. attempt
                             // the shutdown if the returned result cleared up the last pending message
-                            if (isClosed() && pending.isEmpty())
-                                shutdown(closeFuture.get());
-                        }, cluster.executor());
+                            tryShutdown();
+
+                            return null;
+                        });
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
@@ -211,6 +236,15 @@ final class Connection {
             if (logger.isDebugEnabled())
                 logger.debug("Returned {} connection to {} but an error occurred - {}", this.getConnectionInfo(), pool, ce.getMessage());
         }
+    }
+
+    /**
+     * Close was signaled in closeAsync() but there were pending messages at that time. This method attempts the
+     * shutdown if the returned result cleared up the last pending message.
+     */
+    private void tryShutdown() {
+        if (isClosed() && pending.isEmpty())
+            shutdown(closeFuture.get());
     }
 
     private void shutdown(final CompletableFuture<Void> future) {
