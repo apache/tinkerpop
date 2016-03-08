@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bump to commons-collections 3.2.2.
 * Fixed a compilation bug in `TraversalExplanation`.
 * Bumped to Netty 4.0.34.Final.
 * Added "interpreter mode" for the `ScriptEngine` and Gremlin Server which allows variables defined with `def` or a type to be recognized as "global".

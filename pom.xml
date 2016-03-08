@@ -135,7 +135,6 @@ limitations under the License.
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.12</slf4j.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <commons.configuration.version>1.10</commons.configuration.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
 
@@ -477,7 +476,7 @@ limitations under the License.
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
-                <version>${commons.configuration.version}</version>
+                <version>1.10</version>
                 <exclusions>
                     <!-- self-conflict -->
                     <exclusion>
@@ -485,6 +484,11 @@ limitations under the License.
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
