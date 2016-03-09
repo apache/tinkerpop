@@ -532,6 +532,43 @@ In this case, they are streamed from the server as they arrive.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached,
 which will boost performance and reduce resources required on the server.
 
+Configuration
+^^^^^^^^^^^^^
+
+The following table describes the various configuration options for the Gremlin Driver:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
+|connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
+|connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
+|connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
+|connectionPool.maxSize |The maximum size of a connection pool for a host. |8
+|connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
+|connectionPool.maxWaitForSessionClose |The amount of time in milliseconds to wait for a session to close before timing out (does not apply to sessionless connections). |3000
+|connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
+|connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
+|connectionPool.minSize |The minimum size of a connection pool for a host. |2
+|connectionPool.reconnectInitialDelay |The amount of time in milliseconds to wait before trying to reconnect to a dead host for the first time. |1000
+|connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. This interval occurs after the time specified by the `reconnectInitialDelay`. |1000
+|connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
+|connectionPool.trustCertChainFile |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the `TrustManager` will be established with a self-signed certificate which is NOT suitable for production purposes. |_none_
+|hosts |The list of hosts that the driver will connect to. |localhost
+|jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
+|nioPoolSize |Size of the pool for handling request/response operations. |available processors
+|password |The password to submit on requests that require authentication. |_none_
+|port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
+|protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
+|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to communicate with the server. Note that the serializer configured on the client should be supported by the server configuration. |`GryoMessageSerializerV1d0`
+|serializer.config |A `Map` of configuration settings for the serializer. |_none_
+|username |The username to submit on requests that require authentication. |_none_
+|workerPoolSize |Size of the pool for handling background work. |available processors * 2
+|=========================================================
+
+Please see the link:http://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
+
 Aliases
 ^^^^^^^
 
@@ -693,7 +730,7 @@ The following table describes the various configuration options that Gremlin Ser
 |Key |Description |Default
 |authentication.className |The fully qualified classname of an `Authenticator` implementation to use.  If this setting is not present, then authentication is effectively disabled. |`AllowAllAuthenticator`
 |authentication.config |A `Map` of configuration settings to be passes to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
-|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer
+|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |`WebSocketChannelizer`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
 |host |The name of the host to bind the server to. |localhost

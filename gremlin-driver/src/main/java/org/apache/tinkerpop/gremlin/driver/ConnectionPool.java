@@ -248,7 +248,7 @@ final class ConnectionPool {
         return futures.toArray(new CompletableFuture[futures.size()]);
     }
 
-    private void replaceConnection(final Connection connection) {
+    void replaceConnection(final Connection connection) {
         logger.debug("Replace {}", connection);
 
         open.decrementAndGet();

@@ -102,7 +102,7 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
 
     @Override
