@@ -40,6 +40,15 @@ use that capability with a session. That method is now properly implemented and 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1096[TINKERPOP-1096]
 
+Remote Console
+^^^^^^^^^^^^^^
+
+The `:remote console` command provides a way to avoid having to prefix the `:>` command to scripts when remoting. This
+mode of console usage can be convenient when working exclusively with a remote like Gremlin Server and there is only a
+desire to view the returned data and not to actually work with it locally in any way.
+
+See: link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
+
 Console Remote Sessions
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -148,6 +157,8 @@ to `true` if the implementation expects the user to always use `:>` to interact 
 that case, that `RemoteAcceptor` implementation can return `true`.  On the other hand, the `tinkerpop.gephi` plugin,
 expects that the user sometimes call `:>` and sometimes work with local evaluation as well. It interacts with the
 local variable bindings in the console itself. For `tinkerpop.gephi`, this method returns `false`.
+
+See: link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-remote-console[Reference Documentation - Remote Console]
 
 TinkerPop 3.1.1
 ---------------

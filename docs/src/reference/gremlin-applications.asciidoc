@@ -516,6 +516,7 @@ To enable the remote to connect with a session the `connect` argument takes anot
 With the above command a session gets created with a random UUID for a session identifier. It is also possible to
 assign a custom session identifier by adding it as the last argument to `:remote` command above.
 
+[[console-remote-console]]
 Remote Console
 ^^^^^^^^^^^^^^
 
