@@ -129,8 +129,8 @@ class RemoteCommand extends ComplexCommandSupport {
     private String swapEvalautionMode() {
         mediator.localEvaluation = !mediator.localEvaluation
         if (mediator.localEvaluation)
-            return "Exited remote console - all commands will be evaluated locally"
+            return "Exited remote console - all scripts will now be evaluated locally"
         else
-            return "All commands will now be sent to ${mediator.currentRemote()} - type ':remote console' to exit"
+            return "All scripts will now be sent to ${mediator.currentRemote()} - type ':remote console' to exit"
     }
 }
