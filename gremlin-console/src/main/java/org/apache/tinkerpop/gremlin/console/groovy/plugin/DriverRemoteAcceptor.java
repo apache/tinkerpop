@@ -187,6 +187,11 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
+    public boolean allowRemoteConsole() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "Gremlin Server - [" + this.currentCluster + "]" + getSessionStringSegment();
     }

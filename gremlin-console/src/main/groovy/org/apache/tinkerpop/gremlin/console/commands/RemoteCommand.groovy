@@ -117,6 +117,8 @@ class RemoteCommand extends ComplexCommandSupport {
 
     def Object do_console = {
         if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+        if (!mediator.currentRemote().allowRemoteConsole()) return "The ${mediator.currentRemote()} is not compatible with 'connect' - use ':>' instead"
+
         mediator.localEvaluation = !mediator.localEvaluation
         if (mediator.localEvaluation)
             return "Exited remote console - all commands will be evaluated locally"

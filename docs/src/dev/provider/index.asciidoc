@@ -33,6 +33,7 @@ This document attempts to address the needs of the different providers that have
 ** Graph Processor Provider
 * Graph Driver Provider
 * Graph Language Provider
+* Graph Plugin Provider
 
 [[graph-system-provider-requirements]]
 Graph System Provider Requirements

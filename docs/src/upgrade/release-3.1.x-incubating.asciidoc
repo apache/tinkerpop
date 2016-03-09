@@ -135,6 +135,20 @@ this value as `false`, so there is no change to the protocol for this feature.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1039[TINKERPOP-1039],
 link:http://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Reference Documentation - Considering Sessions]
 
+Plugin Providers
+^^^^^^^^^^^^^^^^
+
+RemoteAcceptor allowRemoteConsole
++++++++++++++++++++++++++++++++++
+
+The `RemoteAcceptor` now has a new method called `allowRemoteConsole()`.  It has a default implementation that
+returns `false` and should thus be a non-breaking change for current implementations.  This value should only be set
+to `true` if the implementation expects the user to always use `:>` to interact with it.  For example, the
+`tinkerpop.server` plugin expects all user interaction through `:>`, where the line is sent to Gremlin Server.  In
+that case, that `RemoteAcceptor` implementation can return `true`.  On the other hand, the `tinkerpop.gephi` plugin,
+expects that the user sometimes call `:>` and sometimes work with local evaluation as well. It interacts with the
+local variable bindings in the console itself. For `tinkerpop.gephi`, this method returns `false`.
+
 TinkerPop 3.1.1
 ---------------
 
