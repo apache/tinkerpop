@@ -456,7 +456,7 @@ submitting `:> graph` will return a `Graph` instance and in most cases those are
 and will return a serialization error.  It should be noted that `TinkerGraph`, as a convenience for shipping around
 small sub-graphs, is serializable from Gremlin Server.
 
-The Gremlin Server `:remote` command has the following configuration options:
+The Gremlin Server `:remote config` command for the driver has the following configuration options:
 
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
@@ -469,7 +469,7 @@ The Gremlin Server `:remote` command has the following configuration options:
 !`reset` !Clears any aliases that were supplied in previous configurations of the remote.
 !`show` !Shows the current set of aliases which is returned as a `Map`
 !=========================================================
-|timeout |Specifies the length of time in milliseconds that the remote will wait for a response from the server.
+|timeout |Specifies the length of time in milliseconds a will wait for a response from the server.
 |=========================================================
 
 [[console-aliases]]
@@ -515,6 +515,36 @@ To enable the remote to connect with a session the `connect` argument takes anot
 
 With the above command a session gets created with a random UUID for a session identifier. It is also possible to
 assign a custom session identifier by adding it as the last argument to `:remote` command above.
+
+Remote Console
+^^^^^^^^^^^^^^
+
+Previous examples have shown usage of the `:>` command to send scripts to Gremlin Server. The Gremlin Console also
+supports an additional method for doing this which can be more convenient when the intention is to exclusively
+work with a remote connection to the server.
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote.yaml session
+:remote console
+x = 1
+y = 2
+x + y
+:remote console
+----
+
+In the above example, the `:remote console` command is executed. It places the console in a state where the `:>` is
+no longer required. Each script line is actually automatically submitted to Gremlin Server for evalaution. The
+variables `x` and `y` that were defined actually don't exist locally - they only exist on the server! In this sense,
+putting the console in this mode is basically like creating a window to a session on Gremlin Server.
+
+TIP: When using `:remote console` there is not much point to using a configuration that uses a serializer that returns
+actual data. In other words, using a configuration like the one inside of `conf/remote-objects.yaml` isn't typically
+useful as in this mode the result will only ever be displayed but not used. Using a serializer configuration like
+the one in `conf/remote.yaml` should perform better.
+
+NOTE: Console commands, those that begin with a colon (e.g. `:x`, `:remote`) do not execute remotely when in this mode.
+They are all still evaluated locally.
 
 [[connecting-via-java]]
 Connecting via Java
