@@ -60,7 +60,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     public DefaultTraversal() {
         this.graph = null;
         // necessary for anonymous traversals without a graph start (rethink how this works in the future)
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class));
     }
 
     public DefaultTraversal(final Graph graph) {
