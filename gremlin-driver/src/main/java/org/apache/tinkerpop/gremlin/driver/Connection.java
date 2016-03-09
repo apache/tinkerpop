@@ -27,12 +27,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,6 +58,7 @@ final class Connection {
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 3000;
+    public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
     public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
@@ -185,14 +189,38 @@ final class Connection {
                     } else {
                         final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+
+                        // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+                        // was called
                         readCompleted.thenAcceptAsync(v -> {
                             thisConnection.returnToPool();
+                            tryShutdown();
+                        }, cluster.executor());
+
+                        // the callback for when the read failed. a failed read means the request went to the server
+                        // and came back with a server-side error of some sort.  it means the server is responsive
+                        // so this isn't going to be like a dead host situation which is handled above on a failed
+                        // write operation.
+                        //
+                        // in the event of an IOException, that will typically mean that the Connection might have
+                        // been closed from the server side. this is typical in situations like when a request is
+                        // sent that exceeds maxContentLength (the server closes the channel on its side).  if the
+                        // Connection is simply returned to the pool then it will be used again on a future request
+                        // and the server will refuse it and make it appear as a dead host as the write will not
+                        // succeed. instead, the Connection gets replaced which destroys the dead channel on the
+                        // client and allows a new one to be reconstructed.
+                        readCompleted.exceptionally(t -> {
+                            if (t instanceof IOException)
+                                if (pool != null) pool.replaceConnection(thisConnection);
+                            else
+                                thisConnection.returnToPool();
 
                             // close was signaled in closeAsync() but there were pending messages at that time. attempt
                             // the shutdown if the returned result cleared up the last pending message
-                            if (isClosed() && pending.isEmpty())
-                                shutdown(closeFuture.get());
-                        }, cluster.executor());
+                            tryShutdown();
+
+                            return null;
+                        });
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
@@ -213,9 +241,18 @@ final class Connection {
         }
     }
 
+    /**
+     * Close was signaled in closeAsync() but there were pending messages at that time. This method attempts the
+     * shutdown if the returned result cleared up the last pending message.
+     */
+    private void tryShutdown() {
+        if (isClosed() && pending.isEmpty())
+            shutdown(closeFuture.get());
+    }
+
     private void shutdown(final CompletableFuture<Void> future) {
         // shutdown can be called directly from closeAsync() or after write() and therefore this method should only
-        // be called once. once shutdown is initiated, it shoudln't be executed a second time or else it sends more
+        // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
             if (client instanceof Client.SessionedClient) {
@@ -228,10 +265,15 @@ final class Connection {
                     // make sure we get a response here to validate that things closed as expected.  on error, we'll let
                     // the server try to clean up on its own.  the primary error here should probably be related to
                     // protocol issues which should not be something a user has to fuss with.
-                    closed.get();
+                    closed.get(cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException ex) {
+                    final String msg = String.format(
+                            "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
+                            ((Client.SessionedClient) client).getSessionId());
+                    logger.warn(msg, ex);
                 } catch (Exception ex) {
                     final String msg = String.format(
-                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or timeout.",
+                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
                             ((Client.SessionedClient) client).getSessionId());
                     logger.warn(msg, ex);
                 }

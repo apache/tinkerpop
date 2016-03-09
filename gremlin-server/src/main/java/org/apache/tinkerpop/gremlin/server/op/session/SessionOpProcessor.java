@@ -111,7 +111,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                sessionToClose.kill();
+                sessionToClose.manualKill();
             });
         } else {
             return Optional.empty();
@@ -137,7 +137,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
     @Override
     public void close() throws Exception {
-       sessions.values().forEach(Session::kill);
+       sessions.values().forEach(Session::manualKill);
     }
 
     protected void evalOp(final Context context) throws OpProcessorException {
