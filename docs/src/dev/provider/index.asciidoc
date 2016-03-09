@@ -499,7 +499,7 @@ a `Graph` that passes the full Test Suite, should be compliant with Gremlin Serv
 occur is in serialization.  Always ensure that IO is properly implemented, that custom serializers are tested fully
 and ultimately integration test the `Graph` with an actual Gremlin Server instance.
 
-CAUTION: Configuring tests to run in parallel might result in errors that are difficult to debug as there is some
+WARNING: Configuring tests to run in parallel might result in errors that are difficult to debug as there is some
 shared state in test execution around graph configuration.  It is therefore recommended that parallelism be turned
 off for the test suite (the Maven SureFire Plugin is configured this way by default).  It may also be important to
 include this setting, `<reuseForks>false</reuseForks>`, in the SureFire configuration if tests are failing in an

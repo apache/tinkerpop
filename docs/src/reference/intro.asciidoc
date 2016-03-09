@@ -119,7 +119,7 @@ In the above code all the vertices are created first and then their respective e
 `Graph.addVertex(Object...)` or `Vertex.addEdge(String,Vertex,Object...)`, the respective element is created along
 with the provided key/value pair properties appended to it.
 
-CAUTION: Many graph systems do not allow the user to specify an element ID and in such cases, an exception is thrown.
+WARNING: Many graph systems do not allow the user to specify an element ID and in such cases, an exception is thrown.
 
 NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This
 functionality did not exist in TinkerPop2. Element ids are still immutable in TinkerPop3 as they were in TinkerPop2.
@@ -133,7 +133,7 @@ in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in T
 and Gremlin-Groovy are nearly identical due to the inclusion of Java 8 lambdas, a big effort was made to ensure that
 both languages are as similar as possible.
 
-CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used.
+WARNING: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used.
 It is possible to determine which derivative of Gremlin is being used by mousing over the code block.  The word "JAVA"
 or "GROOVY" will appear in the top right corner of the code block.
 
@@ -322,7 +322,7 @@ the current object being traversed, etc. Traverser metadata may be accessed by a
 g.V(marko).out('knows').values('name').path()
 ----
 
-CAUTION: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path
+WARNING: Path calculation is costly in terms of space as an array of previously seen objects is stored in each path
 of the respective traverser. Thus, a traversal strategy analyzes the traversal to determine if path metadata is
 required. If not, then path calculations are turned off.
 
@@ -334,7 +334,7 @@ has gone through a particular section of the traversal expression (i.e. a loop).
 g.V(marko).repeat(out()).times(2).values('name')
 ----
 
-CAUTION: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>>-step. Thus,
+WARNING: A Traversal's result are never ordered unless explicitly by means of <<order-step,`order()`>>-step. Thus,
 never rely on the iteration order between TinkerPop3 releases and even within a release (as traversal optimizations
 may alter the flow).
 

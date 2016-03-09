@@ -59,7 +59,7 @@ the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 Lambda Steps
 ~~~~~~~~~~~~
 
-CAUTION: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
+WARNING: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
 Gremlin language. In practice, lambda steps should be avoided and traversal verification strategies exist to disallow t
 heir use unless explicitly "turned off." For more information on the problems with lambdas, please read
 <<a-note-on-lambdas,A Note on Lambdas>>.
@@ -1611,7 +1611,7 @@ g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfo
 <2> Get an anonymized set of song repertoire sizes.
 <3> What are the 5 most common song repertoire sizes?
 
-CAUTION: Note that `by()`-modulation is not supported with `select(keys)` and `select(values)`.
+WARNING: Note that `by()`-modulation is not supported with `select(keys)` and `select(values)`.
 
 [[using-where-with-select]]
 Using Where with Select
@@ -2245,7 +2245,7 @@ t.iterate(); null
 t.toString()
 ----
 
-CAUTION: The reason that `OptimizationStrategy` and `ProviderOptimizationStrategy` are two different categories is
+WARNING: The reason that `OptimizationStrategy` and `ProviderOptimizationStrategy` are two different categories is
 that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the
 optimizations executed at the end of the optimization strategy round are TinkerPop3 compliant. From there, provider
 optimizations can analyze the traversal and rewrite the traversal as desired using graph system specific steps (e.g.
@@ -2324,7 +2324,7 @@ where the removed edge count is accounted for after the event is raised.  The st
 `TransactionalEventQueue` that captures the changes within a transaction and does not allow them to fire until the
 transaction is committed.
 
-CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other
+WARNING: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other
 words, a mutation in one JVM process is not raised as an event in a different JVM process.  In addition, events are
 not raised when mutations occur outside of the `Traversal` context.
 

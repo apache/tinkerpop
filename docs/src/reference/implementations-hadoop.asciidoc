@@ -150,7 +150,7 @@ However, realize that the underlying HDFS files are not random access and thus, 
 is required. OLTP operations are useful for peeking into the graph prior to executing a long running OLAP job -- e.g.
 `g.V().valueMap().limit(10)`.
 
-CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable
+WARNING: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable
 for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>>
 which is the OLAP Gremlin machine.
 
@@ -229,7 +229,7 @@ etc.). Unfortunately, typically these dependencies are not to the same versions 
 it is best to *not* have both Spark and Giraph plugins loaded in the same console session nor in the same Java
 project (though intelligent `<exclusion>`-usage can help alleviate conflicts in a Java project).
 
-CAUTION: It is important to note that when doing an OLAP traversal, any resulting vertices, edges, or properties will be
+WARNING: It is important to note that when doing an OLAP traversal, any resulting vertices, edges, or properties will be
 attached to the source graph. For Hadoop-based graphs, this may lead to linear search times on massive graphs. Thus,
 if vertex, edge, or property objects are to be returns (as a final result), it is best to `.id()` to get the id
 of the object and not the actual attached object.

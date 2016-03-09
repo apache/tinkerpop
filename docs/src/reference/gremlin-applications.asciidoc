@@ -70,7 +70,7 @@ Plugins.  Consider adding the "local" reference first in the set of `<ibilio>` r
 "apache-snapshots" will likely resolve dependencies from that repository before looking locally.  If it does that,
 then it's possible that the artifact from the newer local build will not be used.
 
-CAUTION: If building TinkerPop from source, be sure to clear TinkerPop-related jars from the `~/.groovy/grapes`
+WARNING: If building TinkerPop from source, be sure to clear TinkerPop-related jars from the `~/.groovy/grapes`
 directory as they can become stale on some systems and not re-import properly from the local `.m2` after fresh rebuilds.
 
 [[gremlin-console]]
@@ -214,7 +214,7 @@ the Console classpath.  Plugins need to be "active" for their features to be ava
 <5> Again, to use the "tinkerpop.neo4j" plugin, it must be made "active" with `:plugin use`.
 <6> Now when the plugin list is displayed, the "tinkerpop.neo4j" plugin is displayed as "active".
 
-CAUTION: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
+WARNING: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
 to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in
 third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
 
@@ -761,7 +761,7 @@ curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bind
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
 string argument with by setting the `language` key.
 
-CAUTION: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
+WARNING: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
 that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.
