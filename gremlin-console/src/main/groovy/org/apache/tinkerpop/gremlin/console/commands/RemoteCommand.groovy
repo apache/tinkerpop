@@ -113,7 +113,7 @@ class RemoteCommand extends ComplexCommandSupport {
 
         // the console is in remote evaluation mode.  closing at this point will needs to exit that mode and then
         // kill the remote itself
-        def line = !mediator.localEvaluation ? swapEvalautionMode() : ""
+        def line = !mediator.localEvaluation ? swapEvaluationMode() : ""
 
         def removed = mediator.removeCurrent()
         removed.close()
@@ -123,10 +123,10 @@ class RemoteCommand extends ComplexCommandSupport {
     def Object do_console = {
         if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
         if (!mediator.currentRemote().allowRemoteConsole()) return "The ${mediator.currentRemote()} is not compatible with 'connect' - use ':>' instead"
-        return swapEvalautionMode()
+        return swapEvaluationMode()
     }
 
-    private String swapEvalautionMode() {
+    private String swapEvaluationMode() {
         mediator.localEvaluation = !mediator.localEvaluation
         if (mediator.localEvaluation)
             return "Exited remote console - all scripts will now be evaluated locally"
