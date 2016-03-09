@@ -21,22 +21,17 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,8 +54,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_hasXnoX_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_fold_countXlocalX();
-
-    public abstract Traversal<Vertex, String> get_g_V_both_both_order_byXcount_decrX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -143,25 +136,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    @Test
-    @LoadGraphWith
-    public void g_V_both_both_order_byXcount_decrX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_both_both_order_byXcount_decrX_name();
-        printTraversalForm(traversal);
-        final List<String> names = traversal.toList();
-        for (int i = 0; i < 7; i++) {
-            assertEquals("marko", names.get(i));
-        }
-        assertTrue(names.get(7).equals("josh") || names.get(7).equals("lop"));
-        assertEquals(7l, names.stream().filter(name -> name.equals("marko")).count());
-        assertEquals(7l, names.stream().filter(name -> name.equals("josh")).count());
-        assertEquals(7l, names.stream().filter(name -> name.equals("lop")).count());
-        assertEquals(3l, names.stream().filter(name -> name.equals("peter")).count());
-        assertEquals(3l, names.stream().filter(name -> name.equals("ripple")).count());
-        assertEquals(3l, names.stream().filter(name -> name.equals("vadas")).count());
-    }
-
-
     public static class Traversals extends CountTest {
 
         @Override
@@ -202,11 +176,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
             return g.V().fold().count(Scope.local);
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_both_both_order_byXcount_decrX_name() {
-            return g.V().both().both().order().by(__.count(), Order.decr).values("name");
         }
     }
 }
