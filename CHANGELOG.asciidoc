@@ -24,6 +24,7 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `hashCode()`/`equals()` bug in `MessageScope`.
 * Fixed a severe `Traversal` cloning issue that caused inconsistent `TraversalSideEffects`.
 * `TraversalSideEffects` remain consistent and usable across multiple chained OLAP jobs.
 * Added `MemoryTraversalSideEffects` which wraps `Memory` in a `TraversalSideEffects` for use in OLAP.
