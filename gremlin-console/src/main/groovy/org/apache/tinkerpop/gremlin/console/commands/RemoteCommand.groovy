@@ -33,7 +33,7 @@ class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose", "close"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose", "close", "console"], "current")
         this.mediator = mediator
     }
 
@@ -113,5 +113,14 @@ class RemoteCommand extends ComplexCommandSupport {
         def removed = mediator.removeCurrent()
         removed.close()
         return "Removed - $removed"
+    }
+
+    def Object do_console = {
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+        mediator.localEvaluation = !mediator.localEvaluation
+        if (mediator.localEvaluation)
+            return "Exited remote console - all commands will be evaluated locally"
+        else
+            return "All commands will now be sent to ${mediator.currentRemote()} - type ':remote console' to exit"
     }
 }

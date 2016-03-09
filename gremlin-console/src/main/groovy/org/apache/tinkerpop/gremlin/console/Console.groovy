@@ -70,7 +70,7 @@ class Console {
     private Iterator tempIterator = Collections.emptyIterator()
 
     private final IO io = new IO(System.in, System.out, System.err)
-    private final Groovysh groovy = new GremlinGroovysh()
+    private final Groovysh groovy
 
     public Console(final String initScriptFile) {
         io.out.println()
@@ -88,6 +88,8 @@ class Console {
         })
 
         final Mediator mediator = new Mediator(this)
+        groovy = new GremlinGroovysh(mediator)
+
         def commandsToRemove = groovy.getRegistry().commands().findAll{it instanceof SetCommand}
         commandsToRemove.each {groovy.getRegistry().remove(it)}
         groovy.register(new GremlinSetCommand(groovy))
