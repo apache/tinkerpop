@@ -77,7 +77,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final Map<K, Object> map = new HashMap<>();
+        final Map<K, Object> map = new HashMap<>(1);
         final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
         if (this.onGraphComputer) {
             final TraverserSet traverserSet = new TraverserSet();

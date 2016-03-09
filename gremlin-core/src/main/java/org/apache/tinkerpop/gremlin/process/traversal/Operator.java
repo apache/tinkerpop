@@ -76,5 +76,11 @@ public enum Operator implements BinaryOperator<Object> {
             ((Collection) a).addAll((Collection) b);
             return a;
         }
+    },
+    //////
+    sumLong {
+        public Object apply(final Object a, final Object b) {
+            return (long) a + (long) b;
+        }
     }
 }
