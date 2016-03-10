@@ -355,6 +355,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
     @LoadGraphWith(GRATEFUL)
     public void g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
