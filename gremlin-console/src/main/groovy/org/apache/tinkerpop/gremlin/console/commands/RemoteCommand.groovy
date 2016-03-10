@@ -33,7 +33,7 @@ class RemoteCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public RemoteCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose", "close"], "current")
+        super(shell, ":remote", ":rem", ["current", "connect", "config", "list", "next", "prev", "choose", "close", "console"], "current")
         this.mediator = mediator
     }
 
@@ -110,8 +110,27 @@ class RemoteCommand extends ComplexCommandSupport {
 
     def Object do_close = {
         if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+
+        // the console is in remote evaluation mode.  closing at this point will needs to exit that mode and then
+        // kill the remote itself
+        def line = !mediator.localEvaluation ? swapEvaluationMode() : ""
+
         def removed = mediator.removeCurrent()
         removed.close()
-        return "Removed - $removed"
+        return line.isEmpty() ? "Removed - $removed" : "$line and removed - $removed"
+    }
+
+    def Object do_console = {
+        if (mediator.remotes.size() == 0) return "Please add a remote first with [connect]"
+        if (!mediator.currentRemote().allowRemoteConsole()) return "The ${mediator.currentRemote()} is not compatible with 'connect' - use ':>' instead"
+        return swapEvaluationMode()
+    }
+
+    private String swapEvaluationMode() {
+        mediator.localEvaluation = !mediator.localEvaluation
+        if (mediator.localEvaluation)
+            return "Exited remote console - all scripts will now be evaluated locally"
+        else
+            return "All scripts will now be sent to ${mediator.currentRemote()} - type ':remote console' to exit"
     }
 }

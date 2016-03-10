@@ -70,7 +70,7 @@ Plugins.  Consider adding the "local" reference first in the set of `<ibilio>` r
 "apache-snapshots" will likely resolve dependencies from that repository before looking locally.  If it does that,
 then it's possible that the artifact from the newer local build will not be used.
 
-CAUTION: If building TinkerPop from source, be sure to clear TinkerPop-related jars from the `~/.groovy/grapes`
+WARNING: If building TinkerPop from source, be sure to clear TinkerPop-related jars from the `~/.groovy/grapes`
 directory as they can become stale on some systems and not re-import properly from the local `.m2` after fresh rebuilds.
 
 [[gremlin-console]]
@@ -214,7 +214,7 @@ the Console classpath.  Plugins need to be "active" for their features to be ava
 <5> Again, to use the "tinkerpop.neo4j" plugin, it must be made "active" with `:plugin use`.
 <6> Now when the plugin list is displayed, the "tinkerpop.neo4j" plugin is displayed as "active".
 
-CAUTION: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
+WARNING: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
 to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in
 third-party plugins, that may only be resolved via manual jar removal from the `ext/{plugin}` directory.
 
@@ -304,12 +304,12 @@ on how to develop a driver for Gremlin Server.
 By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and
 exposes a custom sub-protocol for interacting with the server.
 
-[[connecting-via-console]]
-Connecting via Console
-~~~~~~~~~~~~~~~~~~~~~~
+[[starting-gremlin-server]]
+Starting Gremlin Server
+~~~~~~~~~~~~~~~~~~~~~~~
 
-The most direct way to get started with Gremlin Server is to issue it some remote Gremlin scripts from the Gremlin
-Console.  To do that, first start Gremlin Server:
+Gremlin Server comes packaged with a script called `bin/gremlin-server.sh` to get it started (use `gremlin-server.bat`
+on Windows):
 
 [source,text]
 ----
@@ -374,7 +374,12 @@ are global to all requests. In addition, any functions that are defined will be 
 WARNING: Transactions on graphs in initialization scripts are not closed automatically after the script finishes
 executing.  It is up to the script to properly commit or rollback transactions in the script itself.
 
-With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+[[connecting-via-console]]
+Connecting via Console
+~~~~~~~~~~~~~~~~~~~~~~
+
+With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as
+follows:
 
 [source,text]
 ----
@@ -451,7 +456,7 @@ submitting `:> graph` will return a `Graph` instance and in most cases those are
 and will return a serialization error.  It should be noted that `TinkerGraph`, as a convenience for shipping around
 small sub-graphs, is serializable from Gremlin Server.
 
-The Gremlin Server `:remote` command has the following configuration options:
+The Gremlin Server `:remote config` command for the driver has the following configuration options:
 
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
@@ -464,8 +469,12 @@ The Gremlin Server `:remote` command has the following configuration options:
 !`reset` !Clears any aliases that were supplied in previous configurations of the remote.
 !`show` !Shows the current set of aliases which is returned as a `Map`
 !=========================================================
-|timeout |Specifies the length of time in milliseconds that the remote will wait for a response from the server.
+|timeout |Specifies the length of time in milliseconds a will wait for a response from the server.
 |=========================================================
+
+[[console-aliases]]
+Aliases
+^^^^^^^
 
 The `alias` configuration command for the Gremlin Server `:remote` can be useful in situations where there are
 multiple `Graph` or `TraversalSource` instances on the server, as it becomes possible to rename them from the client
@@ -477,6 +486,66 @@ for purposes of execution within the context of a script.  Therefore, it becomes
 :remote config alias x g
 :> x.E().label().groupCount()
 ----
+
+[[console-sessions]]
+Sessions
+^^^^^^^^
+
+A `:remote` created in the following fashion will be "sessionless", meaning each script issued to the server with
+`:>` will be encased in a transaction and no state will be maintained from one request to the next.
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote-objects.yaml
+----
+
+In other words, the transaction will be automatically committed (or rolledback on error) and any variables declared
+in that script will be forgotten for the next request. See the section on <<sessions, "Considering Sessions">>
+for more information on that topic.
+
+To enable the remote to connect with a session the `connect` argument takes another argument as follows:
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote.yaml session
+:> x = 1
+:> y = 2
+:> x + y
+----
+
+With the above command a session gets created with a random UUID for a session identifier. It is also possible to
+assign a custom session identifier by adding it as the last argument to `:remote` command above.
+
+[[console-remote-console]]
+Remote Console
+^^^^^^^^^^^^^^
+
+Previous examples have shown usage of the `:>` command to send scripts to Gremlin Server. The Gremlin Console also
+supports an additional method for doing this which can be more convenient when the intention is to exclusively
+work with a remote connection to the server.
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote.yaml session
+:remote console
+x = 1
+y = 2
+x + y
+:remote console
+----
+
+In the above example, the `:remote console` command is executed. It places the console in a state where the `:>` is
+no longer required. Each script line is actually automatically submitted to Gremlin Server for evalaution. The
+variables `x` and `y` that were defined actually don't exist locally - they only exist on the server! In this sense,
+putting the console in this mode is basically like creating a window to a session on Gremlin Server.
+
+TIP: When using `:remote console` there is not much point to using a configuration that uses a serializer that returns
+actual data. In other words, using a configuration like the one inside of `conf/remote-objects.yaml` isn't typically
+useful as in this mode the result will only ever be displayed but not used. Using a serializer configuration like
+the one in `conf/remote.yaml` should perform better.
+
+NOTE: Console commands, those that begin with a colon (e.g. `:x`, `:remote`) do not execute remotely when in this mode.
+They are all still evaluated locally.
 
 [[connecting-via-java]]
 Connecting via Java
@@ -692,7 +761,7 @@ curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bind
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
 string argument with by setting the `language` key.
 
-CAUTION: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
+WARNING: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
 that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.

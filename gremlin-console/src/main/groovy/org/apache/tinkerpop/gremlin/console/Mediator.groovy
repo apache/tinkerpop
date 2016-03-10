@@ -30,8 +30,10 @@ class Mediator {
     public final Map<String, PluggedIn> availablePlugins = [:]
     public final List<RemoteAcceptor> remotes = []
     public int position
+    public boolean localEvaluation = true
 
     private final Console console
+
 
     private static String FILE_SEP = System.getProperty("file.separator")
     private static String LINE_SEP = System.getProperty("line.separator")
@@ -72,8 +74,6 @@ class Mediator {
     def showShellEvaluationOutput(final boolean show) {
         console.showShellEvaluationOutput(show)
     }
-
-    def submit(final List<String> args) throws Exception { return currentRemote().submit(args) }
 
     def writePluginState() {
         def file = new File(PLUGIN_CONFIG_FILE)

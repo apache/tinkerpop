@@ -408,10 +408,10 @@ applications outside of TinkerPop, GraphML may be the best choice to do that. Co
 As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph,
 methods that support input and output of single vertices, edges, etc. are not supported.
 
-CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
+WARNING: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
 support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
 
-CAUTION: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
+WARNING: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
 that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.  However it
 is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because TinkerPop
 does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element
@@ -665,7 +665,7 @@ with graph data inside of the TinkerPop stack. A list of common use cases is pre
 * Serialization of individual graph elements to be sent over the network to another JVM.
 * Backups of in-memory graphs or subgraphs.
 
-CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to
+WARNING: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to
 consider the features of each `Graph` and whether or not the data types supported in one will be supported in the
 other.  Failure to do so, may result in errors.
 

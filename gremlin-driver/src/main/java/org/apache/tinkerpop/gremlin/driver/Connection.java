@@ -257,7 +257,7 @@ final class Connection {
         if (shutdownInitiated.compareAndSet(false, true)) {
             if (client instanceof Client.SessionedClient) {
                 // maybe this should be delegated back to the Client implementation???
-                final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE));
+                final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE)).create();
                 final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
                 write(closeMessage, closed);
 

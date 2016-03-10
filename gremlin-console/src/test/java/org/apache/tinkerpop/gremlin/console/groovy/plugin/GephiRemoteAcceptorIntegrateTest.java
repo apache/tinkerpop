@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.tinkerpop.gremlin.console.GremlinGroovysh;
+import org.apache.tinkerpop.gremlin.console.Mediator;
 import org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -55,7 +56,7 @@ import static org.junit.Assert.assertThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GephiRemoteAcceptorIntegrateTest {
-    private static final Groovysh groovysh = new GremlinGroovysh();
+    private static final Groovysh groovysh = new GremlinGroovysh(new Mediator(null));
     private static int port = pickOpenPort();
 
     private GephiRemoteAcceptor acceptor;
