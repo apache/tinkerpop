@@ -1,0 +1,97 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.process.server;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.server.traversal.strategy.ServerStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.Collections;
+import java.util.Iterator;
+
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class ServerGraph implements Graph {
+
+    private final ServerConnection connection;
+
+    private ServerGraph(final ServerConnection connection, final Class<? extends Graph> graphClass) {
+        this.connection = connection;
+        TraversalStrategies.GlobalCache.getStrategies(graphClass).clone().addStrategies(new ServerStrategy(connection));
+    }
+
+    public static ServerGraph open(final Configuration conf) {
+        return null;
+    }
+
+    public static ServerGraph open(final ServerConnection connection, final Class<? extends Graph> graphClass) {
+        return new ServerGraph(connection, graphClass);
+    }
+
+    @Override
+    public void close() throws Exception {
+        connection.close();
+    }
+
+    @Override
+    public Vertex addVertex(final Object... keyValues) {
+        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+    }
+
+    @Override
+    public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
+        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+    }
+
+    @Override
+    public GraphComputer compute() throws IllegalArgumentException {
+        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+    }
+
+    @Override
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public Iterator<Edge> edges(final Object... edgeIds) {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public Transaction tx() {
+        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+    }
+
+    @Override
+    public Variables variables() {
+        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+    }
+
+    @Override
+    public Configuration configuration() {
+        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+    }
+}

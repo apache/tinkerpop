@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.strategy.DriverServerConnection;
+import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -42,6 +43,15 @@ public class WithServerIntegrationTest extends AbstractGremlinServerIntegrationT
         final Graph graph = TinkerGraph.open();
         final Cluster cluster = Cluster.open();
         final GraphTraversalSource g = graph.traversal().withServer(DriverServerConnection.using(cluster));
+        g.V().forEachRemaining(v -> System.out.println("TEST: " + v.toString()));
+        cluster.close();
+    }
+
+    @Test
+    public void shouldDoServerGraphReturningVertices() {
+        final Cluster cluster = Cluster.open();
+        final Graph graph = ServerGraph.open(DriverServerConnection.using(cluster), TinkerGraph.class);
+        final GraphTraversalSource g = graph.traversal();
         g.V().forEachRemaining(v -> System.out.println("TEST: " + v.toString()));
         cluster.close();
     }

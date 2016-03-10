@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Takes a {@link Traversal}
+ * Sends a {@link Traversal} to a {@link ServerConnection} and iterates back the results.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ServerResultStep<S,E> extends AbstractStep<S, E> implements TraversalParent {
@@ -45,11 +46,11 @@ public class ServerResultStep<S,E> extends AbstractStep<S, E> implements Travers
     private PureTraversal pureTraversal;
     private Iterator<Traverser> currentIterator;
 
-    public ServerResultStep(final Traversal.Admin<S,E> traversal, final Traversal overTheWireTraversal,
+    public ServerResultStep(final Traversal.Admin<S,E> traversal, final Traversal traversalToRemote,
                             final ServerConnection serverConnection) {
         super(traversal);
         this.serverConnection = serverConnection;
-        pureTraversal = new PureTraversal<>(overTheWireTraversal.asAdmin());
+        pureTraversal = new PureTraversal<>(traversalToRemote.asAdmin());
         this.integrateChild(pureTraversal.get());
     }
 
