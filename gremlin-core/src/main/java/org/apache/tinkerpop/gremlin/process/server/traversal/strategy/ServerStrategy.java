@@ -61,12 +61,19 @@ public class ServerStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        if (traversal.getGraph().isPresent() && !(traversal.getGraph().get() instanceof ServerGraph))
-            throw new IllegalStateException("Graph attached to Traversal is not a ServerGraph instance");
+        if (!traversal.getGraph().isPresent())
+            throw new IllegalStateException("ServerStrategy expects a ServerGraph instance attached to the Traversal");
+
+        if (!(traversal.getGraph().get() instanceof ServerGraph))
+            throw new IllegalStateException("ServerStrategy expects a ServerGraph instance attached to the Traversal");
+
+        final ServerGraph serverGraph = (ServerGraph) traversal.getGraph().get();
+        if (null == serverGraph.getConnection())
+            throw new IllegalStateException("ServerStrategy expects ServerGraph instance to have a ServerConnection");
 
         final Traversal.Admin<?, ?> serverTraversal = new DefaultTraversal<>();
         TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) serverTraversal);
-        final ServerResultStep serverStep = new ServerResultStep(traversal, serverTraversal, ((ServerGraph) traversal.getGraph().get()).getConnection());
+        final ServerResultStep serverStep = new ServerResultStep(traversal, serverTraversal, serverGraph.getConnection());
         traversal.addStep(serverStep);
 
         assert traversal.getStartStep().equals(serverStep);
