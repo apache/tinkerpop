@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
+import org.apache.tinkerpop.gremlin.process.server.traversal.strategy.ServerStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
@@ -119,6 +122,10 @@ public interface TraversalSource extends Cloneable {
      */
     public default TraversalSource withComputer() {
         return this.withComputer(Graph::compute);
+    }
+
+    public default TraversalSource withServer(final ServerConnection server) {
+        return this.withStrategies(new ServerStrategy(server));
     }
 
     /**

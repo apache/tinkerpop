@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -146,9 +148,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     try {
                         // compile the traversal - without it getEndStep() has nothing in it
                         traversal.hasNext();
-
-                        final Iterator<Traverser> itty = new DetachingIterator(traversal.asAdmin().getEndStep());
-                        handleIterator(context, itty);
+                        handleIterator(context, new DetachingIterator(traversal.asAdmin().getEndStep()));
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);

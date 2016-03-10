@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
+import org.apache.tinkerpop.gremlin.process.server.traversal.strategy.ServerStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -176,6 +178,11 @@ public class GraphTraversalSource implements TraversalSource {
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, mergeOperator);
+    }
+
+    @Override
+    public GraphTraversalSource withServer(final ServerConnection serverConnection) {
+        return (GraphTraversalSource) TraversalSource.super.withServer(serverConnection);
     }
 
     public GraphTraversalSource withBulk(final boolean useBulk) {
