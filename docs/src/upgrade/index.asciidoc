@@ -33,6 +33,7 @@ These providers include:
 ** Graph Processor Provider
 * Graph Driver Provider
 * Graph Language Provider
+* Graph Plugin Provider
 
 include::release-3.2.x-incubating.asciidoc[]
 

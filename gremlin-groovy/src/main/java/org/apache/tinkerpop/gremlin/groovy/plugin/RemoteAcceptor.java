@@ -66,6 +66,22 @@ public interface RemoteAcceptor extends Closeable {
     public Object submit(final List<String> args) throws RemoteException;
 
     /**
+     * If the {@code RemoteAcceptor} is used in the Gremlin Console, then this method might be called to determine
+     * if it can be used in a fashion that supports the {@code :remote console} command.  By default, this value is
+     * set to {@code false}.
+     * <p/>
+     * A {@code RemoteAcceptor} should only return {@code true} for this method if it expects that all activities it
+     * supports are executed through the {@code :sumbit} command. If the users interaction with the remote requires
+     * working with both local and remote evaluation at the same time, it is likely best to keep this method return
+     * {@code false}. A good example of this type of plugin would be the Gephi Plugin which uses {@code :remote config}
+     * to configure a local {@code TraversalSource} to be used and expects calls to {@code :submit} for the same body
+     * of analysis.
+     */
+    public default boolean allowRemoteConsole() {
+        return false;
+    }
+
+    /**
      * Retrieve a script as defined in the shell context.  This allows for multi-line scripts to be submitted.
      */
     public static String getScript(final String submittedScript, final Groovysh shell) {

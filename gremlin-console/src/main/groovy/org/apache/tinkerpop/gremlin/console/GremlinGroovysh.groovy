@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.console
 
 import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.ParseCode
 
 /**
  * Overrides the posix style parsing of Groovysh allowing for commands to parse prior to Groovy 2.4.x.
@@ -27,6 +28,13 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinGroovysh extends Groovysh {
+
+    private final Mediator mediator
+
+    public GremlinGroovysh(final Mediator mediator) {
+        this.mediator = mediator
+    }
+
     protected List parseLine(final String line) {
         assert line != null
         return line.trim().tokenize()
@@ -46,5 +54,62 @@ class GremlinGroovysh extends Groovysh {
         }
 
         return cmd
+    }
+
+    @Override
+    Object execute(final String line) {
+        if (mediator.localEvaluation)
+            return super.execute(line)
+        else {
+            assert line != null
+            if (line.trim().size() == 0) {
+                return null
+            }
+
+            maybeRecordInput(line)
+
+            Object result
+
+            if (isExecutable(line)) {
+                result = executeCommand(line)
+                if (result != null) setLastResult(result)
+                return result
+            }
+
+            List<String> current = new ArrayList<String>(buffers.current())
+            current << line
+
+            // determine if this script is complete or not - if not it's a multiline script
+            def status = parser.parse(current)
+
+            switch (status.code) {
+                case ParseCode.COMPLETE:
+                    setLastResult(mediator.currentRemote().submit(current))
+                    buffers.clearSelected()
+                    break
+                case ParseCode.INCOMPLETE:
+                    buffers.updateSelected(current)
+                    break
+                case ParseCode.ERROR:
+                    throw status.cause
+                default:
+                    // Should never happen
+                    throw new Error("Invalid parse status: $status.code")
+            }
+
+            return result
+        }
+    }
+
+    private void setLastResult(final Object result) {
+        if (resultHook == null) {
+            throw new IllegalStateException('Result hook is not set')
+        }
+
+        resultHook.call((Object)result)
+
+        interp.context['_'] = result
+
+        maybeRecordResult(result)
     }
 }

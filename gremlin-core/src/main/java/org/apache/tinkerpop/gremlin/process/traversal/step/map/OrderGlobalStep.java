@@ -98,7 +98,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements(TraverserRequirement.BULK, TraverserRequirement.OBJECT);
     }
 
     @Override
@@ -132,6 +132,5 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
         integrateChild(this.valueTraversal);
         integrateChild(this.reduceTraversal);
     }*/
-
 
 }

@@ -116,5 +116,10 @@ public abstract class GroovyOrderTest {
         public Traversal<Vertex, String> get_g_V_properties_order_byXkey_decrX_key() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.properties().order.by(key, decr).key")
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('song', 'name', 'OH BOY').out('followedBy').out('followedBy').order.by('performances').by('songType',decr)")
+        }
     }
 }

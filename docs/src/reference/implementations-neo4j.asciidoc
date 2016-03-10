@@ -35,7 +35,7 @@ Neo4j-Gremlin
 
 link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
-CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed
+WARNING: Unless under a commercial agreement with Neo Technology, Neo4j is licensed
 link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2
 because it only references the Apache2-licensed Neo4j API (not its implementation). Note that neither the
 <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j implementation

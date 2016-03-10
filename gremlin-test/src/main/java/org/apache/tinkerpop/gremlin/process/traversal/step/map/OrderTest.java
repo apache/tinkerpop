@@ -21,11 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -39,6 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
@@ -85,6 +84,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_properties_order_byXkey_decrX_key();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -354,6 +355,25 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
+        int counter = 0;
+        String lastSongType = "a";
+        int lastPerformances = Integer.MIN_VALUE;
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            final String currentSongType = vertex.value("songType");
+            final int currentPerformances = vertex.value("performances");
+            assertTrue(currentPerformances == lastPerformances || currentPerformances > lastPerformances);
+            if (currentPerformances == lastPerformances)
+                assertTrue(currentSongType.equals(lastSongType) || currentSongType.compareTo(lastSongType) < 0);
+            lastSongType = currentSongType;
+            lastPerformances = currentPerformances;
+            counter++;
+        }
+        assertEquals(144, counter);
+    }
 
     public static class Traversals extends OrderTest {
 
@@ -444,6 +464,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_properties_order_byXkey_decrX_key() {
             return g.V().properties().order().by(T.key, Order.decr).key();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
+            return g.V().has("song", "name", "OH BOY").out("followedBy").out("followedBy").order().by("performances").by("songType", Order.decr);
         }
     }
 }

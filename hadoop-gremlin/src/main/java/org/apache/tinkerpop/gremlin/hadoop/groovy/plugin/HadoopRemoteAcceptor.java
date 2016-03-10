@@ -109,6 +109,11 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
+    public boolean allowRemoteConsole() {
+        return true;
+    }
+
+    @Override
     public void close() throws IOException {
         this.hadoopGraph.close();
     }
