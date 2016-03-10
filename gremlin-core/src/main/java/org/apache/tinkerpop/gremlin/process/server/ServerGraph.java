@@ -81,11 +81,17 @@ public class ServerGraph implements Graph {
         throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
     }
 
+    /**
+     * This method returns an empty {@link Iterator} - it is not meant to be called directly.
+     */
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         return Collections.emptyIterator();
     }
 
+    /**
+     * This method returns an empty {@link Iterator} - it is not meant to be called directly.
+     */
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return Collections.emptyIterator();
