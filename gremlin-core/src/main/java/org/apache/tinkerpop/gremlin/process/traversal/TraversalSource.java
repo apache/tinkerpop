@@ -124,10 +124,6 @@ public interface TraversalSource extends Cloneable {
         return this.withComputer(Graph::compute);
     }
 
-    public default TraversalSource withServer(final ServerConnection server) {
-        return this.withStrategies(new ServerStrategy(server));
-    }
-
     /**
      * Add a sideEffect to be used throughout the life of a spawned {@link Traversal}.
      * This adds a {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy} to the strategies.

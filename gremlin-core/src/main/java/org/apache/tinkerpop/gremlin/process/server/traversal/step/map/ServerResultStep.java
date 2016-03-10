@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.process.server.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
 import org.apache.tinkerpop.gremlin.process.server.ServerConnectionException;
+import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
 import org.apache.tinkerpop.gremlin.process.server.traversal.strategy.ServerStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -77,7 +79,7 @@ public class ServerResultStep<S,E> extends AbstractStep<S, E> implements Travers
         if (null == currentIterator) {
             try {
                 final Traversal.Admin temp = pureTraversal.getPure();
-                temp.setStrategies(this.getTraversal().getStrategies());
+                temp.setStrategies(TraversalStrategies.GlobalCache.getStrategies(((ServerGraph) traversal.getGraph().get()).getGraphClass()));
                 currentIterator = serverConnection.submit(temp);
             } catch (ServerConnectionException sce) {
                 throw new IllegalStateException(sce);

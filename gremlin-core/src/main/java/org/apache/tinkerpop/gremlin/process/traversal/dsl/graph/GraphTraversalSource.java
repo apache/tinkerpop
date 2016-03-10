@@ -180,11 +180,6 @@ public class GraphTraversalSource implements TraversalSource {
         return (GraphTraversalSource) TraversalSource.super.withSack(initialValue, mergeOperator);
     }
 
-    @Override
-    public GraphTraversalSource withServer(final ServerConnection serverConnection) {
-        return (GraphTraversalSource) TraversalSource.super.withServer(serverConnection);
-    }
-
     public GraphTraversalSource withBulk(final boolean useBulk) {
         if (!useBulk) {
             final GraphTraversalSource clone = this.clone();

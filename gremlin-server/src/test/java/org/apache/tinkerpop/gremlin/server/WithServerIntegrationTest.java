@@ -39,15 +39,6 @@ public class WithServerIntegrationTest extends AbstractGremlinServerIntegrationT
     }
 
     @Test
-    public void shouldDoTraversalReturningVertices() {
-        final Graph graph = TinkerGraph.open();
-        final Cluster cluster = Cluster.open();
-        final GraphTraversalSource g = graph.traversal().withServer(DriverServerConnection.using(cluster));
-        g.V().forEachRemaining(v -> System.out.println("TEST: " + v.toString()));
-        cluster.close();
-    }
-
-    @Test
     public void shouldDoServerGraphReturningVertices() {
         final Cluster cluster = Cluster.open();
         final Graph graph = ServerGraph.open(DriverServerConnection.using(cluster), TinkerGraph.class);

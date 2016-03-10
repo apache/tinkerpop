@@ -19,12 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.server.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
+import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
 import org.apache.tinkerpop.gremlin.process.server.traversal.step.map.ServerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -40,11 +42,13 @@ import java.util.Set;
  */
 public class ServerStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
-    private transient ServerConnection serverConnection;
 
-    public ServerStrategy(final ServerConnection serverConnection) {
-        if (null == serverConnection) throw new IllegalArgumentException("ServerConnection cannot be null");
-        this.serverConnection = serverConnection;
+    private static final ServerStrategy INSTANCE = new ServerStrategy();
+
+    private ServerStrategy() {}
+
+    public static ServerStrategy instance() {
+        return INSTANCE;
     }
 
     @Override
@@ -54,15 +58,15 @@ public class ServerStrategy extends AbstractTraversalStrategy<TraversalStrategy.
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (null == serverConnection )
-            return;
-
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
+        if (traversal.getGraph().isPresent() && !(traversal.getGraph().get() instanceof ServerGraph))
+            throw new IllegalStateException("Graph attached to Traversal is not a ServerGraph instance");
+
         final Traversal.Admin<?, ?> serverTraversal = new DefaultTraversal<>();
         TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) serverTraversal);
-        final ServerResultStep serverStep = new ServerResultStep(traversal, serverTraversal, serverConnection);
+        final ServerResultStep serverStep = new ServerResultStep(traversal, serverTraversal, ((ServerGraph) traversal.getGraph().get()).getConnection());
         traversal.addStep(serverStep);
 
         assert traversal.getStartStep().equals(serverStep);

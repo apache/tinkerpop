@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,10 +37,12 @@ import java.util.Iterator;
 public class ServerGraph implements Graph {
 
     private final ServerConnection connection;
+    private final Class<? extends Graph> graphClass;
 
     private ServerGraph(final ServerConnection connection, final Class<? extends Graph> graphClass) {
         this.connection = connection;
-        TraversalStrategies.GlobalCache.getStrategies(graphClass).clone().addStrategies(new ServerStrategy(connection));
+        this.graphClass = graphClass;TraversalStrategies.GlobalCache.registerStrategies(
+                ServerGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(ServerStrategy.instance()));
     }
 
     public static ServerGraph open(final Configuration conf) {
@@ -48,6 +51,14 @@ public class ServerGraph implements Graph {
 
     public static ServerGraph open(final ServerConnection connection, final Class<? extends Graph> graphClass) {
         return new ServerGraph(connection, graphClass);
+    }
+
+    public ServerConnection getConnection() {
+        return connection;
+    }
+
+    public Class<? extends Graph> getGraphClass() {
+        return graphClass;
     }
 
     @Override
