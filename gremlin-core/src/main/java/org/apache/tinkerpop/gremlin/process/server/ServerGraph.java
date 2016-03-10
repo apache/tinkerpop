@@ -32,6 +32,11 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
+ * A {@code ServerGraph} represents a proxy by which traversals spawned from this graph are expected over a
+ * {@link ServerConnection}. This is not a full {@link Graph} implementation in the sense that the most of the methods
+ * will throw an {@link UnsupportedOperationException}.  This implementation can only be used for spawning remote
+ * traversal instances.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ServerGraph implements Graph {
@@ -49,6 +54,14 @@ public class ServerGraph implements Graph {
         return null;
     }
 
+    /**
+     * Creates a new {@link ServerGraph} instance. {@link ServerGraph} will attempt to call the
+     * {@link ServerConnection#close()} method when the {@link #close()} method is called on this class.
+     *
+     * @param connection the {@link ServerConnection} instance to use
+     * @param graphClass the {@link Graph} class expected to be executed on the other side of the
+     * {@link ServerConnection}
+     */
     public static ServerGraph open(final ServerConnection connection, final Class<? extends Graph> graphClass) {
         return new ServerGraph(connection, graphClass);
     }
