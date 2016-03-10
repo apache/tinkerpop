@@ -64,7 +64,7 @@ public class VertexProgramStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
 
-        final ComputerResultStep computerResultStep = new ComputerResultStep(EmptyTraversal.instance(), true);
+        final ComputerResultStep computerResultStep = new ComputerResultStep(EmptyTraversal.instance());
 
         return Arrays.asList(new Traversal[][]{
                 {__.V().out().count(), start().addStep(traversal(__.V().out().count())).addStep(computerResultStep)},

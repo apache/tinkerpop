@@ -100,7 +100,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             this.shell.getInterp().getContext().setVariable(RESULT, computerResult);
             ///
             final Traversal.Admin<ComputerResult, ?> traversal = new DefaultTraversal<>(computerResult.graph());
-            traversal.addStep(new ComputerResultStep<>(traversal, false));
+            traversal.addStep(new ComputerResultStep<>(traversal));
             traversal.addStart(traversal.getTraverserGenerator().generate(computerResult, EmptyStep.instance(), 1l));
             return traversal;
         } catch (final Exception e) {

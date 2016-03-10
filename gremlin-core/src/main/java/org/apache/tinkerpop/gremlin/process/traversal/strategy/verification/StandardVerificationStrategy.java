@@ -21,12 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileMarkerStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,5 +63,10 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
 
     public static StandardVerificationStrategy instance() {
         return INSTANCE;
+    }
+
+    @Override
+    public Set<Class<? extends VerificationStrategy>> applyPrior() {
+        return Collections.singleton(ComputerVerificationStrategy.class);
     }
 }

@@ -43,13 +43,11 @@ import java.util.Set;
  */
 public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S> {
 
-
-    private final boolean attachElements; // should be part of graph computer with "propagate properties"
+    private final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private Iterator<Traverser.Admin<S>> currentIterator = EmptyIterator.instance();
 
-    public ComputerResultStep(final Traversal.Admin traversal, final boolean attachElements) {
+    public ComputerResultStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.attachElements = attachElements;
     }
 
     public Iterator<Traverser.Admin<S>> attach(final Iterator<Traverser.Admin<S>> iterator, final Graph graph) {

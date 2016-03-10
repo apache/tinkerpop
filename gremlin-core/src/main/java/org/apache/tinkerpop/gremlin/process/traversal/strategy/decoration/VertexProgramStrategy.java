@@ -112,7 +112,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         // if the last vertex computing step is a TraversalVertexProgramStep convert to OLTP with ComputerResultStep
         TraversalHelper.getLastStepOfAssignableClass(VertexComputing.class, traversal).ifPresent(step -> {
             if (step instanceof TraversalVertexProgramStep) {
-                final ComputerResultStep computerResultStep = new ComputerResultStep<>(traversal, true);
+                final ComputerResultStep computerResultStep = new ComputerResultStep<>(traversal);
                 ((TraversalVertexProgramStep) step).getGlobalChildren().get(0).getEndStep().getLabels().forEach(computerResultStep::addLabel);
                 // labeling should happen in TraversalVertexProgram (perhaps MapReduce)
                 TraversalHelper.insertAfterStep(computerResultStep, (Step) step, traversal);
@@ -122,7 +122,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         if (traversal.getEndStep() instanceof VertexComputing && !(traversal.getEndStep() instanceof TraversalVertexProgramStep)) {
             final TraversalVertexProgramStep traversalVertexProgramStep = new TraversalVertexProgramStep(traversal, __.identity().asAdmin());
             traversal.addStep(traversalVertexProgramStep);
-            traversal.addStep(new ComputerResultStep<>(traversal, true));
+            traversal.addStep(new ComputerResultStep<>(traversal));
         }
         // all vertex computing steps needs the graph computer function
         traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.graphComputerFunction));

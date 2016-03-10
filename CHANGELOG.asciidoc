@@ -24,6 +24,7 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Traversers from `ComputerResultStep` are no longer attached. Attaching is only used in TinkerPop's test suite via `System.getProperties()`.
 * Fixed a `hashCode()`/`equals()` bug in `MessageScope`.
 * Fixed a severe `Traversal` cloning issue that caused inconsistent `TraversalSideEffects`.
 * `TraversalSideEffects` remain consistent and usable across multiple chained OLAP jobs.
