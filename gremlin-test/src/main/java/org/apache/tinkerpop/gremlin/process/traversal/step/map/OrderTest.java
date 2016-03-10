@@ -39,9 +39,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -78,6 +82,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_order_byXageX();
 
     public abstract Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -316,6 +322,27 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertEquals(convertToVertex(graph, "peter"), list.get(3));
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
+        int counter = 0;
+        String lastSongType = "a";
+        int lastPerformances = Integer.MIN_VALUE;
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            final String currentSongType = vertex.value("songType");
+            final int currentPerformances = vertex.value("performances");
+            assertTrue(currentPerformances == lastPerformances || currentPerformances > lastPerformances);
+            if (currentPerformances == lastPerformances)
+                assertTrue(currentSongType.equals(lastSongType) || currentSongType.compareTo(lastSongType) < 0);
+            lastSongType = currentSongType;
+            lastPerformances = currentPerformances;
+            counter++;
+        }
+        assertEquals(144, counter);
+    }
+
     public static class Traversals extends OrderTest {
 
         @Override
@@ -395,6 +422,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX() {
             return g.V().hasLabel("person").fold().order(Scope.local).by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
+            return g.V().has("song", "name", "OH BOY").out("followedBy").out("followedBy").order().by("performances").by("songType", Order.decr);
         }
     }
 }

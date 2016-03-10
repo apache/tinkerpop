@@ -106,5 +106,10 @@ public abstract class GroovyOrderTest {
         public Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX() {
             TraversalScriptHelper.compute("g.V.hasLabel('person').fold.order(local).by('age')", g)
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
+            TraversalScriptHelper.compute("g.V.has('song', 'name', 'OH BOY').out('followedBy').out('followedBy').order.by('performances').by('songType',decr)", g);
+        }
     }
 }
