@@ -16,17 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.server.traversal.strategy;
+package org.apache.tinkerpop.gremlin.process.remote.traversal.strategy;
 
-import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
-import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
-import org.apache.tinkerpop.gremlin.process.server.traversal.step.map.ServerResultStep;
+import org.apache.tinkerpop.gremlin.process.remote.ServerConnection;
+import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.ServerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 

@@ -16,22 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.server.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
-import org.apache.tinkerpop.gremlin.process.server.ServerConnectionException;
-import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
-import org.apache.tinkerpop.gremlin.process.server.traversal.strategy.ServerStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.ServerConnection;
+import org.apache.tinkerpop.gremlin.process.remote.ServerConnectionException;
+import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Collections;
 import java.util.Iterator;

@@ -16,19 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.server;
-
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-
-import java.util.Iterator;
+package org.apache.tinkerpop.gremlin.process.remote;
 
 /**
- * A simple abstraction of a "connection" to a "server" that is capable of processing a {@link Traversal} and
- * returning an {@link Iterator} of {@link Traverser} results.
+ * A generalized exception for any errors related to {@link ServerConnection}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface ServerConnection extends AutoCloseable {
-    public Iterator<Traverser> submit(final Traversal t)  throws ServerConnectionException;
+public class ServerConnectionException extends Exception  {
+    public ServerConnectionException() {
+    }
+
+    public ServerConnectionException(String message) {
+        super(message);
+    }
+
+    public ServerConnectionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ServerConnectionException(Throwable cause) {
+        super(cause);
+    }
 }

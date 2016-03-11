@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.strategy;
+package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.process.server.ServerConnection;
-import org.apache.tinkerpop.gremlin.process.server.ServerConnectionException;
-import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
+import org.apache.tinkerpop.gremlin.process.remote.ServerConnection;
+import org.apache.tinkerpop.gremlin.process.remote.ServerConnectionException;
+import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;

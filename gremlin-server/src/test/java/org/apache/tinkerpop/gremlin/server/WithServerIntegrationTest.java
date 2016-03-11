@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.strategy.DriverServerConnection;
-import org.apache.tinkerpop.gremlin.process.server.ServerGraph;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverServerConnection;
+import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
