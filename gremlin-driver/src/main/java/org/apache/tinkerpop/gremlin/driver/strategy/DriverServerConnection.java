@@ -33,19 +33,21 @@ import java.util.Iterator;
  */
 public class DriverServerConnection implements ServerConnection {
 
-    private Client client;
+    private final Client client;
+    private final boolean tryCloseCluster;
 
-    private DriverServerConnection(final Cluster cluster){
+    private DriverServerConnection(final Cluster cluster, final boolean tryCloseCluster){
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias("graph");
+        this.tryCloseCluster = tryCloseCluster;
     }
 
     public static DriverServerConnection using(final Cluster cluster) {
-        return new DriverServerConnection(cluster);
+        return new DriverServerConnection(cluster, false);
     }
 
     public static DriverServerConnection using(final String conf) {
         try {
-            return new DriverServerConnection(Cluster.open(conf));
+            return new DriverServerConnection(Cluster.open(conf), true);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -54,7 +56,7 @@ public class DriverServerConnection implements ServerConnection {
     @Override
     public Iterator<Traverser> submit(final Traversal t) throws ServerConnectionException  {
         try {
-            return new TraverserIterator(client.submit(t).all().get().iterator());
+            return new TraverserIterator(client.submit(t).iterator());
         } catch (Exception ex) {
             throw new ServerConnectionException(ex);
         }
@@ -66,6 +68,9 @@ public class DriverServerConnection implements ServerConnection {
             client.close();
         } catch (Exception ex) {
             throw new ServerConnectionException(ex);
+        } finally {
+            if (tryCloseCluster)
+                client.getCluster().close();
         }
     }
 
