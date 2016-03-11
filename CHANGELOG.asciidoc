@@ -24,6 +24,7 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Operator.sumLong` as a optimized binary operator intended to be used by `Memory` reducers that know they are dealing with longs.
 * Traversers from `ComputerResultStep` are no longer attached. Attaching is only used in TinkerPop's test suite via `System.getProperties()`.
 * Fixed a `hashCode()`/`equals()` bug in `MessageScope`.
 * Fixed a severe `Traversal` cloning issue that caused inconsistent `TraversalSideEffects`.
