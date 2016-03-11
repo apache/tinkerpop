@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Collections;
@@ -50,6 +51,10 @@ public class ServerGraph implements Graph {
                 ServerGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(ServerStrategy.instance()));
     }
 
+    /**
+     * Creates a new {@link ServerGraph} instance using the specified configuration, which allows {@link ServerGraph}
+     * to be compliant with {@link GraphFactory}.
+     */
     public static ServerGraph open(final Configuration conf) {
         return null;
     }
@@ -74,6 +79,9 @@ public class ServerGraph implements Graph {
         return graphClass;
     }
 
+    /**
+     * Closes the underlying {@link ServerConnection}.
+     */
     @Override
     public void close() throws Exception {
         connection.close();

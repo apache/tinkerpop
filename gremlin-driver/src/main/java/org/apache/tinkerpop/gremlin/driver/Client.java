@@ -312,7 +312,6 @@ public abstract class Client {
 
     /**
      * Gets the {@link Cluster} that spawned this {@code Client}.
-     * @return
      */
     public Cluster getCluster() {
         return cluster;
