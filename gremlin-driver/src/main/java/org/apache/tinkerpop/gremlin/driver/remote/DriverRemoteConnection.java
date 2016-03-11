@@ -22,9 +22,9 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.process.remote.ServerConnection;
-import org.apache.tinkerpop.gremlin.process.remote.ServerConnectionException;
-import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
@@ -32,18 +32,18 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import java.util.Iterator;
 
 /**
- * A {@link ServerConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
+ * A {@link RemoteConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
  * graph instance hosted in Gremlin Server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DriverServerConnection implements ServerConnection {
+public class DriverRemoteConnection implements RemoteConnection {
 
     private final Client client;
     private final boolean tryCloseCluster;
     private final String connectionGraphName;
 
-    public DriverServerConnection(final Configuration conf) {
+    public DriverRemoteConnection(final Configuration conf) {
         if (conf.containsKey("clusterConfigurationFile") && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException("A configuration should not contain both 'clusterConfigurationFile' and 'clusterConfiguration'");
 
@@ -63,53 +63,53 @@ public class DriverServerConnection implements ServerConnection {
         tryCloseCluster = true;
     }
 
-    private DriverServerConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
+    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         this.connectionGraphName = connectionGraphName;
         this.tryCloseCluster = tryCloseCluster;
     }
 
     /**
-     * Creates a {@link DriverServerConnection} from an existing {@link Cluster} instance. When {@link #close()} is
+     * Creates a {@link DriverRemoteConnection} from an existing {@link Cluster} instance. When {@link #close()} is
      * called, the {@link Cluster} is left open for the caller to close. By default, this method will bind the
-     * {@link ServerConnection} to a graph on the server named "graph".
+     * {@link RemoteConnection} to a graph on the server named "graph".
      */
-    public static DriverServerConnection using(final Cluster cluster) {
+    public static DriverRemoteConnection using(final Cluster cluster) {
         return using(cluster, "graph");
     }
 
     /**
-     * Creates a {@link DriverServerConnection} from an existing {@link Cluster} instance. When {@link #close()} is
+     * Creates a {@link DriverRemoteConnection} from an existing {@link Cluster} instance. When {@link #close()} is
      * called, the {@link Cluster} is left open for the caller to close.
      */
-    public static DriverServerConnection using(final Cluster cluster, final String connectionGraphName) {
-        return new DriverServerConnection(cluster, false, connectionGraphName);
+    public static DriverRemoteConnection using(final Cluster cluster, final String connectionGraphName) {
+        return new DriverRemoteConnection(cluster, false, connectionGraphName);
     }
 
     /**
-     * Creates a {@link DriverServerConnection} using a new {@link Cluster} instance created from the supplied
+     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
      * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed. By default,
-     * this method will bind the {@link ServerConnection} to a graph on the server named "graph".
+     * this method will bind the {@link RemoteConnection} to a graph on the server named "graph".
      */
-    public static DriverServerConnection using(final String clusterConfFile) {
+    public static DriverRemoteConnection using(final String clusterConfFile) {
         return using(clusterConfFile, "graph");
     }
 
     /**
-     * Creates a {@link DriverServerConnection} using a new {@link Cluster} instance created from the supplied
+     * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
      * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed.
      */
-    public static DriverServerConnection using(final String clusterConfFile, final String connectionGraphName) {
+    public static DriverRemoteConnection using(final String clusterConfFile, final String connectionGraphName) {
         try {
-            return new DriverServerConnection(Cluster.open(clusterConfFile), true, connectionGraphName);
+            return new DriverRemoteConnection(Cluster.open(clusterConfFile), true, connectionGraphName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
     }
 
     /**
-     * Creates a {@link DriverServerConnection} using an Apache {@code Configuration} object. This method of creation
-     * is typically used by {@link ServerGraph} when being constructed via {@link GraphFactory}. The
+     * Creates a {@link DriverRemoteConnection} using an Apache {@code Configuration} object. This method of creation
+     * is typically used by {@link RemoteGraph} when being constructed via {@link GraphFactory}. The
      * {@code Configuration} object should contain one of two required keys, either: {@code clusterConfigurationFile}
      * or {@code clusterConfiguration}. The {@code clusterConfigurationFile} key is a pointer to a file location
      * containing a configuration for a {@link Cluster}. The {@code clusterConfiguration} should contain the actual
@@ -117,7 +117,7 @@ public class DriverServerConnection implements ServerConnection {
      * contain the optional, but likely necessary, {@code connectionGraphName} which tells the
      * {@code DriverServerConnection} which graph on the server to bind to.
      */
-    public static DriverServerConnection using(final Configuration conf) {
+    public static DriverRemoteConnection using(final Configuration conf) {
         if (conf.containsKey("clusterConfigurationFile") && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException("A configuration should not contain both 'clusterConfigurationFile' and 'clusterConfiguration'");
 
@@ -133,11 +133,11 @@ public class DriverServerConnection implements ServerConnection {
     }
 
     @Override
-    public Iterator<Traverser> submit(final Traversal t) throws ServerConnectionException  {
+    public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException {
         try {
             return new TraverserIterator(client.submit(t).iterator());
         } catch (Exception ex) {
-            throw new ServerConnectionException(ex);
+            throw new RemoteConnectionException(ex);
         }
     }
 
@@ -146,7 +146,7 @@ public class DriverServerConnection implements ServerConnection {
         try {
             client.close();
         } catch (Exception ex) {
-            throw new ServerConnectionException(ex);
+            throw new RemoteConnectionException(ex);
         } finally {
             if (tryCloseCluster)
                 client.getCluster().close();

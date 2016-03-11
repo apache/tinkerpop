@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.remote.ServerConnection;
-import org.apache.tinkerpop.gremlin.process.remote.ServerConnectionException;
-import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -35,19 +35,19 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Sends a {@link Traversal} to a {@link ServerConnection} and iterates back the results.
+ * Sends a {@link Traversal} to a {@link RemoteConnection} and iterates back the results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerResultStep<S,E> extends AbstractStep<S, E> implements TraversalParent {
-    private transient ServerConnection serverConnection;
+public class RemoteStep<S,E> extends AbstractStep<S, E> implements TraversalParent {
+    private transient RemoteConnection remoteConnection;
     private PureTraversal pureTraversal;
     private Iterator<Traverser> currentIterator;
 
-    public ServerResultStep(final Traversal.Admin<S,E> traversal, final Traversal traversalToRemote,
-                            final ServerConnection serverConnection) {
+    public RemoteStep(final Traversal.Admin<S,E> traversal, final Traversal traversalToRemote,
+                      final RemoteConnection remoteConnection) {
         super(traversal);
-        this.serverConnection = serverConnection;
+        this.remoteConnection = remoteConnection;
         pureTraversal = new PureTraversal<>(traversalToRemote.asAdmin());
         this.integrateChild(pureTraversal.get());
     }
@@ -75,9 +75,9 @@ public class ServerResultStep<S,E> extends AbstractStep<S, E> implements Travers
         if (null == currentIterator) {
             try {
                 final Traversal.Admin temp = pureTraversal.getPure();
-                temp.setStrategies(TraversalStrategies.GlobalCache.getStrategies(((ServerGraph) traversal.getGraph().get()).getGraphClass()));
-                currentIterator = serverConnection.submit(temp);
-            } catch (ServerConnectionException sce) {
+                temp.setStrategies(TraversalStrategies.GlobalCache.getStrategies(((RemoteGraph) traversal.getGraph().get()).getGraphClass()));
+                currentIterator = remoteConnection.submit(temp);
+            } catch (RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
             }
         }

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.remote;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.ServerStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -35,45 +35,45 @@ import java.util.Iterator;
 
 /**
  * A {@code ServerGraph} represents a proxy by which traversals spawned from this graph are expected over a
- * {@link ServerConnection}. This is not a full {@link Graph} implementation in the sense that the most of the methods
+ * {@link RemoteConnection}. This is not a full {@link Graph} implementation in the sense that the most of the methods
  * will throw an {@link UnsupportedOperationException}.  This implementation can only be used for spawning remote
  * traversal instances.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerGraph implements Graph {
+public class RemoteGraph implements Graph {
 
-    private final ServerConnection connection;
+    private final RemoteConnection connection;
     private final Class<? extends Graph> graphClass;
 
     public static final String GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS = "gremlin.servergraph.serverConnectionClass";
     public static final String GREMLIN_SERVERGRAPH_GRAPH_CLASS = "gremlin.servergraph.graphClass";
 
-    private ServerGraph(final ServerConnection connection, final Class<? extends Graph> graphClass) {
+    private RemoteGraph(final RemoteConnection connection, final Class<? extends Graph> graphClass) {
         this.connection = connection;
         this.graphClass = graphClass;TraversalStrategies.GlobalCache.registerStrategies(
-                ServerGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(ServerStrategy.instance()));
+                RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
     }
 
     /**
-     * Creates a new {@link ServerGraph} instance using the specified configuration, which allows {@link ServerGraph}
+     * Creates a new {@link RemoteGraph} instance using the specified configuration, which allows {@link RemoteGraph}
      * to be compliant with {@link GraphFactory}. Expects keys for the {@link #GREMLIN_SERVERGRAPH_GRAPH_CLASS} and
      * {@link #GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS} as well as any configuration required by the underlying
-     * {@link ServerConnection} which will be instantiated. Note that the {@code Configuration} object is passed down
-     * without change to the creation of the {@link ServerConnection} instance.
+     * {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object is passed down
+     * without change to the creation of the {@link RemoteConnection} instance.
      */
-    public static ServerGraph open(final Configuration conf) {
+    public static RemoteGraph open(final Configuration conf) {
         if (!conf.containsKey(GREMLIN_SERVERGRAPH_GRAPH_CLASS))
             throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_GRAPH_CLASS +"' key");
 
         if (!conf.containsKey(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS))
             throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS +"' key");
 
-        final ServerConnection serverConnection;
+        final RemoteConnection remoteConnection;
         try {
-            final Class<? extends ServerConnection> clazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS)).asSubclass(ServerConnection.class);
-            final Constructor<? extends ServerConnection> ctor = clazz.getConstructor(Configuration.class);
-            serverConnection = ctor.newInstance(conf);
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
+            remoteConnection = ctor.newInstance(conf);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -85,22 +85,22 @@ public class ServerGraph implements Graph {
             throw new IllegalStateException(ex);
         }
 
-        return new ServerGraph(serverConnection, graphClazz);
+        return new RemoteGraph(remoteConnection, graphClazz);
     }
 
     /**
-     * Creates a new {@link ServerGraph} instance. {@link ServerGraph} will attempt to call the
-     * {@link ServerConnection#close()} method when the {@link #close()} method is called on this class.
+     * Creates a new {@link RemoteGraph} instance. {@link RemoteGraph} will attempt to call the
+     * {@link RemoteConnection#close()} method when the {@link #close()} method is called on this class.
      *
-     * @param connection the {@link ServerConnection} instance to use
+     * @param connection the {@link RemoteConnection} instance to use
      * @param graphClass the {@link Graph} class expected to be executed on the other side of the
-     * {@link ServerConnection}
+     * {@link RemoteConnection}
      */
-    public static ServerGraph open(final ServerConnection connection, final Class<? extends Graph> graphClass) {
-        return new ServerGraph(connection, graphClass);
+    public static RemoteGraph open(final RemoteConnection connection, final Class<? extends Graph> graphClass) {
+        return new RemoteGraph(connection, graphClass);
     }
 
-    public ServerConnection getConnection() {
+    public RemoteConnection getConnection() {
         return connection;
     }
 
@@ -109,7 +109,7 @@ public class ServerGraph implements Graph {
     }
 
     /**
-     * Closes the underlying {@link ServerConnection}.
+     * Closes the underlying {@link RemoteConnection}.
      */
     @Override
     public void close() throws Exception {

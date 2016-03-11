@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote.traversal.strategy;
 
-import org.apache.tinkerpop.gremlin.process.remote.ServerConnection;
-import org.apache.tinkerpop.gremlin.process.remote.ServerGraph;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.ServerResultStep;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -33,20 +33,20 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Reconstructs a {@link Traversal} by appending a {@link ServerResultStep} to its end. That step will submit the
- * {@link Traversal} to a {@link ServerConnection} instance which will typically send it to a remote server for
+ * Reconstructs a {@link Traversal} by appending a {@link RemoteStep} to its end. That step will submit the
+ * {@link Traversal} to a {@link RemoteConnection} instance which will typically send it to a remote server for
  * execution and return results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ServerStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+public class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
-    private static final ServerStrategy INSTANCE = new ServerStrategy();
+    private static final RemoteStrategy INSTANCE = new RemoteStrategy();
 
-    private ServerStrategy() {}
+    private RemoteStrategy() {}
 
-    public static ServerStrategy instance() {
+    public static RemoteStrategy instance() {
         return INSTANCE;
     }
 
@@ -63,16 +63,16 @@ public class ServerStrategy extends AbstractTraversalStrategy<TraversalStrategy.
         if (!traversal.getGraph().isPresent())
             throw new IllegalStateException("ServerStrategy expects a ServerGraph instance attached to the Traversal");
 
-        if (!(traversal.getGraph().get() instanceof ServerGraph))
+        if (!(traversal.getGraph().get() instanceof RemoteGraph))
             throw new IllegalStateException("ServerStrategy expects a ServerGraph instance attached to the Traversal");
 
-        final ServerGraph serverGraph = (ServerGraph) traversal.getGraph().get();
-        if (null == serverGraph.getConnection())
+        final RemoteGraph remoteGraph = (RemoteGraph) traversal.getGraph().get();
+        if (null == remoteGraph.getConnection())
             throw new IllegalStateException("ServerStrategy expects ServerGraph instance to have a ServerConnection");
 
         final Traversal.Admin<?, ?> serverTraversal = new DefaultTraversal<>();
         TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) serverTraversal);
-        final ServerResultStep serverStep = new ServerResultStep(traversal, serverTraversal, serverGraph.getConnection());
+        final RemoteStep serverStep = new RemoteStep(traversal, serverTraversal, remoteGraph.getConnection());
         traversal.addStep(serverStep);
 
         assert traversal.getStartStep().equals(serverStep);

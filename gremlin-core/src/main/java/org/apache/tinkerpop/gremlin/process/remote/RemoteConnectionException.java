@@ -18,17 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-
-import java.util.Iterator;
-
 /**
- * A simple abstraction of a "connection" to a "server" that is capable of processing a {@link Traversal} and
- * returning an {@link Iterator} of {@link Traverser} results.
+ * A generalized exception for any errors related to {@link RemoteConnection}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface ServerConnection extends AutoCloseable {
-    public Iterator<Traverser> submit(final Traversal t)  throws ServerConnectionException;
+public class RemoteConnectionException extends Exception  {
+    public RemoteConnectionException() {
+    }
+
+    public RemoteConnectionException(String message) {
+        super(message);
+    }
+
+    public RemoteConnectionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RemoteConnectionException(Throwable cause) {
+        super(cause);
+    }
 }
