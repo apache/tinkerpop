@@ -718,7 +718,7 @@ It is possible to filter vertices, edges, and vertex properties based on their p
 (*filter*). There are numerous variations on `has()` including:
 
   * `has(key,value)`: Remove the traverser if its element does not have the provided key/value property.
-  * `has(key,predicate)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate.
+  * `has(key,predicate)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate. For more information on predicates, please read <<a-note-on-predicates,A Note on Predicates>>.
   * `hasLabel(labels...)`: Remove the traverser if its element does not have any of the labels.
   * `hasId(ids...)`: Remove the traverser if its element does not have any of the ids.
   * `hasKey(keys...)`: Remove the traverser if its property does not have any of the keys.
@@ -2102,6 +2102,9 @@ not(between(1,2))
 <3> `P`-predicates can be and'd together.
 <4> `P`-predicates can be or' together.
 <5> `and()` is a `P`-predicate and thus, a `P`-predicate can be composed of multiple `P`-predicates.
+
+TIP: To reduce the verbosity of predicate expressions, it is good to
+`import static org.apache.tinkerpop.gremlin.process.traversal.P.*`.
 
 Finally, note that <<where-step,`where()`>>-step takes a `P<String>`. The provided string value refers to a variable
 binding, not to the explicit string value.
