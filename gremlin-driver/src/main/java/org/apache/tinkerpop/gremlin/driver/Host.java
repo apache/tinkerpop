@@ -93,7 +93,7 @@ public final class Host {
     private static URI makeUriFromAddress(final InetSocketAddress addy, final boolean ssl) {
         try {
             final String scheme = ssl ? "wss" : "ws";
-            return new URI(scheme, null, addy.getHostName(), addy.getPort(), "/gremlin", null, null);
+            return new URI(scheme, null, addy.getAddress().getHostAddress(), addy.getPort(), "/gremlin", null, null);
         } catch (URISyntaxException use) {
             throw new RuntimeException(String.format("URI for host could not be constructed from: %s", addy), use);
         }
