@@ -31,7 +31,7 @@ import java.util.Collections;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class WithServerIntegrationTest extends AbstractGremlinServerIntegrationTest {
+public class WithServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
     @Override
     public Settings overrideSettings(final Settings settings) {
         settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList("scripts/generate-modern.groovy");
