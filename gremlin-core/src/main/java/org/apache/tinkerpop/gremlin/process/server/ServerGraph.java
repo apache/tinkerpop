@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -45,6 +46,9 @@ public class ServerGraph implements Graph {
     private final ServerConnection connection;
     private final Class<? extends Graph> graphClass;
 
+    public static final String GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS = "gremlin.servergraph.serverConnectionClass";
+    public static final String GREMLIN_SERVERGRAPH_GRAPH_CLASS = "gremlin.servergraph.graphClass";
+
     private ServerGraph(final ServerConnection connection, final Class<? extends Graph> graphClass) {
         this.connection = connection;
         this.graphClass = graphClass;TraversalStrategies.GlobalCache.registerStrategies(
@@ -53,10 +57,35 @@ public class ServerGraph implements Graph {
 
     /**
      * Creates a new {@link ServerGraph} instance using the specified configuration, which allows {@link ServerGraph}
-     * to be compliant with {@link GraphFactory}.
+     * to be compliant with {@link GraphFactory}. Expects keys for the {@link #GREMLIN_SERVERGRAPH_GRAPH_CLASS} and
+     * {@link #GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS} as well as any configuration required by the underlying
+     * {@link ServerConnection} which will be instantiated. Note that the {@code Configuration} object is passed down
+     * without change to the creation of the {@link ServerConnection} instance.
      */
     public static ServerGraph open(final Configuration conf) {
-        return null;
+        if (!conf.containsKey(GREMLIN_SERVERGRAPH_GRAPH_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_GRAPH_CLASS +"' key");
+
+        if (!conf.containsKey(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS +"' key");
+
+        final ServerConnection serverConnection;
+        try {
+            final Class<? extends ServerConnection> clazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS)).asSubclass(ServerConnection.class);
+            final Constructor<? extends ServerConnection> ctor = clazz.getConstructor(Configuration.class);
+            serverConnection = ctor.newInstance(conf);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        final Class<? extends Graph> graphClazz;
+        try {
+            graphClazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_GRAPH_CLASS)).asSubclass(Graph.class);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        return new ServerGraph(serverConnection, graphClazz);
     }
 
     /**

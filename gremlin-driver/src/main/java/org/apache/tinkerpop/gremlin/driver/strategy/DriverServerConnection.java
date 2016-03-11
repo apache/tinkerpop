@@ -43,6 +43,26 @@ public class DriverServerConnection implements ServerConnection {
     private final boolean tryCloseCluster;
     private final String connectionGraphName;
 
+    public DriverServerConnection(final Configuration conf) {
+        if (conf.containsKey("clusterConfigurationFile") && conf.containsKey("clusterConfiguration"))
+            throw new IllegalStateException("A configuration should not contain both 'clusterConfigurationFile' and 'clusterConfiguration'");
+
+        if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
+            throw new IllegalStateException("A configuration must contain either 'clusterConfigurationFile' and 'clusterConfiguration'");
+
+        connectionGraphName = conf.getString("connectionGraphName", "graph");
+
+        try {
+            final Cluster cluster = conf.containsKey("clusterConfigurationFile") ?
+                Cluster.open(conf.getString("clusterConfigurationFile")) : Cluster.open(conf.subset("clusterConfiguration"));
+            client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        tryCloseCluster = true;
+    }
+
     private DriverServerConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         this.connectionGraphName = connectionGraphName;
@@ -84,6 +104,31 @@ public class DriverServerConnection implements ServerConnection {
             return new DriverServerConnection(Cluster.open(clusterConfFile), true, connectionGraphName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
+        }
+    }
+
+    /**
+     * Creates a {@link DriverServerConnection} using an Apache {@code Configuration} object. This method of creation
+     * is typically used by {@link ServerGraph} when being constructed via {@link GraphFactory}. The
+     * {@code Configuration} object should contain one of two required keys, either: {@code clusterConfigurationFile}
+     * or {@code clusterConfiguration}. The {@code clusterConfigurationFile} key is a pointer to a file location
+     * containing a configuration for a {@link Cluster}. The {@code clusterConfiguration} should contain the actual
+     * contents of a configuration that would be used by a {@link Cluster}.  This {@code configuration} may also
+     * contain the optional, but likely necessary, {@code connectionGraphName} which tells the
+     * {@code DriverServerConnection} which graph on the server to bind to.
+     */
+    public static DriverServerConnection using(final Configuration conf) {
+        if (conf.containsKey("clusterConfigurationFile") && conf.containsKey("clusterConfiguration"))
+            throw new IllegalStateException("A configuration should not contain both 'clusterConfigurationFile' and 'clusterConfiguration'");
+
+        if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
+            throw new IllegalStateException("A configuration must contain either 'clusterConfigurationFile' and 'clusterConfiguration'");
+
+        final String connectionGraphName = conf.getString("connectionGraphName", "graph");
+        if (conf.containsKey("clusterConfigurationFile"))
+            return using(conf.getString("clusterConfigurationFile"), connectionGraphName);
+        else {
+            return using(Cluster.open(conf.subset("clusterConfiguration")), connectionGraphName);
         }
     }
 

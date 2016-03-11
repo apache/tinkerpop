@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -146,6 +147,10 @@ public final class Cluster {
 
     public static Builder build(final File configurationFile) throws FileNotFoundException {
         final Settings settings = Settings.read(new FileInputStream(configurationFile));
+        return getBuilderFromSettings(settings);
+    }
+
+    private static Builder getBuilderFromSettings(final Settings settings) {
         final List<String> addresses = settings.hosts;
         if (addresses.size() == 0)
             throw new IllegalStateException("At least one value must be specified to the hosts setting");
@@ -196,6 +201,13 @@ public final class Cluster {
      */
     public static Cluster open() {
         return build("localhost").create();
+    }
+
+    /**
+     * Create a {@code Cluster} from Apache Configurations.
+     */
+    public static Cluster open(final Configuration conf) {
+        return getBuilderFromSettings(Settings.from(conf)).create();
     }
 
     /**
