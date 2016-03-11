@@ -92,7 +92,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
-        final Map<K, V> map = new HashMap<>();
+        final Map<K, V> map = new HashMap<>(1);
         final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
         if (this.onGraphComputer) {
             final TraverserSet traverserSet = new TraverserSet();

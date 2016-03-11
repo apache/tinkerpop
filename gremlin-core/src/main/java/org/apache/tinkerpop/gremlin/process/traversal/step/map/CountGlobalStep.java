@@ -39,7 +39,7 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> {
     public CountGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(new ConstantSupplier<>(0L));
-        this.setReducingBiOperator((BinaryOperator) Operator.sum);
+        this.setReducingBiOperator((BinaryOperator) Operator.sumLong);
     }
 
     @Override
