@@ -147,7 +147,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                     try {
                         // compile the traversal - without it getEndStep() has nothing in it
-                        traversal.hasNext();
+                        traversal.asAdmin().applyStrategies();
                         handleIterator(context, new DetachingIterator(traversal.asAdmin().getEndStep()));
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
