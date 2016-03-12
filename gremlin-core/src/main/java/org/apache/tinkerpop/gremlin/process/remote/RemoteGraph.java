@@ -162,4 +162,37 @@ public class RemoteGraph implements Graph {
     public Configuration configuration() {
         throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
     }
+
+    @Override
+    public Features features() {
+        return RemoteFeatures.INSTANCE;
+    }
+
+    public static class RemoteFeatures implements Features {
+        static RemoteFeatures INSTANCE = new RemoteFeatures();
+
+        private RemoteFeatures() {}
+
+        @Override
+        public GraphFeatures graph() {
+            return RemoteGraphFeatures.INSTANCE;
+        }
+    }
+
+    public static class RemoteGraphFeatures implements Features.GraphFeatures {
+
+        static RemoteGraphFeatures INSTANCE = new RemoteGraphFeatures();
+
+        private RemoteGraphFeatures() {}
+
+        @Override
+        public boolean supportsTransactions() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsThreadedTransactions() {
+            return false;
+        }
+    }
 }
