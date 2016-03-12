@@ -76,6 +76,7 @@ public abstract class AbstractGremlinTest {
         final LoadGraphWith.GraphData loadGraphWithData = null == loadGraphWith ? null : loadGraphWith.value();
 
         graphProvider = GraphManager.getGraphProvider();
+        graphProvider.getTestListener().ifPresent(l -> l.onTestStart(this.getClass(), name.getMethodName()));
         config = graphProvider.standardGraphConfiguration(this.getClass(), name.getMethodName(), loadGraphWithData);
 
         // this should clear state from a previously unfinished test. since the graph does not yet exist,
@@ -130,6 +131,7 @@ public abstract class AbstractGremlinTest {
     @After
     public void tearDown() throws Exception {
         if (null != graphProvider) {
+            graphProvider.getTestListener().ifPresent(l -> l.onTestEnd(this.getClass(), name.getMethodName()));
             graphProvider.clear(graph, config);
 
             // All GraphProvider objects should be an instance of ManagedGraphProvider, as this is handled by GraphManager
