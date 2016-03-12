@@ -74,6 +74,13 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.conf = Optional.of(conf);
     }
 
+    public DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
+        connectionGraphName = conf.getString("connectionGraphName", "graph");
+        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+        tryCloseCluster = false;
+        this.conf = Optional.of(conf);
+    }
+
     private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         this.connectionGraphName = connectionGraphName;

@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
@@ -54,10 +56,10 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
         add(RemoteGraph.class);
     }};
 
-    private TestListener testListener = new RemoteGraphTestListener();
     private static GremlinServer server;
-
-    private Executor executors = Executors.newFixedThreadPool(4);
+    private Map<String,RemoteGraph> remoteCache = new HashMap<>();
+    private Cluster cluster = Cluster.open();
+    private Client client = cluster.connect();
 
     static {
         try {
@@ -68,8 +70,28 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     }
 
     @Override
+    public Graph openTestGraph(final Configuration config) {
+        final String serverGraphName = config.getString("connectionGraphName");
+        return remoteCache.computeIfAbsent(serverGraphName,
+                k -> RemoteGraph.open(new DriverRemoteConnection(cluster, config), TinkerGraph.class));
+    }
+
+    @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
+        final String serverGraphName = getServerGraphName(loadGraphWith);
+
+        final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get(serverGraphName);
+        return new HashMap<String, Object>() {{
+            put(Graph.GRAPH, RemoteGraph.class.getName());
+            put(RemoteGraph.GREMLIN_SERVERGRAPH_GRAPH_CLASS, TinkerGraph.class.getName());
+            put(RemoteGraph.GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
+            put("connectionGraphName", serverGraphName);
+            put("hidden.for.testing.only", graphGetter);
+        }};
+    }
+
+    private static String getServerGraphName(LoadGraphWith.GraphData loadGraphWith) {
         final String serverGraphName;
         switch (loadGraphWith) {
             case CLASSIC:
@@ -88,28 +110,16 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
                 serverGraphName = "graph";
                 break;
         }
-
-        final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get(serverGraphName);
-        return new HashMap<String, Object>() {{
-            put(Graph.GRAPH, RemoteGraph.class.getName());
-            put(RemoteGraph.GREMLIN_SERVERGRAPH_GRAPH_CLASS, TinkerGraph.class.getName());
-            put(RemoteGraph.GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
-            put("connectionGraphName", serverGraphName);
-            put("hidden.for.testing.only", graphGetter);
-        }};
+        return serverGraphName;
     }
 
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
-        if (graph != null) {
-            executors.execute(() -> {
-                try {
-                    graph.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-        }
+        // doesn't bother to clear grateful because i don't believe that ever gets mutated - read-only
+        client.submit("classic.clear();modern.clear();crew.clear();graph.clear();" +
+                    "TinkerFactory.generateClassic(classic);" +
+                    "TinkerFactory.generateModern(modern);" +
+                    "TinkerFactory.generateTheCrew(crew);null").all().get();
     }
 
     @Override
@@ -120,11 +130,6 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     @Override
     public Set<Class> getImplementations() {
         return IMPLEMENTATION;
-    }
-
-    @Override
-    public Optional<TestListener> getTestListener() {
-        return Optional.of(testListener);
     }
 
     public static void startServer() throws Exception {
@@ -139,21 +144,5 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     public static void stopServer() throws Exception {
         server.stop().join();
         server = null;
-    }
-
-    public class RemoteGraphTestListener implements TestListener {
-        @Override
-        public void onTestEnd(final Class<?> test, final String testName) {
-            if (test.equals(DropTest.Traversals.class) ||
-                    test.equals(AddEdgeTest.Traversals.class) ||
-                    test.equals(AddVertexTest.Traversals.class)) {
-                try {
-                    stopServer();
-                    startServer();
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        }
     }
 }
