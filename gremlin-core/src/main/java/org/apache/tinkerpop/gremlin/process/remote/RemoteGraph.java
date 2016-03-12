@@ -41,6 +41,7 @@ import java.util.Iterator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;

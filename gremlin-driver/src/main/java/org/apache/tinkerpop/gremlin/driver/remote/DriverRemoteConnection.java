@@ -27,9 +27,16 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A {@link RemoteConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
@@ -38,29 +45,33 @@ import java.util.Iterator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DriverRemoteConnection implements RemoteConnection {
-
+    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private final Client client;
     private final boolean tryCloseCluster;
     private final String connectionGraphName;
+    private transient Optional<Configuration> conf = Optional.empty();
 
     public DriverRemoteConnection(final Configuration conf) {
         if (conf.containsKey("clusterConfigurationFile") && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException("A configuration should not contain both 'clusterConfigurationFile' and 'clusterConfiguration'");
 
-        if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
-            throw new IllegalStateException("A configuration must contain either 'clusterConfigurationFile' and 'clusterConfiguration'");
-
         connectionGraphName = conf.getString("connectionGraphName", "graph");
 
         try {
-            final Cluster cluster = conf.containsKey("clusterConfigurationFile") ?
-                Cluster.open(conf.getString("clusterConfigurationFile")) : Cluster.open(conf.subset("clusterConfiguration"));
+            final Cluster cluster;
+            if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
+                cluster = Cluster.open();
+            else
+                cluster = conf.containsKey("clusterConfigurationFile") ?
+                        Cluster.open(conf.getString("clusterConfigurationFile")) : Cluster.open(conf.subset("clusterConfiguration"));
+
             client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
 
         tryCloseCluster = true;
+        this.conf = Optional.of(conf);
     }
 
     private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
@@ -135,7 +146,13 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException {
         try {
-            return new TraverserIterator(client.submit(t).iterator());
+            if (attachElements)
+                return new TraverserIterator(client.submit(t).iterator());
+            else {
+                if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
+                final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
+                return new AttachingTraverserIterator(client.submit(t).iterator(), graph);
+            }
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
@@ -175,6 +192,23 @@ public class DriverRemoteConnection implements RemoteConnection {
         public Traverser next() {
             final Object o = inner.next().getObject();
             return (Traverser) o;
+        }
+    }
+
+    static class AttachingTraverserIterator extends TraverserIterator {
+        private final Graph graph;
+
+        public AttachingTraverserIterator(final Iterator<Result> resultIterator, final Graph graph) {
+            super(resultIterator);
+            this.graph = graph;
+        }
+
+        @Override
+        public Traverser next() {
+            final Traverser traverser = super.next();
+            if (traverser.get() instanceof Attachable && !(traverser.get() instanceof Property))
+                traverser.asAdmin().set(((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
+            return traverser;
         }
     }
 }

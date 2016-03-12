@@ -24,14 +24,11 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -39,7 +36,7 @@ import java.util.NoSuchElementException;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteStep<S,E> extends AbstractStep<S, E> implements TraversalParent {
+public class RemoteStep<S,E> extends AbstractStep<S, E> {
     private transient RemoteConnection remoteConnection;
     private PureTraversal pureTraversal;
     private Iterator<Traverser> currentIterator;
@@ -49,23 +46,11 @@ public class RemoteStep<S,E> extends AbstractStep<S, E> implements TraversalPare
         super(traversal);
         this.remoteConnection = remoteConnection;
         pureTraversal = new PureTraversal<>(traversalToRemote.asAdmin());
-        this.integrateChild(pureTraversal.get());
-    }
-
-    @Override
-    public List<Traversal.Admin<S, E>> getGlobalChildren() {
-        return Collections.singletonList(pureTraversal.get());
     }
 
     @Override
     public String toString() {
         return StringFactory.stepString(this, pureTraversal.get());
-    }
-
-    @Override
-    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
-        super.setTraversal(parentTraversal);
-        this.integrateChild(pureTraversal.get());
     }
 
     @SuppressWarnings("unchecked")

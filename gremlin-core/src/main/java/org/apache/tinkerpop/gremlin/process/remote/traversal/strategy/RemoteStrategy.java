@@ -72,6 +72,7 @@ public class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.
 
         final Traversal.Admin<?, ?> serverTraversal = new DefaultTraversal<>();
         TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) serverTraversal);
+        serverTraversal.setSideEffects(traversal.getSideEffects());
         final RemoteStep serverStep = new RemoteStep(traversal, serverTraversal, remoteGraph.getConnection());
         traversal.addStep(serverStep);
 
