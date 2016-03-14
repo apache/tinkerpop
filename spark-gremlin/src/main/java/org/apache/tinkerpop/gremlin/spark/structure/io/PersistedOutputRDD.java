@@ -68,6 +68,6 @@ public final class PersistedOutputRDD implements OutputRDD {
         Spark.removeRDD(memoryRDDName);
         memoryRDD.setName(memoryRDDName).persist(StorageLevel.fromString(configuration.getString(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_ONLY")));
         Spark.refresh(); // necessary to do really fast so the Spark GC doesn't clear out the RDD
-        return IteratorUtils.map(memoryRDD.toLocalIterator(), tuple -> new KeyValue<>(tuple._1(), tuple._2()));
+        return IteratorUtils.map(memoryRDD.collect().iterator(), tuple -> new KeyValue<>(tuple._1(), tuple._2()));
     }
 }

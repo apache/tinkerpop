@@ -39,7 +39,7 @@ public final class ExampleOutputRDD implements OutputRDD {
     @Override
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD) {
         int totalAge = 0;
-        final Iterator<VertexWritable> iterator = graphRDD.values().toLocalIterator();
+        final Iterator<VertexWritable> iterator = graphRDD.values().collect().iterator();
         while (iterator.hasNext()) {
             final Vertex vertex = iterator.next().get();
             if (vertex.label().equals("person"))
