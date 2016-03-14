@@ -108,6 +108,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Spark `Memory` uses `collect().iterator()` instead of `toLocalIterator()` to reduce noise in Spark UI.
 * Added the `:remote console` option which flips the Gremlin Console into a remote-only mode where all script evaluation is routed to the currently configured remote, which removes the need to use the `:>` command.
 * Added `allowRemoteConsole()` to the `RemoteAcceptor` interface.
 * The `:remote` for `tinkerpop.server` now includes an option to establish the connection as a "session".
