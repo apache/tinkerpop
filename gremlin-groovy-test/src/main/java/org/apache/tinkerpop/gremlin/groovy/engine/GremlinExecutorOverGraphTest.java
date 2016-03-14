@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
@@ -50,9 +51,9 @@ public class GremlinExecutorOverGraphTest extends AbstractGremlinTest {
         final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterSuccess(b -> {
-                    final Graph graph = (Graph) b.get("g");
-                    if (graph.features().graph().supportsTransactions())
-                        graph.tx().commit();
+                    final GraphTraversalSource g = (GraphTraversalSource) b.get("g");
+                    if (g.getGraph().get().features().graph().supportsTransactions())
+                        g.tx().commit();
                 })
                 .executorService(evalExecutor).create();
 

@@ -262,7 +262,6 @@ public class GremlinExecutor implements AutoCloseable {
                 // transactional constraints
                 final Object result = lifeCycle.getTransformResult().isPresent() ?
                         lifeCycle.getTransformResult().get().apply(o) : o;
-                evaluationFuture.complete(result);
 
                 // a mechanism for taking the final result and doing something with it in the same thread, but
                 // AFTER the eval and transform are done and that future completed.  this provides a final means
@@ -270,6 +269,12 @@ public class GremlinExecutor implements AutoCloseable {
                 if (lifeCycle.getWithResult().isPresent()) lifeCycle.getWithResult().get().accept(result);
 
                 lifeCycle.getAfterSuccess().orElse(afterSuccess).accept(bindings);
+
+                // the evaluationFuture must be completed after all processing as an exception in lifecycle events
+                // that must raise as an exception to the caller who has the returned evaluationFuture. in other words,
+                // if it occurs before this point, then the handle() method won't be called again if there is an
+                // exception that ends up below trying to completeExceptionally()
+                evaluationFuture.complete(result);
             } catch (Throwable ex) {
                 final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
@@ -746,7 +751,7 @@ public class GremlinExecutor implements AutoCloseable {
 
             /**
              * Specifies the function to execute on the result of the script evaluation just after script evaluation
-             * returns but after the script evaluation is marked as complete.
+             * returns but before the script evaluation is marked as complete.
              */
             public Builder withResult(final Consumer<Object> withResult) {
                 this.withResult = withResult;
@@ -755,7 +760,8 @@ public class GremlinExecutor implements AutoCloseable {
 
             /**
              * Specifies the function to execute after result transformations.  This function can also be
-             * specified globally on {@link GremlinExecutor.Builder#afterSuccess(Consumer)}.
+             * specified globally on {@link GremlinExecutor.Builder#afterSuccess(Consumer)}. The script evaluation
+             * will be marked as "complete" after this method.
              */
             public Builder afterSuccess(final Consumer<Bindings> afterSuccess) {
                 this.afterSuccess = afterSuccess;

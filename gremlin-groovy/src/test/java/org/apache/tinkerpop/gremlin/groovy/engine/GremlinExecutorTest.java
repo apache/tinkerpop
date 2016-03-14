@@ -24,11 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCust
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
 import org.javatuples.Pair;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -41,7 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -82,6 +78,27 @@ public class GremlinExecutorTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void shouldRaiseExceptionInWithResultOfLifeCycle() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+        final GremlinExecutor.LifeCycle lc = GremlinExecutor.LifeCycle.build()
+                .withResult(r -> {
+                    throw new RuntimeException("no worky");
+                }).create();
+
+        final AtomicBoolean exceptionRaised = new AtomicBoolean(false);
+
+        final CompletableFuture<Object> future = gremlinExecutor.eval("1+1", "gremlin-groovy", new SimpleBindings(), lc);
+        future.handle((r, t) -> {
+            exceptionRaised.set(t != null && t instanceof RuntimeException && t.getMessage().equals("no worky"));
+            return null;
+        }).get();
+
+        assertThat(exceptionRaised.get(), is(true));
+
+        gremlinExecutor.close();
     }
 
     @Test
