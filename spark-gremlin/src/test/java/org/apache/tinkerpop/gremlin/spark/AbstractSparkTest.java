@@ -57,7 +57,7 @@ public abstract class AbstractSparkTest {
         final BaseConfiguration configuration = new BaseConfiguration();
         configuration.setDelimiterParsingDisabled(true);
         configuration.setProperty("spark.master", "local[4]");
-        configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
+        configuration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
         configuration.setProperty("spark.kryo.registrationRequired", true);
         configuration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
