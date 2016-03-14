@@ -34,7 +34,7 @@ public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>>
     @Override
     public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
         output.writeVarInt(iterable.size(), true);
-        JavaConversions.asJavaList(iterable).forEach(t -> {
+        JavaConversions.asJavaCollection(iterable).forEach(t -> {
             kryo.writeClassAndObject(output, t);
             output.flush();
         });
