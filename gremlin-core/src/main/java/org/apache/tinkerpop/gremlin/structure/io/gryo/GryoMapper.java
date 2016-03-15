@@ -262,7 +262,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedList.class, null, 116));  // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedList.class, null, 116));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Locale.class, null, 22));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuffer.class, null, 43));
