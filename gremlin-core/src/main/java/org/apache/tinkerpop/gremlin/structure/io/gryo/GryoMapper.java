@@ -110,6 +110,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -159,6 +160,8 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     private GryoMapper(final Builder builder) {
         this.serializationList = builder.serializationList;
+        validate();
+
         this.registrationRequired = builder.registrationRequired;
         this.referenceTracking = builder.referenceTracking;
         this.classResolver = builder.classResolver;
@@ -187,6 +190,21 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     public static Builder build() {
         return new Builder();
+    }
+
+    private void validate() {
+        final Set<Integer> duplicates = new HashSet<>();
+
+        final Set<Integer> ids = new HashSet<>();
+        serializationList.forEach(t -> {
+            if (!ids.contains(t.getValue2()))
+                ids.add(t.getValue2());
+            else
+                duplicates.add(t.getValue2());
+        });
+
+        if (duplicates.size() > 0)
+            throw new IllegalStateException("There are duplicate kryo identifiers in use: " + duplicates);
     }
 
     /**
