@@ -28,5 +28,27 @@ globals << [hook : [
     TinkerFactory.generateModern(modern)
     TinkerFactory.generateTheCrew(crew)
     grateful.io(gryo()).readGraph('../data/grateful-dead.kryo')
+
+    // a wild bit of trickery here. the process tests use an INTEGER id manager when LoadGraphWith is used. this
+    // closure provides a way to to manually override the various id managers for TinkerGraph - the graph on which
+    // all of these remote tests are executed - so that the tests will pass nicely. an alternative might have been
+    // to have a special test TinkerGraph config for setting up the id manager properly, but based on how we do
+    // things now, that test config would have been mixed in with release artifacts and there would have been ugly
+    // exclusions to make packaging work properly.
+    allowSetOfIdManager = { graph, idManagerFieldName ->
+        java.lang.reflect.Field idManagerField = graph.class.getDeclaredField(idManagerFieldName)
+        idManagerField.setAccessible(true)
+        java.lang.reflect.Field modifiersField = java.lang.reflect.Field.class.getDeclaredField("modifiers")
+        modifiersField.setAccessible(true)
+        modifiersField.setInt(idManagerField, modifiersField.getModifiers() & ~java.lang.reflect.Modifier.FINAL)
+
+        idManagerField.set(graph, TinkerGraph.DefaultIdManager.INTEGER)
+    }
+
+    [classic, modern, crew].each{
+      allowSetOfIdManager(it, "vertexIdManager")
+      allowSetOfIdManager(it, "edgeIdManager")
+      allowSetOfIdManager(it, "vertexPropertyIdManager")
+    }
   }
 ] as LifeCycleHook]
