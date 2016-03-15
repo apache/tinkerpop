@@ -293,7 +293,7 @@ limitations under the License.
                     <dependency>
                         <groupId>org.apache.maven.doxia</groupId>
                         <artifactId>doxia-core</artifactId>
-                        <version>1.6</version>
+                        <version>1.7</version>
                         <exclusions>
                             <exclusion>
                                 <groupId>xerces</groupId>
@@ -406,7 +406,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>1.5.3</version>
+                    <version>0.1.4</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
