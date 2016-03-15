@@ -101,7 +101,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
             // collecting barriers and dedup global use can only operate on the element and its properties (no incidences)
             if ((step instanceof CollectingBarrierStep || step instanceof DedupGlobalStep) && step instanceof TraversalParent) {
-                if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalVertex(t)).findAny().isPresent())
+                if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalProperties(t)).findAny().isPresent())
                     throw new VerificationException("A barrier-steps can not process the incident edges of a vertex: " + step, traversal);
             }
 

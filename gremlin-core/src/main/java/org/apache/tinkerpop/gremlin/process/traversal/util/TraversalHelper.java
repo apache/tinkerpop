@@ -21,36 +21,22 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -72,57 +58,7 @@ public final class TraversalHelper {
     private TraversalHelper() {
     }
 
-    public static boolean isBeyondElementId(final Traversal.Admin<?, ?> traversal) {
-        if (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id))
-            return true;
-        else if (traversal instanceof ElementValueTraversal)
-            return true;
-        else
-            return traversal.getSteps().stream()
-                    .filter(step -> step instanceof VertexStep ||
-                            step instanceof LambdaHolder || // if we don't know, then yes.
-                            step instanceof LabelStep ||
-                            step instanceof EdgeVertexStep ||
-                            step instanceof PropertiesStep ||
-                            step instanceof PropertyMapStep ||
-                            (step instanceof TraversalParent &&
-                                    (((TraversalParent) step).getLocalChildren().stream().filter(TraversalHelper::isBeyondElementId).findAny().isPresent() ||
-                                            ((TraversalParent) step).getGlobalChildren().stream().filter(TraversalHelper::isBeyondElementId).findAny().isPresent())))
-                    .findAny().isPresent();
-    }
-
-    public static Class getLastElementClass(final Traversal.Admin<?, ?> traversal) {
-        Step<?, ?> currentStep = traversal.getEndStep();
-        while (!(currentStep instanceof EmptyStep)) {
-            if (currentStep instanceof VertexStep)
-                return ((VertexStep) currentStep).getReturnClass();
-            else if (currentStep instanceof GraphStep)
-                return ((GraphStep) currentStep).getReturnClass();
-            else if (currentStep instanceof EdgeVertexStep)
-                return Vertex.class;
-            else if (currentStep instanceof PropertiesStep)
-                return ((PropertiesStep) currentStep).getReturnType().forProperties() ? Property.class : Object.class;
-            else if (currentStep instanceof SelectOneStep) {
-                final String key = ((SelectOneStep<?, ?>) currentStep).getScopeKeys().iterator().next();
-                while (!(currentStep instanceof EmptyStep)) {
-                    if (currentStep.getLabels().contains(key))
-                        break;
-                    currentStep = currentStep.getPreviousStep();
-                }
-            } else
-                currentStep = currentStep.getPreviousStep();
-        }
-        return Object.class;
-    }
-
-    public static boolean isLocalElement(final Step<?, ?> step) {
-        return step instanceof PropertiesStep || step instanceof PropertyMapStep ||
-                step instanceof IdStep || step instanceof LabelStep ||
-                step instanceof PropertyKeyStep || step instanceof PropertyValueStep ||
-                step instanceof TailGlobalStep || step instanceof FilterStep;
-    }
-
-    public static boolean isLocalVertex(final Traversal.Admin<?, ?> traversal) {
+    public static boolean isLocalProperties(final Traversal.Admin<?, ?> traversal) {
         for (final Step step : traversal.getSteps()) {
             if (step instanceof RepeatStep &&
                     ((RepeatStep<?>) step).getGlobalChildren().stream()
@@ -137,7 +73,7 @@ public final class TraversalHelper {
                 return false;
             } else if (step instanceof TraversalParent) {
                 if (((TraversalParent) step).getLocalChildren().stream()
-                        .filter(t -> !isLocalVertex(t.asAdmin()))
+                        .filter(t -> !isLocalProperties(t.asAdmin()))
                         .findAny().isPresent()) return false;
             }
         }

@@ -87,6 +87,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
 
+    public abstract Traversal<Vertex, String> get_g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
@@ -359,6 +361,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(GRATEFUL)
     public void g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX();
+        printTraversalForm(traversal);
         int counter = 0;
         String lastSongType = "a";
         int lastPerformances = Integer.MIN_VALUE;
@@ -374,6 +377,21 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
             counter++;
         }
         assertEquals(144, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name();
+        printTraversalForm(traversal);
+        final List<String> results = traversal.toList();
+        assertEquals(5, results.size());
+        assertFalse(traversal.hasNext());
+        assertEquals("peter", results.get(0));
+        assertEquals("josh", results.get(1));
+        assertEquals("josh", results.get(2));
+        assertEquals("josh", results.get(3));
+        assertEquals("marko", results.get(4));
     }
 
     public static class Traversals extends OrderTest {
@@ -470,6 +488,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_incrX() {
             return g.V().has("song", "name", "OH BOY").out("followedBy").out("followedBy").order().by("performances").by("songType", Order.decr);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name() {
+            return g.V().both().hasLabel("person").order().by("age", Order.decr).limit(5).values("name");
         }
     }
 }

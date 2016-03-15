@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
@@ -31,11 +33,14 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 import org.javatuples.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +49,8 @@ import java.util.stream.Collectors;
 public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBarrierStep<S> implements ComparatorHolder<S, C>, TraversalParent, ByModulating {
 
     private List<Pair<Traversal.Admin<S, C>, Comparator<C>>> comparators = new ArrayList<>();
-    private ChainedComparator chainedComparator = null;
+    private ChainedComparator<S, C> chainedComparator = null;
+    private long limit = Long.MAX_VALUE;
 
     public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -57,7 +63,11 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         if (this.chainedComparator.isShuffle())
             traverserSet.shuffle();
         else
-            traverserSet.sort(this.chainedComparator);
+            traverserSet.sort((Comparator) this.chainedComparator);
+    }
+
+    public void setLimit(final long limit) {
+        this.limit = limit;
     }
 
     @Override
@@ -121,4 +131,47 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         this.comparators.stream().map(Pair::getValue0).forEach(TraversalParent.super::integrateChild);
     }
 
+    @Override
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        if (null == this.chainedComparator)
+            this.chainedComparator = new ChainedComparator(true, this.comparators);
+        return MemoryComputeKey.of(this.getId(), new OrderBiOperator(this.chainedComparator, this.limit), false, true);
+    }
+
+    ////////////////
+
+    public static final class OrderBiOperator implements BinaryOperator<TraverserSet>, Serializable {
+
+        private ChainedComparator chainedComparator;
+        private long limit;
+
+        private OrderBiOperator() {
+            // for serializers that need a no-arg constructor
+        }
+
+        public OrderBiOperator(final ChainedComparator chainedComparator, final long limit) {
+            this.chainedComparator = chainedComparator;
+            this.limit = limit;
+        }
+
+        @Override
+        public TraverserSet apply(final TraverserSet setA, final TraverserSet setB) {
+            setA.addAll(setB);
+            if (this.chainedComparator.isShuffle())
+                setA.shuffle();
+            else
+                setA.sort(this.chainedComparator);
+            if (Long.MAX_VALUE != this.limit && setA.bulkSize() > this.limit) {
+                long counter = 0l;
+                final Iterator<Traverser.Admin> traversers = setA.iterator();
+                while (traversers.hasNext()) {
+                    final Traverser.Admin traverser = traversers.next();
+                    if (counter > this.limit)
+                        traversers.remove();
+                    counter = counter + traverser.bulk();
+                }
+            }
+            return setA;
+        }
+    }
 }

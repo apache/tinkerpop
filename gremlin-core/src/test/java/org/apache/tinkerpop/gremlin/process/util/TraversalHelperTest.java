@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
@@ -48,13 +47,12 @@ import static org.junit.Assert.assertTrue;
 public class TraversalHelperTest {
 
     @Test
-    public void shouldIdentifyScopeOfAccess() {
-        assertFalse(TraversalHelper.isBeyondElementId(__.identity().asAdmin()));
-        assertFalse(TraversalHelper.isBeyondElementId(__.id().asAdmin()));
-        assertTrue(TraversalHelper.isBeyondElementId(__.label().asAdmin()));
-        assertTrue(TraversalHelper.isBeyondElementId(__.values("name").asAdmin()));
-        assertTrue(TraversalHelper.isBeyondElementId(__.outE("knows").asAdmin()));
-        // assertTrue(TraversalHelper.isBeyondElementId(((TraversalParent) __.order().asAdmin().getStartStep()).getLocalChildren().get(0)));
+    public void shouldIdentityLocalProperties() {
+        assertTrue(TraversalHelper.isLocalProperties(__.identity().asAdmin()));
+        assertTrue(TraversalHelper.isLocalProperties(__.id().asAdmin()));
+        assertTrue(TraversalHelper.isLocalProperties(__.label().asAdmin()));
+        assertTrue(TraversalHelper.isLocalProperties(__.values("name").asAdmin()));
+        assertFalse(TraversalHelper.isLocalProperties(__.outE("knows").asAdmin()));
     }
 
     @Test

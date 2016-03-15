@@ -68,7 +68,7 @@ public final class GraphFilter implements Cloneable, Serializable {
     //private boolean allowAllRemainingEdges = false;
 
     public void setVertexFilter(final Traversal<Vertex, Vertex> vertexFilter) {
-        if (!TraversalHelper.isLocalVertex(vertexFilter.asAdmin()))
+        if (!TraversalHelper.isLocalProperties(vertexFilter.asAdmin()))
             throw GraphComputer.Exceptions.vertexFilterAccessesIncidentEdges(vertexFilter);
         this.vertexFilter = vertexFilter.asAdmin().clone();
     }
