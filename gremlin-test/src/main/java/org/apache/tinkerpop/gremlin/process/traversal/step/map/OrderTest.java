@@ -94,6 +94,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_hasLabelXpersonX_order_byXage_decrX_name();
 
+    public abstract Traversal<Vertex, String> get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
@@ -413,6 +415,26 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name();
+        printTraversalForm(traversal);
+        final List<String> results = traversal.toList();
+        assertEquals(10, results.size());
+        assertEquals("WANG DANG DOODLE", results.get(0));
+        assertEquals("THE ELEVEN", results.get(1));
+        assertEquals("WAY TO GO HOME", results.get(2));
+        assertEquals("FOOLISH HEART", results.get(3));
+        assertEquals("GIMME SOME LOVING", results.get(4));
+        assertEquals("DUPREES DIAMOND BLUES", results.get(5));
+        assertEquals("CORRINA", results.get(6));
+        assertEquals("PICASSO MOON", results.get(7));
+        assertEquals("KNOCKING ON HEAVENS DOOR", results.get(8));
+        assertEquals("MEMPHIS BLUES", results.get(9));
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends OrderTest {
 
         @Override
@@ -517,6 +539,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasLabelXpersonX_order_byXage_decrX_name() {
             return g.V().both().hasLabel("person").order().by("age", Order.decr).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name() {
+            return g.V().hasLabel("song").order().by("performances", Order.decr).by("name").range(110, 120).values("name");
         }
     }
 }
