@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -74,17 +73,20 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.conf = Optional.of(conf);
     }
 
-    public DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
-        connectionGraphName = conf.getString("connectionGraphName", "graph");
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
-        tryCloseCluster = false;
-        this.conf = Optional.of(conf);
-    }
-
     private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         this.connectionGraphName = connectionGraphName;
         this.tryCloseCluster = tryCloseCluster;
+    }
+
+    /**
+     * This constructor is largely just for unit testing purposes and should not typically be used externally.
+     */
+    DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
+        connectionGraphName = conf.getString("connectionGraphName", "graph");
+        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+        tryCloseCluster = false;
+        this.conf = Optional.of(conf);
     }
 
     /**
