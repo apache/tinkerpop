@@ -78,6 +78,10 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest",
         method = "*",
         reason = "RemoteGraph does not support PartitionStrategy at this time")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest",
+        method = "*",
+        reason = "RemoteGraph does not support SubgraphStrategy at this time")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
