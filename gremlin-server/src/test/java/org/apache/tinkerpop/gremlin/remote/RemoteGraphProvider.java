@@ -116,6 +116,9 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
 
     private static String getServerGraphName(final LoadGraphWith.GraphData loadGraphWith) {
         final String serverGraphName;
+
+        if (null == loadGraphWith) return "graph";
+
         switch (loadGraphWith) {
             case CLASSIC:
                 serverGraphName = "classic";
