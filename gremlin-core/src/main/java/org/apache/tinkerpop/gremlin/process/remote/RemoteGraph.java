@@ -62,6 +62,22 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "shouldNeverPropagateANullValuedTraverser",
         reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest",
+        method = "*",
+        reason = "RemoteGraph does not support ElementIdStrategy at this time")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest",
+        method = "*",
+        reason = "RemoteGraph does not support ReadOnlyStrategy at this time")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest",
+        method = "*",
+        reason = "RemoteGraph does not support EventStrategy at this time")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest",
+        method = "*",
+        reason = "RemoteGraph does not support PartitionStrategy at this time")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
