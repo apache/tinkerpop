@@ -42,6 +42,26 @@ import java.util.Iterator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
+        method = "shouldLoadVerticesViaVertices",
+        reason = "RemoteGraph doesn't seem to serialize a native Vertex (e.g. TinkerVertex) within the Traversal")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
+        method = "shouldLoadEdgesViaEdges",
+        reason = "RemoteGraph doesn't seem to serialize a native Element (e.g. TinkerEdge) within the Traversal")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
+        method = "shouldThrowExceptionWhenIdsMixed",
+        reason = "RemoteGraph doesn't seem to serialize a native Element (e.g. TinkerEdge) within the Traversal")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
+        method = "shouldNeverPropagateANoBulkTraverser",
+        reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
+        method = "shouldNeverPropagateANullValuedTraverser",
+        reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
