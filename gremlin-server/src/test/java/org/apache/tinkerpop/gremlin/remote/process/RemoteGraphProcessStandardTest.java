@@ -29,5 +29,5 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessStandardSuite.class)
 @GraphProviderClass(provider = RemoteGraphProvider.class, graph = RemoteGraph.class)
-public class RemoteGraphProcessStandardIntegrateTest {
+public class RemoteGraphProcessStandardTest {
 }
