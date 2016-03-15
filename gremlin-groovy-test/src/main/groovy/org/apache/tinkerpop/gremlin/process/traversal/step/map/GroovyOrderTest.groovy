@@ -83,7 +83,7 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX() {
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXname_order_byXdecrX_foldX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group.by(label).by(values('name').order().by(decr).fold())")
         }
 
@@ -125,6 +125,11 @@ public abstract class GroovyOrderTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.hasLabel('person').order.by('age',decr).limit(5).name")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_hasLabelXpersonX_order_byXage_decrX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.hasLabel('person').order.by('age',decr).name")
         }
     }
 }

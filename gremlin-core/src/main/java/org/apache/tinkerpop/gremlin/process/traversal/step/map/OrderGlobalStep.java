@@ -70,6 +70,10 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         this.limit = limit;
     }
 
+    public long getLimit() {
+        return this.limit;
+    }
+
     @Override
     public void addComparator(final Traversal.Admin<S, C> traversal, final Comparator<C> comparator) {
         this.comparators.add(new Pair<>(this.integrateChild(traversal), comparator));
@@ -98,8 +102,8 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        for (final Pair comparator : this.comparators) {
-            result ^= comparator.hashCode();
+        for (int i = 0; i < this.comparators.size(); i++) {
+            result ^= this.comparators.get(i).hashCode() * (i+1);
         }
         return result;
     }
@@ -157,11 +161,11 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
         @Override
         public TraverserSet apply(final TraverserSet setA, final TraverserSet setB) {
             setA.addAll(setB);
-            if (this.chainedComparator.isShuffle())
-                setA.shuffle();
-            else
-                setA.sort(this.chainedComparator);
             if (Long.MAX_VALUE != this.limit && setA.bulkSize() > this.limit) {
+                if (this.chainedComparator.isShuffle())
+                    setA.shuffle();
+                else
+                    setA.sort(this.chainedComparator);
                 long counter = 0l;
                 final Iterator<Traverser.Admin> traversers = setA.iterator();
                 while (traversers.hasNext()) {

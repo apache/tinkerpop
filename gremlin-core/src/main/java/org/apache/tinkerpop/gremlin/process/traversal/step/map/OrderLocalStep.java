@@ -93,8 +93,8 @@ public final class OrderLocalStep<S, C extends Comparable> extends MapStep<S, S>
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        for (final Pair comparator : this.comparators) {
-            result ^= comparator.hashCode();
+        for (int i = 0; i < this.comparators.size(); i++) {
+            result ^= this.comparators.get(i).hashCode() * (i + 1);
         }
         return result;
     }
