@@ -25,27 +25,17 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexTest;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.PropertyTest;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 /**
@@ -57,9 +47,9 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     }};
 
     private static GremlinServer server;
-    private Map<String,RemoteGraph> remoteCache = new HashMap<>();
-    private Cluster cluster = Cluster.open();
-    private Client client = cluster.connect();
+    private final Map<String,RemoteGraph> remoteCache = new HashMap<>();
+    private final Cluster cluster = Cluster.open();
+    private final Client client = cluster.connect();
 
     static {
         try {
@@ -89,28 +79,6 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
             put("connectionGraphName", serverGraphName);
             put("hidden.for.testing.only", graphGetter);
         }};
-    }
-
-    private static String getServerGraphName(LoadGraphWith.GraphData loadGraphWith) {
-        final String serverGraphName;
-        switch (loadGraphWith) {
-            case CLASSIC:
-                serverGraphName = "classic";
-                break;
-            case MODERN:
-                serverGraphName = "modern";
-                break;
-            case GRATEFUL:
-                serverGraphName = "grateful";
-                break;
-            case CREW:
-                serverGraphName = "crew";
-                break;
-            default:
-                serverGraphName = "graph";
-                break;
-        }
-        return serverGraphName;
     }
 
     @Override
@@ -144,5 +112,27 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     public static void stopServer() throws Exception {
         server.stop().join();
         server = null;
+    }
+
+    private static String getServerGraphName(final LoadGraphWith.GraphData loadGraphWith) {
+        final String serverGraphName;
+        switch (loadGraphWith) {
+            case CLASSIC:
+                serverGraphName = "classic";
+                break;
+            case MODERN:
+                serverGraphName = "modern";
+                break;
+            case GRATEFUL:
+                serverGraphName = "grateful";
+                break;
+            case CREW:
+                serverGraphName = "crew";
+                break;
+            default:
+                serverGraphName = "graph";
+                break;
+        }
+        return serverGraphName;
     }
 }
