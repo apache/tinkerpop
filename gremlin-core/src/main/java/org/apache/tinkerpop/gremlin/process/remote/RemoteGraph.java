@@ -82,6 +82,10 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest",
         method = "*",
         reason = "RemoteGraph does not support SubgraphStrategy at this time")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest",
+        method = "*",
+        reason = "RemoteGraph does not support ProfileStep at this time")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
