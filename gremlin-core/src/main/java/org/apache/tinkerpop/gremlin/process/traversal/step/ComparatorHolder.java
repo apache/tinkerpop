@@ -18,16 +18,33 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.javatuples.Pair;
+
 import java.util.Comparator;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface ComparatorHolder<S> {
+public interface ComparatorHolder<S, C extends Comparable> {
 
-    public void addComparator(final Comparator<S> comparator);
+    /**
+     * Add a {@link Traversal}-based {@link Comparator} to the holder.
+     * If no traversal is needed, use {@link IdentityTraversal}.
+     *
+     * @param traversal  the traversal to pre-process the object by.
+     * @param comparator the comparator to compare the result of the object after traversal processing
+     */
+    public void addComparator(final Traversal.Admin<S, C> traversal, final Comparator<C> comparator);
 
-    public List<Comparator<S>> getComparators();
+    /**
+     * Get the comparators associated with this holder.
+     * The comparators are ordered according to their oder of operation.
+     *
+     * @return a list of {@link Traversal}/{@link Comparator}-pairs
+     */
+    public List<Pair<Traversal.Admin<S, C>, Comparator<C>>> getComparators();
 
 }
