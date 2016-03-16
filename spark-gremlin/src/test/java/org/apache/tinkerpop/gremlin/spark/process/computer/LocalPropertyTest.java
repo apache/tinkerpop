@@ -56,8 +56,8 @@ public class LocalPropertyTest extends AbstractSparkTest {
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
         configuration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
@@ -79,9 +79,9 @@ public class LocalPropertyTest extends AbstractSparkTest {
         assertTrue(statusTracker.getJobIdsForGroup("22").length >= 1);
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         ///////
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, null);
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
         configuration.setProperty("spark.jobGroup.id", "44");

@@ -18,12 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
@@ -179,12 +176,12 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
         @Override
         public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-            if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT)) {
-                final OutputFormat<NullWritable, VertexWritable> outputFormat = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphOutputFormat(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
-                if (outputFormat instanceof PersistResultGraphAware)
-                    return ((PersistResultGraphAware) outputFormat).supportsResultGraphPersistCombination(resultGraph, persist);
+            if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER)) {
+                final Object writer = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphWriter(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
+                if (writer instanceof PersistResultGraphAware)
+                    return ((PersistResultGraphAware) writer).supportsResultGraphPersistCombination(resultGraph, persist);
                 else {
-                    logger.warn(outputFormat.getClass() + " does not implement " + PersistResultGraphAware.class.getSimpleName() + " and thus, persistence options are unknown -- assuming all options are possible");
+                    logger.warn(writer.getClass() + " does not implement " + PersistResultGraphAware.class.getSimpleName() + " and thus, persistence options are unknown -- assuming all options are possible");
                     return true;
                 }
             } else {

@@ -184,13 +184,13 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 this.logger.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // handle input paths (if any)
                 String inputLocation = this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION, null);
-                if (null != inputLocation && FileInputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
+                if (null != inputLocation && FileInputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class))) {
                     inputLocation = Constants.getSearchGraphLocation(inputLocation, storage).orElse(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
                     FileInputFormat.setInputPaths(job.getInternalJob(), new Path(inputLocation));
                 }
                 // handle output paths (if any)
                 String outputLocation = this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
-                if (null != outputLocation && FileOutputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class))) {
+                if (null != outputLocation && FileOutputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class))) {
                     outputLocation = Constants.getGraphLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
                     FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(outputLocation));
                 }

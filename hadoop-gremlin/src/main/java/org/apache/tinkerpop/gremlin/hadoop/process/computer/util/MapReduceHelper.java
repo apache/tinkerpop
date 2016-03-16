@@ -61,7 +61,7 @@ public final class MapReduceHelper {
         final Configuration newConfiguration = new Configuration(configuration);
         final boolean vertexProgramExists = newConfiguration.get(VertexProgram.VERTEX_PROGRAM, null) != null;
         if (vertexProgramExists) {
-            newConfiguration.set(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)).getCanonicalName());
+            newConfiguration.set(Constants.GREMLIN_HADOOP_GRAPH_READER, InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class)).getCanonicalName());
             newConfiguration.unset(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         }
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();

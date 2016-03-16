@@ -65,8 +65,8 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         Configuration configuration = getBaseConfiguration();
         configuration.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
         Graph graph = GraphFactory.open(configuration);
@@ -81,8 +81,8 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         configuration = getBaseConfiguration();
         configuration.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, inputLocation);
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "DISK_ONLY");
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "persisted-rdd");
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
@@ -92,8 +92,8 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
         configuration = getBaseConfiguration();
         configuration.clearProperty(Constants.SPARK_SERIALIZER); // ensure proper default to GryoSerializer
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, "persisted-rdd");
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         graph = GraphFactory.open(configuration);
@@ -101,8 +101,8 @@ public class GryoSerializerIntegrateTest extends AbstractSparkTest {
 
         configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, "persisted-rdd");
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY"); // this should be ignored as you can't change the persistence level once created
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_AND_DISK");

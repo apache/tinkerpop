@@ -40,15 +40,12 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
-import java.util.Random;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
 public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
-
-    private static final Random RANDOM = new Random();
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
@@ -64,13 +61,13 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
                 !test.equals(FileSystemStorageCheck.class) &&
                 !testMethodName.equals("shouldSupportJobChaining") &&  // GraphComputerTest.shouldSupportJobChaining
                 RANDOM.nextBoolean()) {
-            config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
+            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
         }
 
         // tests persisted RDDs
         if (test.equals(SparkContextStorageCheck.class)) {
-            config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
-            config.put(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
+            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         }
 
         // sugar plugin causes meta-method issues with a persisted context

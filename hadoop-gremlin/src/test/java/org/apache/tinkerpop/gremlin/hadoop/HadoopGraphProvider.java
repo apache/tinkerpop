@@ -52,7 +52,7 @@ import java.util.Set;
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
-    private static final Random RANDOM = new Random();
+    protected static final Random RANDOM = new Random();
     private boolean graphSONInput = false;
 
     public static Map<String, String> PATHS = new HashMap<>();
@@ -112,8 +112,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         this.graphSONInput = RANDOM.nextBoolean();
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, HadoopGraph.class.getName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_HADOOP_GRAPH_READER, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
+            put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         }};
