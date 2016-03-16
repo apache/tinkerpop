@@ -43,13 +43,13 @@ public final class GiraphVertexOutputFormat extends VertexOutputFormat {
     @Override
     public void checkOutputSpecs(final JobContext context) throws IOException, InterruptedException {
         final Configuration configuration = context.getConfiguration();
-        ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class, OutputFormat.class), configuration).checkOutputSpecs(context);
+        ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class, OutputFormat.class), configuration).checkOutputSpecs(context);
     }
 
     @Override
     public OutputCommitter getOutputCommitter(final TaskAttemptContext context) throws IOException, InterruptedException {
         final Configuration configuration = context.getConfiguration();
-        return ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class, OutputFormat.class), configuration).getOutputCommitter(context);
+        return ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class, OutputFormat.class), configuration).getOutputCommitter(context);
     }
 
 }

@@ -52,7 +52,7 @@ public final class GiraphVertexWriter extends VertexWriter {
     @Override
     public void initialize(final TaskAttemptContext context) throws IOException, InterruptedException {
         final Configuration configuration = context.getConfiguration();
-        this.recordWriter = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class, OutputFormat.class), configuration).getRecordWriter(context);
+        this.recordWriter = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputFormat.class, OutputFormat.class), configuration).getRecordWriter(context);
         this.transientComputeKeys = VertexProgramHelper.vertexComputeKeysAsArray(((VertexProgram<?>) VertexProgram.createVertexProgram(EmptyGraph.instance(), ConfUtil.makeApacheConfiguration(configuration))).getVertexComputeKeys().stream().
                 filter(VertexComputeKey::isTransient).
                 collect(Collectors.toSet()));
