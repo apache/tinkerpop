@@ -63,16 +63,6 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
         return this;
     }
 
-    @Override
-    public TraverserGeneratorFactory getTraverserGeneratorFactory() {
-        return DefaultTraverserGeneratorFactory.instance();
-    }
-
-    @Override
-    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
-
-    }
-
     public static EmptyTraversalStrategies instance() {
         return INSTANCE;
     }

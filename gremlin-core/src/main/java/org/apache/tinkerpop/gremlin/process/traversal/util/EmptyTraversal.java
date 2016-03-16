@@ -73,11 +73,6 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void addTraverserRequirement(final TraverserRequirement traverserRequirement) {
-
-    }
-
-    @Override
     public void applyStrategies() {
 
     }

@@ -43,7 +43,6 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -352,35 +351,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
          *
          * @return the generator of traversers
          */
-        public default TraverserGenerator getTraverserGenerator() {
-            return this.getStrategies().getTraverserGeneratorFactory().getTraverserGenerator(this);
-        }
+        public TraverserGenerator getTraverserGenerator();
 
         /**
          * Get the set of all {@link TraverserRequirement}s for this traversal.
          *
          * @return the features of a traverser that are required to execute properly in this traversal
          */
-        public default Set<TraverserRequirement> getTraverserRequirements() {
-            final Set<TraverserRequirement> requirements = this.getSteps().stream()
-                    .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
-                    .collect(Collectors.toSet());
-            if (this.getSideEffects().keys().size() > 0)
-                requirements.add(TraverserRequirement.SIDE_EFFECTS);
-            if (null != this.getSideEffects().getSackInitialValue())
-                requirements.add(TraverserRequirement.SACK);
-            if (requirements.contains(TraverserRequirement.ONE_BULK))
-                requirements.remove(TraverserRequirement.BULK);
-            return requirements;
-        }
-
-        /**
-         * Add a {@link TraverserRequirement} to this traversal and respective nested sub-traversals.
-         * This is here to allow {@link TraversalStrategy} and {@link TraversalSource} instances to insert requirements.
-         *
-         * @param traverserRequirement the traverser requirement to add
-         */
-        public void addTraverserRequirement(final TraverserRequirement traverserRequirement);
+        public Set<TraverserRequirement> getTraverserRequirements();
 
         /**
          * Call the {@link Step#reset} method on every step in the traversal.

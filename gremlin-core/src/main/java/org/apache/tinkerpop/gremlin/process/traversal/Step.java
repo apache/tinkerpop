@@ -36,7 +36,7 @@ import java.util.Set;
  * @param <S> The incoming object type of the step
  * @param <E> The outgoing object type of the step
  */
-public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Cloneable {
+public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, Cloneable {
 
     /**
      * Add a iterator of {@link Traverser} objects of type S to the step.

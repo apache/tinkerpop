@@ -52,7 +52,7 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Map<E, Long> map = new HashMap<>(1);
-        map.put(TraversalUtil.applyNullable(traverser.asAdmin(), this.keyTraversal), traverser.bulk());
+        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
         this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 

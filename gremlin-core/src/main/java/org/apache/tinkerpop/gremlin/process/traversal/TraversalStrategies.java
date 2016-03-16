@@ -91,18 +91,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     public TraversalStrategies clone();
 
     /**
-     * Get the {@link TraverserGeneratorFactory} to use to generate traversers.
-     */
-    public TraverserGeneratorFactory getTraverserGeneratorFactory();
-
-    /**
-     * Set the {@link TraverserGeneratorFactory} to use for determining which {@link Traverser} type to generate for the {@link Traversal}.
-     *
-     * @param traverserGeneratorFactory the factory to use
-     */
-    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory);
-
-    /**
      * Sorts the list of provided strategies such that the {@link TraversalStrategy#applyPost()}
      * and {@link TraversalStrategy#applyPrior()} dependencies are respected.
      * <p/>

@@ -55,7 +55,7 @@ public class StartStep<S> extends AbstractStep<S, S> {
     }
 
     @Override
-    protected Traverser<S> processNextStart() {
+    protected Traverser.Admin<S> processNextStart() {
         if (this.first) {
             if (null != this.start) {
                 if (this.start instanceof Iterator)

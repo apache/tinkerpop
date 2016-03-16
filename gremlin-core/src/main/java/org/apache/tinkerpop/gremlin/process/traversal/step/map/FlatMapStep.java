@@ -38,7 +38,7 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
     }
 
     @Override
-    protected Traverser<E> processNextStart() {
+    protected Traverser.Admin<E> processNextStart() {
         while (true) {
             if (this.iterator.hasNext()) {
                 return this.head.split(this.iterator.next(), this);

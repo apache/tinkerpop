@@ -46,7 +46,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
     }
 
     @Override
-    protected Traverser<ComputerResult> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<ComputerResult> processNextStart() throws NoSuchElementException {
         try {
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;

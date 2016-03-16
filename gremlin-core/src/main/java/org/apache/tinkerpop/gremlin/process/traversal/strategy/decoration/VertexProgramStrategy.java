@@ -63,8 +63,6 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         if (!(traversal.getParent() instanceof EmptyStep))   // VertexPrograms can only execute at the root level of a Traversal
             return;
 
-        traversal.addTraverserRequirement(TraverserRequirement.BULK); // all graph computations require bulk
-
         // back propagate as()-labels off of vertex computing steps
         Step<?, ?> currentStep = traversal.getEndStep();
         final Set<String> currentLabels = new HashSet<>();

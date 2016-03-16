@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.util.iterator.MultiIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
 import java.io.Serializable;
@@ -32,33 +31,30 @@ import java.util.Iterator;
 public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin<S>>, Serializable {
 
     private final TraverserSet<S> traverserSet = new TraverserSet<>();
-    private final MultiIterator<Traverser.Admin<S>> traverserIterators = new MultiIterator<>();
-    private final Step<S,?> hostStep;
+    private final Step<S, ?> hostStep;
 
-    public ExpandableStepIterator(final Step<S,?> hostStep) {
+    public ExpandableStepIterator(final Step<S, ?> hostStep) {
         this.hostStep = hostStep;
     }
 
     @Override
     public boolean hasNext() {
-        return !this.traverserSet.isEmpty() || this.hostStep.getPreviousStep().hasNext() || this.traverserIterators.hasNext();
+        return !this.traverserSet.isEmpty() || this.hostStep.getPreviousStep().hasNext();
     }
 
     @Override
     public Traverser.Admin<S> next() {
         if (!this.traverserSet.isEmpty())
             return this.traverserSet.remove();
-        if (this.traverserIterators.hasNext())
-            return this.traverserIterators.next();
         /////////////
         if (this.hostStep.getPreviousStep().hasNext())
-            return (Traverser.Admin<S>) this.hostStep.getPreviousStep().next();
+            return this.hostStep.getPreviousStep().next();
         /////////////
         return this.traverserSet.remove();
     }
 
     public void add(final Iterator<Traverser.Admin<S>> iterator) {
-        this.traverserIterators.addIterator(iterator);
+        iterator.forEachRemaining(this.traverserSet::add);
     }
 
     public void add(final Traverser.Admin<S> traverser) {
@@ -71,7 +67,6 @@ public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin
     }
 
     public void clear() {
-        this.traverserIterators.clear();
         this.traverserSet.clear();
     }
 }

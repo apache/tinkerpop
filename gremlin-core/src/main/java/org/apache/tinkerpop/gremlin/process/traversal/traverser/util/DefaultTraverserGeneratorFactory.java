@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGen
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_P_S_SE_SL_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -49,9 +48,7 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?, ?> traversal) {
-        final Set<TraverserRequirement> requirements = TraversalHelper.getRootTraversal(traversal).getTraverserRequirements();
-
+    public TraverserGenerator getTraverserGenerator(final Set<TraverserRequirement> requirements) {
         if (requirements.contains(TraverserRequirement.ONE_BULK)) {
             if (O_OB_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
                 return O_OB_S_SE_SL_TraverserGenerator.instance();
@@ -62,9 +59,6 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
             if (LP_O_OB_P_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
                 return LP_O_OB_P_S_SE_SL_TraverserGenerator.instance();
         } else {
-            if (O_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
-                return O_TraverserGenerator.instance();
-
             if (B_O_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
                 return B_O_TraverserGenerator.instance();
 

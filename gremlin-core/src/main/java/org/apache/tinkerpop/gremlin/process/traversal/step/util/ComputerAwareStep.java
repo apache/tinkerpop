@@ -32,14 +32,14 @@ import java.util.NoSuchElementException;
  */
 public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> implements GraphComputing {
 
-    private Iterator<Traverser<E>> previousIterator = EmptyIterator.instance();
+    private Iterator<Traverser.Admin<E>> previousIterator = EmptyIterator.instance();
 
     public ComputerAwareStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Traverser<E> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         while (true) {
             if (this.previousIterator.hasNext())
                 return this.previousIterator.next();
@@ -59,9 +59,9 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         return clone;
     }
 
-    protected abstract Iterator<Traverser<E>> standardAlgorithm() throws NoSuchElementException;
+    protected abstract Iterator<Traverser.Admin<E>> standardAlgorithm() throws NoSuchElementException;
 
-    protected abstract Iterator<Traverser<E>> computerAlgorithm() throws NoSuchElementException;
+    protected abstract Iterator<Traverser.Admin<E>> computerAlgorithm() throws NoSuchElementException;
 
     //////
 
@@ -72,7 +72,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         }
 
         @Override
-        protected Traverser<S> processNextStart() throws NoSuchElementException {
+        protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
             if (this.traverserStepIdAndLabelsSetByChild) {
                 start.setStepId(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getNextStep().getId());

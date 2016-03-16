@@ -206,11 +206,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 else
                     graphStep.setIteratorSupplier(() -> (Iterator) IteratorUtils.filter(vertex.edges(Direction.OUT), edge -> ElementHelper.idExists(edge.id(), graphStep.getIds())));
                 graphStep.forEachRemaining(traverser -> {
-                    if (traverser.asAdmin().isHalted()) {
-                        traverser.asAdmin().detach();
+                    if (traverser.isHalted()) {
+                        traverser.detach();
                         haltedTraversers.add((Traverser.Admin) traverser);
                         if (!this.keepDistributedHaltedTraversers)
-                            memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin()));
+                            memory.add(HALTED_TRAVERSERS, new TraverserSet<>(traverser));
                     } else
                         activeTraversers.add((Traverser.Admin) traverser);
                 });
@@ -256,7 +256,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             } else {
                 // finalize locally with any last traversers dangling in the local traversal
                 while (this.traversal.get().getEndStep().hasNext()) {
-                    final Traverser.Admin<Object> traverser = (Traverser.Admin) this.traversal.get().getEndStep().next().asAdmin();
+                    final Traverser.Admin traverser = this.traversal.get().getEndStep().next();
                     traverser.detach();
                     haltedTraversers.add(traverser);
                 }
@@ -279,7 +279,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 final Barrier<Object> barrier = (Barrier<Object>) step;
                 barrier.addBarrier(memory.get(key));
                 while (step.hasNext()) {
-                    traverserSet.add(step.next().asAdmin());
+                    traverserSet.add(step.next());
                 }
                 if (step instanceof ReducingBarrierStep)
                     memory.set(step.getId(), ((ReducingBarrierStep) step).getSeedSupplier().get());
@@ -297,26 +297,26 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             traverser.set(DetachedFactory.detach(traverser.get(), true));
             traverser.setSideEffects(this.traversal.get().getSideEffects());
             if (traverser.isHalted()) {
-                traverser.asAdmin().detach();
+                traverser.detach();
                 haltedTraversers.add(traverser);
             } else if (traverser.get() instanceof Attachable &&
                     !(traverser.get() instanceof Path) &&
                     !TraversalHelper.isLocalElement(this.traversalMatrix.getStepById(traverser.getStepId()))) {  // this is so that patterns like order().name work as expected.
-                traverser.asAdmin().detach();
+                traverser.detach();
                 remoteActiveTraversers.add(traverser);
             } else {
                 currentStep = this.traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep)) {
                     previousStep.forEachRemaining(result -> {
-                        if (result.asAdmin().isHalted()) {
-                            result.asAdmin().detach();
-                            haltedTraversers.add(result.asAdmin());
+                        if (result.isHalted()) {
+                            result.detach();
+                            haltedTraversers.add(result);
                         } else {
                             if (result.get() instanceof Attachable) {
-                                traverser.asAdmin().detach();
-                                remoteActiveTraversers.add(result.asAdmin());
+                                traverser.detach();
+                                remoteActiveTraversers.add(result);
                             } else
-                                localActiveTraversers.add(result.asAdmin());
+                                localActiveTraversers.add(result);
                         }
                     });
                 }
@@ -326,15 +326,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
         if (!(currentStep instanceof EmptyStep)) {
             currentStep.forEachRemaining(traverser -> {
-                if (traverser.asAdmin().isHalted()) {
-                    traverser.asAdmin().detach();
-                    haltedTraversers.add(traverser.asAdmin());
+                if (traverser.isHalted()) {
+                    traverser.detach();
+                    haltedTraversers.add(traverser);
                 } else {
                     if (traverser.get() instanceof Attachable) {
-                        traverser.asAdmin().detach();
-                        remoteActiveTraversers.add(traverser.asAdmin());
+                        traverser.detach();
+                        remoteActiveTraversers.add(traverser);
                     } else
-                        localActiveTraversers.add(traverser.asAdmin());
+                        localActiveTraversers.add(traverser);
                 }
             });
         }

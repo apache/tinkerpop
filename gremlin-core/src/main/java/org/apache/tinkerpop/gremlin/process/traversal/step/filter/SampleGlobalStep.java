@@ -70,8 +70,8 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             return;
         //////////////// else sample the set
         double totalWeight = 0.0d;
-        for (final Traverser<S> s : traverserSet) {
-            totalWeight = totalWeight + TraversalUtil.apply(s.asAdmin(), this.probabilityTraversal).doubleValue() * s.bulk();
+        for (final Traverser.Admin<S> s : traverserSet) {
+            totalWeight = totalWeight + TraversalUtil.apply(s, this.probabilityTraversal).doubleValue() * s.bulk();
         }
         ///////
         final TraverserSet<S> sampledSet = new TraverserSet<>();
@@ -86,8 +86,8 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
                     for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                         runningWeight = runningWeight + currentWeight;
                         if (RANDOM.nextDouble() <= ((runningWeight / totalWeight))) {
-                            final Traverser.Admin<S> split = s.asAdmin().split();
-                            split.asAdmin().setBulk(1l);
+                            final Traverser.Admin<S> split = s.split();
+                            split.setBulk(1l);
                             sampledSet.add(split);
                             runningAmountToSample++;
                             totalWeight = totalWeight - currentWeight;

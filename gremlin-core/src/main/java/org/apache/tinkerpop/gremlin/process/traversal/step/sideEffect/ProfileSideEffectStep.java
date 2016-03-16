@@ -72,8 +72,8 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
     }
 
     @Override
-    public Traverser<S> next() {
-        Traverser<S> ret = null;
+    public Traverser.Admin<S> next() {
+        Traverser.Admin<S> ret = null;
         initializeIfNeeded();
         getMetrics().start(this.getId());
         try {
@@ -81,7 +81,7 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
             return ret;
         } finally {
             if (ret != null) {
-                getMetrics().finish(this.getId(), ret.asAdmin().bulk());
+                getMetrics().finish(this.getId(), ret.bulk());
             } else {
                 getMetrics().stop(this.getId());
             }
@@ -98,7 +98,7 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
     }
 
     @Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
         return this.starts.next();
     }
 

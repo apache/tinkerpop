@@ -61,7 +61,7 @@ public final class SparkMessenger<M> implements Messenger<M> {
     public void sendMessage(final MessageScope messageScope, final M message) {
         if (messageScope instanceof MessageScope.Local) {
             final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
-            final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.vertex);
+            final Traversal.Admin<Vertex, Edge> incidentTraversal = SparkMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
             final Direction direction = SparkMessenger.getOppositeDirection(incidentTraversal);
             incidentTraversal.forEachRemaining(edge -> this.outgoingMessages.add(new Tuple2<>(edge.vertices(direction).next().id(), message)));
         } else {
@@ -71,8 +71,8 @@ public final class SparkMessenger<M> implements Messenger<M> {
 
     ///////////
 
-    private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal<Vertex, Edge> incidentTraversal, final Vertex vertex) {
-        incidentTraversal.asAdmin().addStart(incidentTraversal.asAdmin().getTraverserGenerator().generate(vertex, incidentTraversal.asAdmin().getStartStep(), 1l));
+    private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal.Admin<Vertex, Edge> incidentTraversal, final Vertex vertex) {
+        incidentTraversal.asAdmin().addStart(incidentTraversal.getTraverserGenerator().generate(vertex, incidentTraversal.asAdmin().getStartStep(), 1l));
         return (T) incidentTraversal;
     }
 

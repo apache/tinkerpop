@@ -83,7 +83,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             final TraverserSet traverserSet = new TraverserSet();
             valueTraversal.reset();
             valueTraversal.addStart(traverser);
-            valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+            valueTraversal.getEndStep().forEachRemaining(traverserSet::add);
             map.put(key, traverserSet);
         } else
             map.put(key, traverser.split());

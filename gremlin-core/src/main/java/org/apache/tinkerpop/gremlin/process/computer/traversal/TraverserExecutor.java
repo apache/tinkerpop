@@ -151,14 +151,14 @@ public final class TraverserExecutor {
                 while (barrier.hasNextBarrier()) {
                     final TraverserSet<Object> barrierSet = barrier.nextBarrier();
                     IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
-                        if (traverser.asAdmin().isHalted()) {
-                            traverser.asAdmin().detach();
-                            haltedTraversers.add(traverser.asAdmin());
+                        if (traverser.isHalted()) {
+                            traverser.detach();
+                            haltedTraversers.add(traverser);
                             if (returnHaltedTraversers)
-                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
                         } else {
-                            traverser.asAdmin().detach();
-                            traverserSet.add(traverser.asAdmin());
+                            traverser.detach();
+                            traverserSet.add(traverser);
                         }
                     });
                 }
@@ -172,13 +172,13 @@ public final class TraverserExecutor {
             }
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
-                if (traverser.asAdmin().isHalted()) {
-                    traverser.asAdmin().detach();
-                    haltedTraversers.add(traverser.asAdmin());
+                if (traverser.isHalted()) {
+                    traverser.detach();
+                    haltedTraversers.add(traverser);
                     if (returnHaltedTraversers)
-                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.asAdmin().split()));
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
                 } else {
-                    activeTraversers.add(traverser.asAdmin());
+                    activeTraversers.add(traverser);
                 }
             });
         }

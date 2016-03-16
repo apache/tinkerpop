@@ -126,7 +126,7 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public Traverser<E> next() {
+    public Traverser.Admin<E> next() {
         throw FastNoSuchElementException.instance();
     }
 
