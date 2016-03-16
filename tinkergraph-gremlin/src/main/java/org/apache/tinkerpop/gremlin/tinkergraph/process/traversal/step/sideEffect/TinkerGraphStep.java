@@ -121,4 +121,9 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
     public void addHasContainer(final HasContainer hasContainer) {
         this.hasContainers.add(hasContainer);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.hasContainers.hashCode();
+    }
 }

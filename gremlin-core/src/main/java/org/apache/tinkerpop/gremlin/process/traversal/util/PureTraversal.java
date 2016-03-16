@@ -56,6 +56,16 @@ public final class PureTraversal<S, E> implements Serializable, Cloneable {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return this.pureTraversal.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof PureTraversal && this.pureTraversal.equals(((PureTraversal) other).pureTraversal);
+    }
+
     ////////////
 
     public static <S, E> void storeState(final Configuration configuration, final String configurationKey, final Traversal.Admin<S, E> traversal) {

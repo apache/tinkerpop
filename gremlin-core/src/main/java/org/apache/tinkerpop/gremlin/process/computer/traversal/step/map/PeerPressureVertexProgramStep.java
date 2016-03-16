@@ -56,6 +56,11 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.edgeTraversal.hashCode() ^ this.clusterProperty.hashCode() ^ this.times;
+    }
+
+    @Override
     public void modulateBy(final Traversal.Admin<?, ?> edgeTraversal) {
         this.edgeTraversal = new PureTraversal<>((Traversal.Admin<Vertex, Edge>) edgeTraversal);
         this.integrateChild(this.edgeTraversal.get());
