@@ -112,6 +112,10 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     @Override
     public void onGraphComputer() {
         this.iteratorSupplier = Collections::emptyIterator;
+        convertElementsToIds();
+    }
+
+    public void convertElementsToIds() {
         for (int i = 0; i < this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
             if (this.ids[i] instanceof Element)
                 this.ids[i] = ((Element) this.ids[i]).id();

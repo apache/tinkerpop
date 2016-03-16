@@ -199,8 +199,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
         @Override
         public Traverser next() {
-            final Object o = inner.next().getObject();
-            return (Traverser) o;
+            return (Traverser) inner.next().getObject();
         }
     }
 

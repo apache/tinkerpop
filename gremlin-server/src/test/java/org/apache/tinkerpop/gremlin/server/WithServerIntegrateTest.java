@@ -41,7 +41,7 @@ public class WithServerIntegrateTest extends AbstractGremlinServerIntegrationTes
     @Test
     public void shouldDoServerGraphReturningVertices() {
         final Cluster cluster = Cluster.open();
-        final Graph graph = RemoteGraph.open(DriverRemoteConnection.using(cluster), TinkerGraph.class);
+        final Graph graph = RemoteGraph.open(DriverRemoteConnection.using(cluster));
         final GraphTraversalSource g = graph.traversal();
         g.V().forEachRemaining(v -> System.out.println("TEST: " + v.toString()));
         cluster.close();

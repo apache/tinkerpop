@@ -66,23 +66,15 @@ import java.util.Optional;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest",
         method = "*",
-        reason = "RemoteGraph does not support ElementIdStrategy at this time")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest",
-        method = "*",
-        reason = "RemoteGraph does not support ReadOnlyStrategy at this time")
+        reason = "RemoteGraph does not support ElementIdStrategy at this time - it requires a lambda in construction which is not serializable")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest",
         method = "*",
-        reason = "RemoteGraph does not support EventStrategy at this time")
+        reason = "RemoteGraph does not support EventStrategy at this time - some of its members are not serializable")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest",
         method = "*",
         reason = "RemoteGraph does not support PartitionStrategy at this time")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest",
-        method = "*",
-        reason = "RemoteGraph does not support SubgraphStrategy at this time")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest",
         method = "*",
@@ -90,28 +82,21 @@ import java.util.Optional;
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
-    private final Optional<Class<? extends Graph>> graphClass;
 
     public static final String GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS = "gremlin.servergraph.serverConnectionClass";
-    public static final String GREMLIN_SERVERGRAPH_GRAPH_CLASS = "gremlin.servergraph.graphClass";
 
     private RemoteGraph(final RemoteConnection connection) {
-        this(connection, null);
-    }
-
-    private RemoteGraph(final RemoteConnection connection, final Class<? extends Graph> graphClass) {
         this.connection = connection;
-        this.graphClass = Optional.ofNullable(graphClass);
         TraversalStrategies.GlobalCache.registerStrategies(
                 RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
     }
 
     /**
      * Creates a new {@link RemoteGraph} instance using the specified configuration, which allows {@link RemoteGraph}
-     * to be compliant with {@link GraphFactory}. Expects keys for the {@link #GREMLIN_SERVERGRAPH_GRAPH_CLASS} and
-     * {@link #GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS} as well as any configuration required by the underlying
-     * {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object is passed down
-     * without change to the creation of the {@link RemoteConnection} instance.
+     * to be compliant with {@link GraphFactory}. Expects key for {@link #GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS}
+     * as well as any configuration required by the underlying {@link RemoteConnection} which will be instantiated.
+     * Note that the {@code Configuration} object is passed down without change to the creation of the
+     * {@link RemoteConnection} instance.
      */
     public static RemoteGraph open(final Configuration conf) {
         if (!conf.containsKey(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS))
@@ -126,33 +111,7 @@ public class RemoteGraph implements Graph {
             throw new IllegalStateException(ex);
         }
 
-        final RemoteGraph remoteGraph;
-        if (conf.containsKey(GREMLIN_SERVERGRAPH_GRAPH_CLASS)) {
-            final Class<? extends Graph> graphClazz;
-            try {
-                graphClazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_GRAPH_CLASS)).asSubclass(Graph.class);
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-
-            remoteGraph = new RemoteGraph(remoteConnection, graphClazz);
-        } else {
-            remoteGraph = new RemoteGraph(remoteConnection);
-        }
-
-        return remoteGraph;
-    }
-
-    /**
-     * Creates a new {@link RemoteGraph} instance. {@link RemoteGraph} will attempt to call the
-     * {@link RemoteConnection#close()} method when the {@link #close()} method is called on this class.
-     *
-     * @param connection the {@link RemoteConnection} instance to use
-     * @param graphClass the {@link Graph} class expected to be executed on the other side of the
-     * {@link RemoteConnection}
-     */
-    public static RemoteGraph open(final RemoteConnection connection, final Class<? extends Graph> graphClass) {
-        return new RemoteGraph(connection, graphClass);
+        return new RemoteGraph(remoteConnection);
     }
 
     /**
@@ -168,10 +127,6 @@ public class RemoteGraph implements Graph {
 
     public RemoteConnection getConnection() {
         return connection;
-    }
-
-    public Optional<Class<? extends Graph>> getGraphClass() {
-        return graphClass;
     }
 
     /**

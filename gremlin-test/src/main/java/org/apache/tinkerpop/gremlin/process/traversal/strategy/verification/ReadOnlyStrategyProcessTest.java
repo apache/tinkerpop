@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -100,15 +101,15 @@ public class ReadOnlyStrategyProcessTest extends AbstractGremlinProcessTest {
 
     private void assertTraversal(final Traversal t, final boolean expectMutatingStep) {
         try {
-            t.asAdmin().applyStrategies();
+            t.hasNext();
             if (expectMutatingStep) fail("The strategy should have found a mutating step.");
-        } catch (final IllegalStateException ise) {
+        } catch (final Exception ise) {
             if (!expectMutatingStep)
                 fail("The traversal should not have failed as there is no mutating step.");
             else {
                 // TraversalVerificationStrategy fails before this as mutating operations are not allowed in OLAP
                 if (!(ise instanceof VerificationException))
-                    assertThat(ise.getMessage(), startsWith("The provided traversal has a mutating step and thus is not read only"));
+                    assertThat(ise.getMessage(), containsString("The provided traversal has a mutating step and thus is not read only"));
             }
         }
     }

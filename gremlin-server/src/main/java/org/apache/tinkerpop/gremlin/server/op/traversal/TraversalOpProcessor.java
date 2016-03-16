@@ -129,6 +129,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final Traversal traversal;
         try {
             traversal = (Traversal) Serializer.deserializeObject(serializedTraversal);
+
+            // todo: isLocked() server error
+            assert !traversal.asAdmin().isLocked();
         } catch (Exception ex) {
             throw new OpProcessorException("Could not deserialize the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).statusMessage(ex.getMessage()).create());
@@ -141,12 +144,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final Graph graph = graphManager.getGraphs().get(graphName);
             final boolean supportsTransactions = graph.features().graph().supportsTransactions();
 
-            traversal.asAdmin().setGraph(graph);
-            traversal.asAdmin().getStrategies().removeStrategies(RemoteStrategy.class);
-            final List<TraversalStrategy<?>> strategies = TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).toList();
-            final TraversalStrategy[] arrayOfStrategies = new TraversalStrategy[strategies.size()];
-            strategies.toArray(arrayOfStrategies);
-            traversal.asAdmin().getStrategies().addStrategies(arrayOfStrategies);
+            configureTraversal(traversal, graph);
 
             context.getGremlinExecutor().getExecutorService().submit(() -> {
                 try {
@@ -181,6 +179,15 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }
+    }
+
+    private static void configureTraversal(final Traversal traversal, final Graph graph) {
+        traversal.asAdmin().setGraph(graph);
+        traversal.asAdmin().getStrategies().removeStrategies(RemoteStrategy.class);
+        final List<TraversalStrategy<?>> strategies = TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).toList();
+        final TraversalStrategy[] arrayOfStrategies = new TraversalStrategy[strategies.size()];
+        strategies.toArray(arrayOfStrategies);
+        traversal.asAdmin().getStrategies().addStrategies(arrayOfStrategies);
     }
 
     static class DetachingIterator implements Iterator<Traverser> {
