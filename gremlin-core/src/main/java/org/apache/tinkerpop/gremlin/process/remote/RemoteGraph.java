@@ -63,10 +63,6 @@ import java.util.Iterator;
         method = "shouldNeverPropagateANullValuedTraverser",
         reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest",
-        method = "g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack",
-        reason = "This test is temporarily failing for RemoteGraph")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest",
         method = "*",
         reason = "RemoteGraph does not support ElementIdStrategy at this time")
