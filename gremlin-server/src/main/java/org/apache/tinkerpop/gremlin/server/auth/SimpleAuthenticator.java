@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.mindrot.jbcrypt.BCrypt;
+import org.mindrot.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

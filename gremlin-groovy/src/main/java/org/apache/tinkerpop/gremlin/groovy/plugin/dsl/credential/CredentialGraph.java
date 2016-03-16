@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.mindrot.jbcrypt.BCrypt;
+import org.mindrot.BCrypt;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
 
