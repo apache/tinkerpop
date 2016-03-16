@@ -53,12 +53,7 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
         try {
             this.graph = graph;
             final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
-            // TOTAL HACK -- NEED TO GENERALIZE
-            final InputFormat<NullWritable, VertexWritable> inputFormat;
-            if (!InputFormat.class.isAssignableFrom(this.graph.configuration().getGraphReader()))
-                inputFormat = (InputFormat<NullWritable, VertexWritable>) Class.forName("org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat").newInstance();
-            else
-                inputFormat = this.graph.configuration().<InputFormat<NullWritable, VertexWritable>>getGraphReader().newInstance();
+            final InputFormat<NullWritable, VertexWritable> inputFormat = ConfUtil.getReaderAsInputFormat(configuration);
             if (inputFormat instanceof FileInputFormat) {
                 final Storage storage = FileSystemStorage.open(configuration);
                 if (!this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
