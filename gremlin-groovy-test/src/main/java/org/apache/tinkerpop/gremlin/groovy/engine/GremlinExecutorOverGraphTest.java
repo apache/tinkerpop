@@ -52,7 +52,7 @@ public class GremlinExecutorOverGraphTest extends AbstractGremlinTest {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .afterSuccess(b -> {
                     final GraphTraversalSource g = (GraphTraversalSource) b.get("g");
-                    if (g.getGraph().get().features().graph().supportsTransactions())
+                    if (g.getGraph().features().graph().supportsTransactions())
                         g.tx().commit();
                 })
                 .executorService(evalExecutor).create();
