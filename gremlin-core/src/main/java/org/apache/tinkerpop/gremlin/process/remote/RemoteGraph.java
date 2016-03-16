@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * A {@code ServerGraph} represents a proxy by which traversals spawned from this graph are expected over a
@@ -89,14 +90,19 @@ import java.util.Iterator;
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
-    private final Class<? extends Graph> graphClass;
+    private final Optional<Class<? extends Graph>> graphClass;
 
     public static final String GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS = "gremlin.servergraph.serverConnectionClass";
     public static final String GREMLIN_SERVERGRAPH_GRAPH_CLASS = "gremlin.servergraph.graphClass";
 
+    private RemoteGraph(final RemoteConnection connection) {
+        this(connection, null);
+    }
+
     private RemoteGraph(final RemoteConnection connection, final Class<? extends Graph> graphClass) {
         this.connection = connection;
-        this.graphClass = graphClass;TraversalStrategies.GlobalCache.registerStrategies(
+        this.graphClass = Optional.ofNullable(graphClass);
+        TraversalStrategies.GlobalCache.registerStrategies(
                 RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
     }
 
@@ -108,9 +114,6 @@ public class RemoteGraph implements Graph {
      * without change to the creation of the {@link RemoteConnection} instance.
      */
     public static RemoteGraph open(final Configuration conf) {
-        if (!conf.containsKey(GREMLIN_SERVERGRAPH_GRAPH_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_GRAPH_CLASS +"' key");
-
         if (!conf.containsKey(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS))
             throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS +"' key");
 
@@ -123,14 +126,21 @@ public class RemoteGraph implements Graph {
             throw new IllegalStateException(ex);
         }
 
-        final Class<? extends Graph> graphClazz;
-        try {
-            graphClazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_GRAPH_CLASS)).asSubclass(Graph.class);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
+        final RemoteGraph remoteGraph;
+        if (conf.containsKey(GREMLIN_SERVERGRAPH_GRAPH_CLASS)) {
+            final Class<? extends Graph> graphClazz;
+            try {
+                graphClazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_GRAPH_CLASS)).asSubclass(Graph.class);
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+
+            remoteGraph = new RemoteGraph(remoteConnection, graphClazz);
+        } else {
+            remoteGraph = new RemoteGraph(remoteConnection);
         }
 
-        return new RemoteGraph(remoteConnection, graphClazz);
+        return remoteGraph;
     }
 
     /**
@@ -145,11 +155,22 @@ public class RemoteGraph implements Graph {
         return new RemoteGraph(connection, graphClass);
     }
 
+    /**
+     * Creates a new {@link RemoteGraph} instance. {@link RemoteGraph} will attempt to call the
+     * {@link RemoteConnection#close()} method when the {@link #close()} method is called on this class.
+     *
+     * @param connection the {@link RemoteConnection} instance to use
+     * {@link RemoteConnection}
+     */
+    public static RemoteGraph open(final RemoteConnection connection) {
+        return new RemoteGraph(connection);
+    }
+
     public RemoteConnection getConnection() {
         return connection;
     }
 
-    public Class<? extends Graph> getGraphClass() {
+    public Optional<Class<? extends Graph>> getGraphClass() {
         return graphClass;
     }
 

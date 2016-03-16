@@ -61,14 +61,14 @@ public class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.
             return;
 
         if (!traversal.getGraph().isPresent())
-            throw new IllegalStateException("ServerStrategy expects a ServerGraph instance attached to the Traversal");
+            throw new IllegalStateException("RemoteStrategy expects a RemoteGraph instance attached to the Traversal");
 
         if (!(traversal.getGraph().get() instanceof RemoteGraph))
-            throw new IllegalStateException("ServerStrategy expects a ServerGraph instance attached to the Traversal");
+            throw new IllegalStateException("RemoteStrategy expects a RemoteGraph instance attached to the Traversal");
 
         final RemoteGraph remoteGraph = (RemoteGraph) traversal.getGraph().get();
         if (null == remoteGraph.getConnection())
-            throw new IllegalStateException("ServerStrategy expects ServerGraph instance to have a ServerConnection");
+            throw new IllegalStateException("RemoteStrategy expects RemoteGraph instance to have a RemoteConnection");
 
         final Traversal.Admin<?, ?> serverTraversal = new DefaultTraversal<>();
         TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) serverTraversal);

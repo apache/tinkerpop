@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Iterator;
@@ -60,10 +61,12 @@ public class RemoteStep<S,E> extends AbstractStep<S, E> {
         if (null == currentIterator) {
             try {
                 final Traversal.Admin temp = pureTraversal.getPure();
-                temp.setStrategies(TraversalStrategies.GlobalCache.getStrategies(((RemoteGraph) traversal.getGraph().get()).getGraphClass()));
+                temp.setStrategies(this.getTraversal().getStrategies().clone());
                 currentIterator = remoteConnection.submit(temp);
             } catch (RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
+            } catch (IllegalStateException ex) {
+
             }
         }
 

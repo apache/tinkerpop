@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -140,6 +142,11 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final boolean supportsTransactions = graph.features().graph().supportsTransactions();
 
             traversal.asAdmin().setGraph(graph);
+            traversal.asAdmin().getStrategies().removeStrategies(RemoteStrategy.class);
+            final List<TraversalStrategy<?>> strategies = TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).toList();
+            final TraversalStrategy[] arrayOfStrategies = new TraversalStrategy[strategies.size()];
+            strategies.toArray(arrayOfStrategies);
+            traversal.asAdmin().getStrategies().addStrategies(arrayOfStrategies);
 
             context.getGremlinExecutor().getExecutorService().submit(() -> {
                 try {
