@@ -155,12 +155,12 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException {
         try {
-            if (attachElements)
-                return new TraverserIterator(client.submit(t).iterator());
-            else {
+            if (attachElements) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
                 return new AttachingTraverserIterator(client.submit(t).iterator(), graph);
+            } else {
+                return new TraverserIterator(client.submit(t).iterator());
             }
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
