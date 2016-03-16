@@ -125,6 +125,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 this.requirements.add(TraverserRequirement.SACK);
             if (this.requirements.contains(TraverserRequirement.ONE_BULK))
                 this.requirements.remove(TraverserRequirement.BULK);
+            this.requirements = Collections.unmodifiableSet(this.requirements);
         }
         return this.requirements;
     }
