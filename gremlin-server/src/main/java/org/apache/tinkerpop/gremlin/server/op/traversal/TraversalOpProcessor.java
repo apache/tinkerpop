@@ -129,13 +129,16 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final Traversal traversal;
         try {
             traversal = (Traversal) Serializer.deserializeObject(serializedTraversal);
-
-            // todo: isLocked() server error
-            assert !traversal.asAdmin().isLocked();
         } catch (Exception ex) {
             throw new OpProcessorException("Could not deserialize the Traversal instance",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).statusMessage(ex.getMessage()).create());
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
+                            .statusMessage(ex.getMessage()).create());
         }
+
+        if (!traversal.asAdmin().isLocked())
+            throw new OpProcessorException("Locked Traversals cannot be processed by the server",
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
+                            .statusMessage("Locked Traversals cannot be processed by the server").create());
 
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
