@@ -766,6 +766,7 @@ that iterates thousands of results will serialize each of those in memory into a
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.
 
+[[connecting-via-remotegraph]]
 Connecting via RemoteGraph
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
