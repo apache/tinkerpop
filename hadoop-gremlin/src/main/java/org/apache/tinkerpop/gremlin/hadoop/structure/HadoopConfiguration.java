@@ -90,6 +90,10 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
             return Constants.GREMLIN_HADOOP_GRAPH_READER;
         else if (key.equals(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD))
             return Constants.GREMLIN_HADOOP_GRAPH_WRITER;
+        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES))
+            return Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES;
+        else if (key.equals(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES))
+            return Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES;
         else
             return key;
     }

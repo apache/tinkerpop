@@ -144,7 +144,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     public int run(final String[] args) {
         final Storage storage = FileSystemStorage.open(this.giraphConfiguration);
         storage.rm(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
-        this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(Persist.EDGES));
+        this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(Persist.EDGES));
         try {
             // store vertex and edge filters (will propagate down to native InputFormat or else GiraphVertexInputFormat will process)
             final BaseConfiguration apacheConfiguration = new BaseConfiguration();
@@ -213,7 +213,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 storage.rm(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), Constants.HIDDEN_ITERATION));
             }
             // do map reduce jobs
-            this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true));
+            this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_READER_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true));
             for (final MapReduce mapReduce : this.mapReducers) {
                 this.memory.addMapReduceMemoryKey(mapReduce);
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);

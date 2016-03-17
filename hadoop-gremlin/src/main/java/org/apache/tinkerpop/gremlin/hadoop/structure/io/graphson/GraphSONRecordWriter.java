@@ -52,7 +52,7 @@ public final class GraphSONRecordWriter extends RecordWriter<NullWritable, Verte
 
     public GraphSONRecordWriter(final DataOutputStream outputStream, final Configuration configuration) {
         this.outputStream = outputStream;
-        this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true);
+        this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true);
     }
 
     @Override

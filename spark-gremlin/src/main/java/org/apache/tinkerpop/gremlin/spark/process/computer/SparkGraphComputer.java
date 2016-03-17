@@ -116,7 +116,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
             if (!apacheConfiguration.containsKey(Constants.SPARK_SERIALIZER))
                 apacheConfiguration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
-            apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
+            apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
             final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
             final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);
             final Storage sparkContextStorage = SparkContextStorage.open(apacheConfiguration);
