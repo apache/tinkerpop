@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 
 import java.io.Serializable;
 import java.util.function.Supplier;
@@ -27,19 +27,19 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StandardTraversalMetricsSupplier implements Supplier<StandardTraversalMetrics>, Serializable {
+public final class DefaultTraversalMetricsSupplier implements Supplier<DefaultTraversalMetrics>, Serializable {
 
-    private static final StandardTraversalMetricsSupplier INSTANCE = new StandardTraversalMetricsSupplier();
+    private static final DefaultTraversalMetricsSupplier INSTANCE = new DefaultTraversalMetricsSupplier();
 
-    private StandardTraversalMetricsSupplier() {
+    private DefaultTraversalMetricsSupplier() {
     }
 
     @Override
-    public StandardTraversalMetrics get() {
-        return new StandardTraversalMetrics();
+    public DefaultTraversalMetrics get() {
+        return new DefaultTraversalMetrics();
     }
 
-    public static StandardTraversalMetricsSupplier instance() {
+    public static DefaultTraversalMetricsSupplier instance() {
         return INSTANCE;
     }
 }

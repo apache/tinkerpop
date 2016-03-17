@@ -20,6 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,13 +31,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class StandardTraversalMetrics implements TraversalMetrics, Serializable {
+public final class DefaultTraversalMetrics implements TraversalMetrics, Serializable {
     // toString() specific headers
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
-    private boolean dirty = true;
     private final Map<String, MutableMetrics> metrics = new HashMap<>();
-    private final Map<String, MutableMetrics> allMetrics = new HashMap<>();
     private final TreeMap<Integer, String> indexToLabelMap = new TreeMap<>();
 
     /*
@@ -43,60 +44,32 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     private long totalStepDuration;
     private Map<String, ImmutableMetrics> computedMetrics;
 
-    public StandardTraversalMetrics() {
-    }
-
-    public void start(final String metricsId) {
-        dirty = true;
-        allMetrics.get(metricsId).start();
-    }
-
-    public void stop(final String metricsId) {
-        dirty = true;
-        allMetrics.get(metricsId).stop();
-    }
-
-    public boolean wasInitialized() {
-        return !this.allMetrics.isEmpty();
-    }
-
-    public void finish(final String metricsId, final long bulk) {
-        dirty = true;
-        final MutableMetrics metrics = allMetrics.get(metricsId);
-        metrics.stop();
-        metrics.incrementCount(TRAVERSER_COUNT_ID, 1);
-        metrics.incrementCount(ELEMENT_COUNT_ID, bulk);
+    public DefaultTraversalMetrics() {
     }
 
     @Override
     public long getDuration(final TimeUnit unit) {
-        computeTotals();
         return unit.convert(totalStepDuration, MutableMetrics.SOURCE_UNIT);
     }
 
     @Override
     public Metrics getMetrics(final int index) {
-        computeTotals();
         // adjust index to account for the injected profile steps
         return (Metrics) computedMetrics.get(indexToLabelMap.get(index));
     }
 
     @Override
     public Metrics getMetrics(final String id) {
-        computeTotals();
         return computedMetrics.get(id);
     }
 
     @Override
     public Collection<ImmutableMetrics> getMetrics() {
-        computeTotals();
         return computedMetrics.values();
     }
 
     @Override
     public String toString() {
-        computeTotals();
-
         // Build a pretty table of metrics data.
 
         // Append headers
@@ -149,8 +122,8 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
             sb.append(String.format(" %15.3f", m.getDuration(TimeUnit.MICROSECONDS) / 1000.0));
 
-            if (percentDur!=null){
-                sb.append(String.format(" %8.2f", percentDur ));
+            if (percentDur != null) {
+                sb.append(String.format(" %8.2f", percentDur));
             }
 
             appendMetrics(m.getNested(), sb, indent + 1);
@@ -158,11 +131,6 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
     }
 
     private void computeTotals() {
-        if (!dirty) {
-            // already good to go
-            return;
-        }
-
         // Create temp list of ordered metrics
         List<MutableMetrics> tempMetrics = new ArrayList<>(metrics.size());
         for (String label : indexToLabelMap.values()) {
@@ -183,12 +151,10 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         // Store immutable instances of the calculated metrics
         computedMetrics = new LinkedHashMap<>(metrics.size());
         tempMetrics.forEach(it -> computedMetrics.put(it.getId(), it.getImmutableClone()));
-
-        dirty = false;
     }
 
-    public static StandardTraversalMetrics merge(final Iterator<StandardTraversalMetrics> toMerge) {
-        final StandardTraversalMetrics newTraversalMetrics = new StandardTraversalMetrics();
+    public static DefaultTraversalMetrics merge(final Iterator<DefaultTraversalMetrics> toMerge) {
+        final DefaultTraversalMetrics newTraversalMetrics = new DefaultTraversalMetrics();
 
         // iterate the incoming TraversalMetrics
         toMerge.forEachRemaining(inTraversalMetrics -> {
@@ -215,12 +181,46 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         return newTraversalMetrics;
     }
 
-    public void addMetrics(final MutableMetrics newMetrics, final String id, final int index, final boolean isTopLevel, final String profileStepId) {
-        if (isTopLevel) {
+    public void setMetrics(Traversal.Admin traversal, boolean onGraphComputer) {
+        addTopLevelMetrics(traversal);
+        handleNestedTraversals(traversal, null, onGraphComputer);
+        computeTotals();
+    }
+
+    private void addTopLevelMetrics(Traversal.Admin traversal) {
+        final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
+        for (int ii = 0; ii < profileSteps.size(); ii++) {
             // The index is necessary to ensure that step order is preserved after a merge.
-            indexToLabelMap.put(index, id);
-            metrics.put(id, newMetrics);
+            final MutableMetrics stepMetrics = profileSteps.get(ii).getMetrics();
+            this.indexToLabelMap.put(ii, stepMetrics.getId());
+            this.metrics.put(stepMetrics.getId(), stepMetrics);
         }
-        allMetrics.put(profileStepId, newMetrics);
+    }
+
+    private void handleNestedTraversals(Traversal.Admin traversal, MutableMetrics parentMetrics, boolean onGraphComputer) {
+        long prevDur = 0;
+        for (int ii = 0; ii < traversal.getSteps().size(); ii++) {
+            Step step = (Step) traversal.getSteps().get(ii);
+            if (step instanceof ProfileStep) {
+                final MutableMetrics metrics = ((ProfileStep) step).getMetrics();
+                if (!onGraphComputer) {
+                    // save duration before we adjust
+                    long tempDur = metrics.getDuration(TimeUnit.NANOSECONDS);
+                    // adjust duration
+                    metrics.setDuration(metrics.getDuration(TimeUnit.NANOSECONDS) - prevDur, TimeUnit.NANOSECONDS);
+                    prevDur = tempDur;
+                }
+                if (parentMetrics != null) {
+                    parentMetrics.addNested(metrics);
+                }
+            } else if (step instanceof TraversalParent) {
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
+                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
+                }
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
+                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
+                }
+            }
+        }
     }
 }

@@ -42,7 +42,6 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         this.name = name;
     }
 
-
     public void addNested(MutableMetrics metrics) {
         this.nested.put(metrics.getId(), metrics);
     }
@@ -178,4 +177,9 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         return clone;
     }
 
+    public void finish(long bulk) {
+        stop();
+        incrementCount(TraversalMetrics.TRAVERSER_COUNT_ID, 1);
+        incrementCount(TraversalMetrics.ELEMENT_COUNT_ID, bulk);
+    }
 }

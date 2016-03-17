@@ -23,17 +23,11 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileMarkerStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -54,7 +48,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class, ProfileMarkerStep.class, ProfileSideEffectStep.class, ComputerResultStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class
     ));
 
     private ComputerVerificationStrategy() {

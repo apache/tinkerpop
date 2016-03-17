@@ -22,14 +22,10 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.*;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
@@ -48,9 +44,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -97,7 +91,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         // Every other step should be a Profile step
         List<Step> steps = traversal.asAdmin().getSteps();
         for (int ii = 1; ii <= 6; ii += 2) {
-            assertEquals("Every other Step should be a ProfileStep.", ProfileSideEffectStep.class, steps.get(ii).getClass());
+            assertEquals("Every other Step should be a ProfileStep.", ProfileStep.class, steps.get(ii).getClass());
         }
 
         // Validate the last Metrics only, which must be consistent across vendors.
@@ -121,7 +115,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         // Every other step should be a Profile step
         List<Step> steps = traversal.asAdmin().getSteps();
         for (int ii = 1; ii < steps.size(); ii += 2) {
-            assertEquals("Every other Step should be a ProfileStep.", ProfileSideEffectStep.class, steps.get(ii).getClass());
+            assertEquals("Every other Step should be a ProfileStep.", ProfileStep.class, steps.get(ii).getClass());
         }
 
         // Validate the last Metrics only, which must be consistent across vendors.
@@ -254,7 +248,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX();
         printTraversalForm(traversal);
         traversal.iterate();
-        assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
+        assertEquals("There should be 7 steps in this traversal (counting injected profile steps).", 7, traversal.asAdmin().getSteps().size());
         TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
         validate_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile(traversalMetrics);
     }

@@ -22,7 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComput
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileMarkerStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -52,11 +53,14 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);
         });
 
-        if (TraversalHelper.hasStepOfClass(ProfileMarkerStep.class, traversal) && traversal.asAdmin().getEndStep() instanceof ProfileMarkerStep) {
-            throw new VerificationException("When specified, the .profile()-Step must be the last step.", traversal);
+        // The ProfileSideEffectStep must be the last step or the 2nd last step when accompanied by the cap step.
+        if (TraversalHelper.hasStepOfClass(ProfileSideEffectStep.class, traversal) &&
+                !(traversal.asAdmin().getEndStep() instanceof ProfileSideEffectStep) &&
+                !(traversal.asAdmin().getEndStep() instanceof SideEffectCapStep && traversal.asAdmin().getEndStep().getPreviousStep() instanceof ProfileSideEffectStep)) {
+            throw new VerificationException("When specified, the .profile()-Step must be the last step or followed only by the cap step.", traversal);
         }
 
-        if (TraversalHelper.getStepsOfClass(ProfileMarkerStep.class, traversal).size() > 1) {
+        if (TraversalHelper.getStepsOfClass(ProfileSideEffectStep.class, traversal).size() > 1) {
             throw new VerificationException("The .profile()-Step cannot be specified multiple times.", traversal);
         }
     }
