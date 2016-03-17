@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Optional;
 
 /**
  * A {@code ServerGraph} represents a proxy by which traversals spawned from this graph are expected over a
@@ -83,7 +82,7 @@ public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
 
-    public static final String GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS = "gremlin.servergraph.serverConnectionClass";
+    public static final String GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remotegraph.remoteConnectionClass";
 
     private RemoteGraph(final RemoteConnection connection) {
         this.connection = connection;
@@ -93,18 +92,18 @@ public class RemoteGraph implements Graph {
 
     /**
      * Creates a new {@link RemoteGraph} instance using the specified configuration, which allows {@link RemoteGraph}
-     * to be compliant with {@link GraphFactory}. Expects key for {@link #GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS}
+     * to be compliant with {@link GraphFactory}. Expects key for {@link #GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS}
      * as well as any configuration required by the underlying {@link RemoteConnection} which will be instantiated.
      * Note that the {@code Configuration} object is passed down without change to the creation of the
      * {@link RemoteConnection} instance.
      */
     public static RemoteGraph open(final Configuration conf) {
-        if (!conf.containsKey(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS +"' key");
+        if (!conf.containsKey(GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS +"' key");
 
         final RemoteConnection remoteConnection;
         try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_SERVERGRAPH_SERVER_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
             final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
             remoteConnection = ctor.newInstance(conf);
         } catch (Exception ex) {

@@ -44,25 +44,30 @@ import java.util.function.Supplier;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DriverRemoteConnection implements RemoteConnection {
+
+    public static final String GREMLIN_REMOTEGRAPH_DRIVER_CLUSTERFILE = "gremlin.remotegraph.driver.clusterFile";
+    public static final String GREMLIN_REMOTEGRAPH_DRIVER_GRAPHNAME = "gremlin.remotegraph.driver.graphName";
+    private static final String DEFAULT_GRAPH = "graph";
     private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
+
     private final Client client;
     private final boolean tryCloseCluster;
     private final String connectionGraphName;
     private transient Optional<Configuration> conf = Optional.empty();
 
     public DriverRemoteConnection(final Configuration conf) {
-        if (conf.containsKey("clusterConfigurationFile") && conf.containsKey("clusterConfiguration"))
-            throw new IllegalStateException("A configuration should not contain both 'clusterConfigurationFile' and 'clusterConfiguration'");
+        if (conf.containsKey(GREMLIN_REMOTEGRAPH_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
+            throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTEGRAPH_DRIVER_CLUSTERFILE));
 
-        connectionGraphName = conf.getString("connectionGraphName", "graph");
+        connectionGraphName = conf.getString(GREMLIN_REMOTEGRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
 
         try {
             final Cluster cluster;
-            if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
+            if (!conf.containsKey(GREMLIN_REMOTEGRAPH_DRIVER_CLUSTERFILE) && !conf.containsKey("clusterConfiguration"))
                 cluster = Cluster.open();
             else
-                cluster = conf.containsKey("clusterConfigurationFile") ?
-                        Cluster.open(conf.getString("clusterConfigurationFile")) : Cluster.open(conf.subset("clusterConfiguration"));
+                cluster = conf.containsKey(GREMLIN_REMOTEGRAPH_DRIVER_CLUSTERFILE) ?
+                        Cluster.open(conf.getString(GREMLIN_REMOTEGRAPH_DRIVER_CLUSTERFILE)) : Cluster.open(conf.subset("clusterConfiguration"));
 
             client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         } catch (Exception ex) {
@@ -83,7 +88,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * This constructor is largely just for unit testing purposes and should not typically be used externally.
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
-        connectionGraphName = conf.getString("connectionGraphName", "graph");
+        connectionGraphName = conf.getString(GREMLIN_REMOTEGRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         tryCloseCluster = false;
         this.conf = Optional.of(conf);
