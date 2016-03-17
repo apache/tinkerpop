@@ -779,7 +779,7 @@ Connecting via RemoteGraph
 </dependency>
 ----
 
-image:remote-graph.png[width=175,float=left] `RemoteGraph` is a lightweight `Graph` implementation that acts as a
+image:remote-graph.png[width=145,float=left] `RemoteGraph` is a lightweight `Graph` implementation that acts as a
 proxy for sending traversals to Gremlin Server for remote execution. It is not a "full" implementation like
 `TinkerGraph` or `Neo4jGraph`, in that most of its methods are not implemented. For example, calls to most methods
 like, `addVertex()` or `edges()` will result in an `UnsupportedOperationException`. The only method used on
