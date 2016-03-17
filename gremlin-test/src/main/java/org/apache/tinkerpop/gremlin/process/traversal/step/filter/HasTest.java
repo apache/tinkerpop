@@ -376,7 +376,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversala1);
         printTraversalForm(traversala2);
         printTraversalForm(traversalb1);
-        printTraversalForm(traversala2);
+        printTraversalForm(traversalb2);
         checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversala1);
         checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversala2);
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb1);

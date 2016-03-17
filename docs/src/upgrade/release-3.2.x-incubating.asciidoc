@@ -181,6 +181,27 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+GraphStep Compilation Requirement
++++++++++++++++++++++++++++++++++
+
+OLTP graph providers that have a custom `GraphStep` implementation should ensure that `g.V().hasId(x)` and `g.V(x)` compile
+to the same representation. This ensures a consistent user experience around random access of elements based on ids
+(as opposed to potentially the former doing a linear scan). A static helper method called `GraphStep.processHasContainerIds()`
+has been added. `TinkerGraphStepStrategy` was updated as such:
+
+```
+((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
+```
+
+is now
+
+```
+((HasContainerHolder) currentStep).getHasContainers().forEach(hasContainer -> {
+  if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+    tinkerGraphStep.addHasContainer(hasContainer);
+});
+```
+
 Step API Update
 +++++++++++++++
 
