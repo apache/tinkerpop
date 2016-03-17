@@ -76,6 +76,8 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
             SugarTestHelper.clearRegistry(this);
         }
 
+        config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
+
         /// spark configuration
         config.put("spark.master", "local[4]");
         config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -91,13 +93,13 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
                         graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1)) :
                 RANDOM.nextBoolean() ?
                         graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)) :
-                        graph.traversal().withComputer(SparkGraphComputer.class);
+                        graph.traversal().withComputer();
     }
 
     @Override
     public GraphComputer getGraphComputer(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1) :
+                graph.compute().workers(RANDOM.nextInt(3) + 1) :
                 graph.compute(SparkGraphComputer.class);
     }
 }

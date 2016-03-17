@@ -227,7 +227,14 @@ public final class HadoopGraph implements Graph {
 
     @Override
     public GraphComputer compute() {
-        throw new IllegalArgumentException("There is no default GraphComputer for HadoopGraph. Use HadoopGraph.compute(class) to specify the GraphComputer to use.");
+        if (this.configuration.containsKey(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER)) {
+            try {
+                return this.compute((Class<? extends GraphComputer>) Class.forName(this.configuration.getString(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER)));
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } else
+            throw new IllegalArgumentException("There is no default GraphComputer for HadoopGraph. Use HadoopGraph.compute(class) or gremlin.hadoop.defaultGraphComputer to specify the GraphComputer to use.");
     }
 
     @Override
