@@ -24,6 +24,7 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* If no configuration is provided to `HadoopPools` it uses the default configuration to create a pool once and only once per JVM.
 * Added `GraphStep.addIds()` which is useful for `HasContainer` "fold ins."
 * Added a static `GraphStep.processHashContainerIds()` helper for handling id-based `HasContainers`.
 * `GraphStep` implementations should have `g.V().hasId(x)` and `g.V(x)` compile equivalently. (*breaking*)
