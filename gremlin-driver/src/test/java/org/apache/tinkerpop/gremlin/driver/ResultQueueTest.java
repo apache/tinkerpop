@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -141,7 +142,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
     }
 
     @Test
-    public void shouldAwaitEverythingAndFlushOnMarkError() throws Exception {
+    public void shouldAwaitFailTheFutureOnMarkError() throws Exception {
         // not so sure this is good behavior (i.e. flushing whatever has arrived up to the error)
         final CompletableFuture<List<Result>> future = resultQueue.await(4);
         resultQueue.add(new Result("test1"));
@@ -149,14 +150,15 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.add(new Result("test3"));
 
         assertThat(future.isDone(), is(false));
-        resultQueue.markError(new Exception());
+        resultQueue.markError(new Exception("no worky"));
         assertThat(future.isDone(), is(true));
 
-        final List<Result> results = future.get();
-        assertEquals("test1", results.get(0).getString());
-        assertEquals("test2", results.get(1).getString());
-        assertEquals("test3", results.get(2).getString());
-        assertEquals(3, results.size());
+        try {
+            future.get();
+        } catch (Exception ex) {
+            final Throwable t = ExceptionUtils.getRootCause(ex);
+            assertEquals("no worky", t.getMessage());
+        }
     }
 
     @Test
