@@ -43,7 +43,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LocalBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
@@ -299,9 +309,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             if (traverser.isHalted()) {
                 traverser.asAdmin().detach();
                 haltedTraversers.add(traverser);
-            } else if (traverser.get() instanceof Attachable &&
-                    !(traverser.get() instanceof Path) &&
-                    !TraversalHelper.isLocalElement(this.traversalMatrix.getStepById(traverser.getStepId()))) {  // this is so that patterns like order().name work as expected.
+            } else if (this.isRemoteTraverser(traverser)) {  // this is so that patterns like order().name work as expected.
                 traverser.asAdmin().detach();
                 remoteActiveTraversers.add(traverser);
             } else {
@@ -312,8 +320,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                             result.asAdmin().detach();
                             haltedTraversers.add(result.asAdmin());
                         } else {
-                            if (result.get() instanceof Attachable) {
-                                traverser.asAdmin().detach();
+                            if (this.isRemoteTraverser(result.asAdmin())) {
+                                result.asAdmin().detach();
                                 remoteActiveTraversers.add(result.asAdmin());
                             } else
                                 localActiveTraversers.add(result.asAdmin());
@@ -330,7 +338,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                     traverser.asAdmin().detach();
                     haltedTraversers.add(traverser.asAdmin());
                 } else {
-                    if (traverser.get() instanceof Attachable) {
+                    if (this.isRemoteTraverser(traverser.asAdmin())) {
                         traverser.asAdmin().detach();
                         remoteActiveTraversers.add(traverser.asAdmin());
                     } else
@@ -339,6 +347,20 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             });
         }
         assert toProcessTraversers.isEmpty();
+    }
+
+    private boolean isRemoteTraverser(final Traverser.Admin traverser) {
+        return traverser.get() instanceof Attachable &&
+                !(traverser.get() instanceof Path) &&
+                !isLocalElement(this.traversalMatrix.getStepById(traverser.getStepId()));
+    }
+
+    // TODO: once this is complete (fully known), move to TraversalHelper
+    private static boolean isLocalElement(final Step<?, ?> step) {
+        return step instanceof PropertiesStep || step instanceof PropertyMapStep ||
+                step instanceof IdStep || step instanceof LabelStep || step instanceof SackStep ||
+                step instanceof PropertyKeyStep || step instanceof PropertyValueStep ||
+                step instanceof TailGlobalStep || step instanceof RangeGlobalStep || step instanceof HasStep;
     }
 
     @Override

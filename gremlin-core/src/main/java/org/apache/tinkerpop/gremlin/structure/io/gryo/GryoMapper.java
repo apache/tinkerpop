@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -300,7 +301,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MutableMetrics.class, null, 69));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ImmutableMetrics.class, null, 115)); // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ImmutableMetrics.class, null, 115));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StandardTraversalMetrics.class, null, 70));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74));
@@ -326,12 +327,13 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 107));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(FoldStep.FoldBiOperator.class, null, 108));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupCountStep.GroupCountBiOperator.class, null, 109));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupBiOperator.class, null, 116));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupBiOperator.class, kryo -> new JavaSerializer(), 117));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanGlobalBiOperator.class, null, 110));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanNumber.class, null, 111));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 112));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 113));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(RangeGlobalStep.RangeBiOperator.class, null, 114));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OrderGlobalStep.OrderBiOperator.class, kryo -> new JavaSerializer(), 118)); // ***LAST ID***
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
