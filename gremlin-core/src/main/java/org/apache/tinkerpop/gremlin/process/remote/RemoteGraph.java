@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.lang.reflect.Constructor;
@@ -191,6 +192,11 @@ public class RemoteGraph implements Graph {
     @Override
     public Features features() {
         return RemoteFeatures.INSTANCE;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.graphString(this, connection.toString());
     }
 
     public static class RemoteFeatures implements Features {
