@@ -779,13 +779,13 @@ Connecting via RemoteGraph
 </dependency>
 ----
 
-`RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
-remote execution. It is not a "full" implementation like `TinkerGraph` or `Neo4jGraph`, in that most of its methods
-are not implemented. For example, calls to most methods like, `addVertex()` or `edges()` will result in an
-`UnsupportedOperationException`. The only method used on `RemoteGraph` is `traversal()`, which generates a
-`GraphTraversalSource` that includes a `RemoteStrategy`. The `RemoteStrategy` submits takes traversals constructed from
-it, serializes them and submits them to Gremlin Server and the results are returned as though working with the `Graph`
-instance in embedded mode.
+image:remote-graph.png[width=175,float=left] `RemoteGraph` is a lightweight `Graph` implementation that acts as a
+proxy for sending traversals to Gremlin Server for remote execution. It is not a "full" implementation like
+`TinkerGraph` or `Neo4jGraph`, in that most of its methods are not implemented. For example, calls to most methods
+like, `addVertex()` or `edges()` will result in an `UnsupportedOperationException`. The only method used on
+`RemoteGraph` is `traversal()`, which generates a `GraphTraversalSource` that includes a `RemoteStrategy`. The
+`RemoteStrategy` submits takes traversals constructed from it, serializes them and submits them to Gremlin Server
+and the results are returned as though working with the `Graph` instance in embedded mode.
 
 `RemoteGraph` is an interesting alternative to the other methods for connecting to Gremlin Server in that all other
 methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
