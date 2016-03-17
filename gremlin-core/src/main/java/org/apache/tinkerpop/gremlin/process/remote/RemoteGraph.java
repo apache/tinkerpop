@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -111,6 +113,10 @@ public class RemoteGraph implements Graph {
         }
 
         return new RemoteGraph(remoteConnection);
+    }
+
+    public static RemoteGraph open(final String configFile) throws Exception {
+        return open(new PropertiesConfiguration(configFile));
     }
 
     /**
