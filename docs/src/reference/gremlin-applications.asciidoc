@@ -844,6 +844,9 @@ cluster.close()
 If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
 the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
 
+WARNING: `RemoteGraph` does not support steps that use lambdas in the `Traversal`. Lambda expressions are not
+serializable and therefore can't be remotely executed.
+
 Configuring
 ~~~~~~~~~~~
 
