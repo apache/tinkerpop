@@ -125,4 +125,9 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
         super.setTraversal(parentTraversal);
         this.integrateChild(this.edgeTraversal.get());
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.edgeTraversal.hashCode() ^ this.pageRankProperty.hashCode() ^ this.times;
+    }
 }
