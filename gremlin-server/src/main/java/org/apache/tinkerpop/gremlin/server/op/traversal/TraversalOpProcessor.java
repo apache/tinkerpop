@@ -135,7 +135,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                             .statusMessage(ex.getMessage()).create());
         }
 
-        if (!traversal.asAdmin().isLocked())
+        if (traversal.asAdmin().isLocked())
             throw new OpProcessorException("Locked Traversals cannot be processed by the server",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage("Locked Traversals cannot be processed by the server").create());
