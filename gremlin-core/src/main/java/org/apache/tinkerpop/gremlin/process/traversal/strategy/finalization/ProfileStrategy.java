@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -50,9 +52,14 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
         // Add .profile() step after every pre-existing step.
         final List<Step> steps = traversal.getSteps();
         final int numSteps = steps.size();
-        for (int ii = 0; ii < numSteps; ii++) {
+        for (int ii = 0; ii < numSteps; ii += 2) {
             // Get the original step
-            Step step = steps.get(ii * 2);
+            Step step = steps.get(ii);
+            if (step instanceof TraversalVertexProgramStep || step instanceof ComputerResultStep) {
+                ii--;
+                // don't profile the computer steps
+                continue;
+            }
 
             // Do not inject profiling after ProfileSideEffectStep as this will be the last step on the root traversal.
             if (step instanceof ProfileSideEffectStep) {
@@ -61,7 +68,7 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
 
             // Create and inject ProfileStep
             ProfileStep profileStep = new ProfileStep(traversal);
-            traversal.addStep((ii * 2) + 1, profileStep);
+            traversal.addStep(ii + 1, profileStep);
         }
     }
 
