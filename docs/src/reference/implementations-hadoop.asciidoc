@@ -723,8 +723,7 @@ Persisted RDDs can be accessed using `spark`.
 ----
 Spark.create('local[4]')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-graph.configuration().setProperty('gremlin.spark.graphOutputRDD', PersistedOutputRDD.class.getCanonicalName())
-graph.configuration().clearProperty('gremlin.hadoop.graphOutputFormat')
+graph.configuration().setProperty('gremlin.hadoop.graphWriter', PersistedOutputRDD.class.getCanonicalName())
 graph.configuration().setProperty('gremlin.spark.persistContext',true)
 graph.compute(SparkGraphComputer).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey('clusterCount').create()).submit().get();
 spark.ls()
