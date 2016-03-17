@@ -27,6 +27,7 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Fixed an hash code bug in `OrderGlobalStep` and `OrderLocalStep`.
 * Added `OrderLimitStrategy` which will ensure that partitions are limited before being merged in OLAP.
 * `ComparatorHolder` now separates the traversal from the comparator. (*breaking*)
+* Bumped to Spark 1.6.1.
 * If no Spark serializer is provided then `GryoSerializer` is now the default, not `JavaSerializer`.
 * Added `Operator.sumLong` as a optimized binary operator intended to be used by `Memory` reducers that know they are dealing with longs.
 * Traversers from `ComputerResultStep` are no longer attached. Attaching is only used in TinkerPop's test suite via `System.getProperties()`.
