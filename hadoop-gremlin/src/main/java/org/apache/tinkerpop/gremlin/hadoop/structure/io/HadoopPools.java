@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -51,8 +52,10 @@ public final class HadoopPools {
     }
 
     public static GryoPool getGryoPool() {
-        if (!INITIALIZED)
+        if (!INITIALIZED) {
             HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");     // TODO: this is necessary because we can't get the pool intialized in the Merger code of the Hadoop process.
+            initialize(new BaseConfiguration());
+        }
         return GRYO_POOL;
     }
 }
