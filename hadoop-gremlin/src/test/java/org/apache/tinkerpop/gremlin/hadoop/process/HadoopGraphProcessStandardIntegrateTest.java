@@ -29,6 +29,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessStandardSuite.class)
 @GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
-public class HadoopGraphProcessStandardTest {
+public class HadoopGraphProcessStandardIntegrateTest {
 
 }

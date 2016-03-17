@@ -24,6 +24,10 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Optimized `ExpandableStepIterator` with simpler logic and increased the likelihood of bulking.
+* Optimized `TraverserRequirement` calculations.
+* `Step.processNextStart()` and `Step.next()` now return `Traverser.Admin<E>`. (*breaking*)
+* `Traversal.addTraverserRequirement()` method removed. (*breaking*)
 * Fixed an hash code bug in `OrderGlobalStep` and `OrderLocalStep`.
 * Added `OrderLimitStrategy` which will ensure that partitions are limited before being merged in OLAP.
 * `ComparatorHolder` now separates the traversal from the comparator. (*breaking*)

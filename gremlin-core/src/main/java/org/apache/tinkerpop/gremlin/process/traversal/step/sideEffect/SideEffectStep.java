@@ -34,7 +34,7 @@ public abstract class SideEffectStep<S> extends AbstractStep<S, S> {
     protected abstract void sideEffect(final Traverser.Admin<S> traverser);
 
     @Override
-    protected Traverser<S> processNextStart() {
+    protected Traverser.Admin<S> processNextStart() {
         final Traverser.Admin<S> traverser = this.starts.next();
         this.sideEffect(traverser);
         return traverser;

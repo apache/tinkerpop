@@ -101,7 +101,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     }
 
     @Override
-    public Traverser<S> processNextStart() {
+    public Traverser.Admin<S> processNextStart() {
         if (!this.traverserSet.isEmpty()) {
             return this.traverserSet.remove();
         } else if (this.starts.hasNext()) {

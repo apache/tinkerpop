@@ -53,7 +53,7 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final BulkSet<Object> bulkSet = new BulkSet<>();
-        bulkSet.add(TraversalUtil.applyNullable(traverser.asAdmin(), this.storeTraversal), traverser.bulk());
+        bulkSet.add(TraversalUtil.applyNullable(traverser, this.storeTraversal), traverser.bulk());
         this.getTraversal().getSideEffects().add(this.sideEffectKey, bulkSet);
     }
 

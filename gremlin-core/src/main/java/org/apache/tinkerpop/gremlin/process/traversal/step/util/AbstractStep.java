@@ -114,7 +114,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public Traverser<E> next() {
+    public Traverser.Admin<E> next() {
         if (null != this.nextEnd) {
             try {
                 return this.prepareTraversalForNextStep(this.nextEnd);
@@ -123,7 +123,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             }
         } else {
             while (true) {
-                final Traverser.Admin<E> traverser = (Traverser.Admin<E>) this.processNextStart();
+                final Traverser.Admin<E> traverser = this.processNextStart();
                 if (null != traverser.get() && 0 != traverser.bulk())
                     return this.prepareTraversalForNextStep(traverser);
             }
@@ -159,7 +159,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         this.traversal = traversal;
     }
 
-    protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
+    protected abstract Traverser.Admin<E> processNextStart() throws NoSuchElementException;
 
     @Override
     public String toString() {

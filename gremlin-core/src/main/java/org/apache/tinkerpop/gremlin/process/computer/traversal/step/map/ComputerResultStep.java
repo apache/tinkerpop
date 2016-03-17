@@ -60,7 +60,7 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
     }
 
     @Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
         while (true) {
             if (this.currentIterator.hasNext())
                 return this.currentIterator.next();

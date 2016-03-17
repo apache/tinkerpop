@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class O_Traverser<T> extends AbstractTraverser<T> {
+public abstract class O_Traverser<T> extends AbstractTraverser<T> {
 
     protected Set<String> tags = null;
 

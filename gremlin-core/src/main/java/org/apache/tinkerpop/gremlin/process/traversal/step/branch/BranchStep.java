@@ -86,7 +86,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     @Override
-    protected Iterator<Traverser<E>> standardAlgorithm() {
+    protected Iterator<Traverser.Admin<E>> standardAlgorithm() {
         while (true) {
             if (!this.first) {
                 for (final List<Traversal.Admin<S, E>> options : this.traversalOptions.values()) {
@@ -128,8 +128,8 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     }
 
     @Override
-    protected Iterator<Traverser<E>> computerAlgorithm() {
-        final List<Traverser<E>> ends = new ArrayList<>();
+    protected Iterator<Traverser.Admin<E>> computerAlgorithm() {
+        final List<Traverser.Admin<E>> ends = new ArrayList<>();
         final Traverser.Admin<S> start = this.starts.next();
         final M choice = TraversalUtil.apply(start, this.branchTraversal);
         final List<Traversal.Admin<S, E>> branch = this.traversalOptions.containsKey(choice) ? this.traversalOptions.get(choice) : this.traversalOptions.get(Pick.none);

@@ -57,7 +57,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
     }
 
     @Override
-    public Traverser<S> processNextStart() {
+    public Traverser.Admin<S> processNextStart() {
         if (this.bypass) {
             // If we are bypassing this step, let everything through.
             return this.starts.next();
@@ -145,7 +145,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             throw FastNoSuchElementException.instance();
         final TraverserSet<S> barrier = new TraverserSet<>();
         while (this.starts.hasNext()) {
-            barrier.add(this.starts.next().asAdmin());
+            barrier.add(this.starts.next());
         }
         return barrier;
     }

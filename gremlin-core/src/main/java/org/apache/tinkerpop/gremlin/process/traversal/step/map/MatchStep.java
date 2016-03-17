@@ -310,7 +310,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
-    protected Iterator<Traverser<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
+    protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
         while (true) {
             Traverser.Admin traverser = null;
             if (this.first) {
@@ -319,7 +319,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             } else {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     if (matchTraversal.hasNext()) {
-                        traverser = matchTraversal.getEndStep().next().asAdmin();
+                        traverser = matchTraversal.getEndStep().next();
                         break;
                     }
                 }
@@ -351,7 +351,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
-    protected Iterator<Traverser<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
+    protected Iterator<Traverser.Admin<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
         while (true) {
             if (this.first) {
                 this.first = false;
@@ -374,7 +374,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                     traverser.setStepId(matchTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
                     return IteratorUtils.of(traverser);
                 } else { // OR
-                    final List<Traverser<Map<String, E>>> traversers = new ArrayList<>(this.matchTraversals.size());
+                    final List<Traverser.Admin<Map<String, E>>> traversers = new ArrayList<>(this.matchTraversals.size());
                     for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                         final Traverser.Admin split = traverser.split();
                         split.getTags().add(matchTraversal.getStartStep().getId());
@@ -414,7 +414,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         @Override
-        protected Traverser<Object> processNextStart() throws NoSuchElementException {
+        protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
             traverser.addLabels(Collections.singleton(this.getId()));
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
@@ -463,7 +463,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         @Override
-        protected Traverser<Object> processNextStart() throws NoSuchElementException {
+        protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
             while (true) {
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label

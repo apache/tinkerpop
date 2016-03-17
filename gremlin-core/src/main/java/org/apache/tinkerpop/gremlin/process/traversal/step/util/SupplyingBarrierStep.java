@@ -44,9 +44,10 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
 
     @Override
     public void addStarts(final Iterator<Traverser<S>> starts) {
-        if (starts.hasNext())
+        if (starts.hasNext()) {
             this.done = false;
-        super.addStarts(starts);
+            super.addStarts(starts);
+        }
     }
 
     @Override
@@ -62,12 +63,12 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
     }
 
     @Override
-    public Traverser<E> processNextStart() {
+    public Traverser.Admin<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supply(), (Step) this, 1l);
+        return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supply(), (Step<E, E>) this, 1l);
     }
 
     @Override
@@ -96,7 +97,7 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
 
     @Override
     public void addBarrier(final Boolean barrier) {
-       this.done = false;
+        this.done = false;
     }
 
     @Override

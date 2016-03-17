@@ -89,7 +89,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
         long toEmit = avail - toSkip - toTrim;
         this.counter.getAndAdd(toSkip + toEmit);
-        traverser.asAdmin().setBulk(toEmit);
+        traverser.setBulk(toEmit);
 
         return true;
     }
@@ -159,7 +159,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
             throw FastNoSuchElementException.instance();
         final TraverserSet<S> barrier = new TraverserSet<>();
         while (this.starts.hasNext()) {
-            barrier.add(this.starts.next().asAdmin());
+            barrier.add(this.starts.next());
         }
         return barrier;
     }

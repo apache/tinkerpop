@@ -55,7 +55,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     }
 
     @Override
-    protected Traverser<E> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (this.first) {
             this.first = false;
             this.localTraversal.addStart(this.starts.next());

@@ -181,6 +181,26 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+Step API Update
++++++++++++++++
+
+The `Step` interface is fundamental to Gremlin. `Step.processNextStart()` and `Step.next()` both returned `Traverser<E>`.
+We had so many `Traverser.asAdmin()` and direct typecast calls throughout (especially in `TraversalVertexProgram`) that
+it was deemed prudent to have `Step.processNextStart()` and `Step.next()` return `Traverser.Admin<E>`. Moreover it makes
+sense as this is internal logic where `Admins` are always needed. Providers with their own step definitions will simply
+need to change the method signatures of `Step.processNextStart()` and `Step.next()`. No logic update is required -- save
+that `asAdmin()` can be safely removed if used.
+
+Traversal API Update
+++++++++++++++++++++
+
+The way in which `TraverserRequirements` are calculated has been changed (for the better). The ramification is that post
+compilation requirement additions no longer make sense and should not be allowed. To enforce this,
+`Traversal.addTraverserRequirement()` method has been removed from the interface. Moreover, providers/users should never be able
+to add requirements manually (this should all be inferred from the end compilation). However, if need be, there is always
+`RequirementStrategy` which will allow the provider to add a requirement at strategy application time
+(though again, there should not be a reason to do so).
+
 ComparatorHolder API Change
 +++++++++++++++++++++++++++
 

@@ -24,9 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Generating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Iterator;
 import java.util.function.BinaryOperator;
@@ -125,12 +123,12 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
-    public Traverser<E> processNextStart() {
+    public Traverser.Admin<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(this.generateFinalResult(this.seed), (Step) this, 1l);
+        final Traverser.Admin<E> traverser = this.getTraversal().getTraverserGenerator().generate(this.generateFinalResult(this.seed), (Step<E, E>) this, 1l);
         this.seed = null;
         return traverser;
     }
@@ -145,7 +143,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     @Override
     public MemoryComputeKey<E> getMemoryComputeKey() {
-        return MemoryComputeKey.<E>of(this.getId(), this.getBiOperator(), false, true);
+        return MemoryComputeKey.of(this.getId(), this.getBiOperator(), false, true);
     }
 
 }

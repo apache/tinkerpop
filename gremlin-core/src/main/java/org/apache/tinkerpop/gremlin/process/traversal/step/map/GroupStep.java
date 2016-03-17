@@ -98,7 +98,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             final TraverserSet traverserSet = new TraverserSet();
             this.valueTraversal.reset();
             this.valueTraversal.addStart(traverser);
-            this.valueTraversal.getEndStep().forEachRemaining(t -> traverserSet.add(t.asAdmin()));
+            this.valueTraversal.getEndStep().forEachRemaining(traverserSet::add);
             map.put(key, (V) traverserSet);
         } else
             map.put(key, (V) traverser);

@@ -107,7 +107,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     @Override
-    protected Traverser<E> processNextStart() {
+    protected Traverser.Admin<E> processNextStart() {
         while (true) {
             if (this.iterator.hasNext()) {
                 return this.isStart ? this.getTraversal().getTraverserGenerator().generate(this.iterator.next(), (Step) this, 1l) : this.head.split(this.iterator.next(), this);

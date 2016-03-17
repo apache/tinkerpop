@@ -105,7 +105,7 @@ public final class AggregateStep<S> extends AbstractStep<S, S> implements SideEf
     }
 
     @Override
-    protected Traverser<S> processNextStart() {
+    protected Traverser.Admin<S> processNextStart() {
         this.processAllStarts();
         return this.barrier.remove();
     }

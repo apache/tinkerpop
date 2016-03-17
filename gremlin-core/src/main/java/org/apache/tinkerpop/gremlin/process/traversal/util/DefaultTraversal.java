@@ -23,9 +23,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -51,11 +53,12 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected List<Step> steps = new ArrayList<>();
     // steps will be repeatedly retrieved from this traversal so wrap them once in an immutable list that can be reused
     protected List<Step> unmodifiableSteps = Collections.unmodifiableList(steps);
-    protected TraversalParent traversalParent = EmptyStep.instance();
+    protected TraversalParent parent = EmptyStep.instance();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
+    protected transient TraverserGenerator generator;
+    protected Set<TraverserRequirement> requirements;
     protected boolean locked = false;
-    protected Set<TraverserRequirement> traverserRequirements = new HashSet<>();
 
     public DefaultTraversal() {
         this.graph = null;
@@ -71,6 +74,15 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Traversal.Admin<S, E> asAdmin() {
         return this;
+    }
+
+    @Override
+    public TraverserGenerator getTraverserGenerator() {
+        if (null == this.generator)
+            this.generator = (this.parent instanceof EmptyStep) ?
+                    DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(this.getTraverserRequirements()) :
+                    TraversalHelper.getRootTraversal(this).getTraverserGenerator();
+        return this.generator;
     }
 
     @Override
@@ -101,24 +113,21 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public Set<TraverserRequirement> getTraverserRequirements() {
-        Set<TraverserRequirement> requirements = new HashSet<>();
-        for (Step step : this.getSteps()) {
-            requirements.addAll(step.getRequirements());
+        if (null == this.requirements) {
+            // if (!this.locked) this.applyStrategies();
+            this.requirements = new HashSet<>();
+            for (Step<?, ?> step : this.getSteps()) {
+                this.requirements.addAll(step.getRequirements());
+            }
+            if (!this.getSideEffects().keys().isEmpty())
+                this.requirements.add(TraverserRequirement.SIDE_EFFECTS);
+            if (null != this.getSideEffects().getSackInitialValue())
+                this.requirements.add(TraverserRequirement.SACK);
+            if (this.requirements.contains(TraverserRequirement.ONE_BULK))
+                this.requirements.remove(TraverserRequirement.BULK);
+            this.requirements = Collections.unmodifiableSet(this.requirements);
         }
-
-        requirements.addAll(this.traverserRequirements);
-        if (this.getSideEffects().keys().size() > 0)
-            requirements.add(TraverserRequirement.SIDE_EFFECTS);
-        if (null != this.getSideEffects().getSackInitialValue())
-            requirements.add(TraverserRequirement.SACK);
-        if (requirements.contains(TraverserRequirement.ONE_BULK))
-            requirements.remove(TraverserRequirement.BULK);
-        return requirements;
-    }
-
-    @Override
-    public void addTraverserRequirement(final TraverserRequirement traverserRequirement) {
-        this.traverserRequirements.add(traverserRequirement);
+        return this.requirements;
     }
 
     @Override
@@ -263,12 +272,12 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public void setParent(final TraversalParent step) {
-        this.traversalParent = step;
+        this.parent = step;
     }
 
     @Override
     public TraversalParent getParent() {
-        return this.traversalParent;
+        return this.parent;
     }
 
     @Override
