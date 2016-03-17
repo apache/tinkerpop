@@ -69,4 +69,9 @@ public class RemoteStep<S,E> extends AbstractStep<S, E> {
 
         return this.currentIterator.next().asAdmin();
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.pureTraversal.hashCode();
+    }
 }
