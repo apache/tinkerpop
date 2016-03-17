@@ -766,6 +766,83 @@ that iterates thousands of results will serialize each of those in memory into a
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.
 
+Connecting via RemoteGraph
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+`RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
+remote execution. It is not a "full" implementation like `TinkerGraph` or `Neo4jGraph`, in that most of its methods
+are not implemented. For example, calls to most methods like, `addVertex()` or `edges()` will result in an
+`UnsupportedOperationException`. The only method used on `RemoteGraph` is `traversal()`, which generates a
+`GraphTraversalSource` that includes a `RemoteStrategy`. The `RemoteStrategy` submits takes traversals constructed from
+it, serializes them and submits them to Gremlin Server and the results are returned as though working with the `Graph`
+instance in embedded mode.
+
+`RemoteGraph` is an interesting alternative to the other methods for connecting to Gremlin Server in that all other
+methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
+to Gremlin Server (via driver or REST). This approach is quite akin to SQL, where query strings are embedded into code
+and submitted to a database server. While there are patterns for taking this approach that can lead to maintainable
+application code, using `RemoteGraph` could be a better method as it brings some good benefits with it:
+
+* Get auto-complete when writing traversals in an IDE.
+* Get compile-time errors in traversal writing.
+* Get the feel of working with an embedded database.
+
+One way to create a `RemoteGraph` instance is by configuration file. Here is an example of what that file looks like:
+
+[source,properties]
+----
+gremlin.remotegraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
+gremlin.remotegraph.driver.clusterFile=conf/remote-objects.yaml
+gremlin.remotegraph.driver.graphName=graph
+----
+
+The `gremlin.remotegraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
+`gremlin-core`. In this case, it points at the `gremlin-driver` implementation, called `DriverRemoteConnection`. The
+other setting, `gremlin.remotegraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
+provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
+connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting Via Java">> section for more
+information on those classes and their usage. Finally, the `gremlin.remotegraph.driver.graphName` setting tells the
+`DriverRemoteConnection` the name of the graph in Gremlin Server to connect to.
+
+Gremlin Server needs to be running for this example to work. Use the following configuration:
+
+[source,bourne]
+$ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
+
+`RemoteGraph` can be demonstrated in the Gremlin Console just like any other `Graph` instance:
+
+[gremlin-groovy]
+----
+graph = RemoteGraph.open('conf/remote-graph.properties')
+g = graph.traversal()
+g.V().valueMap(true)
+----
+
+If working with multiple `RemoteGraph` instances it is more efficient to construct your own `Cluster` object and
+re-use it.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open('conf/remote-objects.yaml')
+graph = RemoteGraph.open(DriverRemoteConnection.using(cluster, "graph"))
+g = graph.traversal()
+g.V().valueMap(true)
+graph.close()
+cluster.close()
+----
+
+If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
+the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
+
 Configuring
 ~~~~~~~~~~~
 
