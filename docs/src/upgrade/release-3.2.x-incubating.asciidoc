@@ -181,6 +181,13 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+ComparatorHolder API Change
++++++++++++++++++++++++++++
+
+Providers that either have their own `ComparatorHolder` implementation or reason on `OrderXXXStep` will need to update their code.
+`ComparatorHolder` now returns `List<Pair<Traversal,Comparator>>`. This has greatly reduced the complexity of comparison-based
+steps like `OrderXXXStep`. However, its a breaking API change that is trivial to update to, just some awareness is required.
+
 GraphComputer Semantics and API
 +++++++++++++++++++++++++++++++
 
