@@ -240,7 +240,7 @@ public class SerializationTest {
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             final Tree after = gryoReader.readObject(inputStream, Tree.class);
             assertNotNull(after);
-            //Seeing as Tree implements Serializable the following assertions should be sufficent.
+            //The following assertions should be sufficent.
             assertThat("Type does not match", after, instanceOf(Tree.class));
             assertEquals("The objects differ", after, before);
         }

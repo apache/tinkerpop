@@ -280,7 +280,7 @@ final class GraphSONSerializers {
         
         private static void ser(final Tree tree, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer)
                 throws IOException {
-            jsonGenerator.writeStartObject(); // {
+            jsonGenerator.writeStartObject(); 
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
             
             Set<Map.Entry<Element, Tree>> set = tree.entrySet();

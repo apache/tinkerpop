@@ -413,7 +413,6 @@ public class GraphSONMessageSerializerV1d0Test {
     public void shouldSerializeToJsonTree() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
-        //final Iterable<Tree> iterable = IteratorUtils.list(g.V(1).out().properties("name").tree());
         final Tree t = g.V(1).out().properties("name").tree().next();
 
         
