@@ -34,7 +34,6 @@ import org.codehaus.groovy.tools.shell.util.Preferences
 import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.AnsiConsole
 
-import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 import java.util.prefs.PreferenceChangeEvent
 import java.util.prefs.PreferenceChangeListener
@@ -59,7 +58,6 @@ class Console {
     private static final int DEFAULT_ITERATION_MAX = 100
     private static int maxIteration = DEFAULT_ITERATION_MAX
 
-    private static final String HISTORY_FILE = ".gremlin_groovy_history"
     private static final String STANDARD_INPUT_PROMPT = "gremlin> "
     private static final String STANDARD_RESULT_PROMPT = "==>"
     private static final String IMPORT_SPACE = "import "
@@ -71,6 +69,7 @@ class Console {
 
     private final IO io = new IO(System.in, System.out, System.err)
     private final Groovysh groovy
+
 
     public Console(final String initScriptFile) {
         io.out.println()
@@ -111,11 +110,11 @@ class Console {
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
         runner.setErrorHandler(handleError)
         try {
-            final FileHistory history = new FileHistory(new File(System.getProperty("user.home") + System.getProperty("file.separator") + HISTORY_FILE))
+            final FileHistory history = new FileHistory(new File(ConsoleFs.HISTORY_FILE))
             groovy.setHistory(history)
             runner.setHistory(history)
         } catch (IOException ignored) {
-            io.err.println("Unable to create history file: " + HISTORY_FILE)
+            io.err.println("Unable to create history file: " + ConsoleFs.HISTORY_FILE)
         }
 
         GremlinLoader.load()
