@@ -42,6 +42,7 @@ limitations under the License.
         </fileSet>
         <fileSet>
             <directory>target/apache-${project.artifactId}-${project.version}-standalone/scripts</directory>
+            <outputDirectory>scripts</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/apache-${project.artifactId}-${project.version}-standalone/ext</directory>
