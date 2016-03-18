@@ -20,7 +20,7 @@
 #
 
 DIR=`dirname $0`
-OPTIONS=${@:-"-DskipIntegrationTests=false -DincludeNeo4j"}
+TINKERPOP_BUILD_OPTIONS=${@:-"-DskipIntegrationTests=false -DincludeNeo4j"}
 
 function cleanup {
   if [[ "$(docker images -q tinkerpop:build 2> /dev/null)" == "" ]]; then
