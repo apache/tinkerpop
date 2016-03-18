@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
 import static org.junit.Assert.*;
 
@@ -223,8 +224,28 @@ public class SerializationTest {
             assertEquals(before.getDuration(TimeUnit.MILLISECONDS), after.getDuration(TimeUnit.MILLISECONDS));
             assertEquals(before.getMetrics(0).getCounts(), after.getMetrics(0).getCounts());
         }
-    }
+        
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        public void shouldSerializeTree() throws Exception {
+            final GryoIo gryoIo = graph.io(GryoIo.build());
+            final GryoWriter gryoWriter = gryoIo.writer().create();
+            final GryoReader gryoReader = gryoIo.reader().create();
 
+            final Tree before = g.V(1).out().properties("name").tree().next();
+            
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            gryoWriter.writeObject(outputStream, before);
+
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            final Tree after = gryoReader.readObject(inputStream, Tree.class);
+            assertNotNull(after);
+            //Seeing as Tree implements Serializable the following assertions should be sufficent.
+            assertThat("Type does not match", after, instanceOf(Tree.class));
+            assertEquals("The objects differ", after, before);
+        }
+    }
+    
     public static class GraphSONTest extends AbstractGremlinTest {
         private final TypeReference<HashMap<String, Object>> mapTypeReference = new TypeReference<HashMap<String, Object>>() {
         };

@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -254,6 +255,40 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         assertEquals(new Integer(1000), deserializedMap.get("1"));
     }
 
+    @Test
+    public void shouldSerializeToJsonTree() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createClassic();
+        final GraphTraversalSource g = graph.traversal();
+        //final Iterable<Tree> iterable = IteratorUtils.list(g.V(1).out().properties("name").tree());
+        final Map t = g.V(1).out().properties("name").tree().next();
+
+        final ResponseMessage response = convert(t);
+        assertCommon(response);
+
+        final Map<String, Map<String, Map>> deserializedMap = (Map<String, Map<String, Map>>) response.getResult().getData();
+        
+        assertEquals(1, deserializedMap.size());
+        
+        //check the first object and it's properties
+        Map<String,Object> vertex = deserializedMap.get("1").get("key");
+        Map<String,List<Map>> vertexProperties = (Map<String, List<Map>>)vertex.get("properties");
+        assertEquals(1, (int)vertex.get("id"));
+        assertEquals("marko", vertexProperties.get("name").get(0).get("value"));
+        
+        //check objects tree structure
+        //check Vertex property
+        Map<String, Map<String, Map>> subTreeMap =  deserializedMap.get("1").get("value");
+        Map<String, Map<String, Map>> subTreeMap2 = subTreeMap.get("2").get("value");
+        Map<String, String> vertexPropertiesDeep = subTreeMap2.get("3").get("key");
+        assertEquals("vadas", vertexPropertiesDeep.get("value"));
+        assertEquals("name", vertexPropertiesDeep.get("label"));
+        
+        // check subitem
+        Map<String,Object> vertex2 = subTreeMap.get("3").get("key");
+        Map<String,List<Map>> vertexProperties2 = (Map<String, List<Map>>)vertex2.get("properties");
+        
+        assertEquals("lop", vertexProperties2.get("name").get(0).get("value"));
+    }
 
     @Test
     public void shouldSerializeFullResponseMessage() throws Exception {
@@ -287,7 +322,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
     }
-
+    
     private void assertCommon(final ResponseMessage response) {
         assertEquals(requestId, response.getRequestId());
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());

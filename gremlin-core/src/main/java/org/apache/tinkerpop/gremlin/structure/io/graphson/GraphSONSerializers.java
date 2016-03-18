@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.structure.T;
 
 /**
  * GraphSON serializers for graph-based objects such as vertices, edges, properties, and paths. These serializers
@@ -282,12 +281,13 @@ final class GraphSONSerializers {
         private static void ser(final Tree tree, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer)
                 throws IOException {
             jsonGenerator.writeStartObject(); // {
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
             
-            Set<Map.Entry<Element, Tree<T>>> set = tree.entrySet();
-            for(Map.Entry<Element, Tree<T>> entry : set)
+            Set<Map.Entry<Element, Tree>> set = tree.entrySet();
+            for(Map.Entry<Element, Tree> entry : set)
             {
-                jsonGenerator.writeObjectFieldStart(entry.getKey().id().toString()); 
-                if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName()); 
+                jsonGenerator.writeObjectFieldStart(entry.getKey().id().toString());
+                if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
                 jsonGenerator.writeObjectField(GraphSONTokens.KEY, entry.getKey()); 
                 jsonGenerator.writeObjectField(GraphSONTokens.VALUE, entry.getValue());
                 jsonGenerator.writeEndObject();
@@ -295,7 +295,7 @@ final class GraphSONSerializers {
             jsonGenerator.writeEndObject();
         }
     } 
-
+    
     /**
      * Maps in the JVM can have {@link Object} as a key, but in JSON they must be a {@link String}.
      */
