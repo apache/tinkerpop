@@ -122,13 +122,13 @@ public abstract class Client {
     }
 
     /**
-     * Create a a new {@code Client} that aliases against multiple {@link Graph} or {@link TraversalSource} instances,
-     * where the key to the supplied {@link Map} is the "alias" and the value is the name of the {@link Graph} or
-     * {@link TraversalSource} on the server.
-     *
-     * @param aliases one or more aliases
+     * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
+     * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
+     * the created {@code Client}.
      */
-    public abstract Client alias(final Map<String,String> aliases);
+    public Client alias(final Map<String,String> aliases) {
+        return new AliasClusteredClient(this, aliases, settings);
+    }
 
     /**
      * Submit a {@link Traversal} to the server for remote execution.
@@ -624,28 +624,6 @@ public abstract class Client {
 
         String getSessionId() {
             return sessionId;
-        }
-
-        /**
-         * The sessioned client does not support this feature.
-         *
-         * @throws UnsupportedOperationException
-         * @deprecated As of release 3.1.0, replaced by {@link #alias(String)}
-         */
-        @Deprecated
-        @Override
-        public Client rebind(final String graphOrTraversalSourceName){
-            throw new UnsupportedOperationException("Sessioned client does not support aliasing");
-        }
-
-        /**
-         * The sessioned client does not support this feature.
-         *
-         * @throws UnsupportedOperationException
-         */
-        @Override
-        public Client alias(final Map<String, String> aliases) {
-            throw new UnsupportedOperationException("Sessioned client does not support aliasing");
         }
 
         /**
