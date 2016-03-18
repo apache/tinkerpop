@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -285,6 +286,14 @@ public interface GraphProvider {
     }
 
     /**
+     * Returns a {@link TestListener} implementation that provides feedback to the {@link GraphProvider} implementation.
+     * By default, this returns an empty listener.
+     */
+    public default Optional<TestListener> getTestListener() {
+        return Optional.empty();
+    }
+
+    /**
      * An annotation to be applied to a {@code GraphProvider} implementation that provides additional information
      * about its intentions. The {@code Descriptor} is required by those {@code GraphProvider} implementations
      * that will be assigned to test suites that use
@@ -301,5 +310,15 @@ public interface GraphProvider {
          * This value should be null if a {@link GraphComputer} is not being used.
          */
         public Class<? extends GraphComputer> computer();
+    }
+
+    public interface TestListener {
+        public default void onTestStart(final Class<?> test, final String testName) {
+            // do nothing
+        }
+
+        public default void onTestEnd(final Class<?> test, final String testName) {
+            // do nothing
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -31,10 +32,13 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
 /**
@@ -165,7 +169,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertThat(gOverAB.V(v).valueMap().next().containsKey(partition), is(false));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForValues() {
@@ -174,7 +178,13 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
 
-        gOverA.V(v).values(partition).next();
+        try {
+            gOverA.V(v).values(partition).next();
+            fail("Should have thrown exception");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), startsWith("Cannot explicitly request the partitionKey in the traversal"));
+        }
+
     }
 
     @Test
@@ -190,7 +200,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("thing", gOverA.V(v).values().next());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForProperties() {
@@ -199,7 +209,12 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
 
-        gOverA.V(v).properties(partition).next();
+        try {
+            gOverA.V(v).properties(partition).next();
+            fail("Should have thrown exception");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), startsWith("Cannot explicitly request the partitionKey in the traversal"));
+        }
     }
 
     @Test
@@ -240,7 +255,6 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("thing", ((List<VertexProperty>) gOverA.V(v).propertyMap().next().get("any")).get(0).value());
     }
 
-    @Test(expected = IllegalStateException.class)
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForValueMap() {
@@ -249,7 +263,13 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
 
-        gOverA.V(v).valueMap(partition).next();
+        try {
+            gOverA.V(v).valueMap(partition).next();
+            fail("Should have thrown exception");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("Cannot explicitly request the partitionKey in the traversal"));
+        }
     }
 
     @Test
@@ -344,8 +364,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
             sourceA.V(vA.id()).next();
             fail("Vertex should not be in this partition");
         } catch (Exception ex) {
-            final Exception expected = FastNoSuchElementException.instance();
-            assertEquals(expected.getClass(), ex.getClass());
+            assertThat(ex, instanceOf(NoSuchElementException.class));
         }
     }
 

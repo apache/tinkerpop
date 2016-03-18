@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.console.groovy.plugin;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
@@ -42,6 +43,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + ConnectionException.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + RequestMessage.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + SerTokens.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + DriverRemoteConnection.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override

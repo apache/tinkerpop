@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
@@ -44,6 +45,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
 /**
@@ -275,12 +277,18 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     // TODO: this test requires Traversal.reverse()
-    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_knows_b__c_knows_bX() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__c_knows_bX();
         printTraversalForm(traversal);
-        traversal.iterate();
+
+        try {
+            traversal.iterate();
+            fail("Should have tossed an exception because match pattern is not solvable");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("The provided match pattern is unsolvable:"));
+        }
     }
 
     @Test
@@ -296,20 +304,32 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     // TODO: this test requires Traversal.reverse()
-    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX();
         printTraversalForm(traversal);
-        traversal.iterate();
+
+        try {
+            traversal.iterate();
+            fail("Should have tossed an exception because match pattern is not solvable");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("The provided match pattern is unsolvable:"));
+        }
     }
 
-    @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() throws Exception {
         final Traversal<Vertex, String> traversal = get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX();
         printTraversalForm(traversal);
-        traversal.iterate();
+
+        try {
+            traversal.iterate();
+            fail("Should have tossed an exception because match pattern is not solvable");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root.getMessage(), startsWith("The provided match pattern is unsolvable:"));
+        }
     }
 
     @Test

@@ -100,7 +100,7 @@ gremlin> traversal.getSideEffects().get('a')
 ==>1
 ```
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
 
 ProfileStep Update and GraphTraversal API Change
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,8 +110,7 @@ used the `profile()` in conjunction with `cap(TraversalMetrics.METRICS_KEY)` can
 retrieved `TraversalMetrics` from the side-effects after iteration can still do so, but will need to specify a side-effect
 key when using the `profile()`. For example, `profile("myMetrics")`.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-958[TINKERPOP-958]
-
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-958[TINKERPOP-958]
 
 BranchStep Bug Fix
 ^^^^^^^^^^^^^^^^^^
@@ -124,7 +123,7 @@ For instance, if a traversal is of the form  `g.V().union(out().count(),both().c
 For instance, `g.V().union(out(),both())` does not need to be updated. Moreover, if the user's traversal already used
 the `local()`-form, then no change are required either.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-1188[TINKERPOP-1188]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1188[TINKERPOP-1188]
 
 MemoryComputeKey and VertexComputeKey
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -164,7 +163,7 @@ public Set<MemoryComputeKey> getMemoryComputeKeys() {
 
 A similar patterns should also be used for `VertexProgram.getVertexComputeKeys()`.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-1162[TINKERPOP-1162]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1162[TINKERPOP-1162]
 
 SparkGraphComputer and GiraphGraphComputer Persistence
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -174,6 +173,34 @@ The `MapReduce`-based steps in `TraversalVertexProgram` have been removed and re
 As such, there will be no data on the disk that is accessible. For instance, there is no more `~reducing`, `~traversers`,
 and specially named side-effects such as `m` from a `groupCount('m')`. The data is still accessible via `ComputerResult.memory()`,
 it simply does not have a corresponding on-disk representation.
+
+RemoteGraph
+^^^^^^^^^^^
+
+`RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
+remote execution. It is an interesting alternative to the other methods for connecting to Gremlin Server in that all
+other methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
+to Gremlin Server (via driver or REST).
+
+[source,groovy]
+----
+gremlin> graph = RemoteGraph.open('conf/remote-graph.properties')
+==>remotegraph[DriverServerConnection-localhost/127.0.0.1:8182 [graph='graph]]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[remotegraph[DriverServerConnection-localhost/127.0.0.1:8182 [graph='graph]], standard]
+gremlin> g.V().valueMap(true)
+==>[name:[marko], label:person, id:1, age:[29]]
+==>[name:[vadas], label:person, id:2, age:[27]]
+==>[name:[lop], label:software, id:3, lang:[java]]
+==>[name:[josh], label:person, id:4, age:[32]]
+==>[name:[ripple], label:software, id:5, lang:[java]]
+==>[name:[peter], label:person, id:6, age:[35]]
+----
+
+Note that `g.V().valueMap(true)` is executing in Gremlin Server and not locally in the console.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-575[TINKERPOP-575],
+link:http://tinkerpop.apache.org/docs/3.2.0-incubating/reference/#connecting-via-remotegraph[Reference Documentation - Remote Graph]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -247,7 +274,7 @@ only effects providers that have their own custom `GraphComputer` implementation
 
 * `VertexComputeKeys` can be marked transient and must be removed from the resultant `ComputerResult.graph()`.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
 
 Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above are implemented correctly.
 
@@ -263,7 +290,7 @@ Providers that have custom extensions to these steps or that use `Barrier` direc
 accommodate a new API that reflects the `Memory` updates above. This should be a simple change. Note that `FinalGet`
 no longer exists and such post-reduction processing is handled by the reducing step (via the new `Generating` interface).
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
 Graph Processor Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^

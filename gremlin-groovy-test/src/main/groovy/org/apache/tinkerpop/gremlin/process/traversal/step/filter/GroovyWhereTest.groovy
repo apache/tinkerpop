@@ -88,7 +88,7 @@ public abstract class GroovyWhereTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(
                 final Object v1Id, final Object v2Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a'){graph.vertices(v2Id).next()}.V(v1Id).out.where(neq('a'))", "graph", graph, "v1Id", v1Id, "v2Id", v2Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a'){g.V(v2Id).next()}.V(v1Id).out.where(neq('a'))", "graph", graph, "v1Id", v1Id, "v2Id", v2Id)
         }
 
         @Override

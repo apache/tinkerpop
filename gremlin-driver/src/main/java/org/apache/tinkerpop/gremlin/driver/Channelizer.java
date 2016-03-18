@@ -138,7 +138,7 @@ public interface Channelizer extends ChannelHandler {
 
             configure(pipeline);
             pipeline.addLast(PIPELINE_GREMLIN_SASL_HANDLER, new Handler.GremlinSaslAuthenticationHandler(cluster.authProperties()));
-            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending));
+            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending, connection.getClient().getSettings()));
         }
     }
 

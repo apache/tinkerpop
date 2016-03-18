@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVerte
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -87,6 +88,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(Graph.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
         imports.add(DetachedElement.class.getPackage().getName() + DOT_STAR);
+        imports.add(RemoteGraph.class.getPackage().getName() + DOT_STAR);
         staticImports.add(T.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);

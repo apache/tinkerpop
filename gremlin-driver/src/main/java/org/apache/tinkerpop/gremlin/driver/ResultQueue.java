@@ -124,10 +124,17 @@ final class ResultQueue {
         flushed.set(true);
     }
 
-    private static void internalDrain(final int items, final CompletableFuture<List<Result>> result,
+    private void internalDrain(final int items, final CompletableFuture<List<Result>> result,
                                       final LinkedBlockingQueue<Result> resultLinkedBlockingQueue) {
         final List<Result> results = new ArrayList<>(items);
         resultLinkedBlockingQueue.drainTo(results, items);
-        result.complete(results);
+
+        // it's important to check for error here because a future may have already been queued in "waiting" prior
+        // to the first response back from the server. if that happens, any "waiting" futures should be completed
+        // exceptionally otherwise it will look like success.
+        if (null == error.get())
+            result.complete(results);
+        else
+            result.completeExceptionally(error.get());
     }
 }

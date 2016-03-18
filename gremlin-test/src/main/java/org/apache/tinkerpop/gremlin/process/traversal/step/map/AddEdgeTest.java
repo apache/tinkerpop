@@ -87,8 +87,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(1, count);
-        assertEquals(7, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -106,8 +106,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(1, count);
-        assertEquals(7, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -128,8 +128,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(1, count);
-        assertEquals(7, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -149,8 +149,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(1, count);
-        assertEquals(7, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -169,12 +169,12 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
             count++;
         }
         assertEquals(36, count);
-        assertEquals(42, IteratorUtils.count(graph.edges()));
-        for (final Vertex vertex : IteratorUtils.list(graph.vertices())) {
+        assertEquals(42, IteratorUtils.count(g.E()));
+        for (final Vertex vertex : IteratorUtils.list(g.V())) {
             assertEquals(6, IteratorUtils.count(vertex.edges(Direction.OUT, "existsWith")));
             assertEquals(6, IteratorUtils.count(vertex.edges(Direction.IN, "existsWith")));
         }
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -192,12 +192,12 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
             count++;
         }
         assertEquals(36, count);
-        assertEquals(42, IteratorUtils.count(graph.edges()));
-        for (final Vertex vertex : IteratorUtils.list(graph.vertices())) {
+        assertEquals(42, IteratorUtils.count(g.E()));
+        for (final Vertex vertex : IteratorUtils.list(g.V())) {
             assertEquals(6, IteratorUtils.count(vertex.edges(Direction.OUT, "existsWith")));
             assertEquals(6, IteratorUtils.count(vertex.edges(Direction.IN, "existsWith")));
         }
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -222,8 +222,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(6, count);
-        assertEquals(12, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(12, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -247,8 +247,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(6, count);
-        assertEquals(12, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(12, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -273,8 +273,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(4, count);
-        assertEquals(10, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(10, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -298,8 +298,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         }
         assertEquals(4, count);
-        assertEquals(10, IteratorUtils.count(graph.edges()));
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
+        assertEquals(10, IteratorUtils.count(g.E()));
+        assertEquals(6, IteratorUtils.count(g.V()));
     }
 
     public static class Traversals extends AddEdgeTest {

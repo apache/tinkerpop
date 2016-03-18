@@ -31,7 +31,7 @@ public class ServerTestHelper {
      *  gremlin-server directory to get stuff to reference scripts properly from the file system from any directory.
      *  If an overriden path is determined to be absolute then the path is not re-written.
      */
-    static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
+    public static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
         final String buildDir = System.getProperty("build.dir");
         final String homeDir = buildDir.substring(0, buildDir.indexOf("gremlin-server") + "gremlin-server".length());
 

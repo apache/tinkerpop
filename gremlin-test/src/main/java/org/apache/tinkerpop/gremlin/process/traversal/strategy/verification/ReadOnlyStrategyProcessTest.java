@@ -20,11 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -100,15 +102,21 @@ public class ReadOnlyStrategyProcessTest extends AbstractGremlinProcessTest {
 
     private void assertTraversal(final Traversal t, final boolean expectMutatingStep) {
         try {
-            t.asAdmin().applyStrategies();
+            // not sure why i need a special hook here for RemoteGraph. It only triggers these exceptions on a
+            // call to hasNext() and not on applyStrategies()
+            if (graph instanceof RemoteGraph)
+                t.hasNext();
+            else
+                t.asAdmin().applyStrategies();
+
             if (expectMutatingStep) fail("The strategy should have found a mutating step.");
-        } catch (final IllegalStateException ise) {
+        } catch (final Exception ise) {
             if (!expectMutatingStep)
                 fail("The traversal should not have failed as there is no mutating step.");
             else {
                 // TraversalVerificationStrategy fails before this as mutating operations are not allowed in OLAP
                 if (!(ise instanceof VerificationException))
-                    assertThat(ise.getMessage(), startsWith("The provided traversal has a mutating step and thus is not read only"));
+                    assertThat(ise.getMessage(), containsString("The provided traversal has a mutating step and thus is not read only"));
             }
         }
     }
