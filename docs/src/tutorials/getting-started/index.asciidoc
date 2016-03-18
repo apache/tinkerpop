@@ -55,7 +55,7 @@ Download the console, unpackage it and start it:
 
 [source,text]
 ----
-$ curl -L -O https://www.apache.org/dist/incubator/tinkerpop/x.y.z/apache-gremlin-console-x.y.z-bin.zip
+$ curl -L -O http://archive.apache.org/dist/incubator/tinkerpop/x.y.z/apache-gremlin-console-x.y.z-bin.zip
 $ unzip apache-gremlin-console-x.y.z-bin.zip
 $ cd apache-gremlin-console-x.y.z-bin.zip
 $ bin/gremlin.sh
