@@ -34,7 +34,7 @@ using both TinkerPop3's OLTP and OLAP graph computing models.
 
 IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting
 started with Hadoop, please see the
-link:http://hadoop.apache.org/docs/r2.7.1/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
+link:http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
 tutorial. Moreover, if using `GiraphGraphComputer` or `SparkGraphComputer` it is advisable that the reader also
 familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.html[Getting Started]) and Spark
 (link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
