@@ -186,7 +186,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     @Override
     public String toString() {
-        return "DriverServerConnection-" + client.getCluster() + " [graph='" + connectionGraphName + "]";
+        return "DriverServerConnection-" + client.getCluster() + " [graph=" + connectionGraphName + "]";
     }
 
     static class TraverserIterator implements Iterator<Traverser> {
