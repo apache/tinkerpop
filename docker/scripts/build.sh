@@ -75,7 +75,7 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
 
   # build docs
   mkdir -p ~/.groovy
-  cp bin/docker/resources/groovy/grapeConfig.xml ~/.groovy/
+  cp docker/resources/groovy/grapeConfig.xml ~/.groovy/
   bin/process-docs.sh
 
   # start a simple HTTP server
