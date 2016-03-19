@@ -34,7 +34,7 @@ esac
 
 pushd ${PROJECT_HOME} > /dev/null
 
-HADOOP_VERSION=$(cat pom.xml | grep -o '<hadoop.version>[^<]*' | head -n1 | grep -o '>.*' | cut -d '>' -f2)
+HADOOP_VERSION=$(cat pom.xml | grep -o '<hadoop.version>[^<]*' | head -n1 | cut -d '>' -f2)
 
 docker/build-containers.sh -h "${HADOOP_VERSION}"
 
