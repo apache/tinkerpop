@@ -48,7 +48,7 @@ public final class GraphFilterInputFormat extends InputFormat<NullWritable, Vert
     @Override
     public List<InputSplit> getSplits(final JobContext jobContext) throws IOException, InterruptedException {
         final Configuration configuration = jobContext.getConfiguration();
-        return ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class), configuration).getSplits(jobContext);
+        return ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class), configuration).getSplits(jobContext);
     }
 
     @Override
