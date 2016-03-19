@@ -15,4 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM dkuppitz/tinkerpop:onbuild
+FROM tinkerpop:base
+
+MAINTAINER Daniel Kuppitz <me@gremlin.guru>
+
+ENV HADOOP_VERSION HADOOP_VERSION
+
+COPY install.sh /usr/local/sbin/install-hadoop.sh
+RUN /usr/local/sbin/install-hadoop.sh

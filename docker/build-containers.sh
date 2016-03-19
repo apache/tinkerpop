@@ -20,24 +20,42 @@
 #
 
 DIR=`dirname $0`
-TINKERPOP_BUILD_OPTIONS=${@:-"-DskipIntegrationTests=false -DincludeNeo4j"}
+FORCE=
+HADOOP_VERSION=
 
 function cleanup {
-  if [[ "$(docker images -q tinkerpop:build 2> /dev/null)" == "" ]]; then
-    docker rmi tinkerpop:build
-  fi
-  rm -f ${DIR}/../../Dockerfile
+  rm -f ${DIR}/hadoop/Dockerfile
 }
 trap cleanup EXIT
 
-pushd ${DIR}/../.. > /dev/null
+while [ "$1" ]; do
+  case "$1" in
+    -f | --force ) FORCE=true; shift ;;
+    -h | --hadoop ) HADOOP_VERSION="$2"; shift 2 ;;
+  esac
+done
 
-cp bin/docker/Dockerfile.build Dockerfile
-cat >> Dockerfile <<EOF
-CMD ["sh", "-c", "mvn clean install ${TINKERPOP_BUILD_OPTIONS}"]
-EOF
+pushd ${DIR} > /dev/null
 
-docker build -t tinkerpop:build .
-docker run --rm tinkerpop:build
+function findByTag {
+  docker images tinkerpop | tail -n+2 | awk "{if (\$2==\"$1\") print \$3}"
+}
+
+if [ ! -z ${FORCE} ]; then
+  for tag in "hadoop-${HADOOP_VERSION}" "base"; do
+    if [ ! -z $(findByTag "${tag}") ]; then
+      docker rmi tinkerpop:${tag}
+    fi
+  done
+fi
+
+if [ -z $(findByTag "base") ]; then
+  docker build -t tinkerpop:base .
+fi
+
+if [ -z $(findByTag "hadoop-${HADOOP_VERSION}") ]; then
+  sed -e "s/HADOOP_VERSION\$/${HADOOP_VERSION}/" hadoop/Dockerfile.template > hadoop/Dockerfile
+  docker build -t tinkerpop:hadoop-${HADOOP_VERSION} hadoop
+fi
 
 popd > /dev/null

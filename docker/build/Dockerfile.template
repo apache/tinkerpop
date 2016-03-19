@@ -1,6 +1,3 @@
-#!/bin/bash
-#
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,11 +14,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
 
-DIR=`dirname $0`
+FROM tinkerpop:hadoop-HADOOP_VERSION
 
-docker build -t dkuppitz/tinkerpop:base ${DIR}
-docker build -t dkuppitz/tinkerpop:onbuild ${DIR}/onbuild
-
-docker push dkuppitz/tinkerpop
+RUN mkdir -p /usr/src/tinkerpop
+WORKDIR /usr/src/tinkerpop
+COPY . /usr/src/tinkerpop

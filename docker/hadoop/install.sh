@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,18 +16,22 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-FROM ubuntu:trusty
+HADOOP_BASENAME="hadoop-${HADOOP_VERSION}"
 
-MAINTAINER Daniel Kuppitz <me@gremlin.guru>
+[ -d "/usr/local/lib/${HADOOP_BASENAME}" ] && exit
 
-RUN \
-  apt-get update && \
-  apt-get -y install software-properties-common python-software-properties && \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer git maven && \
-  rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer
+APACHE_MIRROR=$(curl -s http://www.apache.org/dyn/closer.cgi | grep -Po '(?<=<a href=").*(?="><strong>)' | head -n1)
+HADOOP_DOWNLOAD_URL="${APACHE_MIRROR}hadoop/common/${HADOOP_BASENAME}/${HADOOP_BASENAME}.tar.gz"
 
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+pushd /usr/local/lib > /dev/null
+curl ${HADOOP_DOWNLOAD_URL} | tar xz
+popd > /dev/null
+
+cat >> ~/.bashrc <<EOF
+export USER=`whoami`
+export HADOOP_PREFIX=/usr/local/lib/${HADOOP_BASENAME}
+export PATH="\${PATH}:\${HADOOP_PREFIX}/bin"
+export CLASSPATH="\${CLASSPATH}:\${HADOOP_PREFIX}/etc/hadoop"
+EOF

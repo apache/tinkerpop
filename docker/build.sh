@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,12 +16,34 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-FROM dkuppitz/tinkerpop:base
+DIR=`dirname $0`
+PROJECT_HOME=${DIR}/../
 
-MAINTAINER Daniel Kuppitz <me@gremlin.guru>
+function cleanup {
+  BUILD_IMAGE=$(docker images tinkerpop | awk '{if ($2 == "build") print $3}')
+  [ ! -z ${BUILD_IMAGE} ] && docker rmi ${BUILD_IMAGE}
+  rm -f ${PROJECT_HOME}/Dockerfile
+}
+trap cleanup EXIT
 
-RUN mkdir -p /usr/src/tinkerpop
-WORKDIR /usr/src/tinkerpop
+case "$1" in
+  -h | --help ) ${DIR}/scripts/build.sh -h; exit 0 ;;
+esac
 
-ONBUILD COPY . /usr/src/tinkerpop
+pushd ${PROJECT_HOME} > /dev/null
+
+HADOOP_VERSION=$(cat pom.xml | grep -o '<hadoop.version>[^<]*' | head -n1 | grep -o '>.*' | cut -d '>' -f2)
+
+docker/build-containers.sh -h "${HADOOP_VERSION}"
+
+sed -e "s/HADOOP_VERSION\$/${HADOOP_VERSION}/" docker/build/Dockerfile.template > Dockerfile
+cat >> Dockerfile <<EOF
+CMD ["sh", "-c", "docker/scripts/build.sh $@"]
+EOF
+
+docker build -t tinkerpop:build .
+docker run --rm -ti tinkerpop:build
+
+popd > /dev/null
