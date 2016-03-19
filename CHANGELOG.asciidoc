@@ -17,8 +17,10 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 ====================
 
-TinkerPop 3.2.0 (XXX)
----------------------
+TinkerPop 3.2.0 (Nine Inch Gremlins)
+------------------------------------
+
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3.2.0-incubating]]
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
