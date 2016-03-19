@@ -32,6 +32,22 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Hadoop Configurations
++++++++++++++++++++++
+
+Note that `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and
+`gremlin.spark.graphOuputRDD` have all been deprecated. Using them still works, but moving forward, users only need to
+leverage `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter`. An example properties file snippet is provided
+below.
+
+```
+gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphWriter=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
+gremlin.hadoop.jarsInDistributedCache=true
+gremlin.hadoop.defaultGraphComputer=org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
+```
+
 TraversalSideEffects Update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

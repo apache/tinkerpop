@@ -24,6 +24,9 @@ TinkerPop 3.2.0 (XXX)
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `gremlin.hadoop.defaultGraphComputer` so users can use `graph.compute()` with `HadoopGraph`.
+* Added `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` which can handled `XXXFormats` and `XXXRDDs`.
+* Deprecated `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and `gremlin.spark.graphOuputRDD`.
 * If no configuration is provided to `HadoopPools` it uses the default configuration to create a pool once and only once per JVM.
 * Implemented `RemoteGraph` and `RemoteConnection`.
 * Added validation to `GryoMapper` Kryo identifiers before construction to prevent accidental duplicates.
