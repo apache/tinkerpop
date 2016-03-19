@@ -79,7 +79,7 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   bin/process-docs.sh
 
   # start a simple HTTP server
-  IP=$(ifconfig | grep -Po '(?<=inet addr:)[0-9.]*' | head -n1)
+  IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
   echo -e "\nDocs can be viewed under http://${IP}/\n"
   cd target/docs/htmlsingle/
   python -m SimpleHTTPServer 80

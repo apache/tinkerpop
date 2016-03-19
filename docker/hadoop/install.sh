@@ -22,7 +22,7 @@ HADOOP_BASENAME="hadoop-${HADOOP_VERSION}"
 
 [ -d "/usr/local/lib/${HADOOP_BASENAME}" ] && exit
 
-APACHE_MIRROR=$(curl -s http://www.apache.org/dyn/closer.cgi | grep -Po '(?<=<a href=").*(?="><strong>)' | head -n1)
+APACHE_MIRROR=$(curl -s http://www.apache.org/dyn/closer.cgi | grep -o '<a href=".*"><strong>' | cut -f2 -d '"' | head -n1)
 HADOOP_DOWNLOAD_URL="${APACHE_MIRROR}hadoop/common/${HADOOP_BASENAME}/${HADOOP_BASENAME}.tar.gz"
 
 pushd /usr/local/lib > /dev/null
