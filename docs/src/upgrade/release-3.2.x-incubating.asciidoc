@@ -72,12 +72,13 @@ but instead throws an `IllegalArgumentException`. While the `Optional` semantics
 directly return the side-effect value to reduce object creation costs and because all side-effects must be registered apriori,
 there is never a reason why an unknown side-effect key would be used. In short:
 
-```
+[source,java]
+----
 // change
 traversal.getSideEffects().get("m").get()
 // to
 traversal.getSideEffects().get("m")
-```
+----
 
 TraversalSideEffects Registration Requirement
 +++++++++++++++++++++++++++++++++++++++++++++
@@ -100,7 +101,8 @@ to do the merging and thus, the `Step` must do `sideEffect.add("mySet",1)`, wher
 Thus, the below will increment "a". If no operator was provided, then the operator is assumed `Operator.assign` and the
 final result of "a" would be 1. Note that `Traverser.sideEffects(key,value)` uses `TraversalSideEffect.add()`.
 
-```
+[source,groovy]
+----
 gremlin> traversal = g.withSideEffect('a',0,sum).V().out().sideEffect{it.sideEffects('a',1)}
 ==>v[3]
 ==>v[2]
@@ -119,7 +121,7 @@ gremlin> traversal = g.withSideEffect('a',0).V().out().sideEffect{it.sideEffects
 ==>v[3]
 gremlin> traversal.getSideEffects().get('a')
 ==>1
-```
+----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192],
 https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
