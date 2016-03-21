@@ -134,7 +134,7 @@ limitations under the License.
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.12</slf4j.version>
-        <hadoop.version>2.7.1</hadoop.version>
+        <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
 
@@ -996,8 +996,7 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties}
-                                -Dbuild.dir=${project.build.directory}
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory}  -Dis.testing=true
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1073,7 +1072,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dhadoop.home.dir=${project.build.directory}/hadoop_home</argLine>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dhadoop.home.dir=${project.build.directory}/hadoop_home -Dis.testing=true</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

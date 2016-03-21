@@ -134,5 +134,25 @@ public abstract class GroovyHasTest {
         public Traversal<Vertex, Vertex> get_g_V_hasXlocationX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('location')")
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id)", "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasIdX1X(final Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(v1Id)", "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1_2X(final Object v1Id, final Object v2Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id, v2Id)", "v1Id", v1Id, "v2Id", v2Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasIdX1_2X(final Object v1Id, final Object v2Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasId(v1Id, v2Id)", "v1Id", v1Id, "v2Id", v2Id)
+        }
     }
 }

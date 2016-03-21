@@ -17,13 +17,24 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 ====================
 
-TinkerPop 3.2.0 (XXX)
----------------------
+TinkerPop 3.2.0 (Nine Inch Gremlins)
+------------------------------------
+
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3.2.0-incubating]]
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `gremlin.hadoop.defaultGraphComputer` so users can use `graph.compute()` with `HadoopGraph`.
+* Added `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` which can handled `XXXFormats` and `XXXRDDs`.
+* Deprecated `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and `gremlin.spark.graphOuputRDD`.
+* If no configuration is provided to `HadoopPools` it uses the default configuration to create a pool once and only once per JVM.
+* Implemented `RemoteGraph` and `RemoteConnection`.
+* Added validation to `GryoMapper` Kryo identifiers before construction to prevent accidental duplicates.
+* Added `GraphStep.addIds()` which is useful for `HasContainer` "fold ins."
+* Added a static `GraphStep.processHashContainerIds()` helper for handling id-based `HasContainers`.
+* `GraphStep` implementations should have `g.V().hasId(x)` and `g.V(x)` compile equivalently. (*breaking*)
 * Optimized `ExpandableStepIterator` with simpler logic and increased the likelihood of bulking.
 * Optimized `TraverserRequirement` calculations.
 * `Step.processNextStart()` and `Step.next()` now return `Traverser.Admin<E>`. (*breaking*)
@@ -117,6 +128,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Apache Hadoop 2.7.2.
+* Fixed a bug in `gremlin-driver` where a really fast call to get a `Future` to wait for a result might not register an error raised from the server.
 * Fixed a severe bug where `LP_O_OB_P_S_SE_SL_Traverser` was not registered with `GryoMapper`.
 * The future from `GremlinExecutor.eval()` is completed after the entire evaluation lifecyle is completed.
 * Spark `Memory` uses `collect().iterator()` instead of `toLocalIterator()` to reduce noise in Spark UI.
@@ -128,8 +141,8 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 * Fixed a bug where `OrderGlobalStep` and `OrderLocalStep` were not incorporating their children's traverser requirements.
 * Fixed a compilation bug in `TraversalExplanation`.
 * Fixed bug where a session explicitly closed was being closed again by session expiration.
-* Improved the recovery options for Gremlin Driver after failed requests to Gremlin Server.
-* Added `maxWaitForSessionClose` to the settings for Gremlin Driver.
+* Improved the recovery options for `gremlin-driver` after failed requests to Gremlin Server.
+* Added `maxWaitForSessionClose` to the settings for `gremlin-driver`.
 * Bumped to Netty 4.0.34.Final.
 * Added "interpreter mode" for the `ScriptEngine` and Gremlin Server which allows variables defined with `def` or a type to be recognized as "global".
 * Bumped to Apache Groovy 2.4.6.

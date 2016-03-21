@@ -51,7 +51,7 @@ public final class GraphFilterRecordReader extends RecordReader<NullWritable, Ve
     @Override
     public void initialize(final InputSplit inputSplit, final TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
         final Configuration configuration = taskAttemptContext.getConfiguration();
-        final InputFormat<NullWritable, VertexWritable> inputFormat = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class), configuration);
+        final InputFormat<NullWritable, VertexWritable> inputFormat = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class), configuration);
         if (!(inputFormat instanceof GraphFilterAware) && configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
             this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         this.recordReader = inputFormat.createRecordReader(inputSplit, taskAttemptContext);

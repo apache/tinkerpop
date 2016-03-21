@@ -104,7 +104,6 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     @Override
     public void reset() {
         super.reset();
-        this.first = false;
     }
 
     @Override

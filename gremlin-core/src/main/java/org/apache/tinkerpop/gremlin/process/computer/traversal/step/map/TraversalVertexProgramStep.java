@@ -101,4 +101,9 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
         this.integrateChild(this.computerTraversal.get());
     }
 
+    /*@Override
+    public int hashCode() {
+        return super.hashCode() ^ this.computerTraversal.hashCode();
+    }*/
+
 }

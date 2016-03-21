@@ -42,7 +42,7 @@ public final class GryoRecordWriter extends RecordWriter<NullWritable, VertexWri
 
     public GryoRecordWriter(final DataOutputStream outputStream, final Configuration configuration) {
         this.outputStream = outputStream;
-        this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true);
+        this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true);
         HadoopPools.initialize(configuration);
         this.gryoWriter = HadoopPools.getGryoPool().takeWriter();
     }

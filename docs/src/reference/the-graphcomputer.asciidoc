@@ -526,3 +526,25 @@ the final step), `TraversalVertexProgram` ensures a serial representation is ord
 to maintain the ordering of `g.V().hasLabel("person").order().by("age").values("name")`. However, the OLAP traversal
 `g.V().hasLabel("person").order().by("age").out().values("name")` will lose the original ordering as the `out()`-step
 will rebroadcast traversers across the cluster.
+
+[[graph-filter]]
+Graph Filter
+------------
+
+Most OLAP jobs do not require the entire source graph to faithfully execute their `VertexProgram`. For instance, if
+`PageRankVertexProgram` is only going to compute the centrality of people in the friendship-graph, then the following
+`GraphFilter` can be applied.
+
+[source,java]
+----
+graph.computer().vertices(hasLabel("person")).edges(bothE("knows")).program(PageRankVertexProgram...)
+----
+
+There are two methods for constructing a `GraphFilter`.
+
+* `vertices(Traversal<Vertex,Vertex>)`: A traversal that will be used that can only analyze a vertex and its properties.
+If the traversal `hasNext()`, the input `Vertex` is passed to the `GraphComputer`.
+* `edges(Traversal<Vertex,Edge>)`: A traversal that will iterate all legal edges for the source vertex.
+
+`GraphFilter` is a "push-down predicate" that providers can reason on to determine the most efficient way to provide
+graph data to the `GraphComputer`.

@@ -34,7 +34,7 @@ using both TinkerPop3's OLTP and OLAP graph computing models.
 
 IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting
 started with Hadoop, please see the
-link:http://hadoop.apache.org/docs/r2.7.1/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
+link:http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup]
 tutorial. Moreover, if using `GiraphGraphComputer` or `SparkGraphComputer` it is advisable that the reader also
 familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.html[Getting Started]) and Spark
 (link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
@@ -84,26 +84,22 @@ Properties Files
 ~~~~~~~~~~~~~~~~
 
 `HadoopGraph` makes use of properties files which ultimately get turned into Apache configurations and/or
-Hadoop configurations. The example properties file presented below is located at `conf/hadoop/hadoop-gryo.properties`.
+Hadoop configurations.
 
 [source,text]
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 gremlin.hadoop.inputLocation=tinkerpop-modern.kryo
-gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
 gremlin.hadoop.outputLocation=output
-gremlin.hadoop.graphOutputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
+gremlin.hadoop.graphWriter=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
 gremlin.hadoop.jarsInDistributedCache=true
+gremlin.hadoop.defaultGraphComputer=org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
 ####################################
 # Spark Configuration              #
 ####################################
 spark.master=local[4]
 spark.executor.memory=1g
 spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
-####################################
-# SparkGraphComputer Configuration #
-####################################
-gremlin.spark.graphInputRDD=org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat
-gremlin.spark.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDDFormat
 gremlin.spark.persistContext=true
 #####################################
 # GiraphGraphComputer Configuration #
@@ -126,13 +122,12 @@ to their respective documentation for configuration options.
 |Property |Description
 |gremlin.graph |The class of the graph to construct using GraphFactory.
 |gremlin.hadoop.inputLocation |The location of the input file(s) for Hadoop-Gremlin to read the graph from.
-|gremlin.hadoop.graphInputFormat |The format that the graph input file(s) are represented in.
+|gremlin.hadoop.graphReader |The class that the graph input file(s) are read with (e.g. an `InputFormat`).
 |gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
-|gremlin.hadoop.graphOutputFormat |The format that the output file(s) should be represented in.
+|gremlin.hadoop.graphWriter |The class that the graph output file(s) are written with (e.g. an `OutputFormat`).
 |gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to a distributed cache (necessary if jars are not on the machines' classpaths).
+|gremlin.hadoop.defaultGraphComputer |The default `GraphComputer` to use when `graph.compute()` is called. This is optional.
 |=========================================================
-
-
 
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties]
 can be added as needed to tune and parameterize the executed Hadoop-Gremlin job on the respective Hadoop cluster.
@@ -306,8 +301,8 @@ image::spark-algorithm.png[width=775]
 [width="100%",cols="2,10",options="header"]
 |========================================================
 |Property |Description
-|gremlin.spark.graphInputRDD |A class for creating RDD's from underlying graph data, defaults to Hadoop `InputFormat`.
-|gremlin.spark.graphOutputRDD |A class for output RDD's, defaults to Hadoop `OutputFormat`.
+|gremlin.hadoop.graphReader |A class for reading a graph-based RDD (e.g. an `InputRDD` or `InputFormat`).
+|gremlin.hadoop.graphWriter |A class for writing a graph-based RDD (e.g. an `OutputRDD` or `OutputFormat`).
 |gremlin.spark.graphStorageLevel |What `StorageLevel` to use for the cached graph during job execution (default `MEMORY_ONLY`).
 |gremlin.spark.persistContext |Whether to create a new `SparkContext` for every `SparkGraphComputer` or to reuse an existing one.
 |gremlin.spark.persistStorageLevel |What `StorageLevel` to use when persisted RDDs via `PersistedOutputRDD` (default `MEMORY_ONLY`).
@@ -317,16 +312,14 @@ InputRDD and OutputRDD
 ++++++++++++++++++++++
 
 If the provider/user does not want to use Hadoop `InputFormats`, it is possible to leverage Spark's RDD
-constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends
-InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use
-`gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
+constructs directly. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise,
+and `OutputRDD` is used for writing a graphRDD.
 
 If the graph system provider uses an `InputRDD`, the RDD should maintain an associated `org.apache.spark.Partitioner`. By doing so,
 `SparkGraphComputer` will not partition the loaded graph across the cluster as it has already been partitioned by the graph system provider.
-This can save a significant amount of time and space resources.
-If the `InputRDD` does not have a registered partitioner, `SparkGraphComputer` will partition the graph using
-a `org.apache.spark.HashPartitioner` with the number of partitions being either the number of existing partitions in the input (e.g. input splits)
-or the user specified number of `GraphComputer.workers()`.
+This can save a significant amount of time and space resources. If the `InputRDD` does not have a registered partitioner,
+`SparkGraphComputer` will partition the graph using a `org.apache.spark.HashPartitioner` with the number of partitions
+being either the number of existing partitions in the input (i.e. input splits) or the user specified number of `GraphComputer.workers()`.
 
 Using a Persisted Context
 +++++++++++++++++++++++++
@@ -359,7 +352,7 @@ The <<bulkdumpervertexprogram, BulkDumperVertexProgram>> exports a whole graph i
 ----
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-graph.configuration().setProperty('gremlin.hadoop.graphOutputFormat', 'org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat')
+graph.configuration().setProperty('gremlin.hadoop.graphWriter', 'org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat')
 graph.compute(SparkGraphComputer).program(BulkDumperVertexProgram.build().create()).submit().get()
 hdfs.ls('output')
 hdfs.head('output/~g')
@@ -396,7 +389,7 @@ graph.close()
 # Hadoop Graph Configuration
 #
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
-gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
 gremlin.hadoop.inputLocation=grateful-dead.kryo
 gremlin.hadoop.outputLocation=output
 gremlin.hadoop.jarsInDistributedCache=true
@@ -521,8 +514,8 @@ graph.close()
 # Hadoop Graph Configuration
 #
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
-gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
-gremlin.hadoop.graphOutputFormat=org.apache.hadoop.mapreduce.lib.output.NullOutputFormat
+gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphWriter=org.apache.hadoop.mapreduce.lib.output.NullOutputFormat
 gremlin.hadoop.inputLocation=grateful-dead.kryo
 gremlin.hadoop.outputLocation=output
 gremlin.hadoop.jarsInDistributedCache=true
@@ -725,8 +718,7 @@ Persisted RDDs can be accessed using `spark`.
 ----
 Spark.create('local[4]')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-graph.configuration().setProperty('gremlin.spark.graphOutputRDD', PersistedOutputRDD.class.getCanonicalName())
-graph.configuration().clearProperty('gremlin.hadoop.graphOutputFormat')
+graph.configuration().setProperty('gremlin.hadoop.graphWriter', PersistedOutputRDD.class.getCanonicalName())
 graph.configuration().setProperty('gremlin.spark.persistContext',true)
 graph.compute(SparkGraphComputer).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey('clusterCount').create()).submit().get();
 spark.ls()
@@ -910,10 +902,35 @@ public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) th
 Note that the configurations for Hadoop are assumed to be in the `Graph.configuration()` object. If this is not the
 case, then the `Configuration` provided to `HadoopGraph.open()` should be dynamically created within the
 `compute()`-method. It is in the provided configuration that `HadoopGraph` gets the various properties which
-determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphInputFormat` and
-`gremlin.hadoop.graphOutputFormat`.
+determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphReader` and
+`gremlin.hadoop.graphWriter`.
 
-IMPORTANT: A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
+GraphFilterAware Interface
+++++++++++++++++++++++++++
+
+<<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
+example below constructs a `GraphFilter` that will only pull the the "knows"-graph amongst people into the `GraphComputer`
+for processing.
+
+[source,java]
+----
+graph.compute().vertices(hasLabel("person")).edges(bothE("knows"))
+----
+
+If the provider has a custom `InputRDD`, they can implement `GraphFilterAware` and that graph filter will be provided to their
+`InputRDD` at load time. For providers that use an `InputFormat`, state but the graph filter can be accessed from the configuration
+as such:
+
+[source,java]
+----
+if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
+  this.graphFilter = VertexProgramHelper.deserialize(configuration, Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+----
+
+PersistResultGraphAware Interface
++++++++++++++++++++++++++++++++++
+
+A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
 by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>,
 and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph

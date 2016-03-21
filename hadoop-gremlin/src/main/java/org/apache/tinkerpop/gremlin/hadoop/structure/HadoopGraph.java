@@ -22,13 +22,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopVertexIterator;
-import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -230,7 +227,14 @@ public final class HadoopGraph implements Graph {
 
     @Override
     public GraphComputer compute() {
-        throw new IllegalArgumentException("There is no default GraphComputer for HadoopGraph. Use HadoopGraph.compute(class) to specify the GraphComputer to use.");
+        if (this.configuration.containsKey(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER)) {
+            try {
+                return this.compute((Class<? extends GraphComputer>) Class.forName(this.configuration.getString(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER)));
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } else
+            throw new IllegalArgumentException("There is no default GraphComputer for HadoopGraph. Use HadoopGraph.compute(class) or gremlin.hadoop.defaultGraphComputer to specify the GraphComputer to use.");
     }
 
     @Override
@@ -244,13 +248,12 @@ public final class HadoopGraph implements Graph {
     }
 
     public String toString() {
-        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.configuration);
-        final String fromString = this.configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT) ?
-                hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class).getSimpleName() :
-                "no-input";
-        final String toString = this.configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT) ?
-                hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class).getSimpleName() :
-                "no-output";
+        final String fromString = this.configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_READER) ?
+                this.configuration.getGraphReader().getSimpleName() :
+                "no-reader";
+        final String toString = this.configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER) ?
+                this.configuration.getGraphWriter().getSimpleName() :
+                "no-writer";
         return StringFactory.graphString(this, fromString.toLowerCase() + "->" + toString.toLowerCase());
     }
 

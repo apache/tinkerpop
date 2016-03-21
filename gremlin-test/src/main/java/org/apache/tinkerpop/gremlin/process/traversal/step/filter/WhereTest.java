@@ -372,7 +372,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2Id) {
-            return g.withSideEffect("a", graph.vertices(v2Id).next()).V(v1Id).out().where(neq("a"));
+            return g.withSideEffect("a", g.V(v2Id).next()).V(v1Id).out().where(neq("a"));
         }
 
         @Override

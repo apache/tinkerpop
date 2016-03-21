@@ -345,6 +345,26 @@ TIP: Consider separating serializer code into its own module, if possible, so th
 implementation remotely don't need a full dependency on the entire `Graph` - just the IO components and related
 classes being serialized.
 
+[[remoteconnection-implementations]]
+RemoteConnection Implementations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A `RemoteConnection` is an interface that is important for usage with
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[RemoteGraph]. A `RemoteGraph` takes
+a `RemoteConnection` implementation and submits constructed traversals to it for processing through a single method:
+
+[source,java]
+public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException;
+
+TinkerPop provides the `DriverRemoteConnection` as a useful and example implementation. `DriverRemoteConnection`
+serializes the `Traversal` and then submits it for remote processing on Gremlin Server. Gremlin Server rebinds the
+`Traversal` to a configured `Graph` instance and then iterates the results back as it would normally do.
+
+Implementing `RemoteConnection` is not something routinely done for those implementing `gremlin-core`. It is only
+something required if there is a need to exploit `RemoteGraph` in some way. If a graph provider has a "graph server"
+similar to Gremlin Server that can accept a serialized `Traversal` instance, then that would be one example of a
+reason to implement this interface.
+
 [[validating-with-gremlin-test]]
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

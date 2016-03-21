@@ -40,15 +40,12 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
-import java.util.Random;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
 public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
-
-    private static final Random RANDOM = new Random();
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
@@ -64,13 +61,13 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
                 !test.equals(FileSystemStorageCheck.class) &&
                 !testMethodName.equals("shouldSupportJobChaining") &&  // GraphComputerTest.shouldSupportJobChaining
                 RANDOM.nextBoolean()) {
-            config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
+            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
         }
 
         // tests persisted RDDs
         if (test.equals(SparkContextStorageCheck.class)) {
-            config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
-            config.put(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
+            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_READER, ToyGraphInputRDD.class.getCanonicalName());
+            config.put(RANDOM.nextBoolean() ? Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD : Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         }
 
         // sugar plugin causes meta-method issues with a persisted context
@@ -78,6 +75,8 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
             Spark.close();
             SugarTestHelper.clearRegistry(this);
         }
+
+        config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
 
         /// spark configuration
         config.put("spark.master", "local[4]");
@@ -94,13 +93,13 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
                         graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1)) :
                 RANDOM.nextBoolean() ?
                         graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)) :
-                        graph.traversal().withComputer(SparkGraphComputer.class);
+                        graph.traversal().withComputer();
     }
 
     @Override
     public GraphComputer getGraphComputer(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1) :
+                graph.compute().workers(RANDOM.nextInt(3) + 1) :
                 graph.compute(SparkGraphComputer.class);
     }
 }

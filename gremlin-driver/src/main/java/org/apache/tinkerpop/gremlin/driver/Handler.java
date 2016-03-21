@@ -29,6 +29,7 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,9 +169,11 @@ final class Handler {
     static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
         private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
         private final ConcurrentMap<UUID, ResultQueue> pending;
+        private final boolean unrollTraversers;
 
-        public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending) {
+        public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending, final Client.Settings settings) {
             this.pending = pending;
+            unrollTraversers = settings.unrollTraversers();
         }
 
         @Override
@@ -183,10 +186,11 @@ final class Handler {
                         // unrolls the collection into individual results to be handled by the queue.
                         final List<Object> listToUnroll = (List<Object>) data;
                         final ResultQueue queue = pending.get(response.getRequestId());
-                        listToUnroll.forEach(item -> queue.add(new Result(item)));
+                        listToUnroll.forEach(item -> tryUnrollTraverser(queue, item));
                     } else {
                         // since this is not a list it can just be added to the queue
-                        pending.get(response.getRequestId()).add(new Result(response.getResult().getData()));
+                        final ResultQueue queue = pending.get(response.getRequestId());
+                        tryUnrollTraverser(queue, response.getResult().getData());
                     }
                 } else {
                     // this is a "success" but represents no results otherwise it is an error
@@ -201,6 +205,18 @@ final class Handler {
                 // in the event of an exception above the exception is tossed and handled by whatever channelpipeline
                 // error handling is at play.
                 ReferenceCountUtil.release(response);
+            }
+        }
+
+        private void tryUnrollTraverser(final ResultQueue queue, final Object item) {
+            if (unrollTraversers && item instanceof Traverser) {
+                final Traverser t = (Traverser) item;
+                final Object traverserObject = t.get();
+                for (long ix = 0; ix < t.bulk(); ix++) {
+                    queue.add(new Result(traverserObject));
+                }
+            } else {
+                queue.add(new Result(item));
             }
         }
 

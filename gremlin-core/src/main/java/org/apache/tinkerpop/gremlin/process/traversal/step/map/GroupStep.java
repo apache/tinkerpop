@@ -165,8 +165,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
         private static final GroupBiOperator COMPUTER_INSTANCE = new GroupBiOperator();
 
-        private transient Traversal.Admin<?, V> valueReduceTraversal;
-        private transient Map<K, Integer> counters;
+        private Traversal.Admin<?, V> valueReduceTraversal;
+        private Map<K, Integer> counters;
         private final boolean onGraphComputer;
 
         public GroupBiOperator(final Traversal.Admin<?, V> valueReduceTraversal) {

@@ -20,6 +20,10 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.util;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -50,5 +54,16 @@ public final class ConfUtil {
             final Object object = apacheConfiguration.getProperty(key);
             hadoopConfiguration.set(key, object.toString());
         });
+    }
+
+    public static InputFormat<NullWritable, VertexWritable> getReaderAsInputFormat(final Configuration hadoopConfiguration) {
+        final Class<?> readerClass = hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class);
+        try {
+            return InputFormat.class.isAssignableFrom(readerClass) ?
+                    (InputFormat<NullWritable, VertexWritable>) readerClass.newInstance() :
+                    (InputFormat<NullWritable, VertexWritable>) Class.forName("org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat").newInstance();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }
