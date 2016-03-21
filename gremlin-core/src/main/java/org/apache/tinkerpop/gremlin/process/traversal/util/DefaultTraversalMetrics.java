@@ -25,7 +25,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -182,18 +189,25 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     }
 
     public void setMetrics(Traversal.Admin traversal, boolean onGraphComputer) {
-        addTopLevelMetrics(traversal);
+        addTopLevelMetrics(traversal, onGraphComputer);
         handleNestedTraversals(traversal, null, onGraphComputer);
         computeTotals();
     }
 
-    private void addTopLevelMetrics(Traversal.Admin traversal) {
+    private void addTopLevelMetrics(Traversal.Admin traversal, final boolean onGraphComputer) {
         final List<ProfileStep> profileSteps = TraversalHelper.getStepsOfClass(ProfileStep.class, traversal);
         for (int ii = 0; ii < profileSteps.size(); ii++) {
             // The index is necessary to ensure that step order is preserved after a merge.
-            final MutableMetrics stepMetrics = profileSteps.get(ii).getMetrics();
-            this.indexToLabelMap.put(ii, stepMetrics.getId());
-            this.metrics.put(stepMetrics.getId(), stepMetrics);
+            final ProfileStep step = profileSteps.get(ii);
+            if (onGraphComputer) {
+                final MutableMetrics stepMetrics = traversal.getSideEffects().get(step.getId());
+                this.indexToLabelMap.put(ii, stepMetrics.getId());
+                this.metrics.put(stepMetrics.getId(), stepMetrics);
+            } else {
+                final MutableMetrics stepMetrics = step.getMetrics();
+                this.indexToLabelMap.put(ii, stepMetrics.getId());
+                this.metrics.put(stepMetrics.getId(), stepMetrics);
+            }
         }
     }
 
@@ -202,20 +216,22 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
         for (int ii = 0; ii < traversal.getSteps().size(); ii++) {
             Step step = (Step) traversal.getSteps().get(ii);
             if (step instanceof ProfileStep) {
-                final MutableMetrics metrics = ((ProfileStep) step).getMetrics();
-                if (!onGraphComputer) {
+                final MutableMetrics metrics = onGraphComputer ?
+                        traversal.getSideEffects().get(step.getId()) :
+                        ((ProfileStep) step).getMetrics();
+                if (!onGraphComputer && null != metrics) {
                     // save duration before we adjust
                     long tempDur = metrics.getDuration(TimeUnit.NANOSECONDS);
                     // adjust duration
                     metrics.setDuration(metrics.getDuration(TimeUnit.NANOSECONDS) - prevDur, TimeUnit.NANOSECONDS);
                     prevDur = tempDur;
                 }
-                if (parentMetrics != null) {
+                if (parentMetrics != null && null != metrics) {
                     parentMetrics.addNested(metrics);
                 }
             } else if (step instanceof TraversalParent) {
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
-                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
+                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), false);
                 }
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
                     handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
@@ -223,4 +239,29 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
             }
         }
     }
+
+   /* private void handleNestedTraversals(Traversal.Admin traversal, MutableMetrics parentMetrics, boolean onGraphComputer) {
+        for (int ii = 0; ii < traversal.getSteps().size(); ii++) {
+            Step step = (Step) traversal.getSteps().get(ii);
+            if (step instanceof ProfileStep) {
+                if (onGraphComputer) {
+                    if (parentMetrics != null) {
+                        parentMetrics.addNested(traversal.getSideEffects().get(step.getId()));
+                    }
+                } else {
+                    final MutableMetrics metrics = ((ProfileStep) step).getMetrics();
+                    if (parentMetrics != null && null != metrics) {
+                        parentMetrics.addNested(metrics);
+                    }
+                }
+            } else if (step instanceof TraversalParent) {
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
+                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), false);
+                }
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
+                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
+                }
+            }
+        }
+    }*/
 }

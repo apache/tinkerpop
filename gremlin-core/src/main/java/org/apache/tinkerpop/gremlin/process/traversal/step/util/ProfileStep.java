@@ -18,19 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 
 import java.util.NoSuchElementException;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends AbstractStep<S, S> {
+public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryComputing<MutableMetrics>, GraphComputing {
     private MutableMetrics metrics;
+    private boolean onGraphComputer = false;
 
     public ProfileStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -51,8 +56,16 @@ public final class ProfileStep<S> extends AbstractStep<S, S> {
         } finally {
             if (ret != null) {
                 metrics.finish(ret.bulk());
+                if(this.onGraphComputer) {
+                    this.getTraversal().getSideEffects().add(this.getId(), metrics);
+                    this.metrics = null;
+                }
             } else {
                 metrics.stop();
+                if(this.onGraphComputer) {
+                    this.getTraversal().getSideEffects().add(this.getId(), metrics);
+                    this.metrics = null;
+                }
             }
         }
     }
@@ -81,4 +94,30 @@ public final class ProfileStep<S> extends AbstractStep<S, S> {
         }
     }
 
+    @Override
+    public MemoryComputeKey<MutableMetrics> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), ProfileBiOperator.instance(), false, true);
+    }
+
+    @Override
+    public void onGraphComputer() {
+        this.onGraphComputer = true;
+    }
+
+    /////
+
+    public static class ProfileBiOperator implements BinaryOperator<MutableMetrics> {
+
+        private static final ProfileBiOperator INSTANCE = new ProfileBiOperator();
+
+        @Override
+        public MutableMetrics apply(final MutableMetrics metrics, final MutableMetrics metrics2) {
+            metrics.aggregate(metrics2);
+            return metrics;
+        }
+
+        public static final ProfileBiOperator instance() {
+            return INSTANCE;
+        }
+    }
 }

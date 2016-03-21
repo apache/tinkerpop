@@ -138,13 +138,13 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
         if (null == this.chainedComparator)
-            this.chainedComparator = new ChainedComparator(true, this.comparators);
-        return MemoryComputeKey.of(this.getId(), new OrderBiOperator(this.chainedComparator, this.limit), false, true);
+            this.chainedComparator = new ChainedComparator<>(true, this.comparators);
+        return MemoryComputeKey.of(this.getId(), new OrderBiOperator<>(this.chainedComparator, this.limit), false, true);
     }
 
     ////////////////
 
-    public static final class OrderBiOperator implements BinaryOperator<TraverserSet>, Serializable {
+    public static final class OrderBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
 
         private ChainedComparator chainedComparator;
         private long limit;
@@ -153,13 +153,13 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
             // for serializers that need a no-arg constructor
         }
 
-        public OrderBiOperator(final ChainedComparator chainedComparator, final long limit) {
+        public OrderBiOperator(final ChainedComparator<S,?> chainedComparator, final long limit) {
             this.chainedComparator = chainedComparator;
             this.limit = limit;
         }
 
         @Override
-        public TraverserSet apply(final TraverserSet setA, final TraverserSet setB) {
+        public TraverserSet<S> apply(final TraverserSet<S> setA, final TraverserSet<S> setB) {
             setA.addAll(setB);
             if (Long.MAX_VALUE != this.limit && setA.bulkSize() > this.limit) {
                 if (this.chainedComparator.isShuffle())
@@ -167,9 +167,9 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
                 else
                     setA.sort(this.chainedComparator);
                 long counter = 0l;
-                final Iterator<Traverser.Admin> traversers = setA.iterator();
+                final Iterator<Traverser.Admin<S>> traversers = setA.iterator();
                 while (traversers.hasNext()) {
-                    final Traverser.Admin traverser = traversers.next();
+                    final Traverser.Admin<S> traverser = traversers.next();
                     if (counter > this.limit)
                         traversers.remove();
                     counter = counter + traverser.bulk();

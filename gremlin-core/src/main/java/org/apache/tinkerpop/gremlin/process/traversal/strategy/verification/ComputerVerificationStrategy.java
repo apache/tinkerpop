@@ -50,7 +50,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class, ProfileStep.class, ProfileSideEffectStep.class, ComputerResultStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class
     ));
 
     private ComputerVerificationStrategy() {

@@ -57,13 +57,14 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal().withComputer();//GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        final Traversal<?,?> traversal = g.V().out("created").group("m").by(T.label).pageRank(1.0).by("pageRank").by(__.inE()).times(1).in("created").group("m").by("pageRank").cap("m");
+        final Traversal<?,?> traversal = g.V().where(__.in("created").count().is(1l)).<String>values("name").profile("m");
 
-        System.out.println(traversal.asAdmin().clone().toString());
-        final Traversal<?,?> clone = traversal.asAdmin().clone();
-        clone.asAdmin().applyStrategies();
-        System.out.println(clone);
-        System.out.println(traversal.asAdmin().clone().toList());
+        //System.out.println(traversal.asAdmin().clone().toString());
+       // final Traversal<?,?> clone = traversal.asAdmin().clone();
+       // clone.asAdmin().applyStrategies();
+       // System.out.println(clone);
+        System.out.println(traversal.asAdmin().toList());
+        System.out.println(traversal.asAdmin().getSideEffects().get("m") + " ");
         //System.out.println(g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK).valueMap().toList());
     }
 

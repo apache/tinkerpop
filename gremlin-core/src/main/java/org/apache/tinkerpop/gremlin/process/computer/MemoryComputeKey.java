@@ -73,7 +73,7 @@ public final class MemoryComputeKey<A> implements Serializable {
         return object instanceof MemoryComputeKey && ((MemoryComputeKey) object).key.equals(this.key);
     }
 
-    public static <A> MemoryComputeKey of(final String key, final BinaryOperator<A> reducer, final boolean isBroadcast, final boolean isTransient) {
+    public static <A> MemoryComputeKey<A> of(final String key, final BinaryOperator<A> reducer, final boolean isBroadcast, final boolean isTransient) {
         return new MemoryComputeKey<>(key, reducer, isBroadcast, isTransient);
     }
 }

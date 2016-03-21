@@ -135,7 +135,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new RangeBiOperator(this.high), false, true);
+        return MemoryComputeKey.of(this.getId(), new RangeBiOperator<>(this.high), false, true);
     }
 
     @Override
@@ -174,7 +174,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     ////////////////
 
-    public static final class RangeBiOperator implements BinaryOperator<TraverserSet>, Serializable {
+    public static final class RangeBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
 
         private final long highRange;
 
@@ -187,7 +187,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         }
 
         @Override
-        public TraverserSet apply(final TraverserSet mutatingSeed, final TraverserSet set) {
+        public TraverserSet<S> apply(final TraverserSet<S> mutatingSeed, final TraverserSet<S> set) {
             if (mutatingSeed.size() < this.highRange)
                 mutatingSeed.addAll(set);
             return mutatingSeed;

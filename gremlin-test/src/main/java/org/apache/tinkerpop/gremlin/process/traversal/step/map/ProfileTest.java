@@ -21,8 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.*;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
@@ -44,7 +47,9 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -80,7 +85,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_out_out_profile_simple() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
@@ -102,7 +107,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_out_out_profile_simpleXmetrics_keyX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetrics_keyX();
         printTraversalForm(traversal);
@@ -232,7 +237,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
         printTraversalForm(traversal);
@@ -243,7 +248,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetrics_keyX();
         printTraversalForm(traversal);
@@ -290,7 +295,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_repeat_both_modern_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_repeatXbothX_timesX3X_profile();
         printTraversalForm(traversal);
@@ -301,7 +306,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_repeat_both_modern_profileXmetrics_keyX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_profileXmetrics_keyX();
         printTraversalForm(traversal);
@@ -382,7 +387,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileStrategyCallback() {
         final Traversal<Vertex, TraversalMetrics> t = get_g_V_out_out_profile();
         MockStep mockStep = new MockStep(t.asAdmin());
@@ -390,14 +395,14 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         TraversalMetrics traversalMetrics = t.next();
         assertTrue(mockStep.callbackCalled);
 
-        if (!TraversalHelper.onGraphComputer(t.asAdmin())) {
+        if (!onGraphComputer(t.asAdmin())) {
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileStrategyCallbackSideEffect() {
         final Traversal<Vertex, Vertex> t = get_g_V_out_out_profileXmetrics_keyX();
         MockStep mockStep = new MockStep(t.asAdmin());
@@ -405,7 +410,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         t.iterate();
         assertTrue(mockStep.callbackCalled);
 
-        if (!TraversalHelper.onGraphComputer(t.asAdmin())) {
+        if (!onGraphComputer(t.asAdmin())) {
             final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }
@@ -425,6 +430,10 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profileXmetrics_keyX();
         printTraversalForm(traversal);
         traversal.iterate();
+    }
+
+    private static boolean onGraphComputer(final Traversal.Admin<?, ?> traversal) {
+        return !TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, TraversalHelper.getRootTraversal(traversal)).isEmpty();
     }
 
     /**

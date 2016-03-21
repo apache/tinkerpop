@@ -60,8 +60,8 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
             ret = super.next();
             return ret;
         } finally {
-            if (ret == null) {
-                finalizeMetrics();
+            if (!this.onGraphComputer && ret == null) {
+                ((DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey)).setMetrics(this.getTraversal(), false);
             }
         }
     }
@@ -69,15 +69,17 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
     @Override
     public boolean hasNext() {
         boolean ret = super.hasNext();
-        if (!ret) {
-            finalizeMetrics();
+        if (!this.onGraphComputer && !ret) {
+            ((DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey)).setMetrics(this.getTraversal(), false);
         }
         return ret;
     }
 
-    private void finalizeMetrics() {
-        final DefaultTraversalMetrics tm = this.getTraversal().getSideEffects().get(this.sideEffectKey);
-        tm.setMetrics(traversal, onGraphComputer);
+    @Override
+    public DefaultTraversalMetrics generateFinalResult(final DefaultTraversalMetrics tm) {
+        if (this.onGraphComputer)
+            tm.setMetrics(this.getTraversal(), true);
+        return tm;
     }
 
     @Override
