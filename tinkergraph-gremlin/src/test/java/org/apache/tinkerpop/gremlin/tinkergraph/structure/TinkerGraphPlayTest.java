@@ -57,7 +57,8 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal().withComputer();//GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        final Traversal<?,?> traversal = g.V().where(__.in("created").count().is(1l)).<String>values("name").profile("m");
+        System.out.println(g.V().repeat(out()).times(2).profile("m").explain());
+        final Traversal<?,?> traversal = g.V().repeat(out().union(__.<Vertex>identity().as("a"),out())).times(1).count().profile("m");
 
         //System.out.println(traversal.asAdmin().clone().toString());
        // final Traversal<?,?> clone = traversal.asAdmin().clone();

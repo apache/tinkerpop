@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -53,6 +55,10 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
         for (int ii = 0; ii < numSteps; ii++) {
             // Get the original step
             Step step = steps.get(ii * 2);
+
+            if (step instanceof ComputerAwareStep.EndStep || step instanceof RepeatStep.RepeatEndStep) {
+                continue;
+            }
 
             // Do not inject profiling after ProfileSideEffectStep as this will be the last step on the root traversal.
             if (step instanceof ProfileSideEffectStep) {

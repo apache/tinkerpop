@@ -23,17 +23,19 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -56,36 +58,20 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     private ComputerVerificationStrategy() {
     }
 
-    private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
-        for (final Step step : traversal.getSteps()) {
-            if (step instanceof GraphComputing)
-                ((GraphComputing) step).onGraphComputer();
-            if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getGlobalChildren().forEach(ComputerVerificationStrategy::onlyGlobalChildren);
-            }
-        }
-    }
-
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
 
         if (!TraversalHelper.onGraphComputer(traversal) || traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
             return;
 
-        Step<?, ?> endStep = traversal.getEndStep();
-        while (endStep instanceof ComputerAwareStep.EndStep) {
-            endStep = endStep.getPreviousStep();
-        }
-
-        if (traversal.getParent() instanceof TraversalVertexProgramStep) {
-            if (traversal.getStartStep() instanceof GraphStep && traversal.getSteps().stream().filter(step -> step instanceof GraphStep).count() > 1)
-                throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
-
-            ComputerVerificationStrategy.onlyGlobalChildren(traversal);
+        if (traversal.getParent() instanceof TraversalVertexProgramStep &&
+                TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1) {
+            throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-
+            if (step instanceof GraphComputing)
+                ((GraphComputing) step).onGraphComputer();
             // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()

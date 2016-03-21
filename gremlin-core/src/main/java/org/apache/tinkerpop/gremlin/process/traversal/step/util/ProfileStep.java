@@ -49,20 +49,20 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
     public Traverser.Admin<S> next() {
         Traverser.Admin<S> ret = null;
         initializeIfNeeded();
-        metrics.start();
+        this.metrics.start();
         try {
             ret = super.next();
             return ret;
         } finally {
             if (ret != null) {
-                metrics.finish(ret.bulk());
-                if(this.onGraphComputer) {
+                this.metrics.finish(ret.bulk());
+                if (this.onGraphComputer) {
                     this.getTraversal().getSideEffects().add(this.getId(), metrics);
                     this.metrics = null;
                 }
             } else {
-                metrics.stop();
-                if(this.onGraphComputer) {
+                this.metrics.stop();
+                if (this.onGraphComputer) {
                     this.getTraversal().getSideEffects().add(this.getId(), metrics);
                     this.metrics = null;
                 }
@@ -102,6 +102,13 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
     @Override
     public void onGraphComputer() {
         this.onGraphComputer = true;
+    }
+
+    @Override
+    public ProfileStep<S> clone() {
+        final ProfileStep<S> clone = (ProfileStep<S>) super.clone();
+        clone.metrics = null;
+        return clone;
     }
 
     /////

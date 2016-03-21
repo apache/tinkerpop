@@ -215,53 +215,34 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
         long prevDur = 0;
         for (int ii = 0; ii < traversal.getSteps().size(); ii++) {
             Step step = (Step) traversal.getSteps().get(ii);
-            if (step instanceof ProfileStep) {
-                final MutableMetrics metrics = onGraphComputer ?
-                        traversal.getSideEffects().get(step.getId()) :
-                        ((ProfileStep) step).getMetrics();
-                if (!onGraphComputer && null != metrics) {
-                    // save duration before we adjust
-                    long tempDur = metrics.getDuration(TimeUnit.NANOSECONDS);
-                    // adjust duration
-                    metrics.setDuration(metrics.getDuration(TimeUnit.NANOSECONDS) - prevDur, TimeUnit.NANOSECONDS);
-                    prevDur = tempDur;
+            if (!(step instanceof ProfileStep)) {
+                continue;
+            }
+
+            final MutableMetrics metrics = onGraphComputer ?
+                    traversal.getSideEffects().get(step.getId()) :
+                    ((ProfileStep) step).getMetrics();
+
+            if (!onGraphComputer) {
+                // subtract upstream duration.
+                long durBeforeAdjustment = metrics.getDuration(TimeUnit.NANOSECONDS);
+                // adjust duration
+                metrics.setDuration(metrics.getDuration(TimeUnit.NANOSECONDS) - prevDur, TimeUnit.NANOSECONDS);
+                prevDur = durBeforeAdjustment;
+            }
+
+            if (parentMetrics != null) {
+                parentMetrics.addNested(metrics);
+            }
+
+            if (step.getPreviousStep() instanceof TraversalParent) {
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step.getPreviousStep()).getLocalChildren()) {
+                    handleNestedTraversals(t, metrics, false);
                 }
-                if (parentMetrics != null && null != metrics) {
-                    parentMetrics.addNested(metrics);
-                }
-            } else if (step instanceof TraversalParent) {
-                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
-                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), false);
-                }
-                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
-                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
+                for (Traversal.Admin<?, ?> t : ((TraversalParent) step.getPreviousStep()).getGlobalChildren()) {
+                    handleNestedTraversals(t, metrics, onGraphComputer);
                 }
             }
         }
     }
-
-   /* private void handleNestedTraversals(Traversal.Admin traversal, MutableMetrics parentMetrics, boolean onGraphComputer) {
-        for (int ii = 0; ii < traversal.getSteps().size(); ii++) {
-            Step step = (Step) traversal.getSteps().get(ii);
-            if (step instanceof ProfileStep) {
-                if (onGraphComputer) {
-                    if (parentMetrics != null) {
-                        parentMetrics.addNested(traversal.getSideEffects().get(step.getId()));
-                    }
-                } else {
-                    final MutableMetrics metrics = ((ProfileStep) step).getMetrics();
-                    if (parentMetrics != null && null != metrics) {
-                        parentMetrics.addNested(metrics);
-                    }
-                }
-            } else if (step instanceof TraversalParent) {
-                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
-                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), false);
-                }
-                for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
-                    handleNestedTraversals(t, ((ProfileStep) step.getNextStep()).getMetrics(), onGraphComputer);
-                }
-            }
-        }
-    }*/
 }
