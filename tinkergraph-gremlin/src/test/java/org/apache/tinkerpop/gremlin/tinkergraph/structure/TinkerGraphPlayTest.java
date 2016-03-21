@@ -51,14 +51,6 @@ public class TinkerGraphPlayTest {
     private static final Logger logger = LoggerFactory.getLogger(TinkerGraphPlayTest.class);
 
     @Test
-    public void testBob() {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal().withComputer();
-        final GraphTraversal<Vertex, Long> traversal = g.V().hasLabel("person").bothE().count().profile("m");
-        traversal.iterate();
-        System.out.println(traversal.asAdmin().getSideEffects().get("m").toString());
-    }
-
-    @Test
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();

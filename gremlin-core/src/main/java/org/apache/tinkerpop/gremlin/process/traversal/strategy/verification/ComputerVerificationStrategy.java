@@ -28,10 +28,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -48,7 +50,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, ProfileStep.class, ProfileSideEffectStep.class, ComputerResultStep.class
     ));
 
     private ComputerVerificationStrategy() {
