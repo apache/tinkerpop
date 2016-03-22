@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `StandardTraversalMetrics` to `DefaultTraversalMetrics` given the `DefaultXXX`-convention throughout. (*breaking*)
+* Bumped to Apache Hadoop 2.7.2.
 * Fixed a bug around profiling and nested traversals.
 * Added `gremlin.hadoop.defaultGraphComputer` so users can use `graph.compute()` with `HadoopGraph`.
 * Added `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` which can handled `XXXFormats` and `XXXRDDs`.
@@ -129,8 +131,6 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Renamed `StandardTraversalMetrics` to `DefaultTraversalMetrics` given the `DefaultXXX`-convention throughout. (*breaking*)
-* Bumped to Apache Hadoop 2.7.2.
 * Fixed a bug in `gremlin-driver` where a really fast call to get a `Future` to wait for a result might not register an error raised from the server.
 * Fixed a severe bug where `LP_O_OB_P_S_SE_SL_Traverser` was not registered with `GryoMapper`.
 * The future from `GremlinExecutor.eval()` is completed after the entire evaluation lifecyle is completed.
