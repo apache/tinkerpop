@@ -144,8 +144,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         // if results will be serialized out, don't save halted traversers across the cluster
         this.keepDistributedHaltedTraversers =
                 !(this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep || // if its just going to stream it out, don't distribute
-                        this.traversal.get().getParent().asStep().getNextStep().getNextStep() instanceof ComputerResultStep ||
-                        this.traversal.get().getParent().asStep().getNextStep() instanceof EmptyStep);  // same as above, but if using TraversalVertexProgramStep directly
+                        this.traversal.get().getParent().asStep().getNextStep() instanceof EmptyStep ||  // same as above, but if using TraversalVertexProgramStep directly
+                        (this.traversal.get().getParent().asStep().getNextStep() instanceof ProfileStep && // same as above, but needed for profiling
+                                this.traversal.get().getParent().asStep().getNextStep().getNextStep() instanceof ComputerResultStep));
         // register traversal side-effects in memory
         final TraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).getSideEffects();
         sideEffects.keys().forEach(key -> this.memoryComputeKeys.add(MemoryComputeKey.of(key, sideEffects.getReducer(key), true, false)));
