@@ -161,7 +161,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
         // register profile steps (TODO: try to hide this)
         for (final ProfileStep profileStep : TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get())) {
-            this.traversal.get().getSideEffects().register(profileStep.getId(), new MutableMetricsSupplier(profileStep.getPreviousStep().getId(), profileStep.getPreviousStep().toString()), ProfileStep.ProfileBiOperator.instance());
+            this.traversal.get().getSideEffects().register(profileStep.getId(), new MutableMetricsSupplier(profileStep.getPreviousStep()), ProfileStep.ProfileBiOperator.instance());
         }
         // register TraversalVertexProgram specific memory compute keys
         this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, this.keepDistributedHaltedTraversers)); // only keep if it will be preserved

@@ -54,11 +54,7 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
         final int numSteps = steps.size();
         for (int ii = 0; ii < numSteps; ii++) {
             // Get the original step
-            Step step = steps.get(ii * 2);
-
-            if (step instanceof ComputerAwareStep.EndStep || step instanceof RepeatStep.RepeatEndStep) {
-                continue;
-            }
+            final Step step = steps.get(ii * 2);
 
             // Do not inject profiling after ProfileSideEffectStep as this will be the last step on the root traversal.
             if (step instanceof ProfileSideEffectStep) {

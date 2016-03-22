@@ -19,6 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.util.function;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 
 import java.io.Serializable;
@@ -32,9 +35,12 @@ public final class MutableMetricsSupplier implements Supplier<MutableMetrics>, S
     private final String stepId;
     private final String stepString;
 
-    public MutableMetricsSupplier(final String stepId, final String stepString) {
-        this.stepId = stepId;
-        this.stepString = stepString;
+    public MutableMetricsSupplier(final Step<?, ?> previousStep) {
+        this.stepId = previousStep.getId();
+        this.stepString =
+                previousStep instanceof RepeatStep.RepeatEndStep || previousStep instanceof ComputerAwareStep.EndStep ?
+                        previousStep.toString() + " (profiling ignored)" :
+                        previousStep.toString();
     }
 
     @Override
