@@ -22,18 +22,19 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MemoryComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.function.BinaryOperator;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryComputing<MutableMetrics>, GraphComputing {
+public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryComputing<MutableMetrics> {  // pseudo GraphComputing but local traversals are "GraphComputing"
     private MutableMetrics metrics;
     private boolean onGraphComputer = false;
 
@@ -47,23 +48,23 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
 
     @Override
     public Traverser.Admin<S> next() {
-        Traverser.Admin<S> ret = null;
-        initializeIfNeeded();
+        Traverser.Admin<S> start = null;
+        this.initializeIfNeeded();
         this.metrics.start();
         try {
-            ret = super.next();
-            return ret;
+            start = super.next();
+            return start;
         } finally {
-            if (ret != null) {
-                this.metrics.finish(ret.bulk());
+            if (start != null) {
+                this.metrics.finish(start.bulk());
                 if (this.onGraphComputer) {
-                    this.getTraversal().getSideEffects().add(this.getId(), metrics);
+                    this.getTraversal().getSideEffects().add(this.getId(), this.metrics);
                     this.metrics = null;
                 }
             } else {
                 this.metrics.stop();
                 if (this.onGraphComputer) {
-                    this.getTraversal().getSideEffects().add(this.getId(), metrics);
+                    this.getTraversal().getSideEffects().add(this.getId(), this.metrics);
                     this.metrics = null;
                 }
             }
@@ -85,23 +86,18 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
     }
 
     private void initializeIfNeeded() {
-        if (metrics == null) {
-            metrics = new MutableMetrics(this.getPreviousStep().getId(), this.getPreviousStep().toString());
+        if (null == this.metrics) {
+            this.onGraphComputer = TraversalHelper.onGraphComputer(this.getTraversal());
+            this.metrics = new MutableMetrics(this.getPreviousStep().getId(), this.getPreviousStep().toString());
             final Step<?, S> previousStep = this.getPreviousStep();
-            if (previousStep instanceof Profiling) {
-                ((Profiling) previousStep).setMetrics(metrics);
-            }
+            if (previousStep instanceof Profiling)
+                ((Profiling) previousStep).setMetrics(this.metrics);
         }
     }
 
     @Override
     public MemoryComputeKey<MutableMetrics> getMemoryComputeKey() {
         return MemoryComputeKey.of(this.getId(), ProfileBiOperator.instance(), false, true);
-    }
-
-    @Override
-    public void onGraphComputer() {
-        this.onGraphComputer = true;
     }
 
     @Override
@@ -113,14 +109,14 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MemoryCo
 
     /////
 
-    public static class ProfileBiOperator implements BinaryOperator<MutableMetrics> {
+    public static class ProfileBiOperator implements BinaryOperator<MutableMetrics>, Serializable {
 
         private static final ProfileBiOperator INSTANCE = new ProfileBiOperator();
 
         @Override
-        public MutableMetrics apply(final MutableMetrics metrics, final MutableMetrics metrics2) {
-            metrics.aggregate(metrics2);
-            return metrics;
+        public MutableMetrics apply(final MutableMetrics metricsA, final MutableMetrics metricsB) {
+            metricsA.aggregate(metricsB);
+            return metricsA;
         }
 
         public static final ProfileBiOperator instance() {

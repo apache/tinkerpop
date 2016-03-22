@@ -108,6 +108,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             }
         }
         this.finalEndStep = this.getEndStep();
+        // finalize requirements
+        if (this.getParent() instanceof EmptyStep) {
+            this.requirements = null;
+            this.getTraverserRequirements();
+        }
         this.locked = true;
     }
 
@@ -116,7 +121,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         if (null == this.requirements) {
             // if (!this.locked) this.applyStrategies();
             this.requirements = new HashSet<>();
-            for (Step<?, ?> step : this.getSteps()) {
+            for (final Step<?, ?> step : this.getSteps()) {
                 this.requirements.addAll(step.getRequirements());
             }
             if (!this.getSideEffects().keys().isEmpty())

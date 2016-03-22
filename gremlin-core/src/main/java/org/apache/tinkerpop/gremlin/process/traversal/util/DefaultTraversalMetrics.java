@@ -237,7 +237,7 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
 
             if (step.getPreviousStep() instanceof TraversalParent) {
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step.getPreviousStep()).getLocalChildren()) {
-                    handleNestedTraversals(t, metrics, false);
+                    handleNestedTraversals(t, metrics, onGraphComputer);
                 }
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step.getPreviousStep()).getGlobalChildren()) {
                     handleNestedTraversals(t, metrics, onGraphComputer);

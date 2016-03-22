@@ -55,12 +55,12 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
 
     @Override
     public Traverser.Admin<S> next() {
-        Traverser.Admin<S> ret = null;
+        Traverser.Admin<S> start = null;
         try {
-            ret = super.next();
-            return ret;
+            start = super.next();
+            return start;
         } finally {
-            if (!this.onGraphComputer && ret == null) {
+            if (!this.onGraphComputer && start == null) {
                 ((DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey)).setMetrics(this.getTraversal(), false);
             }
         }
@@ -68,11 +68,11 @@ public final class ProfileSideEffectStep<S> extends SideEffectStep<S> implements
 
     @Override
     public boolean hasNext() {
-        boolean ret = super.hasNext();
-        if (!this.onGraphComputer && !ret) {
+        boolean start = super.hasNext();
+        if (!this.onGraphComputer && !start) {
             ((DefaultTraversalMetrics) this.getTraversal().getSideEffects().get(this.sideEffectKey)).setMetrics(this.getTraversal(), false);
         }
-        return ret;
+        return start;
     }
 
     @Override

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -34,8 +35,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -64,9 +65,11 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (!TraversalHelper.onGraphComputer(traversal) || traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
             return;
 
-        if (traversal.getParent() instanceof TraversalVertexProgramStep &&
-                TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1) {
-            throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
+        if (traversal.getParent() instanceof TraversalVertexProgramStep) {
+            if (TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1)
+                throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
+            if (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileStep.class, traversal) && TraversalHelper.getStepsOfAssignableClass(VertexProgramStep.class, TraversalHelper.getRootTraversal(traversal)).size() > 1)
+                throw new VerificationException("Profiling a multi-OLAP traversal is currently not supported", traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {

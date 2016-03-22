@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -57,15 +58,15 @@ public class TinkerGraphPlayTest {
         GraphTraversalSource g = graph.traversal().withComputer();//GraphTraversalSource.computer());
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        System.out.println(g.V().repeat(out()).times(2).profile("m").explain());
-        final Traversal<?,?> traversal = g.V().repeat(out().union(__.<Vertex>identity().as("a"),out())).times(1).count().profile("m");
-
+        //System.out.println(g.V().repeat(out()).times(2).profile("m").explain());
+        final Traversal<?,?> traversal = g.V().both().hasLabel("person").order().by("age", Order.decr).values("name");
+        //System.out.println(g.V().hasLabel("person").pageRank().by("rank").by(bothE()).values("rank").profile("m").explain());
         //System.out.println(traversal.asAdmin().clone().toString());
        // final Traversal<?,?> clone = traversal.asAdmin().clone();
        // clone.asAdmin().applyStrategies();
        // System.out.println(clone);
         System.out.println(traversal.asAdmin().toList());
-        System.out.println(traversal.asAdmin().getSideEffects().get("m") + " ");
+        //System.out.println(traversal.asAdmin().getSideEffects().get("m") + " ");
         //System.out.println(g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK).valueMap().toList());
     }
 
