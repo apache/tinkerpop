@@ -34,11 +34,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -93,7 +93,7 @@ public class GraphTraversalSource implements TraversalSource {
     //// CONFIGURATIONS
 
     @Override
-    public GraphTraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
+    public GraphTraversalSource withComputer(final SFunction<Graph, GraphComputer> graphComputerFunction) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(graphComputerFunction);
     }
 

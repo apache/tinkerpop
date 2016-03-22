@@ -44,6 +44,7 @@ import java.util.Iterator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest$Traversals",
         method = "g_V_hasId_compilationEquality",
@@ -84,6 +85,30 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest",
         method = "*",
         reason = "RemoteGraph does not support ProfileStep at this time")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        method = "*",
+        reason = "RemoteGraph does not support direct Graph.compute() access")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest",
+        method = "g_V_peerPressure",
+        reason = "RemoteGraph retrieves detached vertices")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest",
+        method = "g_V_pageRank",
+        reason = "RemoteGraph retrieves detached vertices")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",
+        method = "*",
+        reason = "RemoteGraph does not support direct Graph.compute() access")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgramTest",
+        method = "*",
+        reason = "RemoteGraph does not support direct Graph.compute() access")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgramTest",
+        method = "*",
+        reason = "RemoteGraph does not support direct Graph.compute() access")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
@@ -105,7 +130,7 @@ public class RemoteGraph implements Graph {
      */
     public static RemoteGraph open(final Configuration conf) {
         if (!conf.containsKey(GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS +"' key");
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS + "' key");
 
         final RemoteConnection remoteConnection;
         try {
@@ -128,7 +153,7 @@ public class RemoteGraph implements Graph {
      * {@link RemoteConnection#close()} method when the {@link #close()} method is called on this class.
      *
      * @param connection the {@link RemoteConnection} instance to use
-     * {@link RemoteConnection}
+     *                   {@link RemoteConnection}
      */
     public static RemoteGraph open(final RemoteConnection connection) {
         return new RemoteGraph(connection);
@@ -205,7 +230,8 @@ public class RemoteGraph implements Graph {
     public static class RemoteFeatures implements Features {
         static RemoteFeatures INSTANCE = new RemoteFeatures();
 
-        private RemoteFeatures() {}
+        private RemoteFeatures() {
+        }
 
         @Override
         public GraphFeatures graph() {
@@ -217,7 +243,8 @@ public class RemoteGraph implements Graph {
 
         static RemoteGraphFeatures INSTANCE = new RemoteGraphFeatures();
 
-        private RemoteGraphFeatures() {}
+        private RemoteGraphFeatures() {
+        }
 
         @Override
         public boolean supportsTransactions() {

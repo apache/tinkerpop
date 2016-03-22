@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
     private static final RemoteStrategy INSTANCE = new RemoteStrategy();

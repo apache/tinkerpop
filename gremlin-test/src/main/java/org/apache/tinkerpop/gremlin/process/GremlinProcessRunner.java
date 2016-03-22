@@ -36,6 +36,7 @@ import java.io.NotSerializableException;
  */
 public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
     private static final Logger logger = LoggerFactory.getLogger(GremlinProcessRunner.class);
+
     public GremlinProcessRunner(Class<?> klass) throws InitializationError {
         super(klass);
     }
@@ -73,6 +74,8 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
             if (ex instanceof VerificationException)
                 return true;
             else if (ex instanceof NotSerializableException)
+                return true;
+            else if (ex.getClass().getSimpleName().contains("ResponseException"))
                 return true;
             ex = ex.getCause();
         }

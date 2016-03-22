@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Vertex
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
+import org.apache.tinkerpop.gremlin.util.function.SFunction;
 
 import java.io.Serializable;
 import java.util.function.BinaryOperator;
@@ -96,7 +97,7 @@ public interface TraversalSource extends Cloneable {
      * @param graphComputerFunction a function to generate a graph computer from the graph
      * @return a new traversal source with updated strategies
      */
-    public default TraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
+    public default TraversalSource withComputer(final SFunction<Graph, GraphComputer> graphComputerFunction) {
         return this.withStrategies(new VertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
     }
 
