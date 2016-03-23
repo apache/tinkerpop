@@ -280,9 +280,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_knows_b__c_knows_bX() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__c_knows_bX();
-        printTraversalForm(traversal);
-
         try {
+            printTraversalForm(traversal);
             traversal.iterate();
             fail("Should have tossed an exception because match pattern is not solvable");
         } catch (Exception ex) {
@@ -307,9 +306,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX();
-        printTraversalForm(traversal);
-
         try {
+            printTraversalForm(traversal);
             traversal.iterate();
             fail("Should have tossed an exception because match pattern is not solvable");
         } catch (Exception ex) {
@@ -321,9 +319,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() throws Exception {
         final Traversal<Vertex, String> traversal = get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX();
-        printTraversalForm(traversal);
-
         try {
+            printTraversalForm(traversal);
             traversal.iterate();
             fail("Should have tossed an exception because match pattern is not solvable");
         } catch (Exception ex) {

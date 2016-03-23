@@ -227,6 +227,9 @@ public final class TraversalHelper {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, localChild));
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, globalChild));
                 }
@@ -282,6 +285,9 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    if (hasStepOfAssignableClassRecursively(stepClass, localChild)) return true;
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) return true;
                 }
@@ -307,6 +313,9 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    if (hasStepOfAssignableClassRecursively(stepClasses, localChild)) return true;
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) return true;
                 }
@@ -328,6 +337,9 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    if (anyStepRecursively(predicate, localChild)) return true;
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (anyStepRecursively(predicate, globalChild)) return true;
                 }

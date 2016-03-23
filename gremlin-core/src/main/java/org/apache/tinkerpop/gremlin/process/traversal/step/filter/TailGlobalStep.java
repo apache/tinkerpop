@@ -126,7 +126,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator(this.limit), false, true);
+        return MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator<>(this.limit), false, true);
     }
 
     @Override

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -31,13 +32,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileMarkerStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -54,20 +53,10 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class, ProfileMarkerStep.class, ProfileSideEffectStep.class, ComputerResultStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class
     ));
 
     private ComputerVerificationStrategy() {
-    }
-
-    private static void onlyGlobalChildren(final Traversal.Admin<?, ?> traversal) {
-        for (final Step step : traversal.getSteps()) {
-            if (step instanceof GraphComputing)
-                ((GraphComputing) step).onGraphComputer();
-            if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getGlobalChildren().forEach(ComputerVerificationStrategy::onlyGlobalChildren);
-            }
-        }
     }
 
     @Override
@@ -76,20 +65,16 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (!TraversalHelper.onGraphComputer(traversal) || traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
             return;
 
-        Step<?, ?> endStep = traversal.getEndStep();
-        while (endStep instanceof ComputerAwareStep.EndStep) {
-            endStep = endStep.getPreviousStep();
-        }
-
         if (traversal.getParent() instanceof TraversalVertexProgramStep) {
-            if (traversal.getStartStep() instanceof GraphStep && traversal.getSteps().stream().filter(step -> step instanceof GraphStep).count() > 1)
+            if (TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1)
                 throw new VerificationException("GraphComputer does not support mid-traversal V()/E()", traversal);
-
-            ComputerVerificationStrategy.onlyGlobalChildren(traversal);
+            if (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileStep.class, traversal) && TraversalHelper.getStepsOfAssignableClass(VertexProgramStep.class, TraversalHelper.getRootTraversal(traversal)).size() > 1)
+                throw new VerificationException("Profiling a multi-OLAP traversal is currently not supported", traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-
+            if (step instanceof GraphComputing)
+                ((GraphComputing) step).onGraphComputer();
             // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()

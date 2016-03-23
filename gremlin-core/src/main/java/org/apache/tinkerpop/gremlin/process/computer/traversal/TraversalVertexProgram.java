@@ -54,7 +54,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -73,6 +75,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.util.function.MutableMetricsSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -141,7 +144,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         // if results will be serialized out, don't save halted traversers across the cluster
         this.keepDistributedHaltedTraversers =
                 !(this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep || // if its just going to stream it out, don't distribute
-                        this.traversal.get().getParent().asStep().getNextStep() instanceof EmptyStep);  // same as above, but if using TraversalVertexProgramStep directly
+                        this.traversal.get().getParent().asStep().getNextStep() instanceof EmptyStep ||  // same as above, but if using TraversalVertexProgramStep directly
+                        (this.traversal.get().getParent().asStep().getNextStep() instanceof ProfileStep && // same as above, but needed for profiling
+                                this.traversal.get().getParent().asStep().getNextStep().getNextStep() instanceof ComputerResultStep));
         // register traversal side-effects in memory
         final TraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).getSideEffects();
         sideEffects.keys().forEach(key -> this.memoryComputeKeys.add(MemoryComputeKey.of(key, sideEffects.getReducer(key), true, false)));
@@ -154,6 +159,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         // register memory computing steps that use memory compute keys
         for (final MemoryComputing<?> memoryComputing : TraversalHelper.getStepsOfAssignableClassRecursively(MemoryComputing.class, this.traversal.get())) {
             this.memoryComputeKeys.add(memoryComputing.getMemoryComputeKey());
+        }
+        // register profile steps (TODO: try to hide this)
+        for (final ProfileStep profileStep : TraversalHelper.getStepsOfAssignableClassRecursively(ProfileStep.class, this.traversal.get())) {
+            this.traversal.get().getSideEffects().register(profileStep.getId(), new MutableMetricsSupplier(profileStep.getPreviousStep()), ProfileStep.ProfileBiOperator.instance());
         }
         // register TraversalVertexProgram specific memory compute keys
         this.memoryComputeKeys.add(MemoryComputeKey.of(HALTED_TRAVERSERS, Operator.addAll, false, this.keepDistributedHaltedTraversers)); // only keep if it will be preserved
@@ -170,6 +179,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void setup(final Memory memory) {
+        // memory is local
+        ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).setMemory(memory, false);
         memory.set(VOTE_TO_HALT, true);
         memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
@@ -177,7 +188,6 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         memory.set(COMPLETED_BARRIERS, new HashSet<>());
         final TraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).getSideEffects();
         sideEffects.keys().forEach(key -> memory.set(key, sideEffects.get(key)));
-        ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).setMemory(memory, false);
     }
 
     @Override
@@ -187,7 +197,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final Memory memory) {
-        // back the traversal side-effects by the global memory
+        // memory is distributed
         ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).setMemory(memory, true);
         // if a barrier was completed in another worker, it is also completed here (ensure distributed barries are synchronized)
         final Set<String> completedBarriers = memory.get(COMPLETED_BARRIERS);
@@ -235,10 +245,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public boolean terminate(final Memory memory) {
+        // memory is local
+        ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).setMemory(memory, false);
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         memory.set(VOTE_TO_HALT, true);
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
-        // put all side-effect memory into traversal side-effects
         if (voteToHalt) {
             final Set<String> mutatedMemoryKeys = memory.get(MUTATED_MEMORY_KEYS);
             memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
@@ -272,6 +283,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 }
                 // the result of a TraversalVertexProgram are the halted traversers
                 memory.set(HALTED_TRAVERSERS, haltedTraversers);
+                // finalize profile side-effect steps. (todo: try and hide this)
+                for (final ProfileSideEffectStep profileStep : TraversalHelper.getStepsOfAssignableClassRecursively(ProfileSideEffectStep.class, this.traversal.get())) {
+                    this.traversal.get().getSideEffects().set(profileStep.getSideEffectKey(), profileStep.generateFinalResult(this.traversal.get().getSideEffects().get(profileStep.getSideEffectKey())));
+                }
                 return true;
             }
         } else {

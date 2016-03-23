@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -121,7 +122,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
+        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.getTraversal())).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
                 TYPICAL_GLOBAL_REQUIREMENTS :
                 TYPICAL_LOCAL_REQUIREMENTS;
     }
@@ -141,7 +142,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
         protected Object map(final Traverser.Admin<S> traverser) {
             if (this.getTraversal().getEndStep() instanceof WhereEndStep)
                 ((WhereEndStep) this.getTraversal().getEndStep()).processStartTraverser(traverser);
-            else if (this.getTraversal().getEndStep() instanceof ProfileSideEffectStep && this.getTraversal().getEndStep().getPreviousStep() instanceof WhereEndStep)     // TOTAL SUCKY HACK!
+            else if (this.getTraversal().getEndStep() instanceof ProfileStep && this.getTraversal().getEndStep().getPreviousStep() instanceof WhereEndStep)     // TOTAL SUCKY HACK!
                 ((WhereEndStep) this.getTraversal().getEndStep().getPreviousStep()).processStartTraverser(traverser);
             return null == this.selectKey ? traverser.get() : this.getScopeValue(Pop.last, this.selectKey, traverser);
         }

@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -135,6 +136,6 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), Operator.addAll, false, true);
+        return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.addAll, false, true);
     }
 }

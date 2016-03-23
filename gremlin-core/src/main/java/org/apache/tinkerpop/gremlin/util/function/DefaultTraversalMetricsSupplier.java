@@ -16,27 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+package org.apache.tinkerpop.gremlin.util.function;
 
-import java.util.NoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
+
+import java.io.Serializable;
+import java.util.function.Supplier;
 
 /**
- * @author Bob Briody (http://bobbriody.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ProfileMarkerStep<S> extends AbstractStep<S, S> {
-    public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
+public final class DefaultTraversalMetricsSupplier implements Supplier<DefaultTraversalMetrics>, Serializable {
 
-    public ProfileMarkerStep(final Traversal.Admin traversal) {
-        super(traversal);
+    private static final DefaultTraversalMetricsSupplier INSTANCE = new DefaultTraversalMetricsSupplier();
+
+    private DefaultTraversalMetricsSupplier() {
     }
 
     @Override
-    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        return this.starts.next();
+    public DefaultTraversalMetrics get() {
+        return new DefaultTraversalMetrics();
+    }
+
+    public static DefaultTraversalMetricsSupplier instance() {
+        return INSTANCE;
     }
 }
