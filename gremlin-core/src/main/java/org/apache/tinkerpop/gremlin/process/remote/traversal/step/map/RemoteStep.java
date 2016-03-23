@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -40,11 +41,14 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     private Traversal.Admin<S, E> remoteTraversal;
     private Iterator<Traverser.Admin<E>> remoteIterator;
 
+    @SuppressWarnings("unchecked")
     public RemoteStep(final Traversal.Admin traversal, final Traversal<S, E> remoteTraversal,
                       final RemoteConnection remoteConnection) {
         super(traversal);
         this.remoteConnection = remoteConnection;
         this.remoteTraversal = remoteTraversal.asAdmin();
+        this.remoteTraversal.setSideEffects(this.getTraversal().getSideEffects());
+        this.remoteTraversal.setStrategies(this.getTraversal().getStrategies().clone().removeStrategies(RemoteStrategy.class));
     }
 
     @Override

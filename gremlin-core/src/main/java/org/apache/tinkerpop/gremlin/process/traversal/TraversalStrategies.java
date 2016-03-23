@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Matc
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -85,7 +84,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * @param strategyClasses the traversal strategies to remove by their class
      * @return the newly updated/sorted traversal strategies collection
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses);
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")

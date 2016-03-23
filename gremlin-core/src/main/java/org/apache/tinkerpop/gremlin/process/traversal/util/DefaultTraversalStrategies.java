@@ -38,11 +38,16 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
-        final Class<? extends TraversalStrategy>[] classes = new Class[strategies.length];
-        for (int i = 0; i < strategies.length; i++) {
-            classes[i] = strategies[i].getClass();
+        final List<TraversalStrategy<?>> toRemove = new ArrayList<>(strategies.length);
+        for (final TraversalStrategy<?> addStrategy : strategies) {
+            for (final TraversalStrategy<?> currentStrategy : this.traversalStrategies) {
+                if (addStrategy.getClass().equals(currentStrategy.getClass())) {
+                    toRemove.add(currentStrategy);
+                    break;
+                }
+            }
         }
-        this.removeStrategies(classes);  // todo: do a remove with no sort
+        this.traversalStrategies.removeAll(toRemove);
         Collections.addAll(this.traversalStrategies, strategies);
         this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;

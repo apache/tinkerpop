@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -50,6 +51,8 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
 
     private static final RemoteStrategy INSTANCE = new RemoteStrategy();
 
+    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
+
     private RemoteStrategy() {
     }
 
@@ -59,21 +62,20 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
 
     @Override
     public Set<Class<? extends DecorationStrategy>> applyPost() {
-        return Collections.singleton(VertexProgramStrategy.class);
+        return POSTS;
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // verifications to ensure unsupported steps do not exist in the traversal
-        if (TraversalHelper.hasStepOfAssignableClass(ProfileSideEffectStep.class, traversal))
-            throw new VerificationException("RemoteGraph does not support profiling", traversal);
-        if (TraversalHelper.hasStepOfAssignableClass(LambdaHolder.class, traversal))
-            throw new VerificationException("RemoteGraph does not support traversals containing lambdas", traversal);
-
+        // ensure that ids are not elements so they are serializable
         TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal).forEach(GraphStep::convertElementsToIds);
 
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
+
+        // verifications to ensure unsupported steps do not exist in the traversal
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(ProfileSideEffectStep.class, LambdaHolder.class), traversal))
+            throw new VerificationException("RemoteGraph does not support profiling nor lambdas", traversal);
 
         if (!(traversal.getGraph().orElse(EmptyGraph.instance()) instanceof RemoteGraph))
             throw new IllegalStateException("RemoteStrategy expects a RemoteGraph instance attached to the Traversal");
@@ -84,13 +86,11 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
 
         final Traversal.Admin<?, ?> remoteTraversal = new DefaultTraversal<>();
         TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) remoteTraversal);
-        remoteTraversal.setSideEffects(traversal.getSideEffects());
-        remoteTraversal.setStrategies(traversal.getStrategies());
-        final RemoteStep<?, ?> serverStep = new RemoteStep<>(traversal, remoteTraversal, remoteGraph.getConnection());
-        traversal.addStep(serverStep);
+        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteTraversal, remoteGraph.getConnection());
+        traversal.addStep(remoteStep);
 
-        assert traversal.getStartStep().equals(serverStep);
+        assert traversal.getStartStep().equals(remoteStep);
         assert traversal.getSteps().size() == 1;
-        assert traversal.getEndStep() == serverStep;
+        assert traversal.getEndStep() == remoteStep;
     }
 }
