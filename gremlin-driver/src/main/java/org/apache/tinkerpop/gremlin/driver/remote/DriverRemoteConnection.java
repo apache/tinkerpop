@@ -78,7 +78,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.conf = Optional.of(conf);
     }
 
-    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName){
+    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName) {
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         this.connectionGraphName = connectionGraphName;
         this.tryCloseCluster = tryCloseCluster;
@@ -158,14 +158,14 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public Iterator<Traverser> submit(final Traversal t) throws RemoteConnectionException {
+    public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
             if (attachElements) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new AttachingTraverserIterator(client.submit(t).iterator(), graph);
+                return new AttachingTraverserIterator<>(client.submit(t).iterator(), graph);
             } else {
-                return new TraverserIterator(client.submit(t).iterator());
+                return new TraverserIterator<>(client.submit(t).iterator());
             }
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
@@ -189,7 +189,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         return "DriverServerConnection-" + client.getCluster() + " [graph=" + connectionGraphName + "]";
     }
 
-    static class TraverserIterator implements Iterator<Traverser> {
+    static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {
 
         private Iterator<Result> inner;
 
@@ -203,12 +203,12 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
 
         @Override
-        public Traverser next() {
-            return (Traverser) inner.next().getObject();
+        public Traverser.Admin<E> next() {
+            return (Traverser.Admin<E>) inner.next().getObject();
         }
     }
 
-    static class AttachingTraverserIterator extends TraverserIterator {
+    static class AttachingTraverserIterator<E> extends TraverserIterator<E> {
         private final Graph graph;
 
         public AttachingTraverserIterator(final Iterator<Result> resultIterator, final Graph graph) {
@@ -217,10 +217,10 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
 
         @Override
-        public Traverser next() {
-            final Traverser traverser = super.next();
+        public Traverser.Admin<E> next() {
+            final Traverser.Admin<E> traverser = super.next();
             if (traverser.get() instanceof Attachable && !(traverser.get() instanceof Property))
-                traverser.asAdmin().set(((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
+                traverser.set((E) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
             return traverser;
         }
     }

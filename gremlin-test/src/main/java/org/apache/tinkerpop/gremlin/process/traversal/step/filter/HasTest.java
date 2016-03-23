@@ -382,7 +382,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb1);
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb2);
         // if providers don't have their own custom GraphStep, then ignore validating compilation equality
-        if (!traversala1.asAdmin().getStartStep().getClass().equals(GraphStep.class)) {
+        if ((traversala1.asAdmin().getStartStep() instanceof GraphStep) &&
+                !traversala1.asAdmin().getStartStep().getClass().equals(GraphStep.class)) {
             assertEquals(traversala1, traversala2);
             assertEquals(traversalb1, traversalb2);
             assertNotEquals(traversala1, traversalb1);

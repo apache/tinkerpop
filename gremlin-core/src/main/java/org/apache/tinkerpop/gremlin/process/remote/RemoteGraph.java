@@ -46,22 +46,6 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest$Traversals",
-        method = "g_V_hasId_compilationEquality",
-        reason = "The reason why this test does not pass is not clear at this time - could be only a temporary problem")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
-        method = "shouldLoadVerticesViaVertices",
-        reason = "RemoteGraph doesn't seem to serialize a native Vertex (e.g. TinkerVertex) within the Traversal")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
-        method = "shouldLoadEdgesViaEdges",
-        reason = "RemoteGraph doesn't seem to serialize a native Element (e.g. TinkerEdge) within the Traversal")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
-        method = "shouldThrowExceptionWhenIdsMixed",
-        reason = "RemoteGraph doesn't seem to serialize a native Element (e.g. TinkerEdge) within the Traversal")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "shouldNeverPropagateANoBulkTraverser",
         reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
@@ -82,21 +66,13 @@ import java.util.Iterator;
         method = "*",
         reason = "RemoteGraph does not support PartitionStrategy at this time")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest",
-        method = "*",
-        reason = "RemoteGraph does not support ProfileStep at this time")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "*",
-        reason = "RemoteGraph does not support direct Graph.compute() access")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest",
         method = "g_V_peerPressure",
-        reason = "RemoteGraph retrieves detached vertices")
+        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest",
         method = "g_V_pageRank",
-        reason = "RemoteGraph retrieves detached vertices")
+        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",
         method = "*",
@@ -109,16 +85,22 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgramTest",
         method = "*",
         reason = "RemoteGraph does not support direct Graph.compute() access")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
+        method = "*",
+        reason = "RemoteGraph does not support direct Graph.compute() access")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
 
-    public static final String GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remotegraph.remoteConnectionClass";
+    public static final String GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remoteGraph.remoteConnectionClass";
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
+    }
 
     private RemoteGraph(final RemoteConnection connection) {
         this.connection = connection;
-        TraversalStrategies.GlobalCache.registerStrategies(
-                RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
     }
 
     /**
@@ -173,17 +155,17 @@ public class RemoteGraph implements Graph {
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
     }
 
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
-        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
     }
 
     @Override
     public GraphComputer compute() throws IllegalArgumentException {
-        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
     }
 
     /**
@@ -204,17 +186,17 @@ public class RemoteGraph implements Graph {
 
     @Override
     public Transaction tx() {
-        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
     }
 
     @Override
     public Variables variables() {
-        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
     }
 
     @Override
     public Configuration configuration() {
-        throw new UnsupportedOperationException(String.format("ServerGraph is a proxy to %s - this method is not supported", connection));
+        throw new UnsupportedOperationException(String.format("RemoteGraph is a proxy to %s - this method is not supported", connection));
     }
 
     @Override

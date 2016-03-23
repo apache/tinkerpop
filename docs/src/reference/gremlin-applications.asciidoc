@@ -801,12 +801,12 @@ One way to create a `RemoteGraph` instance is by configuration file. Here is an 
 
 [source,properties]
 ----
-gremlin.remotegraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
-gremlin.remotegraph.driver.clusterFile=conf/remote-objects.yaml
-gremlin.remotegraph.driver.graphName=graph
+gremlin.remoteGraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
+gremlin.remoteGraph.driver.clusterFile=conf/remote-objects.yaml
+gremlin.remoteGraph.driver.graphName=graph
 ----
 
-The `gremlin.remotegraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
+The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
 `gremlin-core`. In this case, it points at the `gremlin-driver` implementation, called `DriverRemoteConnection`. The
 other setting, `gremlin.remotegraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
 provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
