@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
@@ -466,7 +467,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 final Traversal.Admin<?, ?> parentTraversal = new DefaultTraversal<>();
                 traversal.getGraph().ifPresent(parentTraversal::setGraph);
                 final TraversalStrategies strategies = traversal.getStrategies().clone();
-                strategies.addStrategies(ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Graph::compute));
+                strategies.addStrategies(ComputerVerificationStrategy.instance(), new VertexProgramStrategy(Computer.compute()));
                 parentTraversal.setStrategies(strategies);
                 traversal.setStrategies(strategies);
                 parentTraversal.setSideEffects(memoryTraversalSideEffects);

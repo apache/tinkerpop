@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
@@ -139,7 +140,7 @@ public final class StringFactory {
 
     public static String traversalSourceString(final TraversalSource traversalSource) {
         final String graphString = traversalSource.getGraph().toString();
-        final Optional<GraphComputer> optional = VertexProgramStrategy.getGraphComputer(traversalSource.getGraph(), traversalSource.getStrategies());
+        final Optional<Computer> optional = VertexProgramStrategy.getComputer(traversalSource.getStrategies());
         return traversalSource.getClass().getSimpleName().toLowerCase() + L_BRACKET + graphString + COMMA_SPACE + (optional.isPresent() ? optional.get().toString() : "standard") + R_BRACKET;
     }
 

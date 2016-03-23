@@ -808,10 +808,10 @@ gremlin.remoteGraph.driver.graphName=graph
 
 The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
 `gremlin-core`. In this case, it points at the `gremlin-driver` implementation, called `DriverRemoteConnection`. The
-other setting, `gremlin.remotegraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
+other setting, `gremlin.remoteGraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
 provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
 connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting Via Java">> section for more
-information on those classes and their usage. Finally, the `gremlin.remotegraph.driver.graphName` setting tells the
+information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.graphName` setting tells the
 `DriverRemoteConnection` the name of the graph in Gremlin Server to connect to.
 
 Gremlin Server needs to be running for this example to work. Use the following configuration:

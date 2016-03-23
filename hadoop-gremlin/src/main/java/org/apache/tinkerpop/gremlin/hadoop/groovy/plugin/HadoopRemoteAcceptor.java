@@ -96,7 +96,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             if (this.useSugar)
                 script = SugarLoader.class.getCanonicalName() + ".load()\n" + script;
             final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.traversalSource, "gremlin-groovy", script).create(this.hadoopGraph);
-            final ComputerResult computerResult = VertexProgramStrategy.getGraphComputer(this.hadoopGraph, this.traversalSource.getStrategies()).get().program(program).submit().get();
+            final ComputerResult computerResult = VertexProgramStrategy.getComputer(this.traversalSource.getStrategies()).get().apply(this.hadoopGraph).program(program).submit().get();
             this.shell.getInterp().getContext().setVariable(RESULT, computerResult);
             ///
             final Traversal.Admin<ComputerResult, ?> traversal = new DefaultTraversal<>(computerResult.graph());

@@ -37,7 +37,7 @@ public class TinkerGraphComputerProvider extends TinkerGraphProvider {
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.traversal().withComputer(Graph::compute) :
+                graph.traversal().withComputer() :
                 graph.traversal(GraphTraversalSource.computer());
     }
 }

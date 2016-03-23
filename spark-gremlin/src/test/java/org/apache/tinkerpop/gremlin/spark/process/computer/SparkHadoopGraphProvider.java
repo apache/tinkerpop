@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopGremlinPluginCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorageCheck;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
@@ -90,7 +91,7 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
         return RANDOM.nextBoolean() ?
                 RANDOM.nextBoolean() ?
                         graph.traversal(GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1))) :
-                        graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1)) :
+                        graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(RANDOM.nextInt(3) + 1)) :
                 RANDOM.nextBoolean() ?
                         graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)) :
                         graph.traversal().withComputer();

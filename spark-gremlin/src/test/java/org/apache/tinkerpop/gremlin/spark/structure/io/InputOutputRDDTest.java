@@ -53,7 +53,7 @@ public class InputOutputRDDTest extends AbstractSparkTest {
                 .result(GraphComputer.ResultGraph.NEW)
                 .persist(GraphComputer.Persist.EDGES)
                 .program(TraversalVertexProgram.build()
-                        .traversal(graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)),
+                        .traversal(graph.traversal().withComputer(SparkGraphComputer.class),
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
     }

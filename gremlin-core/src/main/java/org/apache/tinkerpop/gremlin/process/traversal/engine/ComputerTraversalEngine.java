@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -157,16 +158,14 @@ public final class ComputerTraversalEngine implements TraversalEngine {
          */
         @Deprecated
         public TraversalSource create(final GraphTraversalSource traversalSource) {
-            return traversalSource.withComputer(g -> {
-                GraphComputer graphComputer = (null == this.graphComputerClass) ? g.compute() : g.compute(this.graphComputerClass);
-                if (-1 != this.workers)
-                    graphComputer = graphComputer.workers(this.workers);
-                if (null != this.vertexFilter)
-                    graphComputer = graphComputer.vertices(this.vertexFilter);
-                if (null != this.edgeFilter)
-                    graphComputer = graphComputer.edges(this.edgeFilter);
-                return graphComputer;
-            });
+            Computer computer = null == this.graphComputerClass ? Computer.compute() : Computer.compute(this.graphComputerClass);
+            if (-1 != this.workers)
+                computer = computer.workers(this.workers);
+            if (null != this.vertexFilter)
+                computer = computer.vertices(this.vertexFilter);
+            if (null != this.edgeFilter)
+                computer = computer.edges(this.edgeFilter);
+            return traversalSource.withComputer(computer);
         }
     }
 }

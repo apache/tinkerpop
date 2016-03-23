@@ -93,7 +93,7 @@ public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
 
-    public static final String GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remoteGraph.remoteConnectionClass";
+    public static final String GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remoteGraph.remoteConnectionClass";
 
     static {
         TraversalStrategies.GlobalCache.registerStrategies(RemoteGraph.class, TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone().addStrategies(RemoteStrategy.instance()));
@@ -105,18 +105,18 @@ public class RemoteGraph implements Graph {
 
     /**
      * Creates a new {@link RemoteGraph} instance using the specified configuration, which allows {@link RemoteGraph}
-     * to be compliant with {@link GraphFactory}. Expects key for {@link #GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS}
+     * to be compliant with {@link GraphFactory}. Expects key for {@link #GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS}
      * as well as any configuration required by the underlying {@link RemoteConnection} which will be instantiated.
      * Note that the {@code Configuration} object is passed down without change to the creation of the
      * {@link RemoteConnection} instance.
      */
     public static RemoteGraph open(final Configuration conf) {
-        if (!conf.containsKey(GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS + "' key");
+        if (!conf.containsKey(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS + "' key");
 
         final RemoteConnection remoteConnection;
         try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTEGRAPH_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
             final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
             remoteConnection = ctor.newInstance(conf);
         } catch (Exception ex) {

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankMapReduce;
@@ -65,7 +66,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
-        assertEquals(6, graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)).V().out().count().next().longValue());
+        assertEquals(6, graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class)).V().out().count().next().longValue());
         ////////
         assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertEquals(0, Spark.getContext().getPersistentRDDs().size());
@@ -95,7 +96,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                     .result(GraphComputer.ResultGraph.NEW)
                     .persist(GraphComputer.Persist.EDGES)
                     .program(TraversalVertexProgram.build()
-                            .traversal(graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)),
+                            .traversal(graph.traversal().withComputer(SparkGraphComputer.class),
                                     "gremlin-groovy",
                                     "g.V().groupCount('m').by('name').out()").create(graph)).submit().get();
             ////////

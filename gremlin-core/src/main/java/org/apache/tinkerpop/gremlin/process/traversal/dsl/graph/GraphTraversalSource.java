@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -34,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.function.SFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,8 +93,8 @@ public class GraphTraversalSource implements TraversalSource {
     //// CONFIGURATIONS
 
     @Override
-    public GraphTraversalSource withComputer(final SFunction<Graph, GraphComputer> graphComputerFunction) {
-        return (GraphTraversalSource) TraversalSource.super.withComputer(graphComputerFunction);
+    public GraphTraversalSource withComputer(final Computer computer) {
+        return (GraphTraversalSource) TraversalSource.super.withComputer(computer);
     }
 
     @Override
