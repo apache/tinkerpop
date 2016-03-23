@@ -22,6 +22,17 @@
 set -e
 set -u
 
+DIR="$( cd -P "$( dirname "$0" )" && pwd )"
+SYSTEM_EXT_DIR="${DIR}/../ext"
+
+if [ ! -z "${JAVA_OPTIONS}" ]; then
+  USER_EXT_DIR=$(grep -o '\-Dtinkerpop.ext=\(\([^"][^ ]*\)\|\("[^"]*"\)\)' <<< "${JAVA_OPTIONS}" | cut -f2 -d '=' | xargs -0 echo)
+  if [ ! -z "${USER_EXT_DIR}" -a ! -d "${USER_EXT_DIR}" ]; then
+    mkdir -p "${USER_EXT_DIR}"
+    cp -R ${SYSTEM_EXT_DIR}/* ${USER_EXT_DIR}/
+  fi
+fi
+
 case `uname` in
   CYGWIN*)
     CP="`dirname $0`"/../config
@@ -38,9 +49,9 @@ while [ -h "$SOURCE" ]; do
   SOURCE="$(readlink "$SOURCE")"
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-CP=$CP:$( find -L "$DIR"/../ext -mindepth 1 -maxdepth 1 -type d | \
-          sort | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
+
+CP=$CP:$( find -L "${SYSTEM_EXT_DIR}" "${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" -mindepth 1 -maxdepth 1 -type d | \
+          sort -u | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
 
 export CLASSPATH="${CLASSPATH:-}:$CP"
 
@@ -87,9 +98,8 @@ done
 # Remove processed options from $@. Anything after -e is preserved by the break;; in the case
 shift $(( $OPTIND - 1 ))
 
-if [ -z "${JAVA_OPTIONS:-}" ]; then
-    JAVA_OPTIONS="-Dtinkerpop.ext=$DIR/../ext -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
-fi
+JAVA_OPTIONS="${JAVA_OPTIONS} -Dtinkerpop.ext=${USER_EXT_DIR:-${SYSTEM_EXT_DIR}} -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
+JAVA_OPTIONS=$(awk -vRS=' ' '!/^$/ {if (!x[$0]++) print}' <<< "${JAVA_OPTIONS}" | grep -v '^$' | paste -sd ' ' -)
 
 if [ -n "$SCRIPT_DEBUG" ]; then
     echo "CLASSPATH: $CLASSPATH"
