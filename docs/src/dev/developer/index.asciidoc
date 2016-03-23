@@ -26,6 +26,8 @@ technical information and other internal processes related to the project.
 
 include::contributing.asciidoc[]
 
+include::docker.asciidoc[]
+
 include::release.asciidoc[]
 
 include::administration.asciidoc[]
