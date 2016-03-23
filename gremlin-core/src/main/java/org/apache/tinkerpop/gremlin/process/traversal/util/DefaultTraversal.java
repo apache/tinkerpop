@@ -297,7 +297,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public boolean equals(final Object other) {
-        return other != null && other.getClass().equals(this.getClass()) && this.asAdmin().equals(((Traversal.Admin) other));
+        return other != null && other.getClass().equals(this.getClass()) && this.equals(((Traversal.Admin) other));
     }
 
     @Override
