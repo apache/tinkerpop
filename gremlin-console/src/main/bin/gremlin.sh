@@ -24,6 +24,7 @@ set -u
 
 DIR="$( cd -P "$( dirname "$0" )" && pwd )"
 SYSTEM_EXT_DIR="${DIR}/../ext"
+JAVA_OPTIONS=${JAVA_OPTIONS:-}
 
 if [ ! -z "${JAVA_OPTIONS}" ]; then
   USER_EXT_DIR=$(grep -o '\-Dtinkerpop.ext=\(\([^"][^ ]*\)\|\("[^"]*"\)\)' <<< "${JAVA_OPTIONS}" | cut -f2 -d '=' | xargs -0 echo)
