@@ -20,12 +20,11 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,19 +36,14 @@ public final class ProgramVertexProgramStep extends VertexProgramStep {
 
     public ProgramVertexProgramStep(final Traversal.Admin traversal, final VertexProgram vertexProgram) {
         super(traversal);
-        final MapConfiguration base = new MapConfiguration(Collections.emptyMap());
+        this.configuration = new HashMap<>();
+        final MapConfiguration base = new MapConfiguration(this.configuration);
         base.setDelimiterParsingDisabled(true);
         vertexProgram.storeState(base);
-        this.configuration = base.getMap();
     }
 
     @Override
     public VertexProgram generateProgram(final Graph graph) {
         return VertexProgram.createVertexProgram(graph, new MapConfiguration(this.configuration));
-    }
-
-    @Override
-    public GraphComputer generateComputer(final Graph graph) {
-        return this.computer.apply(graph);
     }
 }

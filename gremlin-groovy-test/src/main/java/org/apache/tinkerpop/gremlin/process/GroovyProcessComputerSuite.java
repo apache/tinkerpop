@@ -61,6 +61,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPageRankTes
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPeerPressureTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProfileTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovySelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovySumTest;
@@ -146,6 +147,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyPathTest.Traversals.class,
             GroovyPeerPressureTest.Traversals.class,
             GroovyProfileTest.Traversals.class,
+            GroovyProgramTest.Traversals.class,
             GroovyPropertiesTest.Traversals.class,
             GroovySelectTest.Traversals.class,
             GroovySumTest.Traversals.class,
