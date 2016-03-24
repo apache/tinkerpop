@@ -32,12 +32,12 @@ public abstract class GroovyProgramTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_programXpageRankX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.program(PageRankVertexProgram.build().create(graph))", "graph", graph)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.program(PageRankVertexProgram.build().create(graph))")
         }
 
         @Override
         public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').program(PageRankVertexProgram.build().property('rank').create(graph)).order.by('rank',incr).valueMap('name','rank')", "graph", graph);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').program(PageRankVertexProgram.build().property('rank').create(graph)).order.by('rank',incr).valueMap('name','rank')");
         }
     }
 }

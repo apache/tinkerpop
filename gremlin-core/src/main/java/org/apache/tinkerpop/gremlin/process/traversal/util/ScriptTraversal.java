@@ -57,6 +57,7 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
             final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngine);
             final Bindings engineBindings = engine.createBindings();
             engineBindings.put("g", this.factory.createTraversalSource(this.graph));
+            engineBindings.put("graph", this.graph);
             for (int i = 0; i < this.bindings.length; i = i + 2) {
                 engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
             }

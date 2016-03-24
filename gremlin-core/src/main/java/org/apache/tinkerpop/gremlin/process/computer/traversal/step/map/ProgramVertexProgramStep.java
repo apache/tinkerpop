@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public final class ProgramVertexProgramStep extends VertexProgramStep {
 
-    final Map<String, Object> configuration;
+    private final Map<String, Object> configuration;
 
     public ProgramVertexProgramStep(final Traversal.Admin traversal, final VertexProgram vertexProgram) {
         super(traversal);
