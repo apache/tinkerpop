@@ -23,8 +23,7 @@ package org.apache.tinkerpop.gremlin.console
  */
 class ConsoleFs {
     public static final String FILE_SEP = System.getProperty("file.separator")
-    private static final String CONSOLE_USER_HOME = System.getProperty("user.home", ".") + FILE_SEP + "gremlin-console" + FILE_SEP + "ext";
-    public static final CONSOLE_HOME_DIR = System.getProperty("tinkerpop.ext", CONSOLE_USER_HOME) + FILE_SEP
+    public static final CONSOLE_HOME_DIR = System.getProperty("tinkerpop.ext", "ext") + FILE_SEP
 
     public static final String PLUGIN_CONFIG_FILE = CONSOLE_HOME_DIR + "plugins.txt"
     public static final String HISTORY_FILE = System.getProperty("user.home", ".") + FILE_SEP + ".gremlin_groovy_history"
