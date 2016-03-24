@@ -233,5 +233,10 @@ public abstract class GroovySelectTest {
         public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a','b').out.as('c').path.select(keys)")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('knows').as('b').local(select('a', 'b').by('name')")
+        }
     }
 }

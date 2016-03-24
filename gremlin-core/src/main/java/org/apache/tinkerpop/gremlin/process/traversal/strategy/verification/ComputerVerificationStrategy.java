@@ -62,8 +62,10 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
 
-        if (!TraversalHelper.onGraphComputer(traversal) || traversal.getParent().isLocalChild(traversal))  // only process global children as local children are standard semantics
+        if (!TraversalHelper.onGraphComputer(traversal))
             return;
+
+        final boolean globalChild = traversal.getParent().isGlobalChild(traversal);
 
         if (traversal.getParent() instanceof TraversalVertexProgramStep) {
             if (TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1)
@@ -73,8 +75,11 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof GraphComputing)
+
+            // only global children are graph computing
+            if (globalChild && step instanceof GraphComputing)
                 ((GraphComputing) step).onGraphComputer();
+
             // you can not traverse past the local star graph with localChildren (e.g. by()-modulators).
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
