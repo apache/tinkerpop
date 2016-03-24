@@ -120,7 +120,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             traversal.addStep(new ComputerResultStep<>(traversal));
         }
         // all vertex computing steps needs the graph computer function
-        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.computer));
+        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setComputer(this.computer));
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {

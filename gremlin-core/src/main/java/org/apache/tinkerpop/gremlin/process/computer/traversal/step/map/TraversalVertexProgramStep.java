@@ -33,14 +33,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class TraversalVertexProgramStep extends VertexProgramStep implements TraversalParent {
 
-    private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
     public PureTraversal<?, ?> computerTraversal;
 
     public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<?, ?> computerTraversal) {
@@ -74,11 +72,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
-        this.graphComputerFunction = graphComputerFunction;
-    }
-
-    @Override
     public TraversalVertexProgram generateProgram(final Graph graph) {
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
         computerSpecificTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
@@ -92,8 +85,8 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
 
     @Override
     public GraphComputer generateComputer(final Graph graph) {
-        final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
-        if (!(this.getNextStep() instanceof ComputerResultStep))
+        final GraphComputer graphComputer = this.computer.apply(graph);
+        if (!this.isEndStep())
             graphComputer.persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
         return graphComputer;
     }

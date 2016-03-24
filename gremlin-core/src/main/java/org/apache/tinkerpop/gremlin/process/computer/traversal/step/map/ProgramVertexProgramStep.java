@@ -17,25 +17,39 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.computer.traversal.step;
+package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface VertexComputing {
+public final class ProgramVertexProgramStep extends VertexProgramStep {
 
-    public void setComputer(final Computer computer);
+    final Map<String, Object> configuration;
 
-    public Computer getComputer();
+    public ProgramVertexProgramStep(final Traversal.Admin traversal, final VertexProgram vertexProgram) {
+        super(traversal);
+        final MapConfiguration base = new MapConfiguration(Collections.emptyMap());
+        base.setDelimiterParsingDisabled(true);
+        vertexProgram.storeState(base);
+        this.configuration = base.getMap();
+    }
 
-    public VertexProgram generateProgram(final Graph graph);
+    @Override
+    public VertexProgram generateProgram(final Graph graph) {
+        return VertexProgram.createVertexProgram(graph, new MapConfiguration(this.configuration));
+    }
 
-    public default GraphComputer generateComputer(final Graph graph) {
-        return this.getComputer().apply(graph);
+    @Override
+    public GraphComputer generateComputer(final Graph graph) {
+        return this.computer.apply(graph);
     }
 }
