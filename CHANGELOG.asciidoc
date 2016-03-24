@@ -26,12 +26,14 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Computer` which is a builder for `GraphComputers` that is serializable.
+* `PersistedOutputRDD` now implements `PersistResultGraphAware` and thus, no more unneeded warnings when using it.
 * Renamed `StandardTraversalMetrics` to `DefaultTraversalMetrics` given the `DefaultXXX`-convention throughout. (*breaking*)
 * Bumped to Apache Hadoop 2.7.2.
 * Fixed a bug around profiling and nested traversals.
 * Added `gremlin.hadoop.defaultGraphComputer` so users can use `graph.compute()` with `HadoopGraph`.
 * Added `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` which can handled `XXXFormats` and `XXXRDDs`.
-* Deprecated `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and `gremlin.spark.graphOuputRDD`.
+* Deprecated `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and `gremlin.spark.graphOutputRDD`.
 * If no configuration is provided to `HadoopPools` it uses the default configuration to create a pool once and only once per JVM.
 * Implemented `RemoteGraph` and `RemoteConnection`.
 * Added validation to `GryoMapper` Kryo identifiers before construction to prevent accidental duplicates.
@@ -46,7 +48,7 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Added `OrderLimitStrategy` which will ensure that partitions are limited before being merged in OLAP.
 * `ComparatorHolder` now separates the traversal from the comparator. (*breaking*)
 * Bumped to Spark 1.6.1.
-* If no Spark serializer is provided then `GryoSerializer` is now the default, not `JavaSerializer`.
+* If no Spark serializer is provided then `GryoSerializer` is the default, not `JavaSerializer`.
 * Added `Operator.sumLong` as a optimized binary operator intended to be used by `Memory` reducers that know they are dealing with longs.
 * Traversers from `ComputerResultStep` are no longer attached. Attaching is only used in TinkerPop's test suite via `System.getProperties()`.
 * Fixed a `hashCode()`/`equals()` bug in `MessageScope`.
