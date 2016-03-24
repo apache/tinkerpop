@@ -236,7 +236,7 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('knows').as('b').local(select('a', 'b').by('name')")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('knows').as('b').local(select('a', 'b').by('name'))")
         }
     }
 }
