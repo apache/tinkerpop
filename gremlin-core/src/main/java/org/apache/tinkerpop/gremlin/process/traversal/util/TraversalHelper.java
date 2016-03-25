@@ -238,6 +238,15 @@ public final class TraversalHelper {
         return list;
     }
 
+    public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {
+        while (!(traversal.getParent() instanceof EmptyStep)) {
+            if (traversal.getParent().isLocalChild(traversal))
+                return false;
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return true;
+    }
+
     /**
      * Determine if the traversal has a step of a particular class.
      *
