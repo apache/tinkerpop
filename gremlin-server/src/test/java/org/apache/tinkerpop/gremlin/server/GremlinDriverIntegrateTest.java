@@ -130,6 +130,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldEventuallySucceedAfterMuchFailure() throws Exception {
+        final Cluster cluster = Cluster.build().addContactPoint("localhost").create();
+        final Client client = cluster.connect();
+
+        // tested independently to 10000 iterations but for speed, bumped back to 1000
+        IntStream.range(0,1000).forEach(i -> {
+            try {
+                client.submit("1 + 9 9").all().join().get(0).getInt();
+                fail("Should not have gone through due to syntax error");
+            } catch (Exception ex) {
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                assertThat(root, instanceOf(ResponseException.class));
+            }
+        });
+
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldEventuallySucceedOnSameServer() throws Exception {
         stopServer();
 
