@@ -240,7 +240,7 @@ public final class TraversalHelper {
 
     public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {
         while (!(traversal.getParent() instanceof EmptyStep)) {
-            if (traversal.getParent().isLocalChild(traversal))
+            if (traversal.getParent().getLocalChildren().contains(traversal))
                 return false;
             traversal = traversal.getParent().asStep().getTraversal();
         }
