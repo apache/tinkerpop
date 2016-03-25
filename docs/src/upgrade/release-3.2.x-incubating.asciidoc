@@ -48,6 +48,9 @@ gremlin.hadoop.jarsInDistributedCache=true
 gremlin.hadoop.defaultGraphComputer=org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
 ```
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1082[TINKERPOP-1082],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1222[TINKERPOP-1222]
+
 TraversalSideEffects Update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -69,12 +72,13 @@ but instead throws an `IllegalArgumentException`. While the `Optional` semantics
 directly return the side-effect value to reduce object creation costs and because all side-effects must be registered apriori,
 there is never a reason why an unknown side-effect key would be used. In short:
 
-```
+[source,java]
+----
 // change
 traversal.getSideEffects().get("m").get()
 // to
 traversal.getSideEffects().get("m")
-```
+----
 
 TraversalSideEffects Registration Requirement
 +++++++++++++++++++++++++++++++++++++++++++++
@@ -84,6 +88,8 @@ and as such, must be declared prior to the execution of the `TraversalVertexProg
 side-effect mid-traversal, it will fail. The traversal must use `GraphTraversalSource.withSideEffect()` to declare
 the side-effects it will use during its execution lifetime. If the user's traversals use standard side-effect Gremlin
 steps (e.g. `group("m")`), then no changes are required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
 
 TraversalSideEffects Add Requirement
 ++++++++++++++++++++++++++++++++++++
@@ -95,7 +101,8 @@ to do the merging and thus, the `Step` must do `sideEffect.add("mySet",1)`, wher
 Thus, the below will increment "a". If no operator was provided, then the operator is assumed `Operator.assign` and the
 final result of "a" would be 1. Note that `Traverser.sideEffects(key,value)` uses `TraversalSideEffect.add()`.
 
-```
+[source,groovy]
+----
 gremlin> traversal = g.withSideEffect('a',0,sum).V().out().sideEffect{it.sideEffects('a',1)}
 ==>v[3]
 ==>v[2]
@@ -114,9 +121,10 @@ gremlin> traversal = g.withSideEffect('a',0).V().out().sideEffect{it.sideEffects
 ==>v[3]
 gremlin> traversal.getSideEffects().get('a')
 ==>1
-```
+----
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192],
+https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
 
 ProfileStep Update and GraphTraversal API Change
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -245,6 +253,8 @@ is now
 });
 ```
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1219[TINKERPOP-1219]
+
 Step API Update
 +++++++++++++++
 
@@ -272,6 +282,8 @@ Providers that either have their own `ComparatorHolder` implementation or reason
 `ComparatorHolder` now returns `List<Pair<Traversal,Comparator>>`. This has greatly reduced the complexity of comparison-based
 steps like `OrderXXXStep`. However, its a breaking API change that is trivial to update to, just some awareness is required.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1209[TINKERPOP-1209]
+
 GraphComputer Semantics and API
 +++++++++++++++++++++++++++++++
 
@@ -290,7 +302,9 @@ only effects providers that have their own custom `GraphComputer` implementation
 
 * `VertexComputeKeys` can be marked transient and must be removed from the resultant `ComputerResult.graph()`.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164],
+link:https://issues.apache.org/jira/browse/TINKERPOP-951[TINKERPOP-951]
 
 Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above are implemented correctly.
 
@@ -329,6 +343,8 @@ which ensures the semantics of `GraphFilter` are handled correctly. For a "quick
 `GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
 execution.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-962[TINKERPOP-962]
+
 Job Chaining and GraphComputer
 ++++++++++++++++++++++++++++++
 
@@ -346,6 +362,8 @@ When chaining OLAP jobs together, if an OLAP job requires the compute keys of a 
 A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop. `GiraphGraphComputer` did not need an update as
 this feature was already naturally supported.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-570[TINKERPOP-570]
+
 Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -357,6 +375,8 @@ which will handle script-based processing of traversals. The entire `GroovyXXXTe
 The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
 `ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network moving forward.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1154[TINKERPOP-1154]
+
 ByModulating and Custom Steps
 +++++++++++++++++++++++++++++
 
@@ -366,6 +386,8 @@ needs to be implemented. Note that this method's body will most like be identica
 `TraversalParent.addLocalChild()`. It is recommended that the custom step not use `TraversalParent.addLocalChild()`
 as this method may be deprecated in a future release. Instead, barring any complex usages, simply rename the
 `CustomStep.addLocalChild(Traversal)` to `CustomStep.modulateBy(Traversal)`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1153[TINKERPOP-1153]
 
 TraversalEngine Deprecation and GraphProvider
 +++++++++++++++++++++++++++++++++++++++++++++
@@ -377,3 +399,4 @@ Unfortunately for graph system providers, a few tweaks to their implementation a
 * For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer(Traversal)`.
 * For custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-971[TINKERPOP-971]

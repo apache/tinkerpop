@@ -16,15 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step;
+
+package org.apache.tinkerpop.gremlin.util.function;
+
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
+
+import java.io.Serializable;
+import java.util.function.Supplier;
 
 /**
- * This is a marker interface stating that the {@link org.apache.tinkerpop.gremlin.process.traversal.Step} contains a
- * lambda/anonymous function. This information is typically used by a {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy}
- * in a verification stage as lambdas are not serializable and thus, can not be propagated over the network.
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface LambdaHolder {
+public final class DefaultTraversalMetricsSupplier implements Supplier<DefaultTraversalMetrics>, Serializable {
 
+    private static final DefaultTraversalMetricsSupplier INSTANCE = new DefaultTraversalMetricsSupplier();
+
+    private DefaultTraversalMetricsSupplier() {
+    }
+
+    @Override
+    public DefaultTraversalMetrics get() {
+        return new DefaultTraversalMetrics();
+    }
+
+    public static DefaultTraversalMetricsSupplier instance() {
+        return INSTANCE;
+    }
 }

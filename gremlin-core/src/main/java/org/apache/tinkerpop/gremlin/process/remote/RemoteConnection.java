@@ -28,7 +28,9 @@ import java.util.Iterator;
  * returning an {@link Iterator} of {@link Traverser} results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface RemoteConnection extends AutoCloseable {
-    public Iterator<Traverser> submit(final Traversal t)  throws RemoteConnectionException;
+
+    public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException;
 }

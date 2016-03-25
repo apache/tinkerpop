@@ -16,27 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+package org.apache.tinkerpop.gremlin.remote.process;
 
-import java.util.NoSuchElementException;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphComputerProvider;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.junit.runner.RunWith;
 
 /**
- * @author Bob Briody (http://bobbriody.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ProfileMarkerStep<S> extends AbstractStep<S, S> {
-    public static final String METRICS_KEY = Graph.Hidden.hide("metrics");
-
-    public ProfileMarkerStep(final Traversal.Admin traversal) {
-        super(traversal);
-    }
-
-    @Override
-    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        return this.starts.next();
-    }
+@RunWith(ProcessComputerSuite.class)
+@GraphProviderClass(provider = RemoteGraphComputerProvider.class, graph = RemoteGraph.class)
+public class RemoteGraphProcessComputerTest {
 }

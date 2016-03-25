@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -120,7 +121,9 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.dedupLabels == null ? this.getSelfAndChildRequirements(TraverserRequirement.BULK) : this.getSelfAndChildRequirements(TraverserRequirement.LABELED_PATH, TraverserRequirement.BULK);
+        return this.dedupLabels == null ?
+                this.getSelfAndChildRequirements(TraverserRequirement.BULK) :
+                this.getSelfAndChildRequirements(TraverserRequirement.LABELED_PATH, TraverserRequirement.BULK);
     }
 
     @Override
@@ -167,7 +170,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), Operator.addAll, false, true);
+        return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.addAll, false, true);
     }
 
 }

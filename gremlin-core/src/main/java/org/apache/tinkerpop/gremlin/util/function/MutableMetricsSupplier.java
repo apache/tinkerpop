@@ -19,7 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 
 import java.io.Serializable;
 import java.util.function.Supplier;
@@ -27,19 +30,21 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class StandardTraversalMetricsSupplier implements Supplier<StandardTraversalMetrics>, Serializable {
+public final class MutableMetricsSupplier implements Supplier<MutableMetrics>, Serializable {
 
-    private static final StandardTraversalMetricsSupplier INSTANCE = new StandardTraversalMetricsSupplier();
+    private final String stepId;
+    private final String stepString;
 
-    private StandardTraversalMetricsSupplier() {
+    public MutableMetricsSupplier(final Step<?, ?> previousStep) {
+        this.stepId = previousStep.getId();
+        this.stepString =
+                previousStep instanceof RepeatStep.RepeatEndStep || previousStep instanceof ComputerAwareStep.EndStep ?
+                        previousStep.toString() + " (profiling ignored)" :
+                        previousStep.toString();
     }
 
     @Override
-    public StandardTraversalMetrics get() {
-        return new StandardTraversalMetrics();
-    }
-
-    public static StandardTraversalMetricsSupplier instance() {
-        return INSTANCE;
+    public MutableMetrics get() {
+        return new MutableMetrics(this.stepId, this.stepString);
     }
 }

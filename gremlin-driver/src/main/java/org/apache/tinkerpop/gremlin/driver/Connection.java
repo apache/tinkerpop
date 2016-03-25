@@ -210,10 +210,11 @@ final class Connection {
                         // succeed. instead, the Connection gets replaced which destroys the dead channel on the
                         // client and allows a new one to be reconstructed.
                         readCompleted.exceptionally(t -> {
-                            if (t instanceof IOException)
+                            if (t instanceof IOException) {
                                 if (pool != null) pool.replaceConnection(thisConnection);
-                            else
+                            } else {
                                 thisConnection.returnToPool();
+                            }
 
                             // close was signaled in closeAsync() but there were pending messages at that time. attempt
                             // the shutdown if the returned result cleared up the last pending message

@@ -185,7 +185,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
                     return true;
                 }
             } else {
-                logger.warn("Unknown OutputFormat class and thus, persistence options are unknown -- assuming all options are possible");
+                logger.warn("No " + Constants.GREMLIN_HADOOP_GRAPH_WRITER + " property provided and thus, persistence options are unknown -- assuming all options are possible");
                 return true;
             }
         }

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -107,6 +108,6 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
 
     @Override
     public MemoryComputeKey<Boolean> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), Operator.and, false, true);
+        return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.and, false, true);
     }
 }

@@ -19,10 +19,11 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -31,36 +32,32 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class VertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
-    private transient Function<Graph, GraphComputer> graphComputerFunction;
+    private Computer computer;
 
     private VertexProgramStrategy() {
 
     }
 
-    public VertexProgramStrategy(final Function<Graph, GraphComputer> graphComputerFunction) {
-        this.graphComputerFunction = graphComputerFunction;
+    public VertexProgramStrategy(final Computer computer) {
+        this.computer = computer;
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.getParent() instanceof EmptyStep))   // VertexPrograms can only execute at the root level of a Traversal
+        // VertexPrograms can only execute at the root level of a Traversal and should not be applied locally prior to RemoteStrategy
+        if (!(traversal.getParent() instanceof EmptyStep) || traversal.getStrategies().toList().contains(RemoteStrategy.instance()))
             return;
 
         // back propagate as()-labels off of vertex computing steps
@@ -123,7 +120,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             traversal.addStep(new ComputerResultStep<>(traversal));
         }
         // all vertex computing steps needs the graph computer function
-        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.graphComputerFunction));
+        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.computer));
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {
@@ -146,8 +143,8 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         return EmptyStep.instance();
     }
 
-    public static Optional<GraphComputer> getGraphComputer(final Graph graph, final TraversalStrategies strategies) {
+    public static Optional<Computer> getComputer(final TraversalStrategies strategies) {
         final Optional<TraversalStrategy<?>> optional = strategies.toList().stream().filter(strategy -> strategy instanceof VertexProgramStrategy).findAny();
-        return optional.isPresent() ? Optional.of(((VertexProgramStrategy) optional.get()).graphComputerFunction.apply(graph)) : Optional.empty();
+        return optional.isPresent() ? Optional.of(((VertexProgramStrategy) optional.get()).computer) : Optional.empty();
     }
 }

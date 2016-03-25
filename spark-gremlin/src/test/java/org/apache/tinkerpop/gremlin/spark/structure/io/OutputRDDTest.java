@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
@@ -56,7 +57,7 @@ public class OutputRDDTest extends AbstractSparkTest {
                 .result(GraphComputer.ResultGraph.NEW)
                 .persist(GraphComputer.Persist.EDGES)
                 .program(TraversalVertexProgram.build()
-                        .traversal(graph.traversal().withComputer(g -> g.compute(SparkGraphComputer.class)),
+                        .traversal(graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class)),
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
     }

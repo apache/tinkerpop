@@ -23,13 +23,18 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -39,13 +44,17 @@ import java.util.Set;
  * execution and return results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
     private static final RemoteStrategy INSTANCE = new RemoteStrategy();
 
-    private RemoteStrategy() {}
+    private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(VertexProgramStrategy.class);
+
+    private RemoteStrategy() {
+    }
 
     public static RemoteStrategy instance() {
         return INSTANCE;
@@ -53,34 +62,35 @@ public class RemoteStrategy extends AbstractTraversalStrategy<TraversalStrategy.
 
     @Override
     public Set<Class<? extends DecorationStrategy>> applyPost() {
-        return Collections.singleton(VertexProgramStrategy.class);
+        return POSTS;
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        // ensure that ids are not elements so they are serializable
         TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal).forEach(GraphStep::convertElementsToIds);
 
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        if (!traversal.getGraph().isPresent())
-            throw new IllegalStateException("RemoteStrategy expects a RemoteGraph instance attached to the Traversal");
+        // verifications to ensure unsupported steps do not exist in the traversal
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(ProfileSideEffectStep.class, LambdaHolder.class), traversal))
+            throw new VerificationException("RemoteGraph does not support profiling nor lambdas", traversal);
 
-        if (!(traversal.getGraph().get() instanceof RemoteGraph))
+        if (!(traversal.getGraph().orElse(EmptyGraph.instance()) instanceof RemoteGraph))
             throw new IllegalStateException("RemoteStrategy expects a RemoteGraph instance attached to the Traversal");
 
         final RemoteGraph remoteGraph = (RemoteGraph) traversal.getGraph().get();
         if (null == remoteGraph.getConnection())
-            throw new IllegalStateException("RemoteStrategy expects RemoteGraph instance to have a RemoteConnection");
+            throw new IllegalStateException("RemoteStrategy expects the RemoteGraph instance to have a RemoteConnection");
 
-        final Traversal.Admin<?, ?> serverTraversal = new DefaultTraversal<>();
-        TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) serverTraversal);
-        serverTraversal.setSideEffects(traversal.getSideEffects());
-        final RemoteStep serverStep = new RemoteStep(traversal, serverTraversal, remoteGraph.getConnection());
-        traversal.addStep(serverStep);
+        final Traversal.Admin<?, ?> remoteTraversal = new DefaultTraversal<>();
+        TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) remoteTraversal);
+        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteTraversal, remoteGraph.getConnection());
+        traversal.addStep(remoteStep);
 
-        assert traversal.getStartStep().equals(serverStep);
+        assert traversal.getStartStep().equals(remoteStep);
         assert traversal.getSteps().size() == 1;
-        assert traversal.getEndStep() == serverStep;
+        assert traversal.getEndStep() == remoteStep;
     }
 }

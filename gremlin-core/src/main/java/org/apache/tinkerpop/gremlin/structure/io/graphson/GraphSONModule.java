@@ -42,6 +42,7 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 /**
  * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
@@ -78,7 +79,8 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(TraversalExplanation.class, new GraphSONSerializers.TraversalExplanationJacksonSerializer());
             addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
             addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
-
+            addSerializer(Tree.class, new GraphSONSerializers.TreeJacksonSerializer());
+           
             // java.util
             addSerializer(Map.Entry.class, new JavaUtilSerializers.MapEntryJacksonSerializer());
 

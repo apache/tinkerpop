@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -30,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -55,7 +55,7 @@ public class VertexProgramStrategyTest {
     @Test
     public void doTest() {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(new VertexProgramStrategy(Graph::compute), ComputerVerificationStrategy.instance());
+        strategies.addStrategies(new VertexProgramStrategy(Computer.compute()), ComputerVerificationStrategy.instance());
         original.asAdmin().setStrategies(strategies);
         original.asAdmin().applyStrategies();
         assertEquals(optimized, original);

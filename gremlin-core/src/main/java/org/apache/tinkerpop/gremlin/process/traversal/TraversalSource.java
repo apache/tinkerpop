@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
@@ -93,11 +94,11 @@ public interface TraversalSource extends Cloneable {
      * Add a {@link Function} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
      * This adds a {@link VertexProgramStrategy} to the strategies.
      *
-     * @param graphComputerFunction a function to generate a graph computer from the graph
+     * @param computer a builder to generate a graph computer from the graph
      * @return a new traversal source with updated strategies
      */
-    public default TraversalSource withComputer(final Function<Graph, GraphComputer> graphComputerFunction) {
-        return this.withStrategies(new VertexProgramStrategy(graphComputerFunction), ComputerVerificationStrategy.instance());
+    public default TraversalSource withComputer(final Computer computer) {
+        return this.withStrategies(new VertexProgramStrategy(computer), ComputerVerificationStrategy.instance());
     }
 
     /**
@@ -108,7 +109,7 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        return this.withComputer(graph -> graph.compute(graphComputerClass));
+        return this.withComputer(Computer.compute(graphComputerClass));
     }
 
     /**
@@ -118,7 +119,7 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer() {
-        return this.withComputer(Graph::compute);
+        return this.withComputer(Computer.compute());
     }
 
     /**

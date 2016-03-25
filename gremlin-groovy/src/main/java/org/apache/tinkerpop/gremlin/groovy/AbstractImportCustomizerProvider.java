@@ -62,6 +62,7 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -123,6 +124,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GFunction.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalMetrics.class.getPackage().getName() + DOT_STAR);
         staticImports.add(TimeUtil.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Computer.class.getCanonicalName() + DOT_STAR);
 
         // IO packages
         imports.add(GraphReader.class.getPackage().getName() + DOT_STAR);
