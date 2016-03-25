@@ -144,14 +144,4 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     public Set<TraverserRequirement> getRequirements() {
         return Collections.emptySet();
     }
-
-    @Override
-    public boolean isGlobalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return true;
-    }
-
-    @Override
-    public boolean isLocalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return false;
-    }
 }

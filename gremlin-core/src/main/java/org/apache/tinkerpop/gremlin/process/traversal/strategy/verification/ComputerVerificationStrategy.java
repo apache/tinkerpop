@@ -65,7 +65,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (!TraversalHelper.onGraphComputer(traversal))
             return;
 
-        final boolean globalChild = traversal.getParent().isGlobalChild(traversal);
+        final boolean globalChild = TraversalHelper.isGlobalChild(traversal);
 
         if (traversal.getParent() instanceof TraversalVertexProgramStep) {
             if (TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1)

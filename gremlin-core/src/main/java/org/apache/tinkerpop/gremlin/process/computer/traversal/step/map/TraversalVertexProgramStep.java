@@ -54,16 +54,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public boolean isGlobalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return true;
-    }
-
-    @Override
-    public boolean isLocalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return StringFactory.stepString(this, this.computerTraversal.get());
     }
