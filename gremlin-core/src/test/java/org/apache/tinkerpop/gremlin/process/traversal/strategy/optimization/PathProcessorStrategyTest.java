@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.junit.Test;
@@ -68,6 +69,8 @@ public class PathProcessorStrategyTest {
 
         return Arrays.asList(new Traversal[][]{
                 // select("a")
+                {__.select("a"), __.select("a")},
+                {__.select("a").by(), __.select("a").by()},
                 {__.select("a").by(__.outE().count()), __.select("a").map(__.outE().count())},
                 {__.select("a").by("name"), __.select("a").map(new ElementValueTraversal<>("name"))},
                 {__.select("a").out(), __.select("a").out()},
@@ -75,7 +78,12 @@ public class PathProcessorStrategyTest {
                 {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name"))},
                 {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name"))},
                 // select("a","b")
+                {__.select("a", "b"), __.select("a", "b")},
+                {__.select("a", "b").by(), __.select("a", "b").by()},
+                {__.select("a", "b", "c").by(), __.select("a", "b", "c").by()},
+                {__.select("a", "b").by().by("age"), __.select("b").map(new ElementValueTraversal<>("age")).as("b").select("a").map(new IdentityTraversal<>()).as("a").select(Pop.last, "a", "b")},
                 {__.select("a", "b").by("name").by("age"), __.select("b").map(new ElementValueTraversal<>("age")).as("b").select("a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b")},
+                {__.select("a", "b", "c").by("name").by(__.outE().count()), __.select("c").map(new ElementValueTraversal<>("name")).as("c").select("b").map(__.outE().count()).as("b").select("a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b", "c")},
                 {__.select(Pop.first, "a", "b").by("name").by("age"), __.select(Pop.first, "b").map(new ElementValueTraversal<>("age")).as("b").select(Pop.first, "a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b")},
                 {__.select(Pop.last, "a", "b").by("name").by("age"), __.select(Pop.last, "b").map(new ElementValueTraversal<>("age")).as("b").select(Pop.last, "a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b")},
                 {__.select(Pop.all, "a", "b").by("name").by("age"), __.select(Pop.all, "a", "b").by("name").by("age")},
