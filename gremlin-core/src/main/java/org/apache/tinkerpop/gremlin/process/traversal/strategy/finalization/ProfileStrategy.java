@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -42,7 +40,7 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.getStepsOfAssignableClassRecursively(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal).asAdmin()).isEmpty()) {
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal).asAdmin())) {
             prepTraversalForProfiling(traversal);
         }
     }
