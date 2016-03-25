@@ -123,7 +123,6 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * `GryoReader` does not materialize edges that will be filtered out and this greatly reduces GC and load times.
 * Created custom `Serializers` for `SparkGraphComputer` message-passing classes which reduce graph sizes significantly.
 
-
 TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 --------------------------------------------------
 
@@ -133,6 +132,10 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `gremlin-driver` where connections were not returning to the pool after many consecutive errors.
+* Fixed a bug where `tree()` did not serialize into GraphSON.
+* Bumped to SLF4j 1.7.19.
+* Bumped to Apache Hadoop 2.7.2.
 * Fixed a bug in `gremlin-driver` where a really fast call to get a `Future` to wait for a result might not register an error raised from the server.
 * Fixed a severe bug where `LP_O_OB_P_S_SE_SL_Traverser` was not registered with `GryoMapper`.
 * The future from `GremlinExecutor.eval()` is completed after the entire evaluation lifecyle is completed.
