@@ -70,7 +70,12 @@ public class TinkerGraphPlayTest {
         //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
         //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
         //System.out.println(g.V().repeat(out()).times(2).profile("m").explain());
-        final Traversal<?, ?> traversal = g.V().as("a").select("a").by("name");
+        final Traversal<?, ?> traversal = g.V().<Vertex>match(
+                as("a").in("sungBy").as("b"),
+                as("a").in("writtenBy").as("c"),
+                as("b").out("writtenBy").as("d"))
+                .where(as("c").out("sungBy").as("d"))
+                .where(as("d").has("name", "Garcia"));
         System.out.println(traversal.explain());
         //System.out.println(g.V().hasLabel("person").pageRank().by("rank").by(bothE()).values("rank").profile("m").explain());
         //System.out.println(traversal.asAdmin().clone().toString());

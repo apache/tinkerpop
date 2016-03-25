@@ -90,6 +90,12 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
+    public void removeLocalChild(final Traversal.Admin<?, ?> traversal) {
+        if (this.selectTraversal == traversal)
+            this.selectTraversal = null;
+    }
+
+    @Override
     public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
         this.selectTraversal = this.integrateChild(selectTraversal);
     }
@@ -104,6 +110,10 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public Set<String> getScopeKeys() {
         return Collections.singleton(this.selectKey);
+    }
+
+    public Pop getPop() {
+        return this.pop;
     }
 }
 
