@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
+import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
@@ -34,7 +35,6 @@ import org.codehaus.groovy.tools.shell.Groovysh
  */
 class InstallCommand extends CommandSupport {
 
-    private final static String fileSep = System.getProperty("file.separator")
     private final Mediator mediator
 
     public InstallCommand(final Groovysh shell, final Mediator mediator) {
@@ -46,7 +46,7 @@ class InstallCommand extends CommandSupport {
     def Object execute(final List<String> arguments) {
         final def artifact = createArtifact(arguments)
         try {
-            def grabber = new DependencyGrabber(shell.getInterp().getClassLoader(), System.getProperty("user.dir") + fileSep + "ext")
+            def grabber = new DependencyGrabber(shell.getInterp().getClassLoader(), ConsoleFs.CONSOLE_HOME_DIR)
             grabber.copyDependenciesToPath(artifact)
 
             final def dep = grabber.makeDepsMap(artifact)
