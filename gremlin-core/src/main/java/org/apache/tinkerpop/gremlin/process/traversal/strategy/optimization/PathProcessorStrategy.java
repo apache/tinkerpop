@@ -25,8 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
@@ -62,7 +60,8 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
             return;
 
         // process where(as("a").out()...)
-        final List<WhereTraversalStep> whereTraversalSteps = TraversalHelper.getStepsOfClass(WhereTraversalStep.class, traversal);
+        // todo: need to be able to drop path labels for this to work
+        /*final List<WhereTraversalStep> whereTraversalSteps = TraversalHelper.getStepsOfClass(WhereTraversalStep.class, traversal);
         for (final WhereTraversalStep<?> whereTraversalStep : whereTraversalSteps) {
             final Traversal.Admin<?, ?> localChild = whereTraversalStep.getLocalChildren().get(0);
             if ((localChild.getStartStep() instanceof WhereTraversalStep.WhereStartStep) &&
@@ -88,7 +87,7 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                     traversal.removeStep(whereTraversalStep);
                 }
             }
-        }
+        }*/
 
         // process select("a","b").by(...).by(...)
         final List<SelectStep> selectSteps = TraversalHelper.getStepsOfClass(SelectStep.class, traversal);
