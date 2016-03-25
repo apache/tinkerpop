@@ -977,6 +977,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#optional(Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> optional(final Traversal<?, B> optionalTraversal) {
+        return __.<A>start().optional(optionalTraversal);
+    }
+
+    /**
      * @see GraphTraversal#union(Traversal[])
      */
     public static <A, B> GraphTraversal<A, B> union(final Traversal<?, B>... traversals) {

@@ -1127,6 +1127,31 @@ g.V().repeat(both()).times(3).values('age').min()
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
 
+[[optional-step]]
+Optional Step
+~~~~~~~~~~~~~
+
+The `optional()`-step returns the result of the specified traversal if it yields a result else it returns the calling
+element, i.e. the `identity()`.
+
+[gremlin-groovy,modern]
+----
+g.V(2).optional(out('knows')) <1>
+g.V(2).optional(__.in('knows')) <2>
+----
+
+<1> vadas does not have an `out` "know" edge so vadas is returned.
+<2> vadas does have an `in` "knows" edge so marko is returned.
+
+`optional` is particularly useful for lifting entire graphs when used in conjunction with `path` or `tree`.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').optional(out("knows").optional(out("created"))).path() <1>
+----
+
+<1> Returns the paths of everybody followed by who they know followed by what they created.
+
 [[or-step]]
 Or Step
 ~~~~~~~

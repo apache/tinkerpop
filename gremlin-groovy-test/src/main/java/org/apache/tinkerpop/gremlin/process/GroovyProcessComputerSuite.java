@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyBranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyChooseTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyOptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyLocalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyRepeatTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyUnionTest;
@@ -106,6 +107,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             //branch
             GroovyBranchTest.Traversals.class,
             GroovyChooseTest.Traversals.class,
+            GroovyOptionalTest.Traversals.class,
             GroovyLocalTest.Traversals.class,
             GroovyRepeatTest.Traversals.class,
             GroovyUnionTest.Traversals.class,

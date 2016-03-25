@@ -1106,6 +1106,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.choose(__.filter(new PredicateTraverser<>(choosePredicate)), trueChoice, falseChoice);
     }
 
+    public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
+        return this.choose(optionalTraversal, optionalTraversal.asAdmin().clone(), __.identity());
+    }
+
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
         return this.asAdmin().addStep(new UnionStep(this.asAdmin(), Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
     }
