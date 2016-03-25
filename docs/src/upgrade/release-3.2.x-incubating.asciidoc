@@ -308,6 +308,11 @@ no longer exists and such post-reduction processing is handled by the reducing s
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
+Performance Tests
++++++++++++++++++
+The `ProcessPerformanceSuite` and `TraversalPerformanceTest` have been deprecated.  They are still available, but going forward,
+providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based performance test suit.
+
 Graph Processor Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
