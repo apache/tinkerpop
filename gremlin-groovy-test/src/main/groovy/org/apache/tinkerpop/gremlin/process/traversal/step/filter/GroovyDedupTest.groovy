@@ -80,5 +80,10 @@ public abstract class GroovyDedupTest {
         Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.outE.as('e').inV.as('v').select('e').order.by('weight', incr).select('v').values('name').dedup")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_both_dedup_byXoutE_countX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.dedup.by(outE().count).name")
+        }
     }
 }
