@@ -22,10 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
+public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, PathProcessor {
 
     protected Traversal.Admin<?, ?> whereTraversal;
     protected final Set<String> scopeKeys = new HashSet<>();
@@ -79,6 +79,13 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
             endStep.removeLabel(label);
             whereTraversal.addStep(new WhereEndStep(whereTraversal, label));
         }
+    }
+
+    @Override
+    public ElementRequirement getMaxRequirement() {
+        return TraversalHelper.getVariableLocations(this.whereTraversal).contains(Scoping.Variable.START) ?
+                PathProcessor.super.getMaxRequirement() :
+                ElementRequirement.ID;
     }
 
 

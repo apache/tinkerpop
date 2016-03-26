@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `DedupGlobalStep` can now handle star-bound `by()`-modulators and scoped keys on `GraphComputer`.
 * Added `Computer` which is a builder for `GraphComputers` that is serializable.
 * `PersistedOutputRDD` now implements `PersistResultGraphAware` and thus, no more unneeded warnings when using it.
 * Renamed `StandardTraversalMetrics` to `DefaultTraversalMetrics` given the `DefaultXXX`-convention throughout. (*breaking*)
@@ -132,6 +133,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Changed `DriverRemoteAcceptor` to send scripts as multi-line.
 * Fixed a bug in `gremlin-driver` where connections were not returning to the pool after many consecutive errors.
 * Fixed a bug where `tree()` did not serialize into GraphSON.
 * Bumped to SLF4j 1.7.19.

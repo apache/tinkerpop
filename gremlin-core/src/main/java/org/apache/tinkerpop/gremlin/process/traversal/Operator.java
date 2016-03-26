@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.BinaryOperator;
 
 /**
@@ -73,7 +74,10 @@ public enum Operator implements BinaryOperator<Object> {
     },
     addAll {
         public Object apply(final Object a, final Object b) {
-            ((Collection) a).addAll((Collection) b);
+            if (a instanceof Map)
+                ((Map) a).putAll((Map) b);
+            else
+                ((Collection) a).addAll((Collection) b);
             return a;
         }
     },
