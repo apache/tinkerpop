@@ -137,7 +137,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         else {
             try {
                 while (true) {
-                    this.nextEnd = (Traverser.Admin<E>) this.processNextStart();
+                    this.nextEnd = this.processNextStart();
                     if (null != this.nextEnd.get() && 0 != this.nextEnd.bulk())
                         return true;
                     else
