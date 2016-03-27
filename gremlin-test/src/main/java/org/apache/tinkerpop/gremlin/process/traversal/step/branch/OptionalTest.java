@@ -143,11 +143,7 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_optionalXout_optionalXoutXX_path() {
-            return this.g.V().optional(
-                    out().optional(
-                            out()
-                    )
-            ).path();
+            return this.g.V().optional(out().optional(out())).path();
         }
 
     }
