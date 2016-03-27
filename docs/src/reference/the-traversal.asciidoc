@@ -1131,7 +1131,7 @@ This works for `Collection` and `Number`-type objects. For any other object, a m
 Optional Step
 ~~~~~~~~~~~~~
 
-The `optional()`-step returns the result of the specified traversal if it yields a result else it returns the calling
+The `optional()`-step (*map*) returns the result of the specified traversal if it yields a result else it returns the calling
 element, i.e. the `identity()`.
 
 [gremlin-groovy,modern]
