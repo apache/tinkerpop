@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -31,9 +35,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -193,6 +200,29 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
         @Override
         public boolean supportsDirectObjects() {
             return false;
+        }
+    }
+
+    //////////
+
+    public static File copyDirectoryIfNonExistent(final FileSystem fileSystem, final String localDirectory) {
+        try {
+            final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
+            File file = new File(localDirectory);
+            if ((Boolean.valueOf(System.getProperty("is.testing", "false")) || !file.exists()) && fileSystem.exists(new Path(localDirectory)) && fileSystem.isDirectory(new Path(localDirectory))) {
+                final File tempDirectory = new File(System.getProperty("java.io.tmpdir") + "/" + hadoopGremlinLibsRemote);
+                if (!tempDirectory.exists()) assert tempDirectory.mkdir();
+                final String tempPath = tempDirectory.getAbsolutePath() + "/" + new File(localDirectory).getName();
+                final RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(new Path(localDirectory), false);
+                while (files.hasNext()) {
+                    final LocatedFileStatus f = files.next();
+                    fileSystem.copyToLocalFile(f.getPath(), new Path(tempPath + "/" + f.getPath().getName()));
+                }
+                return new File(tempPath);
+            } else
+                return file;
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }
