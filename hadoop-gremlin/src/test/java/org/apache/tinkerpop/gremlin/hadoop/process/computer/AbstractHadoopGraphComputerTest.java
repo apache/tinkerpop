@@ -68,7 +68,6 @@ public class AbstractHadoopGraphComputerTest {
         final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
         final File localDirectory = new File(System.getProperty("java.io.tmpdir") + "/" + hadoopGremlinLibsRemote);
         final File localLibDirectory = new File(localDirectory.getAbsolutePath() + "/testing");
-        assertTrue(localDirectory.exists());
         if (localLibDirectory.exists()) {
             Stream.of(localLibDirectory.listFiles()).forEach(File::delete);
             assertTrue(localLibDirectory.delete());
