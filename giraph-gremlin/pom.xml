@@ -25,6 +25,16 @@ limitations under the License.
     </parent>
     <artifactId>giraph-gremlin</artifactId>
     <name>Apache TinkerPop :: Giraph Gremlin</name>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<!-- see: https://github.com/apache/hadoop/pull/84 -->
+				<groupId>io.netty</groupId>
+				<artifactId>netty</artifactId>
+				<version>3.7.1.Final</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -238,7 +248,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.1
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.2
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>

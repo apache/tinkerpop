@@ -57,6 +57,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -406,6 +407,47 @@ public class GraphSONMessageSerializerV1d0Test {
         assertEquals(2, deserialized.getStatus().getAttributes().get("two"));
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
+    }
+    
+    @Test
+    public void shouldSerializeToJsonTree() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createClassic();
+        final GraphTraversalSource g = graph.traversal();
+        final Tree t = g.V(1).out().properties("name").tree().next();
+
+        
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(t).create());
+
+        final JsonNode json = mapper.readTree(results);
+
+        assertNotNull(json);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
+        assertNotNull(converted);
+        
+        //check the first object and it's properties
+        assertEquals(1, converted.get("1").get("key").get("id").asInt());
+        assertEquals("marko", converted.get("1").get("key").get("properties").get("name").get(0).get("value").asText());
+        
+        //check objects tree structure
+        //check Vertex property
+        assertEquals("vadas", converted.get("1")
+                                 .get("value")
+                                 .get("2")
+                                 .get("value")
+                                 .get("3").get("key").get("value").asText());
+        assertEquals("name", converted.get("1")
+                                 .get("value")
+                                 .get("2")
+                                 .get("value")
+                                 .get("3").get("key").get("label").asText());
+        
+        // check subitem
+        assertEquals("lop", converted.get("1")
+                                 .get("value")
+                                 .get("3")
+                                 .get("key")
+                                 .get("properties").get("name").get(0).get("value").asText());
     }
 
     private class FunObject {

@@ -48,7 +48,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 /**
  * GraphSON serializers for graph-based objects such as vertices, edges, properties, and paths. These serializers
@@ -257,7 +259,43 @@ final class GraphSONSerializers {
         }
 
     }
+    
+    final static class TreeJacksonSerializer extends StdSerializer<Tree> {
 
+        public TreeJacksonSerializer() {
+            super(Tree.class);
+        }
+
+        @Override
+        public void serialize(final Tree tree, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+            ser(tree, jsonGenerator, null);
+        }
+        
+        @Override
+        public void serializeWithType(final Tree tree, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
+                throws IOException, JsonProcessingException {
+            ser(tree, jsonGenerator, typeSerializer);
+        }
+        
+        private static void ser(final Tree tree, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer)
+                throws IOException {
+            jsonGenerator.writeStartObject(); 
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            
+            Set<Map.Entry<Element, Tree>> set = tree.entrySet();
+            for(Map.Entry<Element, Tree> entry : set)
+            {
+                jsonGenerator.writeObjectFieldStart(entry.getKey().id().toString());
+                if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+                jsonGenerator.writeObjectField(GraphSONTokens.KEY, entry.getKey()); 
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, entry.getValue());
+                jsonGenerator.writeEndObject();
+            }
+            jsonGenerator.writeEndObject();
+        }
+    } 
+    
     /**
      * Maps in the JVM can have {@link Object} as a key, but in JSON they must be a {@link String}.
      */
