@@ -106,7 +106,7 @@ supported:
 * build Java docs
 * build user docs
 
-A list of command line options is provided by `docker.build.sh --help`. The container will install,
+A list of command line options is provided by `docker/build.sh --help`. The container will install,
 configure and start all required dependencies, such as Hadoop.
 
 If the container is used to generate the user docs, it will start a web server and show the URL that
