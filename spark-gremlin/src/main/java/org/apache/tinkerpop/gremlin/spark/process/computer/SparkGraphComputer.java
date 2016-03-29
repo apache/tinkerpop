@@ -323,13 +323,18 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             if (null == hadoopGremlinLocalLibs)
                 this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
-                final String[] paths = hadoopGremlinLocalLibs.split(":");
-                for (final String path : paths) {
-                    final File file = new File(path);
-                    if (file.exists())
-                        Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
-                    else
-                        this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
+                try {
+                    final String[] paths = hadoopGremlinLocalLibs.split(":");
+                    final FileSystem fs = FileSystem.get(hadoopConfiguration);
+                    for (final String path : paths) {
+                        final File file = AbstractHadoopGraphComputer.copyDirectoryIfNonExistent(fs, path);
+                        if (file.exists())
+                            Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
+                        else
+                            this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             }
         }
