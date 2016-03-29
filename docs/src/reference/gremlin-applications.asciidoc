@@ -1326,6 +1326,9 @@ Regardless of the output, the metrics gathered are the same. Each metric is pref
 * `op.eval` - the number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
 (note that these time apply to both sessionless and in-session requests).
+* `op.traversal` - the number of `Traveral` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
+mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
+times.
 
 Best Practices
 ~~~~~~~~~~~~~~
