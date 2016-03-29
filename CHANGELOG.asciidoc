@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `gremlin-benchmark` module with JMH benchmarking base classes that can be used for further benchmark development.
 * `TraversalStrategies.GlobalCache` supports both `Graph` and `GraphComputer` strategy registrations.
 * `select("a","b").by("name").by("age")`-style traversals now work in OLAP with new `PathProcessorStrategy`.
 * `DedupGlobalStep` can now handle star-bound `by()`-modulators and scoped keys on `GraphComputer`.
