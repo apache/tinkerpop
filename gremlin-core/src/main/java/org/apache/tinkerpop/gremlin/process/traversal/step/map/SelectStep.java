@@ -61,7 +61,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     protected Map<String, E> map(final Traverser.Admin<S> traverser) {
-        final Map<String, E> bindings = new LinkedHashMap<>();
+        final Map<String, E> bindings = new LinkedHashMap<>(this.selectKeys.size(),1.0f);
         for (final String selectKey : this.selectKeys) {
             final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
             if (null != end)

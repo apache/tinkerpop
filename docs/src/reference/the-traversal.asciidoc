@@ -1376,6 +1376,24 @@ metrics = t.getSideEffects().get('metrics')
 
 For traversal compilation information, please see <<explain-step,`explain()`>>-step.
 
+[[project-step]]
+Project Step
+~~~~~~~~~~~~
+
+The `project()`-step (*map*) projects the current object into a `Map<String,Object>` keyed by provided labels. It is similar
+to <<select-step,`select()`>>-step, save that instead of retrieving and modulating historic traverser state, it modulates
+the current state of the traverser.
+
+[gremlin-groovy,modern]
+----
+g.V().out('created').
+  project('a','b').
+    by('name').
+    by(__.in('created').count()).
+  order().by(select('b'),decr).
+  select('a')
+----
+
 [[range-step]]
 Range Step
 ~~~~~~~~~~
