@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
@@ -27,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inci
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -177,40 +180,59 @@ public interface TraversalStrategies extends Serializable, Cloneable {
 
     public static final class GlobalCache {
 
-        private static final Map<Class<? extends Graph>, TraversalStrategies> CACHE = new HashMap<>();
+        private static final Map<Class<? extends Graph>, TraversalStrategies> GRAPH_CACHE = new HashMap<>();
+        private static final Map<Class<? extends GraphComputer>, TraversalStrategies> GRAPH_COMPUTER_CACHE = new HashMap<>();
 
         static {
-            final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
-            coreStrategies.addStrategies(
+            final TraversalStrategies graphStrategies = new DefaultTraversalStrategies();
+            graphStrategies.addStrategies(
                     ConnectiveStrategy.instance(),
-                    ProfileStrategy.instance(),
                     IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
                     FilterRankingStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
                     MatchPredicateStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
-                    OrderLimitStrategy.instance(),
+                    ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance());
-            //LambdaRestrictionStrategy.instance(),
-            //LazyBarrierStrategy.instance(),
 
-            CACHE.put(Graph.class, coreStrategies.clone());
-            CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
+            GRAPH_CACHE.put(Graph.class, graphStrategies);
+            GRAPH_CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
+
+            /////////////////////
+
+            final TraversalStrategies graphComputerStrategies = new DefaultTraversalStrategies();
+            graphComputerStrategies.addStrategies(
+                    OrderLimitStrategy.instance(),
+                    ComputerVerificationStrategy.instance());
+
+            GRAPH_COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);
         }
 
-        public static void registerStrategies(final Class<? extends Graph> graphClass, final TraversalStrategies traversalStrategies) {
-            CACHE.put(graphClass, traversalStrategies);
+        public static void registerStrategies(final Class graphOrGraphComputerClass, final TraversalStrategies traversalStrategies) {
+            if (Graph.class.isAssignableFrom(graphOrGraphComputerClass))
+                GRAPH_CACHE.put(graphOrGraphComputerClass, traversalStrategies);
+            else if (GraphComputer.class.isAssignableFrom(graphOrGraphComputerClass))
+                GRAPH_COMPUTER_CACHE.put(graphOrGraphComputerClass, traversalStrategies);
+            else
+                throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
         }
 
-        public static TraversalStrategies getStrategies(final Class<? extends Graph> graphClass) {
-            final TraversalStrategies traversalStrategies = CACHE.get(graphClass);
-            if (null == traversalStrategies) {
-                if (EmptyGraph.class.isAssignableFrom(graphClass))
-                    return CACHE.get(EmptyGraph.class);
-                else return CACHE.get(Graph.class);
+        public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
+            if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
+                final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrGraphComputerClass);
+                if (null == traversalStrategies) {
+                    if (EmptyGraph.class.isAssignableFrom(graphOrGraphComputerClass))
+                        return GRAPH_CACHE.get(EmptyGraph.class);
+                    else return GRAPH_CACHE.get(Graph.class);
+                }
+                return traversalStrategies;
+            } else if (GraphComputer.class.isAssignableFrom(graphOrGraphComputerClass)) {
+                final TraversalStrategies traversalStrategies = GRAPH_COMPUTER_CACHE.get(graphOrGraphComputerClass);
+                return null == traversalStrategies ? GRAPH_COMPUTER_CACHE.get(GraphComputer.class) : traversalStrategies;
+            } else {
+                throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
             }
-            return traversalStrategies;
         }
     }
 
