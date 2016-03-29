@@ -59,6 +59,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
@@ -77,6 +79,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
@@ -147,6 +150,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             OrderTest.Traversals.class,
             PathTest.Traversals.class,
             ProfileTest.Traversals.class,
+            ProjectTest.Traversals.class,
             PropertiesTest.Traversals.class,
             SelectTest.Traversals.class,
             VertexTest.Traversals.class,
@@ -225,6 +229,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             OrderTest.class,
             PathTest.class,
             PropertiesTest.class,
+            ProfileStep.class,
+            ProjectStep.class,
             SelectTest.class,
             VertexTest.class,
             UnfoldTest.class,

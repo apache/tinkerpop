@@ -145,9 +145,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
         final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
 
-        if (expectedList.size() > actualList.size()) {
-            return false;
-        } else if (actualList.size() > expectedList.size()) {
+        if (expectedList.size() != actualList.size()) {
             return false;
         }
 
