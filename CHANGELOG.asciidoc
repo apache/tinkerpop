@@ -41,16 +41,17 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Added `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` which can handled `XXXFormats` and `XXXRDDs`.
 * Deprecated `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and `gremlin.spark.graphOutputRDD`.
 * If no configuration is provided to `HadoopPools` it uses the default configuration to create a pool once and only once per JVM.
-* Implemented `RemoteGraph` and `RemoteConnection`.
+* Implemented `RemoteGraph`, `RemoteConnection`, and `RemoteStrategy`.
 * Added validation to `GryoMapper` Kryo identifiers before construction to prevent accidental duplicates.
 * Added `GraphStep.addIds()` which is useful for `HasContainer` "fold ins."
 * Added a static `GraphStep.processHashContainerIds()` helper for handling id-based `HasContainers`.
 * `GraphStep` implementations should have `g.V().hasId(x)` and `g.V(x)` compile equivalently. (*breaking*)
 * Optimized `ExpandableStepIterator` with simpler logic and increased the likelihood of bulking.
 * Optimized `TraverserRequirement` calculations.
+* `Step.addStart()` and `Step.addStarts()` now take `Traverser.Admin<S>` and `Traverser.Admin<S>`, respectively. (*breaking*)
 * `Step.processNextStart()` and `Step.next()` now return `Traverser.Admin<E>`. (*breaking*)
 * `Traversal.addTraverserRequirement()` method removed. (*breaking*)
-* Fixed an hash code bug in `OrderGlobalStep` and `OrderLocalStep`.
+* Fixed a `hashCode()` bug in `OrderGlobalStep` and `OrderLocalStep`.
 * Added `OrderLimitStrategy` which will ensure that partitions are limited before being merged in OLAP.
 * `ComparatorHolder` now separates the traversal from the comparator. (*breaking*)
 * Bumped to Spark 1.6.1.
@@ -94,6 +95,7 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Added `ScriptTraversal` which allows for delayed compilation of script-based `Traversals`.
 * Simplified `VertexProgram` implementations with a `PureTraversal`-model and deprecated `ConfigurationTraversal`.
 * Simplified script-based `Traversals` via `ScriptTraversal` and deprecated `TraversalScriptFunction` and `TraversalScriptHelper`.
+* Added `TimesModulating` interface which allows the `Step` to decicde how a `times()`-modulation should be handled.
 * Added `ByModulating` interface which allows the `Step` to decide how a `by()`-modulation should be handled. (*breaking*)
 * Simplified the `by()`-modulation patterns of `OrderGlobalStep` and `OrderLocalStep`.
 * Added `GraphComputerTest.shouldSupportPreExistingComputeKeys()` to ensure existing compute keys are "revived." (*breaking*)
@@ -123,9 +125,9 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Added `GraphFilterAware` interface to `hadoop-gremlin/` which tells the OLAP engine that the `InputFormat` handles filtering.
 * `GryoInputFormat` and `ScriptInputFormat` implement `GraphFilterAware`.
 * Added `GraphFilterInputFormat` which handles graph filtering for `InputFormats` that are not `GraphFilterAware`.
-* Fixed a bug in `TraversalUtil.isLocalStarGraph()` which allowed certain illegal traversals to pass.
-* Added `TraversalUtil.isLocalVertex()` to verify that the traversal does not touch incident edges.
-* `GraphReader` IO interface now has `Optional<Vertex> readGraph(InputStream, GraphFilter)`. Default `UnsupportOperationException`.
+* Fixed a bug in `TraversalHelper.isLocalStarGraph()` which allowed certain illegal traversals to pass.
+* Added `TraversalHelper.isLocalProperties()` to verify that the traversal does not touch incident edges.
+* `GraphReader` I/O interface now has `Optional<Vertex> readGraph(InputStream, GraphFilter)`. Default `UnsupportedOperationException`.
 * `GryoReader` does not materialize edges that will be filtered out and this greatly reduces GC and load times.
 * Created custom `Serializers` for `SparkGraphComputer` message-passing classes which reduce graph sizes significantly.
 

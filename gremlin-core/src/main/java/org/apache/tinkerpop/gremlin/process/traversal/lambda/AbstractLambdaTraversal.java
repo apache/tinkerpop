@@ -123,7 +123,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
     }
 
     @Override

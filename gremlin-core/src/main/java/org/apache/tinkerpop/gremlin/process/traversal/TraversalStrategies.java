@@ -222,12 +222,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
             if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
                 final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrGraphComputerClass);
-                if (null == traversalStrategies) {
-                    if (EmptyGraph.class.isAssignableFrom(graphOrGraphComputerClass))
-                        return GRAPH_CACHE.get(EmptyGraph.class);
-                    else return GRAPH_CACHE.get(Graph.class);
-                }
-                return traversalStrategies;
+                return null == traversalStrategies ? GRAPH_CACHE.get(Graph.class) : traversalStrategies;
             } else if (GraphComputer.class.isAssignableFrom(graphOrGraphComputerClass)) {
                 final TraversalStrategies traversalStrategies = GRAPH_COMPUTER_CACHE.get(graphOrGraphComputerClass);
                 return null == traversalStrategies ? GRAPH_COMPUTER_CACHE.get(GraphComputer.class) : traversalStrategies;

@@ -263,7 +263,8 @@ We had so many `Traverser.asAdmin()` and direct typecast calls throughout (espec
 it was deemed prudent to have `Step.processNextStart()` and `Step.next()` return `Traverser.Admin<E>`. Moreover it makes
 sense as this is internal logic where `Admins` are always needed. Providers with their own step definitions will simply
 need to change the method signatures of `Step.processNextStart()` and `Step.next()`. No logic update is required -- save
-that `asAdmin()` can be safely removed if used.
+that `asAdmin()` can be safely removed if used. Also, `Step.addStart()` and `Step.addStarts()` take `Traverser.Admin<S>`
+and `Iterator<Traverser.Admin<S>>`, respectively.
 
 Traversal API Update
 ++++++++++++++++++++

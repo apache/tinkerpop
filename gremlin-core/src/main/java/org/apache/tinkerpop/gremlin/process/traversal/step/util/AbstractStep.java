@@ -84,13 +84,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
-        this.starts.add((Iterator) starts);
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
+        this.starts.add(starts);
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
-        this.starts.add((Traverser.Admin<S>) start);
+    public void addStart(final Traverser.Admin<S> start) {
+        this.starts.add(start);
     }
 
     @Override
