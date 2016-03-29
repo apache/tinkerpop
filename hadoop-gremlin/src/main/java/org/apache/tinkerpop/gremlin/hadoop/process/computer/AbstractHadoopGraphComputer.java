@@ -210,13 +210,13 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
             final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
             File file = new File(localDirectory);
             if ((Boolean.valueOf(System.getProperty("is.testing", "false")) || !file.exists()) && fileSystem.exists(new Path(localDirectory)) && fileSystem.isDirectory(new Path(localDirectory))) {
-                final File tempDirectory = new File(System.getProperty("java.io.tmpdir") + "/" + hadoopGremlinLibsRemote);
+                final File tempDirectory = new File(System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + hadoopGremlinLibsRemote);
                 if (!tempDirectory.exists()) assert tempDirectory.mkdirs();
-                final String tempPath = tempDirectory.getAbsolutePath() + "/" + new File(localDirectory).getName();
+                final String tempPath = tempDirectory.getAbsolutePath() + System.getProperty("file.separator") + new File(localDirectory).getName();
                 final RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(new Path(localDirectory), false);
                 while (files.hasNext()) {
                     final LocatedFileStatus f = files.next();
-                    fileSystem.copyToLocalFile(f.getPath(), new Path(tempPath + "/" + f.getPath().getName()));
+                    fileSystem.copyToLocalFile(f.getPath(), new Path(tempPath + System.getProperty("file.separator") + f.getPath().getName()));
                 }
                 return new File(tempPath);
             } else
