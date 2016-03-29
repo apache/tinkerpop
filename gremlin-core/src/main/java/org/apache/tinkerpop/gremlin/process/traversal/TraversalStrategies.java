@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
@@ -28,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Iden
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
@@ -204,6 +204,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             final TraversalStrategies graphComputerStrategies = new DefaultTraversalStrategies();
             graphComputerStrategies.addStrategies(
                     OrderLimitStrategy.instance(),
+                    PathProcessorStrategy.instance(),
                     ComputerVerificationStrategy.instance());
 
             GRAPH_COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);

@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TraversalStrategies.GlobalCache` supports both `Graph` and `GraphComputer` strategy registrations.
+* `select("a","b").by("name").by("age")`-style traversals now work in OLAP with new `PathProcessorStrategy`.
 * `DedupGlobalStep` can now handle star-bound `by()`-modulators and scoped keys on `GraphComputer`.
 * Added `Computer` which is a builder for `GraphComputers` that is serializable.
 * `PersistedOutputRDD` now implements `PersistResultGraphAware` and thus, no more unneeded warnings when using it.

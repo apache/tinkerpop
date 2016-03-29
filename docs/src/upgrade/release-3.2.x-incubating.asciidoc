@@ -337,11 +337,15 @@ then there is no immediate action required on their part to remain TinkerPop-com
 their `InputFormat` or `InputRDD` implementation to be `GraphFilterAware` and handle the `GraphFilter` filtering at the disk/database
 level. It is advisable to do so in order to reduce OLAP load times and memory/GC usage.
 
-* If the graph system provider has their own `GraphComputer` implementation, then they will need to implement the two new methods
+* If the graph system provider has their own `GraphComputer` implementation, then they should implement the two new methods
 and ensure that `GraphFilter` is processed correctly. There is a new test case called `GraphComputerTest.shouldSupportGraphFilter()`
 which ensures the semantics of `GraphFilter` are handled correctly. For a "quick and easy" way to move forward, look to
 `GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
 execution.
+
+NOTE: To quickly move forward, the `GraphComputer` implementation can simply set `GraphComputer.Features.supportsGraphFilter()`
+to `false` and ensure that `GraphComputer.vertices()` and `GraphComputer.edges()` throws `GraphComputer.Exceptions.graphFilterNotSupported()`.
+This is not recommended as its best to support `GraphFilter`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-962[TINKERPOP-962]
 

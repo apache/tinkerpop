@@ -78,7 +78,8 @@ import static org.junit.Assert.fail;
         "vertexPropertiesCanNotBeUpdatedInMapReduce",
         "computerRequiresMoreWorkersThanSupported",
         "vertexFilterAccessesIncidentEdges",
-        "edgeFilterAccessesAdjacentVertices"
+        "edgeFilterAccessesAdjacentVertices",
+        "graphFilterNotSupported"
 })
 @ExceptionCoverage(exceptionClass = Memory.Exceptions.class, methods = {
         "memoryKeyCanNotBeEmpty",
@@ -125,6 +126,22 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         } catch (Exception ex) {
             validateException(Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(BadGraphComputer.class), ex);
         }
+        if (!new BadGraphComputer().features().supportsGraphFilter()) {
+            try {
+                new BadGraphComputer().vertices(__.hasLabel("software"));
+                fail("Should throw an unsupported operation exception");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
+            }
+            try {
+                new BadGraphComputer().edges(__.bothE());
+                fail("Should throw an unsupported operation exception");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
+            }
+        } else {
+            fail("Should not support graph filter: " + BadGraphComputer.class);
+        }
     }
 
     public static class BadGraphComputer implements GraphComputer {
@@ -156,12 +173,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
-            return null;
+            throw GraphComputer.Exceptions.graphFilterNotSupported();
         }
 
         @Override
         public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
-            return null;
+            throw GraphComputer.Exceptions.graphFilterNotSupported();
         }
 
         @Override
@@ -174,6 +191,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             return null;
         }
 
+        public GraphComputer.Features features() {
+            return new Features() {
+                @Override
+                public boolean supportsGraphFilter() {
+                    return false;
+                }
+            };
+        }
     }
     /////////////////////////////////////////////
 
@@ -1554,6 +1579,22 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldSupportGraphFilter() throws Exception {
+        // if the graph computer does not support graph filter, then make sure its exception handling is correct
+        if (!graphProvider.getGraphComputer(graph).features().supportsGraphFilter()) {
+            try {
+                graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software"));
+                fail("Should throw an unsupported operation exception");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
+            }
+            try {
+                graphProvider.getGraphComputer(graph).edges(__.<Vertex>outE().limit(10));
+                fail("Should throw an unsupported operation exception");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
+            }
+            return;
+        }
         /// VERTEX PROGRAM
         graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
         graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).submit().get();
