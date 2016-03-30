@@ -132,6 +132,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Provided Docker script that allows the execution of several build tasks within a Docker container.
+* Changed `DriverRemoteAcceptor` to send scripts as multi-line.
 * Fixed a bug in `gremlin-driver` where connections were not returning to the pool after many consecutive errors.
 * Fixed a bug where `tree()` did not serialize into GraphSON.
 * Bumped to SLF4j 1.7.19.

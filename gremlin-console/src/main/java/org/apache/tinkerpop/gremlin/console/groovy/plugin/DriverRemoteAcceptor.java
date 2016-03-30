@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
+import org.codehaus.groovy.tools.shell.Parser;
 
 import javax.security.sasl.SaslException;
 import java.io.FileNotFoundException;
@@ -137,7 +138,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object submit(final List<String> args) throws RemoteException {
-        final String line = RemoteAcceptor.getScript(String.join(" ", args), this.shell);
+        final String line = RemoteAcceptor.getScript(String.join(Parser.getNEWLINE(), args), this.shell);
 
         try {
             final List<Result> resultSet = send(line);

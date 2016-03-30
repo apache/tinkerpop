@@ -469,7 +469,8 @@ The Gremlin Server `:remote config` command for the driver has the following con
 !`reset` !Clears any aliases that were supplied in previous configurations of the remote.
 !`show` !Shows the current set of aliases which is returned as a `Map`
 !=========================================================
-|timeout |Specifies the length of time in milliseconds a will wait for a response from the server.
+|timeout |Specifies the length of time in milliseconds a will wait for a response from the server. Specify "max" to
+essentially have no timeout.
 |=========================================================
 
 [[console-aliases]]
@@ -1235,8 +1236,8 @@ Gremlin Server can accept requests and return results using different serializat
 serialization is configured by the `serializers` setting described in the table above.  Note that some serializers
 have additional configuration options as defined by the `serializers[X].config` setting.  The `config` setting is a
 `Map` where the keys and values get passed to the serializer at its initialization.  The available and/or expected
- keys are dependent on the serializer being used.  Gremlin Server comes packaged with two different serializers:
- GraphSON and Gryo.
+keys are dependent on the serializer being used.  Gremlin Server comes packaged with two different serializers:
+GraphSON and Gryo.
 
 GraphSON
 ++++++++
@@ -1302,6 +1303,29 @@ Those configuring or implementing a `Supplier<ClassResolver>` should consider th
 important to use cases where server types need to be coerced to client types (i.e. a type is available on the server
 but not on the client).  Implementations should typically instantiate `ClassResolver` implementations that are
 extensions of the `GryoClassResolver` as this class is important to most serialization tasks in TinkerPop.
+
+Metrics
+^^^^^^^
+
+Gremlin Server produces metrics about its operations that can yield some insight into how it is performing. These
+metrics are exposed in a variety of ways:
+
+* Directly to the console where Gremlin Server is running
+* CSV file
+* link:http://ganglia.info/[Ganglia]
+* link:http://graphite.wikidot.com/[Graphite]
+* link:http://www.slf4j.org/[SLF4j]
+* link:https://en.wikipedia.org/wiki/Java_Management_Extensions[JMX]
+
+The configuration of each of these outputs is described in the Gremlin Server <<_configuring_2, Configuring>> section.
+Regardless of the output, the metrics gathered are the same. Each metric is prefixed with
+`org.apache.tinkerpop.gremlin.server.GremlinServer` and the following metrics are reported:
+
+* `sessions` - the number of sessions open at the time the metric was last measured.
+* `errors` - the number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
+* `op.eval` - the number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
+and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
+(note that these time apply to both sessionless and in-session requests).
 
 Best Practices
 ~~~~~~~~~~~~~~

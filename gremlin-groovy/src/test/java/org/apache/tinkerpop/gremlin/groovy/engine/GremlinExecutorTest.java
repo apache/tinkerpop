@@ -271,6 +271,35 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    public void shouldTimeoutSleepingScriptViaOverrideOnLifeCycle() throws Exception {
+        final AtomicBoolean successCalled = new AtomicBoolean(false);
+        final AtomicBoolean failureCalled = new AtomicBoolean(false);
+
+        final CountDownLatch timeOutCount = new CountDownLatch(1);
+
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .scriptEvaluationTimeout(10000)
+                .afterFailure((b, e) -> failureCalled.set(true))
+                .afterSuccess((b) -> successCalled.set(true))
+                .afterTimeout((b) -> timeOutCount.countDown()).create();
+        try {
+            final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
+                    .scriptEvaluationTimeoutOverride(250L).create();
+            gremlinExecutor.eval("Thread.sleep(1000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
+            fail("This script should have timed out with an exception");
+        } catch (Exception ex) {
+            assertEquals(TimeoutException.class, ex.getCause().getClass());
+        }
+
+        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
+
+        assertFalse(successCalled.get());
+        assertFalse(failureCalled.get());
+        assertEquals(0, timeOutCount.getCount());
+        gremlinExecutor.close();
+    }
+
+    @Test
     public void shouldOverrideBeforeEval() throws Exception {
         final AtomicInteger called = new AtomicInteger(0);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().beforeEval(b -> called.set(1)).create();
