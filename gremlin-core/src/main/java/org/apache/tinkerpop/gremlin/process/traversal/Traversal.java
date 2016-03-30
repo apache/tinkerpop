@@ -32,7 +32,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -230,23 +239,23 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public interface Admin<S, E> extends Traversal<S, E> {
 
         /**
-         * Add an iterator of {@link Traverser} objects to the head/start of the traversal.
+         * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal.
          * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
          *
          * @param starts an iterators of traversers
          */
-        public default void addStarts(final Iterator<Traverser<S>> starts) {
+        public default void addStarts(final Iterator<Traverser.Admin<S>> starts) {
             if (!this.isLocked()) this.applyStrategies();
             this.getStartStep().addStarts(starts);
         }
 
         /**
-         * Add a single {@link Traverser} object to the head of the traversal.
+         * Add a single {@link Traverser.Admin} object to the head of the traversal.
          * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
          *
          * @param start a traverser to add to the traversal
          */
-        public default void addStart(final Traverser<S> start) {
+        public default void addStart(final Traverser.Admin<S> start) {
             if (!this.isLocked()) this.applyStrategies();
             this.getStartStep().addStart(start);
         }

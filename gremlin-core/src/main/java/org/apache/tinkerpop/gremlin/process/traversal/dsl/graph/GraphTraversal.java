@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -93,6 +95,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
@@ -538,6 +541,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Integer> loops() {
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
+        final String[] projectKeys = new String[otherProjectKeys.length + 1];
+        projectKeys[0] = projectKey;
+        System.arraycopy(otherProjectKeys, 0, projectKeys, 1, otherProjectKeys.length);
+        return this.asAdmin().addStep(new ProjectStep<>(this.asAdmin(), projectKeys));
     }
 
     /**
@@ -1164,6 +1174,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep((Step<E, E>) new PeerPressureVertexProgramStep(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, E> program(final VertexProgram<?> vertexProgram) {
+        return this.asAdmin().addStep((Step<E, E>) new ProgramVertexProgramStep(this.asAdmin(), vertexProgram));
+    }
 
     ///////////////////// UTILITY STEPS /////////////////////
 

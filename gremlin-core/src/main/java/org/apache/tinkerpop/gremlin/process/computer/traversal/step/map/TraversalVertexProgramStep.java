@@ -33,14 +33,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class TraversalVertexProgramStep extends VertexProgramStep implements TraversalParent {
 
-    private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
     public PureTraversal<?, ?> computerTraversal;
 
     public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<?, ?> computerTraversal) {
@@ -54,16 +52,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public boolean isGlobalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return true;
-    }
-
-    @Override
-    public boolean isLocalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return StringFactory.stepString(this, this.computerTraversal.get());
     }
@@ -71,11 +59,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return TraversalParent.super.getSelfAndChildRequirements(TraverserRequirement.BULK);
-    }
-
-    @Override
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
-        this.graphComputerFunction = graphComputerFunction;
     }
 
     @Override
@@ -92,8 +75,8 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
 
     @Override
     public GraphComputer generateComputer(final Graph graph) {
-        final GraphComputer graphComputer = this.graphComputerFunction.apply(graph);
-        if (!(this.getNextStep() instanceof ComputerResultStep))
+        final GraphComputer graphComputer = this.computer.apply(graph);
+        if (!this.isEndStep())
             graphComputer.persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
         return graphComputer;
     }

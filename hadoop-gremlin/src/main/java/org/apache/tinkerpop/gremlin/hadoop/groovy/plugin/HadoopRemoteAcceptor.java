@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Computer
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 

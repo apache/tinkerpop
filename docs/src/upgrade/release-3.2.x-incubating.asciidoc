@@ -263,7 +263,8 @@ We had so many `Traverser.asAdmin()` and direct typecast calls throughout (espec
 it was deemed prudent to have `Step.processNextStart()` and `Step.next()` return `Traverser.Admin<E>`. Moreover it makes
 sense as this is internal logic where `Admins` are always needed. Providers with their own step definitions will simply
 need to change the method signatures of `Step.processNextStart()` and `Step.next()`. No logic update is required -- save
-that `asAdmin()` can be safely removed if used.
+that `asAdmin()` can be safely removed if used. Also, `Step.addStart()` and `Step.addStarts()` take `Traverser.Admin<S>`
+and `Iterator<Traverser.Admin<S>>`, respectively.
 
 Traversal API Update
 ++++++++++++++++++++
@@ -322,6 +323,11 @@ no longer exists and such post-reduction processing is handled by the reducing s
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
+Performance Tests
++++++++++++++++++
+The `ProcessPerformanceSuite` and `TraversalPerformanceTest` have been deprecated.  They are still available, but going forward,
+providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based performance test suit.
+
 Graph Processor Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -337,11 +343,15 @@ then there is no immediate action required on their part to remain TinkerPop-com
 their `InputFormat` or `InputRDD` implementation to be `GraphFilterAware` and handle the `GraphFilter` filtering at the disk/database
 level. It is advisable to do so in order to reduce OLAP load times and memory/GC usage.
 
-* If the graph system provider has their own `GraphComputer` implementation, then they will need to implement the two new methods
+* If the graph system provider has their own `GraphComputer` implementation, then they should implement the two new methods
 and ensure that `GraphFilter` is processed correctly. There is a new test case called `GraphComputerTest.shouldSupportGraphFilter()`
 which ensures the semantics of `GraphFilter` are handled correctly. For a "quick and easy" way to move forward, look to
 `GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
 execution.
+
+NOTE: To quickly move forward, the `GraphComputer` implementation can simply set `GraphComputer.Features.supportsGraphFilter()`
+to `false` and ensure that `GraphComputer.vertices()` and `GraphComputer.edges()` throws `GraphComputer.Exceptions.graphFilterNotSupported()`.
+This is not recommended as its best to support `GraphFilter`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-962[TINKERPOP-962]
 

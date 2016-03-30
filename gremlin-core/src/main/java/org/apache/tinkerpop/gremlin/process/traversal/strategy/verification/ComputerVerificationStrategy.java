@@ -27,10 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
@@ -65,13 +62,13 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (!TraversalHelper.onGraphComputer(traversal))
             return;
 
-        final boolean globalChild = traversal.getParent().isGlobalChild(traversal);
+        final boolean globalChild = TraversalHelper.isGlobalChild(traversal);
 
         if (traversal.getParent() instanceof TraversalVertexProgramStep) {
             if (TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal).size() > 1)
                 throw new VerificationException("Mid-traversal V()/E() is currently not supported on GraphComputer", traversal);
             if (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileStep.class, traversal) && TraversalHelper.getStepsOfAssignableClass(VertexProgramStep.class, TraversalHelper.getRootTraversal(traversal)).size() > 1)
-                throw new VerificationException("Profiling a multi-GraphComputer traversal is currently not supported", traversal);
+                throw new VerificationException("Profiling a multi-VertexProgramStep traversal is currently not supported on GraphComputer", traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
@@ -86,30 +83,21 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
                         .findAny();
                 if (traversalOptional.isPresent())
-                    throw new VerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
+                    throw new VerificationException("Local traversals may not traverse past the local star-graph on GraphComputer: " + traversalOptional.get(), traversal);
             }
 
             // collecting barriers and dedup global use can only operate on the element and its properties (no incidences)
-            if ((step instanceof CollectingBarrierStep || step instanceof DedupGlobalStep) && step instanceof TraversalParent) {
+            if (step instanceof CollectingBarrierStep && step instanceof TraversalParent) {
                 if (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isLocalProperties(t)).findAny().isPresent())
-                    throw new VerificationException("A barrier-steps can not process the incident edges of a vertex on GraphComputer: " + step, traversal);
-            }
-
-            // this is due to how reducing works and can be fixed by generalizing the current simple model
-            // we need to make it so dedup global does its project post reduction (easy to do, just do it)
-            if ((step instanceof DedupGlobalStep) && (!((DedupGlobalStep) step).getScopeKeys().isEmpty())) {
-                throw new VerificationException("A dedup()-step can not process scoped elements on GraphComputer: " + step, traversal);
+                    throw new VerificationException("The following barrier step can not process the incident edges of a vertex on GraphComputer: " + step, traversal);
             }
 
             // this is a problem because sideEffect.merge() is transient on the OLAP reduction
             if (TraversalHelper.getRootTraversal(traversal).getTraverserRequirements().contains(TraverserRequirement.ONE_BULK))
-                throw new VerificationException("One bulk us currently not supported on GraphComputer: " + step, traversal);
-
-            if ((step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
-                throw new VerificationException("A where()-step that has a start variable is not allowed on GraphComputer because the variable value is retrieved from the path: " + step, traversal);
+                throw new VerificationException("One bulk is currently not supported on GraphComputer: " + step, traversal);
 
             if (step instanceof PathProcessor && ((PathProcessor) step).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
-                throw new VerificationException("The following path processor step requires more than the element id on GraphComputer: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
+                throw new VerificationException("It is not possible to access more than a path element's id on GraphComputer: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
                 throw new VerificationException("The following step is currently not supported on GraphComputer: " + step, traversal);

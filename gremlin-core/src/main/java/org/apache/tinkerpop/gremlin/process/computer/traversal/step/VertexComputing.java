@@ -19,20 +19,23 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface VertexComputing {
 
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction);
+    public void setComputer(final Computer computer);
+
+    public Computer getComputer();
 
     public VertexProgram generateProgram(final Graph graph);
 
-    public GraphComputer generateComputer(final Graph graph);
+    public default GraphComputer generateComputer(final Graph graph) {
+        return this.getComputer().apply(graph);
+    }
 }

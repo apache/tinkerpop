@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
+package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -120,7 +120,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             traversal.addStep(new ComputerResultStep<>(traversal));
         }
         // all vertex computing steps needs the graph computer function
-        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setGraphComputerFunction(this.computer));
+        traversal.getSteps().stream().filter(step -> step instanceof VertexComputing).forEach(step -> ((VertexComputing) step).setComputer(this.computer));
     }
 
     private static Step<?, ?> getFirstLegalOLAPStep(Step<?, ?> currentStep) {

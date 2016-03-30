@@ -34,7 +34,7 @@ import java.util.function.Function;
  */
 public final class Computer implements Function<Graph, GraphComputer>, Serializable {
 
-    private Class<? extends GraphComputer> graphComputerClass = null;
+    private Class<? extends GraphComputer> graphComputerClass = GraphComputer.class;
     private Map<String, Object> configuration = new HashMap<>();
     private int workers = -1;
     private GraphComputer.Persist persist = null;
@@ -47,7 +47,7 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     }
 
     public static Computer compute() {
-        return new Computer(null);
+        return new Computer(GraphComputer.class);
     }
 
     public static Computer compute(final Class<? extends GraphComputer> graphComputerClass) {
@@ -85,9 +85,13 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         return this;
     }
 
+    public Class<? extends GraphComputer> getGraphComputerClass() {
+        return this.graphComputerClass;
+    }
+
     @Override
     public GraphComputer apply(final Graph graph) {
-        GraphComputer computer = null == this.graphComputerClass ? graph.compute() : graph.compute(this.graphComputerClass);
+        GraphComputer computer = this.graphComputerClass.equals(GraphComputer.class) ? graph.compute() : graph.compute(this.graphComputerClass);
         for (final Map.Entry<String, Object> entry : this.configuration.entrySet()) {
             computer = computer.configure(entry.getKey(), entry.getValue());
         }
@@ -106,6 +110,6 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
 
     @Override
     public String toString() {
-        return null == this.graphComputerClass ? GraphComputer.class.getSimpleName().toLowerCase() : this.graphComputerClass.getSimpleName().toLowerCase();
+        return this.graphComputerClass.getSimpleName().toLowerCase();
     }
 }

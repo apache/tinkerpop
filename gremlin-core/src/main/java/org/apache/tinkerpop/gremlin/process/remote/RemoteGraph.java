@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -72,6 +72,10 @@ import java.util.Iterator;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest",
         method = "g_V_pageRank",
+        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest",
+        method = "g_V_programXpageRankX",
         reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",

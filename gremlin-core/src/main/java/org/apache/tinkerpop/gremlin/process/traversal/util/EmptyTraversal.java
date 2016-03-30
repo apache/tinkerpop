@@ -78,12 +78,12 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
 
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
 
     }
 

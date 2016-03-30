@@ -40,7 +40,7 @@ public final class ColumnTraversal extends AbstractLambdaTraversal {
     }
 
     @Override
-    public void addStart(final Traverser start) {
+    public void addStart(final Traverser.Admin start) {
         this.selection = this.column.apply(start.get());
     }
 

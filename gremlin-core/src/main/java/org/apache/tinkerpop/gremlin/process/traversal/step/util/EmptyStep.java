@@ -45,12 +45,12 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
 
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
 
     }
 
@@ -143,15 +143,5 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public boolean isGlobalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return true;
-    }
-
-    @Override
-    public boolean isLocalChild(final Traversal.Admin<?, ?> childTraversal) {
-        return false;
     }
 }

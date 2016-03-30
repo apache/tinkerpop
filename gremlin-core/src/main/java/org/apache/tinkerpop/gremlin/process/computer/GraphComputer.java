@@ -207,6 +207,10 @@ public interface GraphComputer {
             return true;
         }
 
+        public default boolean supportsGraphFilter() {
+            return true;
+        }
+
         /**
          * Supports {@link VertexProgram} and {@link MapReduce} parameters to be direct referenced Java objects (no serialization required).
          * This is typically true for single machine graph computer engines. For cluster oriented graph computers, this is typically false.
@@ -231,6 +235,10 @@ public interface GraphComputer {
 
         public static UnsupportedOperationException adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated() {
             return new UnsupportedOperationException("The edges and vertices of an adjacent vertex can not be read or updated");
+        }
+
+        public static UnsupportedOperationException graphFilterNotSupported() {
+            return new UnsupportedOperationException("The computer does not support graph filter");
         }
 
         public static IllegalArgumentException providedKeyIsNotAnElementComputeKey(final String key) {

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.traversal;
 
+import com.codahale.metrics.Timer;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -29,9 +30,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
@@ -42,7 +45,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Simple {@link OpProcessor} implementation that iterates remotely submitted serialized {@link Traversal} objects.
@@ -52,7 +58,7 @@ import java.util.concurrent.TimeoutException;
 public class TraversalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(TraversalOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "traversal";
-
+    public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
 
     public TraversalOpProcessor() {
         super(true);
@@ -135,6 +141,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage("Locked Traversals cannot be processed by the server").create());
 
+        final Timer.Context timerContext = traversalOpTimer.time();
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final GraphManager graphManager = context.getGraphManager();
@@ -170,10 +177,13 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
                     if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+                } finally {
+                    timerContext.stop();
                 }
             });
 
         } catch (Exception ex) {
+            timerContext.stop();
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }

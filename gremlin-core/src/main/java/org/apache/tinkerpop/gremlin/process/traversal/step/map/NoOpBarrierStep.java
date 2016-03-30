@@ -51,7 +51,8 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
 
     @Override
     protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        this.processAllStarts();
+        if (this.barrier.isEmpty())
+            this.processAllStarts();
         return this.barrier.remove();
     }
 

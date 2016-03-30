@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +61,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     protected Map<String, E> map(final Traverser.Admin<S> traverser) {
-        final Map<String, E> bindings = new LinkedHashMap<>();
+        final Map<String, E> bindings = new LinkedHashMap<>(this.selectKeys.size(),1.0f);
         for (final String selectKey : this.selectKeys) {
             final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
             if (null != end)
@@ -126,5 +127,18 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public Set<String> getScopeKeys() {
         return this.selectKeysSet;
+    }
+
+    public Map<String, Traversal.Admin<Object, E>> getByTraversals() {
+        final Map<String, Traversal.Admin<Object, E>> map = new HashMap<>();
+        this.traversalRing.reset();
+        for (final String as : this.selectKeys) {
+            map.put(as, this.traversalRing.next());
+        }
+        return map;
+    }
+
+    public Pop getPop() {
+        return this.pop;
     }
 }

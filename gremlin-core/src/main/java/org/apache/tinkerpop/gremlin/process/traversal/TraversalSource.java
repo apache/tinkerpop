@@ -20,14 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.VertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -98,7 +98,13 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Computer computer) {
-        return this.withStrategies(new VertexProgramStrategy(computer), ComputerVerificationStrategy.instance());
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(computer.getGraphComputerClass()).toList();
+        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
+        traversalStrategies[0] = new VertexProgramStrategy(computer);
+        for (int i = 0; i < graphComputerStrategies.size(); i++) {
+            traversalStrategies[i+1] = graphComputerStrategies.get(i);
+        }
+        return this.withStrategies(traversalStrategies);
     }
 
     /**
