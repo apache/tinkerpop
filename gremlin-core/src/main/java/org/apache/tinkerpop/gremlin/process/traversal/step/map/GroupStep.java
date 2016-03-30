@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
@@ -55,22 +57,14 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, ?> valueTraversal = this.integrateChild(__.identity().asAdmin());   // used in OLAP
-    private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
-    public Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
+    public Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
+    public Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
     private boolean onGraphComputer = false;
-
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setReducingBiOperator(new GroupBiOperator<>(this.valueReduceTraversal));
+        this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer));
         this.setSeedSupplier(HashMapSupplier.instance());
-    }
-
-    @Override
-    public void onGraphComputer() {
-        this.onGraphComputer = true;
-        this.setReducingBiOperator(GroupBiOperator.computerInstance());
     }
 
     @Override
@@ -79,12 +73,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueReduceTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
-            final List<Traversal.Admin<?, ?>> splitTraversal = splitOnBarrierStep(this.valueReduceTraversal);
-            this.valueTraversal = this.integrateChild(splitTraversal.get(0));
-            this.reduceTraversal = this.integrateChild(splitTraversal.get(1));
+            this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
+            this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer));
             this.state = 'x';
-            this.setReducingBiOperator(new GroupBiOperator<>(this.valueReduceTraversal));
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
         }
@@ -94,20 +85,21 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
         final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-        if (this.onGraphComputer) {
-            final TraverserSet traverserSet = new TraverserSet();
-            this.valueTraversal.reset();
-            this.valueTraversal.addStart(traverser);
-            this.valueTraversal.getEndStep().forEachRemaining(traverserSet::add);
-            map.put(key, (V) traverserSet);
-        } else
+        if (null == this.preTraversal)
             map.put(key, (V) traverser);
+        else {  // OLAP no reducing barrier
+            final TraverserSet traverserSet = new TraverserSet();
+            this.preTraversal.reset();
+            this.preTraversal.addStart(traverser.split());
+            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+            map.put(key, (V) traverserSet);
+        }
         return map;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.keyTraversal, this.valueReduceTraversal);
+        return StringFactory.stepString(this, this.keyTraversal, this.valueTraversal);
     }
 
     @Override
@@ -115,15 +107,13 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         final List<Traversal.Admin<?, ?>> children = new ArrayList<>(4);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
-        children.add(this.valueReduceTraversal);
         children.add(this.valueTraversal);
-        children.add(this.reduceTraversal);
         return children;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.BULK, TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.BULK);
     }
 
     @Override
@@ -131,9 +121,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         final GroupStep<S, K, V> clone = (GroupStep<S, K, V>) super.clone();
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
-        clone.valueReduceTraversal = this.valueReduceTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.reduceTraversal = this.reduceTraversal.clone();
+        if (null != this.preTraversal)
+            clone.preTraversal = this.preTraversal.clone();
         return clone;
     }
 
@@ -141,97 +131,132 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
         integrateChild(this.keyTraversal);
-        integrateChild(this.valueReduceTraversal);
         integrateChild(this.valueTraversal);
-        integrateChild(this.reduceTraversal);
+        integrateChild(this.preTraversal);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
-        result ^= this.valueReduceTraversal.hashCode();
+        result ^= this.valueTraversal.hashCode();
         return result;
     }
 
     @Override
     public Map<K, V> generateFinalResult(final Map<K, V> object) {
-        return GroupStep.doFinalReduction((Map<K, Object>) object, this.onGraphComputer ? this.reduceTraversal : null);
+        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal, this.onGraphComputer);
+    }
+
+    @Override
+    public void onGraphComputer() {
+        final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal);
+        if (!(optional.isPresent() && optional.get() instanceof ReducingBarrierStep))
+            this.preTraversal = this.integrateChild(splitOnBarrierStep(this.valueTraversal).get(0));
+        this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer = true));
     }
 
     ///////////////////////
 
     public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
-        private static final GroupBiOperator COMPUTER_INSTANCE = new GroupBiOperator();
-
-        private Traversal.Admin<?, V> valueReduceTraversal;
+        private Traversal.Admin<?, V> valueTraversal;
+        private boolean onGraphComputer;
+        private boolean hasReducingBarrier;
         private Map<K, Integer> counters;
-        private final boolean onGraphComputer;
 
-        public GroupBiOperator(final Traversal.Admin<?, V> valueReduceTraversal) {
-            this.valueReduceTraversal = valueReduceTraversal;
-            this.counters = new HashMap<>();
-            this.onGraphComputer = false;
+        public GroupBiOperator(final Traversal.Admin<?, V> valueTraversal, final boolean onGraphComputer) {
+            this.valueTraversal = valueTraversal;
+            this.onGraphComputer = onGraphComputer;
+            if (this.onGraphComputer) {
+                final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal);
+                this.hasReducingBarrier = optional.isPresent() && optional.get() instanceof ReducingBarrierStep;
+            } else {
+                this.counters = new HashMap<>();
+                this.hasReducingBarrier = false; // doesn't matter, its OLTP (no need to analyze the traversal)
+            }
         }
 
         public GroupBiOperator() {
-            this.onGraphComputer = true;
+            // no-arg constructor for serialization
         }
 
         @Override
-        public Map<K, V> apply(final Map<K, V> mutatingSeed, final Map<K, V> map) {
-            for (final K key : map.keySet()) {
+        public Map<K, V> apply(final Map<K, V> mapA, final Map<K, V> mapB) {
+            for (final K key : mapB.keySet()) {
                 if (this.onGraphComputer) {
-                    TraverserSet<?> traverserSet = (TraverserSet) mutatingSeed.get(key);
-                    if (null == traverserSet) {
-                        traverserSet = new TraverserSet<>();
-                        mutatingSeed.put(key, (V) traverserSet);
+                    final Object objectB = mapB.get(key);
+                    // get mapA ready to receive data
+                    if (this.hasReducingBarrier) {
+                        // if there is a mid-barrier, process using midway reductions (reduces memory footprint)
+                        final Traversal.Admin valueTraversalClone = this.valueTraversal.clone(); // be nice to just reset() but TinkerGraphComputer has thread issues
+                        final ReducingBarrierStep barrier = TraversalHelper.getFirstStepOfAssignableClass(ReducingBarrierStep.class, valueTraversalClone).get();
+                        final Object objectA = mapA.get(key);
+                        if (objectA instanceof Traverser.Admin) {
+                            barrier.processAllStarts();
+                            valueTraversalClone.addStart((Traverser.Admin) objectA);
+                        } else if (null != objectA)
+                            barrier.addBarrier(objectA);
+                        if (objectB instanceof Traverser.Admin) {
+                            barrier.processAllStarts();
+                            valueTraversalClone.addStart((Traverser.Admin) objectB);
+                        } else
+                            barrier.addBarrier(objectB);
+                        // only store the reduction barrier (i.e. seed), not the traversal
+                        if (barrier.hasNextBarrier())
+                            mapA.put(key, (V) barrier.nextBarrier());
+                    } else {
+                        // if there is no mid-traversal reducer, aggregate pre-barrier traversers into a traverser set (expensive, but that's that)
+                        final Object objectA = mapA.get(key);
+                        final TraverserSet traverserSet;
+                        if (null == objectA) {
+                            traverserSet = new TraverserSet();
+                            mapA.put(key, (V) traverserSet);
+                        } else
+                            traverserSet = (TraverserSet) objectA;
+                        traverserSet.addAll((TraverserSet) objectB);
                     }
-                    traverserSet.addAll((TraverserSet) map.get(key));
                 } else {
-                    final Traverser.Admin traverser = (Traverser.Admin) map.get(key);
-                    Traversal.Admin valueReduceTraversal = (Traversal.Admin) mutatingSeed.get(key);
-                    if (null == valueReduceTraversal) {
+                    // for OLTP, do mid-barrier reductions if they exist, else don't.
+                    // bulking is also available here because of addStart() prior to barrier
+                    final Traverser.Admin traverser = (Traverser.Admin) mapB.get(key);
+                    Traversal.Admin valueTraversalClone = (Traversal.Admin) mapA.get(key);
+                    if (null == valueTraversalClone) {
                         this.counters.put(key, 0);
-                        valueReduceTraversal = this.valueReduceTraversal.clone();
-                        mutatingSeed.put(key, (V) valueReduceTraversal);
+                        valueTraversalClone = this.valueTraversal.clone();
+                        mapA.put(key, (V) valueTraversalClone);
                     }
-                    valueReduceTraversal.addStart(traverser);
+                    valueTraversalClone.addStart(traverser);
                     final int count = this.counters.compute(key, (k, i) -> ++i);
                     if (count > 10000) {
                         this.counters.put(key, 0);
-                        TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueReduceTraversal).ifPresent(Barrier::processAllStarts);
+                        TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversalClone).ifPresent(Barrier::processAllStarts);
                     }
                 }
             }
-            return mutatingSeed;
-        }
-
-        public static final <K, V> GroupBiOperator<K, V> computerInstance() {
-            return COMPUTER_INSTANCE;
+            return mapA;
         }
     }
 
     ///////////////////////
 
-    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueReduceTraversal) {
-        if (valueReduceTraversal instanceof ElementValueTraversal ||
-                valueReduceTraversal instanceof TokenTraversal ||
-                valueReduceTraversal instanceof IdentityTraversal ||
-                valueReduceTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueReduceTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
-            return (Traversal.Admin<S, E>) __.map(valueReduceTraversal).fold();
+    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueTraversal) {
+        if (valueTraversal instanceof ElementValueTraversal ||
+                valueTraversal instanceof TokenTraversal ||
+                valueTraversal instanceof IdentityTraversal ||
+                valueTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
+            return (Traversal.Admin<S, E>) __.map(valueTraversal).fold();
         } else {
-            return valueReduceTraversal;
+            return valueTraversal;
         }
     }
 
-    public static List<Traversal.Admin<?, ?>> splitOnBarrierStep(final Traversal.Admin<?, ?> valueReduceTraversal) {
-        if (TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueReduceTraversal).isPresent()) {
+    public static List<Traversal.Admin<?, ?>> splitOnBarrierStep(final Traversal.Admin<?, ?> valueTraversal) {
+        if (TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).isPresent()) {
             final Traversal.Admin<?, ?> first = __.identity().asAdmin();
             final Traversal.Admin<?, ?> second = __.identity().asAdmin();
             boolean onSecond = false;
-            for (final Step step : valueReduceTraversal.getSteps()) {
+            for (final Step step : valueTraversal.getSteps()) {
                 if (step instanceof Barrier)
                     onSecond = true;
                 if (onSecond)
@@ -241,21 +266,37 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             }
             return Arrays.asList(first, second);
         } else {
-            return Arrays.asList(valueReduceTraversal.clone(), __.identity().asAdmin());
+            return Arrays.asList(valueTraversal.clone(), __.identity().asAdmin());
         }
     }
 
-    public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> reduceTraversal) {
-        final Map<K, Object> tempMap = new HashMap<>(map);
+    public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal, final boolean onGraphComputer) {
+        final Map<K, V> reducedMap = new HashMap<>(map.size());
+        // if not on OLAP, who cares --- don't waste time computing barriers
+        final Traversal.Admin<?, ?> postTraversal = onGraphComputer ? splitOnBarrierStep(valueTraversal.clone()).get(1) : null;
+        final boolean hasReducingBarrier = onGraphComputer &&
+                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).isPresent() &&
+                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).get() instanceof ReducingBarrierStep;
+        IteratorUtils.removeOnNext(map.entrySet().iterator()).forEachRemaining(entry -> {
+            if (onGraphComputer) {
+                if (hasReducingBarrier) {  // OLAP with reduction (barrier)
+                    final Traversal.Admin<?, V> valueTraversalClone = valueTraversal.clone();
+                    if (entry.getValue() instanceof Traverser.Admin)
+                        valueTraversalClone.addStart((Traverser.Admin) entry.getValue());
+                    else
+                        TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversalClone).get().addBarrier(entry.getValue());
+                    reducedMap.put(entry.getKey(), valueTraversalClone.next());
+                } else {  // OLAP without reduction (traverser set)
+                    postTraversal.reset();
+                    postTraversal.addStarts(((TraverserSet) entry.getValue()).iterator());
+                    reducedMap.put(entry.getKey(), (V) postTraversal.next());
+                }
+            } else   // OLTP is just a traversal
+                reducedMap.put(entry.getKey(), ((Traversal.Admin<?, V>) entry.getValue()).next());
+        });
+        assert map.isEmpty();
         map.clear();
-        if (null != reduceTraversal) {
-            for (final K key : tempMap.keySet()) {
-                final Traversal.Admin<?, V> reduceClone = reduceTraversal.clone();
-                reduceClone.addStarts(((TraverserSet) tempMap.get(key)).iterator());
-                map.put(key, reduceClone.next());
-            }
-        } else
-            tempMap.forEach((key, traversal) -> map.put(key, ((Traversal.Admin<?, V>) traversal).next()));
+        map.putAll(reducedMap);
         return (Map<K, V>) map;
     }
 }

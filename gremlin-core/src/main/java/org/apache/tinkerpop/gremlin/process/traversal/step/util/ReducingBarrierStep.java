@@ -40,7 +40,6 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     protected BinaryOperator<E> reducingBiOperator;
     private boolean done = false;
     private E seed = null;
-    protected boolean onGraphComputer = false;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -98,6 +97,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     @Override
     public boolean hasNextBarrier() {
+        this.processAllStarts();
         return !this.done;
     }
 
@@ -116,10 +116,9 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     @Override
     public void addBarrier(final E barrier) {
+        this.processAllStarts();
         this.done = false;
-        this.seed = null == this.seed ?
-                barrier :
-                this.reducingBiOperator.apply(this.seed, barrier);
+        this.seed = this.reducingBiOperator.apply(this.seed, barrier);
     }
 
     @Override

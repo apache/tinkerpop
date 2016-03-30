@@ -87,35 +87,35 @@ public class TinkerGraphPlayTest {
     public void benchmarkGroup() throws Exception {
         Graph graph = TinkerGraph.open();
         GraphTraversalSource g = graph.traversal().withComputer();
-        graph.io(GraphMLIo.build()).readGraph("data/grateful-dead.xml");
+        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
         /////////
 
         g.V().group().by(T.label).by(values("name")).forEachRemaining(x -> logger.info(x.toString()));
 
-        logger.info("group: " + g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next());
-        logger.info("groupV3d0: " + g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next());
+        System.out.println("group: " + g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next());
+        System.out.println("groupV3d0: " + g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next());
 
         //
-        logger.info("\n\nBig Values -- by(songType)");
+        System.out.println("\n\nBig Values -- by(songType)");
 
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next()) + "\n");
-
-        ///
-
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(fold()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().next()));
-
-        ///
-        logger.info("\n\nBig Keys -- by(name)");
-
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(count()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().by(__.count(Scope.local)).next()) + "\n");
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next()) + "\n");
 
         ///
 
-        logger.info("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(fold()).next()));
-        logger.info("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().next()));
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("songType").by(fold()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().next()));
+
+        ///
+        System.out.println("\n\nBig Keys -- by(name)");
+
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(count()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().by(__.count(Scope.local)).next()) + "\n");
+
+        ///
+
+        System.out.println("group: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").group().by("name").by(fold()).next()));
+        System.out.println("groupV3d0: " + TimeUtil.clock(10, () -> g.V().both("followedBy").both("followedBy").groupV3d0().by("name").by().next()));
 
     }
 

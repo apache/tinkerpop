@@ -93,5 +93,15 @@ public abstract class GroovyGroupTest {
         public Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.group.by(label).select('person').unfold.out('created').name.limit(2)")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('song').group.by('name').by(__.properties().groupCount.by(label))")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('song').group('a').by('name').by(__.properties().groupCount.by(label)).out.cap('a')")
+        }
     }
 }
