@@ -93,6 +93,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
@@ -538,6 +539,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, Integer> loops() {
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
+        final String[] projectKeys = new String[otherProjectKeys.length + 1];
+        projectKeys[0] = projectKey;
+        System.arraycopy(otherProjectKeys, 0, projectKeys, 1, otherProjectKeys.length);
+        return this.asAdmin().addStep(new ProjectStep<>(this.asAdmin(), projectKeys));
     }
 
     /**

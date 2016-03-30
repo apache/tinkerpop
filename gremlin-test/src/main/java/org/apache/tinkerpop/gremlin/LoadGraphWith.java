@@ -52,7 +52,7 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatur
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface LoadGraphWith {
 
     public enum GraphData {

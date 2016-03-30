@@ -42,7 +42,7 @@ public final class LoopTraversal<S> extends AbstractLambdaTraversal<S, S> {
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
         this.allow = start.loops() >= this.maxLoops;
     }
 

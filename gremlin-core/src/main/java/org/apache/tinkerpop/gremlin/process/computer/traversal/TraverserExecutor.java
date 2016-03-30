@@ -151,6 +151,7 @@ public final class TraverserExecutor {
                 while (barrier.hasNextBarrier()) {
                     final TraverserSet<Object> barrierSet = barrier.nextBarrier();
                     IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
+                        traverser.addLabels(step.getLabels());  // this might need to be generalized for working with global barriers too
                         if (traverser.isHalted()) {
                             traverser.detach();
                             haltedTraversers.add(traverser);

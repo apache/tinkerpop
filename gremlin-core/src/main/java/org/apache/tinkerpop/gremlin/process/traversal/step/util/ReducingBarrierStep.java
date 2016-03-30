@@ -71,7 +71,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser<S>> starts) {
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
         if (starts.hasNext()) {
             this.done = false;
             super.addStarts(starts);
@@ -84,7 +84,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
-    public void addStart(final Traverser<S> start) {
+    public void addStart(final Traverser.Admin<S> start) {
         this.done = false;
         super.addStart(start);
     }

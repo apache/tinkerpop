@@ -39,7 +39,7 @@ public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Elem
     }
 
     @Override
-    public void addStart(final Traverser<Element> start) {
+    public void addStart(final Traverser.Admin<Element> start) {
         this.value = start.get().value(this.propertyKey);
     }
 

@@ -39,7 +39,7 @@ public final class HaltedTraversersCountTraversal extends AbstractLambdaTraversa
     }
 
     @Override
-    public void addStart(final Traverser<Vertex> start) {
+    public void addStart(final Traverser.Admin<Vertex> start) {
         final VertexProperty<TraverserSet<Object>> property = start.get().<TraverserSet<Object>>property(TraversalVertexProgram.HALTED_TRAVERSERS);
         this.count = property.isPresent() ? property.value().bulkSize() : 0l;
     }

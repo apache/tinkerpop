@@ -248,6 +248,9 @@ public class GremlinExecutor implements AutoCloseable {
         bindings.putAll(globalBindings);
         bindings.putAll(boundVars);
 
+        // override the timeout if the lifecycle has a value assigned
+        final long seto = lifeCycle.scriptEvaluationTimeoutOverride.orElse(scriptEvaluationTimeout);
+
         final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
         final FutureTask<Void> f = new FutureTask<>(() -> {
             try {
@@ -282,7 +285,7 @@ public class GremlinExecutor implements AutoCloseable {
                 // check for that situation and convert to TimeoutException
                 if (root instanceof InterruptedException)
                     evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
+                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms for request [%s]: %s", seto, script, root.getMessage())));
                 else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
@@ -294,7 +297,7 @@ public class GremlinExecutor implements AutoCloseable {
 
         executorService.execute(f);
 
-        if (scriptEvaluationTimeout > 0) {
+        if (seto > 0) {
             // Schedule a timeout in the thread pool for future execution
             final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
                 logger.warn("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
@@ -302,7 +305,7 @@ public class GremlinExecutor implements AutoCloseable {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
                     f.cancel(true);
                 }
-            }, scriptEvaluationTimeout, TimeUnit.MILLISECONDS);
+            }, seto, TimeUnit.MILLISECONDS);
 
             // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
             // with exception
@@ -539,7 +542,7 @@ public class GremlinExecutor implements AutoCloseable {
         }
 
         /**
-         * Replaces any settings provided by {@link #engineSettings(java.util.Map)}.
+         * Replaces any settings provided.
          */
         public Builder engineSettings(final Map<String, EngineSettings> settings) {
             this.settings = settings;
@@ -685,6 +688,7 @@ public class GremlinExecutor implements AutoCloseable {
         private final Optional<Consumer<Bindings>> afterSuccess;
         private final Optional<Consumer<Bindings>> afterTimeout;
         private final Optional<BiConsumer<Bindings, Throwable>> afterFailure;
+        private final Optional<Long> scriptEvaluationTimeoutOverride;
 
         private LifeCycle(final Builder builder) {
             beforeEval = Optional.ofNullable(builder.beforeEval);
@@ -693,6 +697,11 @@ public class GremlinExecutor implements AutoCloseable {
             afterSuccess = Optional.ofNullable(builder.afterSuccess);
             afterTimeout = Optional.ofNullable(builder.afterTimeout);
             afterFailure = Optional.ofNullable(builder.afterFailure);
+            scriptEvaluationTimeoutOverride = Optional.ofNullable(builder.scriptEvaluationTimeoutOverride);
+        }
+
+        public Optional<Long> getScriptEvaluationTimeoutOverride() {
+            return scriptEvaluationTimeoutOverride;
         }
 
         public Optional<Consumer<Bindings>> getBeforeEval() {
@@ -730,6 +739,7 @@ public class GremlinExecutor implements AutoCloseable {
             private Consumer<Bindings> afterSuccess = null;
             private Consumer<Bindings> afterTimeout = null;
             private BiConsumer<Bindings, Throwable> afterFailure = null;
+            private Long scriptEvaluationTimeoutOverride = null;
 
             /**
              * Specifies the function to execute prior to the script being evaluated.  This function can also be
@@ -783,6 +793,15 @@ public class GremlinExecutor implements AutoCloseable {
              */
             public Builder afterFailure(final BiConsumer<Bindings, Throwable> afterFailure) {
                 this.afterFailure = afterFailure;
+                return this;
+            }
+
+            /**
+             * An override to the global {@code scriptEvaluationTimeout} setting on the script engine. If this value
+             * is set to {@code null} (the default) it will use the global setting.
+             */
+            public Builder scriptEvaluationTimeoutOverride(final Long scriptEvaluationTimeoutOverride) {
+                this.scriptEvaluationTimeoutOverride = scriptEvaluationTimeoutOverride;
                 return this;
             }
 

@@ -247,7 +247,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             else {
                 final String[] paths = hadoopGremlinLibsLocal.split(":");
                 for (final String path : paths) {
-                    final File file = new File(path);
+                    final File file = AbstractHadoopGraphComputer.copyDirectoryIfNonExistent(fs, path);
                     if (file.exists()) {
                         Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
                             try {
