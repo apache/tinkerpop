@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Generating;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
-import java.util.Iterator;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
@@ -38,7 +37,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     protected Supplier<E> seedSupplier;
     protected BinaryOperator<E> reducingBiOperator;
-    private boolean done = false;
+    private boolean hasProcessedOnce = false;
     private E seed = null;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
@@ -65,31 +64,21 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     public void reset() {
         super.reset();
-        this.done = false;
+        this.hasProcessedOnce = false;
         this.seed = null;
     }
 
     @Override
-    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
-        if (starts.hasNext()) {
-            this.done = false;
-            super.addStarts(starts);
-        }
-    }
-
-    @Override
     public void done() {
-        this.done = true;
-    }
-
-    @Override
-    public void addStart(final Traverser.Admin<S> start) {
-        this.done = false;
-        super.addStart(start);
+        this.hasProcessedOnce = true;
+        this.seed = null;
     }
 
     @Override
     public void processAllStarts() {
+        if (this.hasProcessedOnce && !this.starts.hasNext())
+            return;
+        this.hasProcessedOnce = true;
         if (this.seed == null) this.seed = this.seedSupplier.get();
         while (this.starts.hasNext())
             this.seed = this.reducingBiOperator.apply(this.seed, this.projectTraverser(this.starts.next()));
@@ -98,35 +87,32 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     @Override
     public boolean hasNextBarrier() {
         this.processAllStarts();
-        return !this.done;
+        return null != this.seed;
     }
 
     @Override
     public E nextBarrier() {
-        if (this.done)
+        if (!this.hasNextBarrier())
             throw FastNoSuchElementException.instance();
         else {
-            processAllStarts();
             final E temp = this.seed;
             this.seed = null;
-            this.done = true;
             return temp;
         }
     }
 
     @Override
     public void addBarrier(final E barrier) {
-        this.processAllStarts();
-        this.done = false;
-        this.seed = this.reducingBiOperator.apply(this.seed, barrier);
+        this.seed = null == this.seed ?
+                barrier :
+                this.reducingBiOperator.apply(this.seed, barrier);
     }
 
     @Override
     public Traverser.Admin<E> processNextStart() {
-        if (this.done)
-            throw FastNoSuchElementException.instance();
         this.processAllStarts();
-        this.done = true;
+        if (this.seed == null)
+            throw FastNoSuchElementException.instance();
         final Traverser.Admin<E> traverser = this.getTraversal().getTraverserGenerator().generate(this.generateFinalResult(this.seed), (Step<E, E>) this, 1l);
         this.seed = null;
         return traverser;
@@ -135,7 +121,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     @Override
     public ReducingBarrierStep<S, E> clone() {
         final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
-        clone.done = false;
+        clone.hasProcessedOnce = false;
         clone.seed = null;
         return clone;
     }

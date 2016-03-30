@@ -50,7 +50,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
     private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
-    public Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
+    private Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
+    private ReducingBarrierStep reducingBarrierStep = null; // used in OLAP
     private boolean onGraphComputer = false;
     ///
     private String sideEffectKey;
@@ -78,16 +79,21 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Map<K, Object> map = new HashMap<>(1);
-        final K key = TraversalUtil.applyNullable(traverser, keyTraversal);
-        if (null == this.preTraversal) {
+        final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+        if (this.onGraphComputer) {
+            if (null == this.reducingBarrierStep) {
+                final TraverserSet traverserSet = new TraverserSet<>();
+                this.preTraversal.reset();
+                this.preTraversal.addStart(traverser.split());
+                this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+                map.put(key, traverserSet);
+            } else {
+                this.valueTraversal.reset();
+                this.valueTraversal.addStart(traverser.split());
+                map.put(key, (V) this.reducingBarrierStep.nextBarrier());
+            }
+        } else
             map.put(key, traverser.split());
-        } else { // OLAP no reducing barrier
-            final TraverserSet traverserSet = new TraverserSet<>();
-            this.preTraversal.reset();
-            this.preTraversal.addStart(traverser.split());
-            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
-            map.put(key, traverserSet);
-        }
         this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 
@@ -103,7 +109,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(4);
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(2);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
         children.add(this.valueTraversal);
@@ -123,6 +129,9 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         clone.valueTraversal = this.valueTraversal.clone();
         if (null != this.preTraversal)
             clone.preTraversal = this.preTraversal.clone();
+        final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, clone.valueTraversal);
+        if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
+            clone.reducingBarrierStep = (ReducingBarrierStep) optional.get();
         return clone;
     }
 
@@ -143,15 +152,16 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public Map<K, V> generateFinalResult(final Map<K, ?> unGroupedMap) {
-        return GroupStep.doFinalReduction((Map<K, Object>) unGroupedMap, this.valueTraversal, this.onGraphComputer);
+    public Map<K, V> generateFinalResult(final Map<K, ?> object) {
+        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal, this.onGraphComputer);
     }
 
     @Override
     public void onGraphComputer() {
+        this.preTraversal = this.integrateChild(GroupStep.splitOnBarrierStep(this.valueTraversal).get(0));
         final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal);
-        if (!(optional.isPresent() && optional.get() instanceof ReducingBarrierStep))
-            this.preTraversal = this.integrateChild(GroupStep.splitOnBarrierStep(this.valueTraversal).get(0));
+        if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
+            this.reducingBarrierStep = (ReducingBarrierStep) optional.get();
         this.getTraversal().getSideEffects().register(this.sideEffectKey, null, new GroupStep.GroupBiOperator<>(this.valueTraversal, this.onGraphComputer = true));
     }
 }
