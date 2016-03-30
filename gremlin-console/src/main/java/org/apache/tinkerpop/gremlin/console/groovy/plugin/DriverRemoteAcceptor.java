@@ -138,7 +138,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object submit(final List<String> args) throws RemoteException {
-        final String line = RemoteAcceptor.getScript(String.join(Parser.getNEWLINE(), args), this.shell);
+        final String line = RemoteAcceptor.getScript(String.join(" ", args), this.shell);
 
         try {
             final List<Result> resultSet = send(line);
