@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -75,6 +76,10 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
 
     public abstract Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X();
+
+    public abstract Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX();
+
+    public abstract Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -272,6 +277,42 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects());
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX() {
+        final Traversal<Vertex, Map<String, Map<String, Long>>> traversal = get_g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX();
+        printTraversalForm(traversal);
+        final Map<String, Map<String, Long>> map = traversal.next();
+        assertEquals(584, map.size());
+        for (final Map.Entry<String, Map<String, Long>> entry : map.entrySet()) {
+            assertEquals(entry.getKey().toUpperCase(), entry.getKey());
+            final Map<String, Long> countMap = entry.getValue();
+            assertEquals(3, countMap.size());
+            assertEquals(1l, countMap.get("name").longValue());
+            assertEquals(1l, countMap.get("songType").longValue());
+            assertEquals(1l, countMap.get("performances").longValue());
+        }
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX() {
+        final Traversal<Vertex, Map<String, Map<String, Long>>> traversal = get_g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX();
+        printTraversalForm(traversal);
+        final Map<String, Map<String, Long>> map = traversal.next();
+        assertEquals(584, map.size());
+        for (final Map.Entry<String, Map<String, Long>> entry : map.entrySet()) {
+            assertEquals(entry.getKey().toUpperCase(), entry.getKey());
+            final Map<String, Long> countMap = entry.getValue();
+            assertEquals(3, countMap.size());
+            assertEquals(1l, countMap.get("name").longValue());
+            assertEquals(1l, countMap.get("songType").longValue());
+            assertEquals(1l, countMap.get("performances").longValue());
+        }
+        assertFalse(traversal.hasNext());
+    }
+
 
     public static class Traversals extends GroupTest {
 
@@ -338,6 +379,16 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X() {
             return g.V().out().<String, Vertex>group().by(T.label).select("person").unfold().out("created").<String>values("name").limit(2);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX() {
+            return g.V().hasLabel("song").<String, Map<String, Long>>group().by("name").by(__.properties().groupCount().by(T.label));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX() {
+            return g.V().hasLabel("song").group("a").by("name").by(__.properties().groupCount().by(T.label)).out().cap("a");
         }
     }
 }
