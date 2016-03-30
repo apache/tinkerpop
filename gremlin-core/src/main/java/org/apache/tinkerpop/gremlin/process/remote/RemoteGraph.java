@@ -74,6 +74,10 @@ import java.util.Iterator;
         method = "g_V_pageRank",
         reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest",
+        method = "g_V_programXpageRankX",
+        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",
         method = "*",
         reason = "RemoteGraph does not support direct Graph.compute() access")
