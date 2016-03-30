@@ -19,8 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -28,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
@@ -37,6 +40,8 @@ import java.util.concurrent.ExecutionException;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class VertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements VertexComputing {
+
+    protected Computer computer = Computer.compute();
 
     protected boolean first = true;
 
@@ -65,6 +70,16 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
         }
     }
 
+    @Override
+    public Computer getComputer() {
+        return this.computer;
+    }
+
+    @Override
+    public void setComputer(final Computer computer) {
+        this.computer = computer;
+    }
+
     protected boolean previousTraversalVertexProgram() {
         Step<?, ?> currentStep = this;
         while (!(currentStep instanceof EmptyStep)) {
@@ -75,16 +90,19 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
         return false;
     }
 
-
     private void processMemorySideEffects(final Memory memory) {
         // unfortunately there is no easy way to test this in a test case
-        // assert this.getNextStep() instanceof ComputerResultStep == memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
+        assert this.isEndStep() == memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
         final TraversalSideEffects sideEffects = this.getTraversal().getSideEffects();
         for (final String key : memory.keys()) {
             if (sideEffects.exists(key)) {
                 sideEffects.set(key, memory.get(key));
             }
         }
+    }
+
+    protected boolean isEndStep() {
+        return this.getNextStep() instanceof ComputerResultStep || (this.getNextStep() instanceof ProfileStep && this.getNextStep().getNextStep() instanceof ComputerResultStep);
     }
 
 }
