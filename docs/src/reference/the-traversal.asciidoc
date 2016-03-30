@@ -2121,7 +2121,7 @@ provided predicates are outlined in the table below and are used in various step
 | `gt(number)` | Is the incoming number greater than the provided number?
 | `gte(number)` | Is the incoming number greater than or equal to the provided number?
 | `inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
-| `outside(number,number)` | Is the incoming number less than the first provided number and greater than the second?
+| `outside(number,number)` | Is the incoming number less than the first provided number or greater than the second?
 | `between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
 | `within(objects...)` | Is the incoming object in the array of provided objects?
 | `without(objects...)` | Is the incoming object not in the array of the provided objects?

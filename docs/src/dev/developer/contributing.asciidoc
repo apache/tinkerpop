@@ -91,6 +91,30 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Benchmarks: `mvn verify -DskipBenchmarks=false`
 
+[[docker-integration]]
+Docker Integration
+------------------
+
+TinkerPop provides a shell script, that can start several build tasks within a Docker container. The
+required Docker images will be built automatically if they don't exist yet. Thus the first invokation
+of the Docker script is expected to take some time.
+
+The script can be found under `PROJECT_HOME/docker/build.sh`. The following tasks are currently
+supported:
+
+* run standard test suite
+* run integration tests
+* build Java docs
+* build user docs
+
+A list of command line options is provided by `docker/build.sh --help`. The container will install,
+configure and start all required dependencies, such as Hadoop.
+
+If the container is used to generate the user docs, it will start a web server and show the URL that
+is used to host the HTML docs.
+
+After finishing all tasks, the script will immediately destroy the container.
+
 IDE Setup with Intellij
 -----------------------
 

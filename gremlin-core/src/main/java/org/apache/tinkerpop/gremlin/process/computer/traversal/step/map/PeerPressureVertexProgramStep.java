@@ -37,14 +37,11 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class PeerPressureVertexProgramStep extends VertexProgramStep implements TraversalParent, ByModulating, TimesModulating {
-
-    private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
 
     private PureTraversal<Vertex, Edge> edgeTraversal;
     private String clusterProperty = PeerPressureVertexProgram.CLUSTER;
@@ -87,11 +84,6 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
     }
 
     @Override
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
-        this.graphComputerFunction = graphComputerFunction;
-    }
-
-    @Override
     public PeerPressureVertexProgram generateProgram(final Graph graph) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
@@ -109,7 +101,7 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
 
     @Override
     public GraphComputer generateComputer(final Graph graph) {
-        return this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
+        return this.computer.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
     }
 
     @Override

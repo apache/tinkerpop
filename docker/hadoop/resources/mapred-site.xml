@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <property>
+    <name>mapreduce.framework.name</name>
+    <value>yarn</value>
+  </property>
+  <property>
+    <name>mapred.map.tasks</name>
+    <value>2</value>
+  </property>
+  <property>
+    <name>mapred.reduce.tasks</name>
+    <value>2</value>
+  </property>
+  <property>
+    <name>mapreduce.job.counters.limit</name>
+    <value>1000</value>
+  </property>
+  <property>
+    <name>mapreduce.jobtracker.address</name>
+    <value>localhost:9001</value>
+  </property>
+</configuration>

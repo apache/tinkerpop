@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.console
 import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.ParseCode
+import org.codehaus.groovy.tools.shell.Parser
 
 /**
  * Overrides the posix style parsing of Groovysh allowing for commands to parse prior to Groovy 2.4.x.
@@ -84,7 +85,9 @@ class GremlinGroovysh extends Groovysh {
 
             switch (status.code) {
                 case ParseCode.COMPLETE:
-                    setLastResult(mediator.currentRemote().submit(current))
+                    // concat script here because commands don't support multi-line
+                    def script = String.join(Parser.getNEWLINE(), current)
+                    setLastResult(mediator.currentRemote().submit([script]))
                     buffers.clearSelected()
                     break
                 case ParseCode.INCOMPLETE:

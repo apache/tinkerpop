@@ -45,8 +45,6 @@ import java.util.function.Function;
  */
 public final class PageRankVertexProgramStep extends VertexProgramStep implements TraversalParent, ByModulating, TimesModulating {
 
-    private transient Function<Graph, GraphComputer> graphComputerFunction = Graph::compute;
-
     private PureTraversal<Vertex, Edge> edgeTraversal;
     private String pageRankProperty = PageRankVertexProgram.PAGE_RANK;
     private int times = 30;
@@ -85,11 +83,6 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public void setGraphComputerFunction(final Function<Graph, GraphComputer> graphComputerFunction) {
-        this.graphComputerFunction = graphComputerFunction;
-    }
-
-    @Override
     public PageRankVertexProgram generateProgram(final Graph graph) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
@@ -104,13 +97,13 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return TraversalParent.super.getSelfAndChildRequirements();
+    public GraphComputer generateComputer(final Graph graph) {
+        return this.computer.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
     }
 
     @Override
-    public GraphComputer generateComputer(final Graph graph) {
-        return this.graphComputerFunction.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
+    public Set<TraverserRequirement> getRequirements() {
+        return TraversalParent.super.getSelfAndChildRequirements();
     }
 
     @Override

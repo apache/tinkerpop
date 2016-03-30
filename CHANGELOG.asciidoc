@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `GraphTraversal.program(VertexProgram)` to allow arbitrary user vertex programs in OLAP.
 * Added `GraphTraversal.project()` for creating a `Map<String,E>` given the current traverser and an arbitrary number of `by()`-modulators.
 * `HADOOP_GREMLIN_LIBS` can now reference a directory in HDFS and will be used if the directory does not exist locally.
 * Added `gremlin-benchmark` module with JMH benchmarking base classes that can be used for further benchmark development.
@@ -140,6 +141,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Provided Docker script that allows the execution of several build tasks within a Docker container.
+* Added a per-request `scriptEvaluationTimeout` option to the Gremlin Server protocol.
 * Changed `DriverRemoteAcceptor` to send scripts as multi-line.
 * Fixed a bug in `gremlin-driver` where connections were not returning to the pool after many consecutive errors.
 * Fixed a bug where `tree()` did not serialize into GraphSON.
