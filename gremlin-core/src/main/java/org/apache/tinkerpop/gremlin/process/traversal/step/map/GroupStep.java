@@ -57,8 +57,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
-    public Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
-    public Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
+    private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
+    private Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
+    private ReducingBarrierStep reducingBarrierStep = null; // used in OLAP
     private boolean onGraphComputer = false;
 
     public GroupStep(final Traversal.Admin traversal) {
@@ -85,15 +86,20 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
         final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-        if (null == this.preTraversal)
+        if (this.onGraphComputer) {
+            if (null == this.reducingBarrierStep) {
+                final TraverserSet traverserSet = new TraverserSet();
+                this.preTraversal.reset();
+                this.preTraversal.addStart(traverser.split());
+                this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+                map.put(key, (V) traverserSet);
+            } else {
+                this.valueTraversal.reset();
+                this.valueTraversal.addStart(traverser.split());
+                map.put(key, (V) this.reducingBarrierStep.nextBarrier());
+            }
+        } else
             map.put(key, (V) traverser);
-        else {  // OLAP no reducing barrier
-            final TraverserSet traverserSet = new TraverserSet();
-            this.preTraversal.reset();
-            this.preTraversal.addStart(traverser.split());
-            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
-            map.put(key, (V) traverserSet);
-        }
         return map;
     }
 
@@ -124,6 +130,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         clone.valueTraversal = this.valueTraversal.clone();
         if (null != this.preTraversal)
             clone.preTraversal = this.preTraversal.clone();
+        final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, clone.valueTraversal);
+        if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
+            clone.reducingBarrierStep = (ReducingBarrierStep) optional.get();
         return clone;
     }
 
@@ -150,9 +159,10 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public void onGraphComputer() {
+        this.preTraversal = this.integrateChild(splitOnBarrierStep(this.valueTraversal).get(0));
         final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal);
-        if (!(optional.isPresent() && optional.get() instanceof ReducingBarrierStep))
-            this.preTraversal = this.integrateChild(splitOnBarrierStep(this.valueTraversal).get(0));
+        if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
+            this.reducingBarrierStep = (ReducingBarrierStep) optional.get();
         this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer = true));
     }
 
@@ -190,21 +200,14 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                     if (this.hasReducingBarrier) {
                         // if there is a mid-barrier, process using midway reductions (reduces memory footprint)
                         final Traversal.Admin valueTraversalClone = this.valueTraversal.clone(); // be nice to just reset() but TinkerGraphComputer has thread issues
-                        final ReducingBarrierStep barrier = TraversalHelper.getFirstStepOfAssignableClass(ReducingBarrierStep.class, valueTraversalClone).get();
+                        final ReducingBarrierStep reducingBarrierStep = TraversalHelper.getFirstStepOfAssignableClass(ReducingBarrierStep.class, valueTraversalClone).get();
                         final Object objectA = mapA.get(key);
-                        if (objectA instanceof Traverser.Admin) {
-                            barrier.processAllStarts();
-                            valueTraversalClone.addStart((Traverser.Admin) objectA);
-                        } else if (null != objectA)
-                            barrier.addBarrier(objectA);
-                        if (objectB instanceof Traverser.Admin) {
-                            barrier.processAllStarts();
-                            valueTraversalClone.addStart((Traverser.Admin) objectB);
-                        } else
-                            barrier.addBarrier(objectB);
+                        if (null != objectA)
+                            reducingBarrierStep.addBarrier(objectA);
+                        reducingBarrierStep.addBarrier(objectB);
                         // only store the reduction barrier (i.e. seed), not the traversal
-                        if (barrier.hasNextBarrier())
-                            mapA.put(key, (V) barrier.nextBarrier());
+                        if (reducingBarrierStep.hasNextBarrier())
+                            mapA.put(key, (V) reducingBarrierStep.nextBarrier());
                     } else {
                         // if there is no mid-traversal reducer, aggregate pre-barrier traversers into a traverser set (expensive, but that's that)
                         final Object objectA = mapA.get(key);
@@ -280,10 +283,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             if (onGraphComputer) {
                 if (hasReducingBarrier) {  // OLAP with reduction (barrier)
                     final Traversal.Admin<?, V> valueTraversalClone = valueTraversal.clone();
-                    if (entry.getValue() instanceof Traverser.Admin)
-                        valueTraversalClone.addStart((Traverser.Admin) entry.getValue());
-                    else
-                        TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversalClone).get().addBarrier(entry.getValue());
+                    TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversalClone).get().addBarrier(entry.getValue());
                     reducedMap.put(entry.getKey(), valueTraversalClone.next());
                 } else {  // OLAP without reduction (traverser set)
                     postTraversal.reset();
