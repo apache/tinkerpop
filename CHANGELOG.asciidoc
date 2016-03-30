@@ -27,6 +27,7 @@ TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Provided Docker script that allows the execution of several build tasks within a Docker container.
+* Added a per-request `scriptEvaluationTimeout` option to the Gremlin Server protocol.
 * Changed `DriverRemoteAcceptor` to send scripts as multi-line.
 * Fixed a bug in `gremlin-driver` where connections were not returning to the pool after many consecutive errors.
 * Fixed a bug where `tree()` did not serialize into GraphSON.

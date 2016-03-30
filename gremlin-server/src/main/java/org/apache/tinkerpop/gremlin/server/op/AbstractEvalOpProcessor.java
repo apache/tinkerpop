@@ -195,7 +195,12 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final boolean managedTransactionsForRequest = manageTransactions ?
                 true : (Boolean) args.getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
 
+        // timeout override
+        final long seto = args.containsKey(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT) ?
+                Long.parseLong(args.get(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT).toString()) : settings.scriptEvaluationTimeout;
+
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
+                .scriptEvaluationTimeoutOverride(seto)
                 .beforeEval(b -> {
                     try {
                         b.putAll(bindingsSupplier.get());

@@ -47,6 +47,7 @@ public final class Tokens {
     public static final String ARGS_IMPORTS = "imports";
     public static final String ARGS_INFO_TYPE = "infoType";
     public static final String ARGS_LANGUAGE = "language";
+    public static final String ARGS_SCRIPT_EVAL_TIMEOUT = "scriptEvaluationTimeout";
 
     /**
      * @deprecated As of release 3.1.0-incubating, replaced by {@link #ARGS_ALIASES}.
