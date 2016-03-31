@@ -50,7 +50,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
     private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
-    private Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
+    private Traversal.Admin<S, ?> preTraversal = null;      // used in OLAP
     private ReducingBarrierStep reducingBarrierStep = null; // used in OLAP
     private boolean onGraphComputer = false;
     ///
