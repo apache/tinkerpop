@@ -80,6 +80,8 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs (Hadoop must be running and link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
+** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun the-graph,the-traversal,...`
+** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun the-graph,the-traversal,...`
 ** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`

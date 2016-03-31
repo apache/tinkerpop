@@ -23,8 +23,42 @@ TP_HOME=`pwd`
 CONSOLE_HOME=$1
 AWK_SCRIPTS="${TP_HOME}/docs/preprocessor/awk"
 
-input=$2
+IFS=',' read -r -a DRYRUN_DOCS <<< "$2"
+IFS=',' read -r -a FULLRUN_DOCS <<< "$3"
+
+dryRun () {
+  local doc
+  yes=0
+  no=1
+  doDryRun=${no}
+  if [ "${DRYRUN_DOCS}" == "*" ]; then
+    doDryRun=${yes}
+  else
+    for doc in "${DRYRUN_DOCS[@]}"; do
+      if [ "${doc}" == "$1" ]; then
+        doDryRun=${yes}
+        break
+      fi
+    done
+  fi
+  if [ ${doDryRun} ]; then
+    for doc in "${FULLRUN_DOCS[@]}"; do
+      if [ "${doc}" == "$1" ]; then
+        doDryRun=${no}
+        break
+      fi
+    done
+  fi
+  return ${doDryRun}
+}
+
+input=$4
 output=`sed 's@/docs/src/@/target/postprocess-asciidoc/@' <<< "${input}"`
+
+SKIP=
+if dryRun `basename ${input} .asciidoc`; then
+  SKIP=1
+fi
 
 mkdir -p `dirname ${output}`
 
@@ -50,7 +84,7 @@ echo " * source:   ${input}"
 echo "   target:   ${output}"
 echo -ne "   progress: initializing"
 
-if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
+if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   if [ ${output} -nt ${input} ]; then
     processed
     exit 0
