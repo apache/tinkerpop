@@ -333,6 +333,14 @@ If the `InputRDD` does not have a registered partitioner, `SparkGraphComputer` w
 a `org.apache.spark.HashPartitioner` with the number of partitions being either the number of existing partitions in the input (e.g. input splits)
 or the user specified number of `GraphComputer.workers()`.
 
+Storage Levels
+++++++++++++++
+
+The `SparkGraphComputer` uses `MEMORY_ONLY` to cache the input graph and the output graph by default. Users should be aware of the impact of
+different storage levels, since the default settings can quickly lead to memory issues on larger graphs. An overview about Spark's persistence
+settings is provided in link:http://spark.apache.org/docs/latest/programming-guide.html#rdd-persistence[Spark's programming guide].
+
+
 Using a Persisted Context
 +++++++++++++++++++++++++
 
