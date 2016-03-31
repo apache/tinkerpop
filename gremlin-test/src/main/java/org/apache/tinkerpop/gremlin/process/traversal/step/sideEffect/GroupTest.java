@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
@@ -80,6 +81,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX();
 
     public abstract Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX();
+
+    public abstract Traversal<Vertex, Map<String, Map<Object, Object>>> get_g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -313,6 +316,45 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX() {
+        //[{a={32=[v[4]], ripple=[v[5], v[5]], vadas=[v[2]], 27=[v[2]], josh=[v[4]], lop=[v[3], v[3], v[3], v[3]]}, b={ripple=2, lop=4}}]
+        final Traversal<Vertex, Map<String, Map<Object, Object>>> traversal = get_g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Map<Object, Object>> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("a"));
+        assertTrue(map.containsKey("b"));
+        //
+        final Map<Object, List<Vertex>> mapA = (Map) map.get("a");
+        assertEquals(6, mapA.size());
+        assertEquals(1, mapA.get(32).size());
+        assertEquals(convertToVertex(graph, "josh"), mapA.get(32).get(0));
+        assertEquals(1, mapA.get(27).size());
+        assertEquals(convertToVertex(graph, "vadas"), mapA.get(27).get(0));
+        assertEquals(2, mapA.get("ripple").size());
+        assertEquals(convertToVertex(graph, "ripple"), mapA.get("ripple").get(0));
+        assertEquals(convertToVertex(graph, "ripple"), mapA.get("ripple").get(1));
+        assertEquals(1, mapA.get("vadas").size());
+        assertEquals(convertToVertex(graph, "vadas"), mapA.get("vadas").get(0));
+        assertEquals(1, mapA.get("josh").size());
+        assertEquals(convertToVertex(graph, "josh"), mapA.get("josh").get(0));
+        assertEquals(4, mapA.get("lop").size());
+        assertEquals(convertToVertex(graph, "lop"), mapA.get("lop").get(0));
+        assertEquals(convertToVertex(graph, "lop"), mapA.get("lop").get(1));
+        assertEquals(convertToVertex(graph, "lop"), mapA.get("lop").get(2));
+        assertEquals(convertToVertex(graph, "lop"), mapA.get("lop").get(3));
+        //
+        final Map<String, Long> mapB = (Map) map.get("b");
+        assertEquals(2, mapB.size());
+        assertEquals(2l, mapB.get("ripple").longValue());
+        assertEquals(4l, mapB.get("lop").longValue());
+        //
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class, "b", HashMap.class);
+    }
 
     public static class Traversals extends GroupTest {
 
@@ -389,6 +431,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Map<String, Long>>> get_g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX() {
             return g.V().hasLabel("song").group("a").by("name").by(__.properties().groupCount().by(T.label)).out().cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Map<Object, Object>>> get_g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX() {
+            return g.V().repeat(__.union(__.out("knows").group("a").by("age"), __.out("created").group("b").by("name").by(count())).group("a").by("name")).times(2).cap("a", "b");
         }
     }
 }
