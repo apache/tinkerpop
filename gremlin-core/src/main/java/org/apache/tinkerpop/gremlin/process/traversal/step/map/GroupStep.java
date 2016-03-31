@@ -58,7 +58,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
     private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
-    private Traversal.Admin<S, ?> preTraversal = null;   // used in OLAP
+    private Traversal.Admin<S, ?> preTraversal = null;      // used in OLAP
     private ReducingBarrierStep reducingBarrierStep = null; // used in OLAP
     private boolean onGraphComputer = false;
 
@@ -170,20 +170,20 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
-        private Traversal.Admin<?, V> valueTraversal;
         private boolean onGraphComputer;
-        private boolean hasReducingBarrier;
-        private Map<K, Integer> counters;
+        private BinaryOperator reducingBinaryOperator;          // OLAP (w/ reducer)
+        private transient Traversal.Admin<?, V> valueTraversal; // OLTP
+        private transient Map<K, Integer> counters;             // OLTP
 
         public GroupBiOperator(final Traversal.Admin<?, V> valueTraversal, final boolean onGraphComputer) {
-            this.valueTraversal = valueTraversal;
             this.onGraphComputer = onGraphComputer;
             if (this.onGraphComputer) {
-                final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal);
-                this.hasReducingBarrier = optional.isPresent() && optional.get() instanceof ReducingBarrierStep;
+                final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal);
+                if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
+                    this.reducingBinaryOperator = ((ReducingBarrierStep) optional.get()).getBiOperator();
             } else {
+                this.valueTraversal = valueTraversal;
                 this.counters = new HashMap<>();
-                this.hasReducingBarrier = false; // doesn't matter, its OLTP (no need to analyze the traversal)
             }
         }
 
@@ -196,20 +196,12 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             for (final K key : mapB.keySet()) {
                 if (this.onGraphComputer) {
                     final Object objectB = mapB.get(key);
-                    // get mapA ready to receive data
-                    if (this.hasReducingBarrier) {
-                        // if there is a mid-barrier, process using midway reductions (reduces memory footprint)
-                        final Traversal.Admin valueTraversalClone = this.valueTraversal.clone(); // be nice to just reset() but TinkerGraphComputer has thread issues
-                        final ReducingBarrierStep reducingBarrierStep = TraversalHelper.getFirstStepOfAssignableClass(ReducingBarrierStep.class, valueTraversalClone).get();
+                    if (null != this.reducingBinaryOperator) {
+                        // OLAP -- if there is a mid-traversal, apply the binary reducer and propagate the mutating barrier
                         final Object objectA = mapA.get(key);
-                        if (null != objectA)
-                            reducingBarrierStep.addBarrier(objectA);
-                        reducingBarrierStep.addBarrier(objectB);
-                        // only store the reduction barrier (i.e. seed), not the traversal
-                        if (reducingBarrierStep.hasNextBarrier())
-                            mapA.put(key, (V) reducingBarrierStep.nextBarrier());
+                        mapA.put(key, (V) (null == objectA ? objectB : this.reducingBinaryOperator.apply(objectA, objectB)));
                     } else {
-                        // if there is no mid-traversal reducer, aggregate pre-barrier traversers into a traverser set (expensive, but that's that)
+                        // OLAP -- if there is no mid-traversal reducer, aggregate pre-barrier traversers into a traverser set (expensive, but that's that)
                         final Object objectA = mapA.get(key);
                         final TraverserSet traverserSet;
                         if (null == objectA) {
@@ -220,8 +212,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                         traverserSet.addAll((TraverserSet) objectB);
                     }
                 } else {
-                    // for OLTP, do mid-barrier reductions if they exist, else don't.
-                    // bulking is also available here because of addStart() prior to barrier
+                    // OLTP -- do mid-barrier reductions if they exist, else don't. Bulking is also available here because of addStart() prior to barrier.
                     final Traverser.Admin traverser = (Traverser.Admin) mapB.get(key);
                     Traversal.Admin valueTraversalClone = (Traversal.Admin) mapA.get(key);
                     if (null == valueTraversalClone) {
@@ -275,22 +266,22 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal, final boolean onGraphComputer) {
         final Map<K, V> reducedMap = new HashMap<>(map.size());
         // if not on OLAP, who cares --- don't waste time computing barriers
-        final Traversal.Admin<?, ?> postTraversal = onGraphComputer ? splitOnBarrierStep(valueTraversal.clone()).get(1) : null;
         final boolean hasReducingBarrier = onGraphComputer &&
                 TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).isPresent() &&
                 TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).get() instanceof ReducingBarrierStep;
+        final Traversal.Admin<?, ?> postTraversal = (onGraphComputer & !hasReducingBarrier) ? splitOnBarrierStep(valueTraversal.clone()).get(1) : null;
         IteratorUtils.removeOnNext(map.entrySet().iterator()).forEachRemaining(entry -> {
             if (onGraphComputer) {
-                if (hasReducingBarrier) {  // OLAP with reduction (barrier)
-                    final Traversal.Admin<?, V> valueTraversalClone = valueTraversal.clone();
-                    TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversalClone).get().addBarrier(entry.getValue());
-                    reducedMap.put(entry.getKey(), valueTraversalClone.next());
-                } else {  // OLAP without reduction (traverser set)
+                if (hasReducingBarrier) {   // OLAP with reduction (barrier)
+                    valueTraversal.reset();
+                    TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).get().addBarrier(entry.getValue());
+                    reducedMap.put(entry.getKey(), valueTraversal.next());
+                } else {                    // OLAP without reduction (traverser set)
                     postTraversal.reset();
                     postTraversal.addStarts(((TraverserSet) entry.getValue()).iterator());
                     reducedMap.put(entry.getKey(), (V) postTraversal.next());
                 }
-            } else   // OLTP is just a traversal
+            } else                          // OLTP is just a traversal
                 reducedMap.put(entry.getKey(), ((Traversal.Admin<?, V>) entry.getValue()).next());
         });
         assert map.isEmpty();
