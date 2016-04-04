@@ -1364,6 +1364,12 @@ situations, the iteration and serialization process is the more costly step in t
 returns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the
 other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the
 contents of the script itself.
+* Graph element serialization for `Vertex` and `Edge` can be expensive, as their data structures are complex given the
+possible existence of multi-properties and meta-properties. When returning data from Gremlin Server only return the
+data that is required. For example, if only two properties of a `Vertex` are needed then simply return the two rather
+than returning the entire `Vertex` object itself. Even with an entire `Vertex`, it is typically much faster to issue
+the query as `g.V(1).valueMap(true)` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
+without all the associated structure which can slow the response.
 
 [[parameterized-scripts]]
 Parameterized Scripts
