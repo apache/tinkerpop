@@ -700,7 +700,7 @@ Interacting with HDFS
 ^^^^^^^^^^^^^^^^^^^^^
 
 The distributed file system of Hadoop is called link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS].
-The results of any OLAP operation are stored in HDFS accessible via `hdfs`. For local file system access, there is `local`.
+The results of any OLAP operation are stored in HDFS accessible via `hdfs`. For local file system access, there is `fs`.
 
 [gremlin-groovy]
 ----

@@ -102,7 +102,7 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
             assertTrue(line.startsWith("-") || line.startsWith("r") || line.startsWith("w") || line.startsWith("x"));
             assertEquals(" ", line.substring(9, 10));
         }
-        ls = (List<String>) this.console.eval("local.ls()");
+        ls = (List<String>) this.console.eval("fs.ls()");
         for (final String line : ls) {
             assertTrue(line.startsWith("-") || line.startsWith("r") || line.startsWith("w") || line.startsWith("x"));
             assertEquals(" ", line.substring(9, 10));

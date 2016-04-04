@@ -80,7 +80,7 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         pluginAcceptor.addImports(IMPORTS);
         try {
             pluginAcceptor.addBinding("hdfs", FileSystemStorage.open(FileSystem.get(new Configuration())));
-            pluginAcceptor.addBinding("local", FileSystemStorage.open(FileSystem.getLocal(new Configuration())));
+            pluginAcceptor.addBinding("fs", FileSystemStorage.open(FileSystem.getLocal(new Configuration())));
             if (null == System.getenv(Constants.HADOOP_GREMLIN_LIBS))
                 HadoopGraph.LOGGER.warn("Be sure to set the environmental variable: " + Constants.HADOOP_GREMLIN_LIBS);
             else

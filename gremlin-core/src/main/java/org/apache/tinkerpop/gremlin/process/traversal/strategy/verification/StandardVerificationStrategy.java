@@ -45,7 +45,7 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!traversal.getStrategies().toList().contains(ComputerVerificationStrategy.instance())) {
             if (!TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal).isEmpty())
-                throw new VerificationException("VertexComputing steps must be executing with a GraphComputer: " + TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal), traversal);
+                throw new VerificationException("VertexComputing steps must be executed with a GraphComputer: " + TraversalHelper.getStepsOfAssignableClass(VertexComputing.class, traversal), traversal);
         }
 
         traversal.getSteps().forEach(step -> {
@@ -57,11 +57,11 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
         if (TraversalHelper.hasStepOfClass(ProfileSideEffectStep.class, traversal) &&
                 !(traversal.asAdmin().getEndStep() instanceof ProfileSideEffectStep) &&
                 !(traversal.asAdmin().getEndStep() instanceof SideEffectCapStep && traversal.asAdmin().getEndStep().getPreviousStep() instanceof ProfileSideEffectStep)) {
-            throw new VerificationException("When specified, the .profile()-Step must be the last step or followed only by the cap step.", traversal);
+            throw new VerificationException("When specified, the profile()-Step must be the last step or followed only by the cap()-step.", traversal);
         }
 
         if (TraversalHelper.getStepsOfClass(ProfileSideEffectStep.class, traversal).size() > 1) {
-            throw new VerificationException("The .profile()-Step cannot be specified multiple times.", traversal);
+            throw new VerificationException("The profile()-Step cannot be specified multiple times.", traversal);
         }
     }
 

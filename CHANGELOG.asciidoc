@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed variable `local` to `fs` in `HadoopGremlinPlugin` to avoid a naming conflict with `Scope.local`. (*breaking*)
 * Added `GraphTraversal.optional()` which will use the inner traversal if it returns results, else it won't.
 * `GroupStep` and `GroupSideEffectStep` make use of mid-traversal reducers to limit memory consumption in OLAP.
 * Added `GraphTraversal.program(VertexProgram)` to allow arbitrary user vertex programs in OLAP.
