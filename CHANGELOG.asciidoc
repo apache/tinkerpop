@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Neo4j 2.3.3.
 * Renamed variable `local` to `fs` in `HadoopGremlinPlugin` to avoid a naming conflict with `Scope.local`. (*breaking*)
 * Added `GraphTraversal.optional()` which will use the inner traversal if it returns results, else it won't.
 * `GroupStep` and `GroupSideEffectStep` make use of mid-traversal reducers to limit memory consumption in OLAP.
@@ -58,7 +59,7 @@ TinkerPop 3.2.0 (NOT OFFICIALLY RELEASED YET)
 * Fixed a `hashCode()` bug in `OrderGlobalStep` and `OrderLocalStep`.
 * Added `OrderLimitStrategy` which will ensure that partitions are limited before being merged in OLAP.
 * `ComparatorHolder` now separates the traversal from the comparator. (*breaking*)
-* Bumped to Spark 1.6.1.
+* Bumped to Apache Spark 1.6.1.
 * If no Spark serializer is provided then `GryoSerializer` is the default, not `JavaSerializer`.
 * Added `Operator.sumLong` as a optimized binary operator intended to be used by `Memory` reducers that know they are dealing with longs.
 * Traversers from `ComputerResultStep` are no longer attached. Attaching is only used in TinkerPop's test suite via `System.getProperties()`.
