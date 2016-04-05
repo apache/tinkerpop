@@ -222,9 +222,17 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                         logger.warn(errorMessage);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
                         if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                    } catch (InterruptedException ex) {
+                        logger.warn(String.format("Interruption during result iteration on request [%s].", msg), ex);
+                        final String exceptionMsg = ex.getMessage();
+                        final String err = "Interruption of result iteration" + (null == exceptionMsg || exceptionMsg.isEmpty() ? "" : " - " + exceptionMsg);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(err).create());
+                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                        final String err = ex.getMessage();
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                                .statusMessage(null == err || err.isEmpty() ? ex.getClass().getSimpleName() : err).create());
                         if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                     }
                 }).create();
