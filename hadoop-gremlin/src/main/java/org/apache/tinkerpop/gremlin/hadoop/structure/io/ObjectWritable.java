@@ -36,6 +36,7 @@ import java.io.Serializable;
  */
 public final class ObjectWritable<T> implements WritableComparable<ObjectWritable>, Serializable {
 
+    private static final String NULL = "null";
     private static final ObjectWritable<MapReduce.NullObject> NULL_OBJECT_WRITABLE = new ObjectWritable<>(MapReduce.NullObject.instance());
 
     T t;
@@ -57,7 +58,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public String toString() {
-        return this.t.toString();
+        return null == this.t ? NULL : this.t.toString();
     }
 
     @Override
@@ -97,7 +98,9 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public int compareTo(final ObjectWritable objectWritable) {
-        if (this.t instanceof Comparable)
+        if (null == this.t)
+            return objectWritable.isEmpty() ? 0 : -1;
+        else if (this.t instanceof Comparable && !objectWritable.isEmpty())
             return ((Comparable) this.t).compareTo(objectWritable.get());
         else if (this.t.equals(objectWritable.get()))
             return 0;
@@ -110,7 +113,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
     }
 
     public static ObjectWritable empty() {
-        return new ObjectWritable(null);
+        return new ObjectWritable<>(null);
     }
 
     @Override
