@@ -57,7 +57,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public String toString() {
-        return this.t.toString();
+        return "objectwritable[" + (null == t ? "null" : t.toString()) + "]";
     }
 
     @Override
