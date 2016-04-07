@@ -332,24 +332,22 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
         @Override
         public void doCommit() throws TransactionException {
-            try {
-                threadLocalTx.get().success();
+            try (Neo4jTx tx = threadLocalTx.get()) {
+                tx.success();
             } catch (Exception ex) {
                 throw new TransactionException(ex);
             } finally {
-                threadLocalTx.get().close();
                 threadLocalTx.remove();
             }
         }
 
         @Override
         public void doRollback() throws TransactionException {
-            try {
-                threadLocalTx.get().failure();
+            try (Neo4jTx tx = threadLocalTx.get()) {
+                tx.failure();
             } catch (Exception e) {
                 throw new TransactionException(e);
             } finally {
-                threadLocalTx.get().close();
                 threadLocalTx.remove();
             }
         }
