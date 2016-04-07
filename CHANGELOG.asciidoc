@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed two `NullPointerException`-potential situations in `ObjectWritable`.
 * Provided Docker script that allows the execution of several build tasks within a Docker container.
 * Added a per-request `scriptEvaluationTimeout` option to the Gremlin Server protocol.
 * Changed `DriverRemoteAcceptor` to send scripts as multi-line.

@@ -42,15 +42,6 @@ familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.ht
 Installing Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The `HADOOP_GREMLIN_LIBS` references locations that contains jars that should be uploaded to a respective
-distributed cache (link:http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html[YARN] or SparkServer).
-Note that the locations in `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) and all jars from all locations will
-be loaded into the cluster. Typically, only the jars of the respective GraphComputer are required to be loaded (e.g.
-`GiraphGraphComputer` plugin lib directory).
-
-[source,shell]
-export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/lib
-
 If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that
 Hadoop-Gremlin requires a Gremlin Console restart after installing.
 
@@ -79,6 +70,28 @@ gremlin> :plugin use tinkerpop.hadoop
 ==>tinkerpop.hadoop activated
 gremlin>
 ----
+
+It is important that the `CLASSPATH` environmental variable references `HADOOP_CONF_DIR` and that the configuration
+files in `HADOOP_CONF_DIR` contain references to a live Hadoop cluster. It is easy to verify a proper configuration
+from within the Gremlin Console. If `hdfs` references the local file system, then there is a configuration issue.
+
+[source,text]
+----
+gremlin> hdfs
+==>storage[org.apache.hadoop.fs.LocalFileSystem@65bb9029] // BAD
+
+gremlin> hdfs
+==>storage[DFS[DFSClient[clientName=DFSClient_NONMAPREDUCE_1229457199_1, ugi=user (auth:SIMPLE)]]] // GOOD
+----
+
+The `HADOOP_GREMLIN_LIBS` references locations that contains jars that should be uploaded to a respective
+distributed cache (link:http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html[YARN] or SparkServer).
+Note that the locations in `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) and all jars from all locations will
+be loaded into the cluster. Typically, only the jars of the respective GraphComputer are required to be loaded (e.g.
+`GiraphGraphComputer` plugin lib directory).
+
+[source,shell]
+export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/lib
 
 Properties Files
 ~~~~~~~~~~~~~~~~
