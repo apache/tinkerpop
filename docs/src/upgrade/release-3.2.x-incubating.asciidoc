@@ -25,9 +25,9 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.0
 ---------------
 
-*Release Date: NOT YET RELEASED*
+*Release Date: Release Date: April 8, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#tinkerpop-320-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~

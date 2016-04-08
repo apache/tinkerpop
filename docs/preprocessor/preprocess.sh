@@ -70,8 +70,7 @@ TMP_DIR="/tmp/tp-docs-preprocessor"
 
 mkdir -p "${TMP_DIR}"
 
-HISTORY_FILE=`find . -name Console.groovy | xargs grep HISTORY_FILE | head -n1 | cut -d '=' -f2 | xargs echo`
-[ ${HISTORY_FILE} ] || HISTORY_FILE=".gremlin_groovy_history"
+HISTORY_FILE=".gremlin_groovy_history"
 [ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} ${TMP_DIR}
 
 pushd gremlin-server/target/apache-gremlin-server-*-standalone > /dev/null
