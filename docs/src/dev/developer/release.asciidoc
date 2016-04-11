@@ -94,10 +94,10 @@ validity into question.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
 = 3.1.0-incubating AND fixVersion not in (3.0.2-incubating, 3.0.1-incubating)`.
-... Consider use of an "Excel" export to organize, sort and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
+... Consider use of an "Excel" export to organize, sort (by type and then id) and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
-3.1.0-incubating for an example.
+3.1.0-incubating or 3.2.0-incubating for an example.
 .. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . Update "upgrade documentation":
 .. Update the release date.
@@ -109,8 +109,8 @@ current release was under development as this new release will have those change
 . `bin/process-docs.sh` and validate the generated documentation locally (don't rely on "SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly)
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step.
 handled document generation and this step now merely needs to upload what was generated.
-. `mvn deploy -Papache-release -DcreateChecksum=true` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
-. Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote.
+. `mvn deploy -Papache-release -DcreateChecksum=true -DskipTests` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well).
+. Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote. Do NOT "release" the repository at this time.
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
@@ -124,15 +124,17 @@ handled document generation and this step now merely needs to upload what was ge
 . Perform JIRA administration tasks:
 .. "Release" the current version and set the "release date"
 .. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
-. Prepare Git administration tasks (apply the following steps as needed per release branch):
+. Prepare Git administration tasks. Note that this work can be performed at the release manager's discretion. It may be wise to wait until a successful VOTE is eminent before reopening development. Apply the following steps as needed per release branch:
 .. Make the appropriate branching changes as required by the release and bump the version to `SNAPSHOT` with
 `mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false`.
-.. `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
+.. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 .. `mvn deploy` - deploy the new `SNAPSHOT`
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
 .. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
 .. Update the links in the `README.asciidoc` to point at the `SNAPSHOT` version.
 .. Commit and push the `SNAPSHOT` changes to git
+.. Send email to advise that code freeze is lifted.
+.. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
