@@ -56,7 +56,8 @@ TINKERPOP_BUILD_OPTIONS=""
 [ -z "${INCLUDE_NEO4J}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DincludeNeo4j"
 [ -z "${BUILD_JAVA_DOCS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -Dmaven.javadoc.skip=true"
 
-mvn clean install ${TINKERPOP_BUILD_OPTIONS}
+mvn clean install process-resources ${TINKERPOP_BUILD_OPTIONS} || exit 1
+[ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
 if [ ! -z "${BUILD_USER_DOCS}" ]; then
 
@@ -76,12 +77,27 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   # build docs
   mkdir -p ~/.groovy
   cp docker/resources/groovy/grapeConfig.xml ~/.groovy/
-  bin/process-docs.sh
+  bin/process-docs.sh || exit 1
 
   # start a simple HTTP server
   IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
-  echo -e "\nDocs can be viewed under http://${IP}/\n"
+  cd target/docs/htmlsingle/
+  if [ -z "${BUILD_JAVA_DOCS}" ]; then
+    echo -e "\nUser Docs can be viewed under http://${IP}/\n"
+    python -m SimpleHTTPServer 80
+  else
+    echo -e "\nUser Docs can be viewed under http://${IP}/"
+    echo -e "Java Docs can be viewed under http://${IP}:81/\n"
+    python -m SimpleHTTPServer 80 &
+    cd ../../site/apidocs/full/
+    python -m SimpleHTTPServer 81
+  fi
+
+elif [ ! -z "${BUILD_JAVA_DOCS}" ]; then
+
+  IP=$(ifconfig | grep -o 'inet addr:[0-9.]*' | cut -f2 -d ':' | head -n1)
+  echo -e "\nJava Docs can be viewed under http://${IP}/\n"
   cd target/docs/htmlsingle/
   python -m SimpleHTTPServer 80
-fi
 
+fi

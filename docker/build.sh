@@ -21,8 +21,11 @@
 DIR=`dirname $0`
 PROJECT_HOME=${DIR}/../
 
+TIMESTAMP=$(date +%s)
+BUILD_TAG="build-${TIMESTAMP}"
+
 function cleanup {
-  BUILD_IMAGE=$(docker images tinkerpop | awk '{if ($2 == "build") print $3}')
+  BUILD_IMAGE=$(docker images tinkerpop | awk "{if (\$2 == \"${BUILD_TAG}\") print \$3}")
   [ ! -z ${BUILD_IMAGE} ] && docker rmi ${BUILD_IMAGE}
   rm -f ${PROJECT_HOME}/Dockerfile
 }
@@ -43,7 +46,7 @@ cat >> Dockerfile <<EOF
 CMD ["sh", "-c", "docker/scripts/build.sh $@"]
 EOF
 
-docker build -t tinkerpop:build .
-docker run --rm -ti tinkerpop:build
+docker build -t tinkerpop:${BUILD_TAG} .
+docker run --rm -ti tinkerpop:${BUILD_TAG}
 
 popd > /dev/null
