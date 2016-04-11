@@ -22,13 +22,13 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
-[[release-3.1.3-incubating]]
+[[release-3-1-3-incubating]]
 TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
-[[release-3.1.2-incubating]]
+[[release-3-1-2-incubating]]
 TinkerPop 3.1.2 (Release Date: April 8, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -85,56 +85,56 @@ TinkerPop 3.1.2 (Release Date: April 8, 2016)
 Bugs
 ^^^^
 
-* TINKERPOP-1252 Failed Neo4j transaction can leave Neo4jTransaction in inconsistent state
-* TINKERPOP-1251 NPE in ObjectWritable.toString
-* TINKERPOP-1245 Gremlin shell starts incorrectly on OS X due to awk difference
-* TINKERPOP-1239 Excessive continual failure for requests can cause TimeoutException in driver
-* TINKERPOP-1216 OrderStep or O_Traverser is broken
-* TINKERPOP-1184 Sessions not being closed properly
-* TINKERPOP-1175 Anonymous traversals can't be explained
-* TINKERPOP-1172 Reconnect to Gremlin Server previously marked as dead
-* TINKERPOP-1168 Switch plugins in docs preprocessor
-* TINKERPOP-1159 Client sends multiple session close messages per host
-* TINKERPOP-1150 Update pom file dependencies to work with Neo4j 2.3.2
-* TINKERPOP-1148 ConcurrentModificationException with bindings in Gremlin Server
-* TINKERPOP-1146 IoTest are not clearing the db after the test run
-* TINKERPOP-1127 client fails to reconnect to restarted server
-* TINKERPOP-1126 A single Host spawns many reconnect tasks
-* TINKERPOP-1125 RoundRobin load balancing always uses the second Host when size = 2
-* TINKERPOP-1106 Errors on commit in Gremlin Server don't register as exception on driver
-* TINKERPOP-1105 SparkGraphComputer / Null Pointer Exceptions for properties traversals
 * TINKERPOP-1041 StructureStandardTestSuite has file I/O issues on Windows
+* TINKERPOP-1105 SparkGraphComputer / Null Pointer Exceptions for properties traversals
+* TINKERPOP-1106 Errors on commit in Gremlin Server don't register as exception on driver
+* TINKERPOP-1125 RoundRobin load balancing always uses the second Host when size = 2
+* TINKERPOP-1126 A single Host spawns many reconnect tasks
+* TINKERPOP-1127 client fails to reconnect to restarted server
+* TINKERPOP-1146 IoTest are not clearing the db after the test run
+* TINKERPOP-1148 ConcurrentModificationException with bindings in Gremlin Server
+* TINKERPOP-1150 Update pom file dependencies to work with Neo4j 2.3.2
+* TINKERPOP-1159 Client sends multiple session close messages per host
+* TINKERPOP-1168 Switch plugins in docs preprocessor
+* TINKERPOP-1172 Reconnect to Gremlin Server previously marked as dead
+* TINKERPOP-1175 Anonymous traversals can't be explained
+* TINKERPOP-1184 Sessions not being closed properly
+* TINKERPOP-1216 OrderStep or O_Traverser is broken
+* TINKERPOP-1239 Excessive continual failure for requests can cause TimeoutException in driver
+* TINKERPOP-1245 Gremlin shell starts incorrectly on OS X due to awk difference
+* TINKERPOP-1251 NPE in ObjectWritable.toString
+* TINKERPOP-1252 Failed Neo4j transaction can leave Neo4jTransaction in inconsistent state
 
 Improvements
 ^^^^^^^^^^^^
 
-* TINKERPOP-1218 Usage of toLocalIterator Produces large amount of Spark Jobs
-* TINKERPOP-1213 missing docs for has(label, key, value)
-* TINKERPOP-1198 Bump commons-collections to 3.2.2
-* TINKERPOP-1197 Document Gremlin Server available metrics
-* TINKERPOP-1177 Improve documentation around Spark's storage levels
-* TINKERPOP-1176 Bump Groovy version - 2.4.6
-* TINKERPOP-1165 Tooling Support: Compile with -parameters
-* TINKERPOP-1160 Add timeout configuration for time to wait for connection close
-* TINKERPOP-1147 Add serialization for TraversalExplanation
-* TINKERPOP-1138 Improve messaging on server timeouts
-* TINKERPOP-1137 Deprecate ScriptElementFactory and make star graph globally available
-* TINKERPOP-1135 Improve GraphSON representation of java.time.* classes
-* TINKERPOP-1131 TraversalVertexProgram traverser management is inefficient memory-wise.
-* TINKERPOP-1109 Make Gremlin Console better suited for system level installs
-* TINKERPOP-1107 Provide a way to support global variables with sandboxing enabled
-* TINKERPOP-1097 Gremlin Console supporting sessions
-* TINKERPOP-1096 Support aliasing for sessions in Gremlin Server
-* TINKERPOP-1085 Establish TinkerPop "example" projects
-* TINKERPOP-1080 Bump Netty version - 4.0.34.Final
-* TINKERPOP-1068 Bump to support jbcrypt-0.4m.jar
-* TINKERPOP-1039 Enable auto-commit for session'd requests.
-* TINKERPOP-956 Connection errors tend to force a complete close of the channel
-* TINKERPOP-937 Extract the implementations sections of the primary documentation to its own book
-* TINKERPOP-916 Develop a better "simple" driver for testing and example purposes
 * TINKERPOP-732 gremlin-server GraphSON serializer issue with tree()
+* TINKERPOP-916 Develop a better "simple" driver for testing and example purposes
+* TINKERPOP-937 Extract the implementations sections of the primary documentation to its own book
+* TINKERPOP-956 Connection errors tend to force a complete close of the channel
+* TINKERPOP-1039 Enable auto-commit for session'd requests.
+* TINKERPOP-1068 Bump to support jbcrypt-0.4m.jar
+* TINKERPOP-1080 Bump Netty version - 4.0.34.Final
+* TINKERPOP-1085 Establish TinkerPop "example" projects
+* TINKERPOP-1096 Support aliasing for sessions in Gremlin Server
+* TINKERPOP-1097 Gremlin Console supporting sessions
+* TINKERPOP-1107 Provide a way to support global variables with sandboxing enabled
+* TINKERPOP-1109 Make Gremlin Console better suited for system level installs
+* TINKERPOP-1131 TraversalVertexProgram traverser management is inefficient memory-wise.
+* TINKERPOP-1135 Improve GraphSON representation of java.time.* classes
+* TINKERPOP-1137 Deprecate ScriptElementFactory and make star graph globally available
+* TINKERPOP-1138 Improve messaging on server timeouts
+* TINKERPOP-1147 Add serialization for TraversalExplanation
+* TINKERPOP-1160 Add timeout configuration for time to wait for connection close
+* TINKERPOP-1165 Tooling Support: Compile with -parameters
+* TINKERPOP-1176 Bump Groovy version - 2.4.6
+* TINKERPOP-1177 Improve documentation around Spark's storage levels
+* TINKERPOP-1197 Document Gremlin Server available metrics
+* TINKERPOP-1198 Bump commons-collections to 3.2.2
+* TINKERPOP-1213 missing docs for has(label, key, value)
+* TINKERPOP-1218 Usage of toLocalIterator Produces large amount of Spark Jobs
 
-[[release-3.1.1-incubating]]
+[[release-3-1-1-incubating]]
 TinkerPop 3.1.1 (Release Date: February 8, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -292,7 +292,7 @@ Improvements
 * TINKERPOP-1100 Look deeply into adding combine()-support in Spark MapReduce.
 * TINKERPOP-1117 InputFormatRDD.readGraphRDD requires a valid gremlin.hadoop.inputLocation, breaking InputFormats (Cassandra, HBase) that don't need one
 
-[[release-3.1.0-incubating]]
+[[release-3-1-0-incubating]]
 TinkerPop 3.1.0 (Release Date: November 16, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -474,26 +474,26 @@ TinkerPop 3.0.2 (Release Date: October 19, 2015)
 Bugs
 ^^^^
 
-* [TINKERPOP-814] - ConnectionPool can fill with dead Connections
-* [TINKERPOP-816] - Gryo deserialization of error response with null message causes NPE and protocol desync
-* [TINKERPOP-817] - Gryo serialization of large responses fails and causes protocol desync
-* [TINKERPOP-840] - TreeTest Is not being ignored via ComputerVerificationStrategy
-* [TINKERPOP-849] - gremlin-server doesn't close sessions on 'close' opcode
-* [TINKERPOP-855] - sasl authentication type error due to Json format
-* [TINKERPOP-865] - Errors with HTTP REST basic auth
-* [TINKERPOP-867] - TinkerGraphProvider does not initialize temp dir
-* [TINKERPOP-870] - Rebound client requires a connection to occur on the underlying client.
-* [TINKERPOP-877] - Driver hangs if SSL enabled on server but not on client
+* TINKERPOP-814 ConnectionPool can fill with dead Connections
+* TINKERPOP-816 Gryo deserialization of error response with null message causes NPE and protocol desync
+* TINKERPOP-817 Gryo serialization of large responses fails and causes protocol desync
+* TINKERPOP-840 TreeTest Is not being ignored via ComputerVerificationStrategy
+* TINKERPOP-849 gremlin-server doesn't close sessions on 'close' opcode
+* TINKERPOP-855 sasl authentication type error due to Json format
+* TINKERPOP-865 Errors with HTTP REST basic auth
+* TINKERPOP-867 TinkerGraphProvider does not initialize temp dir
+* TINKERPOP-870 Rebound client requires a connection to occur on the underlying client.
+* TINKERPOP-877 Driver hangs if SSL enabled on server but not on client
 
 Improvements
 ^^^^^^^^^^^^
 
-* [TINKERPOP-828] - TinkerGraph can supportPersistence(), should we allow it.
-* [TINKERPOP-830] - process-docs.sh introduces extra white space dependent on console width
-* [TINKERPOP-839] - Docs should have a ${version.number} under the logo.
-* [TINKERPOP-852] - A shell script that validates the distribution artifacts at release time
-* [TINKERPOP-853] - TinkerPop Logo in JavaDoc index.html
-* [TINKERPOP-858] - Cleanup after failed :install
+* TINKERPOP-828 TinkerGraph can supportPersistence(), should we allow it.
+* TINKERPOP-830 process-docs.sh introduces extra white space dependent on console width
+* TINKERPOP-839 Docs should have a ${version.number} under the logo.
+* TINKERPOP-852 A shell script that validates the distribution artifacts at release time
+* TINKERPOP-853 TinkerPop Logo in JavaDoc index.html
+* TINKERPOP-858 Cleanup after failed :install
 
 [[release-3-0-1-incubating]]
 TinkerPop 3.0.1 (Release Date: September 2, 2015)
@@ -528,32 +528,32 @@ TinkerPop 3.0.1 (Release Date: September 2, 2015)
 Bugs
 ^^^^
 
-* [TINKERPOP-770] - Exception while AddPropertyStep tries to detach vertex property
-* [TINKERPOP-780] - Use of fold() in repeat()
-* [TINKERPOP-782] - map(Traversal) should declare requirements of child
-* [TINKERPOP-785] - Gremlin Server Not Properly Reporting Port Conflict
-* [TINKERPOP-792] - select at start of match traversal on Map can fail
-* [TINKERPOP-794] - IncidentToAdjecentStrategy malfunction
-* [TINKERPOP-804] - Failed installing neo4j-gremlin extension on Windows 7
-* [TINKERPOP-822] - Neo4j GraphStep with element arguments ignores has  *(breaking)*
+* TINKERPOP-770 Exception while AddPropertyStep tries to detach vertex property
+* TINKERPOP-780 Use of fold() in repeat()
+* TINKERPOP-782 map(Traversal) should declare requirements of child
+* TINKERPOP-785 Gremlin Server Not Properly Reporting Port Conflict
+* TINKERPOP-792 select at start of match traversal on Map can fail
+* TINKERPOP-794 IncidentToAdjecentStrategy malfunction
+* TINKERPOP-804 Failed installing neo4j-gremlin extension on Windows 7
+* TINKERPOP-822 Neo4j GraphStep with element arguments ignores has  *(breaking)*
 
 Improvements
 ^^^^^^^^^^^^
 
-* [TINKERPOP-576] - Gremlin Server Authentication
-* [TINKERPOP-582] - Remove Groovy Sandbox Dependency
-* [TINKERPOP-610] - General graph concept names in test schema
-* [TINKERPOP-656] - IoRegistry Chaining
-* [TINKERPOP-690] - Be able to OPT_OUT for Standard, but not Computer *(breaking)*
-* [TINKERPOP-699] - GraphSON writeGraph not producing valid json object
-* [TINKERPOP-750] - Compare should not have special case for Number
-* [TINKERPOP-752] - Make Gremlin Server Better Respect ACCEPT
-* [TINKERPOP-764] - Unify semantics of Transaction.close() in tests and documentation *(breaking)*
-* [TINKERPOP-771] - IoRegistry Instantiation With GryoPool
-* [TINKERPOP-778] - Support GraphFactory location via annotation.
-* [TINKERPOP-791] - Document rules for committers
-* [TINKERPOP-797] - order() seems to only like List? *(breaking)*
-* [TINKERPOP-808] - TraversalComparator.comparator needs a getter
+* TINKERPOP-576 Gremlin Server Authentication
+* TINKERPOP-582 Remove Groovy Sandbox Dependency
+* TINKERPOP-610 General graph concept names in test schema
+* TINKERPOP-656 IoRegistry Chaining
+* TINKERPOP-690 Be able to OPT_OUT for Standard, but not Computer *(breaking)*
+* TINKERPOP-699 GraphSON writeGraph not producing valid json object
+* TINKERPOP-750 Compare should not have special case for Number
+* TINKERPOP-752 Make Gremlin Server Better Respect ACCEPT
+* TINKERPOP-764 Unify semantics of Transaction.close() in tests and documentation *(breaking)*
+* TINKERPOP-771 IoRegistry Instantiation With GryoPool
+* TINKERPOP-778 Support GraphFactory location via annotation.
+* TINKERPOP-791 Document rules for committers
+* TINKERPOP-797 order() seems to only like List? *(breaking)*
+* TINKERPOP-808 TraversalComparator.comparator needs a getter
 
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
