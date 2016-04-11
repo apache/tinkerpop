@@ -103,6 +103,11 @@ limitations under the License.
             <email>dylan.millikin@gmail.com</email>
             <url>https://github.com/PommeVerte</url>
         </contributor>
+        <contributor>
+            <name>Ted Wilmes</name>
+            <email>twilmes@gmail.com</email>
+            <url>https://github.com/twilmes</url>
+        </contributor>
     </contributors>
     <modules>
         <module>gremlin-shaded</module>
@@ -331,7 +336,7 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
@@ -357,7 +362,7 @@ limitations under the License.
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
                                     -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
                                     -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
-                                    -Dbuild.dir=${project.build.directory}
+                                    -Dbuild.dir=${project.build.directory}  -Dis.testing=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                             </configuration>
@@ -874,7 +879,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
+                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java:gremlin-benchmark/src/main/java
                                     </sourcepath>
                                 </configuration>
                             </execution>
@@ -996,7 +1001,7 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory}
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1072,7 +1077,7 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dhadoop.home.dir=${project.build.directory}/hadoop_home</argLine>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dhadoop.home.dir=${project.build.directory}/hadoop_home -Dis.testing=true</argLine>
                         </configuration>
                     </plugin>
                 </plugins>
