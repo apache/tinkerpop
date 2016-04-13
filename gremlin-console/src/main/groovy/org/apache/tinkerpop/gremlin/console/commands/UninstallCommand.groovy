@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
+import org.apache.tinkerpop.gremlin.console.ConsoleFs
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
@@ -53,8 +54,7 @@ class UninstallCommand extends CommandSupport {
     }
 
     private static String getPathFromDependency(final String module) {
-        def fileSep = System.getProperty("file.separator")
-        def extClassPath = System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) module
+        def extClassPath = ConsoleFs.CONSOLE_HOME_DIR + (String) module
         return extClassPath
     }
 }
