@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -34,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedActionException;
 import java.util.HashMap;
@@ -61,7 +63,7 @@ import javax.security.sasl.SaslException;
 final class Handler {
 
     /**
-     * Generic SASL handler that will authenticate against the gremlin server. 
+     * Generic SASL handler that will authenticate against the gremlin server.
      */
     static class GremlinSaslAuthenticationHandler extends SimpleChannelInboundHandler<ResponseMessage> implements CallbackHandler {
         private static final Logger logger = LoggerFactory.getLogger(GremlinSaslAuthenticationHandler.class);
@@ -88,7 +90,9 @@ final class Handler {
                 if (saslClient.get() == null) {
                     subject.set(login());
                     saslClient.set(saslClient(getHostName(channelHandlerContext)));
-                    saslResponse = saslClient.get().hasInitialResponse() ? evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null;
+                    byte[] initialResponse = saslClient.get().hasInitialResponse() ? evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null;
+                    // Add the mechanism name to the start of the initial response
+                    saslResponse = ArrayUtils.addAll(getMechanism().getBytes(StandardCharsets.UTF_8), initialResponse);
                 } else {
                     saslResponse = evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData());
                 }
@@ -114,7 +118,7 @@ final class Handler {
             }
         }
 
-        private byte[] evaluateChallenge(final Attribute<Subject> subject, final Attribute<SaslClient> saslClient, 
+        private byte[] evaluateChallenge(final Attribute<Subject> subject, final Attribute<SaslClient> saslClient,
                                          final byte[] challenge) throws SaslException {
 
             if (subject.get() == null) {
@@ -134,13 +138,13 @@ final class Handler {
             if (authProps.get(AuthProperties.Property.JAAS_ENTRY) != null) {
                 final LoginContext login = new LoginContext(authProps.get(AuthProperties.Property.JAAS_ENTRY));
                 login.login();
-                return login.getSubject();                    
+                return login.getSubject();
             }
             return null;
         }
 
         private SaslClient saslClient(final String hostname) throws SaslException {
-            return Sasl.createSaslClient(new String[] { getMechanism() }, null, authProps.get(AuthProperties.Property.PROTOCOL), 
+            return Sasl.createSaslClient(new String[] { getMechanism() }, null, authProps.get(AuthProperties.Property.PROTOCOL),
                                          hostname, SASL_PROPERTIES, this);
         }
 
@@ -149,7 +153,7 @@ final class Handler {
         }
 
         /**
-         * Work out the Sasl mechanism based on the user supplied parameters. 
+         * Work out the Sasl mechanism based on the user supplied parameters.
          * If we have a username and password use PLAIN otherwise GSSAPI
          */
         private String getMechanism() {

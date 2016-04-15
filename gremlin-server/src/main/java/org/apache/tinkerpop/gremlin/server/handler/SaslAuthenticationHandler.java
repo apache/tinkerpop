@@ -27,7 +27,9 @@ import io.netty.util.Attribute;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -50,6 +52,8 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
+    private static final byte[] PLAIN_BYTES = "PLAIN".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] GSSAPI_BYTES = "GSSAPI".getBytes(StandardCharsets.UTF_8);
 
     private final Authenticator authenticator;
 
@@ -73,10 +77,10 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                 ctx.writeAndFlush(authenticate);
             } else {
                 if (requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION) && requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
-                    
+
                     final Object saslObject = requestMessage.getArgs().get(Tokens.ARGS_SASL);
-                    final byte[] saslResponse;
-                    
+                    byte[] saslResponse;
+
                     if (saslObject instanceof byte[]) {
                         saslResponse = (byte[]) saslObject;
                     } else if(saslObject instanceof String) {
@@ -88,7 +92,10 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                         ctx.writeAndFlush(error);
                         return;
                     }
-                    
+
+                    // We aren't interested in the mechanism from the client so just remove it
+                    saslResponse = removeSaslMechanism(saslResponse);
+
                     try {
                         final byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
@@ -125,6 +132,24 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                     this.getClass().getSimpleName(), msg.getClass());
             ctx.close();
         }
+    }
+
+    private byte[] removeSaslMechanism(byte[] saslResponse) {
+        if (compareMechanism(PLAIN_BYTES, saslResponse)) {
+            return ArrayUtils.subarray(saslResponse, PLAIN_BYTES.length, saslResponse.length);
+        } else if (compareMechanism(GSSAPI_BYTES, saslResponse)) {
+            return ArrayUtils.subarray(saslResponse, GSSAPI_BYTES.length, saslResponse.length);
+        }
+        return saslResponse;
+    }
+
+    private boolean compareMechanism(byte[] mechanism, byte[] saslResponse) {
+        for (int index = 0; index < mechanism.length; index++) {
+            if (mechanism[index] != saslResponse[index]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private InetAddress getRemoteInetAddress(ChannelHandlerContext ctx)
