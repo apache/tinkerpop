@@ -201,6 +201,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .scriptEvaluationTimeoutOverride(seto)
+                .afterFailure((b,t) -> {
+                    if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                })
                 .beforeEval(b -> {
                     try {
                         b.putAll(bindingsSupplier.get());
@@ -417,12 +420,17 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
     private static void attemptCommit(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
         if (strict) {
-            // assumes that validations will already have been performed in extending classes - they are performed
-            // in StandardOpProcessor when getting bindings right now
+            // validations should have already been performed in StandardOpProcessor, but a failure in bindings maker
+            // at the time of the eval might raise through here at which point the validation didn't yet happen. better
+            // to just check again
             final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
             final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
-            final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
-            graphManager.commit(new HashSet<>(aliases.values()));
+            if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
+                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+                graphManager.commit(new HashSet<>(aliases.values()));
+            } else {
+                graphManager.commitAll();
+            }
         } else {
             graphManager.commitAll();
         }
@@ -430,12 +438,17 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
     private static void attemptRollback(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
         if (strict) {
-            // assumes that validations will already have been performed in extending classes - they are performed
-            // in StandardOpProcessor when getting bindings right now
+            // validations should have already been performed in StandardOpProcessor, but a failure in bindings maker
+            // at the time of the eval might raise through here at which point the validation didn't yet happen. better
+            // to just check again
             final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
             final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
-            final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
-            graphManager.rollback(new HashSet<>(aliases.values()));
+            if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
+                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+                graphManager.rollback(new HashSet<>(aliases.values()));
+            } else {
+                graphManager.rollbackAll();
+            }
         } else {
             graphManager.rollbackAll();
         }

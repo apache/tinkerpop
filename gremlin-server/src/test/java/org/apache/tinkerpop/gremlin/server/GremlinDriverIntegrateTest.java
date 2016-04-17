@@ -980,7 +980,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().get().get(0).getVertex();
+            client.submit("1+1").all().get();
             fail("Should have tossed an exception because strict mode is on and no aliasing was performed");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
