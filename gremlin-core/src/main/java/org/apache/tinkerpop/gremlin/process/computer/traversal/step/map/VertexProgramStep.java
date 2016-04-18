@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
@@ -83,6 +84,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
     protected boolean previousTraversalVertexProgram() {
         Step<?, ?> currentStep = this;
         while (!(currentStep instanceof EmptyStep)) {
+            if(Thread.interrupted()) throw new TraversalInterruptedException();
             if (currentStep instanceof TraversalVertexProgramStep)
                 return true;
             currentStep = currentStep.getPreviousStep();

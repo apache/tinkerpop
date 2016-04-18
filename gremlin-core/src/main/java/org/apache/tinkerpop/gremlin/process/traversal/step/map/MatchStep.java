@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -446,6 +447,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         @Override
         protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
             while (true) {
+                if(Thread.interrupted()) throw new TraversalInterruptedException();
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {

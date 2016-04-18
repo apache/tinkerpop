@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -64,6 +65,7 @@ public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements Loca
     @Override
     public void processAllStarts() {
         while (this.starts.hasNext() && (this.maxBarrierSize == Integer.MAX_VALUE || this.barrier.size() < this.maxBarrierSize)) {
+            if(Thread.interrupted()) throw new TraversalInterruptedException();
             final Traverser.Admin<S> traverser = this.starts.next();
             traverser.setStepId(this.getNextStep().getId()); // when barrier is reloaded, the traversers should be at the next step
             this.barrier.add(traverser);
