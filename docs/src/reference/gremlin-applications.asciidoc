@@ -610,6 +610,9 @@ The following table describes the various configuration options for the Gremlin 
 |Key |Description |Default
 |connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
+|connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
+|connectionPool.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
