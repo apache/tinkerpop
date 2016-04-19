@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.driver;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
@@ -41,7 +43,9 @@ import io.netty.handler.ssl.SslContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.io.File;
+import java.security.cert.CertificateException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -116,15 +120,7 @@ public interface Channelizer extends ChannelHandler {
             final Optional<SslContext> sslCtx;
             if (supportsSsl()) {
                 try {
-                    final SslContextBuilder builder = SslContextBuilder.forClient();
-                    if (cluster.connectionPoolSettings().trustCertChainFile != null)
-                        builder.trustManager(new File(cluster.connectionPoolSettings().trustCertChainFile));
-                    else {
-                        logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
-                        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
-                    }
-
-                    sslCtx = Optional.of(builder.build());
+                    sslCtx = Optional.of(createSSLContext(cluster.connectionPoolSettings()));
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -139,6 +135,30 @@ public interface Channelizer extends ChannelHandler {
             configure(pipeline);
             pipeline.addLast(PIPELINE_GREMLIN_SASL_HANDLER, new Handler.GremlinSaslAuthenticationHandler(cluster.authProperties()));
             pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending));
+        }
+
+        private SslContext createSSLContext(final Settings.ConnectionPoolSettings sslSettings) throws Exception  {
+            final SslProvider provider = SslProvider.JDK;
+
+            final SslContextBuilder builder = SslContextBuilder.forClient();
+            if (cluster.connectionPoolSettings().trustCertChainFile != null)
+                builder.trustManager(new File(cluster.connectionPoolSettings().trustCertChainFile));
+            else {
+                logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
+                builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+            }
+
+            if (null != sslSettings.keyCertChainFile && null != sslSettings.keyFile) {
+                final File keyCertChainFile = new File(sslSettings.keyCertChainFile);
+                final File keyFile = new File(sslSettings.keyFile);
+
+                // note that keyPassword may be null here if the keyFile is not password-protected.
+                builder.keyManager(keyCertChainFile, keyFile, sslSettings.keyPassword);
+            }
+
+            builder.sslProvider(provider);
+
+            return builder.build();
         }
     }
 
