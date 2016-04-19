@@ -69,7 +69,6 @@ public class DefaultTraversalTest {
                     startedIterating.countDown();
                     counter.incrementAndGet();
                 }).iterate();
-                fail("Traversal should have been interrupted");
             } catch (Exception ex) {
                 exceptionThrown.set(ex instanceof TraversalInterruptedException);
             }
