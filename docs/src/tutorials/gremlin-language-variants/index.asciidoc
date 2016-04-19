@@ -20,3 +20,91 @@ image::apache-tinkerpop-logo.png[width=500]
 Gremlin Language Variants
 -------------------------
 
+Gremlin is an embeddable query language able to represent itself within the constructs of existing programming languages.
+Any programming language that supports function composition (e.g. fluent chaining) and function nesting (e.g. call stacks)
+can support Gremlin. With Gremlin, the distinction between a programming language and a query language is not be as
+strongly divided as they have historically been. For instance, with Gremlin-Java, the developer is able to have their
+application code and their graph database queries at the same level of abstraction. A simple example is presented below
+where the `MyApplication` Java class contains both application-level and database-level code all within the constructs
+of Java.
+
+[source,java]
+----
+public class MyApplication {
+
+  public static void run(final String[] args) {
+    // assumes args[0] is a configuration file location
+    Graph graph = GraphFactory.open(args[0]);
+    GraphTraversalSource g = graph.traversal();
+
+    // assumes that args[1] is a vertex id
+    double averageRating =
+      g.V(args[1]).out("created").inE("rated").
+        values("stars").mean().next();
+
+    String personName = g.V(args[1]).values("name").next();
+
+    System.out.println("Average rating of " + personName + " projects is: " + averageRating);
+  }
+
+}
+----
+
+In query languages like link:https://en.wikipedia.org/wiki/SQL[SQL], the user must construct a string representation of
+their query and submit it to the database for evaluation. The same example above is presented below in Java using SQL and the
+link:https://en.wikipedia.org/wiki/Java_Database_Connectivity[JDBC] interface.
+
+[source,java]
+----
+public class MyApplication {
+
+  public static void run(final String[] args) {
+    // assumes args[0] is a URI to the database
+    Connection connection = DriverManager.getConnection(args[0])
+    Statement statement = connection.createStatement();
+
+    // assumes that args[1] is a vertex id
+    ResultSet result = statement.executeQuery(
+      "SELECT p.name as NAME, AVG(c.stars) as AVERAGE FROM PERSONS p" +
+        "INNER JOIN CREATED c ON c.person = p.id " +
+        "WHERE p.id = '" + args[1] + "'");
+
+    result.next();
+    double averageRating = result.getDouble("AVERAGE");
+    String personName = result.getString("NAME");
+
+    System.out.println("Average rating of " + personName + " projects is: " + averageRating);
+  }
+
+}
+----
+
+The purpose of this tutorial is to explain how to develop a Gremlin language variant. That is, for those developers that
+are interested in supporting Gremlin in their native language and there currently does not exist a Gremlin variant for
+their language, can develop one for both their language community and the Apache TinkerPop community to use. For this
+tutorial the Python will be used and three design models are presented.
+
+1. <<using-jython-and-the-jvm,**Using Jython and the JVM**>>: This is perhaps the easiest way to produce a Gremlin
+language variant. With link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223], any language compiler written for the JVM
+can directly access the JVM and any of its libraries (including Gremlin).
+
+2. <<using-python-and-jni,**Using Python and JNI**>>: This is similar to the first model save that a non-JVM Python version is used.
+However, the JVM is interacted with using link:https://en.wikipedia.org/wiki/Java_Native_Interface[JNI] to construct a Gremlin traversal
+for execution on the JVM, but whose result set is converted to Python for the native language developer.
+
+3. <<using-python-and-gremlin-server,**Using Python and GremlinServer**>>: This model requires that there exist a Python
+class that mimics Gremlin-Java's `GraphTraversal` API. With each method calls of this Python class, a `ScriptEngine`
+string is constructed (e.g. Gremlin-Groovy). Ultimately, that constructed traversal (represented behind the
+scenes as a string) is submitted to a Gremlin-Server compliant graph system for evaluation.
+
+[[using-jython-and-the-jvm]]
+Using Jython and the JVM
+------------------------
+
+[[using-python-and-jni]]
+Using Python and JNI
+--------------------
+
+[[using-python-and-gremlin-server]]
+Using Python and GremlinServer
+------------------------------
