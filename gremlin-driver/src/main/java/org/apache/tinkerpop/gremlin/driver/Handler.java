@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -84,18 +83,18 @@ final class Handler {
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
                 final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
                 final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
-                byte[] saslResponse;
+                RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
                     subject.set(login());
                     saslClient.set(saslClient(getHostName(channelHandlerContext)));
-                    byte[] initialResponse = saslClient.get().hasInitialResponse() ? evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null;
-                    // Add the mechanism name to the start of the initial response
-                    saslResponse = ArrayUtils.addAll(getMechanism().getBytes(StandardCharsets.UTF_8), initialResponse);
+                    messageBuilder.addArg(Tokens.ARGS_SASL_MECHANISM, getMechanism());
+                    messageBuilder.addArg(Tokens.ARGS_SASL, saslClient.get().hasInitialResponse() ?
+                                                                evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null);
                 } else {
-                    saslResponse = evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData());
+                    messageBuilder.addArg(Tokens.ARGS_SASL, evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData()));
                 }
-                channelHandlerContext.writeAndFlush(RequestMessage.build(Tokens.OPS_AUTHENTICATION).addArg(Tokens.ARGS_SASL, saslResponse).create());
+                channelHandlerContext.writeAndFlush(messageBuilder.create());
             } else {
                 channelHandlerContext.fireChannelRead(response);
             }
