@@ -144,6 +144,9 @@ public final class Cluster {
                 .port(settings.port)
                 .enableSsl(settings.connectionPool.enableSsl)
                 .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
+                .keyCertChainFile(settings.connectionPool.keyCertChainFile)
+                .keyFile(settings.connectionPool.keyFile)
+                .keyPassword(settings.connectionPool.keyPassword)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
@@ -286,6 +289,9 @@ public final class Cluster {
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String trustCertChainFile = null;
+        private String keyCertChainFile = null;
+        private String keyFile = null;
+        private String keyPassword = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
 
@@ -359,6 +365,30 @@ public final class Cluster {
          */
         public Builder trustCertificateChainFile(final String certificateChainFile) {
             this.trustCertChainFile = certificateChainFile;
+            return this;
+        }
+
+        /**
+         * The X.509 certificate chain file in PEM format.
+         */
+        public Builder keyCertChainFile(final String keyCertChainFile) {
+            this.keyCertChainFile = keyCertChainFile;
+            return this;
+        }
+
+        /**
+         * The PKCS#8 private key file in PEM format.
+         */
+        public Builder keyFile(final String keyFile) {
+            this.keyFile = keyFile;
+            return this;
+        }
+
+        /**
+         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         */
+        public Builder keyPassword(final String keyPassword) {
+            this.keyPassword = keyPassword;
             return this;
         }
 
@@ -587,6 +617,9 @@ public final class Cluster {
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
             connectionPoolSettings.trustCertChainFile = this.trustCertChainFile;
+            connectionPoolSettings.keyCertChainFile = this.keyCertChainFile;
+            connectionPoolSettings.keyFile = this.keyFile;
+            connectionPoolSettings.keyPassword = this.keyPassword;
             connectionPoolSettings.channelizer = this.channelizer;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy, authProps);
