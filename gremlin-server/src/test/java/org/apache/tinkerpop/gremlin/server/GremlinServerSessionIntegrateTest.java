@@ -119,6 +119,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             fail("Should have tossed the manually generated exception");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
+            ex.printStackTrace();
             assertEquals("no worky", root.getMessage());
 
             // just force a commit here of "something" in case there is something lingering

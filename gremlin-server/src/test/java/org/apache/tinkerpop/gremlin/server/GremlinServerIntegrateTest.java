@@ -19,6 +19,10 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import java.io.File;
+
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -122,6 +126,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldEnableSsl":
             case "shouldEnableSslButFailIfClientConnectsWithoutIt":
+            case "shouldEnableSslWithSslContextProgrammaticallySpecified":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 break;
@@ -261,6 +266,24 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEnableSsl() {
         final Cluster cluster = Cluster.build().enableSsl(true).create();
+        final Client client = cluster.connect();
+
+        try {
+            // this should return "nothing" - there should be no exception
+            assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableSslWithSslContextProgrammaticallySpecified() throws Exception {
+        // just for testing - this is not good for production use
+        final SslContextBuilder builder = SslContextBuilder.forClient();
+        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+        builder.sslProvider(SslProvider.JDK);
+
+        final Cluster cluster = Cluster.build().enableSsl(true).sslContext(builder.build()).create();
         final Client client = cluster.connect();
 
         try {
