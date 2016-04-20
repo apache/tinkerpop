@@ -56,7 +56,7 @@ input=$4
 output=`sed 's@/docs/src/@/target/postprocess-asciidoc/@' <<< "${input}"`
 
 SKIP=
-if dryRun `basename ${input} .asciidoc`; then
+if dryRun ${input}; then
   SKIP=1
 fi
 

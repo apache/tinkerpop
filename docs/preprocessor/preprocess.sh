@@ -24,7 +24,7 @@ FULLRUN_DOCS="$2"
 
 pushd "$(dirname $0)/../.." > /dev/null
 
-if [ "${DRYRUN_DOCS}" != "" ]; then
+if [ "${DRYRUN_DOCS}" != "*" ]; then
 
   if [ ! -f bin/gremlin.sh ]; then
     echo "Gremlin REPL is not available. Cannot preprocess AsciiDoc files."

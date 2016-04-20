@@ -26,6 +26,18 @@ DRYRUN=
 DRYRUN_DOCS=
 FULLRUN_DOCS=
 
+makeAbsPaths () {
+  for doc in $(tr ',' $'\n' <<< "$1"); do
+    if [ -d $doc ]; then
+      for d in $(find "$doc" -name "*.asciidoc"); do
+        echo $(cd $(dirname "$d") && pwd -P)/$(basename "$d")
+      done
+    else
+      echo $(cd $(dirname "$doc") && pwd -P)/$(basename "$doc")
+    fi
+  done | paste -sd ',' -
+}
+
 while [[ $# -gt 0 ]]
 do
   key="$1"
@@ -38,7 +50,7 @@ do
       DRYRUN=1
       shift
       if [[ $# -gt 0 ]] && [[ $1 != -* ]]; then
-        DRYRUN_DOCS="$1"
+        DRYRUN_DOCS=$(makeAbsPaths "$1")
         shift
       else
         DRYRUN_DOCS="*"
@@ -48,7 +60,7 @@ do
       DRYRUN=1
       DRYRUN_DOCS=${DRYRUN_DOCS:-"*"}
       shift
-      FULLRUN_DOCS="$1"
+      FULLRUN_DOCS=$(makeAbsPaths "$1")
       shift
       ;;
     *)
