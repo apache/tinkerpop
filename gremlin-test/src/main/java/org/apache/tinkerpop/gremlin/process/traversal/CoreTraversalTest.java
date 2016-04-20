@@ -24,13 +24,11 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -38,12 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -60,130 +54,6 @@ import static org.junit.Assert.*;
         "idArgsMustBeEitherIdOrElement"
 })
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
-
-    @Test
-    @LoadGraphWith(GRATEFUL)
-    public void shouldRespectThreadInterruptionInGraphStep() throws Exception {
-        final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
-        final CountDownLatch startedIterating = new CountDownLatch(1);
-        final Thread t = new Thread(() -> {
-            try {
-                final Traversal traversal = g.V().sideEffect(traverser -> {
-                    startedIterating.countDown();
-
-                    // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
-                    if (startedIterating.getCount() == 0) {
-                        try {
-                            Thread.sleep(3000);
-                        } catch (Exception ignored) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                });
-                traversal.iterate();
-            } catch (Exception ex) {
-                exceptionThrown.set(ex instanceof TraversalInterruptedException);
-            }
-        });
-
-        t.start();
-
-        // total time for test should not exceed 5 seconds - this prevents the test from just hanging and allows
-        // it to finish with failure
-        assertThat(startedIterating.await(5000, TimeUnit.MILLISECONDS), CoreMatchers.is(true));
-
-        t.interrupt();
-        t.join();
-
-        // ensure that some but not all of the traversal was iterated and that the right exception was tossed
-        assertThat(exceptionThrown.get(), CoreMatchers.is(true));
-    }
-
-    @Test
-    @LoadGraphWith(GRATEFUL)
-    public void shouldRespectThreadInterruptionInVertexStep() throws Exception {
-        final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
-        final CountDownLatch startedIterating = new CountDownLatch(1);
-        final Thread t = new Thread(() -> {
-            try {
-                final AtomicBoolean first = new AtomicBoolean(true);
-                final Traversal traversal = g.V().sideEffect(traverser -> {
-                    // let the first iteration flow through
-                    if (!first.compareAndSet(true, false)) {
-                        // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
-                        // the next iteration should stop so we can force the interrupt to be handled by VertexStep
-                        try {
-                            Thread.sleep(3000);
-                        } catch (Exception ignored) {
-                            // make sure that the interrupt propagates in case the interrupt occurs during sleep.
-                            // this should ensure VertexStep gets to try to throw the TraversalInterruptedException
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                }).out().sideEffect(traverser -> {
-                    startedIterating.countDown();
-                });
-                traversal.iterate();
-            } catch (Exception ex) {
-                exceptionThrown.set(ex instanceof TraversalInterruptedException);
-            }
-        });
-
-        t.start();
-
-        // total time for test should not exceed 5 seconds - this prevents the test from just hanging and allows
-        // it to finish with failure
-        assertThat(startedIterating.await(5000, TimeUnit.MILLISECONDS), CoreMatchers.is(true));
-
-        t.interrupt();
-        t.join();
-
-        // ensure that some but not all of the traversal was iterated and that the right exception was tossed
-        assertThat(exceptionThrown.get(), CoreMatchers.is(true));
-    }
-
-    @Test
-    @LoadGraphWith(GRATEFUL)
-    public void shouldRespectThreadInterruptionInPropertyStep() throws Exception {
-        final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
-        final CountDownLatch startedIterating = new CountDownLatch(1);
-        final Thread t = new Thread(() -> {
-            try {
-                final AtomicBoolean first = new AtomicBoolean(true);
-                final Traversal traversal = g.V().sideEffect(traverser -> {
-                    // let the first iteration flow through
-                    if (!first.compareAndSet(true, false)) {
-                        // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
-                        // the next iteration should stop so we can force the interrupt to be handled by PropertyStep
-                        try {
-                            Thread.sleep(3000);
-                        } catch (Exception ignored) {
-                            // make sure that the interrupt propagates in case the interrupt occurs during sleep.
-                            // this should ensure PropertyStep gets to try to throw the TraversalInterruptedException
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                }).properties().sideEffect(traverser -> {
-                    startedIterating.countDown();
-                });
-                traversal.iterate();
-            } catch (Exception ex) {
-                exceptionThrown.set(ex instanceof TraversalInterruptedException);
-            }
-        });
-
-        t.start();
-
-        // total time for test should not exceed 5 seconds - this prevents the test from just hanging and allows
-        // it to finish with failure
-        assertThat(startedIterating.await(5000, TimeUnit.MILLISECONDS), CoreMatchers.is(true));
-
-        t.interrupt();
-        t.join();
-
-        // ensure that some but not all of the traversal was iterated and that the right exception was tossed
-        assertThat(exceptionThrown.get(), CoreMatchers.is(true));
-    }
 
     @Test
     @LoadGraphWith
