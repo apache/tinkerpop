@@ -102,28 +102,52 @@ IMPORTANT: Gremlin-Java is considered the idiomatic, standard implementation of 
 regardless of the implementation model chosen, **must**, within the constraints of the host language, be in 1-to-1
 correspondence with Gremlin-Java.
 
-Implementation Requirements
----------------------------
+Language Drivers vs. Language Variants
+--------------------------------------
 
-Every language variant implementation, regardless of the model used above, will have to account for four core concepts below:
+Language Drivers
+~~~~~~~~~~~~~~~~
 
-1. `Graph`: The graph instance that enables the creation of a `GraphTraversalSource` via `graph.traversal()`.
+A language driver is a software library that is able to communicate with a TinkerPop `Graph` whether directly via the JVM
+or indirectly via link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]. By in large, if a
+language driver is being developed, it is being developed to interact with GremlinServer or a
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[RemoteConnection].
+Language drivers ensure that `Traversals` are submitted to a TinkerPop-enabled graph system and the results are translated
+back into the host language's type system. For instance, resultant doubles are coerced to floats in Python.
 
-2. `GraphTraversalSource`: The class is the typical `g` instance. It maintain all the `withXXX()` methods as well as the
-"traversal source"-methods such as `V()`, `E()`, `addV()`, etc.
+This tutorial is not about language drivers, but about language variants. Moreover, community libraries should make this
+distinction clear and should not develop libraries that serve both roles. Language drivers will be useful to a collection
+of language variants -- including `GraphTraversal`-variants but also other DSL-variants (e.g. `SocialTraversal`).
 
-3. `GraphTraversal`: The primary traversal class that has every traversal step method such as `out()`, `groupCount()`,
-`match()`, etc.
+IMPORTANT: `GraphTraversal` is a particular Gremlin domain-specific language (link:https://en.wikipedia.org/wiki/Domain-specific_language[DSL]),
+albeit the most popular and foundational DSL. If another DSL is created, then the same techniques discussed in this tutorial
+for `GraphTraversal` apply to `XXXTraversal`.
 
-4. `__`: The anonymous traversal class that is used for nested traversals. An example includes `repeat(__.out())`.
+Language Variants
+~~~~~~~~~~~~~~~~~
 
-Historically, many Gremlin language variants have failed to make these distinction clear and in doing so, either
-complicate their implementations or yield variants that are not in 1-to-1 correspondence with Gremlin-Java. Note that most
-variants will only have to consider `GraphTraversalSource`, `GraphTraversal`, and `__`.
+A language variant is a software library that allows a developer to write a Gremlin traversal within their native
+programming language. The language variant is responsible for creating a `Traversal` instance that will ultimately be
+evaluated by a TinkerPop-enabled graph system. The `Traversal` instance is either created directly on the JVM or as a String
+representation for ultimate generation by a `ScriptEngine` (typically, via GremlinServer).
 
-NOTE: `GraphTraversal` is a particular Gremlin domain-specific language (link:https://en.wikipedia.org/wiki/Domain-specific_language[DSL]),
-albeit the most popular and foundational DSL. If another DSL is created, then the same techniques discussed for `GraphTraversal`
-apply to `XXXTraversal`.
+Every language variant, regardless of the implementation details, will have to account for the four core concepts below:
+
+1. `Graph` (**data**): The source of the graph data to be traversers and which enables the creation of a `GraphTraversalSource` via `graph.traversal()`.
+
+2. `GraphTraversalSource` (**compiler**): This is the typical `g` reference. It maintains the `withXXX()`-strategy
+methods as well as the "traversal spawn"-methods such as `V()`, `E()`, `addV()`, etc. A traversal source is responsible
+for specifying how the ultimate traversal will be compiled by way of its registered `TraversalStrategies`.
+
+3. `GraphTraversal` (**function composition**): The primary traversal class that maintains every traversal step such as `out()`, `groupCount()`,
+`match()`, etc. This fluent interface support method chaining and thus, a linear "left-to-right" representation of a traversal.
+
+4. `__` (**function nesting**) : The anonymous traversal class that is used for nested traversals. An example includes `repeat(__.out())`.
+This static interface enables the "up-and-down" representation of a traversal.
+
+Both `GraphTraversal` and `__` define the structure of the Gremlin language. Gremlin is a _two-dimensional language_ supporting
+linear, nested step sequences. Historically, many Gremlin language variants have failed to make the distinctions above clear
+and in doing so, either complicate their implementations or yield variants that are not in 1-to-1 correspondence with Gremlin-Java.
 
 IMPORTANT: The term "Gremlin-Java" denotes the language that is defined by `GraphTraversalSource`, `GraphTraversal`,
 and `__`. These three classes exist in `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph` and form the definitive
