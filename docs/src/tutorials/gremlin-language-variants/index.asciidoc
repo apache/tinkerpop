@@ -175,6 +175,8 @@ with the Java API and any Java packages on the `CLASSPATH`. This makes any JSR-2
 # import Java classes
 >>> from org.apache.tinkerpop.gremlin.tinkergraph.structure import TinkerFactory
 >>> from org.apache.tinkerpop.gremlin.process.traversal.dsl.graph import __
+>>> from org.apache.tinkerpop.gremlin.process.traversal import *
+>>> from org.apache.tinkerpop.gremlin.structure import *
 # create a the toy "modern" graph for the example and spawn a GraphTraversalSource
 >>> graph = TinkerFactory.createModern()
 >>> g = graph.traversal()
@@ -293,8 +295,9 @@ is generated and can be used by Jython.
 [source,groovy]
 ----
 pythonClass = new StringBuilder();
+pythonClass.append("from org.apache.tinkerpop.gremlin.process.traversal import *\n")
+pythonClass.append("from org.apache.tinkerpop.gremlin.structure import *\n")
 pythonClass.append("from org.apache.tinkerpop.gremlin.process.traversal.dsl.graph import __ as anon\n\n")
-
 //////////////////////////
 // GraphTraversalSource //
 //////////////////////////
@@ -331,9 +334,9 @@ pythonClass.append("\n\n")
 ////////////////////
 // GraphTraversal //
 ////////////////////
-methodMap = [as:"_as",in:"_in",and:"_and",or:"_or",is:"_is",not:"_not",from:"_from"].withDefault{ it }  <1>
+methodMap = [as:"_as",in:"_in",and:"_and",or:"_or",is:"_is",not:"_not",from:"_from"].withDefault{ it }  //// <1>
 invertedMethodMap = [_as:"as",_in:"in",_and:"and",_or:"or",_is:"is",_not:"not",_from:"from"].withDefault{ it }
-pythonClass.append(                                                           <2>
+pythonClass.append(                                                           //// <2>
 """class JythonGraphTraversal(object):
   def __init__(self, traversal):
     self.traversal = traversal
@@ -350,17 +353,17 @@ pythonClass.append(                                                           <2
   def __getattr__(self,key):
     return self.values(key)
 """)
-methods = GraphTraversal.getMethods().collect{methodMap[it.name]} as Set; []  <3>
+methods = GraphTraversal.getMethods().collect{methodMap[it.name]} as Set; []  //// <3>
 methods.each{ method ->
   returnType = (GraphTraversal.getMethods() as Set).findAll{it.name.equals(method)}.collect{it.returnType}[0]
-  if(null != returnType && Traversal.isAssignableFrom(returnType)) {          <4>
+  if(null != returnType && Traversal.isAssignableFrom(returnType)) {          //// <4>
   pythonClass.append(
 """  def ${method}(self, *args):
     self.traversal = self.traversal.${invertedMethodMap[method]}(*args)
     return self
 """)
   } else {
-  pythonClass.append(                                                         <5>
+  pythonClass.append(                                                         //// <5>
 """  def ${method}(self, *args):
     return self.traversal.${invertedMethodMap[method]}(*args)
 """)
@@ -414,13 +417,13 @@ graphtraversalsource[tinkergraph[vertices:6 edges:6], graphcomputer]
 >>>
 ----
 
-Gremlin-Jython was simple to create. Unfortunately, this simplicity is not without problems. These problems are itemized below.
-However, for the sake of this tutorial, the simple application of the technique was chosen.
+Gremlin-Jython was simple to create. Unfortunately, this simplicity is not without its problems. These problems are itemized below.
+The interested reader can solve the aforementioned problems as a training exercise.
 
 * The Gremlin-Jython API is non-informative as all methods take a tuple reference (`*args`).
 ** The Gremlin-Java link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[JavaDoc] would be a sufficient guide to Gremlin-Jython (minus the extensions).
 * Lambdas are not supported with, for example, `map(lambda x: x.get())` throwing an exception.
-** Type introspection with a typecast to a `java.util.function.Function` lambda wrapper would solve this problem.
+** Python type inspection with a typecast to a `java.util.function.Function` lambda wrapper would solve this problem.
 * `__` is always required for anonymous traversals.
 ** By placing the `@staticmethods` outside of the `__` Jython class, the methods would be globally scoped (analogous to `import static` in Java).
 
@@ -432,3 +435,135 @@ Using Python and JNI
 [[using-python-and-gremlin-server]]
 Using Python and GremlinServer
 ------------------------------
+
+The last model does not leverage the JVM. Instead, it constructs a String representation of a `Traversal` that will
+ultimately be evaluated by a registered `ScriptEngine` in GremlinServer or a `RemoteConnection`. Note that all that this
+generated Python file does is generate a String. It has no concept of WebSockets, or REST, or the JVM. It is up to the
+language variant designer to choose a language driver to use for submitted the generated String.
+
+[source,groovy]
+----
+pythonClass = new StringBuilder()
+pythonClass.append("""
+class Helper(object):
+  @staticmethod
+  def stringOrObject(arg):
+    if (type(arg) is str and
+       not(arg.startswith("P.")) and
+       not(arg.startswith("Order.")) and
+       not(arg.startswith("T.")) and
+       not(arg.startswith("Pop.")) and
+       not(arg.startswith("Column."))):
+      return "\\"" + arg + "\\""
+    elif type(arg) is bool:
+      return str(arg).lower()
+    else:
+      return str(arg)
+  @staticmethod
+  def stringify(*args):
+    if len(args) == 0:
+      return ""
+    elif len(args) == 1:
+      return Helper.stringOrObject(args[0])
+    else:
+      return ", ".join(Helper.stringOrObject(i) for i in args)\n
+""");
+
+//////////////////////////
+// GraphTraversalSource //
+//////////////////////////
+methods = GraphTraversalSource.getMethods().collect{methodMap[it.name]} as Set; []
+pythonClass.append(
+"""class PythonGraphTraversalSource(object):
+  def __init__(self, traversalSourceString):
+    self.traversalSourceString = traversalSourceString
+  def __repr__(self):
+    return self.traversalSourceString
+""")
+methods.each{ method ->
+  returnType = (GraphTraversalSource.getMethods() as Set).findAll{it.name.equals(method)}.collect{it.returnType}[0]
+  if(null != returnType && Traversal.isAssignableFrom(returnType)) {
+  pythonClass.append(
+"""  def ${method}(self, *args):
+    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
+""")
+  } else {
+  pythonClass.append(
+"""  def ${method}(self, *args):
+    self.traversalSourceString = self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")"
+    return self
+""")
+  }
+}; []
+pythonClass.append("\n\n")
+
+////////////////////
+// GraphTraversal //
+////////////////////
+methodMap = [as:"_as",in:"_in",and:"_and",or:"_or",is:"_is",not:"_not",from:"_from"].withDefault{ it }
+invertedMethodMap = [_as:"as",_in:"in",_and:"and",_or:"or",_is:"is",_not:"not",_from:"from"].withDefault{ it }
+methods = GraphTraversal.getMethods().collect{methodMap[it.name]} as Set; []
+pythonClass.append(
+"""class PythonGraphTraversal(object):
+  def __init__(self, traversalString):
+    self.traversalString = traversalString
+  def __repr__(self):
+    return self.traversalString
+  def __getitem__(self,index):
+    if type(index) is int:
+      return self.range(indices,indices+1)
+    elif type(index) is slice:
+      return self.range(index.start,index.stop)
+    else:
+      raise TypeError("index must be int or slice")
+  def __getattr__(self,key):
+    return self.values(key)
+""")
+methods.each{ method ->
+  pythonClass.append(
+"""  def ${method}(self, *args):
+    self.traversalString = self.traversalString + ".${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")"
+    return self
+""")
+}; []
+pythonClass.append("\n\n")
+
+////////////////////////
+// AnonymousTraversal //
+////////////////////////
+methods = __.getMethods().collect{methodMap[it.name]} as Set; []
+pythonClass.append("class __(object):\n");
+methods.each{ method ->
+  pythonClass.append(
+"""  @staticmethod
+  def ${method}(*args):
+    return PythonGraphTraversal("__").${invertedMethodMap[method]}(*args)
+""")
+}; []
+pythonClass.append("\n\n")
+
+// save to a python file
+file = new File("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-python.py")
+file.delete()
+pythonClass.eachLine{ file.append(it + "\n") }
+----
+
+When the above Groovy script is evaluated in GremlinConsole, **Gremlin-Python** is born.
+The generated file is available at link:../../resources/gremlin-python.py[gremlin-python.py]. Now, from any Python
+virtual machine (not just Jython), Gremlin traversals can be expressed in native Python and a legal Gremlin-Groovy
+string is created behind the scenes.
+
+[source,python]
+----
+>>> execfile("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-python.py")
+>>> g = PythonGraphTraversalSource("g")
+# nested traversal with Python slicing and attribute interception extensions
+>>> g.V().hasLabel("person").repeat(__.out()).times(2).name[0:2]
+g.V().hasLabel("person").repeat(__.out()).times(2).values("name").range(0, 2)
+>>>
+----
+
+IMPORTANT: The string that is generated for submission to a GremlinServer or `RemoteConnection` does not have to be a
+Gremlin-Groovy string. However, it must be a string that has a respective `ScriptEngine` that is enabled on the remote
+GremlinServer. It is recommended that a `Gremlin-Groovy` string be constructed as Gremlin-Groovy is maintained by
+Apache TinkerPop and is guaranteed to be perfectly aligned with Gremlin-Java.
