@@ -189,6 +189,9 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .scriptEvaluationTimeoutOverride(seto)
+                .afterFailure((b,t) -> {
+                    if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                })
                 .beforeEval(b -> {
                     try {
                         b.putAll(bindingsSupplier.get());
