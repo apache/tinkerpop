@@ -664,6 +664,7 @@ limitations under the License.
                                     </resources>
                                     <nonFilteredFileExtensions>
                                         <nonFilteredFileExtension>png</nonFilteredFileExtension>
+                                        <nonFilteredFileExtension>py</nonFilteredFileExtension>
                                     </nonFilteredFileExtensions>
                                 </configuration>
                             </execution>
