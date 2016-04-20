@@ -28,6 +28,7 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 
 * Fixed bug where transaction managed sessions were not properly rolling back transactions for exceptions encountered during script evaluation.
 * Fixed bug in `:uninstall` command if the default `/ext` directory was not used.
+* Improved dryRun functionality for the docs processor. It's now possible to dry run (or full run) only specific files.
 
 [[release-3-1-2-incubating]]
 TinkerPop 3.1.2 (Release Date: April 8, 2016)
