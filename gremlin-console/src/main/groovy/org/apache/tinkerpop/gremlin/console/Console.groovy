@@ -37,6 +37,7 @@ import org.fusesource.jansi.AnsiConsole
 import java.util.concurrent.TimeUnit
 import java.util.prefs.PreferenceChangeEvent
 import java.util.prefs.PreferenceChangeListener
+import org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs.*
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -64,6 +65,7 @@ class Console {
     private static final String IMPORT_STATIC_SPACE = "import static "
     private static final String NULL = "null"
     private static final String ELLIPSIS = "..."
+    protected static DocStructure currdocs = ImportJavadocs.findClass("Graph")
 
     private Iterator tempIterator = Collections.emptyIterator()
 
@@ -76,7 +78,6 @@ class Console {
         io.out.println("         \\,,,/")
         io.out.println("         (o o)")
         io.out.println("-----oOOo-(3)-oOOo-----")
-
         maxIteration = Integer.parseInt(Preferences.get(PREFERENCE_ITERATION_MAX, Integer.toString(DEFAULT_ITERATION_MAX)))
         Preferences.addChangeListener(new PreferenceChangeListener() {
             @Override
@@ -85,7 +86,7 @@ class Console {
                     maxIteration = Integer.parseInt(evt.newValue)
             }
         })
-
+        
         final Mediator mediator = new Mediator(this)
         groovy = new GremlinGroovysh(mediator)
 
@@ -97,6 +98,9 @@ class Console {
         groovy.register(new PluginCommand(groovy, mediator))
         groovy.register(new RemoteCommand(groovy, mediator))
         groovy.register(new SubmitCommand(groovy, mediator))
+        groovy.register(new ImportDocsCommand(groovy, mediator))
+        groovy.register(new DocsCommand(groovy, mediator))
+        groovy.register(new CurrDocsCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
@@ -300,6 +304,14 @@ class Console {
             io.err.println("Error starting Gremlin with initialization script at [$initScriptFile] - ${ex.message}")
             System.exit(1)
         }
+    }
+    
+    public static void updateCurrdocs(final DocStructure importedDocs) {
+        currdocs = importedDocs
+    }
+    
+    public static DocStructure getCurrdocs() {
+        return(currdocs)
     }
 
     public static void main(final String[] args) {
