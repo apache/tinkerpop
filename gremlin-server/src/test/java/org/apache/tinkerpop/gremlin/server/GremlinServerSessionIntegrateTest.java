@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -108,6 +109,8 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {
+        assumeNeo4jIsPresent();
+
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName(), true);
 
@@ -215,7 +218,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         assertEquals(requests, futures.size());
 
         for(CompletableFuture<ResultSet> f : futures) {
-            final Result r = f.get().one();
+            final Result r = f.get().all().get(3000, TimeUnit.MILLISECONDS).get(0);
             assertEquals(11100, r.getInt());
         }
 
