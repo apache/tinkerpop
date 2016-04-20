@@ -29,6 +29,24 @@ TinkerPop 3.1.3
 
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-313-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+SASL Mechanism
+++++++++++++++
+
+Note that the Gremlin Driver for Java now passes a new parameter for SASL authentication called `saslMechanism`. This
+is an optional argument and does not represent a breaking change, but it does make the overall implementation more
+complete. While the default authentication implementations packaged with Gremlin Server don't utilize this argument
+other implementations might, so the drivers should be able to pass it as per the SASL specification.
+
+See: https://issues.apache.org/jira/browse/[TINKERPOP-1263]
 
 TinkerPop 3.1.2
 ---------------
