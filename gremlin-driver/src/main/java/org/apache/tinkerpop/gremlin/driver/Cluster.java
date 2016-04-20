@@ -394,7 +394,8 @@ public final class Cluster {
         /**
          * Explicitly set the {@code SslContext} for when more flexibility is required in the configuration than is
          * allowed by the {@link Builder}. If this value is set to something other than {@code null} then all other
-         * related SSL settings are ignored.
+         * related SSL settings are ignored. The {@link #enableSsl} setting should still be set to {@code true} for
+         * this setting to take effect.
          */
         public Builder sslContext(final SslContext sslContext) {
             this.sslContext = sslContext;

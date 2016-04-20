@@ -195,6 +195,12 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     private SslContext createSSLContext(final Settings settings)  {
         final Settings.SslSettings sslSettings = settings.ssl;
+
+        if (sslSettings.getSslContext().isPresent()) {
+            logger.info("Using the SslContext override");
+            return sslSettings.getSslContext().get();
+        }
+
         final SslProvider provider = SslProvider.JDK;
 
         final SslContextBuilder builder;
