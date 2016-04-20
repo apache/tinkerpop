@@ -129,7 +129,6 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(GSSException.class, root.getClass());
-            assertThat(root.getMessage(), startsWith("Invalid name provided"));
         } finally {
             cluster.close();
         }
@@ -167,7 +166,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldAuthenticateWithPlainTextOverJSONSerialization() throws Exception {
         final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON).credentials("stephen", "password").create();
@@ -195,7 +194,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverJsonSerialization() throws Exception {
         final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON).credentials("stephen", "password").create();
@@ -205,14 +204,14 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             Map vertex = (Map) client.submit("v=graph.addVertex(\"name\", \"stephen\")").all().get().get(0).getObject();
             Map<String, List<Map>> properties = (Map) vertex.get("properties");
             assertEquals("stephen", properties.get("name").get(0).get("value"));
-            
+
             final Map vpName = (Map)client.submit("v.property('name')").all().get().get(0).getObject();
             assertEquals("stephen", vpName.get("value"));
         } finally {
             cluster.close();
         }
     }
-    
+
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverGraphSONSerialization() throws Exception {
         final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V1D0).credentials("stephen", "password").create();
@@ -222,7 +221,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             Map vertex = (Map) client.submit("v=graph.addVertex('name', 'stephen')").all().get().get(0).getObject();
             Map<String, List<Map>> properties = (Map) vertex.get("properties");
             assertEquals("stephen", properties.get("name").get(0).get("value"));
-            
+
             final Map vpName = (Map)client.submit("v.property('name')").all().get().get(0).getObject();
             assertEquals("stephen", vpName.get("value"));
         } finally {

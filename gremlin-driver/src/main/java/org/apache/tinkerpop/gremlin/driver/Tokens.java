@@ -58,6 +58,7 @@ public final class Tokens {
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
+    public static final String ARGS_SASL_MECHANISM = "saslMechanism";
 
     public static final String ARGS_COORDINATES_GROUP = "group";
     public static final String ARGS_COORDINATES_ARTIFACT = "artifact";

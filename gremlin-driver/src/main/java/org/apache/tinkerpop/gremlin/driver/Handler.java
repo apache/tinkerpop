@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedActionException;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ import javax.security.sasl.SaslException;
 final class Handler {
 
     /**
-     * Generic SASL handler that will authenticate against the gremlin server. 
+     * Generic SASL handler that will authenticate against the gremlin server.
      */
     static class GremlinSaslAuthenticationHandler extends SimpleChannelInboundHandler<ResponseMessage> implements CallbackHandler {
         private static final Logger logger = LoggerFactory.getLogger(GremlinSaslAuthenticationHandler.class);
@@ -83,16 +84,18 @@ final class Handler {
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
                 final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
                 final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
-                byte[] saslResponse;
+                RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
                     subject.set(login());
                     saslClient.set(saslClient(getHostName(channelHandlerContext)));
-                    saslResponse = saslClient.get().hasInitialResponse() ? evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null;
+                    messageBuilder.addArg(Tokens.ARGS_SASL_MECHANISM, getMechanism());
+                    messageBuilder.addArg(Tokens.ARGS_SASL, saslClient.get().hasInitialResponse() ?
+                                                                evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null);
                 } else {
-                    saslResponse = evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData());
+                    messageBuilder.addArg(Tokens.ARGS_SASL, evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData()));
                 }
-                channelHandlerContext.writeAndFlush(RequestMessage.build(Tokens.OPS_AUTHENTICATION).addArg(Tokens.ARGS_SASL, saslResponse).create());
+                channelHandlerContext.writeAndFlush(messageBuilder.create());
             } else {
                 channelHandlerContext.fireChannelRead(response);
             }
@@ -114,7 +117,7 @@ final class Handler {
             }
         }
 
-        private byte[] evaluateChallenge(final Attribute<Subject> subject, final Attribute<SaslClient> saslClient, 
+        private byte[] evaluateChallenge(final Attribute<Subject> subject, final Attribute<SaslClient> saslClient,
                                          final byte[] challenge) throws SaslException {
 
             if (subject.get() == null) {
@@ -134,13 +137,13 @@ final class Handler {
             if (authProps.get(AuthProperties.Property.JAAS_ENTRY) != null) {
                 final LoginContext login = new LoginContext(authProps.get(AuthProperties.Property.JAAS_ENTRY));
                 login.login();
-                return login.getSubject();                    
+                return login.getSubject();
             }
             return null;
         }
 
         private SaslClient saslClient(final String hostname) throws SaslException {
-            return Sasl.createSaslClient(new String[] { getMechanism() }, null, authProps.get(AuthProperties.Property.PROTOCOL), 
+            return Sasl.createSaslClient(new String[] { getMechanism() }, null, authProps.get(AuthProperties.Property.PROTOCOL),
                                          hostname, SASL_PROPERTIES, this);
         }
 
@@ -149,7 +152,7 @@ final class Handler {
         }
 
         /**
-         * Work out the Sasl mechanism based on the user supplied parameters. 
+         * Work out the Sasl mechanism based on the user supplied parameters.
          * If we have a username and password use PLAIN otherwise GSSAPI
          */
         private String getMechanism() {
