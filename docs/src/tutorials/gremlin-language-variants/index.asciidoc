@@ -444,6 +444,9 @@ language variant designer to choose a language driver to use for submitted the g
 [source,groovy]
 ----
 pythonClass = new StringBuilder()
+pythonClass.append("from tornado import gen\n")
+pythonClass.append("from tornado.ioloop import IOLoop\n")
+pythonClass.append("from gremlinclient.tornado_client import submit\n")
 pythonClass.append("""
 class Helper(object):
   @staticmethod
@@ -466,7 +469,17 @@ class Helper(object):
     elif len(args) == 1:
       return Helper.stringOrObject(args[0])
     else:
-      return ", ".join(Helper.stringOrObject(i) for i in args)\n
+      return ", ".join(Helper.stringOrObject(i) for i in args)
+  @staticmethod
+  @gen.coroutine
+  def submit(traversalString):
+    response = yield submit("ws://localhost:8182/", traversalString)
+    while True:
+      result = yield response.read()
+      if result is None:
+        break
+      raise gen.Return(result.data)\n
+
 """);
 
 //////////////////////////
@@ -503,10 +516,12 @@ pythonClass.append("\n\n")
 methodMap = [as:"_as",in:"_in",and:"_and",or:"_or",is:"_is",not:"_not",from:"_from"].withDefault{ it }
 invertedMethodMap = [_as:"as",_in:"in",_and:"and",_or:"or",_is:"is",_not:"not",_from:"from"].withDefault{ it }
 methods = GraphTraversal.getMethods().collect{methodMap[it.name]} as Set; []
+methods.remove("toList")
 pythonClass.append(
 """class PythonGraphTraversal(object):
   def __init__(self, traversalString):
     self.traversalString = traversalString
+    self.result = None
   def __repr__(self):
     return self.traversalString
   def __getitem__(self,index):
@@ -518,6 +533,8 @@ pythonClass.append(
       raise TypeError("index must be int or slice")
   def __getattr__(self,key):
     return self.values(key)
+  def toList(self):
+    return IOLoop.current().run_sync(lambda: Helper.submit(self.traversalString))
 """)
 methods.each{ method ->
   pythonClass.append(
@@ -537,13 +554,14 @@ methods.each{ method ->
   pythonClass.append(
 """  @staticmethod
   def ${method}(*args):
-    return PythonGraphTraversal("__").${invertedMethodMap[method]}(*args)
+    return PythonGraphTraversal("__").${method}(*args)
 """)
 }; []
 pythonClass.append("\n\n")
 
 // save to a python file
-file = new File("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-python.py")
+file = new File("/Users/marko/Desktop/JYTHON-TUTORIAL/gremlin-python.py")
+// file = new File("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-python.py")
 file.delete()
 pythonClass.eachLine{ file.append(it + "\n") }
 ----
