@@ -15,18 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-image::apache-tinkerpop-logo.png[width=500]
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
 Gremlin Language Variants
 -------------------------
 
-Gremlin is an embeddable query language able to represent itself within the constructs of existing programming languages.
-Any programming language that supports function composition (e.g. fluent chaining) and function nesting (e.g. call stacks)
-can support Gremlin. With Gremlin, the distinction between a programming language and a query language is not be as
-strongly divided as they have historically been. For instance, with Gremlin-Java, the developer is able to have their
-application code and their graph database queries at the same level of abstraction. A simple example is presented below
-where the `MyApplication` Java class contains both application-level and database-level code all within the constructs
-of Java.
+Gremlin is an embeddable query language able to represent itself within the constructs of a host programming language.
+Any programming language that supports link:https://en.wikipedia.org/wiki/Function_composition[function composition]
+(e.g. fluent chaining) and link:https://en.wikipedia.org/wiki/Nested_function[function nesting] (e.g. call stacks)
+can support Gremlin. Nearly every modern programming language is capable of meeting both requirements.
+With Gremlin, the distinction between a programming language and a query language is not be as strongly divided as they
+have historically been. For instance, with Gremlin-Java, the developer is able to have their application code and their
+graph database queries at the same level of abstraction -- both written in Java. A simple example is presented below
+where the `MyApplication` Java class contains both application-level and database-level code written in Java.
+
+WARNING: This is an advanced tutorial intended for experts knowledgeable in Gremlin in particular and TinkerPop in general.
+Moreover, the audience should understand advanced programming language concepts such as reflection, meta-programming,
+source code generation, and virtual machines.
 
 [source,java]
 ----
@@ -51,8 +56,12 @@ public class MyApplication {
 ----
 
 In query languages like link:https://en.wikipedia.org/wiki/SQL[SQL], the user must construct a string representation of
-their query and submit it to the database for evaluation. The same example above is presented below in Java using SQL and the
-link:https://en.wikipedia.org/wiki/Java_Database_Connectivity[JDBC] interface.
+their query and submit it to the database for evaluation. This is because SQL can be expressed in Java as they use fundamentally
+different constructs in their expression. The same example above is presented below using SQL and the
+link:https://en.wikipedia.org/wiki/Java_Database_Connectivity[JDBC] interface. The take home point is that Gremlin does
+not exist outside the programming language in which it will be used. Gremlin was designed to be able to easily be
+embedded in any modern programming language and thus, always free from the complexities of string manipulation as seen
+in other database and analytics query languages.
 
 [source,java]
 ----
@@ -79,71 +88,78 @@ public class MyApplication {
 }
 ----
 
-The purpose of this tutorial is to explain how to develop a Gremlin language variant. That is, for those developers that
-are interested in supporting Gremlin in their native language and there currently does not exist a (good) Gremlin variant for
-their language, can develop one for both their language community and the Apache TinkerPop community to use. For this
-tutorial, Python will be used and three different design models are presented. Any variant will use one of the models
-below.
+The purpose of this tutorial is to explain how to develop a _Gremlin language variant_. That is, for those developers that
+are interested in supporting Gremlin in their native language and there currently does not exist a (good) Gremlin variant in
+their language, they can develop one for the Apache TinkerPop community (and their language community in general). In this
+tutorial, link:https://www.python.org/[Python] will serve as the host language and two typical implementation models will be presented.
 
 1. <<using-jython-and-the-jvm,**Using Jython and the JVM**>>: This is perhaps the easiest way to produce a Gremlin
 language variant. With link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223], any language compiler written for the JVM
-can directly access the JVM and any of its libraries (including Gremlin).
+can directly access the JVM and any of its libraries (including Gremlin-Java).
 
-2. <<using-python-and-jni,**Using Python and JNI**>>: This is similar to the first model save that a non-JVM Python version is used.
-However, the JVM is interacted with using link:https://en.wikipedia.org/wiki/Java_Native_Interface[JNI] to construct a Gremlin traversal
-for execution on the JVM, but whose result set is converted to Python for the native language developer.
+2. <<using-python-and-gremlin-server,**Using Python and GremlinServer**>>: This model requires that there exist a Python
+class that mimics Gremlin-Java's `GraphTraversal` API. With each method call of this Python class, a `ScriptEngine`
+string is constructed (e.g. Gremlin-Groovy). Ultimately, that constructed traversal string is submitted to a
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[GremlinServer]-compliant graph system for evaluation.
 
-3. <<using-python-and-gremlin-server,**Using Python and GremlinServer**>>: This model requires that there exist a Python
-class that mimics Gremlin-Java's `GraphTraversal` API. With each method calls of this Python class, a `ScriptEngine`
-string is constructed (e.g. Gremlin-Groovy). Ultimately, that constructed traversal (represented behind the
-scenes as a string) is submitted to a Gremlin-Server compliant graph system for evaluation.
+IMPORTANT: Apache TinkerPop's Gremlin-Java is considered the idiomatic, standard implementation of Gremlin.
+Any Gremlin language variant, regardless of the implementation model chosen, **must**, within the constraints of the
+host language, be in 1-to-1 correspondence with Gremlin-Java. This ensures that language variants are collectively
+consistent and easily leveraged by anyone versed in Gremlin.
 
-IMPORTANT: Gremlin-Java is considered the idiomatic, standard implementation of Gremlin. Any Gremlin language variant,
-regardless of the implementation model chosen, **must**, within the constraints of the host language, be in 1-to-1
-correspondence with Gremlin-Java.
-
+[[language-drivers-vs-language-variants]]
 Language Drivers vs. Language Variants
 --------------------------------------
+
+Before discussing how to implement a Gremlin language variant in Python, it is necessary to understand two concepts related to
+Gremlin language development. There is a difference between a _language driver_ and a _language variant_ and it is important
+that these two concepts (and their respective implementations) remain separated.
 
 Language Drivers
 ~~~~~~~~~~~~~~~~
 
-A language driver is a software library that is able to communicate with a TinkerPop `Graph` whether directly via the JVM
-or indirectly via link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]. By in large, if a
-language driver is being developed, it is being developed to interact with GremlinServer or a
+image:language-drivers.png[width=375,float=right] A Gremlin language driver is a software library that is able to
+communicate with a TinkerPop-enabled graph system whether directly via the JVM or indirectly via
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]. By in large, if a
+language driver is being developed, it is typically being developed to interact with GremlinServer or a
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[RemoteConnection].
-Language drivers ensure that `Traversals` are submitted to a TinkerPop-enabled graph system and the results are translated
-back into the host language's type system. For instance, resultant doubles are coerced to floats in Python.
+Language drivers are responsible for submitting Gremlin traversals to a TinkerPop-enabled graph system and
+returning results to the developer that are within the developer's language's type system.
+For instance, resultant doubles should be coerced to floats in Python.
 
 This tutorial is not about language drivers, but about language variants. Moreover, community libraries should make this
-distinction clear and should not develop libraries that serve both roles. Language drivers will be useful to a collection
-of language variants -- including `GraphTraversal`-variants but also other DSL-variants (e.g. `SocialTraversal`).
+distinction clear and **should not** develop libraries that serve both roles. Language drivers will be useful to a collection
+of Gremlin variants within a language community -- able to support `GraphTraversal`-variants as well as also other
+link:https://en.wikipedia.org/wiki/Domain-specific_language[DSL]-variants (e.g. `SocialTraversal`).
 
-IMPORTANT: `GraphTraversal` is a particular Gremlin domain-specific language (link:https://en.wikipedia.org/wiki/Domain-specific_language[DSL]),
+NOTE: `GraphTraversal` is a particular Gremlin domain-specific language (link:https://en.wikipedia.org/wiki/Domain-specific_language[DSL]),
 albeit the most popular and foundational DSL. If another DSL is created, then the same techniques discussed in this tutorial
 for `GraphTraversal` apply to `XXXTraversal`.
 
 Language Variants
 ~~~~~~~~~~~~~~~~~
 
-A language variant is a software library that allows a developer to write a Gremlin traversal within their native
-programming language. The language variant is responsible for creating a `Traversal` instance that will ultimately be
-evaluated by a TinkerPop-enabled graph system. The `Traversal` instance is either created directly on the JVM or as a String
-representation for ultimate generation by a `ScriptEngine` (typically, via GremlinServer).
+image:language-variants.png[width=375,float=right] A Gremlin language variant is a software library that allows a developer
+to write a Gremlin traversal within their native programming language. The language variant is responsible for
+creating a `Traversal` instance that will ultimately be evaluated by a TinkerPop-enabled graph system.
+The `Traversal` instance is either created directly on the JVM or as a String for ultimate conversion to a `Traversal` by
+a link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223] `ScriptEngine` (typically, via GremlinServer).
 
 Every language variant, regardless of the implementation details, will have to account for the four core concepts below:
 
-1. `Graph` (**data**): The source of the graph data to be traversers and which enables the creation of a `GraphTraversalSource` via `graph.traversal()`.
+1. `Graph` (**data**): The source of the graph data to be traversed and the interface which enables the creation of a
+`GraphTraversalSource` (via `graph.traversal()`).
 
-2. `GraphTraversalSource` (**compiler**): This is the typical `g` reference. It maintains the `withXXX()`-strategy
-methods as well as the "traversal spawn"-methods such as `V()`, `E()`, `addV()`, etc. A traversal source is responsible
-for specifying how the ultimate traversal will be compiled by way of its registered `TraversalStrategies`.
+2. `GraphTraversalSource` (**compiler**): This is the typical `g` reference. A `GraphTraversalSource` maintains the
+`withXXX()`-strategy methods as well as the "traversal spawn"-methods such as `V()`, `E()`, `addV()`, etc.
+A traversal source's registered `TraversalStrategies` determine how the submitted traversal will be compiled prior to evaluation.
 
-3. `GraphTraversal` (**function composition**): The primary traversal class that maintains every traversal step such as `out()`, `groupCount()`,
-`match()`, etc. This fluent interface support method chaining and thus, a linear "left-to-right" representation of a traversal.
+3. `GraphTraversal` (**function composition**): A graph traversal maintains every the computational steps such as `out()`, `groupCount()`,
+`match()`, etc. This fluent interface supports method chaining and thus, a linear "left-to-right" representation of a traversal/query.
 
-4. `__` (**function nesting**) : The anonymous traversal class that is used for nested traversals. An example includes `repeat(__.out())`.
-This static interface enables the "up-and-down" representation of a traversal.
+4. `__` (**function nesting**) : The anonymous traversal class is used for passing a traversal as an argument to a parent step.
+For example, in `repeat(__.out())`, `__.out()` is an anonymous traversal passed to the traversal parent `repeat()`.
+Anonymous traversals enable the "top-to-bottom" representation of a traversal.
 
 Both `GraphTraversal` and `__` define the structure of the Gremlin language. Gremlin is a _two-dimensional language_ supporting
 linear, nested step sequences. Historically, many Gremlin language variants have failed to make the distinctions above clear
@@ -153,20 +169,28 @@ IMPORTANT: The term "Gremlin-Java" denotes the language that is defined by `Grap
 and `__`. These three classes exist in `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph` and form the definitive
 representation of the Gremlin traversal language.
 
+Gremlin-Jython and Gremlin-Python
+---------------------------------
+
 [[using-jython-and-the-jvm]]
 Using Jython and the JVM
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-link:http://www.jython.org/[Jython] is a link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223] implementation that allows
-for the evaluation of Python on the link:https://en.wikipedia.org/wiki/Java_virtual_machine[Java virtual machine].
-In other words, Jython's virtual machine is not the standard link:https://wiki.python.org/moin/CPython[CPython] reference implementation
-distributed with most operating systems, but instead the JVM. The benefit of Jython is that Python code and classes can interact
-with the Java API and any Java packages on the `CLASSPATH`. This makes any JSR-224 Gremlin language variant "implementation" trivial.
+image:jython-logo.png[width=200,float=left] link:http://www.jython.org/[Jython] is a
+link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223] `ScriptEngine` implementation that enables the evaluation of
+Python on the link:https://en.wikipedia.org/wiki/Java_virtual_machine[Java virtual machine]. In other words, Jython's
+virtual machine is not the standard link:https://wiki.python.org/moin/CPython[CPython] reference implementation
+distributed with most operating systems, but instead the JVM. The benefit of Jython is that Python code and classes
+can easily interact with the Java API and any Java packages on the `CLASSPATH`. In general, any JSR-223 Gremlin language
+variant is trivial to "implement."
 
 [source,python]
 ----
+Jython 2.7.0 (default:9987c746f838, Apr 29 2015, 02:25:11)
+[Java HotSpot(TM) 64-Bit Server VM (Oracle Corporation)] on java1.8.0_40
+Type "help", "copyright", "credits" or "license" for more information.
 >>> import sys
-# this list is longer, including all jars in lib/, not just Apache TinkerPop jars
+# this list is longer than displayed, including all jars in lib/, not just Apache TinkerPop jars
 >>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-console-x.y.z.jar")
 >>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-core-x.y.z.jar")
 >>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-driver-x.y.z.jar")
@@ -177,10 +201,10 @@ with the Java API and any Java packages on the `CLASSPATH`. This makes any JSR-2
 >>> from org.apache.tinkerpop.gremlin.process.traversal.dsl.graph import __
 >>> from org.apache.tinkerpop.gremlin.process.traversal import *
 >>> from org.apache.tinkerpop.gremlin.structure import *
-# create a the toy "modern" graph for the example and spawn a GraphTraversalSource
+# create the toy "modern" graph and spawn a GraphTraversalSource
 >>> graph = TinkerFactory.createModern()
 >>> g = graph.traversal()
-# The Jython shell does not automatically iterate Iterators like the Gremlin Console
+# The Jython shell does not automatically iterate Iterators like the GremlinConsole
 >>> g.V().hasLabel("person").out("knows").out("created")
 [GraphStep(vertex,[]), HasStep([~label.eq(person)]), VertexStep(OUT,[knows],vertex), VertexStep(OUT,[created],vertex)]
 # toList() will do the iteration and return the results as a list
@@ -203,17 +227,19 @@ link:http://www.scala-lang.org/[Scala], Lisp (link:https://clojure.org/[Clojure]
 list of implementations is provided link:https://en.wikipedia.org/wiki/List_of_JVM_languages[here].
 
 Traversal Wrappers
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 While it is possible to simply interact with Java classes in a `ScriptEngine` implementation, such Gremlin language variants
-will not leverage the unique features of the host language. It is for this reason that link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala]
-was developed. Scala provides many syntax niceties not available in Java. To leverage these niceties, Gremlin-Scala "wraps"
-`GraphTraversal` in order to provide Scala-idiomatic extensions. Another example is Apache TinkerPop's
-Gremlin-Groovy which does the same via the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sugar-plugin[Sugar plugin],
-but uses link:http://groovy-lang.org/metaprogramming.html[meta-programming] instead of object wrapping.
+will not leverage the unique features of the host language. It is for this reason that JVM-based language variants such as
+link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala] were developed. Scala provides many syntax niceties not
+available in Java. To leverage these niceties, Gremlin-Scala "wraps" `GraphTraversal` in order to provide Scala-idiomatic extensions.
+Another example is Apache TinkerPop's Gremlin-Groovy which does the same via the
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sugar-plugin[Sugar plugin], but uses
+link:http://groovy-lang.org/metaprogramming.html[meta-programming] instead of object wrapping, where "behing the scenes,"
+Groovy meta-programming is doing object wrapping.
 
-The Python (via Jython) classes below wrap `GraphTraversalSource` and `GraphTraversal`. In doing so, they add methods
-that apply Python-specific constructs to Gremlin. In particular, `__getitem__` and `__getattr__` "magic methods" are leveraged.
+The Jython classes below wrap `GraphTraversalSource` and `GraphTraversal`. In doing so, they add methods
+that apply Python-specific constructs to Gremlin. In particular, the `__getitem__` and `__getattr__` "magic methods" are leveraged.
 It is important to note that the classes below are **not complete** and only provide enough functionality to demonstrate this
 sub-sections tutorial material.
 
@@ -255,7 +281,7 @@ class JythonGraphTraversal(object):
 ----
 
 The two methods `__getitem__` and `__getattr__` support Python _slicing_ and _object attribute interception_, respectively.
-In this way, the host language is able to use its native constructs with Gremlin.
+In this way, the host language is able to use its native constructs in a meaningful way within a Gremlin traversal.
 
 [source,python]
 ----
@@ -264,10 +290,10 @@ tinkergraph[vertices:6 edges:6]
 >>> g = JythonGraphTraversalSource(graph.traversal())
 >>> g
 graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-# Python slices are converted into range()-steps
+# Python slices are converted to range()-steps
 >>> g.V()[1:4]
 [GraphStep(vertex,[]), RangeGlobalStep(1,4)]
-# Python attribute selections are converted into values()-steps
+# Python attribute selections are converted to values()-steps
 >>> g.V()[1:4].name
 [GraphStep(vertex,[]), RangeGlobalStep(1,4), PropertiesStep([name],value)]
 >>> g.V()[1:4].name.toList()
@@ -277,20 +303,24 @@ graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 IMPORTANT: Gremlin-Java serves as the standard/default representation of the Gremlin traversal language. Any Gremlin
 language variant **must** provide all the same functionality (methods) as `GraphTraversal`, but **can** extend it
 with host language specific constructs. This means that the extensions **must** compile to `GraphTraversal`-specific
-steps. A Gremlin language variant **should not** add steps/methods that do not exist in `GraphTraversal`. If such an extension
+steps. A Gremlin language variant **should not** add steps/methods that do not exist in `GraphTraversal`. If an extension
 is desired, the language variant designer should submit a proposal to link:http://tinkerpop.apache.org[Apache TinkerPop]
 to have the extension added to a future release of Gremlin.
 
 Auto-Generated Traversal Wrappers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the previous example, only a subset of the `GraphTraversalSource` and `GraphTraversal` methods were implemented in the
-corresponding Jython-based Python classes. Unfortunately, adding the near 200 `GraphTraversal` methods to a wrapper is
+corresponding Jython classes. Unfortunately, adding the near 200 `GraphTraversal` methods to a wrapper class is
 both tedious and error-prone. To alleviate this pain, Python classes can be dynamically created using Groovy and
 link:https://en.wikipedia.org/wiki/Reflection_(computer_programming)#Java[Java reflection].
 The Groovy code for constructing the `JythonGraphTraversal` class source is reviewed below. By simply executing this code
 in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console], the `gremlin-jython.py` file
-is generated and can be used by Jython.
+is generated and can be `execfile()`'d by Jython.
+
+NOTE: Any JVM language can use Java reflection to generate source code. The examples in this tutorial use Groovy because of
+its terse syntax and convenient multi-line string construct `""" """`. Moreover, the Gremlin Console is recommended for
+the Groovy script evaluation because all requisite TinkerPop libraries are pre-loaded and available at startup.
 
 [source,groovy]
 ----
@@ -402,6 +432,9 @@ The generated file is available at link:../../resources/gremlin-jython.py[gremli
 
 [source,python]
 ----
+Jython 2.7.0 (default:9987c746f838, Apr 29 2015, 02:25:11)
+[Java HotSpot(TM) 64-Bit Server VM (Oracle Corporation)] on java1.8.0_40
+Type "help", "copyright", "credits" or "license" for more information.
 >>> execfile("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-jython.py")
 >>> graph = TinkerFactory.createModern()
 >>> g = JythonGraphTraversalSource(graph.traversal())
@@ -417,40 +450,53 @@ graphtraversalsource[tinkergraph[vertices:6 edges:6], graphcomputer]
 >>>
 ----
 
-Gremlin-Jython was simple to create. Unfortunately, this simplicity is not without its problems. These problems are itemized below.
+Gremlin-Jython was simple to create. Unfortunately, this simplicity is not without some problems. These problems are itemized below.
 The interested reader can solve the aforementioned problems as a training exercise.
 
 * The Gremlin-Jython API is non-informative as all methods take a tuple reference (`*args`).
 ** The Gremlin-Java link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[JavaDoc] would be a sufficient guide to Gremlin-Jython (minus the extensions).
-* Lambdas are not supported with, for example, `map(lambda x: x.get())` throwing an exception.
-** Python type inspection with a typecast to a `java.util.function.Function` lambda wrapper would solve this problem.
-* `__` is always required for anonymous traversals.
+* Lambdas are not supported as `map(lambda x: x.get())` will throw an exception about not being able to coerce `lamba` into `java.util.function.Function`.
+** Python type inspection with a creation of `Function` lambda wrapper would solve this problem.
+* `__` is always required for anonymous traversals and thus, `repeat(__.both())` can not be replaced by `repeat(both())`.
 ** By placing the `@staticmethods` outside of the `__` Jython class, the methods would be globally scoped (analogous to `import static` in Java).
 
 
-[[using-python-and-jni]]
-Using Python and JNI
---------------------
-
 [[using-python-and-gremlin-server]]
 Using Python and GremlinServer
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The last model does not leverage the JVM directly. Instead, it constructs a `String` representation of a `Traversal`
-that will ultimately be evaluated by a registered `ScriptEngine` at a GremlinServer or `RemoteConnection`. It is up to the
-language variant designer to choose a _language driver_ to use for submitting the generated String and processing its
-returned results. For this example, the link:https://github.com/davebshow/gremlinclient[gremlinclient] Python language
-driver is used and its installation via link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] is provided below.
+The JVM is a wonderful piece of technology that has, over the years, become a meeting ground for developers from all
+language communities. However, not all applications will use the JVM. Given that Apache TinkerPop is a Java-framework,
+there must be a way for two different virtual machines to communicate traversals and their results. This section presents
+the second Gremlin language variant implementation model which does just that.
+
+NOTE: Apache TinkerPop is a JVM-based graph computing framework. Most graph databases and processors today are built
+on the JVM. This makes it easy for these graph system providers to implement Apache TinkerPop. However, TinkerPop is more
+than its graph API and tools -- it is also the Gremlin traversal machine and language. While Apache's Gremlin traversal
+machine was written for the JVM, its constructs are simple and can/should be ported to other VMs for those graph systems
+that are not JVM-based. A theoretical review of the concepts behind the Gremlin traversal machine is provided in
+link:http://arxiv.org/abs/1508.03843[this article].
+
+This section's Gremlin language variant design model does not leverage the JVM directly. Instead, it constructs a `String`
+representation of a `Traversal` that will ultimately be evaluated by a registered `ScriptEngine` at a GremlinServer
+or `RemoteConnection`. It is up to the language variant designer to choose a _language driver_ to use for submitting
+the generated String and coercing its results. The language driver is the means by which, for this example, the CPython
+VM communicates with the JVM. The link:https://github.com/davebshow/gremlinclient[gremlinclient]
+Python language driver is used and its installation via link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip]
+is provided below.
 
 [source,bash]
 ----
-$ # sudo easy_install pip
+# sudo easy_install pip
 $ sudo pip install gremlinclient
 ----
 
-IMPORTANT: When language drivers are seperated from language variants, language variants can more easily choose a language
+IMPORTANT: When language drivers are separated from language variants, language variants can more easily choose a language
 driver to use. In fact, it is possible for multiple language drivers to be supported by a language variant as GremlinServer,
-for example, supports WebSockets, REST, etc.
+for example, supports various interaction mechanisms such as WebSockets, REST, custom endpoints, etc.
+
+The Groovy source code below uses Java reflection to generate a Python class that is in 1-to-1 correspondence with
+Gremlin-Java.
 
 [source,groovy]
 ----
@@ -483,33 +529,34 @@ class Helper(object):
       return ", ".join(Helper.stringOrObject(i) for i in args)
   @staticmethod
   @gen.coroutine
-  def submit(traversalString):
-    response = yield submit("ws://localhost:8182/", traversalString)
+  def submit(gremlinServerURI, traversalString):
+    response = yield submit(gremlinServerURI, traversalString)
     while True:
       result = yield response.read()
       if result is None:
         break
       raise gen.Return(result.data)\n
 
-""");
+"""); //// <1>
 
 //////////////////////////
 // GraphTraversalSource //
 //////////////////////////
-methods = GraphTraversalSource.getMethods().collect{methodMap[it.name]} as Set; []
+methods = GraphTraversalSource.getMethods().collect{it.name} as Set; []
 pythonClass.append(
 """class PythonGraphTraversalSource(object):
-  def __init__(self, traversalSourceString):
+  def __init__(self, gremlinServerURI, traversalSourceString):
+    self.gremlinServerURI = gremlinServerURI
     self.traversalSourceString = traversalSourceString
   def __repr__(self):
-    return self.traversalSourceString
+    return "graphtraversalsource[" + self.gremlinServerURI + ", " + self.traversalSourceString + "]"
 """)
 methods.each{ method ->
   returnType = (GraphTraversalSource.getMethods() as Set).findAll{it.name.equals(method)}.collect{it.returnType}[0]
   if(null != returnType && Traversal.isAssignableFrom(returnType)) {
   pythonClass.append(
 """  def ${method}(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")", self.gremlinServerURI)
 """)
   } else {
   pythonClass.append(
@@ -527,14 +574,19 @@ pythonClass.append("\n\n")
 methodMap = [as:"_as",in:"_in",and:"_and",or:"_or",is:"_is",not:"_not",from:"_from"].withDefault{ it }
 invertedMethodMap = [_as:"as",_in:"in",_and:"and",_or:"or",_is:"is",_not:"not",_from:"from"].withDefault{ it }
 methods = GraphTraversal.getMethods().collect{methodMap[it.name]} as Set; []
-methods.remove("toList")
+methods.remove("toList")                                                                //// <2>
 pythonClass.append(
 """class PythonGraphTraversal(object):
-  def __init__(self, traversalString):
+  def __init__(self, traversalString, gremlinServerURI=None):
     self.traversalString = traversalString
+    self.gremlinServerURI = gremlinServerURI
     self.result = None
   def __repr__(self):
-    return self.traversalString
+    temp = self.traversalString;
+    self.traversalString = self.traversalString + ".toString()"
+    temp2 = self.toList()[0]
+    self.traversalString = temp
+    return temp2
   def __getitem__(self,index):
     if type(index) is int:
       return self.range(indices,indices+1)
@@ -545,7 +597,7 @@ pythonClass.append(
   def __getattr__(self,key):
     return self.values(key)
   def toList(self):
-    return IOLoop.current().run_sync(lambda: Helper.submit(self.traversalString))
+    return IOLoop.current().run_sync(lambda: Helper.submit(self.gremlinServerURI, self.traversalString))
 """)
 methods.each{ method ->
   pythonClass.append(
@@ -577,6 +629,9 @@ file.delete()
 pythonClass.eachLine{ file.append(it + "\n") }
 ----
 
+<1> The `Helper` class contains static methods that are generally useful to the other classes. This could have been a separate file, but was included in the Groovy script so that the tutorial's code is consolidated.
+<2> `toList()`'s method `def` is not generated programmatically, but instead is hardcoded and uses the gremlinclient driver to communicate with GremlinServer.
+
 When the above Groovy script is evaluated in GremlinConsole, **Gremlin-Python** is born.
 The generated file is available at link:../../resources/gremlin-python.py[gremlin-python.py]. Now, from any Python
 virtual machine (not just Jython), Gremlin traversals can be expressed in native Python and a legal Gremlin-Groovy
@@ -588,7 +643,9 @@ Python 2.7.2 (default, Oct 11 2012, 20:14:37)
 [GCC 4.2.1 Compatible Apple Clang 4.0 (tags/Apple/clang-418.0.60)] on darwin
 Type "help", "copyright", "credits" or "license" for more information.
 >>> execfile("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-python.py")
->>> g = PythonGraphTraversalSource("g")
+>>> g = PythonGraphTraversalSource("ws://localhost:8182/", "g")
+>>> g
+graphtraversalsource[ws://localhost:8182/, g]
 # nested traversal with Python slicing and attribute interception extensions
 >>> g.V().hasLabel("person").repeat(__.out()).times(2).name[0:2]
 g.V().hasLabel("person").repeat(__.out()).times(2).values("name").range(0, 2)
@@ -600,3 +657,10 @@ NOTE: The string that is generated for submission to a GremlinServer or `RemoteC
 Gremlin-Groovy string. However, it must be a string that has a respective `ScriptEngine` that is enabled on the remote
 location. It is recommended that a Gremlin-Groovy string be constructed as Gremlin-Groovy is maintained by
 Apache TinkerPop and is guaranteed to always be aligned with Gremlin-Java.
+
+Finally, for the sake of brevity, Gremlin-Python is simple and as such, incurs a few peculiarities that the interested
+reader can remedy as an exercise.
+
+* `P`, `T`, `Order`, etc. are handled via string analysis and are used as `has("age","P.gt(36)")`. It would be better to create `P`, `T`, etc. Python classes that yield the appropriate string representation.
+* Results are retrieved using `toList()`. This simple implementation does not account for GremlinServer's result batching and is thus, not optimal for large result sets.
+* Results are only retrieved using `toList()`. Other aggregation terminal methods should be implemented as well. For example, `toSet()`.
