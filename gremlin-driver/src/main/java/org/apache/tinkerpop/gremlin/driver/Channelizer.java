@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
@@ -116,15 +117,7 @@ public interface Channelizer extends ChannelHandler {
             final Optional<SslContext> sslCtx;
             if (supportsSsl()) {
                 try {
-                    final SslContextBuilder builder = SslContextBuilder.forClient();
-                    if (cluster.connectionPoolSettings().trustCertChainFile != null)
-                        builder.trustManager(new File(cluster.connectionPoolSettings().trustCertChainFile));
-                    else {
-                        logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
-                        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
-                    }
-
-                    sslCtx = Optional.of(builder.build());
+                    sslCtx = Optional.of(cluster.createSSLContext());
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }

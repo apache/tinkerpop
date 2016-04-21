@@ -20,12 +20,18 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.TrustManager;
 import java.io.File;
@@ -39,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -53,15 +60,12 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Cluster {
+    private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
     private Manager manager;
 
-    private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
-                    final int nioPoolSize, final int workerPoolSize,
-                    final Settings.ConnectionPoolSettings connectionPoolSettings,
-                    final LoadBalancingStrategy loadBalancingStrategy,
-                    final AuthProperties authProps) {
-        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy, authProps);
+    private Cluster(final Builder builder) {
+        this.manager = new Manager(builder);
     }
 
     public synchronized void init() {
@@ -159,6 +163,9 @@ public final class Cluster {
                 .port(settings.port)
                 .enableSsl(settings.connectionPool.enableSsl)
                 .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
+                .keyCertChainFile(settings.connectionPool.keyCertChainFile)
+                .keyFile(settings.connectionPool.keyFile)
+                .keyPassword(settings.connectionPool.keyPassword)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
@@ -287,6 +294,34 @@ public final class Cluster {
         return manager.allHosts();
     }
 
+    SslContext createSSLContext() throws Exception  {
+        // if the context is provided then just use that and ignore the other settings
+        if (manager.sslContextOptional.isPresent()) return manager.sslContextOptional.get();
+
+        final SslProvider provider = SslProvider.JDK;
+        final Settings.ConnectionPoolSettings connectionPoolSettings = connectionPoolSettings();
+        final SslContextBuilder builder = SslContextBuilder.forClient();
+
+        if (connectionPoolSettings.trustCertChainFile != null)
+            builder.trustManager(new File(connectionPoolSettings.trustCertChainFile));
+        else {
+            logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
+            builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+        }
+
+        if (null != connectionPoolSettings.keyCertChainFile && null != connectionPoolSettings.keyFile) {
+            final File keyCertChainFile = new File(connectionPoolSettings.keyCertChainFile);
+            final File keyFile = new File(connectionPoolSettings.keyFile);
+
+            // note that keyPassword may be null here if the keyFile is not password-protected.
+            builder.keyManager(keyCertChainFile, keyFile, connectionPoolSettings.keyPassword);
+        }
+
+        builder.sslProvider(provider);
+
+        return builder.build();
+    }
+
     public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
@@ -308,6 +343,10 @@ public final class Cluster {
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String trustCertChainFile = null;
+        private String keyCertChainFile = null;
+        private String keyFile = null;
+        private String keyPassword = null;
+        private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
 
@@ -375,12 +414,47 @@ public final class Cluster {
         }
 
         /**
+         * Explicitly set the {@code SslContext} for when more flexibility is required in the configuration than is
+         * allowed by the {@link Builder}. If this value is set to something other than {@code null} then all other
+         * related SSL settings are ignored. The {@link #enableSsl} setting should still be set to {@code true} for
+         * this setting to take effect.
+         */
+        public Builder sslContext(final SslContext sslContext) {
+            this.sslContext = sslContext;
+            return this;
+        }
+
+        /**
          * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
          * SSL is enabled, the {@link TrustManager} will be established with a self-signed certificate which is NOT
          * suitable for production purposes.
          */
         public Builder trustCertificateChainFile(final String certificateChainFile) {
             this.trustCertChainFile = certificateChainFile;
+            return this;
+        }
+
+        /**
+         * The X.509 certificate chain file in PEM format.
+         */
+        public Builder keyCertChainFile(final String keyCertChainFile) {
+            this.keyCertChainFile = keyCertChainFile;
+            return this;
+        }
+
+        /**
+         * The PKCS#8 private key file in PEM format.
+         */
+        public Builder keyFile(final String keyFile) {
+            this.keyFile = keyFile;
+            return this;
+        }
+
+        /**
+         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         */
+        public Builder keyPassword(final String keyPassword) {
+            this.keyPassword = keyPassword;
             return this;
         }
 
@@ -588,30 +662,13 @@ public final class Cluster {
             return this;
         }
 
-        private List<InetSocketAddress> getContactPoints() {
+        List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
 
         public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
-            final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
-            connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;
-            connectionPoolSettings.minInProcessPerConnection = this.minInProcessPerConnection;
-            connectionPoolSettings.maxSimultaneousUsagePerConnection = this.maxSimultaneousUsagePerConnection;
-            connectionPoolSettings.minSimultaneousUsagePerConnection = this.minSimultaneousUsagePerConnection;
-            connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
-            connectionPoolSettings.minSize = this.minConnectionPoolSize;
-            connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;
-            connectionPoolSettings.maxWaitForSessionClose = this.maxWaitForSessionClose;
-            connectionPoolSettings.maxContentLength = this.maxContentLength;
-            connectionPoolSettings.reconnectInitialDelay = this.reconnectInitialDelay;
-            connectionPoolSettings.reconnectInterval = this.reconnectInterval;
-            connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
-            connectionPoolSettings.enableSsl = this.enableSsl;
-            connectionPoolSettings.trustCertChainFile = this.trustCertChainFile;
-            connectionPoolSettings.channelizer = this.channelizer;
-            return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
-                    connectionPoolSettings, loadBalancingStrategy, authProps);
+            return new Cluster(this);
         }
     }
 
@@ -643,22 +700,42 @@ public final class Cluster {
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final AuthProperties authProps;
+        private final Optional<SslContext> sslContextOptional;
 
         private final ScheduledExecutorService executor;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
-        private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
-                        final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
-                        final LoadBalancingStrategy loadBalancingStrategy,
-                        final AuthProperties authProps) {
-            this.loadBalancingStrategy = loadBalancingStrategy;
-            this.authProps = authProps;
-            this.contactPoints = contactPoints;
-            this.connectionPoolSettings = connectionPoolSettings;
-            this.factory = new Factory(nioPoolSize);
-            this.serializer = serializer;
-            this.executor = Executors.newScheduledThreadPool(workerPoolSize,
+        private Manager(final Builder builder) {
+            this.loadBalancingStrategy = builder.loadBalancingStrategy;
+            this.authProps = builder.authProps;
+            this.contactPoints = builder.getContactPoints();
+
+            connectionPoolSettings = new Settings.ConnectionPoolSettings();
+            connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;
+            connectionPoolSettings.minInProcessPerConnection = builder.minInProcessPerConnection;
+            connectionPoolSettings.maxSimultaneousUsagePerConnection = builder.maxSimultaneousUsagePerConnection;
+            connectionPoolSettings.minSimultaneousUsagePerConnection = builder.minSimultaneousUsagePerConnection;
+            connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
+            connectionPoolSettings.minSize = builder.minConnectionPoolSize;
+            connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
+            connectionPoolSettings.maxWaitForSessionClose = builder.maxWaitForSessionClose;
+            connectionPoolSettings.maxContentLength = builder.maxContentLength;
+            connectionPoolSettings.reconnectInitialDelay = builder.reconnectInitialDelay;
+            connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
+            connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
+            connectionPoolSettings.enableSsl = builder.enableSsl;
+            connectionPoolSettings.trustCertChainFile = builder.trustCertChainFile;
+            connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
+            connectionPoolSettings.keyFile = builder.keyFile;
+            connectionPoolSettings.keyPassword = builder.keyPassword;
+            connectionPoolSettings.channelizer = builder.channelizer;
+
+            sslContextOptional = Optional.ofNullable(builder.sslContext);
+
+            this.factory = new Factory(builder.nioPoolSize);
+            this.serializer = builder.serializer;
+            this.executor = Executors.newScheduledThreadPool(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
         }
 

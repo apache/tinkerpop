@@ -226,6 +226,21 @@ final class Settings {
         public String trustCertChainFile = null;
 
         /**
+         * The X.509 certificate chain file in PEM format.
+         */
+        public String keyCertChainFile = null;
+
+        /**
+         * The PKCS#8 private key file in PEM format.
+         */
+        public String keyFile = null;
+
+        /**
+         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         */
+        public String keyPassword = null;
+
+        /**
          * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
          */
         public int minSize = ConnectionPool.MIN_POOL_SIZE;
