@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.ssl.SslContext;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -406,6 +407,21 @@ public class Settings {
          * contain an X.509 certificate chain in PEM format. {@code null} uses the system default.
          */
         public String trustCertChainFile = null;
+
+        private SslContext sslContext;
+
+        /**
+         * When this value is set, the other settings for SSL are ignored. This option provides for a programmatic
+         * way to configure more complex SSL configurations. The {@link #enabled} setting should still be set to
+         * {@code true} for this setting to take effect.
+         */
+        public void overrideSslContext(final SslContext sslContext) {
+            this.sslContext = sslContext;
+        }
+
+        public Optional<SslContext> getSslContext() {
+            return Optional.ofNullable(sslContext);
+        }
     }
 
     /**

@@ -19,6 +19,12 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import java.io.File;
+
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -49,6 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.channels.ClosedChannelException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -125,6 +132,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 break;
+            case "shouldEnableSslWithSslContextProgrammaticallySpecified":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                settings.ssl.overrideSslContext(createServerSslContext());
+                break;
             case "shouldStartWithDefaultSettings":
                 return new Settings();
             case "shouldHaveTheSessionTimeout":
@@ -152,6 +164,18 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    private static SslContext createServerSslContext() {
+        final SslProvider provider = SslProvider.JDK;
+
+        try {
+            // this is not good for production - just testing
+            final SelfSignedCertificate ssc = new SelfSignedCertificate();
+            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).sslProvider(provider).build();
+        } catch (Exception ce) {
+            throw new RuntimeException("Couldn't setup self-signed certificate for test");
+        }
     }
 
     private static Map<String, Object> getScriptEngineConfForSimpleSandbox() {
@@ -261,6 +285,24 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldEnableSsl() {
         final Cluster cluster = Cluster.build().enableSsl(true).create();
+        final Client client = cluster.connect();
+
+        try {
+            // this should return "nothing" - there should be no exception
+            assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableSslWithSslContextProgrammaticallySpecified() throws Exception {
+        // just for testing - this is not good for production use
+        final SslContextBuilder builder = SslContextBuilder.forClient();
+        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+        builder.sslProvider(SslProvider.JDK);
+
+        final Cluster cluster = Cluster.build().enableSsl(true).sslContext(builder.build()).create();
         final Client client = cluster.connect();
 
         try {
