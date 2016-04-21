@@ -436,10 +436,21 @@ Using Python and JNI
 Using Python and GremlinServer
 ------------------------------
 
-The last model does not leverage the JVM. Instead, it constructs a String representation of a `Traversal` that will
-ultimately be evaluated by a registered `ScriptEngine` in GremlinServer or a `RemoteConnection`. Note that all that this
-generated Python file does is generate a String. It has no concept of WebSockets, or REST, or the JVM. It is up to the
-language variant designer to choose a language driver to use for submitted the generated String.
+The last model does not leverage the JVM directly. Instead, it constructs a `String` representation of a `Traversal`
+that will ultimately be evaluated by a registered `ScriptEngine` at a GremlinServer or `RemoteConnection`. It is up to the
+language variant designer to choose a _language driver_ to use for submitting the generated String and processing its
+returned results. For this example, the link:https://github.com/davebshow/gremlinclient[gremlinclient] Python language
+driver is used and its installation via link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] is provided below.
+
+[source,bash]
+----
+$ # sudo easy_install pip
+$ sudo pip install gremlinclient
+----
+
+IMPORTANT: When language drivers are seperated from language variants, language variants can more easily choose a language
+driver to use. In fact, it is possible for multiple language drivers to be supported by a language variant as GremlinServer,
+for example, supports WebSockets, REST, etc.
 
 [source,groovy]
 ----
@@ -573,15 +584,19 @@ string is created behind the scenes.
 
 [source,python]
 ----
+Python 2.7.2 (default, Oct 11 2012, 20:14:37)
+[GCC 4.2.1 Compatible Apple Clang 4.0 (tags/Apple/clang-418.0.60)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
 >>> execfile("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-python.py")
 >>> g = PythonGraphTraversalSource("g")
 # nested traversal with Python slicing and attribute interception extensions
 >>> g.V().hasLabel("person").repeat(__.out()).times(2).name[0:2]
 g.V().hasLabel("person").repeat(__.out()).times(2).values("name").range(0, 2)
->>>
+>>> g.V().hasLabel("person").repeat(__.out()).times(2).name[0:2].toList()
+[u'ripple', u'lop']
 ----
 
-IMPORTANT: The string that is generated for submission to a GremlinServer or `RemoteConnection` does not have to be a
+NOTE: The string that is generated for submission to a GremlinServer or `RemoteConnection` does not have to be a
 Gremlin-Groovy string. However, it must be a string that has a respective `ScriptEngine` that is enabled on the remote
-GremlinServer. It is recommended that a `Gremlin-Groovy` string be constructed as Gremlin-Groovy is maintained by
-Apache TinkerPop and is guaranteed to be perfectly aligned with Gremlin-Java.
+location. It is recommended that a Gremlin-Groovy string be constructed as Gremlin-Groovy is maintained by
+Apache TinkerPop and is guaranteed to always be aligned with Gremlin-Java.
