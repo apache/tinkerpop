@@ -176,7 +176,7 @@ Gremlin-Jython and Gremlin-Python
 Using Jython and the JVM
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:jython-logo.png[width=200,float=left] link:http://www.jython.org/[Jython] is a
+image:jython-logo.png[width=200,float=left,link="http://www.jython.org/"] link:http://www.jython.org/[Jython] is a
 link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223] `ScriptEngine` implementation that enables the evaluation of
 Python on the link:https://en.wikipedia.org/wiki/Java_virtual_machine[Java virtual machine]. In other words, Jython's
 virtual machine is not the standard link:https://wiki.python.org/moin/CPython[CPython] reference implementation
@@ -465,7 +465,7 @@ The interested reader can solve the aforementioned problems as a training exerci
 Using Python and GremlinServer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:python-logo.png[width=125,float=left] The JVM is a wonderful piece of technology that has, over the years,
+image:python-logo.png[width=125,float=left,link="https://www.python.org/"] The JVM is a wonderful piece of technology that has, over the years,
 become a meeting ground for developers from numerous language communities. However, not all applications will use the JVM.
 Given that Apache TinkerPop is a Java-framework, there must be a way for two different virtual machines to communicate
 traversals and their results. This section presents the second Gremlin language variant implementation model which does just that.
@@ -722,6 +722,7 @@ reader may want to remedy as an exercise.
 * Results are retrieved using `toList()`. This simple implementation does not account for GremlinServer's result batching and is thus, is not optimal for large result sets.
 * While terminal methods such as `next()`, `hasNext()`, `toSet()`, etc. work, they simply rely on `toList()` in an awkward way.
 
+[[gremlin-language-variant-conventions]]
 Gremlin Language Variant Conventions
 ------------------------------------
 
