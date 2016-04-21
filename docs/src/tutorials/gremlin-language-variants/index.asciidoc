@@ -579,7 +579,6 @@ pythonClass.append(
   def __init__(self, traversalString, gremlinServerURI=None):
     self.traversalString = traversalString
     self.gremlinServerURI = gremlinServerURI
-    self.result = None
   def __repr__(self):
     return self.traversalString;
   def __getitem__(self,index):
