@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from org.apache.tinkerpop.gremlin.process.traversal import *
+from org.apache.tinkerpop.gremlin.structure import *
 from org.apache.tinkerpop.gremlin.process.traversal.dsl.graph import __ as anon
 
 class JythonGraphTraversalSource(object):
@@ -31,12 +33,8 @@ class JythonGraphTraversalSource(object):
     return JythonGraphTraversal(self.traversalSource.V(*args))
   def E(self, *args):
     return JythonGraphTraversal(self.traversalSource.E(*args))
-  def getStrategies(self, *args):
-    return self.traversalSource.getStrategies(*args)
-  def addV(self, *args):
-    return JythonGraphTraversal(self.traversalSource.addV(*args))
-  def getGraph(self, *args):
-    return self.traversalSource.getGraph(*args)
+  def build(self, *args):
+    return self.traversalSource.build(*args)
   def withSack(self, *args):
     self.traversalSource = self.traversalSource.withSack(*args)
     return self
@@ -62,10 +60,14 @@ class JythonGraphTraversalSource(object):
     return self
   def standard(self, *args):
     return self.traversalSource.standard(*args)
-  def build(self, *args):
-    return self.traversalSource.build(*args)
   def inject(self, *args):
     return JythonGraphTraversal(self.traversalSource.inject(*args))
+  def getStrategies(self, *args):
+    return self.traversalSource.getStrategies(*args)
+  def addV(self, *args):
+    return JythonGraphTraversal(self.traversalSource.addV(*args))
+  def getGraph(self, *args):
+    return self.traversalSource.getGraph(*args)
   def tx(self, *args):
     return self.traversalSource.tx(*args)
   def wait(self, *args):
@@ -175,47 +177,48 @@ class JythonGraphTraversal(object):
   def id(self, *args):
     self.traversal = self.traversal.id(*args)
     return self
-  def label(self, *args):
-    self.traversal = self.traversal.label(*args)
+  def option(self, *args):
+    self.traversal = self.traversal.option(*args)
     return self
-  def has(self, *args):
-    self.traversal = self.traversal.has(*args)
-    return self
-  def union(self, *args):
-    self.traversal = self.traversal.union(*args)
-    return self
-  def groupCount(self, *args):
-    self.traversal = self.traversal.groupCount(*args)
-    return self
-  def flatMap(self, *args):
-    self.traversal = self.traversal.flatMap(*args)
-    return self
-  def iterate(self, *args):
-    self.traversal = self.traversal.iterate(*args)
-    return self
-  def until(self, *args):
-    self.traversal = self.traversal.until(*args)
-    return self
-  def asAdmin(self, *args):
-    self.traversal = self.traversal.asAdmin(*args)
-    return self
-  def choose(self, *args):
-    self.traversal = self.traversal.choose(*args)
+  def _not(self, *args):
+    return self.traversal.not(*args)
+  def property(self, *args):
+    self.traversal = self.traversal.property(*args)
     return self
   def program(self, *args):
     self.traversal = self.traversal.program(*args)
     return self
-  def both(self, *args):
-    self.traversal = self.traversal.both(*args)
+  def label(self, *args):
+    self.traversal = self.traversal.label(*args)
     return self
-  def toE(self, *args):
-    self.traversal = self.traversal.toE(*args)
+  def choose(self, *args):
+    self.traversal = self.traversal.choose(*args)
     return self
+  def propertyMap(self, *args):
+    self.traversal = self.traversal.propertyMap(*args)
+    return self
+  def inject(self, *args):
+    self.traversal = self.traversal.inject(*args)
+    return self
+  def drop(self, *args):
+    self.traversal = self.traversal.drop(*args)
+    return self
+  def times(self, *args):
+    self.traversal = self.traversal.times(*args)
+    return self
+  def select(self, *args):
+    self.traversal = self.traversal.select(*args)
+    return self
+  def _as(self, *args):
+    return self.traversal.as(*args)
   def outE(self, *args):
     self.traversal = self.traversal.outE(*args)
     return self
   def inE(self, *args):
     self.traversal = self.traversal.inE(*args)
+    return self
+  def toE(self, *args):
+    self.traversal = self.traversal.toE(*args)
     return self
   def bothE(self, *args):
     self.traversal = self.traversal.bothE(*args)
@@ -225,6 +228,9 @@ class JythonGraphTraversal(object):
     return self
   def outV(self, *args):
     self.traversal = self.traversal.outV(*args)
+    return self
+  def both(self, *args):
+    self.traversal = self.traversal.both(*args)
     return self
   def bothV(self, *args):
     self.traversal = self.traversal.bothV(*args)
@@ -349,36 +355,11 @@ class JythonGraphTraversal(object):
   def by(self, *args):
     self.traversal = self.traversal.by(*args)
     return self
-  def propertyMap(self, *args):
-    self.traversal = self.traversal.propertyMap(*args)
-    return self
-  def select(self, *args):
-    self.traversal = self.traversal.select(*args)
-    return self
-  def _as(self, *args):
-    return self.traversal.as(*args)
-  def property(self, *args):
-    self.traversal = self.traversal.property(*args)
-    return self
-  def inject(self, *args):
-    self.traversal = self.traversal.inject(*args)
-    return self
-  def drop(self, *args):
-    self.traversal = self.traversal.drop(*args)
-    return self
-  def times(self, *args):
-    self.traversal = self.traversal.times(*args)
-    return self
-  def option(self, *args):
-    self.traversal = self.traversal.option(*args)
-    return self
-  def cap(self, *args):
-    self.traversal = self.traversal.cap(*args)
-    return self
   def _is(self, *args):
     return self.traversal.is(*args)
-  def _not(self, *args):
-    return self.traversal.not(*args)
+  def until(self, *args):
+    self.traversal = self.traversal.until(*args)
+    return self
   def constant(self, *args):
     self.traversal = self.traversal.constant(*args)
     return self
@@ -390,6 +371,27 @@ class JythonGraphTraversal(object):
     return self
   def _from(self, *args):
     return self.traversal.from(*args)
+  def has(self, *args):
+    self.traversal = self.traversal.has(*args)
+    return self
+  def union(self, *args):
+    self.traversal = self.traversal.union(*args)
+    return self
+  def groupCount(self, *args):
+    self.traversal = self.traversal.groupCount(*args)
+    return self
+  def flatMap(self, *args):
+    self.traversal = self.traversal.flatMap(*args)
+    return self
+  def iterate(self, *args):
+    self.traversal = self.traversal.iterate(*args)
+    return self
+  def cap(self, *args):
+    self.traversal = self.traversal.cap(*args)
+    return self
+  def asAdmin(self, *args):
+    self.traversal = self.traversal.asAdmin(*args)
+    return self
   def next(self, *args):
     return self.traversal.next(*args)
   def fill(self, *args):
@@ -398,16 +400,16 @@ class JythonGraphTraversal(object):
     return self.traversal.forEachRemaining(*args)
   def toList(self, *args):
     return self.traversal.toList(*args)
+  def toSet(self, *args):
+    return self.traversal.toSet(*args)
+  def toBulkSet(self, *args):
+    return self.traversal.toBulkSet(*args)
   def tryNext(self, *args):
     return self.traversal.tryNext(*args)
   def toStream(self, *args):
     return self.traversal.toStream(*args)
-  def toBulkSet(self, *args):
-    return self.traversal.toBulkSet(*args)
   def explain(self, *args):
     return self.traversal.explain(*args)
-  def toSet(self, *args):
-    return self.traversal.toSet(*args)
   def remove(self, *args):
     return self.traversal.remove(*args)
   def hasNext(self, *args):
@@ -497,41 +499,44 @@ class __(object):
   def id(*args):
     return anon.id(*args)
   @staticmethod
+  def _not(*args):
+    return anon.not(*args)
+  @staticmethod
+  def property(*args):
+    return anon.property(*args)
+  @staticmethod
   def label(*args):
     return anon.label(*args)
-  @staticmethod
-  def has(*args):
-    return anon.has(*args)
-  @staticmethod
-  def union(*args):
-    return anon.union(*args)
-  @staticmethod
-  def groupCount(*args):
-    return anon.groupCount(*args)
-  @staticmethod
-  def flatMap(*args):
-    return anon.flatMap(*args)
-  @staticmethod
-  def until(*args):
-    return anon.until(*args)
-  @staticmethod
-  def __(*args):
-    return anon.__(*args)
   @staticmethod
   def choose(*args):
     return anon.choose(*args)
   @staticmethod
-  def both(*args):
-    return anon.both(*args)
+  def propertyMap(*args):
+    return anon.propertyMap(*args)
   @staticmethod
-  def toE(*args):
-    return anon.toE(*args)
+  def inject(*args):
+    return anon.inject(*args)
+  @staticmethod
+  def drop(*args):
+    return anon.drop(*args)
+  @staticmethod
+  def times(*args):
+    return anon.times(*args)
+  @staticmethod
+  def select(*args):
+    return anon.select(*args)
+  @staticmethod
+  def _as(*args):
+    return anon.as(*args)
   @staticmethod
   def outE(*args):
     return anon.outE(*args)
   @staticmethod
   def inE(*args):
     return anon.inE(*args)
+  @staticmethod
+  def toE(*args):
+    return anon.toE(*args)
   @staticmethod
   def bothE(*args):
     return anon.bothE(*args)
@@ -541,6 +546,9 @@ class __(object):
   @staticmethod
   def outV(*args):
     return anon.outV(*args)
+  @staticmethod
+  def both(*args):
+    return anon.both(*args)
   @staticmethod
   def bothV(*args):
     return anon.bothV(*args)
@@ -656,35 +664,14 @@ class __(object):
   def barrier(*args):
     return anon.barrier(*args)
   @staticmethod
-  def propertyMap(*args):
-    return anon.propertyMap(*args)
-  @staticmethod
-  def select(*args):
-    return anon.select(*args)
-  @staticmethod
-  def _as(*args):
-    return anon.as(*args)
-  @staticmethod
-  def property(*args):
-    return anon.property(*args)
-  @staticmethod
-  def inject(*args):
-    return anon.inject(*args)
-  @staticmethod
-  def drop(*args):
-    return anon.drop(*args)
-  @staticmethod
-  def times(*args):
-    return anon.times(*args)
-  @staticmethod
-  def cap(*args):
-    return anon.cap(*args)
-  @staticmethod
   def _is(*args):
     return anon.is(*args)
   @staticmethod
-  def _not(*args):
-    return anon.not(*args)
+  def until(*args):
+    return anon.until(*args)
+  @staticmethod
+  def __(*args):
+    return anon.__(*args)
   @staticmethod
   def constant(*args):
     return anon.constant(*args)
@@ -694,6 +681,21 @@ class __(object):
   @staticmethod
   def to(*args):
     return anon.to(*args)
+  @staticmethod
+  def has(*args):
+    return anon.has(*args)
+  @staticmethod
+  def union(*args):
+    return anon.union(*args)
+  @staticmethod
+  def groupCount(*args):
+    return anon.groupCount(*args)
+  @staticmethod
+  def flatMap(*args):
+    return anon.flatMap(*args)
+  @staticmethod
+  def cap(*args):
+    return anon.cap(*args)
   @staticmethod
   def wait(*args):
     return anon.wait(*args)
@@ -715,4 +717,5 @@ class __(object):
   @staticmethod
   def notifyAll(*args):
     return anon.notifyAll(*args)
+
 
