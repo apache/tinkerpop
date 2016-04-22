@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -51,6 +52,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
@@ -67,15 +69,26 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
+
+
+    private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SparkGraphComputer.class.getSimpleName() + "-boss").build();
+
+    /**
+     * An {@code ExecutorService} that schedules up background work. Since a {@link GraphComputer} is only used once
+     * for a {@link VertexProgram} a single threaded executor is sufficient.
+     */
+    private final ExecutorService computerService = Executors.newSingleThreadExecutor(threadFactoryBoss);
 
     private final org.apache.commons.configuration.Configuration sparkConfiguration;
     private boolean workersSet = false;
@@ -110,7 +123,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     private Future<ComputerResult> submitWithExecutor(Executor exec) {
         // create the completable future                                                    
-        return CompletableFuture.<ComputerResult>supplyAsync(() -> {
+        return computerService.submit(() -> {
             final long startTime = System.currentTimeMillis();
             // apache and hadoop configurations that are used throughout the graph computer computation
             final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
@@ -219,7 +232,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (!inputFromSpark || partitioned || filtered)
                     loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
 
-
                 ////////////////////////////////
                 // process the vertex program //
                 ////////////////////////////////
@@ -235,6 +247,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                     // execute the vertex program
                     while (true) {
+                        if (Thread.interrupted()) {
+                            sparkContext.cancelAllJobs();
+                            throw new TraversalInterruptedException();
+                        }
                         memory.setInExecute(true);
                         viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
                         memory.setInExecute(false);
@@ -312,7 +328,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (!apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     Spark.close();
             }
-        }, exec);
+        });
     }
 
     /////////////////

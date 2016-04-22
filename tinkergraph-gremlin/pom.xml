@@ -31,6 +31,10 @@ limitations under the License.
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
         <!-- provided scope for gremlin-groovy because it is only used for purpose of scriptengine plugin in
              the console and server - in which case that jar should already be present -->
         <dependency>

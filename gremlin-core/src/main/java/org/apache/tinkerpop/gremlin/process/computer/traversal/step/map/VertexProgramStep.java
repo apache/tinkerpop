@@ -36,9 +36,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class VertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements VertexComputing {
 
@@ -52,21 +54,31 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
 
     @Override
     protected Traverser.Admin<ComputerResult> processNextStart() throws NoSuchElementException {
+        Future<ComputerResult> future = null;
         try {
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                final ComputerResult result = this.generateComputer(graph).program(this.generateProgram(graph)).submit().get();
+                future = this.generateComputer(graph).program(this.generateProgram(graph)).submit();
+                final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
-                final ComputerResult result = this.generateComputer(graph).program(this.generateProgram(graph)).submit().get();
+                future = this.generateComputer(graph).program(this.generateProgram(graph)).submit();
+                final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return traverser.split(result, this);
             }
-        } catch (final InterruptedException | ExecutionException e) {
+        } catch (InterruptedException ie) {
+            // the thread running the traversal took an interruption while waiting on the call the future.get().
+            // the future should then be cancelled with interruption so that the the GraphComputer that created
+            // the future knows we don't care about it anymore. The GraphComputer should attempt to respect this
+            // cancellation request.
+            if (future != null) future.cancel(true);
+            throw new TraversalInterruptedException();
+        } catch (ExecutionException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

@@ -181,6 +181,11 @@ import java.util.stream.Stream;
         method = "shouldStartAndEndWorkersForVertexProgramAndMapReduce",
         reason = "Spark executes map and combine in a lazy fashion and thus, fails the blocking aspect of this test",
         computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer"})
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.computer.TraversalInterruptionComputerTest",
+        method = "*",
+        reason = "This test makes an use of a sideEffect to enforce when a thread interruption is triggered and thus isn't applicable to HadoopGraph",
+        computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer"})
 public final class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);

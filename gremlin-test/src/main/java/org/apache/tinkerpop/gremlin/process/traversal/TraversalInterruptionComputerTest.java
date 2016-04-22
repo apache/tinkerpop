@@ -42,21 +42,21 @@ import static org.junit.Assert.assertThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
-public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
+public class TraversalInterruptionComputerTest extends AbstractGremlinProcessTest {
 
     @Parameterized.Parameters(name = "expectInterruption({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"g_V", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V(), (UnaryOperator<GraphTraversal<?,?>>) t -> t},
-                {"g_V_out", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.out()},
-                {"g_V_outE", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.outE()},
-                {"g_V_in", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.in()},
-                {"g_V_inE", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.inE()},
-                {"g_V_properties", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.properties()},
-                {"g_E", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E(), (UnaryOperator<GraphTraversal<?,?>>) t -> t},
-                {"g_E_outV", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.outV()},
-                {"g_E_inV", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.inV()},
-                {"g_E_properties", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E(), (UnaryOperator<GraphTraversal<?,?>>) t -> t.properties()},
+                {"g_V", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V()},
+                {"g_V_out", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V().out()},
+                {"g_V_outE", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V().outE()},
+                {"g_V_in", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V().in()},
+                {"g_V_inE", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V().inE()},
+                {"g_V_properties", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.V().properties()},
+                {"g_E", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E()},
+                {"g_E_outV", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E().outV()},
+                {"g_E_inV", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E().inV()},
+                {"g_E_properties", (Function<GraphTraversalSource, GraphTraversal<?,?>>) g -> g.E().properties()},
         });
     }
 
@@ -64,10 +64,7 @@ public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
     public String name;
 
     @Parameterized.Parameter(value = 1)
-    public Function<GraphTraversalSource,GraphTraversal<?,?>> traversalBeforePause;
-
-    @Parameterized.Parameter(value = 2)
-    public UnaryOperator<GraphTraversal<?,?>> traversalAfterPause;
+    public Function<GraphTraversalSource,GraphTraversal<?,?>> traversalMaker;
 
     @Test
     @LoadGraphWith(GRATEFUL)
@@ -76,21 +73,7 @@ public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
         final CountDownLatch startedIterating = new CountDownLatch(1);
         final Thread t = new Thread(() -> {
             try {
-                final AtomicBoolean first = new AtomicBoolean(true);
-                final Traversal traversal = traversalAfterPause.apply(traversalBeforePause.apply(g).sideEffect(traverser -> {
-                    // let the first iteration flow through
-                    if (!first.compareAndSet(true, false)) {
-                        // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
-                        // the next iteration should stop so we can force the interrupt to be handled by VertexStep
-                        try {
-                            Thread.sleep(3000);
-                        } catch (Exception ignored) {
-                            // make sure that the interrupt propagates in case the interrupt occurs during sleep.
-                            // this should ensure VertexStep gets to try to throw the TraversalInterruptedException
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                })).sideEffect(traverser -> {
+                final Traversal traversal = traversalMaker.apply(g).sideEffect(traverser -> {
                     startedIterating.countDown();
                 });
                 traversal.iterate();
