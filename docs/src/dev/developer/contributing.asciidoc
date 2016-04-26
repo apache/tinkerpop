@@ -270,9 +270,6 @@ replaced then the comment can simply read "not replaced".  Additional comments t
 encouraged.
 ** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP-XXX">TINKERPOP-XXX</a>` - supply a link to the
 JIRA issue for reference.
-* All deprecation should typically be tied to a JIRA issue with a "breaking" label - the issue itself does not need to
-specifically or solely be about "deprecation" but it should be documented very clearly in the comments what was
-deprecated and what the path forward should be.
 * Be sure that deprecated methods are still under test - consider using javadoc/comments in the tests themselves to
 call out this fact.
 * Create a new JIRA issue to track removal of the deprecation for future evaluation - this issue should have the
