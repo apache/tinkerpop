@@ -109,6 +109,24 @@ public class DriverRemoteAcceptorTest {
     }
 
     @Test
+    public void shouldConfigureTimeoutToMax() throws Exception {
+        acceptor.configure(Arrays.asList("timeout", "max"));
+        assertEquals(Integer.MAX_VALUE, acceptor.getTimeout());
+    }
+
+    @Test
+    public void shouldConfigureTimeoutToNone() throws Exception {
+        acceptor.configure(Arrays.asList("timeout", "none"));
+        assertEquals(DriverRemoteAcceptor.NO_TIMEOUT, acceptor.getTimeout());
+    }
+
+    @Test
+    public void shouldConfigureTimeout() throws Exception {
+        acceptor.configure(Arrays.asList("timeout", "123456"));
+        assertEquals(123456, acceptor.getTimeout());
+    }
+
+    @Test
     public void shouldConnect() throws Exception {
         // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should
         // be ok to just validate that a connection is created
