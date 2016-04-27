@@ -7,7 +7,7 @@ environment:
 os: Windows Server 2012
 
 install:
-  - cmd: choco install maven -y -f
+  - cmd: choco install maven -y -f --version 3.2.5
   - cmd: refreshenv
 
 build_script:
