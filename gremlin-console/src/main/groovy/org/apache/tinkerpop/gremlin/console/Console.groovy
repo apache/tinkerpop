@@ -139,9 +139,11 @@ class Console {
 
         // start iterating results to show as output
         showShellEvaluationOutput(true)
-        if (initScriptFile != null) initializeShellWithScript(initScriptFile)
 
         try {
+            // if the init script contains :x command it will throw an ExitNotification so init script execution
+            // needs to appear in the try/catch
+            if (initScriptFile != null) initializeShellWithScript(initScriptFile)
             runner.run()
         } catch (ExitNotification ignored) {
             // occurs on exit
