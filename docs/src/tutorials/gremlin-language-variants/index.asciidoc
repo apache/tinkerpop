@@ -17,6 +17,8 @@ limitations under the License.
 
 image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 
+*x.y.z*
+
 Gremlin Language Variants
 -------------------------
 
@@ -38,20 +40,23 @@ source code generation, and virtual machines.
 public class MyApplication {
 
   public static void run(final String[] args) {
+
     // assumes args[0] is a configuration file location
     Graph graph = GraphFactory.open(args[0]);
     GraphTraversalSource g = graph.traversal();
 
-    // assumes that args[1] is a vertex id
-    double averageRating =
-      g.V(args[1]).out("created").inE("rated").
-        values("stars").mean().next();
+    // assumes that args[1] and args[2] are range boundaries
+    Iterator<Map<String,Double>> result =
+      g.V().hasLabel("product").
+        order().by("unitPrice", incr).
+        range(Integer.valueOf(args[1]), Integer.valueOf(args[2])).
+        valueMap("name", "unitPrice")
 
-    String personName = g.V(args[1]).values("name").next();
-
-    System.out.println("Average rating of " + personName + " projects is: " + averageRating);
+    while(result.hasNext()) {
+      Map<String,Double> map = result.next();
+      System.out.println(map.get("name") + " " + map.get("unitPrice"));
+    }
   }
-
 }
 ----
 
@@ -68,23 +73,29 @@ in other database and analytics query languages.
 public class MyApplication {
 
   public static void run(final String[] args) {
+
     // assumes args[0] is a URI to the database
     Connection connection = DriverManager.getConnection(args[0])
     Statement statement = connection.createStatement();
 
-    // assumes that args[1] is a vertex id
+    // assumes that args[1] and args[2] are range boundaries
     ResultSet result = statement.executeQuery(
-      "SELECT p.name as NAME, AVG(c.stars) as AVERAGE FROM PERSONS p" +
-        "INNER JOIN CREATED c ON c.person = p.id " +
-        "WHERE p.id = '" + args[1] + "'");
+      "SELECT Products.ProductName, Products.UnitPrice \n" +
+      "  FROM (SELECT ROW_NUMBER() \n" +
+      "                   OVER ( \n" +
+      "                     ORDER BY UnitPrice) AS [ROW_NUMBER], \n" +
+      "                 ProductID \n" +
+      "            FROM Products) AS SortedProducts \n" +
+      "      INNER JOIN Products \n" +
+      "              ON Products.ProductID = SortedProducts.ProductID \n" +
+      "   WHERE [ROW_NUMBER] BETWEEN " + args[1] + " AND " + args[2] + " \n" +
+      "ORDER BY [ROW_NUMBER]"
 
-    result.next();
-    double averageRating = result.getDouble("AVERAGE");
-    String personName = result.getString("NAME");
-
-    System.out.println("Average rating of " + personName + " projects is: " + averageRating);
+    while(result.hasNext()) {
+      result.next();
+      System.out.println(result.getString("Products.ProductName") + " " + result.getDouble("Products.UnitPrice"));
+    }
   }
-
 }
 ----
 
@@ -759,11 +770,11 @@ semantics will be validated and deemed an accurate representation of Gremlin-Jav
 Conclusion
 ----------
 
-Gremlin is a simple language because it uses two fundamental programming language constructs: function composition
-and function nesting. Because of this foundation, it is relatively easy to implement Gremlin in any modern programming
-language. Two ways of doing this were presented in this tutorial. One using Jython (on the JVM) and one using Python
+Gremlin is a simple language because it uses two fundamental programming language constructs: *function composition*
+and *function nesting*. Because of this foundation, it is relatively easy to implement Gremlin in any modern programming
+language. Two ways of doing this for the Python language were presented in this tutorial. One using Jython (on the JVM) and one using Python
 (on CPython). It is strongly recommended that language variant designers leverage (especially when not on the JVM)
 the reflection-based source code generation technique presented. This method ensures that the language
 variant is always in sync with the corresponding Apache TinkerPop Gremlin-Java release version. Moreover, it reduces
 the chance of missing methods or creating poorly implemented methods. While Gremlin is simple, there are nearly 200
-steps in `GraphTraversal` and thus, its complexity is realized in the diversity of the atomic step operations it supports.
+steps in `GraphTraversal`. As such, computational means of host language embedding are strongly advised.
