@@ -28,6 +28,11 @@ limitations under the License.
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
+            <directory>../spark-gremlin/src/main/bin</directory>
+            <outputDirectory>/bin/hadoop</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
             <directory>conf</directory>
             <outputDirectory>/conf</outputDirectory>
         </fileSet>
