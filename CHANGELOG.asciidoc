@@ -26,7 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+* Added a Gremlin language variant tutorial teaching people how to embed Gremlin in a host programming language.
 
 [[release-3.2.0-incubating]]
 TinkerPop 3.2.0 (Release Date: April 8, 2016)
@@ -108,7 +108,7 @@ This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incuba
 * Added `ScriptTraversal` which allows for delayed compilation of script-based `Traversals`.
 * Simplified `VertexProgram` implementations with a `PureTraversal`-model and deprecated `ConfigurationTraversal`.
 * Simplified script-based `Traversals` via `ScriptTraversal` and deprecated `TraversalScriptFunction` and `TraversalScriptHelper`.
-* Added `TimesModulating` interface which allows the `Step` to decicde how a `times()`-modulation should be handled.
+* Added `TimesModulating` interface which allows the `Step` to decide how a `times()`-modulation should be handled.
 * Added `ByModulating` interface which allows the `Step` to decide how a `by()`-modulation should be handled. (*breaking*)
 * Simplified the `by()`-modulation patterns of `OrderGlobalStep` and `OrderLocalStep`.
 * Added `GraphComputerTest.shouldSupportPreExistingComputeKeys()` to ensure existing compute keys are "revived." (*breaking*)
