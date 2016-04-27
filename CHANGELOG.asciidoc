@@ -211,6 +211,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed bug where use of `:x` in a Gremlin Console initialization script would generate a stack trace.
 * Added configuration options to Gremlin Driver and Server to override the SSL configuration with an `SslContext`.
 * Added driver configuration settings for SSL: `keyCertChainFile`, `keyFile` and `keyPassword`.
 * Fixed bug where transaction managed sessions were not properly rolling back transactions for exceptions encountered during script evaluation.
