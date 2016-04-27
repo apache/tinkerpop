@@ -5,13 +5,13 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ------------------------------------------------------------------------
-Apache Commons Lang (AL ASF)
+Apache Commons Lang 3.3.1/2.6 (AL ASF)
 ------------------------------------------------------------------------
 This product includes software from the Spring Framework,
 under the Apache License 2.0 (see: StringUtils.containsWhitespace())
 
 ------------------------------------------------------------------------
-Apache Groovy (AL ASF)
+Apache Groovy 2.4.6 (AL ASF)
 ------------------------------------------------------------------------
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
@@ -22,7 +22,7 @@ Licensed under the Creative Commons Attribution Licence v2.5
 http://creativecommons.org/licenses/by/2.5/
 
 ------------------------------------------------------------------------
-Apache Ivy (AL ASF)
+Apache Ivy 2.3.0 (AL ASF)
 ------------------------------------------------------------------------
 Portions of Ivy were originally developed by
 Jayasoft SARL (http://www.jayasoft.fr/)
@@ -36,12 +36,12 @@ The original software and related information is available
 at http://www.jcraft.com/jsch/.
 
 ------------------------------------------------------------------------
-JavaTuples
+JavaTuples 1.2
 ------------------------------------------------------------------------
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Metrics
+Metrics 3.0.2
 ------------------------------------------------------------------------
 Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2015 Dropwizard Team
 
@@ -55,6 +55,6 @@ LongAdder), which was released with the following comments:
     http://creativecommons.org/publicdomain/zero/1.0/
 
 ------------------------------------------------------------------------
-Netty
+Netty 4.0.34
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project

@@ -5,20 +5,20 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ------------------------------------------------------------------------
-Apache Commons Codec (AL ASF)
+Apache Commons Codec 1.9 (AL ASF)
 ------------------------------------------------------------------------
 src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
 contains test data from http://aspell.net/test/orig/batch0.tab.
 Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
 
 ------------------------------------------------------------------------
-Apache Commons Lang (AL ASF)
+Apache Commons Lang 3.3.1/2.6 (AL ASF)
 ------------------------------------------------------------------------
 This product includes software from the Spring Framework,
 under the Apache License 2.0 (see: StringUtils.containsWhitespace())
 
 ------------------------------------------------------------------------
-Apache Groovy (AL ASF)
+Apache Groovy 2.4.6 (AL ASF)
 ------------------------------------------------------------------------
 This product includes/uses ANTLR (http://www.antlr2.org/)
 developed by Terence Parr 1989-2006
@@ -29,13 +29,13 @@ Licensed under the Creative Commons Attribution Licence v2.5
 http://creativecommons.org/licenses/by/2.5/
 
 ------------------------------------------------------------------------
-Apache Http Components Core (AL ASF)
+Apache Http Components Core 4.4.3 (AL ASF)
 ------------------------------------------------------------------------
 This project contains annotations derived from JCIP-ANNOTATIONS
 Copyright (c) 2005 Brian Goetz and Tim Peierls. See http://www.jcip.net
 
 ------------------------------------------------------------------------
-Apache Ivy (AL ASF)
+Apache Ivy 2.3.0 (AL ASF)
 ------------------------------------------------------------------------
 Portions of Ivy were originally developed by
 Jayasoft SARL (http://www.jayasoft.fr/)
@@ -49,12 +49,12 @@ The original software and related information is available
 at http://www.jcraft.com/jsch/.
 
 ------------------------------------------------------------------------
-JavaTuples
+JavaTuples 1.2
 ------------------------------------------------------------------------
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Netty
+Netty 4.0.34
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
