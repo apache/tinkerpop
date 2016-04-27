@@ -187,7 +187,7 @@ Gremlin-Jython and Gremlin-Python
 Using Jython and the JVM
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:jython-logo.png[width=200,float=left,link="http://www.jython.org/"] link:http://www.jython.org/[Jython] is a
+image:jython-logo.png[width=200,float=left,link="http://www.jython.org/"] link:http://www.jython.org/[Jython] provides a
 link:https://www.jcp.org/en/jsr/detail?id=223[JSR-223] `ScriptEngine` implementation that enables the evaluation of
 Python on the link:https://en.wikipedia.org/wiki/Java_virtual_machine[Java virtual machine]. In other words, Jython's
 virtual machine is not the standard link:https://wiki.python.org/moin/CPython[CPython] reference implementation
