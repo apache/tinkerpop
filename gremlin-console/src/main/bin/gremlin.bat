@@ -39,45 +39,6 @@ set JAVA_OPTIONS=-Xms32m -Xmx512m -Djline.terminal=none
 
 :: Launch the application
 
-if "%1" == "" goto console
-if "%1" == "-e" goto script
-if "%1" == "-v" goto version
-
-:console
-
 java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; org.apache.tinkerpop.gremlin.console.Console %*
 
 set CLASSPATH=%OLD_CLASSPATH%
-goto :eof
-
-:script
-
-set strg=
-
-FOR %%X IN (%*) DO (
-CALL :concat %%X %1 %2
-)
-
-java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor %strg%
-goto :eof
-
-:version
-java %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*;%EXTDIR%; org.apache.tinkerpop.gremlin.util.Gremlin
-
-goto :eof
-
-:concat
-
-if %1 == %2 goto skip
-
-SET strg=%strg% %1
-
-:concatsep
-
-if "%CP%" == "" (
-set CP=%LIBDIR%\%1
-)else (
-set CP=%CP%;%LIBDIR%\%1
-)
-
-:skip
