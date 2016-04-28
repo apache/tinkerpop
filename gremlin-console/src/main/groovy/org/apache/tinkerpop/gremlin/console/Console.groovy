@@ -332,11 +332,14 @@ class Console {
                     lineNumber++
                     groovy.execute(line)
                 } catch (Exception ex) {
-                    io.err.println("Invalid line in $scriptFile at [$lineNumber: $line] - ${ex.message}")
+                    io.err.println("Error in $scriptFile at [$lineNumber: $line] - ${ex.message}")
                     if (interactive)
                         break
-                    else
+                    else {
+                        ex.printStackTrace(io.err)
                         System.exit(1)
+                    }
+
                 }
             }
 
