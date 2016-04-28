@@ -29,6 +29,47 @@ TinkerPop 3.2.1
 
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1-incubating/CHANGELOG.asciidoc#tinkerpop-313-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Gremlin Console Flags
++++++++++++++++++++++
+
+Gremlin Console had several methods for executing scripts from file at the start-up of `bin/gremlin.sh`. There were
+two options:
+
+[source,text]
+bin/gremlin.sh script.groovy    <1>
+bin/gremlin.sh -e script.groovy <2>
+
+<1> The `script.groovy` would be executed as a console initialization script setting the console up for use and leaving
+it open when the script completed successfully or closing it if the script failed.
+<2> The `script.groovy` would be executed by the `ScriptExecutor` which meant that commands for the Gremlin Console,
+such as `:remote` and `:>` would not be respected.
+
+Changes in this version of TinkerPop have added much more flexibility here and only a minor breaking change should be
+considered when using this version. First of all, recognize that hese two lines are currently equivalent:
+
+[source,text]
+bin/gremlin.sh script.groovy
+bin/gremlin.sh -i script.groovy
+
+but users should start to explicitly specify the `-i` flag as TinkerPop will eventually remove the old syntax. Despite
+the one used beware of the fact that neither will close the console on script failure anymore. In that sense, this
+behavior represents a breaking change to consider. To ensure the console closes on failure or success, a script will
+have to use the `-e` option.
+
+The console also has a number of new features in addition to `-e` and `-i`:
+
+* View the available flags for the console with `-h`.
+* Control console output with `-D`, `-Q` and -`V`
+* Get line numbers on script failures passed to `-i` and `-e`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1268[TINKERPOP-1268],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1155[TINKERPOP-1155], link:https://issues.apache.org/jira/browse/TINKERPOP-1156[TINKERPOP-1156],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1157[TINKERPOP-1157],
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#interactive-mode[Reference Documentation - Interactive Mode],
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#execution-mode[Reference Documentation - Execution Mode]
 
 TinkerPop 3.2.0
 ---------------
