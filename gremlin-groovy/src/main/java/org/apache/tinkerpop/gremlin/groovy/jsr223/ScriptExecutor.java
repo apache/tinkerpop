@@ -33,7 +33,9 @@ import java.util.List;
  * @author Pavel A. Yaskevich
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by direct execution via gremlin.sh
  */
+@Deprecated
 public class ScriptExecutor {
     public static void main(final String[] arguments) throws IOException {
         if (arguments.length == 0) {
