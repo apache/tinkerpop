@@ -395,6 +395,10 @@ class Console {
         if (options.D) io.verbosity = IO.Verbosity.DEBUG
         if (options.Q) io.verbosity = IO.Verbosity.QUIET
 
+        // override verbosity if not explicitly set and -e is used
+        if (options.e && (!options.V && !options.D && !options.Q))
+            io.verbosity = IO.Verbosity.QUIET
+
         if (options.i && options.e) {
             println("-i and -e options are mutually exclusive - provide one or the other")
             System.exit(0)
