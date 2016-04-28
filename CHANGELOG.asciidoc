@@ -26,6 +26,12 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added support for interactive (`-i`) and execute (`-e`) modes for Gremlin Console.
+* Displayed line numbers for script execution failures of `-e` and `-i`.
+* Improved messaging around script execution errors in Gremlin Console.
+* Added "help" support to Gremlin Console with the `-h` flag.
+* Added options to better control verbosity of Gremlin Console output with `-Q`, `-V` and `-D`.
+* Deprecated the `ScriptExecutor` - the `-e` option to `gremlin.sh` is now handled by `Console`.
 * Added a Gremlin language variant tutorial teaching people how to embed Gremlin in a host programming language.
 
 [[release-3.2.0-incubating]]
