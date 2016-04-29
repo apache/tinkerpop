@@ -290,7 +290,9 @@ public final class StarGraph implements Graph, Serializable {
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
             final Edge edge = this.addOutEdge(label, inVertex, keyValues);
             if (inVertex.equals(this)) {
-                List<Edge> inE = inEdges.get(label);
+                if(null == this.inEdges)
+                    this.inEdges = new HashMap<>();
+                List<Edge> inE = this.inEdges.get(label);
                 if (null == inE) {
                     inE = new ArrayList<>();
                     this.inEdges.put(label, inE);

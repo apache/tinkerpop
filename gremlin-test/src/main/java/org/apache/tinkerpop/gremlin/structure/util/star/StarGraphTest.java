@@ -229,7 +229,23 @@ public class StarGraphTest extends AbstractGremlinTest {
         TestHelper.validateVertexEquality(vertex, starGraph.getStarVertex(), true);
         TestHelper.validateVertexEquality(vertex, starGraphCopy.getStarVertex(), true);
         TestHelper.validateVertexEquality(starGraph.getStarVertex(), starGraphCopy.getStarVertex(), true);
+        // test native non-clone-based methods
+        final StarGraph starGraphNative = StarGraph.open();
+        Vertex v1 = starGraphNative.addVertex(T.label, "thing", T.id, "v1");
+        assertEquals("v1", v1.id());
+        assertEquals("thing", v1.label());
+        Edge e1 = v1.addEdge("self", v1, "name", "pipes");
+        assertEquals(2l, IteratorUtils.count(v1.vertices(Direction.BOTH, "self", "nothing")));
+        assertEquals(1l, IteratorUtils.count(v1.vertices(Direction.OUT)));
+        assertEquals(1l, IteratorUtils.count(v1.vertices(Direction.IN, "self")));
+        edgeIterator = v1.edges(Direction.BOTH);
+        TestHelper.validateEdgeEquality(e1, edgeIterator.next());
+        TestHelper.validateEdgeEquality(e1, edgeIterator.next());
+        assertFalse(edgeIterator.hasNext());
+        TestHelper.validateEdgeEquality(e1, v1.edges(Direction.OUT, "self", "nothing").next());
+        TestHelper.validateEdgeEquality(e1, v1.edges(Direction.IN).next());
     }
+
 
     private Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph) {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
