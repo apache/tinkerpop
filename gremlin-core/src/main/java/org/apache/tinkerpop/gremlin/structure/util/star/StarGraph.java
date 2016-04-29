@@ -206,10 +206,8 @@ public final class StarGraph implements Graph, Serializable {
         });
 
         vertex.edges(Direction.OUT).forEachRemaining(edge -> {
-            if (!ElementHelper.areEqual(starVertex, edge.inVertex())) { // only do a self loop once
-                final Edge starEdge = starVertex.addOutEdge(edge.label(), starGraph.addVertex(T.id, edge.inVertex().id()), T.id, edge.id());
-                edge.properties().forEachRemaining(p -> starEdge.property(p.key(), p.value()));
-            }
+            final Edge starEdge = starVertex.addOutEdge(edge.label(), starGraph.addVertex(T.id, edge.inVertex().id()), T.id, edge.id());
+            edge.properties().forEachRemaining(p -> starEdge.property(p.key(), p.value()));
         });
         return starGraph;
     }
@@ -290,7 +288,16 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-            return this.addOutEdge(label, inVertex, keyValues);
+            final Edge edge = this.addOutEdge(label, inVertex, keyValues);
+            if (inVertex.equals(this)) {
+                List<Edge> inE = inEdges.get(label);
+                if (null == inE) {
+                    inE = new ArrayList<>();
+                    this.inEdges.put(label, inE);
+                }
+                inE.add(edge);
+            }
+            return edge;
         }
 
         @Override

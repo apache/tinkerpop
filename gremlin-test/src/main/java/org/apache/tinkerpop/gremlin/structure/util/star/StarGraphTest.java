@@ -40,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -47,6 +48,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -159,6 +161,74 @@ public class StarGraphTest extends AbstractGremlinTest {
         final Vertex createdVertex = starGraph.getStarVertex().attach(Attachable.Method.create(graph));
         starGraph.getStarVertex().edges(Direction.BOTH).forEachRemaining(edge -> ((Attachable<Edge>) edge).attach(Attachable.Method.create(random.nextBoolean() ? graph : createdVertex)));
         TestHelper.validateEquality(starVertex, createdVertex);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
+    public void shouldHandleSelfLoops() {
+        assertEquals(0l, IteratorUtils.count(graph.vertices()));
+        assertEquals(0l, IteratorUtils.count(graph.edges()));
+        final Vertex vertex = graph.addVertex("person");
+        final VertexProperty<String> vertexProperty = vertex.property("name", "furnace");
+        final Edge edge = vertex.addEdge("self", vertex);
+        final Property<String> edgeProperty = edge.property("acl", "private");
+        assertEquals(1l, IteratorUtils.count(graph.vertices()));
+        assertEquals(1l, IteratorUtils.count(graph.edges()));
+        assertEquals(1l, IteratorUtils.count(vertex.properties()));
+        assertEquals(1l, IteratorUtils.count(edge.properties()));
+        assertEquals(vertexProperty, vertex.properties().next());
+        assertEquals(edgeProperty, edge.properties().next());
+        ///
+        final StarGraph starGraph = StarGraph.of(vertex);
+        final StarGraph.StarVertex starVertex = starGraph.getStarVertex();
+        final Edge starEdge = starVertex.edges(Direction.OUT).next();
+        assertEquals(vertex, starVertex);
+        assertEquals(edge, starEdge);
+        assertEquals(1l, IteratorUtils.count(starVertex.properties()));
+        assertEquals("furnace", starVertex.value("name"));
+        assertEquals(2l, IteratorUtils.count(starVertex.vertices(Direction.BOTH, "self")));
+        assertEquals(1l, IteratorUtils.count(starVertex.vertices(Direction.OUT, "self")));
+        assertEquals(1l, IteratorUtils.count(starVertex.vertices(Direction.IN, "self")));
+        Iterator<Vertex> vertexIterator = starVertex.vertices(Direction.BOTH, "self");
+        assertEquals(starVertex, vertexIterator.next());
+        assertEquals(starVertex, vertexIterator.next());
+        assertFalse(vertexIterator.hasNext());
+        assertEquals(starVertex, starVertex.vertices(Direction.OUT, "self").next());
+        assertEquals(starVertex, starVertex.vertices(Direction.IN, "self").next());
+        ///
+        assertEquals(2l, IteratorUtils.count(starVertex.vertices(Direction.BOTH)));
+        assertEquals(1l, IteratorUtils.count(starVertex.vertices(Direction.OUT)));
+        assertEquals(1l, IteratorUtils.count(starVertex.vertices(Direction.IN)));
+        vertexIterator = starVertex.vertices(Direction.BOTH);
+        assertEquals(starVertex, vertexIterator.next());
+        assertEquals(starVertex, vertexIterator.next());
+        assertFalse(vertexIterator.hasNext());
+        assertEquals(starVertex, starVertex.vertices(Direction.OUT).next());
+        assertEquals(starVertex, starVertex.vertices(Direction.IN).next());
+        ///
+        assertEquals(2l, IteratorUtils.count(starVertex.edges(Direction.BOTH, "self", "nothing")));
+        assertEquals(1l, IteratorUtils.count(starVertex.edges(Direction.OUT, "self", "nothing")));
+        assertEquals(1l, IteratorUtils.count(starVertex.edges(Direction.IN, "self", "nothing")));
+        Iterator<Edge> edgeIterator = starVertex.edges(Direction.BOTH, "self", "nothing");
+        Edge tempEdge = edgeIterator.next();
+        assertEquals(1l, IteratorUtils.count(tempEdge.properties()));
+        assertEquals("private", tempEdge.value("acl"));
+        assertEquals(starEdge, tempEdge);
+        tempEdge = edgeIterator.next();
+        assertEquals(1l, IteratorUtils.count(tempEdge.properties()));
+        assertEquals("private", tempEdge.value("acl"));
+        assertEquals(starEdge, tempEdge);
+        assertFalse(edgeIterator.hasNext());
+        assertEquals(starEdge, starVertex.edges(Direction.OUT, "self", "nothing").next());
+        assertEquals(starEdge, starVertex.edges(Direction.IN, "self", "nothing").next());
+        //
+        final StarGraph starGraphCopy = serializeDeserialize(starGraph).getValue0();
+        TestHelper.validateVertexEquality(vertex, starGraph.getStarVertex(), true);
+        TestHelper.validateVertexEquality(vertex, starGraphCopy.getStarVertex(), true);
+        TestHelper.validateVertexEquality(starGraph.getStarVertex(), starGraphCopy.getStarVertex(), true);
     }
 
     private Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph) {
