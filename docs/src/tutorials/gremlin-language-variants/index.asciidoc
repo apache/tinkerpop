@@ -31,6 +31,8 @@ have historically been. For instance, with Gremlin-Java, the developer is able t
 graph database queries at the same level of abstraction -- both written in Java. A simple example is presented below
 where the `MyApplication` Java class contains both application-level and database-level code written in Java.
 
+image::gremlin-house-of-mirrors.png[width=1024]
+
 WARNING: This is an advanced tutorial intended for experts knowledgeable in Gremlin in particular and TinkerPop in general.
 Moreover, the audience should understand advanced programming language concepts such as reflection, meta-programming,
 source code generation, and virtual machines.
