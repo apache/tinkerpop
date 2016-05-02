@@ -44,7 +44,7 @@ public final class ViewIncomingPayload<M> implements Payload {
 
     public ViewIncomingPayload(final ViewPayload viewPayload) {
         this.incomingMessages = null;
-        this.view = viewPayload.getView();
+        this.view = viewPayload.getView().isEmpty() ? null : viewPayload.getView();
     }
 
 
@@ -58,7 +58,7 @@ public final class ViewIncomingPayload<M> implements Payload {
     }
 
     public boolean hasView() {
-        return null != view;
+        return null != this.view;
     }
 
     ////////////////////
