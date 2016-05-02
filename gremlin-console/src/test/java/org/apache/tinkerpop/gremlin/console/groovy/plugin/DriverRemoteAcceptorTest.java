@@ -126,6 +126,11 @@ public class DriverRemoteAcceptorTest {
         assertEquals(123456, acceptor.getTimeout());
     }
 
+    @Test(expected = RemoteException.class)
+    public void shouldConfigureTimeoutNotLessThanNoTimeout() throws Exception {
+        acceptor.configure(Arrays.asList("timeout", "-1"));
+    }
+
     @Test
     public void shouldConnect() throws Exception {
         // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should

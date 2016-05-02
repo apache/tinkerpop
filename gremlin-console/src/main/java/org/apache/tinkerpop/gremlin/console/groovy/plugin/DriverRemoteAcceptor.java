@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
-import org.codehaus.groovy.tools.shell.Parser;
 
 import javax.security.sasl.SaslException;
 import java.io.FileNotFoundException;
@@ -53,7 +52,7 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DriverRemoteAcceptor implements RemoteAcceptor {
-    public static final int NO_TIMEOUT = -1;
+    public static final int NO_TIMEOUT = 0;
 
     private Cluster currentCluster;
     private Client currentClient;
@@ -120,7 +119,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
                 // in the sense that it will no longer be promoted. support for it will be removed at a later date
                 timeout = arguments.get(0).equals(TOKEN_MAX) ? Integer.MAX_VALUE :
                         arguments.get(0).equals(TOKEN_NONE) ? NO_TIMEOUT : Integer.parseInt(arguments.get(0));
-                return timeout == NO_TIMEOUT ? "Remote timeout is disable" : "Set remote timeout to " + timeout + "ms";
+                if (timeout < NO_TIMEOUT) throw new RemoteException("The value for the timeout cannot be less than " + NO_TIMEOUT);
+                return timeout == NO_TIMEOUT ? "Remote timeout is disabled" : "Set remote timeout to " + timeout + "ms";
             } catch (Exception ignored) {
                 throw new RemoteException(errorMessage);
             }
@@ -188,7 +188,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private List<Result> send(final String gremlin) throws SaslException {
         try {
             final ResultSet rs = this.currentClient.submitAsync(gremlin, aliases, Collections.emptyMap()).get();
-            return timeout > 0 ? rs.all().get(timeout, TimeUnit.MILLISECONDS) : rs.all().get();
+            return timeout > NO_TIMEOUT ? rs.all().get(timeout, TimeUnit.MILLISECONDS) : rs.all().get();
         } catch(TimeoutException ignored) {
             throw new IllegalStateException("Request timed out while processing - increase the timeout with the :remote command");
         } catch (Exception e) {
