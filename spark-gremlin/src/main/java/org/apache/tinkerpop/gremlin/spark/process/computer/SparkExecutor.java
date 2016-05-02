@@ -101,12 +101,13 @@ public final class SparkExecutor {
                         // drop any computed properties that are cached in memory
                         if (elementComputeKeysArray.length > 0) vertex.dropVertexProperties(elementComputeKeysArray);
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
-                        previousView.forEach(property -> property.attach(Attachable.Method.create(vertex)));  // attach the view to the vertex
-                        previousView.clear(); // no longer needed so kill it from memory
+                        IteratorUtils.removeOnNext(previousView.iterator()).forEachRemaining(property -> property.attach(Attachable.Method.create(vertex)));  // attach the view to the vertex
+                        assert previousView.isEmpty();
                         ///
                         messenger.setVertexAndIncomingMessages(vertex, incomingMessages); // set the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.vertexProgram(vertex, workerVertexProgram), messenger, memory); // execute the vertex program on this vertex for this iteration
-                        incomingMessages.clear(); // no longer needed so kill it from memory
+                        // assert incomingMessages.isEmpty();  // maybe the program didn't read all the messages
+                        incomingMessages.clear();
                         ///
                         final List<DetachedVertexProperty<Object>> nextView = elementComputeKeysArray.length == 0 ?  // not all vertex programs have compute keys
                                 Collections.emptyList() :
