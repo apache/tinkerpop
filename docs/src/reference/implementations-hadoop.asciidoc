@@ -273,7 +273,7 @@ Furthermore the `lib/` directory should be distributed across all machines in th
 provides a helper script, which takes the Spark installation directory and the the Spark machines as input:
 
 [source,shell]
-bin/init-tp-spark.sh /usr/local/spark spark@10.0.0.1 spark@10.0.0.2 spark@10.0.0.3
+bin/hadoop/init-tp-spark.sh /usr/local/spark spark@10.0.0.1 spark@10.0.0.2 spark@10.0.0.3
 
 Once the `lib/` directory is distributed, `SparkGraphComputer` can be used as follows.
 

@@ -30,6 +30,15 @@ limitations under the License.
             </includes>
         </fileSet>
         <fileSet>
+            <fileMode>0775</fileMode>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/bin/hadoop</directory>
+            <outputDirectory>bin/hadoop</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+                <include>*.bat</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>src/main/static/licenses</directory>
             <outputDirectory>licenses</outputDirectory>
         </fileSet>
