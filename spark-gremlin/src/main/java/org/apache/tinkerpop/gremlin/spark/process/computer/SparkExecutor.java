@@ -96,28 +96,27 @@ public final class SparkExecutor {
                         final boolean hasViewAndMessages = vertexViewIncoming._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
                         final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getView() : memory.isInitialIteration() ? new ArrayList<>() : Collections.emptyList();
                         // revive compute properties if they already exist
-                        if (memory.isInitialIteration() && elementComputeKeysArray.length > 0) {
+                        if (memory.isInitialIteration() && elementComputeKeysArray.length > 0)
                             vertex.properties(elementComputeKeysArray).forEachRemaining(vertexProperty -> previousView.add(DetachedFactory.detach(vertexProperty, true)));
-                        }
                         // drop any computed properties that are cached in memory
-                        if (elementComputeKeysArray.length > 0)
-                            vertex.dropVertexProperties(elementComputeKeysArray);
+                        if (elementComputeKeysArray.length > 0) vertex.dropVertexProperties(elementComputeKeysArray);
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
                         previousView.forEach(property -> property.attach(Attachable.Method.create(vertex)));  // attach the view to the vertex
-                        // previousView.clear(); // no longer needed so kill it from memory
+                        previousView.clear(); // no longer needed so kill it from memory
                         ///
                         messenger.setVertexAndIncomingMessages(vertex, incomingMessages); // set the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.vertexProgram(vertex, workerVertexProgram), messenger, memory); // execute the vertex program on this vertex for this iteration
-                        // incomingMessages.clear(); // no longer needed so kill it from memory
+                        incomingMessages.clear(); // no longer needed so kill it from memory
                         ///
                         final List<DetachedVertexProperty<Object>> nextView = elementComputeKeysArray.length == 0 ?  // not all vertex programs have compute keys
                                 Collections.emptyList() :
-                                IteratorUtils.list(
-                                        IteratorUtils.map(
-                                                IteratorUtils.filter(
-                                                        vertex.properties(elementComputeKeysArray),
-                                                        VertexProperty::isPresent),
-                                                property -> DetachedFactory.detach(property, true)));
+                                IteratorUtils.list(IteratorUtils.map(
+                                        IteratorUtils.filter(
+                                                vertex.properties(elementComputeKeysArray),
+                                                VertexProperty::isPresent),
+                                        property -> DetachedFactory.detach(property, true)));
+                        // drop any computed properties that are cached in memory
+                        if (elementComputeKeysArray.length > 0) vertex.dropVertexProperties(elementComputeKeysArray);
                         final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
                         if (!partitionIterator.hasNext())
                             workerVertexProgram.workerIterationEnd(memory.asImmutable()); // if no more vertices in the partition, end the worker's iteration

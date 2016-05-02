@@ -1973,10 +1973,10 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(2l, traversers.stream().filter(s -> s.get().equals("software")).map(Traverser::bulk).reduce((a, b) -> a + b).get().longValue());
         assertEquals(6, graph3.traversal().V().count().next().intValue());
         assertEquals(6, graph3.traversal().E().count().next().intValue());
-        assertEquals(6, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());
+        assertEquals(0, graph3.traversal().V().values(TraversalVertexProgram.HALTED_TRAVERSERS).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PeerPressureVertexProgram.CLUSTER).count().next().intValue());
         assertEquals(6, graph3.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
-        assertEquals(30, graph3.traversal().V().values().count().next().intValue());
+        assertEquals(24, graph3.traversal().V().values().count().next().intValue()); // no halted traversers
 
         // TODO: add a test the shows DAG behavior -- splitting another TraversalVertexProgram off of the PeerPressureVertexProgram job.
     }

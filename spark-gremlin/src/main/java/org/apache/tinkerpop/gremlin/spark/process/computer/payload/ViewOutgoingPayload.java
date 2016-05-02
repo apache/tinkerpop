@@ -42,7 +42,7 @@ public final class ViewOutgoingPayload<M> implements Payload {
     }
 
     public ViewPayload getView() {
-        return new ViewPayload(null == this.view ? Collections.emptyList() : this.view);
+        return new ViewPayload(this.view);
     }
 
     public List<Tuple2<Object, M>> getOutgoingMessages() {
