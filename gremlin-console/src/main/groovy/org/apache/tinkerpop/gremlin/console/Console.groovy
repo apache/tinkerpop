@@ -322,6 +322,8 @@ class Console {
             if (scriptAndArgs.size() > 1) {
                 List<String> args = scriptAndArgs.subList(1, scriptAndArgs.size())
                 groovy.execute("args = [\"" + args.join('\",\"') + "\"]")
+            } else {
+                groovy.execute("args = []")
             }
 
             final File file = new File(scriptFile)
