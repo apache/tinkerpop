@@ -42,7 +42,7 @@ public abstract class ConnectiveP<V> extends P<V> {
 
     @Deprecated
     /**
-     * @deprecated Since 3.2.0 -- use {@link ConnectiveP(List)}
+     * @deprecated As of release 3.2.0-incubating, replaced by {@link ConnectiveP(List)}
      */
     public ConnectiveP(final P<V>... predicates) {
         this(Arrays.asList(predicates));

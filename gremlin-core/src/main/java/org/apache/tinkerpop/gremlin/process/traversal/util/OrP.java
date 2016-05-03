@@ -39,7 +39,7 @@ public final class OrP<V> extends ConnectiveP<V> {
 
     @Deprecated
     /**
-     * @deprecated Since 3.2.0 -- use {@link OrP(List)}
+     * @deprecated As of release 3.2.0-incubating, replaced by {@link OrP(List)}
      */
     public OrP(final P<V>... predicates) {
         this(Arrays.asList(predicates));

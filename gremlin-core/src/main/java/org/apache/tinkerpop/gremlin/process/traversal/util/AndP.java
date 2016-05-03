@@ -39,7 +39,7 @@ public final class AndP<V> extends ConnectiveP<V> {
 
     @Deprecated
     /**
-     * @deprecated Since 3.2.0 -- use {@link AndP(List)}
+     * @deprecated As of release 3.2.0-incubating, replaced by {@link AndP(List)}
      */
     public AndP(final P<V>... predicates) {
         this(Arrays.asList(predicates));
