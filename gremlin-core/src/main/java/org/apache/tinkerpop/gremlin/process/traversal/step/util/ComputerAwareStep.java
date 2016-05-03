@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
@@ -42,7 +41,6 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
     @Override
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         while (true) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
             if (this.previousIterator.hasNext())
                 return this.previousIterator.next();
             this.previousIterator = this.traverserStepIdAndLabelsSetByChild ? this.computerAlgorithm() : this.standardAlgorithm();

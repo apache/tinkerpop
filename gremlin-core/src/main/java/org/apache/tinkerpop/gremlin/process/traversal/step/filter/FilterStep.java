@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,7 +34,6 @@ public abstract class FilterStep<S> extends AbstractStep<S, S> {
     @Override
     protected Traverser.Admin<S> processNextStart() {
         while (true) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
             final Traverser.Admin<S> traverser = this.starts.next();
             if (this.filter(traverser))
                 return traverser;

@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -62,7 +61,6 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
             this.localTraversal.addStart(this.starts.next());
         }
         while (true) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
             if (this.localTraversal.hasNext())
                 return this.localTraversal.getEndStep().next();
             else if (this.starts.hasNext()) {

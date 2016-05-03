@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Iterator;
@@ -41,7 +40,6 @@ public abstract class FlatMapStep<S, E> extends AbstractStep<S, E> {
     @Override
     protected Traverser.Admin<E> processNextStart() {
         while (true) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
             if (this.iterator.hasNext()) {
                 return this.head.split(this.iterator.next(), this);
             } else {

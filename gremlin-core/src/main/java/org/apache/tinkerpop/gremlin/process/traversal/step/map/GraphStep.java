@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -126,7 +125,6 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     @Override
     protected Traverser.Admin<E> processNextStart() {
         while (true) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
             if (this.iterator.hasNext()) {
                 return this.isStart ? this.getTraversal().getTraverserGenerator().generate(this.iterator.next(), (Step) this, 1l) : this.head.split(this.iterator.next(), this);
             } else {
