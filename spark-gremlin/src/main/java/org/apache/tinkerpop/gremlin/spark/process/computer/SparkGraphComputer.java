@@ -53,6 +53,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization.SparkInterceptorStrategy;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization.SparkPartitionAwareStrategy;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
@@ -83,7 +84,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     private boolean workersSet = false;
 
     static {
-        TraversalStrategies.GlobalCache.registerStrategies(SparkGraphComputer.class, TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().addStrategies(SparkPartitionAwareStrategy.instance()));
+        TraversalStrategies.GlobalCache.registerStrategies(SparkGraphComputer.class,
+                TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().addStrategies(
+                        SparkPartitionAwareStrategy.instance(),
+                        SparkInterceptorStrategy.instance()));
     }
 
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
@@ -228,7 +232,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         loadedGraphRDD = loadedGraphRDD.repartition(this.workers);
                 }
                 // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
-                if (!inputFromSpark || partitioned || filtered)
+                if (!skipPartitioner && (!inputFromSpark || partitioned || filtered))
                     loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
 
 
@@ -236,30 +240,39 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // process the vertex program //
                 ////////////////////////////////
                 if (null != this.vertexProgram) {
-                    // set up the vertex program and wire up configurations
-                    JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
                     this.vertexProgram.setup(memory);
-                    memory.broadcastMemory(sparkContext);
-                    final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
-                    this.vertexProgram.storeState(vertexProgramConfiguration);
-                    ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
-                    ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
-                    // execute the vertex program
-                    while (true) {
-                        memory.setInExecute(true);
-                        viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
-                        memory.setInExecute(false);
-                        if (this.vertexProgram.terminate(memory))
-                            break;
-                        else {
-                            memory.incrIteration();
-                            memory.broadcastMemory(sparkContext);
+                    if (apacheConfiguration.containsKey(Constants.GREMLIN_SPARK_NATIVE_INTERCEPTOR)) {
+                        try {
+                            final NativeInterceptor<VertexProgram> interceptor = (NativeInterceptor) Class.forName(apacheConfiguration.getString(Constants.GREMLIN_SPARK_NATIVE_INTERCEPTOR)).newInstance();
+                            computedGraphRDD = interceptor.apply(this.vertexProgram, loadedGraphRDD, memory);
+                        } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                            throw new IllegalStateException(e.getMessage());
                         }
+                    } else {
+                        // set up the vertex program and wire up configurations
+                        JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
+                        memory.broadcastMemory(sparkContext);
+                        final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
+                        this.vertexProgram.storeState(vertexProgramConfiguration);
+                        ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
+                        ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
+                        // execute the vertex program
+                        while (true) {
+                            memory.setInExecute(true);
+                            viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
+                            memory.setInExecute(false);
+                            if (this.vertexProgram.terminate(memory))
+                                break;
+                            else {
+                                memory.incrIteration();
+                                memory.broadcastMemory(sparkContext);
+                            }
+                        }
+                        // write the computed graph to the respective output (rdd or output format)
+                        computedGraphRDD = SparkExecutor.prepareFinalGraphRDD(loadedGraphRDD, viewIncomingRDD, this.vertexProgram.getVertexComputeKeys());
                     }
                     memory.complete(); // drop all transient memory keys
-                    // write the computed graph to the respective output (rdd or output format)
-                    computedGraphRDD = SparkExecutor.prepareFinalGraphRDD(loadedGraphRDD, viewIncomingRDD, this.vertexProgram.getVertexComputeKeys());
                     if (null != outputRDD && !this.persist.equals(Persist.NOTHING)) {
                         outputRDD.writeGraphRDD(apacheConfiguration, computedGraphRDD);
                     }
