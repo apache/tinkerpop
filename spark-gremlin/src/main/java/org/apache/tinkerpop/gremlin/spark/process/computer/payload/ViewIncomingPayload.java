@@ -49,6 +49,11 @@ public final class ViewIncomingPayload<M> implements Payload {
             this.view = null;
     }
 
+    public ViewIncomingPayload(final MessagePayload<M> messagePayload) {
+        this.incomingMessages = new ArrayList<>();
+        this.incomingMessages.add(messagePayload.getMessage());
+    }
+
 
     public List<DetachedVertexProperty<Object>> getView() {
         return null == this.view ? Collections.emptyList() : this.view;
