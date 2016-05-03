@@ -106,7 +106,7 @@ These plugins can only be deactivated.
 The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.
 Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a
 superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier
-to interact with the Java API.  Moreoever, Gremlin provides many neat shorthands to make it easier to express paths
+to interact with the Java API.  Moreover, Gremlin provides many neat shorthands to make it easier to express paths
 through a property graph.
 
 [gremlin-groovy]
@@ -220,24 +220,22 @@ TIP: It is possible to manage plugin activation and deactivation by manually edi
 contains the class names of the "active" plugins.  It is also possible to clear dependencies added by `:install` by
 deleting them from the `ext` directory.
 
-Script Executor
-~~~~~~~~~~~~~~~
+[[execution-mode]]
+Execution Mode
+~~~~~~~~~~~~~~
 
-For automated tasks and batch executions of Gremlin, it can be useful to execute Gremlin scripts from the command
-line.  Consider the following file named `gremlin.groovy`:
+For automated tasks and batch executions of Gremlin, it can be useful to execute Gremlin scripts in "execution" mode
+from the command line.  Consider the following file named `gremlin.groovy`:
 
 [source,groovy]
 ----
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 graph = TinkerFactory.createModern()
 g = graph.traversal()
 g.V().each { println it }
 ----
 
-This script creates the toy graph and then iterates through all its vertices printing each to the system out.  Note
-that under this approach, "imports" need to be explicitly defined (except for "core" TinkerPop classes).  In addition,
-plugins and other dependencies should already be "installed" via console commands which cannot be used with this mode
-of execution.  To execute this script from the command line, `gremlin.sh` has the `-e` option used as follows:
+This script creates the toy graph and then iterates through all its vertices printing each to the system out.  To
+execute this script from the command line, `gremlin.sh` has the `-e` option used as follows:
 
 [source,bash]
 ----
@@ -257,7 +255,6 @@ to system out:
 
 [source,groovy]
 ----
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 graph = TinkerFactory.createModern()
 g = graph.traversal()
 g.V().has('name',args[0]).each { println it }
@@ -273,10 +270,49 @@ $ bin/gremlin.sh -e gremlin.groovy vadas
 v[2]
 ----
 
-NOTE: The `ScriptExecutor` is for Gremlin Groovy scripts only.  It is not possible to include Console plugin commands
-such as `:remote` or `:>` when using `-e` in these scripts. That does not mean that it is impossible to script such
-commands, it just means that they need to be scripted manually.  For example, instead of trying to use the `:remote`
-command, manually construct a <<connecting-via-java,Gremlin Driver>> `Client` and submit scripts from there.
+[[interactive-mode]]
+Interactive Mode
+~~~~~~~~~~~~~~~~
+
+The Gremlin Console can be started in an "interactive" mode. Interactive mode is like <<execution-mode, execution mode>>
+but the console will not exit at the completion of the script, even if the script completes unsuccessfully. In such a
+case, it will simply stop processing on the line that of the script that failed. In this way the state of the console
+is such that a user could examine the state of things up to the point of failure which might make the script easier to
+debug.
+
+In addition to debugging, interactive mode is a helpful way for users to initialize their console environment to
+avoid otherwise repetitive typing. For example, a user who spends a lot of time working with the TinkerPop "modern"
+graph might create a script called `init.groovy` like:
+
+[source,groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+----
+
+and then start Gremlin Console as follows:
+
+[source,text]
+----
+$ bin/gremlin.sh -i init.groovy
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin> g.V()
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+----
+
+Note that the user can now reference `g` (and `graph` for that matter) at startup without having to directly type that
+variable initialization code into the console.
 
 [[gremlin-server]]
 Gremlin Server

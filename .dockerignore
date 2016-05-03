@@ -8,6 +8,5 @@
 .settings
 **/_bsp/
 docs/*.asciidoc
-**/ext
 Dockerfile
 .dockerignore
