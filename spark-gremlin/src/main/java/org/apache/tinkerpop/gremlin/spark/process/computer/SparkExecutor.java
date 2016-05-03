@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import com.google.common.base.Optional;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -78,7 +80,8 @@ public final class SparkExecutor {
             final SparkMemory memory,
             final Configuration apacheConfiguration) {
 
-        if (null != viewIncomingRDD) // the graphRDD and the viewRDD must have the same partitioner
+        final boolean partitionedGraphRDD = graphRDD.partitioner().isPresent();
+        if (partitionedGraphRDD && null != viewIncomingRDD) // the graphRDD and the viewRDD must have the same partitioner
             assert graphRDD.partitioner().get().equals(viewIncomingRDD.partitioner().get());
         final JavaPairRDD<Object, ViewOutgoingPayload<M>> viewOutgoingRDD = (((null == viewIncomingRDD) ?
                 graphRDD.mapValues(vertexWritable -> new Tuple2<>(vertexWritable, Optional.<ViewIncomingPayload<M>>absent())) : // first iteration will not have any views or messages
@@ -119,34 +122,46 @@ public final class SparkExecutor {
                     });
                 }, true)); // true means that the partition is preserved
         // the graphRDD and the viewRDD must have the same partitioner
-        assert graphRDD.partitioner().get().equals(viewOutgoingRDD.partitioner().get());
+        if (partitionedGraphRDD)
+            assert graphRDD.partitioner().get().equals(viewOutgoingRDD.partitioner().get());
         // "message pass" by reducing on the vertex object id of the view and message payloads
         final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration).getMessageCombiner().orElse(null);
-        final JavaPairRDD<Object, ViewIncomingPayload<M>> newViewIncomingRDD = viewOutgoingRDD
-                .flatMapToPair(tuple -> () -> IteratorUtils.<Tuple2<Object, Payload>>concat(
+
+        /////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////
+        final PairFlatMapFunction<Tuple2<Object, ViewOutgoingPayload<M>>, Object, Payload> messageFunction =
+                tuple -> () -> IteratorUtils.<Tuple2<Object, Payload>>concat(
                         IteratorUtils.of(new Tuple2<>(tuple._1(), tuple._2().getView())),      // emit the view payload
-                        IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2())))))  // emit the outgoing message payloads one by one
-                .reduceByKey(graphRDD.partitioner().get(), (a, b) -> {      // reduce the view and outgoing messages into a single payload object representing the new view and incoming messages for a vertex
-                    if (a instanceof ViewIncomingPayload) {
-                        ((ViewIncomingPayload<M>) a).mergePayload(b, messageCombiner);
-                        return a;
-                    } else if (b instanceof ViewIncomingPayload) {
-                        ((ViewIncomingPayload<M>) b).mergePayload(a, messageCombiner);
-                        return b;
-                    } else {
-                        final ViewIncomingPayload<M> c = new ViewIncomingPayload<>(messageCombiner);
-                        c.mergePayload(a, messageCombiner);
-                        c.mergePayload(b, messageCombiner);
-                        return c;
-                    }
-                })
-                .filter(payload -> !(payload._2() instanceof MessagePayload)) // this happens if there is a message to a vertex that does not exist
-                .filter(payload -> !((payload._2() instanceof ViewIncomingPayload) && !((ViewIncomingPayload<M>) payload._2()).hasView())) // this happens if there are many messages to a vertex that does not exist
-                .mapValues(payload -> payload instanceof ViewIncomingPayload ?
-                        (ViewIncomingPayload<M>) payload :                    // this happens if there is a vertex with incoming messages
-                        new ViewIncomingPayload<>((ViewPayload) payload));    // this happens if there is a vertex with no incoming messages
+                        IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2()))));
+        final Function2<Payload, Payload, Payload> reducerFunction = (a, b) -> {      // reduce the view and outgoing messages into a single payload object representing the new view and incoming messages for a vertex
+            if (a instanceof ViewIncomingPayload) {
+                ((ViewIncomingPayload<M>) a).mergePayload(b, messageCombiner);
+                return a;
+            } else if (b instanceof ViewIncomingPayload) {
+                ((ViewIncomingPayload<M>) b).mergePayload(a, messageCombiner);
+                return b;
+            } else {
+                final ViewIncomingPayload<M> c = new ViewIncomingPayload<>(messageCombiner);
+                c.mergePayload(a, messageCombiner);
+                c.mergePayload(b, messageCombiner);
+                return c;
+            }
+        };
+        /////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////
+
+        final JavaPairRDD<Object, ViewIncomingPayload<M>> newViewIncomingRDD =
+                (partitionedGraphRDD ?
+                        viewOutgoingRDD.flatMapToPair(messageFunction).reduceByKey(graphRDD.partitioner().get(), reducerFunction) :
+                        viewOutgoingRDD.flatMapToPair(messageFunction).reduceByKey(reducerFunction))
+                        .filter(payload -> !(payload._2() instanceof MessagePayload)) // this happens if there is a message to a vertex that does not exist
+                        .filter(payload -> !((payload._2() instanceof ViewIncomingPayload) && !((ViewIncomingPayload<M>) payload._2()).hasView())) // this happens if there are many messages to a vertex that does not exist
+                        .mapValues(payload -> payload instanceof ViewIncomingPayload ?
+                                (ViewIncomingPayload<M>) payload :                    // this happens if there is a vertex with incoming messages
+                                new ViewIncomingPayload<>((ViewPayload) payload));    // this happens if there is a vertex with no incoming messages
         // the graphRDD and the viewRDD must have the same partitioner
-        assert graphRDD.partitioner().get().equals(newViewIncomingRDD.partitioner().get());
+        if (partitionedGraphRDD)
+            assert graphRDD.partitioner().get().equals(newViewIncomingRDD.partitioner().get());
         newViewIncomingRDD
                 .foreachPartition(partitionIterator -> {
                     HadoopPools.initialize(apacheConfiguration);
@@ -156,7 +171,8 @@ public final class SparkExecutor {
 
     public static <M> JavaPairRDD<Object, VertexWritable> prepareFinalGraphRDD(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD, final Set<VertexComputeKey> vertexComputeKeys) {
         // the graphRDD and the viewRDD must have the same partitioner
-        assert (graphRDD.partitioner().get().equals(viewIncomingRDD.partitioner().get()));
+        if (graphRDD.partitioner().isPresent())
+            assert (graphRDD.partitioner().get().equals(viewIncomingRDD.partitioner().get()));
         // attach the final computed view to the cached graph
         return graphRDD.leftOuterJoin(viewIncomingRDD)
                 .mapValues(tuple -> {

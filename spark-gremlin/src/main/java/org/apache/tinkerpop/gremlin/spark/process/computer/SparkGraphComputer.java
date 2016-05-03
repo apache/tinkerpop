@@ -51,7 +51,9 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization.SparkPartitionAwareStrategy;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
@@ -79,6 +81,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     private final org.apache.commons.configuration.Configuration sparkConfiguration;
     private boolean workersSet = false;
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(SparkGraphComputer.class, TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().addStrategies(SparkPartitionAwareStrategy.instance()));
+    }
 
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
@@ -124,6 +130,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
             final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
             final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
+            final boolean skipPartitioner = apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false);
             String inputLocation = null;
             if (inputFromSpark)
                 inputLocation = Constants.getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), sparkContextStorage).orElse(null);
@@ -202,12 +209,17 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (loadedGraphRDD.partitioner().isPresent())
                     this.logger.debug("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
                 else {
-                    final Partitioner partitioner = new HashPartitioner(this.workersSet ? this.workers : loadedGraphRDD.partitions().size());
-                    this.logger.debug("Partitioning the loaded graphRDD: " + partitioner);
-                    loadedGraphRDD = loadedGraphRDD.partitionBy(partitioner);
-                    partitioned = true;
+                    if (!skipPartitioner) {
+                        final Partitioner partitioner = new HashPartitioner(this.workersSet ? this.workers : loadedGraphRDD.partitions().size());
+                        this.logger.debug("Partitioning the loaded graphRDD: " + partitioner);
+                        loadedGraphRDD = loadedGraphRDD.partitionBy(partitioner);
+                        partitioned = true;
+                        assert loadedGraphRDD.partitioner().isPresent();
+                    } else {
+                        assert skipPartitioner == !loadedGraphRDD.partitioner().isPresent(); // no easy way to test this with a test case
+                        this.logger.debug("Partitioning has been skipped for the loaded graphRDD via " + Constants.GREMLIN_SPARK_SKIP_PARTITIONER);
+                    }
                 }
-                assert loadedGraphRDD.partitioner().isPresent();
                 // if the loaded graphRDD was already partitioned previous, then this coalesce/repartition will not take place
                 if (this.workersSet) {
                     if (loadedGraphRDD.partitions().size() > this.workers) // ensures that the loaded graphRDD does not have more partitions than workers

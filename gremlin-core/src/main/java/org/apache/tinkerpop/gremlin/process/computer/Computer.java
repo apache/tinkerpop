@@ -32,7 +32,7 @@ import java.util.function.Function;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Computer implements Function<Graph, GraphComputer>, Serializable {
+public final class Computer implements Function<Graph, GraphComputer>, Serializable, Cloneable {
 
     private Class<? extends GraphComputer> graphComputerClass = GraphComputer.class;
     private Map<String, Object> configuration = new HashMap<>();
@@ -55,41 +55,42 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     }
 
     public Computer configure(final String key, final Object value) {
-        this.configuration.put(key, value);
-        return this;
+        final Computer clone = this.clone();
+        clone.configuration.put(key, value);
+        return clone;
     }
 
     public Computer workers(final int workers) {
-        this.workers = workers;
-        return this;
+        final Computer clone = this.clone();
+        clone.workers = workers;
+        return clone;
     }
 
     public Computer persist(final GraphComputer.Persist persist) {
-        this.persist = persist;
-        return this;
+        final Computer clone = this.clone();
+        clone.persist = persist;
+        return clone;
     }
 
 
     public Computer result(final GraphComputer.ResultGraph resultGraph) {
-        this.resultGraph = resultGraph;
-        return this;
+        final Computer clone = this.clone();
+        clone.resultGraph = resultGraph;
+        return clone;
     }
 
     public Computer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
-        this.vertices = vertexFilter;
-        return this;
+        final Computer clone = this.clone();
+        clone.vertices = vertexFilter;
+        return clone;
     }
 
     public Computer edges(final Traversal<Vertex, Edge> edgeFilter) {
-        this.edges = edgeFilter;
-        return this;
+        final Computer clone = this.clone();
+        clone.edges = edgeFilter;
+        return clone;
     }
 
-    public Class<? extends GraphComputer> getGraphComputerClass() {
-        return this.graphComputerClass;
-    }
-
-    @Override
     public GraphComputer apply(final Graph graph) {
         GraphComputer computer = this.graphComputerClass.equals(GraphComputer.class) ? graph.compute() : graph.compute(this.graphComputerClass);
         for (final Map.Entry<String, Object> entry : this.configuration.entrySet()) {
@@ -111,5 +112,43 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     @Override
     public String toString() {
         return this.graphComputerClass.getSimpleName().toLowerCase();
+    }
+
+    @Override
+    public Computer clone() {
+        try {
+            final Computer clone = (Computer) super.clone();
+            clone.configuration = new HashMap<>(this.configuration);
+            if (null != this.vertices)
+                clone.vertices = this.vertices.asAdmin().clone();
+            if (null != this.edges)
+                clone.edges = this.edges.asAdmin().clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
+
+    /////////////////
+    /////////////////
+
+    public Class<? extends GraphComputer> getGraphComputerClass() {
+        return this.graphComputerClass;
+    }
+
+    public Map<String,Object> getConfiguration()  {
+        return this.configuration;
+    }
+
+    public Traversal<Vertex,Vertex> getVertices() {
+        return this.vertices;
+    }
+
+    public Traversal<Vertex,Edge> getEdges() {
+        return this.edges;
+    }
+
+    public int getWorkers() {
+        return this.workers;
     }
 }
