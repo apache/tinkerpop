@@ -20,18 +20,27 @@
 package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkMemory;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
@@ -39,65 +48,95 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SparkCountInterceptor implements SparkVertexProgramInterceptor<TraversalVertexProgram> {
+public final class SparkStarBarrierInterceptor implements SparkVertexProgramInterceptor<TraversalVertexProgram> {
 
-    public SparkCountInterceptor() {
+    public SparkStarBarrierInterceptor() {
 
     }
 
     @Override
     public JavaPairRDD<Object, VertexWritable> apply(final TraversalVertexProgram vertexProgram, final JavaPairRDD<Object, VertexWritable> inputRDD, final SparkMemory memory) {
         vertexProgram.setup(memory);
-        final Traversal.Admin<Vertex, Long> traversal = (Traversal.Admin) vertexProgram.getTraversal().getPure().clone();
+        final Traversal.Admin<Vertex, Object> traversal = (Traversal.Admin) vertexProgram.getTraversal().getPure().clone();
         final Object[] graphStepIds = ((GraphStep) traversal.getStartStep()).getIds();    // any V(1,2,3)-style ids to filter on
-        final CountGlobalStep countGlobalStep = (CountGlobalStep) traversal.getEndStep(); // needed for the final traverser generation
+        final ReducingBarrierStep endStep = (ReducingBarrierStep) traversal.getEndStep(); // needed for the final traverser generation
+        final Traversal.Admin<Object, Object> endStepTraversal = new DefaultTraversal<>();
+        endStepTraversal.addStep(endStep).applyStrategies();
         traversal.removeStep(0);                                    // remove GraphStep
         traversal.removeStep(traversal.getSteps().size() - 1);      // remove CountGlobalStep
         traversal.applyStrategies();                                // compile
         boolean identityTraversal = traversal.getSteps().isEmpty(); // if the traversal is empty, just return the vertex (fast)
-
+        ///////////////////////////////
         ((MemoryTraversalSideEffects) traversal.getSideEffects()).setMemory(memory, true); // any intermediate sideEffect steps are backed by SparkMemory
         memory.setInExecute(true);
-        final long count = inputRDD
-                .filter(tuple -> ElementHelper.idExists(tuple._2().get().id(), graphStepIds))
-                .flatMapValues(vertexWritable -> {
+        final JavaRDD<Traverser.Admin<Object>> nextRDD = inputRDD.values()
+                .filter(vertexWritable -> ElementHelper.idExists(vertexWritable.get().id(), graphStepIds))
+                .flatMap(vertexWritable -> {
                     if (identityTraversal)                          // g.V.count()-style (identity)
-                        return () -> (Iterator) IteratorUtils.of(vertexWritable);
+                        return () -> IteratorUtils.of(traversal.getTraverserGenerator().generate(vertexWritable.get(), EmptyStep.instance(), 1l));
                     else {                                          // add the vertex to head of the traversal
                         return () -> {                              // and iterate it for its results
                             final Traversal.Admin<Vertex, ?> clone = traversal.clone(); // need a unique clone for each vertex to isolate the computation
                             clone.getStartStep().addStart(clone.getTraverserGenerator().generate(vertexWritable.get(), EmptyStep.instance(), 1l));
-                            return clone;
+                            return (Step) clone.getEndStep();
                         };
                     }
-                }).count();
+                });
+        final Object result;
+        if (endStep instanceof CountGlobalStep)
+            result = nextRDD.map(Traverser::bulk).fold(0l, (a, b) -> a + b);
+        else if (endStep instanceof SumGlobalStep)
+            result = nextRDD
+                    .map(traverser -> NumberHelper.mul(traverser.bulk(), (Number) traverser.get()))
+                    .fold(0, NumberHelper::add);
+        else if (endStep instanceof MeanGlobalStep)
+            result = nextRDD
+                    .map(traverser -> new MeanGlobalStep.MeanNumber((Number) traverser.get(), traverser.bulk()))
+                    .fold(new MeanGlobalStep.MeanNumber(), MeanGlobalStep.MeanNumber::add)
+                    .getFinal();
+        else if (endStep instanceof MinGlobalStep)
+            result = nextRDD
+                    .map(traverser -> (Number) traverser.get())
+                    .fold(Integer.MAX_VALUE, NumberHelper::min);
+        else if (endStep instanceof MaxGlobalStep)
+            result = nextRDD
+                    .map(traverser -> (Number) traverser.get())
+                    .fold(Integer.MIN_VALUE, NumberHelper::max);
+        else
+            throw new IllegalArgumentException("The end step is an unsupported barrier: " + endStep);
         memory.setInExecute(false);
+        ///////////////////////////////
 
         // generate the HALTED_TRAVERSERS for the memory
         final TraverserSet<Long> haltedTraversers = new TraverserSet<>();
-        haltedTraversers.add(traversal.getTraverserGenerator().generate(count, countGlobalStep, 1l));
+        haltedTraversers.add(traversal.getTraverserGenerator().generate(result, endStep, 1l));
         memory.set(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversers);
         memory.incrIteration(); // any local star graph reduction take a single iteration
         return inputRDD;
     }
 
     public static boolean isLegal(final Traversal.Admin<?, ?> traversal) {
-        final List<Step> steps = traversal.getSteps();
-        if (!steps.get(0).getClass().equals(GraphStep.class) || ((GraphStep) steps.get(0)).returnsEdge())
+        final Step<?, ?> startStep = traversal.getStartStep();
+        final Step<?, ?> endStep = traversal.getEndStep();
+        if (!startStep.getClass().equals(GraphStep.class) || ((GraphStep) startStep).returnsEdge())
             return false;
-        if (!steps.get(steps.size() - 1).getClass().equals(CountGlobalStep.class))
+        if (!endStep.getClass().equals(CountGlobalStep.class) &&
+                !endStep.getClass().equals(SumGlobalStep.class) &&
+                !endStep.getClass().equals(MeanGlobalStep.class) &&
+                !endStep.getClass().equals(MaxGlobalStep.class) &&
+                !endStep.getClass().equals(MinGlobalStep.class))
+            // TODO: group(), groupCount(), fold(), and tree()
             return false;
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, Arrays.asList(CollectingBarrierStep.class, DedupGlobalStep.class), traversal))
+        if (TraversalHelper.getStepsOfAssignableClassRecursively(Scope.global, Barrier.class, traversal).size() != 1)
+            return false;
+        if (traversal.getTraverserRequirements().contains(TraverserRequirement.SACK))
             return false;
         return TraversalHelper.isLocalStarGraph(traversal);
-
     }
 }
 

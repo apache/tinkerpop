@@ -58,7 +58,6 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         traverser.sack(this.sackFunction.apply(traverser.sack(), null == this.sackTraversal ? (B) traverser.get() : TraversalUtil.apply(traverser, this.sackTraversal)));
-
     }
 
     @Override

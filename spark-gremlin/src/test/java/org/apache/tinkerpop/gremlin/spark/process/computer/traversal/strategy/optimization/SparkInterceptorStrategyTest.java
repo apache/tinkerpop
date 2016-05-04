@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkCountInterceptor;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkStarBarrierInterceptor;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -69,7 +69,7 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// groupCount(m)-test
         Traversal.Admin<Vertex, Long> traversal = g.V().groupCount("m").by(T.label).count().asAdmin();
-        test(SparkCountInterceptor.class, 6l, traversal);
+        test(SparkStarBarrierInterceptor.class, 6l, traversal);
         assertEquals(1, traversal.getSideEffects().keys().size());
         assertTrue(traversal.getSideEffects().exists("m"));
         assertTrue(traversal.getSideEffects().keys().contains("m"));
@@ -94,25 +94,29 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         assertTrue(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// SparkCountInterceptor matches
-        test(SparkCountInterceptor.class, 6l, g.V().count());
-        test(SparkCountInterceptor.class, 2l, g.V().hasLabel("software").count());
-        test(SparkCountInterceptor.class, 2l, g.V().hasLabel("person").has("age", P.gt(30)).count());
-        test(SparkCountInterceptor.class, 2l, g.V().hasLabel("person").has("age", P.gt(30)).values("name").count());
-        test(SparkCountInterceptor.class, 2l, g.V().hasLabel("person").has("age", P.gt(30)).properties("name").count());
-        test(SparkCountInterceptor.class, 4l, g.V().hasLabel("person").has("age", P.gt(30)).properties("name", "age").count());
-        test(SparkCountInterceptor.class, 3l, g.V().hasLabel("person").has("age", P.gt(30)).out().count());
-        test(SparkCountInterceptor.class, 0l, g.V().hasLabel("person").has("age", P.gt(30)).out("knows").count());
-        test(SparkCountInterceptor.class, 3l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age", P.gt(30)).out("created").count());
-        test(SparkCountInterceptor.class, 3l, g.V(1).out().count());
-        test(SparkCountInterceptor.class, 2l, g.V(1).out("knows").count());
-        test(SparkCountInterceptor.class, 3l, g.V(1).out("knows", "created").count());
-        test(SparkCountInterceptor.class, 5l, g.V(1, 4).out("knows", "created").count());
-        test(SparkCountInterceptor.class, 1l, g.V(2).in("knows").count());
-        test(SparkCountInterceptor.class, 0l, g.V(6).has("name", "peter").in().count());
-        test(SparkCountInterceptor.class, 6l, g.V().as("a").values("name").as("b").count());
-        test(SparkCountInterceptor.class, 6l, g.V().as("a").count());
-        test(SparkCountInterceptor.class, 1l, g.V().has("name", "marko").as("a").values("name").as("b").count());
-        test(SparkCountInterceptor.class, 4l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age").out("created").count());
+        test(SparkStarBarrierInterceptor.class, 6l, g.V().count());
+        test(SparkStarBarrierInterceptor.class, 2l, g.V().hasLabel("software").count());
+        test(SparkStarBarrierInterceptor.class, 2l, g.V().hasLabel("person").has("age", P.gt(30)).count());
+        test(SparkStarBarrierInterceptor.class, 2l, g.V().hasLabel("person").has("age", P.gt(30)).values("name").count());
+        test(SparkStarBarrierInterceptor.class, 2l, g.V().hasLabel("person").has("age", P.gt(30)).properties("name").count());
+        test(SparkStarBarrierInterceptor.class, 4l, g.V().hasLabel("person").has("age", P.gt(30)).properties("name", "age").count());
+        test(SparkStarBarrierInterceptor.class, 3l, g.V().hasLabel("person").has("age", P.gt(30)).out().count());
+        test(SparkStarBarrierInterceptor.class, 0l, g.V().hasLabel("person").has("age", P.gt(30)).out("knows").count());
+        test(SparkStarBarrierInterceptor.class, 3l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age", P.gt(30)).out("created").count());
+        test(SparkStarBarrierInterceptor.class, 3l, g.V(1).out().count());
+        test(SparkStarBarrierInterceptor.class, 2l, g.V(1).out("knows").count());
+        test(SparkStarBarrierInterceptor.class, 3l, g.V(1).out("knows", "created").count());
+        test(SparkStarBarrierInterceptor.class, 5l, g.V(1, 4).out("knows", "created").count());
+        test(SparkStarBarrierInterceptor.class, 1l, g.V(2).in("knows").count());
+        test(SparkStarBarrierInterceptor.class, 0l, g.V(6).has("name", "peter").in().count());
+        test(SparkStarBarrierInterceptor.class, 6l, g.V().as("a").values("name").as("b").count());
+        test(SparkStarBarrierInterceptor.class, 6l, g.V().as("a").count());
+        test(SparkStarBarrierInterceptor.class, 1l, g.V().has("name", "marko").as("a").values("name").as("b").count());
+        test(SparkStarBarrierInterceptor.class, 4l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age").out("created").count());
+        test(SparkStarBarrierInterceptor.class, 123l, g.V().has("age").values("age").sum());
+        test(SparkStarBarrierInterceptor.class, 67l, g.V().has("age").has("age", P.gt(30)).values("age").sum());
+        test(SparkStarBarrierInterceptor.class, 27, g.V().hasLabel("person").values("age").min());
+        test(SparkStarBarrierInterceptor.class, 35, g.V().hasLabel("person").values("age").max());
         /// No interceptor matches
         test(2l, g.V().out().out().count());
         test(6l, g.E().count());
@@ -123,6 +127,7 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(6l, g.V().repeat(__.dedup()).times(2).count());
         test(6l, g.V().dedup().count());
         test(4l, g.V().hasLabel("person").order().by("age").count());
+        test(1l, g.V().count().count());
     }
 
     private static <R> void test(Class<? extends VertexProgramInterceptor> expectedInterceptor, R expectedResult, final Traversal<?, R> traversal) throws Exception {
