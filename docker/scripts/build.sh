@@ -77,6 +77,7 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   # build docs
   mkdir -p ~/.groovy
   cp docker/resources/groovy/grapeConfig.xml ~/.groovy/
+  rm -rf /tmp/neo4j
   bin/process-docs.sh || exit 1
 
   # start a simple HTTP server
