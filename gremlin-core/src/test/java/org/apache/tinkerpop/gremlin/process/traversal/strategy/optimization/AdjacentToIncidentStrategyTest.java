@@ -60,6 +60,10 @@ public class AdjacentToIncidentStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Traversal[][]{
+                {__.outE().count(), __.outE().count()},
+                {__.bothE("knows").count(), __.bothE("knows").count()},
+                {__.properties().count(), __.properties().count()},
+                {__.properties("name").count(), __.properties("name").count()},
                 {__.out().count(), __.outE().count()},
                 {__.in().count(), __.inE().count()},
                 {__.both().count(), __.bothE().count()},
