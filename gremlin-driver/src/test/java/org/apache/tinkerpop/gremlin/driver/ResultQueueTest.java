@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -143,7 +143,6 @@ public class ResultQueueTest extends AbstractResultQueueTest {
 
     @Test
     public void shouldAwaitFailTheFutureOnMarkError() throws Exception {
-        // not so sure this is good behavior (i.e. flushing whatever has arrived up to the error)
         final CompletableFuture<List<Result>> future = resultQueue.await(4);
         resultQueue.add(new Result("test1"));
         resultQueue.add(new Result("test2"));

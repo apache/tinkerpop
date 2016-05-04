@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,7 +43,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent, PathProcessor {
+public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent, PathProcessor, ByModulating {
 
     private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
     private final Pop pop;
@@ -59,7 +61,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     protected Map<String, E> map(final Traverser.Admin<S> traverser) {
-        final Map<String, E> bindings = new LinkedHashMap<>();
+        final Map<String, E> bindings = new LinkedHashMap<>(this.selectKeys.size(),1.0f);
         for (final String selectKey : this.selectKeys) {
             final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
             if (null != end)
@@ -88,8 +90,13 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     public SelectStep<S, E> clone() {
         final SelectStep<S, E> clone = (SelectStep<S, E>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
-        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -106,7 +113,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
     }
 
@@ -120,5 +127,18 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public Set<String> getScopeKeys() {
         return this.selectKeysSet;
+    }
+
+    public Map<String, Traversal.Admin<Object, E>> getByTraversals() {
+        final Map<String, Traversal.Admin<Object, E>> map = new HashMap<>();
+        this.traversalRing.reset();
+        for (final String as : this.selectKeys) {
+            map.put(as, this.traversalRing.next());
+        }
+        return map;
+    }
+
+    public Pop getPop() {
+        return this.pop;
     }
 }

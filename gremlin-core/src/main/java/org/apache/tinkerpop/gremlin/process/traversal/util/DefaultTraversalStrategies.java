@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -36,23 +34,27 @@ import java.util.Optional;
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
     protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
-    protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
 
     @Override
+    @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
-        boolean added = false;
-        for (final TraversalStrategy strategy : strategies) {
-            if (!this.traversalStrategies.contains(strategy)) {
-                this.traversalStrategies.add(strategy);
-                added = true;
+        final List<TraversalStrategy<?>> toRemove = new ArrayList<>(strategies.length);
+        for (final TraversalStrategy<?> addStrategy : strategies) {
+            for (final TraversalStrategy<?> currentStrategy : this.traversalStrategies) {
+                if (addStrategy.getClass().equals(currentStrategy.getClass())) {
+                    toRemove.add(currentStrategy);
+                    break;
+                }
             }
         }
-        if (added) this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
+        this.traversalStrategies.removeAll(toRemove);
+        Collections.addAll(this.traversalStrategies, strategies);
+        this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings({"unchecked", "varargs"})
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses) {
         boolean removed = false;
         for (final Class<? extends TraversalStrategy> strategyClass : strategyClasses) {
@@ -76,16 +78,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
             traversalStrategy.apply(traversal);
         }
-    }
-
-    @Override
-    public TraverserGeneratorFactory getTraverserGeneratorFactory() {
-        return this.traverserGeneratorFactory;
-    }
-
-    @Override
-    public void setTraverserGeneratorFactory(final TraverserGeneratorFactory traverserGeneratorFactory) {
-        this.traverserGeneratorFactory = traverserGeneratorFactory;
     }
 
     @Override

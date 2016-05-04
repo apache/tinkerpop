@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,37 +32,37 @@ public abstract class GroovyTreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
-            TraversalScriptHelper.compute("g.V.out.out.tree.by(id)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.out.tree.by(id)")
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX() {
-            TraversalScriptHelper.compute("g.V.out.out.tree('a').by(id).cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.out.tree('a').by(id).cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree() {
-            TraversalScriptHelper.compute("g.V.out.out.tree()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.out.tree()")
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX() {
-            TraversalScriptHelper.compute("g.V.out.out.tree('a').cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.out.tree('a').cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a')", "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out.out.tree.by('name')", g, "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out.out.tree.by('name')", "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_out_tree() {
-            TraversalScriptHelper.compute("g.V.out.out.out.tree", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.out.out.tree")
         }
 
     }

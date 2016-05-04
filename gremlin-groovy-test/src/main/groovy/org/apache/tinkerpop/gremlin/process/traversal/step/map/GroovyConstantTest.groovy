@@ -19,10 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import java.util.List
 
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
@@ -32,12 +30,12 @@ public abstract class GroovyConstantTest {
     public static class Traversals extends ConstantTest {
         @Override
         public Traversal<Vertex, Integer> get_g_V_constantX123X() {
-            TraversalScriptHelper.compute("g.V.constant(123)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.constant(123)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX() {
-            TraversalScriptHelper.compute("g.V.choose(hasLabel('person'), values('name'), constant('inhuman'))",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.choose(hasLabel('person'), values('name'), constant('inhuman'))")
         }
 
     }

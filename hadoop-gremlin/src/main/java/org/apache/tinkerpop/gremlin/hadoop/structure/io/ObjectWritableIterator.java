@@ -24,11 +24,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 /**
@@ -77,7 +77,7 @@ public final class ObjectWritableIterator implements Iterator<KeyValue> {
             } else {
                 while (true) {
                     if (this.readers.isEmpty())
-                        throw FastNoSuchElementException.instance();
+                        throw new NoSuchElementException();
                     if (this.readers.peek().next(this.key, this.value)) {
                         return new KeyValue<>(this.key.get(), this.value.get());
                     } else

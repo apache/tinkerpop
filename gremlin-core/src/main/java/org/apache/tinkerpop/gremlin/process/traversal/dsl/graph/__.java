@@ -269,6 +269,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#project(String, String...)
+     */
+    public static <A, B> GraphTraversal<A, Map<String, B>> project(final String projectKey, final String... projectKeys) {
+        return __.<A>start().project(projectKey, projectKeys);
+    }
+
+    /**
      * @see GraphTraversal#select(Column)
      */
     public static <A, B> GraphTraversal<A, Collection<B>> select(final Column column) {
@@ -974,6 +981,13 @@ public class __ {
      */
     public static <A, M, B> GraphTraversal<A, B> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, B> trueChoice, final Traversal<?, B> falseChoice) {
         return __.<A>start().choose(traversalPredicate, trueChoice, falseChoice);
+    }
+
+    /**
+     * @see GraphTraversal#optional(Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> optional(final Traversal<?, B> optionalTraversal) {
+        return __.<A>start().optional(optionalTraversal);
     }
 
     /**

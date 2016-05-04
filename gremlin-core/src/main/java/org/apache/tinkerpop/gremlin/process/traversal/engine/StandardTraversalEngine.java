@@ -18,52 +18,84 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
  */
+@Deprecated
 public final class StandardTraversalEngine implements TraversalEngine {
 
     private static final StandardTraversalEngine INSTANCE = new StandardTraversalEngine();
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     private StandardTraversalEngine() {
 
     }
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     @Override
     public Type getType() {
         return Type.STANDARD;
     }
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     @Override
     public Optional<GraphComputer> getGraphComputer() {
         return Optional.empty();
     }
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     public static Builder build() {
         return Builder.INSTANCE;
     }
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     public static StandardTraversalEngine instance() {
         return INSTANCE;
     }
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     @Override
     public String toString() {
-        return StringFactory.traversalEngineString(this);
+        return this.getClass().getSimpleName().toLowerCase();
     }
 
+    /**
+     * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+     */
+    @Deprecated
     public final static class Builder implements TraversalEngine.Builder {
 
         private static final Builder INSTANCE = new Builder();
 
+        /**
+         * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.
+         */
+        @Deprecated
         @Override
         public TraversalEngine create(final Graph graph) {
             return StandardTraversalEngine.INSTANCE;

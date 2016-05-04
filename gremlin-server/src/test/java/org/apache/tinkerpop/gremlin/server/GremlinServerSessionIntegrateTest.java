@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -97,12 +98,36 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
+            case "shouldRollbackOnEvalExceptionForManagedTransaction":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName(), true);
+
+        try {
+            client.submit("graph.addVertex(); throw new Exception('no worky')").all().get();
+            fail("Should have tossed the manually generated exception");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            ex.printStackTrace();
+            assertEquals("no worky", root.getMessage());
+
+            // just force a commit here of "something" in case there is something lingering
+            client.submit("graph.addVertex(); graph.tx().commit()").all().get();
+        }
+
+        // the transaction is managed so a rollback should have executed
+        assertEquals(1, client.submit("g.V().count()").all().get().get(0).getInt());
     }
 
     @Test
@@ -194,7 +219,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         assertEquals(requests, futures.size());
 
         for(CompletableFuture<ResultSet> f : futures) {
-            final Result r = f.get().one();
+            final Result r = f.get().all().get(3000, TimeUnit.MILLISECONDS).get(0);
             assertEquals(11100, r.getInt());
         }
 

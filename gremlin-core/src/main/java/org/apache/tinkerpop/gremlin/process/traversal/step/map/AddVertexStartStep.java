@@ -72,7 +72,7 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     }
 
     @Override
-    protected Traverser<Vertex> processNextStart() {
+    protected Traverser.Admin<Vertex> processNextStart() {
         if (this.first) {
             this.first = false;
             final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(EmptyTraverser.instance()));
@@ -104,7 +104,6 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     @Override
     public void reset() {
         super.reset();
-        this.first = false;
     }
 
     @Override

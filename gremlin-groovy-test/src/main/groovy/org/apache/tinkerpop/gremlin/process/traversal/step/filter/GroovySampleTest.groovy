@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -32,27 +32,27 @@ public abstract class GroovySampleTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            TraversalScriptHelper.compute("g.E.sample(1)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.E.sample(1)")
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            TraversalScriptHelper.compute("g.E.sample(2).by('weight')",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.E.sample(2).by('weight')")
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            TraversalScriptHelper.compute("g.V.local(__.outE.sample(1).by('weight'))",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.local(__.outE.sample(1).by('weight'))")
         }
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX() {
-            TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().weight.sample(2).fold)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().group().by(T.label).by(bothE().weight.sample(2).fold)")
         }
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX() {
-            TraversalScriptHelper.compute("g.V().group().by(label).by(bothE().weight.fold().sample(local, 5))",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().group().by(label).by(bothE().weight.fold().sample(local, 5))")
         }
     }
 }

@@ -101,14 +101,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be and'd together");
-        return new AndP<>(this, (P<V>) predicate);
+        return new AndP<>(Arrays.asList(this, (P<V>) predicate));
     }
 
     @Override
     public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
-        return new OrP<>(this, (P<V>) predicate);
+        return new OrP<>(Arrays.asList(this, (P<V>) predicate));
     }
 
     public P<V> clone() {
@@ -146,15 +146,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public static <V> P<V> inside(final V first, final V second) {
-        return new AndP<>(new P(Compare.gt, first), new P(Compare.lt, second));
+        return new AndP<V>(Arrays.asList(new P(Compare.gt, first), new P(Compare.lt, second)));
     }
 
     public static <V> P<V> outside(final V first, final V second) {
-        return new OrP<>(new P(Compare.lt, first), new P(Compare.gt, second));
+        return new OrP<V>(Arrays.asList(new P(Compare.lt, first), new P(Compare.gt, second)));
     }
 
     public static <V> P<V> between(final V first, final V second) {
-        return new AndP<>(new P(Compare.gte, first), new P(Compare.lt, second));
+        return new AndP<V>(Arrays.asList(new P(Compare.gte, first), new P(Compare.lt, second)));
     }
 
     public static <V> P<V> within(final V... values) {

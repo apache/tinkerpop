@@ -38,6 +38,7 @@ public final class Tokens {
     public static final String OPS_USE = "use";
     public static final String OPS_VERSION = "version";
     public static final String OPS_AUTHENTICATION = "authentication";
+    public static final String OPS_TRAVERSE = "traverse";
 
     public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";
@@ -57,6 +58,7 @@ public final class Tokens {
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
+    public static final String ARGS_SASL_MECHANISM = "saslMechanism";
 
     public static final String ARGS_COORDINATES_GROUP = "group";
     public static final String ARGS_COORDINATES_ARTIFACT = "artifact";

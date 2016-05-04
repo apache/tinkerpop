@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
@@ -35,7 +36,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor {
+public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating {
 
     private TraversalRing<Object, Object> traversalRing;
 
@@ -61,8 +62,13 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     public PathStep<S> clone() {
         final PathStep<S> clone = (PathStep<S>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
-        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -82,7 +88,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> pathTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> pathTraversal) {
         this.traversalRing.addTraversal(this.integrateChild(pathTraversal));
     }
 

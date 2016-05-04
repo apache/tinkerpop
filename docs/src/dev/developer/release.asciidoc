@@ -157,7 +157,7 @@ Release & Promote
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
-. If there is are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.1.0-incubating` is present and `3.1.1-incubating` is released then remove `3.1.0-incubating`.  However, if `3.0.2-incubating` is present and that line of code is still under potential development, it may stay.
+. If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.1.0-incubating` is present and `3.1.1-incubating` is released then remove `3.1.0-incubating`.  However, if `3.0.2-incubating` is present and that line of code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
 Email Templates
@@ -250,21 +250,28 @@ Subject: TinkerPop xx.yy.zz Released: [name of release line]
 
 Hello,
 
-TinkerPop xx.yy.zz has just been released. You can find all the links and goodies on our homepage at http://tinkerpop.apache.org. However, if that is just one click too many, then the respective links are below.
+TinkerPop xx.yy.zz has just been released. [some text to introduce the release - e.g. whether or not
+there is breaking change, an important game-changing feature or two, etc.]
 
 The release artifacts can be found at this location:
-        https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
-        https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
 
-The online docs can be found here (note that the URL structure has changed with this release):
-        http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
-        http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade.html#XXXXXXXXXXXXXXXXXX (upgrade docs)
-        http://tinkerpop.apache.org/docs/xx.yy.zz/tutorials/the-gremlin-console/ (gremlin console tutorial) [NEW!]
-        http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
-        http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
+
+The online docs can be found here:
+
+http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
+http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade.html#XXXXXXXXXXXXXXXXXX (upgrade docs)
+http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
+http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
+http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [NEW!]
 
 The release notes are available here:
-        https://github.com/apache/incubator-tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+
+https://github.com/apache/incubator-tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
 
 The Central Maven repo has sync'd as well:
-        https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
+
+https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
+
+[include the release line logo]

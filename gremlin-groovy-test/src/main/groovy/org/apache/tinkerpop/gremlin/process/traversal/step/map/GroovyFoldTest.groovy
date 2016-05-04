@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,17 +30,17 @@ public abstract class GroovyFoldTest {
     public static class Traversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
-            TraversalScriptHelper.compute("g.V.fold", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.fold")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            TraversalScriptHelper.compute("g.V.fold.unfold", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.fold.unfold")
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            TraversalScriptHelper.compute("g.V.age.fold(0,sum)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.age.fold(0,sum)")
         }
     }
 }

@@ -18,20 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.process.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -39,13 +44,66 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TraversalHelperTest {
+
+    @Test
+    public void shouldIdentifyLocalChildren() {
+        final Traversal.Admin<?, ?> localChild = __.as("x").select("a", "b").by("name").asAdmin();
+        new LocalStep<>(new DefaultTraversal(), localChild);
+        assertFalse(TraversalHelper.isGlobalChild(localChild));
+        ///
+        new WhereTraversalStep<>(new DefaultTraversal(), localChild);
+        assertFalse(TraversalHelper.isGlobalChild(localChild));
+        ///
+        new TraversalFilterStep<>(new DefaultTraversal(), localChild);
+        assertFalse(TraversalHelper.isGlobalChild(localChild));
+        ///
+        new TraversalMapStep<>(new DefaultTraversal(), localChild);
+        assertFalse(TraversalHelper.isGlobalChild(localChild));
+        ///
+        new TraversalFlatMapStep<>(new DefaultTraversal(), localChild);
+        assertFalse(TraversalHelper.isGlobalChild(localChild));
+        ///
+        final Traversal.Admin<?, ?> remoteLocalChild = __.repeat(localChild).asAdmin();
+        new LocalStep<>(new DefaultTraversal<>(), remoteLocalChild);
+        assertFalse(TraversalHelper.isGlobalChild(localChild));
+    }
+
+    @Test
+    public void shouldIdentifyGlobalChildren() {
+        final Traversal.Admin<?, ?> globalChild = __.select("a", "b").by("name").asAdmin();
+        TraversalParent parent = new RepeatStep<>(new DefaultTraversal());
+        ((RepeatStep) parent).setRepeatTraversal(globalChild);
+        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        ///
+        new UnionStep<>(new DefaultTraversal(), globalChild);
+        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        ///
+        new TraversalVertexProgramStep(new DefaultTraversal<>(), globalChild);
+        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        ///
+        final Traversal.Admin<?, ?> remoteRemoteChild = __.repeat(globalChild).asAdmin();
+        new UnionStep<>(new DefaultTraversal(), remoteRemoteChild);
+        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+    }
+
+    @Test
+    public void shouldIdentityLocalProperties() {
+        assertTrue(TraversalHelper.isLocalProperties(__.identity().asAdmin()));
+        assertTrue(TraversalHelper.isLocalProperties(__.id().asAdmin()));
+        assertTrue(TraversalHelper.isLocalProperties(__.label().asAdmin()));
+        assertTrue(TraversalHelper.isLocalProperties(__.values("name").asAdmin()));
+        assertFalse(TraversalHelper.isLocalProperties(__.outE("knows").asAdmin()));
+    }
 
     @Test
     public void shouldNotFindStepOfClassInTraversal() {

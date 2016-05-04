@@ -163,23 +163,23 @@ public final class FileSystemStorage implements Storage {
     }
 
     @Override
-    public Iterator<Vertex> head(final String location, final Class parserClass, final int totalLines) {
+    public Iterator<Vertex> head(final String location, final Class readerClass, final int totalLines) {
         final org.apache.commons.configuration.Configuration configuration = new BaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Constants.getSearchGraphLocation(location, this).get());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, readerClass.getCanonicalName());
         try {
-            if (InputFormat.class.isAssignableFrom(parserClass))
+            if (InputFormat.class.isAssignableFrom(readerClass))
                 return IteratorUtils.limit(new HadoopVertexIterator(HadoopGraph.open(configuration)), totalLines);
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-        throw new IllegalArgumentException("The provided parser class must be an " + InputFormat.class.getCanonicalName() + ": " + parserClass.getCanonicalName());
+        throw new IllegalArgumentException("The provided parser class must be an " + InputFormat.class.getCanonicalName() + ": " + readerClass.getCanonicalName());
 
     }
 
     @Override
-    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines) {
-        if (!parserClass.equals(SequenceFileInputFormat.class))
+    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class readerClass, final int totalLines) {
+        if (!readerClass.equals(SequenceFileInputFormat.class))
             throw new IllegalArgumentException("Only " + SequenceFileInputFormat.class.getCanonicalName() + " memories are supported");
         final Configuration configuration = new Configuration();
         try {

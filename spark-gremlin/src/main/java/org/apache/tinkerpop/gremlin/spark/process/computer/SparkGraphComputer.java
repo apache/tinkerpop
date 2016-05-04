@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,6 +29,7 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.spark.HashPartitioner;
+import org.apache.spark.Partitioner;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -40,6 +42,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.ComputerSubmiss
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.GraphFilterAware;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
@@ -49,6 +52,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
@@ -59,19 +63,32 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
+
+
+    private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SparkGraphComputer.class.getSimpleName() + "-boss").build();
+
+    /**
+     * An {@code ExecutorService} that schedules up background work. Since a {@link GraphComputer} is only used once
+     * for a {@link VertexProgram} a single threaded executor is sufficient.
+     */
+    private final ExecutorService computerService = Executors.newSingleThreadExecutor(threadFactoryBoss);
 
     private final org.apache.commons.configuration.Configuration sparkConfiguration;
     private boolean workersSet = false;
@@ -99,47 +116,70 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     }
 
     @Override
-    protected void validateStatePriorToExecution() {
-        super.validateStatePriorToExecution();
-        if (this.sparkConfiguration.containsKey(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD) && this.sparkConfiguration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT))
-            this.logger.warn("Both " + Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD + " and " + Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT + " were specified, ignoring " + Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT);
-        if (this.sparkConfiguration.containsKey(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD) && this.sparkConfiguration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))
-            this.logger.warn("Both " + Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD + " and " + Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT + " were specified, ignoring " + Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT);
-    }
-
-    @Override
     public Future<ComputerResult> submit() {
         this.validateStatePriorToExecution();
-
         return ComputerSubmissionHelper.runWithBackgroundThread(this::submitWithExecutor, "SparkSubmitter");
     }
 
     private Future<ComputerResult> submitWithExecutor(Executor exec) {
-        // apache and hadoop configurations that are used throughout the graph computer computation
-        final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
-        apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
-        final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
-        if (hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, null) == null && // if an InputRDD is specified, then ignore InputFormat
-                hadoopConfiguration.get(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, null) != null &&
-                FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
-            try {
-                final String inputLocation = FileSystem.get(hadoopConfiguration).getFileStatus(new Path(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION))).getPath().toString();
-                apacheConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
-                hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
-            } catch (final IOException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-
-        // create the completable future
-        return CompletableFuture.<ComputerResult>supplyAsync(() -> {
+        // create the completable future                                                    
+        return computerService.submit(() -> {
             final long startTime = System.currentTimeMillis();
+            // apache and hadoop configurations that are used throughout the graph computer computation
+            final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
+            if (!apacheConfiguration.containsKey(Constants.SPARK_SERIALIZER))
+                apacheConfiguration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
+            apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
+            final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
             final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);
             final Storage sparkContextStorage = SparkContextStorage.open(apacheConfiguration);
-            // final boolean inputFromHDFS = FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, Object.class));
-            final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, Object.class));
-            final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, Object.class));
-            final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, Object.class));
+            final boolean inputFromHDFS = FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
+            final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
+            final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
+            final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
+            String inputLocation = null;
+            if (inputFromSpark)
+                inputLocation = Constants.getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), sparkContextStorage).orElse(null);
+            else if (inputFromHDFS)
+                inputLocation = Constants.getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), fileSystemStorage).orElse(null);
+            if (null == inputLocation)
+                inputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+
+            if (null != inputLocation && inputFromHDFS) {
+                try {
+                    apacheConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
+                    hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
+                } catch (final IOException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }
+            final InputRDD inputRDD;
+            final OutputRDD outputRDD;
+            final boolean filtered;
+            try {
+
+                inputRDD = InputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class)) ?
+                        hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputRDD.class, InputRDD.class).newInstance() :
+                        InputFormatRDD.class.newInstance();
+                outputRDD = OutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class)) ?
+                        hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputRDD.class, OutputRDD.class).newInstance() :
+                        OutputFormatRDD.class.newInstance();
+                // if the input class can filter on load, then set the filters
+                if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class))) {
+                    GraphFilterAware.storeGraphFilter(apacheConfiguration, hadoopConfiguration, this.graphFilter);
+                    filtered = false;
+                } else if (inputRDD instanceof GraphFilterAware) {
+                    ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
+                    filtered = false;
+                } else if (this.graphFilter.hasFilter()) {
+                    filtered = true;
+                } else {
+                    filtered = false;
+                }
+            } catch (final InstantiationException | IllegalAccessException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+
             SparkMemory memory = null;
             // delete output location
             final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
@@ -149,11 +189,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (outputToSpark && sparkContextStorage.exists(outputLocation))
                     sparkContextStorage.rm(outputLocation);
             }
-            // wire up a spark context
-            final SparkConf sparkConfiguration = new SparkConf();
-            sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
+
+            // the Spark application name will always be set by SparkContextStorage, thus, INFO the name to make it easier to debug
+            logger.debug(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
 
             // create the spark configuration from the graph computer configuration
+            final SparkConf sparkConfiguration = new SparkConf();
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
             try {
@@ -162,42 +203,41 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 Spark.create(sparkContext.sc()); // this is the context RDD holder that prevents GC
                 updateLocalConfiguration(sparkContext, sparkConfiguration);
                 // create a message-passing friendly rdd from the input rdd
-                JavaPairRDD<Object, VertexWritable> loadedGraphRDD;
                 JavaPairRDD<Object, VertexWritable> computedGraphRDD = null;
                 boolean partitioned = false;
-                try {
-                    loadedGraphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
-                            .newInstance()
-                            .readGraphRDD(apacheConfiguration, sparkContext);
-
-                    if (loadedGraphRDD.partitioner().isPresent())
-                        this.logger.info("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
-                    else {
-                        loadedGraphRDD = loadedGraphRDD.partitionBy(new HashPartitioner(this.workersSet ? this.workers : loadedGraphRDD.partitions().size()));
-                        partitioned = true;
-                    }
-                    assert loadedGraphRDD.partitioner().isPresent();
-                    // if the loaded graphRDD was already partitioned previous, then this coalesce/repartition will not take place
-                    if (this.workersSet) {
-                        if (loadedGraphRDD.partitions().size() > this.workers) // ensures that the loaded graphRDD does not have more partitions than workers
-                            loadedGraphRDD = loadedGraphRDD.coalesce(this.workers);
-                        else if (loadedGraphRDD.partitions().size() < this.workers) // ensures that the loaded graphRDD does not have less partitions than workers
-                            loadedGraphRDD = loadedGraphRDD.repartition(this.workers);
-                    }
-                    // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
-                    if (!inputFromSpark || partitioned)
-                        loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
-                } catch (final InstantiationException | IllegalAccessException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
+                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(apacheConfiguration, sparkContext);
+                // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
+                if (filtered) {
+                    this.logger.debug("Filtering the loaded graphRDD: " + this.graphFilter);
+                    loadedGraphRDD = SparkExecutor.applyGraphFilter(loadedGraphRDD, this.graphFilter);
                 }
-
-                JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
+                // if the loaded graph RDD is already partitioned use that partitioner, else partition it with HashPartitioner
+                if (loadedGraphRDD.partitioner().isPresent())
+                    this.logger.debug("Using the existing partitioner associated with the loaded graphRDD: " + loadedGraphRDD.partitioner().get());
+                else {
+                    final Partitioner partitioner = new HashPartitioner(this.workersSet ? this.workers : loadedGraphRDD.partitions().size());
+                    this.logger.debug("Partitioning the loaded graphRDD: " + partitioner);
+                    loadedGraphRDD = loadedGraphRDD.partitionBy(partitioner);
+                    partitioned = true;
+                }
+                assert loadedGraphRDD.partitioner().isPresent();
+                // if the loaded graphRDD was already partitioned previous, then this coalesce/repartition will not take place
+                if (this.workersSet) {
+                    if (loadedGraphRDD.partitions().size() > this.workers) // ensures that the loaded graphRDD does not have more partitions than workers
+                        loadedGraphRDD = loadedGraphRDD.coalesce(this.workers);
+                    else if (loadedGraphRDD.partitions().size() < this.workers) // ensures that the loaded graphRDD does not have less partitions than workers
+                        loadedGraphRDD = loadedGraphRDD.repartition(this.workers);
+                }
+                // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
+                if (!inputFromSpark || partitioned || filtered)
+                    loadedGraphRDD = loadedGraphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
 
                 ////////////////////////////////
                 // process the vertex program //
                 ////////////////////////////////
                 if (null != this.vertexProgram) {
                     // set up the vertex program and wire up configurations
+                    JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
                     this.vertexProgram.setup(memory);
                     memory.broadcastMemory(sparkContext);
@@ -207,9 +247,13 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                     // execute the vertex program
                     while (true) {
-                        memory.setInTask(true);
+                        if (Thread.interrupted()) {
+                            sparkContext.cancelAllJobs();
+                            throw new TraversalInterruptedException();
+                        }
+                        memory.setInExecute(true);
                         viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
-                        memory.setInTask(false);
+                        memory.setInExecute(false);
                         if (this.vertexProgram.terminate(memory))
                             break;
                         else {
@@ -217,18 +261,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             memory.broadcastMemory(sparkContext);
                         }
                     }
+                    memory.complete(); // drop all transient memory keys
                     // write the computed graph to the respective output (rdd or output format)
-                    final String[] elementComputeKeys = this.vertexProgram == null ? new String[0] : this.vertexProgram.getElementComputeKeys().toArray(new String[this.vertexProgram.getElementComputeKeys().size()]);
-                    computedGraphRDD = SparkExecutor.prepareFinalGraphRDD(loadedGraphRDD, viewIncomingRDD, elementComputeKeys);
-                    if ((hadoopConfiguration.get(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, null) != null ||
-                            hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null) != null) && !this.persist.equals(Persist.NOTHING)) {
-                        try {
-                            hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
-                                    .newInstance()
-                                    .writeGraphRDD(apacheConfiguration, computedGraphRDD);
-                        } catch (final InstantiationException | IllegalAccessException e) {
-                            throw new IllegalStateException(e.getMessage(), e);
-                        }
+                    computedGraphRDD = SparkExecutor.prepareFinalGraphRDD(loadedGraphRDD, viewIncomingRDD, this.vertexProgram.getVertexComputeKeys());
+                    if (null != outputRDD && !this.persist.equals(Persist.NOTHING)) {
+                        outputRDD.writeGraphRDD(apacheConfiguration, computedGraphRDD);
                     }
                 }
 
@@ -245,7 +282,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     if (computedGraphCreated && !outputToSpark) {
                         // drop all the edges of the graph as they are not used in mapReduce processing
                         computedGraphRDD = computedGraphRDD.mapValues(vertexWritable -> {
-                            vertexWritable.get().dropEdges();
+                            vertexWritable.get().dropEdges(Direction.BOTH);
                             return vertexWritable;
                         });
                         // if there is only one MapReduce to execute, don't bother wasting the clock cycles.
@@ -264,20 +301,15 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         // reduce
                         final JavaPairRDD reduceRDD = mapReduce.doStage(MapReduce.Stage.REDUCE) ? SparkExecutor.executeReduce(combineRDD, mapReduce, newApacheConfiguration) : combineRDD;
                         // write the map reduce output back to disk and computer result memory
-                        try {
-                            mapReduce.addResultToMemory(finalMemory,
-                                    hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
-                                            .newInstance()
-                                            .writeMemoryRDD(apacheConfiguration, mapReduce.getMemoryKey(), reduceRDD));
-                        } catch (final InstantiationException | IllegalAccessException e) {
-                            throw new IllegalStateException(e.getMessage(), e);
-                        }
+                        if (null != outputRDD)
+                            mapReduce.addResultToMemory(finalMemory, outputRDD.writeMemoryRDD(apacheConfiguration, mapReduce.getMemoryKey(), reduceRDD));
+
                     }
                 }
 
                 // unpersist the loaded graph if it will not be used again (no PersistedInputRDD)
                 // if the graphRDD was loaded from Spark, but then partitioned, its a different RDD
-                if ((!inputFromSpark || partitioned) && computedGraphCreated)
+                if ((!inputFromSpark || partitioned || filtered) && computedGraphCreated)
                     loadedGraphRDD.unpersist();
                 // unpersist the computed graph if it will not be used again (no PersistedOutputRDD)
                 if (!outputToSpark || this.persist.equals(GraphComputer.Persist.NOTHING))
@@ -296,7 +328,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (!apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     Spark.close();
             }
-        }, exec);
+        });
     }
 
     /////////////////
@@ -307,13 +339,18 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             if (null == hadoopGremlinLocalLibs)
                 this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
-                final String[] paths = hadoopGremlinLocalLibs.split(":");
-                for (final String path : paths) {
-                    final File file = new File(path);
-                    if (file.exists())
-                        Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
-                    else
-                        this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
+                try {
+                    final String[] paths = hadoopGremlinLocalLibs.split(":");
+                    final FileSystem fs = FileSystem.get(hadoopConfiguration);
+                    for (final String path : paths) {
+                        final File file = AbstractHadoopGraphComputer.copyDirectoryIfNonExistent(fs, path);
+                        if (file.exists())
+                            Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
+                        else
+                            this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             }
         }

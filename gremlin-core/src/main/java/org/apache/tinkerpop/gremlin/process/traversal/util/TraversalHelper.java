@@ -18,10 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -33,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -60,6 +58,28 @@ public final class TraversalHelper {
     private TraversalHelper() {
     }
 
+    public static boolean isLocalProperties(final Traversal.Admin<?, ?> traversal) {
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof RepeatStep &&
+                    ((RepeatStep<?>) step).getGlobalChildren().stream()
+                            .flatMap(t -> t.getSteps().stream())
+                            .filter(s -> s instanceof VertexStep)
+                            .findAny()
+                            .isPresent())  // TODO: is this sufficient?
+                return false;
+            else if (step instanceof VertexStep) {
+                return false;
+            } else if (step instanceof EdgeVertexStep) {
+                return false;
+            } else if (step instanceof TraversalParent) {
+                if (((TraversalParent) step).getLocalChildren().stream()
+                        .filter(t -> !isLocalProperties(t.asAdmin()))
+                        .findAny().isPresent()) return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         return isLocalStarGraph(traversal, 'v');
     }
@@ -69,21 +89,17 @@ public final class TraversalHelper {
             if (step instanceof RepeatStep &&
                     ((RepeatStep<?>) step).getGlobalChildren().stream()
                             .flatMap(t -> t.getSteps().stream())
-                            .filter(temp -> temp instanceof VertexStep)
+                            .filter(s -> s instanceof VertexStep)
                             .findAny()
                             .isPresent())  // TODO: is this sufficient?
                 return false;
-            if (step instanceof PropertiesStep && state == 'u')
+            else if (step instanceof PropertiesStep && state == 'u')
                 return false;
             else if (step instanceof VertexStep) {
-                if (((VertexStep) step).returnsVertex()) {
-                    if (state == 'u') return false;
-                    if (state == 'v') state = 'u';
-                } else {
-                    state = 'e';
-                }
+                if (state == 'u') return false;
+                state = ((VertexStep) step).returnsVertex() ? 'u' : 'e';
             } else if (step instanceof EdgeVertexStep) {
-                if (state == 'e') state = 'u';
+                state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
                 if (((HasContainerHolder) step).getHasContainers().stream()
                         .filter(c -> !c.getKey().equals(T.id.getAccessor())) // TODO: are labels available?
@@ -102,7 +118,7 @@ public final class TraversalHelper {
      * Insert a step before a specified step instance.
      *
      * @param insertStep the step to insert
-     * @param afterStep  the step to insert the new step after
+     * @param afterStep  the step to insert the new step before
      * @param traversal  the traversal on which the action should occur
      */
     public static <S, E> void insertBeforeStep(final Step<S, E> insertStep, final Step<E, ?> afterStep, final Traversal.Admin<?, ?> traversal) {
@@ -211,12 +227,24 @@ public final class TraversalHelper {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, localChild));
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, globalChild));
                 }
             }
         }
         return list;
+    }
+
+    public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {
+        while (!(traversal.getParent() instanceof EmptyStep)) {
+            if (traversal.getParent().getLocalChildren().contains(traversal))
+                return false;
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return true;
     }
 
     /**
@@ -266,6 +294,9 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    if (hasStepOfAssignableClassRecursively(stepClass, localChild)) return true;
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) return true;
                 }
@@ -291,6 +322,9 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    if (hasStepOfAssignableClassRecursively(stepClasses, localChild)) return true;
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) return true;
                 }
@@ -312,6 +346,9 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    if (anyStepRecursively(predicate, localChild)) return true;
+                }
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (anyStepRecursively(predicate, globalChild)) return true;
                 }
@@ -452,4 +489,12 @@ public final class TraversalHelper {
         return variables;
     }
 
+    public static boolean onGraphComputer(Traversal.Admin<?, ?> traversal) {
+        while (!(traversal.getParent() instanceof EmptyStep)) {
+            if (traversal.getParent().asStep() instanceof TraversalVertexProgramStep)
+                return true;
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return false;
+    }
 }

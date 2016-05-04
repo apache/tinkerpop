@@ -27,7 +27,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
@@ -48,7 +49,6 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     private HadoopGraph hadoopGraph;
     private Groovysh shell;
     private boolean useSugar = false;
-    private TraversalSource.Builder useTraversalSource = GraphTraversalSource.computer();
     private TraversalSource traversalSource;
 
     public HadoopRemoteAcceptor(final Groovysh shell) {
@@ -58,12 +58,13 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     @Override
     public Object connect(final List<String> args) throws RemoteException {
         if (args.size() != 1 && args.size() != 2) {
-            throw new IllegalArgumentException("Usage: :remote connect " + HadoopGremlinPlugin.NAME + " <variable name of graph> <optional variable name of traversal source builder>");
+            throw new IllegalArgumentException("Usage: :remote connect " + HadoopGremlinPlugin.NAME + " <variable name of graph> <optional variable name of traversal source>");
         }
         this.hadoopGraph = (HadoopGraph) this.shell.getInterp().getContext().getVariable(args.get(0));
         if (args.size() == 2)
-            this.useTraversalSource = ((TraversalSource) this.shell.getInterp().getContext().getVariable(args.get(1))).asBuilder();
-        this.traversalSource = this.useTraversalSource.create(this.hadoopGraph);
+            this.traversalSource = ((TraversalSource) this.shell.getInterp().getContext().getVariable(args.get(1)));
+        else
+            this.traversalSource = this.hadoopGraph.traversal();
         ///
         final HashMap<String, Object> configuration = new HashMap<>();
         configuration.put(USE_SUGAR, this.useSugar);
@@ -77,8 +78,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugar = Boolean.valueOf(args.get(i + 1));
             else if (args.get(i).equals(USE_TRAVERSAL_SOURCE)) {
-                this.useTraversalSource = ((TraversalSource) this.shell.getInterp().getContext().getVariable(args.get(i + 1))).asBuilder();
-                this.traversalSource = this.useTraversalSource.create(this.hadoopGraph);
+                this.traversalSource = ((TraversalSource) this.shell.getInterp().getContext().getVariable(args.get(i + 1)));
             } else
                 throw new IllegalArgumentException("The provided configuration is unknown: " + args.get(i) + ":" + args.get(i + 1));
         }
@@ -95,12 +95,13 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             String script = RemoteAcceptor.getScript(String.join(SPACE, args), this.shell);
             if (this.useSugar)
                 script = SugarLoader.class.getCanonicalName() + ".load()\n" + script;
-            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.useTraversalSource, "gremlin-groovy", script).create(this.hadoopGraph);
-            final ComputerResult computerResult = this.traversalSource.getGraphComputer().get().program(program).submit().get();
+            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(this.traversalSource, "gremlin-groovy", script).create(this.hadoopGraph);
+            final ComputerResult computerResult = VertexProgramStrategy.getComputer(this.traversalSource.getStrategies()).get().apply(this.hadoopGraph).program(program).submit().get();
             this.shell.getInterp().getContext().setVariable(RESULT, computerResult);
             ///
-            final Traversal.Admin<?, ?> traversal = new DefaultTraversal<>(computerResult.graph());
-            traversal.addStep(new ComputerResultStep<>(traversal, computerResult, false));
+            final Traversal.Admin<ComputerResult, ?> traversal = new DefaultTraversal<>(computerResult.graph());
+            traversal.addStep(new ComputerResultStep<>(traversal));
+            traversal.addStart(traversal.getTraverserGenerator().generate(computerResult, EmptyStep.instance(), 1l));
             return traversal;
         } catch (final Exception e) {
             throw new RemoteException(e);

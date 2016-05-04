@@ -19,18 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
-import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import java.util.List
-import java.util.Map
-
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.global
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local
 
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
@@ -41,57 +31,57 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailXglobal_2X() {
-            TraversalScriptHelper.compute("g.V.values('name').order.tail(global, 2)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.values('name').order.tail(global, 2)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX2X() {
-            TraversalScriptHelper.compute("g.V.values('name').order.tail(2)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.values('name').order.tail(2)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
-            TraversalScriptHelper.compute("g.V.values('name').order.tail",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.values('name').order.tail")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
-            TraversalScriptHelper.compute("g.V.values('name').order.tail(7)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.values('name').order.tail(7)")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X() {
-            TraversalScriptHelper.compute("g.V.repeat(both()).times(3).tail(7)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(both()).times(3).tail(7)")
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(limit(local, 0)).tail(local, 1)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(limit(local, 0)).tail(local, 1)")
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 2)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 2)")
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 1)",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 1)")
         }
     }
 }

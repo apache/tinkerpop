@@ -194,7 +194,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
         final Traversal<Vertex, String> traversal = get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X();
         printTraversalForm(traversal);
-        final Set<String> expected = new HashSet(Arrays.asList("ripple", "lop"));
+        final Set<String> expected = new HashSet<>(Arrays.asList("ripple", "lop"));
         final Set<List<String>> actual = new HashSet(traversal.toList());
         assertEquals(expected, actual);
     }
@@ -206,7 +206,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, List<String>> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X();
         printTraversalForm(traversal);
         final Set<List<String>> expected =
-            new HashSet(Arrays.asList(
+            new HashSet<>(Arrays.asList(
                             Arrays.asList("josh", "ripple"),
                             Arrays.asList("josh", "lop")));
         final Set<List<String>> actual = new HashSet(traversal.toList());
@@ -243,10 +243,10 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X();
         printTraversalForm(traversal);
-        final Set<Map<String, String>> expected = new HashSet(makeMapList(2,
+        final Set<Map<String, String>> expected = new HashSet<>(makeMapList(2,
                 "a", "ripple", "b", "josh",
                 "a", "lop", "b", "josh"));
-        final Set<Map<String, String>> actual = new HashSet(traversal.toList());
+        final Set<Map<String, String>> actual = new HashSet<>(traversal.toList());
         assertEquals(expected, actual);
     }
 
@@ -256,10 +256,10 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X();
         printTraversalForm(traversal);
-        final Set<Map<String, String>> expected = new HashSet(makeMapList(1,
+        final Set<Map<String, String>> expected = new HashSet<>(makeMapList(1,
                  "a", "ripple",
                  "a", "lop"));
-        final Set<Map<String, String>> actual = new HashSet(traversal.toList());
+        final Set<Map<String, String>> actual = new HashSet<>(traversal.toList());
         assertEquals(expected, actual);
     }
 
@@ -269,10 +269,10 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X();
         printTraversalForm(traversal);
-        final Set<Map<String, String>> expected = new HashSet(makeMapList(2,
+        final Set<Map<String, String>> expected = new HashSet<>(makeMapList(2,
                  "b", "josh", "c", "ripple",
                  "b", "josh", "c", "lop"));
-        final Set<Map<String, String>> actual = new HashSet(traversal.toList());
+        final Set<Map<String, String>> actual = new HashSet<>(traversal.toList());
         assertEquals(expected, actual);
     }
 
@@ -283,8 +283,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X();
         printTraversalForm(traversal);
         // Since both of the tuples are identical, we count them.
-        final Set<Map<String, String>> expected = new HashSet(makeMapList(1, "b", "josh"));
-        final Set<Map<String, String>> actual = new HashSet();
+        final Set<Map<String, String>> expected = new HashSet<>(makeMapList(1, "b", "josh"));
+        final Set<Map<String, String>> actual = new HashSet<>();
         int counter = 0;
         while (traversal.hasNext()) {
             final Map<String, String> map = traversal.next();

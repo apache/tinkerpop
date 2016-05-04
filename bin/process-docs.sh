@@ -20,21 +20,54 @@
 
 pushd "$(dirname $0)/.." > /dev/null
 
+NOCLEAN=
+
+DRYRUN=
+DRYRUN_DOCS=
+FULLRUN_DOCS=
+
+makeAbsPaths () {
+  for doc in $(tr ',' $'\n' <<< "$1"); do
+    if [ -d $doc ]; then
+      for d in $(find "$doc" -name "*.asciidoc"); do
+        echo $(cd $(dirname "$d") && pwd -P)/$(basename "$d")
+      done
+    else
+      echo $(cd $(dirname "$doc") && pwd -P)/$(basename "$doc")
+    fi
+  done | paste -sd ',' -
+}
+
 while [[ $# -gt 0 ]]
 do
   key="$1"
   case $key in
     -n|--noClean)
       NOCLEAN=1
+      shift
       ;;
     -d|--dryRun)
       DRYRUN=1
+      shift
+      if [[ $# -gt 0 ]] && [[ $1 != -* ]]; then
+        DRYRUN_DOCS=$(makeAbsPaths "$1")
+        shift
+      else
+        DRYRUN_DOCS="*"
+      fi
+      ;;
+    -f|--fullRun)
+      DRYRUN=1
+      DRYRUN_DOCS=${DRYRUN_DOCS:-"*"}
+      shift
+      FULLRUN_DOCS=$(makeAbsPaths "$1")
+      shift
       ;;
     *)
       # unknown option
+      shift
       ;;
   esac
-  shift
 done
 
 if [ -z ${NOCLEAN} ]; then
@@ -44,7 +77,7 @@ if [ -z ${NOCLEAN} ]; then
   fi
 fi
 
-if [ ! -z ${DRYRUN} ]; then
+if [ ${DRYRUN} ] && [ "${DRYRUN_DOCS}" == "*" ] && [ -z "${FULLRUN_DOCS}" ]; then
 
   mkdir -p target/postprocess-asciidoc/tmp
   cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
@@ -61,13 +94,12 @@ else
     [ ${GEPHI_MOCK} ] && kill ${GEPHI_MOCK}
   }
 
-
   nc -z localhost 8080 || (
     bin/gephi-mock.py > /dev/null 2>&1 &
     GEPHI_MOCK=$!
   )
 
-  docs/preprocessor/preprocess.sh
+  docs/preprocessor/preprocess.sh "${DRYRUN_DOCS}" "${FULLRUN_DOCS}"
   ec=$?
 fi
 

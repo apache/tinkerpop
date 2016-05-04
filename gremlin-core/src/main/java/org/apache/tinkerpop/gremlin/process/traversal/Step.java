@@ -36,21 +36,21 @@ import java.util.Set;
  * @param <S> The incoming object type of the step
  * @param <E> The outgoing object type of the step
  */
-public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Cloneable {
+public interface Step<S, E> extends Iterator<Traverser.Admin<E>>, Serializable, Cloneable {
 
     /**
-     * Add a iterator of {@link Traverser} objects of type S to the step.
+     * Add a iterator of {@link Traverser.Admin} objects of type S to the step.
      *
      * @param starts The iterator of objects to add
      */
-    public void addStarts(final Iterator<Traverser<S>> starts);
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts);
 
     /**
-     * Add a single {@link Traverser} to the step.
+     * Add a single {@link Traverser.Admin} to the step.
      *
      * @param start The traverser to add
      */
-    public void addStart(final Traverser<S> start);
+    public void addStart(final Traverser.Admin<S> start);
 
     /**
      * Set the step that is previous to the current step.

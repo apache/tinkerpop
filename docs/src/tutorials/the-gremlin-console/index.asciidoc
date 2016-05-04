@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
-image::apache-tinkerpop-logo.png[width=500]
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+
+*x.y.z*
 
 The Gremlin Console
 -------------------
@@ -614,11 +616,12 @@ Display stack trace? [yN] n
 ----
 
 TIP: If you find that you always work with a particular library, consider starting the console with an initialization
-script that prepares your environment for you. An "initialization script" is just a Groovy script that contains the
-initial commands to execute when the console starts.  Following the use case, it would be nice if the initialization
-script contained the `import` statement for the driver and possibly the code to get the `Session` object ready for use.
-Start the Gremlin Console with that script by just adding it as an argument on the command line:
-`bin/gremlin.sh init.groovy`.
+script that prepares your environment for you and start Gremlin Console in
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#interactive-mode[interactive mode]. An "initialization script"
+is just a Groovy script that contains the initial commands to execute when the console starts.  Following the use case,
+it would be nice if the initialization script contained the `import` statement for the driver and possibly the code to
+get the `Session` object ready for use. Start the Gremlin Console with that script by just adding it as an argument on
+the command line: `bin/gremlin.sh -i init.groovy`.
 
 This use case focused on using a Cassandra related library, but it should be evident that it would be equally
 straightforward to perform this same data dump to link:https://hbase.apache.org/[HBase],

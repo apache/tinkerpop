@@ -69,7 +69,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
                 // the type is embedded in the stream so it can just read it from there and return it as needed.
                 // presumably that will cast nicely to T
                 return (T) gryoReader.readObject(new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input)), Object.class);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         });
@@ -82,7 +82,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 gryoWriter.writeObject(outputStream, this.t);
                 WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         });
@@ -112,7 +112,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
         return null == this.t;
     }
 
-    public static ObjectWritable empty() {
+    public static <A> ObjectWritable<A> empty() {
         return new ObjectWritable<>(null);
     }
 
@@ -128,7 +128,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public int hashCode() {
-        return this.isEmpty() ? 0 : this.t.hashCode();
+        return null == this.t ? 0 : this.t.hashCode();
     }
 
     public static ObjectWritable<MapReduce.NullObject> getNullObjectWritable() {

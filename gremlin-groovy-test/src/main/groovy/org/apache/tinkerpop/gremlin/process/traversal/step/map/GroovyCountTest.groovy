@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,42 +30,42 @@ public abstract class GroovyCountTest {
     public static class Traversals extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
-            TraversalScriptHelper.compute("g.V.count()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.count()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_out_count() {
-            TraversalScriptHelper.compute("g.V.out.count", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.count")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_both_both_count() {
-            TraversalScriptHelper.compute("g.V.both.both.count()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.count()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
-            TraversalScriptHelper.compute("g.V().repeat(__.out).times(3).count()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().repeat(__.out).times(3).count()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
-            TraversalScriptHelper.compute("g.V.repeat(__.out).times(8).count()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.out).times(8).count()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count() {
-            TraversalScriptHelper.compute("g.V.repeat(out()).times(5).as('a').out('writtenBy').as('b').select('a', 'b').count()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(out()).times(5).as('a').out('writtenBy').as('b').select('a', 'b').count()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
-            TraversalScriptHelper.compute("g.V.has('no').count", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('no').count")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            TraversalScriptHelper.compute("g.V.fold.count(local)", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.fold.count(local)")
         }
     }
 }

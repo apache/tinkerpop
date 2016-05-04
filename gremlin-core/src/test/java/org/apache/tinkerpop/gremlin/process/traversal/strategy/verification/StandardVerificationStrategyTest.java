@@ -19,35 +19,25 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
 public class StandardVerificationStrategyTest {
-
-    private TraversalEngine traversalEngine;
-
-    @Before
-    public void setup() {
-        this.traversalEngine = mock(TraversalEngine.class);
-        when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-    }
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -67,11 +57,10 @@ public class StandardVerificationStrategyTest {
     public void shouldBeVerifiedIllegal() {
         try {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(ComputerVerificationStrategy.instance());
+            strategies.addStrategies(StandardVerificationStrategy.instance());
             traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
-            fail("The strategy should not allow lambdas: " + this.traversal);
+            fail("The strategy should not allow traversal: " + this.traversal);
         } catch (IllegalStateException ise) {
             assertTrue(true);
         }

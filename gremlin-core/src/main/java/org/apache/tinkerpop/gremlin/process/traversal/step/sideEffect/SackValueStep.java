@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -33,7 +34,7 @@ import java.util.function.BiFunction;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements TraversalParent {
+public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements TraversalParent, ByModulating {
 
     private Traversal.Admin<S, B> sackTraversal = null;
 
@@ -45,7 +46,7 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> sackTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> sackTraversal) {
         this.sackTraversal = this.integrateChild(sackTraversal);
     }
 
@@ -79,7 +80,13 @@ public final class SackValueStep<S, A, B> extends SideEffectStep<S> implements T
     public SackValueStep<S, A, B> clone() {
         final SackValueStep<S, A, B> clone = (SackValueStep<S, A, B>) super.clone();
         if (null != this.sackTraversal)
-            clone.sackTraversal = clone.integrateChild(this.sackTraversal.clone());
+            clone.sackTraversal = this.sackTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.sackTraversal);
     }
 }

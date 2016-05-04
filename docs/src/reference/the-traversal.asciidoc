@@ -328,7 +328,7 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(standard())
+g = graph.traversal()
 clockWithResult(1){g.V().both().both().both().count().next()} <1>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <2>
 clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <3>
@@ -349,7 +349,7 @@ The non-default `LazyBarrierStrategy` inserts `barrier()`-steps in a traversal w
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(GraphTraversalSource.build().with(LazyBarrierStrategy.instance()).engine(StandardTraversalEngine.build()))
+g = graph.traversal().withStrategies(LazyBarrierStrategy.instance())
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <1>
 ----
@@ -924,7 +924,7 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 [gremlin-groovy]
 ----
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(standard())
+g = graph.traversal()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
@@ -1128,6 +1128,31 @@ g.V().repeat(both()).times(3).values('age').min()
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
 
+[[optional-step]]
+Optional Step
+~~~~~~~~~~~~~
+
+The `optional()`-step (*map*) returns the result of the specified traversal if it yields a result else it returns the calling
+element, i.e. the `identity()`.
+
+[gremlin-groovy,modern]
+----
+g.V(2).optional(out('knows')) <1>
+g.V(2).optional(__.in('knows')) <2>
+----
+
+<1> vadas does not have an `out` "know" edge so vadas is returned.
+<2> vadas does have an `in` "knows" edge so marko is returned.
+
+`optional` is particularly useful for lifting entire graphs when used in conjunction with `path` or `tree`.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').optional(out("knows").optional(out("created"))).path() <1>
+----
+
+<1> Returns the paths of everybody followed by who they know followed by what they created.
+
 [[or-step]]
 Or Step
 ~~~~~~~
@@ -1216,6 +1241,37 @@ g.V().groupCount().by(inE().count()).order(local).by(keys, incr) <4>
 
 NOTE: The `values` and `keys` enums are from `Column` which is used to select "columns" from a `Map`, `Map.Entry`, or `Path`.
 
+[[pagerank-step]]
+PageRank Step
+~~~~~~~~~~~~~
+
+The `pageRank()`-step (*map*/*sideEffect*) calculates link:http://en.wikipedia.org/wiki/PageRank[PageRank] using <<pagerankvertexprogram,`PageRankVertexProgram`>>.
+
+IMPORTANT: The `pageRank()`-step is a `VertexComputing`-step and as such, can only be used against a graph that supports `GraphComputer` (OLAP).
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().pageRank().by('pageRank').values('pageRank')
+g.V().hasLabel('person').
+  pageRank().
+    by(outE('knows')).
+    by('friendRank').
+  order().by('friendRank',decr).valueMap('name','friendRank')
+----
+
+The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple `GraphComputer` jobs.
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().hasLabel('person').
+  pageRank().
+    by(outE('knows')).
+    by('friendRank').
+  order().by('friendRank',decr).valueMap('name','friendRank').explain()
+----
+
 [[path-step]]
 Path Step
 ~~~~~~~~~
@@ -1287,7 +1343,24 @@ path.c
 path.d == path.e
 ----
 
-[[profile-step]]
+[[peerpressure-step]]
+PeerPressure Step
+~~~~~~~~~~~~~~~~~
+
+The `peerPressure()`-step (*map*/*sideEffect*) clusters vertices using <<peerpressurevertexprogram,`PeerPressureVertexProgram`>>.
+
+IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, can only be used against a graph that supports `GraphComputer` (OLAP).
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().peerPressure().by('cluster').values('cluster')
+g.V().hasLabel('person').
+  peerPressure().by('cluster').
+  group().by('cluster').by('name')
+----
+
+[profile-step]]
 Profile Step
 ~~~~~~~~~~~~
 
@@ -1299,7 +1372,7 @@ profile results, but durations are not exact. Thus, durations are best considere
 
 [gremlin-groovy,modern]
 ----
-g.V().out('created').repeat(both()).times(3).hasLabel('person').values('age').sum().profile().cap(TraversalMetrics.METRICS_KEY)
+g.V().out('created').repeat(both()).times(3).hasLabel('person').values('age').sum().profile()
 ----
 
 The `profile()`-step generates a `TraversalMetrics` sideEffect object that contains the following information:
@@ -1316,7 +1389,35 @@ into a single traverser. That new traverser has a `Traverser.bulk()` that is the
 bulks. On the other hand, the `Count` represents the sum of all `Traverser.bulk()` results and thus, expresses the
 number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
 
+A side effect key can also be passed to the `profile()`-step for situations when it is important to iterate the normal
+results of the Traversal and retrieve the `TraversalMetrics` afterwards, as shown here:
+
+[gremlin-groovy,modern]
+----
+t = g.V().out('created').profile('metrics')
+t.iterate()
+metrics = t.getSideEffects().get('metrics')
+----
+
 For traversal compilation information, please see <<explain-step,`explain()`>>-step.
+
+[[project-step]]
+Project Step
+~~~~~~~~~~~~
+
+The `project()`-step (*map*) projects the current object into a `Map<String,Object>` keyed by provided labels. It is similar
+to <<select-step,`select()`>>-step, save that instead of retrieving and modulating historic traverser state, it modulates
+the current state of the traverser.
+
+[gremlin-groovy,modern]
+----
+g.V().out('created').
+  project('a','b').
+    by('name').
+    by(__.in('created').count()).
+  order().by(select('b'),decr).
+  select('a')
+----
 
 [[range-step]]
 Range Step
@@ -1694,7 +1795,7 @@ The following example demonstrates how to produce the "knows" subgraph:
 [gremlin-groovy,modern]
 ----
 subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
-sg = subGraph.traversal(standard())
+sg = subGraph.traversal()
 sg.E() <2>
 ----
 
@@ -1706,7 +1807,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 [gremlin-groovy,modern]
 ----
 subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
-sg = subGraph.traversal(standard())
+sg = subGraph.traversal()
 sg.E()
 ----
 
@@ -1719,8 +1820,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').get().traversal(standard()).E()
-t.sideEffects.get('createdG').get().traversal(standard()).E()
+t.sideEffects.get('knowsG').traversal().E()
+t.sideEffects.get('createdG').traversal().E()
 ----
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover,
@@ -2112,7 +2213,7 @@ Gremlin attempts to provide the user a comprehensive collection of steps in the 
 leverage a lambda in practice. It is advised that users only leverage a lambda if and only if there is no
 corresponding lambda-less step that encompasses the desired functionality. The reason being, lambdas can not be
 optimized by Gremlin's compiler strategies as they can not be programmatically inspected (see
-<<traversalstrategy,traversal strategies>>).
+<<traversalstrategy,traversal strategies>>). It is also not currently possible to send a lambda for remote execution to Gremlin-Server or a driver that supports remote execution. 
 
 In many situations where a lambda could be used, either a corresponding step exists or a traversal can be provided in
 its place. A `TraversalLambda` behaves like a typical lambda, but it can be optimized and it yields less objects than
@@ -2212,7 +2313,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEngine().isComputer())
+        if (TraversalHelper.onGraphComputer(traversal))
             return;
 
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
@@ -2282,7 +2383,7 @@ under the hood.
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
-g = GraphTraversalSource.build().with(strategy).create(graph)
+g = graph.traversal().withStrategies(strategy)
 g.addV().property(id, '42a').id()
 ----
 
@@ -2317,7 +2418,7 @@ console session displays the basic usage:
 graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
-g = GraphTraversalSource.build().with(strategy).create(graph)
+g = graph.traversal().withStrategies(strategy)
 g.addV('name','stephen')
 g.E().drop()
 ----
@@ -2355,9 +2456,9 @@ The best way to understand `PartitionStrategy` is via example.
 graph = TinkerFactory.createModern()
 strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
 strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
-gA = GraphTraversalSource.build().with(strategyA).create(graph)
+gA = graph.traversal().withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
-gB = GraphTraversalSource.build().with(strategyB).create(graph)
+gB = graph.traversal().withStrategies(strategyB)
 gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
@@ -2389,7 +2490,7 @@ and edges as determined by a `Traversal` criterion defined individually for each
 ----
 graph = TinkerFactory.createModern()
 strategy = SubgraphStrategy.build().edgeCriterion(hasId(8,9,10)).create()
-g = GraphTraversalSource.build().with(strategy).create(graph)
+g = graph.traversal().withStrategies(strategy)
 g.V() // shows all vertices as no filter for vertices was specified
 g.E() // shows only the edges defined in the edgeCriterion
 ----

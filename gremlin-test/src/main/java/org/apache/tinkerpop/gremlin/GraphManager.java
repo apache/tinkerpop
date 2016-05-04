@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -107,6 +109,11 @@ public class GraphManager {
         }
 
         @Override
+        public GraphComputer getGraphComputer(final Graph graph) {
+            return innerGraphProvider.getGraphComputer(graph);
+        }
+
+        @Override
         public Graph standardTestGraph(final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
             // call the ManagedGraphProvider.openTestGraph() so that the created Graph/Configuration instances
             // are tracked
@@ -164,6 +171,11 @@ public class GraphManager {
         @Override
         public Set<Class> getImplementations() {
             return innerGraphProvider.getImplementations();
+        }
+
+        @Override
+        public Optional<TestListener> getTestListener() {
+            return innerGraphProvider.getTestListener();
         }
     }
 

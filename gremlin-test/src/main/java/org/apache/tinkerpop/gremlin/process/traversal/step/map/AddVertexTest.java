@@ -81,7 +81,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(29, vertex.<Integer>value("age").intValue());
         assertEquals("puppy", vertex.<String>value("name"));
         assertFalse(traversal.hasNext());
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.V()));
     }
 
 
@@ -100,7 +100,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
             count++;
         }
         assertEquals(6, count);
-        assertEquals(12, IteratorUtils.count(graph.vertices()));
+        assertEquals(12, IteratorUtils.count(g.V()));
 
     }
 
@@ -116,7 +116,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals("person", stephen.label());
         assertEquals("stephen", stephen.value("name"));
         assertEquals(1, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -132,7 +132,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals("person", stephen.label());
         assertThat((List<String>) IteratorUtils.asList(stephen.values("name")), containsInAnyOrder("stephen", "stephenm"));
         assertEquals(2, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -147,7 +147,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals("person", stephen.label());
         assertEquals("stephenm", stephen.value("name"));
         assertEquals(1, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -165,7 +165,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(2010, Integer.parseInt(stephen.property("name").value("since").toString()));
         assertEquals(1, IteratorUtils.count(stephen.property("name").properties()));
         assertEquals(1, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.V()));
     }
 
     @Test
@@ -255,7 +255,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
             count++;
         }
         assertEquals(6, count);
-        assertEquals(12, IteratorUtils.count(graph.vertices()));
+        assertEquals(12, IteratorUtils.count(g.V()));
 
     }
 
@@ -271,7 +271,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals("person", stephen.label());
         assertEquals("stephen", stephen.value("name"));
         assertEquals(1, IteratorUtils.count(stephen.properties()));
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7, IteratorUtils.count(g.V()));
     }
 
 

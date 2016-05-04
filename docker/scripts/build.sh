@@ -52,7 +52,7 @@ done
 TINKERPOP_BUILD_OPTIONS=""
 
 [ -z "${RUN_TESTS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DskipTests"
-[ -z "${RUN_INTEGRATION_TESTS}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DskipIntegrationsTests=false"
+[ -z "${RUN_INTEGRATION_TESTS}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DskipIntegrationTests=false"
 [ -z "${INCLUDE_NEO4J}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DincludeNeo4j"
 [ -z "${BUILD_JAVA_DOCS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -Dmaven.javadoc.skip=true"
 
@@ -77,6 +77,7 @@ if [ ! -z "${BUILD_USER_DOCS}" ]; then
   # build docs
   mkdir -p ~/.groovy
   cp docker/resources/groovy/grapeConfig.xml ~/.groovy/
+  rm -rf /tmp/neo4j
   bin/process-docs.sh || exit 1
 
   # start a simple HTTP server

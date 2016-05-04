@@ -24,15 +24,15 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction;
+import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -44,31 +44,31 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PageRankVertexProgram extends StaticVertexProgram<Double> {
+public class PageRankVertexProgram implements VertexProgram<Double> {
 
-    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE);
-    private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
 
     public static final String PAGE_RANK = "gremlin.pageRankVertexProgram.pageRank";
-    public static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
-
+    private static final String EDGE_COUNT = "gremlin.pageRankVertexProgram.edgeCount";
+    private static final String PROPERTY = "gremlin.pageRankVertexProgram.property";
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
-    private static final String TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.traversalSupplier";
+    private static final String EDGE_TRAVERSAL = "gremlin.pageRankVertexProgram.edgeTraversal";
+    private static final String INITIAL_RANK_TRAVERSAL = "gremlin.pageRankVertexProgram.initialRankTraversal";
 
-    private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
+    private MessageScope.Local<Double> incidentMessageScope = MessageScope.Local.of(__::outE);
+    private MessageScope.Local<Double> countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
+    private PureTraversal<Vertex, Edge> edgeTraversal = null;
+    private PureTraversal<Vertex, ? extends Number> initialRankTraversal = null;
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
-
-    private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(PAGE_RANK, EDGE_COUNT));
+    private String property = PAGE_RANK;
+    private Set<VertexComputeKey> vertexComputeKeys;
 
     private PageRankVertexProgram() {
 
@@ -76,25 +76,31 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
-            this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
-            this.incidentMessageScope = MessageScope.Local.of(this.configurationTraversal);
+        if (configuration.containsKey(INITIAL_RANK_TRAVERSAL))
+            this.initialRankTraversal = PureTraversal.loadState(configuration, INITIAL_RANK_TRAVERSAL, graph);
+        if (configuration.containsKey(EDGE_TRAVERSAL)) {
+            this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
+            this.incidentMessageScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
             this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
         }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
+        this.property = configuration.getString(PROPERTY, PAGE_RANK);
+        this.vertexComputeKeys = new HashSet<>(Arrays.asList(VertexComputeKey.of(this.property, false), VertexComputeKey.of(EDGE_COUNT, true)));
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-        configuration.setProperty(VERTEX_PROGRAM, PageRankVertexProgram.class.getName());
+        VertexProgram.super.storeState(configuration);
         configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
-        if (null != this.configurationTraversal) {
-            this.configurationTraversal.storeState(configuration);
-        }
+        configuration.setProperty(PROPERTY, this.property);
+        if (null != this.edgeTraversal)
+            this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
+        if (null != this.initialRankTraversal)
+            this.initialRankTraversal.storeState(configuration, INITIAL_RANK_TRAVERSAL);
     }
 
     @Override
@@ -108,8 +114,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     }
 
     @Override
-    public Set<String> getElementComputeKeys() {
-        return COMPUTE_KEYS;
+    public Set<VertexComputeKey> getVertexComputeKeys() {
+        return this.vertexComputeKeys;
     }
 
     @Override
@@ -125,6 +131,18 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     }
 
     @Override
+    public PageRankVertexProgram clone() {
+        try {
+            final PageRankVertexProgram clone = (PageRankVertexProgram) super.clone();
+            if (null != this.initialRankTraversal)
+                clone.initialRankTraversal = this.initialRankTraversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void setup(final Memory memory) {
 
     }
@@ -134,16 +152,20 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         if (memory.isInitialIteration()) {
             messenger.sendMessage(this.countMessageScope, 1.0d);
         } else if (1 == memory.getIteration()) {
-            double initialPageRank = 1.0d / this.vertexCountAsDouble;
+            double initialPageRank = (null == this.initialRankTraversal ?
+                    1.0d :
+                    TraversalUtil.apply(vertex, this.initialRankTraversal.get()).doubleValue()) / this.vertexCountAsDouble;
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
-            vertex.property(VertexProperty.Cardinality.single, PAGE_RANK, initialPageRank);
+            vertex.property(VertexProperty.Cardinality.single, this.property, initialPageRank);
             vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
-            messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
+            if (!this.terminate(memory)) // don't send messages if this is the last iteration
+                messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else {
             double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(VertexProperty.Cardinality.single, PAGE_RANK, newPageRank);
-            messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
+            vertex.property(VertexProperty.Cardinality.single, this.property, newPageRank);
+            if (!this.terminate(memory)) // don't send messages if this is the last iteration
+                messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }
 
@@ -154,7 +176,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ",iterations=" + this.totalIterations);
+        return StringFactory.vertexProgramString(this, "alpha=" + this.alpha + ", iterations=" + this.totalIterations);
     }
 
     //////////////////////////////
@@ -179,25 +201,44 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             return this;
         }
 
-        public Builder traversal(final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(builder, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder property(final String key) {
+            this.configuration.setProperty(PROPERTY, key);
             return this;
         }
 
-        public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
-            ConfigurationTraversal.storeState(new TraversalObjectFunction<>(traversal), this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder edges(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
+            PureTraversal.storeState(this.configuration, EDGE_TRAVERSAL, edgeTraversal);
             return this;
         }
 
-
-        public Builder traversal(final Class<? extends Supplier<Traversal.Admin<?, ?>>> traversalClass) {
-            ConfigurationTraversal.storeState(new TraversalClassFunction(traversalClass), this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder initialRank(final Traversal.Admin<Vertex, ? extends Number> initialRankTraversal) {
+            PureTraversal.storeState(this.configuration, INITIAL_RANK_TRAVERSAL, initialRankTraversal);
             return this;
         }
 
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#initialRank(Traversal.Admin)}
+         */
+        @Deprecated
         public Builder vertexCount(final long vertexCount) {
             this.configuration.setProperty(VERTEX_COUNT, (double) vertexCount);
             return this;
+        }
+
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#edges(Traversal.Admin)}
+         */
+        @Deprecated
+        public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            return this.edges(new ScriptTraversal<>(traversalSource, scriptEngine, traversalScript, bindings));
+        }
+
+        /**
+         * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram.Builder#edges(Traversal.Admin)}
+         */
+        @Deprecated
+        public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
+            return this.edges(traversal);
         }
     }
 

@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -40,24 +39,51 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public void set(final String key, final Object value) {
-
+    public void set(final String key, final Object value) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
-    public <V> Optional<V> get(final String key) throws IllegalArgumentException {
-        return Optional.empty();
+    public <V> V get(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
-    public void remove(final String key) {
-
+    public void remove(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
     }
 
     @Override
     public Set<String> keys() {
         return Collections.emptySet();
     }
+
+    @Override
+    public void add(final String key, final Object value) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
+    }
+
+    @Override
+    public <V> void register(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
+
+    }
+
+    @Override
+    public <V> void registerIfAbsent(final String key, final Supplier<V> initialValue, final BinaryOperator<V> reducer) {
+
+    }
+
+    @Override
+    public <V> BinaryOperator<V> getReducer(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
+    }
+
+
+    @Override
+    public <V> Supplier<V> getSupplier(final String key) throws IllegalArgumentException {
+        throw TraversalSideEffects.Exceptions.sideEffectKeyDoesNotExist(key);
+    }
+
 
     @Override
     public void registerSupplier(final String key, final Supplier supplier) {
@@ -87,11 +113,6 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     @Override
     public <S> BinaryOperator<S> getSackMerger() {
         return null;
-    }
-
-    @Override
-    public void setLocalVertex(final Vertex vertex) {
-
     }
 
     @SuppressWarnings("CloneDoesntCallSuperClone")

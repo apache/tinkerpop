@@ -40,8 +40,8 @@ public interface Scoping {
     public static final TraverserRequirement[] TYPICAL_GLOBAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS};
 
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
-        if (traverser.getSideEffects().get(key).isPresent())
-            return traverser.getSideEffects().<S>get(key).get();
+        if (traverser.getSideEffects().exists(key))
+            return traverser.getSideEffects().<S>get(key);
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
@@ -55,8 +55,8 @@ public interface Scoping {
     }
 
     public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
-        if (traverser.getSideEffects().get(key).isPresent())
-            return traverser.getSideEffects().<S>get(key).get();
+        if (traverser.getSideEffects().exists(key))
+            return traverser.getSideEffects().<S>get(key);
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))

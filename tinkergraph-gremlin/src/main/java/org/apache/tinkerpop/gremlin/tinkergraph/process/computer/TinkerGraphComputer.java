@@ -18,27 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,6 +64,15 @@ public final class TinkerGraphComputer implements GraphComputer {
     private boolean executed = false;
     private final Set<MapReduce> mapReducers = new HashSet<>();
     private int workers = Runtime.getRuntime().availableProcessors();
+    private final GraphFilter graphFilter = new GraphFilter();
+
+    private final ThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(TinkerGraphComputer.class.getSimpleName() + "-boss").build();
+
+    /**
+     * An {@code ExecutorService} that schedules up background work. Since a {@link GraphComputer} is only used once
+     * for a {@link VertexProgram} a single threaded executor is sufficient.
+     */
+    private final ExecutorService computerService = Executors.newSingleThreadExecutor(threadFactoryBoss);
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -92,6 +109,18 @@ public final class TinkerGraphComputer implements GraphComputer {
     }
 
     @Override
+    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+        this.graphFilter.setVertexFilter(vertexFilter);
+        return this;
+    }
+
+    @Override
+    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
+        this.graphFilter.setEdgeFilter(edgeFilter);
+        return this;
+    }
+
+    @Override
     public Future<ComputerResult> submit() {
         // a graph computer can only be executed once
         if (this.executed)
@@ -115,24 +144,27 @@ public final class TinkerGraphComputer implements GraphComputer {
         if (this.workers > this.features().getMaxWorkers())
             throw GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported(this.workers, this.features().getMaxWorkers());
 
-
         // initialize the memory
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
-        return CompletableFuture.<ComputerResult>supplyAsync(() -> {
+        return computerService.submit(() -> {
             final long time = System.currentTimeMillis();
-            try (final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers)) {
+            final TinkerGraphComputerView view;
+            final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers);
+            try {
                 if (null != this.vertexProgram) {
-                    TinkerHelper.createGraphComputerView(this.graph, this.vertexProgram.getElementComputeKeys());
+                    view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, this.vertexProgram.getVertexComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
-                    this.memory.completeSubRound();
                     while (true) {
+                        if (Thread.interrupted()) throw new TraversalInterruptedException();
+                        this.memory.completeSubRound();
                         workers.setVertexProgram(this.vertexProgram);
                         final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
                         workers.executeVertexProgram(vertexProgram -> {
                             vertexProgram.workerIterationStart(this.memory.asImmutable());
                             while (true) {
                                 final Vertex vertex = vertices.next();
+                                if (Thread.interrupted()) throw new TraversalInterruptedException();
                                 if (null == vertex) break;
                                 vertexProgram.execute(
                                         ComputerGraph.vertexProgram(vertex, vertexProgram),
@@ -146,64 +178,70 @@ public final class TinkerGraphComputer implements GraphComputer {
                         this.memory.completeSubRound();
                         if (this.vertexProgram.terminate(this.memory)) {
                             this.memory.incrIteration();
-                            this.memory.completeSubRound();
                             break;
                         } else {
                             this.memory.incrIteration();
-                            this.memory.completeSubRound();
                         }
                     }
+                    view.complete(); // drop all transient vertex compute keys
+                } else {
+                    // MapReduce only
+                    view = TinkerHelper.createGraphComputerView(this.graph, this.graphFilter, Collections.emptySet());
                 }
 
                 // execute mapreduce jobs
                 for (final MapReduce mapReduce : mapReducers) {
-                    if (mapReduce.doStage(MapReduce.Stage.MAP)) {
-                        final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
-                        workers.setMapReduce(mapReduce);
-                        workers.executeMapReduce(workerMapReduce -> {
-                            workerMapReduce.workerStart(MapReduce.Stage.MAP);
-                            while (true) {
-                                final Vertex vertex = vertices.next();
-                                if (null == vertex) break;
-                                workerMapReduce.map(ComputerGraph.mapReduce(vertex), mapEmitter);
-                            }
-                            workerMapReduce.workerEnd(MapReduce.Stage.MAP);
-                        });
-                        // sort results if a map output sort is defined
-                        mapEmitter.complete(mapReduce);
-
-                        // no need to run combiners as this is single machine
-                        if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
-                            final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
-                            final SynchronizedIterator<Map.Entry<?, Queue<?>>> keyValues = new SynchronizedIterator((Iterator) mapEmitter.reduceMap.entrySet().iterator());
-                            workers.executeMapReduce(workerMapReduce -> {
-                                workerMapReduce.workerStart(MapReduce.Stage.REDUCE);
-                                while (true) {
-                                    final Map.Entry<?, Queue<?>> entry = keyValues.next();
-                                    if (null == entry) break;
-                                    workerMapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter);
-                                }
-                                workerMapReduce.workerEnd(MapReduce.Stage.REDUCE);
-                            });
-                            reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
-                            mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
-                        } else {
-                            mapReduce.addResultToMemory(this.memory, mapEmitter.mapQueue.iterator());
+                    final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
+                    final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
+                    workers.setMapReduce(mapReduce);
+                    workers.executeMapReduce(workerMapReduce -> {
+                        workerMapReduce.workerStart(MapReduce.Stage.MAP);
+                        while (true) {
+                            if (Thread.interrupted()) throw new TraversalInterruptedException();
+                            final Vertex vertex = vertices.next();
+                            if (null == vertex) break;
+                            workerMapReduce.map(ComputerGraph.mapReduce(vertex), mapEmitter);
                         }
+                        workerMapReduce.workerEnd(MapReduce.Stage.MAP);
+                    });
+                    // sort results if a map output sort is defined
+                    mapEmitter.complete(mapReduce);
+
+                    // no need to run combiners as this is single machine
+                    if (mapReduce.doStage(MapReduce.Stage.REDUCE)) {
+                        final TinkerReduceEmitter<?, ?> reduceEmitter = new TinkerReduceEmitter<>();
+                        final SynchronizedIterator<Map.Entry<?, Queue<?>>> keyValues = new SynchronizedIterator((Iterator) mapEmitter.reduceMap.entrySet().iterator());
+                        workers.executeMapReduce(workerMapReduce -> {
+                            workerMapReduce.workerStart(MapReduce.Stage.REDUCE);
+                            while (true) {
+                                if (Thread.interrupted()) throw new TraversalInterruptedException();
+                                final Map.Entry<?, Queue<?>> entry = keyValues.next();
+                                if (null == entry) break;
+                                workerMapReduce.reduce(entry.getKey(), entry.getValue().iterator(), reduceEmitter);
+                            }
+                            workerMapReduce.workerEnd(MapReduce.Stage.REDUCE);
+                        });
+                        reduceEmitter.complete(mapReduce); // sort results if a reduce output sort is defined
+                        mapReduce.addResultToMemory(this.memory, reduceEmitter.reduceQueue.iterator());
+                    } else {
+                        mapReduce.addResultToMemory(this.memory, mapEmitter.mapQueue.iterator());
                     }
                 }
                 // update runtime and return the newly computed graph
                 this.memory.setRuntime(System.currentTimeMillis() - time);
-                this.memory.complete();
+                this.memory.complete(); // drop all transient properties and set iteration
                 // determine the resultant graph based on the result graph/persist state
-                final TinkerGraphComputerView view = TinkerHelper.getGraphComputerView(this.graph);
-                final Graph resultGraph = null == view ? this.graph : view.processResultGraphPersist(this.resultGraph, this.persist);
-                TinkerHelper.dropGraphComputerView(this.graph);
+                final Graph resultGraph = view.processResultGraphPersist(this.resultGraph, this.persist);
+                TinkerHelper.dropGraphComputerView(this.graph); // drop the view from the original source graph
                 return new DefaultComputerResult(resultGraph, this.memory.asImmutable());
-
+            } catch (InterruptedException ie) {
+                workers.closeNow();
+                throw new TraversalInterruptedException();
             } catch (Exception ex) {
+                workers.closeNow();
                 throw new RuntimeException(ex);
+            } finally {
+                workers.close();
             }
         });
     }

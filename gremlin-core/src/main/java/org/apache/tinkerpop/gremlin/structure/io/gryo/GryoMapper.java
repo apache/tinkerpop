@@ -21,8 +21,18 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
@@ -33,9 +43,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DependantMutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -96,9 +106,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -148,6 +160,8 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     private GryoMapper(final Builder builder) {
         this.serializationList = builder.serializationList;
+        validate();
+
         this.registrationRequired = builder.registrationRequired;
         this.referenceTracking = builder.referenceTracking;
         this.classResolver = builder.classResolver;
@@ -176,6 +190,21 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     public static Builder build() {
         return new Builder();
+    }
+
+    private void validate() {
+        final Set<Integer> duplicates = new HashSet<>();
+
+        final Set<Integer> ids = new HashSet<>();
+        serializationList.forEach(t -> {
+            if (!ids.contains(t.getValue2()))
+                ids.add(t.getValue2());
+            else
+                duplicates.add(t.getValue2());
+        });
+
+        if (duplicates.size() > 0)
+            throw new IllegalStateException("There are duplicate kryo identifiers in use: " + duplicates);
     }
 
     /**
@@ -251,6 +280,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedList.class, null, 116));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Locale.class, null, 22));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuffer.class, null, 43));
@@ -291,13 +321,13 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MutableMetrics.class, null, 69));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StandardTraversalMetrics.class, null, 70));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ImmutableMetrics.class, null, 115));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DefaultTraversalMetrics.class, null, 70));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 88));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalExplanation.class, kryo -> new JavaSerializer(), 106)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalExplanation.class, kryo -> new JavaSerializer(), 106));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Duration.class, kryo -> new JavaTimeSerializers.DurationSerializer(), 93));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Instant.class, kryo -> new JavaTimeSerializers.InstantSerializer(), 94));
@@ -312,6 +342,18 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(YearMonth.class, kryo -> new JavaTimeSerializers.YearMonthSerializer(), 103));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZonedDateTime.class, kryo -> new JavaTimeSerializers.ZonedDateTimeSerializer(), 104));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZoneOffset.class, kryo -> new JavaTimeSerializers.ZoneOffsetSerializer(), 105));
+
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 107));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(FoldStep.FoldBiOperator.class, null, 108));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupCountStep.GroupCountBiOperator.class, null, 109));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupBiOperator.class, kryo -> new JavaSerializer(), 117)); // because they contain traversals
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanGlobalBiOperator.class, null, 110));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanNumber.class, null, 111));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 112));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 113));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(RangeGlobalStep.RangeBiOperator.class, null, 114));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OrderGlobalStep.OrderBiOperator.class, kryo -> new JavaSerializer(), 118)); // because they contain traversals
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ProfileStep.ProfileBiOperator.class, null, 119)); // ***LAST ID***
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
