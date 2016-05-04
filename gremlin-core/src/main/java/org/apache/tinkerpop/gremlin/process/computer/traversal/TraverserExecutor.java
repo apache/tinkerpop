@@ -154,9 +154,10 @@ public final class TraverserExecutor {
                         traverser.addLabels(step.getLabels());  // this might need to be generalized for working with global barriers too
                         if (traverser.isHalted()) {
                             traverser.detach();
-                            haltedTraversers.add(traverser);
                             if (returnHaltedTraversers)
                                 memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
+                            else
+                                haltedTraversers.add(traverser);
                         } else {
                             traverser.detach();
                             traverserSet.add(traverser);
@@ -175,9 +176,10 @@ public final class TraverserExecutor {
             step.forEachRemaining(traverser -> {
                 if (traverser.isHalted()) {
                     traverser.detach();
-                    haltedTraversers.add(traverser);
                     if (returnHaltedTraversers)
                         memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
+                    else
+                        haltedTraversers.add(traverser);
                 } else {
                     activeTraversers.add(traverser);
                 }
