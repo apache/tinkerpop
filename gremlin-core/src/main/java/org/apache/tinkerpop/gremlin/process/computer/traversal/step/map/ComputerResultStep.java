@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -63,7 +62,6 @@ public final class ComputerResultStep<S> extends AbstractStep<ComputerResult, S>
     @Override
     protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
         while (true) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
             if (this.currentIterator.hasNext())
                 return this.currentIterator.next();
             else {
