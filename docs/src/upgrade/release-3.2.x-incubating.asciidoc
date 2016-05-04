@@ -27,13 +27,40 @@ TinkerPop 3.2.1
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1-incubating/CHANGELOG.asciidoc#tinkerpop-313-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1-incubating/CHANGELOG.asciidoc#tinkerpop-321-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+TraversalVertexProgram
+^^^^^^^^^^^^^^^^^^^^^^
+
+`TraversalVertexProgram` always maintained a `HALTED_TRAVERSERS` `TraverserSet` for each vertex throughout the life
+of the OLAP computation. However, if there are no halted traversers in the set, then there is no point in keeping that
+compute property around as without it, time and space can be saved. Users that have `VertexPrograms` that are chained off
+of `TraversalVertexProgram` and have previously assumed that `HALTED_TRAVERSERS` always exists at each vertex, should no
+longer assume that.
+
+[source,java]
+// bad code
+TraverserSet haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
+// good code
+TraverserSet haltedTraversers = vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(new TraverserSet());
+
+Interrupting Traversals
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Traversals now better respect calls to `Thread.interrupt()`, which mean that a running `Traversal` can now be
+cancelled. There are some limitations that remain, but most OLTP-based traversals should cancel without
+issue. OLAP-based traversals for Spark will also cancel and clean up running jobs in Spark itself. Mileage may vary
+on other process implementations and it is possible that graph providers could potentially write custom step
+implementations that prevent interruption. If it is found that there are configurations or specific traversals that
+do not respect interruption, please mention them on the mailing list.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-946[TINKERPOP-946]
+
 Gremlin Console Flags
-+++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^
 
 Gremlin Console had several methods for executing scripts from file at the start-up of `bin/gremlin.sh`. There were
 two options:
@@ -70,6 +97,22 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1155[TINKERPOP-1155], link:
 link:https://issues.apache.org/jira/browse/TINKERPOP-1157[TINKERPOP-1157],
 link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#interactive-mode[Reference Documentation - Interactive Mode],
 link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#execution-mode[Reference Documentation - Execution Mode]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Interrupting Traversals
++++++++++++++++++++++++
+
+Several tests have been added to the TinkerPop test suite to validate that a `Traversal` can be cancelled with
+`Thread.interrupt()`. The test suite does not cover all possible traversal scenarios. When implementing custom steps,
+providers should take care to not ignore an `InterruptionException` that might be thrown in their code and to be sure
+to check `Thread.isInterrupted()` as needed to ensure that the step remains cancellation compliant.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-946[TINKERPOP-946]
 
 TinkerPop 3.2.0
 ---------------

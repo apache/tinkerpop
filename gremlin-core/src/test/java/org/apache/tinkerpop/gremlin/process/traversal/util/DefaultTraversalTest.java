@@ -28,22 +28,62 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.is;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DefaultTraversalTest {
+
+    @Test
+    public void shouldRespectThreadInterruption() throws Exception {
+        final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
+        final AtomicInteger counter = new AtomicInteger(0);
+        final CountDownLatch startedIterating = new CountDownLatch(100);
+        final List<Integer> l = IntStream.range(0, 1000000).boxed().collect(Collectors.toList());
+        final Thread t = new Thread(() -> {
+            try {
+                __.inject(l).unfold().sideEffect(i -> {
+                    startedIterating.countDown();
+                    counter.incrementAndGet();
+                }).iterate();
+            } catch (Exception ex) {
+                exceptionThrown.set(ex instanceof TraversalInterruptedException);
+            }
+        });
+
+        t.start();
+        startedIterating.await();
+        t.interrupt();
+        t.join();
+
+        // ensure that some but not all of the traversal was iterated and that the right exception was tossed
+        assertThat(counter.get(), greaterThan(0));
+        assertThat(counter.get(), lessThan(1000000));
+        assertThat(exceptionThrown.get(), CoreMatchers.is(true));
+    }
 
     @Test
     public void shouldCloneTraversalCorrectly() {

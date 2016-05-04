@@ -50,7 +50,7 @@ public abstract class AbstractBenchmarkBase {
     protected static final String DEFAULT_BENCHMARK_DIRECTORY = "./benchmarks/";
 
     protected static final String[] JVM_ARGS = {
-            "-server", "-Xms1g", "-Xmx1g"
+            "-server", "-Xms2g", "-Xmx2g"
     };
 
     @Test

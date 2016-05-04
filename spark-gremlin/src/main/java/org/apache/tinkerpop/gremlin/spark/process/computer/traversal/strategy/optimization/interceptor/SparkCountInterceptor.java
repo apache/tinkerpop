@@ -23,10 +23,13 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -36,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,7 +72,7 @@ public final class SparkCountInterceptor implements SparkVertexProgramIntercepto
                         return () -> (Iterator) IteratorUtils.of(vertexWritable);
                     else {                                          // add the vertex to head of the traversal
                         return () -> {                              // and iterate it for its results
-                            final Traversal.Admin<Vertex, ?> clone = traversal.clone();
+                            final Traversal.Admin<Vertex, ?> clone = traversal.clone(); // need a unique clone for each vertex to isolate the computation
                             clone.getStartStep().addStart(clone.getTraverserGenerator().generate(vertexWritable.get(), EmptyStep.instance(), 1l));
                             return clone;
                         };
@@ -89,6 +93,8 @@ public final class SparkCountInterceptor implements SparkVertexProgramIntercepto
         if (!steps.get(0).getClass().equals(GraphStep.class) || ((GraphStep) steps.get(0)).returnsEdge())
             return false;
         if (!steps.get(steps.size() - 1).getClass().equals(CountGlobalStep.class))
+            return false;
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, Arrays.asList(CollectingBarrierStep.class, DedupGlobalStep.class), traversal))
             return false;
         return TraversalHelper.isLocalStarGraph(traversal);
 

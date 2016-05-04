@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
@@ -228,16 +229,24 @@ public final class TraversalHelper {
     }
 
     public static <S> List<S> getStepsOfAssignableClassRecursively(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
+        return getStepsOfAssignableClassRecursively(null, stepClass, traversal);
+    }
+
+    public static <S> List<S> getStepsOfAssignableClassRecursively(final Scope scope, final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         final List<S> list = new ArrayList<>();
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass()))
                 list.add((S) step);
             if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, localChild));
+                if (null == scope || Scope.local.equals(scope)) {
+                    for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                        list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, localChild));
+                    }
                 }
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, globalChild));
+                if (null == scope || Scope.global.equals(scope)) {
+                    for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                        list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, globalChild));
+                    }
                 }
             }
         }
@@ -287,7 +296,7 @@ public final class TraversalHelper {
 
     /**
      * Determine if the traversal has a step of an assignable class in the current {@link Traversal} and its
-     * child traversals.
+     * local and global child traversals.
      *
      * @param stepClass the step class to look for
      * @param traversal the traversal in which to look for the given step class
@@ -295,16 +304,34 @@ public final class TraversalHelper {
      * given <code>stepClass</code>, otherwise <code>false</code>.
      */
     public static boolean hasStepOfAssignableClassRecursively(final Class stepClass, final Traversal.Admin<?, ?> traversal) {
+        return hasStepOfAssignableClassRecursively(null, stepClass, traversal);
+    }
+
+    /**
+     * Determine if the traversal has a step of an assignable class in the current {@link Traversal} and its
+     * {@link Scope} child traversals.
+     *
+     * @param scope     the child traversal scope to check
+     * @param stepClass the step class to look for
+     * @param traversal the traversal in which to look for the given step class
+     * @return <code>true</code> if any step in the given traversal (and its child traversals) is an instance of the
+     * given <code>stepClass</code>, otherwise <code>false</code>.
+     */
+    public static boolean hasStepOfAssignableClassRecursively(final Scope scope, final Class stepClass, final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass())) {
                 return true;
             }
             if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    if (hasStepOfAssignableClassRecursively(stepClass, localChild)) return true;
+                if (null == scope || Scope.local.equals(scope)) {
+                    for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                        if (hasStepOfAssignableClassRecursively(stepClass, localChild)) return true;
+                    }
                 }
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) return true;
+                if (null == scope || Scope.global.equals(scope)) {
+                    for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                        if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) return true;
+                    }
                 }
             }
         }
@@ -313,7 +340,7 @@ public final class TraversalHelper {
 
     /**
      * Determine if the traversal has any of the supplied steps of an assignable class in the current {@link Traversal}
-     * and its child traversals.
+     * and its global or local child traversals.
      *
      * @param stepClasses the step classes to look for
      * @param traversal   the traversal in which to look for the given step classes
@@ -321,6 +348,20 @@ public final class TraversalHelper {
      * provided in <code>stepClasses</code>, otherwise <code>false</code>.
      */
     public static boolean hasStepOfAssignableClassRecursively(final Collection<Class> stepClasses, final Traversal.Admin<?, ?> traversal) {
+        return hasStepOfAssignableClassRecursively(null, stepClasses, traversal);
+    }
+
+    /**
+     * Determine if the traversal has any of the supplied steps of an assignable class in the current {@link Traversal}
+     * and its {@link Scope} child traversals.
+     *
+     * @param scope       whether to check global or local children (null for both).
+     * @param stepClasses the step classes to look for
+     * @param traversal   the traversal in which to look for the given step classes
+     * @return <code>true</code> if any step in the given traversal (and its child traversals) is an instance of a class
+     * provided in <code>stepClasses</code>, otherwise <code>false</code>.
+     */
+    public static boolean hasStepOfAssignableClassRecursively(final Scope scope, final Collection<Class> stepClasses, final Traversal.Admin<?, ?> traversal) {
         if (stepClasses.size() == 1)
             return hasStepOfAssignableClassRecursively(stepClasses.iterator().next(), traversal);
         for (final Step<?, ?> step : traversal.getSteps()) {
@@ -328,11 +369,15 @@ public final class TraversalHelper {
                 return true;
             }
             if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
-                    if (hasStepOfAssignableClassRecursively(stepClasses, localChild)) return true;
+                if (null == scope || Scope.local.equals(scope)) {
+                    for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                        if (hasStepOfAssignableClassRecursively(stepClasses, localChild)) return true;
+                    }
                 }
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) return true;
+                if (null == scope || Scope.global.equals(scope)) {
+                    for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                        if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) return true;
+                    }
                 }
             }
         }

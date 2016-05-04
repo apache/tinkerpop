@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.VertexPr
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
@@ -119,6 +120,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(6l, g.V().out().values("name").count());
         test(2l, g.V().out("knows").values("name").count());
         test(3l, g.V().in().has("name", "marko").count());
+        test(6l, g.V().repeat(__.dedup()).times(2).count());
+        test(6l, g.V().dedup().count());
+        test(4l, g.V().hasLabel("person").order().by("age").count());
     }
 
     private static <R> void test(Class<? extends VertexProgramInterceptor> expectedInterceptor, R expectedResult, final Traversal<?, R> traversal) throws Exception {

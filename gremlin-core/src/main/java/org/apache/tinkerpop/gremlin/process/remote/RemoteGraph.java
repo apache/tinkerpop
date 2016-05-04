@@ -93,6 +93,14 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "*",
         reason = "RemoteGraph does not support direct Graph.compute() access")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest",
+        method = "*",
+        reason = "The interruption model in the test can't guarantee interruption at the right time with RemoteGraph.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest",
+        method = "*",
+        reason = "The interruption model in the test can't guarantee interruption at the right time with RemoteGraph.")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;
