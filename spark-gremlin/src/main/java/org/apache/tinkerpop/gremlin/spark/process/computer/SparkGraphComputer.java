@@ -156,7 +156,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             final OutputRDD outputRDD;
             final boolean filtered;
             try {
-
                 inputRDD = InputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class)) ?
                         hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputRDD.class, InputRDD.class).newInstance() :
                         InputFormatRDD.class.newInstance();
@@ -243,7 +242,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (null != this.vertexProgram) {
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
                     /////////////////
-                    // if there is a registered VertexProgramInterceptor, use it to by pass the GraphComputer semantics
+                    // if there is a registered VertexProgramInterceptor, use it to bypass the GraphComputer semantics
                     if (apacheConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
                         try {
                             final SparkVertexProgramInterceptor<VertexProgram> interceptor =
@@ -322,11 +321,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 }
 
                 // unpersist the loaded graph if it will not be used again (no PersistedInputRDD)
-                // if the graphRDD was loaded from Spark, but then partitioned, its a different RDD
-                if ((!skipPartitioner && (!inputFromSpark || partitioned || filtered)) && computedGraphCreated)
+                // if the graphRDD was loaded from Spark, but then partitioned or filtered, its a different RDD
+                if ((!inputFromSpark || partitioned || filtered) && computedGraphCreated)
                     loadedGraphRDD.unpersist();
                 // unpersist the computed graph if it will not be used again (no PersistedOutputRDD)
-                if (!outputToSpark || this.persist.equals(GraphComputer.Persist.NOTHING))
+                // if the computed graph is the loadedGraphRDD because it was not mutated and not-unpersisted, then don't unpersist the computedGraphRDD/loadedGraphRDD
+                if (!outputToSpark || (this.persist.equals(GraphComputer.Persist.NOTHING) && loadedGraphRDD != computedGraphRDD))
                     computedGraphRDD.unpersist();
                 // delete any file system or rdd data if persist nothing
                 if (null != outputLocation && this.persist.equals(GraphComputer.Persist.NOTHING)) {
