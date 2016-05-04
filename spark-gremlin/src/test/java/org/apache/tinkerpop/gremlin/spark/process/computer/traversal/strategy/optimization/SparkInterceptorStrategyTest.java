@@ -36,9 +36,11 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.op
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -49,6 +51,32 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SparkInterceptorStrategyTest extends AbstractSparkTest {
+
+    @Test
+    public void shouldHandleSideEffectsCorrectly() throws Exception {
+        final Configuration configuration = getBaseConfiguration();
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString()));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
+        ///
+        Graph graph = GraphFactory.open(configuration);
+        GraphTraversalSource g = graph.traversal().withComputer();
+        assertTrue(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
+        assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
+        /// groupCount(m)-test
+        Traversal.Admin<Vertex, Long> traversal = g.V().groupCount("m").by(T.label).count().asAdmin();
+        test(SparkCountInterceptor.class, 6l, traversal);
+        assertEquals(1, traversal.getSideEffects().keys().size());
+        assertTrue(traversal.getSideEffects().exists("m"));
+        assertTrue(traversal.getSideEffects().keys().contains("m"));
+        final Map<String, Long> map = traversal.getSideEffects().get("m");
+        assertEquals(2, map.size());
+        assertEquals(2, map.get("software").intValue());
+        assertEquals(4, map.get("person").intValue());
+    }
 
     @Test
     public void shouldSuccessfullyEvaluateInterceptedTraversals() throws Exception {

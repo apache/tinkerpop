@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.o
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -51,23 +52,30 @@ public final class SparkCountInterceptor implements SparkVertexProgramIntercepto
     public JavaPairRDD<Object, VertexWritable> apply(final TraversalVertexProgram vertexProgram, final JavaPairRDD<Object, VertexWritable> inputRDD, final SparkMemory memory) {
         vertexProgram.setup(memory);
         final Traversal.Admin<Vertex, Long> traversal = (Traversal.Admin) vertexProgram.getTraversal().getPure().clone();
-        final Object[] graphStepIds = ((GraphStep) traversal.getStartStep()).getIds();
-        final CountGlobalStep countGlobalStep = (CountGlobalStep) traversal.getEndStep();
+        final Object[] graphStepIds = ((GraphStep) traversal.getStartStep()).getIds();    // any V(1,2,3)-style ids to filter on
+        final CountGlobalStep countGlobalStep = (CountGlobalStep) traversal.getEndStep(); // needed for the final traverser generation
         traversal.removeStep(0);                                    // remove GraphStep
         traversal.removeStep(traversal.getSteps().size() - 1);      // remove CountGlobalStep
         traversal.applyStrategies();                                // compile
         boolean identityTraversal = traversal.getSteps().isEmpty(); // if the traversal is empty, just return the vertex (fast)
+
+        ((MemoryTraversalSideEffects) traversal.getSideEffects()).setMemory(memory, true); // any intermediate sideEffect steps are backed by SparkMemory
+        memory.setInExecute(true);
         final long count = inputRDD
                 .filter(tuple -> ElementHelper.idExists(tuple._2().get().id(), graphStepIds))
                 .flatMapValues(vertexWritable -> {
                     if (identityTraversal)                          // g.V.count()-style (identity)
                         return () -> (Iterator) IteratorUtils.of(vertexWritable);
                     else {                                          // add the vertex to head of the traversal
-                        final Traversal.Admin<Vertex, ?> clone = traversal.clone();
-                        clone.getStartStep().addStart(clone.getTraverserGenerator().generate(vertexWritable.get(), EmptyStep.instance(), 1l));
-                        return () -> clone;
+                        return () -> {                              // and iterate it for its results
+                            final Traversal.Admin<Vertex, ?> clone = traversal.clone();
+                            clone.getStartStep().addStart(clone.getTraverserGenerator().generate(vertexWritable.get(), EmptyStep.instance(), 1l));
+                            return clone;
+                        };
                     }
                 }).count();
+        memory.setInExecute(false);
+
         // generate the HALTED_TRAVERSERS for the memory
         final TraverserSet<Long> haltedTraversers = new TraverserSet<>();
         haltedTraversers.add(traversal.getTraverserGenerator().generate(count, countGlobalStep, 1l));
