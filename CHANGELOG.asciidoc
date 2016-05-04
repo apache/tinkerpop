@@ -33,6 +33,7 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 * Added "help" support to Gremlin Console with the `-h` flag.
 * Added options to better control verbosity of Gremlin Console output with `-Q`, `-V` and `-D`.
 * Deprecated the `ScriptExecutor` - the `-e` option to `gremlin.sh` is now handled by `Console`.
+* `Traversal` now allows cancellation with `Thread.interrupt()`.
 * Added a Gremlin language variant tutorial teaching people how to embed Gremlin in a host programming language.
 
 [[release-3.2.0-incubating]]
