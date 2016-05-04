@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `SparkGraphComputer` no longer shuffles empty views or empty outgoing messages in order to save time and space.
+* `TraversalVertexProgram` no longer maintains empty halted traverser properties in order to save space.
 * Added `List<P<V>>` constructors to `ConnectiveP`, `AndP`, and `OrP` for ease of use.
 * Added support for interactive (`-i`) and execute (`-e`) modes for Gremlin Console.
 * Displayed line numbers for script execution failures of `-e` and `-i`.

@@ -32,6 +32,21 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+TraversalVertexProgram
+^^^^^^^^^^^^^^^^^^^^^^
+
+`TraversalVertexProgram` always maintained a `HALTED_TRAVERSERS` `TraverserSet` for each vertex throughout the life
+of the OLAP computation. However, if there are no halted traversers in the set, then there is no point in keeping that
+compute property around as without it, time and space can be saved. Users that have `VertexPrograms` that are chained off
+of `TraversalVertexProgram` and have previously assumed that `HALTED_TRAVERSERS` always exists at each vertex, should no
+longer assume that.
+
+[source,java]
+// bad code
+TraverserSet haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
+// good code
+TraverserSet haltedTraversers = vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(new TraverserSet());
+
 Interrupting Traversals
 ^^^^^^^^^^^^^^^^^^^^^^^
 
