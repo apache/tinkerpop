@@ -59,7 +59,9 @@ public final class SparkPartitionAwareStrategy extends AbstractTraversalStrategy
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final List<TraversalVertexProgramStep> steps = TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal);
         for (final TraversalVertexProgramStep step : steps) {
-            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(traversal.getGraph().orElse(EmptyGraph.instance())).getTraversal();
+            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(traversal.getGraph().orElse(EmptyGraph.instance())).getTraversal().get().clone();
+            if (!computerTraversal.isLocked())
+                computerTraversal.applyStrategies();
             boolean messagePasses = MESSAGEPASS_CLASSES.stream()
                     .flatMap(clazz -> TraversalHelper.<Step<?, ?>>getStepsOfAssignableClassRecursively((Class) clazz, computerTraversal).stream())
                     .filter(s -> TraversalHelper.isGlobalChild(((Step) s).getTraversal().asAdmin()))

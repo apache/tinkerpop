@@ -46,7 +46,10 @@ public final class SparkInterceptorStrategy extends AbstractTraversalStrategy<Tr
         final Graph graph = traversal.getGraph().orElse(EmptyGraph.instance());
         final List<TraversalVertexProgramStep> steps = TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal);
         for (final TraversalVertexProgramStep step : steps) {
-            if (SparkCountInterceptor.isLegal(step.generateProgram(graph).getTraversal()))
+            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph).getTraversal().get().clone();
+            if (!computerTraversal.isLocked())
+                computerTraversal.applyStrategies();
+            if (SparkCountInterceptor.isLegal(computerTraversal))
                 step.setComputer(step.getComputer().configure(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR, SparkCountInterceptor.class.getCanonicalName()));
         }
     }

@@ -80,17 +80,17 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(SparkCountInterceptor.class, 5l, g.V(1, 4).out("knows", "created").count());
         test(SparkCountInterceptor.class, 1l, g.V(2).in("knows").count());
         test(SparkCountInterceptor.class, 0l, g.V(6).has("name", "peter").in().count());
+        test(SparkCountInterceptor.class, 6l, g.V().as("a").values("name").as("b").count());
+        test(SparkCountInterceptor.class, 6l, g.V().as("a").count());
+        test(SparkCountInterceptor.class, 1l, g.V().has("name", "marko").as("a").values("name").as("b").count());
+        test(SparkCountInterceptor.class, 4l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age").out("created").count());
         /// No interceptor matches
         test(2l, g.V().out().out().count());
         test(6l, g.E().count());
-        test(6l, g.V().as("a").values("name").as("b").count());
-        test(6l, g.V().as("a").count());
-        test(1l, g.V().has("name", "marko").as("a").values("name").as("b").count());
         test(2l, g.V().out().out().count());
         test(6l, g.V().out().values("name").count());
         test(2l, g.V().out("knows").values("name").count());
         test(3l, g.V().in().has("name", "marko").count());
-        test(4l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age").out("created").count()); // TODO: filter(values()) should be okay.
     }
 
     private static <R> void test(Class<? extends VertexProgramInterceptor> expectedInterceptor, R expectedResult, final Traversal<?, R> traversal) throws Exception {
