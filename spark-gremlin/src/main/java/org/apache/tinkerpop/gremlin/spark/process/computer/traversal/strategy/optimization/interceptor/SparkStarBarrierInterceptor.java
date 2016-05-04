@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
@@ -42,13 +43,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkMemory;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -75,7 +77,7 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         ((MemoryTraversalSideEffects) traversal.getSideEffects()).setMemory(memory, true); // any intermediate sideEffect steps are backed by SparkMemory
         memory.setInExecute(true);
         final JavaRDD<Traverser.Admin<Object>> nextRDD = inputRDD.values()
-                .filter(vertexWritable -> ElementHelper.idExists(vertexWritable.get().id(), graphStepIds))
+                .filter(vertexWritable -> ElementHelper.idExists(vertexWritable.get().id(), graphStepIds)) // ensure vertex ids are in V(x)
                 .flatMap(vertexWritable -> {
                     if (identityTraversal)                          // g.V.count()-style (identity)
                         return () -> IteratorUtils.of(traversal.getTraverserGenerator().generate(vertexWritable.get(), EmptyStep.instance(), 1l));
@@ -107,6 +109,13 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
             result = nextRDD
                     .map(traverser -> (Number) traverser.get())
                     .fold(Integer.MIN_VALUE, NumberHelper::max);
+        else if (endStep instanceof GroupCountStep)
+            result = nextRDD
+                    .mapPartitions(partition -> {
+                        final Traversal.Admin<?, Map<?, Long>> clone = (Traversal.Admin) endStepTraversal.clone();
+                        return () -> IteratorUtils.map(partition, traverser -> TraversalUtil.apply((Traverser.Admin) traverser, clone));
+                    })
+                    .fold(((GroupCountStep<?, ?>) endStep).getSeedSupplier().get(), (a, b) -> GroupCountStep.GroupCountBiOperator.instance().apply((Map) a, (Map) b));
         else
             throw new IllegalArgumentException("The end step is an unsupported barrier: " + endStep);
         memory.setInExecute(false);
@@ -129,8 +138,9 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
                 !endStep.getClass().equals(SumGlobalStep.class) &&
                 !endStep.getClass().equals(MeanGlobalStep.class) &&
                 !endStep.getClass().equals(MaxGlobalStep.class) &&
-                !endStep.getClass().equals(MinGlobalStep.class))
-            // TODO: group(), groupCount(), fold(), and tree()
+                !endStep.getClass().equals(MinGlobalStep.class) &&
+                !endStep.getClass().equals(GroupCountStep.class))
+            // TODO: group(), fold(), and tree()
             return false;
         if (TraversalHelper.getStepsOfAssignableClassRecursively(Scope.global, Barrier.class, traversal).size() != 1)
             return false;

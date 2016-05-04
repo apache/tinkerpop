@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -117,6 +119,11 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(SparkStarBarrierInterceptor.class, 67l, g.V().has("age").has("age", P.gt(30)).values("age").sum());
         test(SparkStarBarrierInterceptor.class, 27, g.V().hasLabel("person").values("age").min());
         test(SparkStarBarrierInterceptor.class, 35, g.V().hasLabel("person").values("age").max());
+        test(SparkStarBarrierInterceptor.class, new HashMap<String, Long>() {{
+            put("software", 2l);
+            put("person", 4l);
+        }}, g.V().<String>groupCount().by(T.label));
+        test(SparkStarBarrierInterceptor.class, Collections.singletonMap("person", 2l), g.V().has("person", "age", P.lt(30)).<String>groupCount().by(T.label));
         /// No interceptor matches
         test(2l, g.V().out().out().count());
         test(6l, g.E().count());
@@ -128,6 +135,8 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(6l, g.V().dedup().count());
         test(4l, g.V().hasLabel("person").order().by("age").count());
         test(1l, g.V().count().count());
+        test(2l, g.V().limit(2).count());
+        test(3l, g.V().tail(3).count());
     }
 
     private static <R> void test(Class<? extends VertexProgramInterceptor> expectedInterceptor, R expectedResult, final Traversal<?, R> traversal) throws Exception {
