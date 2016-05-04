@@ -17,14 +17,12 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization;
+package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -50,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 public class SparkPartitionAwareStrategyTest extends AbstractSparkTest {
 
     @Test
-    public void shouldPartitionTheInputRDDAccordingly() throws Exception {
+    public void shouldSuccessfullyEvaluateSkipPartitionedTraversals() throws Exception {
         final String outputLocation = TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString());
         Configuration configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
@@ -71,7 +69,7 @@ public class SparkPartitionAwareStrategyTest extends AbstractSparkTest {
 
 
     @Test
-    public void shouldSetConfigurationsCorrectly() throws Exception {
+    public void shouldSkipPartitionExceptedTraversals() throws Exception {
         final String outputLocation = TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString());
         Configuration configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
@@ -81,7 +79,7 @@ public class SparkPartitionAwareStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
 
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW));
+        GraphTraversalSource g = graph.traversal().withComputer();
 
         assertTrue(skipPartitioner(g.V().limit(10)));
         assertTrue(skipPartitioner(g.V().values("age").groupCount()));

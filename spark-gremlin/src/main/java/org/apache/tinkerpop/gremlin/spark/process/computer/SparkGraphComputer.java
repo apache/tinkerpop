@@ -53,8 +53,9 @@ import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
-import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization.SparkInterceptorStrategy;
-import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization.SparkPartitionAwareStrategy;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkInterceptorStrategy;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkPartitionAwareStrategy;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
@@ -241,16 +242,19 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 ////////////////////////////////
                 if (null != this.vertexProgram) {
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
-                    this.vertexProgram.setup(memory);
-                    if (apacheConfiguration.containsKey(Constants.GREMLIN_SPARK_NATIVE_INTERCEPTOR)) {
+                    /////////////////
+                    // if there is a registered VertexProgramInterceptor, use it to by pass the GraphComputer semantics
+                    if (apacheConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
                         try {
-                            final NativeInterceptor<VertexProgram> interceptor = (NativeInterceptor) Class.forName(apacheConfiguration.getString(Constants.GREMLIN_SPARK_NATIVE_INTERCEPTOR)).newInstance();
+                            final SparkVertexProgramInterceptor<VertexProgram> interceptor =
+                                    (SparkVertexProgramInterceptor) Class.forName(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)).newInstance();
                             computedGraphRDD = interceptor.apply(this.vertexProgram, loadedGraphRDD, memory);
                         } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                             throw new IllegalStateException(e.getMessage());
                         }
-                    } else {
+                    } else {  // standard GraphComputer semantics
                         // set up the vertex program and wire up configurations
+                        this.vertexProgram.setup(memory);
                         JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
                         memory.broadcastMemory(sparkContext);
                         final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
@@ -272,6 +276,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         // write the computed graph to the respective output (rdd or output format)
                         computedGraphRDD = SparkExecutor.prepareFinalGraphRDD(loadedGraphRDD, viewIncomingRDD, this.vertexProgram.getVertexComputeKeys());
                     }
+                    /////////////////
                     memory.complete(); // drop all transient memory keys
                     if (null != outputRDD && !this.persist.equals(Persist.NOTHING)) {
                         outputRDD.writeGraphRDD(apacheConfiguration, computedGraphRDD);
@@ -318,7 +323,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
                 // unpersist the loaded graph if it will not be used again (no PersistedInputRDD)
                 // if the graphRDD was loaded from Spark, but then partitioned, its a different RDD
-                if ((!inputFromSpark || partitioned || filtered) && computedGraphCreated)
+                if ((!skipPartitioner && (!inputFromSpark || partitioned || filtered)) && computedGraphCreated)
                     loadedGraphRDD.unpersist();
                 // unpersist the computed graph if it will not be used again (no PersistedOutputRDD)
                 if (!outputToSpark || this.persist.equals(GraphComputer.Persist.NOTHING))

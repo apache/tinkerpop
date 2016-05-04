@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization;
+package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization.interceptors.VertexCountInterceptor;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkVertexCountInterceptor;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
@@ -48,13 +48,12 @@ import static org.junit.Assert.assertTrue;
 public class SparkInterceptorStrategyTest extends AbstractSparkTest {
 
     @Test
-    public void shouldUseVertexCountInterceptor() throws Exception {
-        final String outputLocation = TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString());
-        Configuration configuration = getBaseConfiguration();
+    public void shouldSuccessfullyEvaluateInterceptedTraversals() throws Exception {
+        final Configuration configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString()));
         configuration.setProperty(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
         ///
         Graph graph = GraphFactory.open(configuration);
@@ -67,20 +66,19 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
     }
 
     @Test
-    public void shouldSetConfigurationsCorrectly() throws Exception {
-        final String outputLocation = TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString());
-        Configuration configuration = getBaseConfiguration();
+    public void shouldInterceptExceptedTraversals() throws Exception {
+        final Configuration configuration = getBaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, outputLocation);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, TestHelper.makeTestDataDirectory(SparkPartitionAwareStrategyTest.class, UUID.randomUUID().toString()));
         configuration.setProperty(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-
+        ///
         Graph graph = GraphFactory.open(configuration);
         GraphTraversalSource g = graph.traversal().withComputer();
-
-        assertEquals(VertexCountInterceptor.class.getCanonicalName(), getInterceptor(g.V().count()));
-        assertEquals(VertexCountInterceptor.class.getCanonicalName(), getInterceptor(g.V().identity().identity().count()));
+        //
+        assertEquals(SparkVertexCountInterceptor.class.getCanonicalName(), getInterceptor(g.V().count()));
+        assertEquals(SparkVertexCountInterceptor.class.getCanonicalName(), getInterceptor(g.V().identity().identity().count()));
         assertNull(getInterceptor(g.V().out().count()));
         assertNull(getInterceptor(g.V().as("a").count()));
     }
@@ -90,7 +88,7 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         return (String) TraversalHelper.getFirstStepOfAssignableClass(TraversalVertexProgramStep.class, traversal.asAdmin()).get()
                 .getComputer()
                 .getConfiguration()
-                .getOrDefault(Constants.GREMLIN_SPARK_NATIVE_INTERCEPTOR, null);
+                .getOrDefault(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR, null);
 
     }
 }

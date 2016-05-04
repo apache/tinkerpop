@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.optimization;
+package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
@@ -45,7 +45,7 @@ public final class SparkPartitionAwareStrategy extends AbstractTraversalStrategy
 
     private static final SparkPartitionAwareStrategy INSTANCE = new SparkPartitionAwareStrategy();
 
-    private static final Set<Class<? extends Step>> MESSAGE_PASS_CLASSES = new HashSet<>(Arrays.asList(
+    private static final Set<Class<? extends Step>> MESSAGEPASS_CLASSES = new HashSet<>(Arrays.asList(
             EdgeVertexStep.class,
             LambdaMapStep.class, // maybe?
             LambdaFlatMapStep.class // maybe?
@@ -60,7 +60,7 @@ public final class SparkPartitionAwareStrategy extends AbstractTraversalStrategy
         final List<TraversalVertexProgramStep> steps = TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal);
         for (final TraversalVertexProgramStep step : steps) {
             final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(traversal.getGraph().orElse(EmptyGraph.instance())).getTraversal();
-            boolean messagePasses = MESSAGE_PASS_CLASSES.stream()
+            boolean messagePasses = MESSAGEPASS_CLASSES.stream()
                     .flatMap(clazz -> TraversalHelper.<Step<?, ?>>getStepsOfAssignableClassRecursively((Class) clazz, computerTraversal).stream())
                     .filter(s -> TraversalHelper.isGlobalChild(((Step) s).getTraversal().asAdmin()))
                     .findAny()

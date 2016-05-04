@@ -98,7 +98,13 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Computer computer) {
-        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(computer.apply(this.getGraph()).getClass()).toList();
+        Class<? extends GraphComputer> graphComputerClass;
+        try {
+            graphComputerClass = computer.apply(this.getGraph()).getClass();
+        } catch (final Exception e) {
+            graphComputerClass = computer.getGraphComputerClass();
+        }
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
         final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
         traversalStrategies[0] = new VertexProgramStrategy(computer);
         for (int i = 0; i < graphComputerStrategies.size(); i++) {

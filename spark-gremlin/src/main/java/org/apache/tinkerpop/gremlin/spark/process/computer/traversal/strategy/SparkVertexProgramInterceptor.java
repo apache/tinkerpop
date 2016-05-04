@@ -17,16 +17,16 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer;
+package org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.VertexProgramInterceptor;
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkMemory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface NativeInterceptor<V extends VertexProgram> {
-
-    public JavaPairRDD<Object, VertexWritable> apply(final V vertexProgram, final JavaPairRDD<Object, VertexWritable> inputRDD, final SparkMemory memory);
+public interface SparkVertexProgramInterceptor<V extends VertexProgram> extends VertexProgramInterceptor<V, JavaPairRDD<Object, VertexWritable>, SparkMemory> {
 }
