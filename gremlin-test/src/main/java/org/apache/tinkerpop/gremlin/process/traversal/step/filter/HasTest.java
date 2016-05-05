@@ -149,14 +149,25 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXage_gt_30X() {
-        Arrays.asList(get_g_V_hasXage_gt_30X(), get_g_V_hasXage_isXgt_30XX()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            final List<Vertex> list = traversal.toList();
-            assertEquals(2, list.size());
-            for (final Element v : list) {
-                assertTrue(v.<Integer>value("age") > 30);
-            }
-        });
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXage_gt_30X();
+        printTraversalForm(traversal);
+        final List<Vertex> list = traversal.toList();
+        assertEquals(2, list.size());
+        for (final Element v : list) {
+            assertTrue(v.<Integer>value("age") > 30);
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXage_isXgt_30XX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXage_isXgt_30XX();
+        printTraversalForm(traversal);
+        final List<Vertex> list = traversal.toList();
+        assertEquals(2, list.size());
+        for (final Element v : list) {
+            assertTrue(v.<Integer>value("age") > 30);
+        }
     }
 
     @Test
