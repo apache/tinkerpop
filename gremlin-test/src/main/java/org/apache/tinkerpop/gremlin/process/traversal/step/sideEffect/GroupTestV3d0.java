@@ -40,6 +40,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.1.0-incubating
  */
 @RunWith(GremlinProcessRunner.class)
 @Deprecated
@@ -180,6 +181,10 @@ public abstract class GroupTestV3d0 extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    /**
+     * @deprecated As of release 3.1.0-incubating
+     */
+    @Deprecated
     public static class Traversals extends GroupTestV3d0 {
 
         @Override
