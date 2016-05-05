@@ -71,7 +71,7 @@ public interface GraphProvider {
 
     /**
      * Implementations from {@code gremlin-core} that need to be part of the clear process.  This does not exempt
-     * vendors from having to register their extensions to any of these classes, but does prevent them from
+     * providers from having to register their extensions to any of these classes, but does prevent them from
      * having to register them in addition to their own.
      */
     public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
@@ -87,7 +87,7 @@ public interface GraphProvider {
 
     /**
      * Create a {@link GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
-     * {@link StandardTraversalEngine} so vendors should override as necessary if their implementation is testing
+     * {@link StandardTraversalEngine} so providers should override as necessary if their implementation is testing
      * something that requires a different engine type, like those tests for
      * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
      */
@@ -97,7 +97,7 @@ public interface GraphProvider {
 
     /**
      * Create a {@link GraphTraversalSource} from a {@link Graph} instance.  The default implementation uses the
-     * {@link StandardTraversalEngine} so vendors should override as necessary if their implementation is testing
+     * {@link StandardTraversalEngine} so providers should override as necessary if their implementation is testing
      * something that requires a different engine type, like those tests for
      * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type}.
      * <p/>

@@ -27,7 +27,7 @@ import org.junit.runners.model.RunnerBuilder;
 /**
  * The {@code StructureIntegrationSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
  * {@link Graph} implementation. This suite contains "long-run" tests that enforce various behaviors and
- * expectations of a vendor implementation of {@link Graph}. Its usage is optional to vendors as the tests are
+ * expectations of a vendor implementation of {@link Graph}. Its usage is optional to providers as the tests are
  * somewhat redundant to those found elsewhere in other required test suites.
  * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.

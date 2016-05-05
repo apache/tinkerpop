@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
@@ -63,7 +62,7 @@ import java.util.Map;
  * implementation specific classes that might need to be serialized.  This registry allows a {@link TinkerGraph} to
  * be serialized directly which is useful for moving small graphs around on the network.
  * <p/>
- * Most vendors need not implement this kind of custom serializer as they will deal with much larger graphs that
+ * Most providers need not implement this kind of custom serializer as they will deal with much larger graphs that
  * wouldn't be practical to serialize in this fashion.  This is a bit of a special case for TinkerGraph given its
  * in-memory status.  Typical implementations would create serializers for a complex vertex identifier or a
  * custom data class like a "geographic point".

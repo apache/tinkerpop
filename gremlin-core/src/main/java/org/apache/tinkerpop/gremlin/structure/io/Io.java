@@ -86,7 +86,7 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
     public interface Builder<I extends Io> {
 
         /**
-         * Vendors use this method to supply an {@link IoRegistry} to the {@link Io} implementation.  End-users
+         * Providers use this method to supply an {@link IoRegistry} to the {@link Io} implementation.  End-users
          * should not use this method directly.  If a user wants to register custom serializers, then such things
          * can be done via calls to {@link Io#mapper()} after the {@link Io} is constructed via
          * {@link Graph#io(Io.Builder)}.
@@ -94,13 +94,13 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
         public Builder<? extends Io> registry(final IoRegistry registry);
 
         /**
-         * Vendors use this method to supply the current instance of their {@link Graph} to the builder.  End-users
+         * Providers use this method to supply the current instance of their {@link Graph} to the builder.  End-users
          * should not call this method directly.
          */
         public Builder<? extends Io> graph(final Graph g);
 
         /**
-         * Vendors call this method in the {@link Graph#io(Io.Builder)} method to construct the {@link Io} instance
+         * Providers call this method in the {@link Graph#io(Io.Builder)} method to construct the {@link Io} instance
          * and return the value.  End-users will typically not call this method.
          */
         public I create();

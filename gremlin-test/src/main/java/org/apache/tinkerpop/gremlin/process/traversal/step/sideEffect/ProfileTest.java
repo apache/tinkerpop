@@ -86,7 +86,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
             assertEquals("Every other Step should be a ProfileStep.", ProfileStep.class, steps.get(ii).getClass());
         }
 
-        // Validate the last Metrics only, which must be consistent across vendors.
+        // Validate the last Metrics only, which must be consistent across providers.
         Metrics metrics = traversalMetrics.getMetrics(traversalMetrics.getMetrics().size() - 1);
         assertEquals(2, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());

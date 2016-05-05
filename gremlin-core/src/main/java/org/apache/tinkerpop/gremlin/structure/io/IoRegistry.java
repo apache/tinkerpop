@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * A generalized custom serializer registry for vendors implementing a {@link Graph}.  Vendors should provide an
+ * A generalized custom serializer registry for providers implementing a {@link Graph}.  Providers should develop an
  * implementation of this interface if their implementation requires custom serialization of identifiers or other
  * such content housed in their graph.  Consider extending from {@link AbstractIoRegistry} and ensure that the
  * implementation has a zero-arg constructor or a static "getInstance" method that returns an {@code IoRegistry}

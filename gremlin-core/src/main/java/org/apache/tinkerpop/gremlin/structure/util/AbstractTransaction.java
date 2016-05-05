@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 /**
  * A simple base class for {@link Transaction} that provides some common functionality and default behavior.
- * While vendors can choose to use this class, it is generally better to extend from
+ * While providers can choose to use this class, it is generally better to extend from
  * {@link AbstractThreadedTransaction} or {@link AbstractThreadLocalTransaction} which include default "listener"
  * functionality.  Implementers should note that this class assumes that threaded transactions are not enabled
  * and should explicitly override {@link #createThreadedTx} to implement that functionality if required.
@@ -155,7 +155,7 @@ public abstract class AbstractTransaction implements Transaction {
     }
 
     /**
-     * An "internal" exception thrown by vendors when calls to {@link AbstractTransaction#doCommit} or
+     * An "internal" exception thrown by providers when calls to {@link AbstractTransaction#doCommit} or
      * {@link AbstractTransaction#doRollback} fail.
      */
     public static class TransactionException extends Exception {

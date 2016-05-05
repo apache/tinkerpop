@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 /**
  * Base implementation of the {@link IoRegistry} interface that provides implementation of the methods using a
- * a {@code HashMap}.  Vendors should extend from this class if they have custom serializers to provide to IO
+ * a {@code HashMap}.  Providers should extend from this class if they have custom serializers to provide to IO
  * instances.  Simply register their classes to it via the provided {@link #register(Class, Class, Object)} method.
  * <p/>
  * It is important that implementations provide a zero-arg constructor as there may be cases where it will need to be
