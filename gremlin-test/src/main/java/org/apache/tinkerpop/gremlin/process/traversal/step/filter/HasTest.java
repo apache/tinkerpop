@@ -98,7 +98,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
+    public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("ripple"), traversal);
