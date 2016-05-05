@@ -69,7 +69,7 @@ public interface GraphProvider {
 
     /**
      * Implementations from {@code gremlin-core} that need to be part of the clear process.  This does not exempt
-     * vendors from having to register their extensions to any of these classes, but does prevent them from
+     * providers from having to register their extensions to any of these classes, but does prevent them from
      * having to register them in addition to their own.
      */
     public static final Set<Class> CORE_IMPLEMENTATIONS = new HashSet<Class>() {{
@@ -85,7 +85,7 @@ public interface GraphProvider {
 
     /**
      * Create a {@link GraphTraversalSource} from a {@link Graph} instance.  The default implementation does not
-     * use {@link GraphComputer} so vendors should override as necessary if their implementation is testing
+     * use {@link GraphComputer} so providers should override as necessary if their implementation is testing
      * something that requires a different engine type, like {@link GraphComputer}.
      */
     public default GraphTraversalSource traversal(final Graph graph) {
@@ -94,7 +94,7 @@ public interface GraphProvider {
 
     /**
      * Create a {@link GraphTraversalSource} from a {@link Graph} instance.  The default implementation does not use
-     * {@link GraphComputer} so vendors should override as necessary if their implementation is testing
+     * {@link GraphComputer} so providers should override as necessary if their implementation is testing
      * something that requires a different engine type, like {@link GraphComputer}.
      * <p/>
      * Implementations should apply strategies as necessary to the

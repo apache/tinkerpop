@@ -33,6 +33,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.1.0-incubating
  */
 @RunWith(GremlinProcessRunner.class)
 @Deprecated
@@ -58,6 +59,10 @@ public abstract class MapKeysTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
     }
 
+    /**
+     * @deprecated As of release 3.1.0-incubating
+     */
+    @Deprecated
     public static class Traversals extends MapKeysTest {
 
         @Override

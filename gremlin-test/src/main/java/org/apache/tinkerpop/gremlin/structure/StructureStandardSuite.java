@@ -45,7 +45,7 @@ import org.junit.runners.model.RunnerBuilder;
 /**
  * The {@code StructureStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
  * {@link Graph} implementation.  This specialized test suite and runner is for use by
- * vendors to test their {@link Graph} implementations.  The {@code StructureStandardSuite} ensures consistency and
+ * providers to test their {@link Graph} implementations.  The {@code StructureStandardSuite} ensures consistency and
  * validity of the implementations that they test.  Successful execution of this test suite is critical to proper
  * operations of a vendor implementation.
  * <p/>

@@ -36,7 +36,7 @@ import java.util.Map;
  * Kryo serializer for {@link StarGraph}.  Implements an internal versioning capability for backward compatibility.
  * The single byte at the front of the serialization stream denotes the version.  That version can be used to choose
  * the correct deserialization mechanism.  The limitation is that this versioning won't help with backward
- * compatibility for custom serializers from vendors.  Vendors should be encouraged to write their serializers
+ * compatibility for custom serializers from providers.  Providers should be encouraged to write their serializers
  * with backward compatibility in mind.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

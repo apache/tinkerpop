@@ -29,8 +29,9 @@ import java.util.function.Supplier;
 
 /**
  * A {@link MessageScope} represents the range of a message. A message can have multiple receivers and message scope
- * allows the underlying {@link GraphComputer} to apply the message passing algorithm in whichever manner is most efficient.
- * It is best to use {@link MessageScope.Local} if possible as that provides more room for optimization by vendors than {@link MessageScope.Global}.
+ * allows the underlying {@link GraphComputer} to apply the message passing algorithm in whichever manner is most
+ * efficient. It is best to use {@link MessageScope.Local} if possible as that provides more room for optimization by
+ * providers than {@link MessageScope.Global}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)

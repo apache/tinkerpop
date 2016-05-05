@@ -92,8 +92,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
         validate_g_V_out_out_profile_modern(traversal, traversal.next());
-
-
     }
 
     @Test

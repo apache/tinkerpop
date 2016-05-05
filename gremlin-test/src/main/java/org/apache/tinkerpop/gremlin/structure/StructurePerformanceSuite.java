@@ -26,7 +26,7 @@ import org.junit.runners.model.RunnerBuilder;
 /**
  * The {@code StructurePerformanceSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
  * {@link Graph} implementation. This suite contains "long-run" tests that produce reports on the read/write
- * performance of a vendor implementation {@link Graph}. Its usage is optional to vendors as the tests are
+ * performance of a providers implementation {@link Graph}. Its usage is optional to providers as the tests are
  * somewhat redundant to those found elsewhere in other required test suites.
  * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.

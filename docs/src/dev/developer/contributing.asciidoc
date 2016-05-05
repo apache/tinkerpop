@@ -229,7 +229,7 @@ reasonable workaround.  Given that definition, a `bug` should generally have ver
 this property set.
 * Issues are not assigned "labels" with two exceptions:
 ** The "breaking" label which marks an issue as one that is representative of a change in the API that might
-affect users or vendors.  This label is important when organizing release notes.
+affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that is about removing a deprecated portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
 which that particular issue will completed.
@@ -262,7 +262,7 @@ Deprecation
 
 When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor
 deprecation.  Deprecation should come with sufficient documentation and notice especially when the change involves
-public APIs that might be utilized by users or implemented by vendors:
+public APIs that might be utilized by users or implemented by providers:
 
 * Mark the code with the `@Deprecated` annotation.
 * Use javadoc to further document the change with the following content:

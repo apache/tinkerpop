@@ -88,7 +88,7 @@ import org.junit.runners.model.RunnerBuilder;
 
 /**
  * The {@code GroovyProcessStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
- * {@link Graph} implementation.  This test suite covers traversal operations and should be implemented by vendors
+ * {@link Graph} implementation.  This test suite covers traversal operations and should be implemented by providers
  * to validate that their implementations are compliant with the Groovy flavor of the Gremlin language.
  * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.

@@ -90,7 +90,7 @@ import org.junit.runners.model.RunnerBuilder;
 /**
  * The {@code GroovyProcessComputerSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
  * {@link Graph} implementation.  This test suite covers traversal operations around {@link GraphComputer} and should
- * be implemented by vendors to validate that their implementations are compliant with the Groovy flavor of the
+ * be implemented by providers to validate that their implementations are compliant with the Groovy flavor of the
  * Gremlin language. Implementations that use this test suite should return {@code true} for
  * {@link Graph.Features.GraphFeatures#supportsComputer()}.
  * <p/>
