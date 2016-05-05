@@ -74,7 +74,6 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path() {
         final Traversal<Vertex, Path> traversal = get_g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path();
         printTraversalForm(traversal);
@@ -98,7 +97,6 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_optionalXout_optionalXoutXX_path() {
         final Traversal<Vertex, Path> traversal = get_g_V_optionalXout_optionalXoutXX_path();
         printTraversalForm(traversal);

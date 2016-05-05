@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -33,8 +34,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -84,41 +87,53 @@ public final class TraversalHelper {
     }
 
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
-        return isLocalStarGraph(traversal, 'v');
+        return 'x' != isLocalStarGraph(traversal, 'v');
     }
 
-    private static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal, char state) {
+    private static char isLocalStarGraph(final Traversal.Admin<?, ?> traversal, char state) {
         if (state == 'u' &&
                 (traversal instanceof ElementValueTraversal ||
                         (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id))))
-            return false;
+            return 'x';
         for (final Step step : traversal.getSteps()) {
-            if (step instanceof RepeatStep &&
-                    ((RepeatStep<?>) step).getGlobalChildren().stream()
-                            .flatMap(t -> t.getSteps().stream())
-                            .filter(s -> s instanceof VertexStep)
-                            .findAny()
-                            .isPresent())  // TODO: is this sufficient?
-                return false;
-            else if (step instanceof PropertiesStep && state == 'u')
-                return false;
+            if ((step instanceof PropertiesStep || step instanceof LabelStep || step instanceof PropertyMapStep) && state == 'u')
+                return 'x';
             else if (step instanceof VertexStep) {
-                if (state == 'u') return false;
+                if (state == 'u') return 'x';
                 state = ((VertexStep) step).returnsVertex() ? 'u' : 'e';
             } else if (step instanceof EdgeVertexStep) {
                 state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
                 if (((HasContainerHolder) step).getHasContainers().stream()
-                        .filter(c -> !c.getKey().equals(T.id.getAccessor())) // TODO: are labels available?
-                        .findAny().isPresent()) return false;
+                        .filter(c -> !c.getKey().equals(T.id.getAccessor()))
+                        .findAny().isPresent()) return 'x';
             } else if (step instanceof TraversalParent) {
                 final char currState = state;
-                if (((TraversalParent) step).getLocalChildren().stream()
-                        .filter(t -> !isLocalStarGraph(t.asAdmin(), currState))
-                        .findAny().isPresent()) return false;
+                Set<Character> states = ((TraversalParent) step).getLocalChildren().stream()
+                        .map(t -> isLocalStarGraph(t.asAdmin(), currState))
+                        .collect(Collectors.toSet());
+                if (states.contains('x'))
+                    return 'x';
+                else if (!(step instanceof ByModulating)) {
+                    if (states.contains('u'))
+                        state = 'u';
+                    else if (states.contains('e'))
+                        state = 'e';
+                }
+                states = ((TraversalParent) step).getGlobalChildren().stream()
+                        .map(t -> isLocalStarGraph(t.asAdmin(), currState))
+                        .collect(Collectors.toSet());
+                if (states.contains('x'))
+                    return 'x';
+                else if (states.contains('u'))
+                    state = 'u';
+                else if (states.contains('e'))
+                    state = 'e';
+                if (state != currState && step instanceof RepeatStep)
+                    return 'x';
             }
         }
-        return true;
+        return state;
     }
 
     /**

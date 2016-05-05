@@ -29,8 +29,6 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.op
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -43,9 +41,8 @@ public final class SparkInterceptorStrategy extends AbstractTraversalStrategy<Tr
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        final Graph graph = traversal.getGraph().orElse(EmptyGraph.instance());
-        final List<TraversalVertexProgramStep> steps = TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal);
-        for (final TraversalVertexProgramStep step : steps) {
+        final Graph graph = traversal.getGraph().orElse(EmptyGraph.instance()); // best guess at what the graph will be as its dynamically determined
+        for (final TraversalVertexProgramStep step : TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal)) {
             final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph).getTraversal().get().clone();
             if (!computerTraversal.isLocked())
                 computerTraversal.applyStrategies();

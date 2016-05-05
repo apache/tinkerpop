@@ -39,10 +39,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -289,5 +291,39 @@ public class TraversalHelperTest {
         Step s = Mockito.mock(Step.class);
         Mockito.when(s.toString()).thenReturn("0123456789");
         assertEquals("0123...", TraversalHelper.getShortName(s, 7));
+    }
+
+    @Test
+    public void shouldIdentifyStarGraphTraversals() {
+        assertTrue(TraversalHelper.isLocalStarGraph(__.identity().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.id().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.out().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.label().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.bothE().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.values().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.properties().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.repeat(__.identity()).asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name")).asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.out().repeat(__.identity()).asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.out().id().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), __.in()).asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), __.in()).id().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by(T.id).asAdmin()));
+        // assertTrue(TraversalHelper.isLocalStarGraph(__.out().repeat(__.has("name")).asAdmin()));
+        //
+        assertFalse(TraversalHelper.isLocalStarGraph(__.out().label().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.out().values().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.out().valueMap().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.out()).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name").out()).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name").union(__.out(), __.in())).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.in()).label().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.in().out()).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.out().union(__.in(), __.out())).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.values(), __.out().union(__.in(), __.out())).out().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().by("name").asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by("name").asAdmin()));
     }
 }
