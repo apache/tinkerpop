@@ -297,16 +297,15 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public boolean equals(final Object other) {
-        return other != null && other instanceof Traversal.Admin && this.equals(((Traversal.Admin) other));
+        return other != null && other.getClass().equals(this.getClass()) && this.equals(((Traversal.Admin) other));
     }
 
     @Override
     public int hashCode() {
-        int result = 1;
+        int result = this.getClass().hashCode();
         for (final Step step : this.asAdmin().getSteps()) {
             result ^= step.hashCode();
         }
         return result;
     }
-
 }

@@ -136,6 +136,9 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
+            // clear properties that should not be propagated in an OLAP chain
+            apacheConfiguration.clearProperty(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+            apacheConfiguration.clearProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR);
             return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), this.memory.asImmutable());
         }, exec);
     }

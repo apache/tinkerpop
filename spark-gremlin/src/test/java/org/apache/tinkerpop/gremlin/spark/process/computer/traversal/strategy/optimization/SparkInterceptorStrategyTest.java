@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.VertexProgramInterceptor;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -47,6 +48,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -66,7 +68,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         ///
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer();
+        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class);
+        assertFalse(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertFalse(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
         assertTrue(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// groupCount(m)-test
@@ -92,7 +96,9 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         ///
         Graph graph = GraphFactory.open(configuration);
-        GraphTraversalSource g = graph.traversal().withComputer();
+        GraphTraversalSource g = graph.traversal().withComputer().withoutStrategies(SparkSingleIterationStrategy.class);
+        assertFalse(g.getStrategies().toList().contains(SparkSingleIterationStrategy.instance()));
+        assertFalse(g.V().count().explain().toString().contains(SparkSingleIterationStrategy.class.getSimpleName()));
         assertTrue(g.getStrategies().toList().contains(SparkInterceptorStrategy.instance()));
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// SparkCountInterceptor matches
@@ -124,6 +130,11 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
             put("person", 4l);
         }}, g.V().<String>groupCount().by(T.label));
         test(SparkStarBarrierInterceptor.class, Collections.singletonMap("person", 2l), g.V().has("person", "age", P.lt(30)).<String>groupCount().by(T.label));
+        test(SparkStarBarrierInterceptor.class, new HashMap<String, Long>() {{
+            put("software", 2l);
+            put("person", 4l);
+        }}, g.V().<String, Long>group().by(T.label).by(__.count()));
+        test(SparkStarBarrierInterceptor.class, 123l, g.V().hasLabel("person").values("age").fold(0l, Operator.sum));
         /// No interceptor matches
         test(2l, g.V().out().out().count());
         test(6l, g.E().count());
@@ -142,14 +153,19 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
     private static <R> void test(Class<? extends VertexProgramInterceptor> expectedInterceptor, R expectedResult, final Traversal<?, R> traversal) throws Exception {
         final Traversal.Admin<?, ?> clone = traversal.asAdmin().clone();
         clone.applyStrategies();
-        final String interceptor = (String) TraversalHelper.getFirstStepOfAssignableClass(TraversalVertexProgramStep.class, clone).get()
-                .getComputer()
-                .getConfiguration()
-                .getOrDefault(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR, null);
-        if (null == expectedInterceptor)
+        final Map<String, Object> configuration = TraversalHelper.getFirstStepOfAssignableClass(TraversalVertexProgramStep.class, clone).get().getComputer().getConfiguration();
+        final String interceptor = (String) configuration.getOrDefault(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR, null);
+        if (null == expectedInterceptor) {
             assertNull(interceptor);
-        else
+            assertFalse((Boolean) configuration.getOrDefault(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false));
+            assertFalse((Boolean) configuration.getOrDefault(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false));
+        } else {
             assertEquals(expectedInterceptor, Class.forName(interceptor));
+            if (interceptor.equals(SparkStarBarrierInterceptor.class.getCanonicalName())) {
+                assertTrue((Boolean) configuration.getOrDefault(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false));
+                assertTrue((Boolean) configuration.getOrDefault(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false));
+            }
+        }
         assertEquals(expectedResult, traversal.next());
     }
 

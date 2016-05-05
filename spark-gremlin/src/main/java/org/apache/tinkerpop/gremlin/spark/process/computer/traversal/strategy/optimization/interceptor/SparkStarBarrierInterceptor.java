@@ -31,8 +31,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
@@ -41,16 +43,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkMemory;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,10 +70,8 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         final Traversal.Admin<Vertex, Object> traversal = (Traversal.Admin) vertexProgram.getTraversal().getPure().clone();
         final Object[] graphStepIds = ((GraphStep) traversal.getStartStep()).getIds();    // any V(1,2,3)-style ids to filter on
         final ReducingBarrierStep endStep = (ReducingBarrierStep) traversal.getEndStep(); // needed for the final traverser generation
-        final Traversal.Admin<Object, Object> endStepTraversal = new DefaultTraversal<>();
-        endStepTraversal.addStep(endStep).applyStrategies();
         traversal.removeStep(0);                                    // remove GraphStep
-        traversal.removeStep(traversal.getSteps().size() - 1);      // remove CountGlobalStep
+        traversal.removeStep(traversal.getSteps().size() - 1);      // remove ReducingBarrierStep
         traversal.applyStrategies();                                // compile
         boolean identityTraversal = traversal.getSteps().isEmpty(); // if the traversal is empty, just return the vertex (fast)
         ///////////////////////////////
@@ -89,6 +90,7 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
                         };
                     }
                 });
+        // USE SPARK DSL FOR THE RESPECTIVE END REDUCING BARRIER STEP OF THE TRAVERSAL
         final Object result;
         if (endStep instanceof CountGlobalStep)
             result = nextRDD.map(Traverser::bulk).fold(0l, (a, b) -> a + b);
@@ -109,23 +111,45 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
             result = nextRDD
                     .map(traverser -> (Number) traverser.get())
                     .fold(Integer.MIN_VALUE, NumberHelper::max);
-        else if (endStep instanceof GroupCountStep)
+        else if (endStep instanceof FoldStep) {
+            final BinaryOperator biOperator = endStep.getBiOperator();
+            result = nextRDD.map(traverser -> {
+                if (endStep.getSeedSupplier() instanceof ArrayListSupplier) {
+                    final List list = new ArrayList<>();
+                    for (long i = 0; i < traverser.bulk(); i++) {
+                        list.add(traverser.get());
+                    }
+                    return list;
+                } else {
+                    return traverser.get();
+                }
+            }).fold(endStep.getSeedSupplier().get(), biOperator::apply);
+        } else if (endStep instanceof GroupStep) {
+            ((GroupStep) endStep).onGraphComputer();
+            final GroupStep.GroupBiOperator<Object, Object> biOperator = (GroupStep.GroupBiOperator) endStep.getBiOperator();
+            result = ((GroupStep) endStep).generateFinalResult(nextRDD.
+                    mapPartitions(partitions -> {
+                        final GroupStep<Object, Object, Object> clone = (GroupStep) endStep.clone();
+                        return () -> IteratorUtils.map(partitions, clone::projectTraverser);
+                    }).fold(((GroupStep<Object, Object, Object>) endStep).getSeedSupplier().get(), biOperator::apply));
+        } else if (endStep instanceof GroupCountStep) {
+            final GroupCountStep.GroupCountBiOperator<Object> biOperator = GroupCountStep.GroupCountBiOperator.instance();
             result = nextRDD
-                    .mapPartitions(partition -> {
-                        final Traversal.Admin<?, Map<?, Long>> clone = (Traversal.Admin) endStepTraversal.clone();
-                        return () -> IteratorUtils.map(partition, traverser -> TraversalUtil.apply((Traverser.Admin) traverser, clone));
+                    .mapPartitions(partitions -> {
+                        final GroupCountStep<Object, Object> clone = (GroupCountStep) endStep.clone();
+                        return () -> IteratorUtils.map(partitions, clone::projectTraverser);
                     })
-                    .fold(((GroupCountStep<?, ?>) endStep).getSeedSupplier().get(), (a, b) -> GroupCountStep.GroupCountBiOperator.instance().apply((Map) a, (Map) b));
-        else
+                    .fold(((GroupCountStep<Object, Object>) endStep).getSeedSupplier().get(), biOperator::apply);
+        } else
             throw new IllegalArgumentException("The end step is an unsupported barrier: " + endStep);
         memory.setInExecute(false);
         ///////////////////////////////
 
         // generate the HALTED_TRAVERSERS for the memory
         final TraverserSet<Long> haltedTraversers = new TraverserSet<>();
-        haltedTraversers.add(traversal.getTraverserGenerator().generate(result, endStep, 1l));
+        haltedTraversers.add(traversal.getTraverserGenerator().generate(result, endStep, 1l)); // all reducing barrier steps produce a result of bulk 1
         memory.set(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversers);
-        memory.incrIteration(); // any local star graph reduction take a single iteration
+        memory.incrIteration(); // any local star graph reduction takes a single iteration
         return inputRDD;
     }
 
@@ -139,8 +163,10 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
                 !endStep.getClass().equals(MeanGlobalStep.class) &&
                 !endStep.getClass().equals(MaxGlobalStep.class) &&
                 !endStep.getClass().equals(MinGlobalStep.class) &&
+                !endStep.getClass().equals(FoldStep.class) &&
+                !endStep.getClass().equals(GroupStep.class) &&
                 !endStep.getClass().equals(GroupCountStep.class))
-            // TODO: group(), fold(), and tree()
+            // TODO: tree()
             return false;
         if (TraversalHelper.getStepsOfAssignableClassRecursively(Scope.global, Barrier.class, traversal).size() != 1)
             return false;
