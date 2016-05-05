@@ -1,0 +1,38 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
+
+*x.y.z*
+
+:toc-position: left
+
+Recipes
+=======
+
+image:gremlin-chef.png[width=120,float=left] All programming languages tend to have
+link:https://en.wikipedia.org/wiki/Software_design_pattern[patterns of usage] for commonly occurring problems. Gremlin
+is not different in that respect. There are many commonly occurring traversal themes that have general applicability
+to any graph. Gremlin Recipes present these common traversal patterns and methods of usage that will
+provide some basic building blocks for virtually any graph in any domain.
+
+Recipes assume general familiarity with Gremlin and the TinkerPop stack. Be sure to have read the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
+link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
+
+include::shortest-path.asciidoc[]
+
+include::if-then-based-grouping.asciidoc[]
