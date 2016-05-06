@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Increased the testing and scope of `TraversalHelper.isLocalStarGraph()`.
 * Added `VertexProgramInterceptor` interface as a general pattern for `GraphComputer` providers to use for bypassing `GraphComputer` semantics where appropriate.
 * Added `SparkStarBarrierInterceptor` that uses Spark DSL for local star graph traversals that end with a `ReducingBarrierStep`.
 * Added `SparkInterceptorStrategy` which identifies which interceptor to use (if any) given the submitted `VertexProgram`.
