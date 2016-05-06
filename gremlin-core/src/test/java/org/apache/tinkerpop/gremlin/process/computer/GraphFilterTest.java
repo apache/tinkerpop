@@ -19,18 +19,52 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphFilterTest {
 
-    /*@Test
-    public void shouldHandleStarGraph() {
-        final StarGraph graph = StarGraph.open();
-        final Vertex vertex = graph.addVertex("person");
-        for (int i = 0; i < 10; i++) {
-            vertex.addEdge("created", graph.addVertex(i < 5 ? "software" : "hardware"), "weight", 1);
-        }
-        final GraphFilter graphFilter = new GraphFilter();
-    }*/
+    @Test
+    public void shouldHaveProperEdgeLegality() {
+        GraphFilter graphFilter = new GraphFilter();
+        assertFalse(graphFilter.hasEdgeFilter());
+        assertEquals(GraphFilter.Legal.YES, graphFilter.checkEdgeLegality(Direction.IN));
+        assertEquals(GraphFilter.Legal.YES, graphFilter.checkEdgeLegality(Direction.BOTH));
+        assertEquals(GraphFilter.Legal.YES, graphFilter.checkEdgeLegality(Direction.OUT));
+        //
+        graphFilter = new GraphFilter();
+        graphFilter.setEdgeFilter(__.<Vertex>bothE().limit(0));
+        assertTrue(graphFilter.hasEdgeFilter());
+        assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.IN));
+        assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.BOTH));
+        assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.OUT));
+        //
+        graphFilter = new GraphFilter();
+        graphFilter.setEdgeFilter(__.outE());
+        assertTrue(graphFilter.hasEdgeFilter());
+        assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.IN));
+        assertEquals(GraphFilter.Legal.NO, graphFilter.checkEdgeLegality(Direction.BOTH));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "knows"));
+        //
+        graphFilter = new GraphFilter();
+        graphFilter.setEdgeFilter(__.union(__.inE("bought"), __.outE("created"), __.bothE("knows", "likes")));
+        assertTrue(graphFilter.hasEdgeFilter());
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.IN));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.BOTH));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "created"));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "likes"));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.IN, "created"));
+        assertEquals(GraphFilter.Legal.MAYBE, graphFilter.checkEdgeLegality(Direction.OUT, "worksFor"));
+    }
 }

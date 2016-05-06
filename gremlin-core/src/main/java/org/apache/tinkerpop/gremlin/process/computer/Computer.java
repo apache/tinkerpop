@@ -136,16 +136,24 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         return this.graphComputerClass;
     }
 
-    public Map<String,Object> getConfiguration()  {
+    public Map<String, Object> getConfiguration() {
         return this.configuration;
     }
 
-    public Traversal<Vertex,Vertex> getVertices() {
+    public Traversal<Vertex, Vertex> getVertices() {
         return this.vertices;
     }
 
-    public Traversal<Vertex,Edge> getEdges() {
+    public Traversal<Vertex, Edge> getEdges() {
         return this.edges;
+    }
+
+    public GraphComputer.Persist getPersist() {
+        return this.persist;
+    }
+
+    public GraphComputer.ResultGraph getResultGraph() {
+        return this.resultGraph;
     }
 
     public int getWorkers() {
