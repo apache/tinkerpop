@@ -39,6 +39,7 @@ public final class Constants {
     public static final String GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES = "gremlin.hadoop.graphWriter.hasEdges";
     public static final String GREMLIN_HADOOP_GRAPH_FILTER = "gremlin.hadoop.graphFilter";
     public static final String GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER = "gremlin.hadoop.defaultGraphComputer";
+    public static final String GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR = "gremlin.hadoop.vertexProgramInterceptor";
 
     public static final String GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE = "gremlin.hadoop.jarsInDistributedCache";
     public static final String HIDDEN_G = Graph.Hidden.hide("g");
@@ -57,6 +58,8 @@ public final class Constants {
     public static final String GREMLIN_SPARK_PERSIST_CONTEXT = "gremlin.spark.persistContext";
     public static final String GREMLIN_SPARK_GRAPH_STORAGE_LEVEL = "gremlin.spark.graphStorageLevel";
     public static final String GREMLIN_SPARK_PERSIST_STORAGE_LEVEL = "gremlin.spark.persistStorageLevel";
+    public static final String GREMLIN_SPARK_SKIP_PARTITIONER = "gremlin.spark.skipPartitioner"; // don't partition the loadedGraphRDD
+    public static final String GREMLIN_SPARK_SKIP_GRAPH_CACHE = "gremlin.spark.skipGraphCache";  // don't cache the loadedGraphRDD (ignores graphStorageLevel)
     public static final String SPARK_SERIALIZER = "spark.serializer";
 
     public static String getGraphLocation(final String location) {

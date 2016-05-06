@@ -66,14 +66,17 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
+        ///
         assertEquals(6, graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class)).V().out().count().next().longValue());
-        ////////
+        assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertEquals(0, Spark.getContext().getPersistentRDDs().size());
+        //
+        assertEquals(2, graph.traversal().withComputer(Computer.compute(SparkGraphComputer.class)).V().out().out().count().next().longValue());
         assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         assertEquals(0, Spark.getContext().getPersistentRDDs().size());
         ///////
         Spark.close();
     }
-
 
     @Test
     public void shouldPersistRDDBasedOnStorageLevel() throws Exception {
@@ -104,7 +107,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
             assertEquals(StorageLevel.fromString(storageLevel), Spark.getRDD(Constants.getGraphLocation(rddName)).getStorageLevel());
             assertEquals(counter, Spark.getRDDs().size());
             assertEquals(counter, Spark.getContext().getPersistentRDDs().size());
-            //System.out.println(SparkContextStorage.open().ls());
         }
         Spark.close();
     }
@@ -160,6 +162,44 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName2);
+        graph = GraphFactory.open(configuration);
+        assertEquals(6, graph.traversal().withComputer(SparkGraphComputer.class).V().out().count().next().longValue());
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
+        ///////
+        graph = GraphFactory.open(configuration);
+        graph.compute(SparkGraphComputer.class)
+                .result(GraphComputer.ResultGraph.NEW)
+                .persist(GraphComputer.Persist.EDGES)
+                .program(TraversalVertexProgram.build()
+                        .traversal(graph.traversal().withComputer(SparkGraphComputer.class),
+                                "gremlin-groovy",
+                                "g.V().count()").create(graph)).submit().get();
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName2)));
+        assertEquals(2, Spark.getContext().getPersistentRDDs().size());
+        ///////
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, PersistedInputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName2);
+        graph = GraphFactory.open(configuration);
+        assertEquals(6, graph.traversal().withComputer(SparkGraphComputer.class).V().out().count().next().longValue());
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
+        ///////
+        graph = GraphFactory.open(configuration);
+        graph.compute(SparkGraphComputer.class)
+                .result(GraphComputer.ResultGraph.NEW)
+                .persist(GraphComputer.Persist.EDGES)
+                .program(TraversalVertexProgram.build()
+                        .traversal(graph.traversal().withComputer(SparkGraphComputer.class),
+                                "gremlin-groovy",
+                                "g.V().count()").create(graph)).submit().get();
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName2)));
+        assertEquals(2, Spark.getContext().getPersistentRDDs().size());
+        ///////
         graph = GraphFactory.open(configuration);
         assertEquals(6, graph.traversal().withComputer(SparkGraphComputer.class).V().out().count().next().longValue());
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));

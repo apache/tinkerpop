@@ -148,7 +148,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         this.memoryComputeKeys.values().stream().filter(MemoryComputeKey::isTransient).forEach(memoryComputeKey -> this.sparkMemory.remove(memoryComputeKey.getKey()));
     }
 
-    protected void setInExecute(final boolean inExecute) {
+    public void setInExecute(final boolean inExecute) {
         this.inExecute = inExecute;
     }
 

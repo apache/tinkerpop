@@ -308,5 +308,4 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         }
         return result;
     }
-
 }

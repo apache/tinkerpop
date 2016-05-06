@@ -123,14 +123,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     /**
-     * A helper method to yield a {@link Traversal} from the {@link Graph} and provided {@link Configuration}.
+     * Get the {@link PureTraversal} associated with the current instance of the {@link TraversalVertexProgram}.
      *
-     * @param graph         the graph that the traversal will run against
-     * @param configuration The configuration containing the TRAVERSAL key.
-     * @return the traversal supplied by the configuration
+     * @return the pure traversal of the instantiated program
      */
-    public static Traversal.Admin<?, ?> getTraversal(final Graph graph, final Configuration configuration) {
-        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).traversal.get();
+    public PureTraversal<?, ?> getTraversal() {
+        return this.traversal;
     }
 
     @Override
