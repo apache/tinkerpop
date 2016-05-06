@@ -26,6 +26,11 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `VertexProgramInterceptor` interface as a general pattern for `GraphComputer` providers to use for bypassing `GraphComputer` semantics where appropriate.
+* Added `SparkStarBarrierInterceptor` that uses Spark DSL for local star graph traversals that end with a `ReducingBarrierStep`.
+* Added `SparkInterceptorStrategy` which identifies which interceptor to use (if any) given the submitted `VertexProgram`.
+* Added `SparkSingleIterationStrategy` that does not partition nor cache the graph RDD if the traversal does not message pass.
+* Added more helper methods to `TraversalHelper` for handling scoped traversal children.
 * Deprecated all "performance" tests based on "JUnit Benchmarks".
 * `SparkGraphComputer` no longer shuffles empty views or empty outgoing messages in order to save time and space.
 * `TraversalVertexProgram` no longer maintains empty halted traverser properties in order to save space.
