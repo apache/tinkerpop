@@ -66,9 +66,6 @@ public class GraphFilterStrategyTest {
                 {__.union(__.inE("created"), __.outE("created")), __.bothE("created")},
                 {__.union(__.inE("knows"), __.outE("created")), __.union(__.outE("created"), __.bothE("knows"))},
                 {__.union(__.inE("knows", "created"), __.outE("created")), __.bothE("knows", "created")},
-                {__.V().match(
-                        as("a").in("created").as("b"),
-                        as("b").in("knows").as("c")).select("c").out("created").values("name"), __.union(__.inE("knows"), __.bothE("created"))},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").values("name"), null}

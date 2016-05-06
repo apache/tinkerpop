@@ -124,14 +124,14 @@ public final class GraphFilterStrategy extends AbstractTraversalStrategy<Travers
                 return __.<Vertex>outE(outs).asAdmin();
             else if (outLabels.isEmpty() && bothLabels.isEmpty())
                 return __.<Vertex>inE(ins).asAdmin();
-            else if (outLabels.isEmpty())
-                return __.<Vertex, Edge>union(__.inE(ins), __.bothE(boths)).asAdmin();
-            else if (inLabels.isEmpty())
-                return __.<Vertex, Edge>union(__.outE(outs), __.bothE(boths)).asAdmin();
             else if (bothLabels.isEmpty())
                 return __.<Vertex, Edge>union(__.inE(ins), __.outE(outs)).asAdmin();
+            else if (outLabels.isEmpty() && ins.length > 0)
+                return __.<Vertex, Edge>union(__.inE(ins), __.bothE(boths)).asAdmin();
+            else if (inLabels.isEmpty() && outs.length > 0)
+                return __.<Vertex, Edge>union(__.outE(outs), __.bothE(boths)).asAdmin();
             else
-                return null;  // no filter
+                return null;
         }
     }
 
