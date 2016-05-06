@@ -20,7 +20,6 @@ port: 8182
 threadPoolWorker: 1
 gremlinPool: 8
 scriptEvaluationTimeout: 30000
-serializedResponseTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-empty.properties}

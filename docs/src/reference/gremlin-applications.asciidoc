@@ -961,7 +961,6 @@ The following table describes the various configuration options that Gremlin Ser
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. |_none_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
-|serializedResponseTimeout |The amount of time in milliseconds before a response serialization times out.  The notion of "response serialization" refers to the time it takes for Gremlin Server to iterate an entire result after the script is evaluated in the `ScriptEngine`. |30000
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
@@ -1388,20 +1387,15 @@ generally means being measured in the low hundreds of milliseconds and "slow" me
 ** If the bulk of the scripts being processed are expected to be "fast", then a good starting point for this setting is `2*threadPoolWorker`.
 ** If the bulk of the scripts being processed are expected to be "slow", then a good starting point for this setting is `4*threadPoolWorker`.
 * Scripts that are "slow" can really hurt Gremlin Server if they are not properly accounted for.  `ScriptEngine`
-evaluations are blocking operations that aren't easily interrupted, so once a "slow" script is being evaluated in
+evaluations are blocking operations that aren't always easily interrupted, so once a "slow" script is being evaluated in
 the context of a `ScriptEngine` it must finish its work.  Lots of "slow" scripts will eventually consume the
 `gremlinPool` preventing other scripts from getting processed from the queue.
-** To limit the impact of this problem consider properly setting the `scriptEvaluationTimeout` and the `serializedResponseTimeout` to something "sane".
-** Test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate and iterate
-over results, then set these configurations accordingly.
-** Note that `scriptEvaluationTimeout` does not interrupt the evaluation on timeout.  It merely allows Gremlin Server
-to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` will still be consumed after
-the timeout.
-** The `serializedResponseTimeout` will kill the result iteration process and prevent additional processing.  In most
-situations, the iteration and serialization process is the more costly step in this process as an errant script that
-returns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the
-other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the
-contents of the script itself.
+** To limit the impact of this problem, consider properly setting the `scriptEvaluationTimeout` to something "sane".
+In other words, test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate
+and iterate over results, then set the timeout value accordingly.
+** Note that `scriptEvaluationTimeout` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
+Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` that did the evaluation
+may still be consumed after the timeout.
 * Graph element serialization for `Vertex` and `Edge` can be expensive, as their data structures are complex given the
 possible existence of multi-properties and meta-properties. When returning data from Gremlin Server only return the
 data that is required. For example, if only two properties of a `Vertex` are needed then simply return the two rather

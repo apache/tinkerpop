@@ -166,7 +166,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             }
 
             stopWatch.split();
-            if (stopWatch.getSplitTime() > settings.serializedResponseTimeout) {
+            if (settings.serializedResponseTimeout > 0 && stopWatch.getSplitTime() > settings.serializedResponseTimeout) {
                 final String timeoutMsg = String.format("Serialization of the entire response exceeded the 'serializeResponseTimeout' setting %s",
                         warnOnce ? "[Gremlin Server paused writes to client as messages were not being consumed quickly enough]" : "");
                 throw new TimeoutException(timeoutMsg.trim());

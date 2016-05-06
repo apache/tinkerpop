@@ -560,8 +560,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    /**
+     * @deprecated As of release 3.2.1, replaced by tests covering {@link Settings#scriptEvaluationTimeout}.
+     */
     @Test
     @SuppressWarnings("unchecked")
+    @Deprecated
     public void shouldReceiveFailureTimeOutOnTotalSerialization() throws Exception {
         try (SimpleClient client = new WebSocketClient()){
             final List<ResponseMessage> responses = client.submit("(0..<100000)");
