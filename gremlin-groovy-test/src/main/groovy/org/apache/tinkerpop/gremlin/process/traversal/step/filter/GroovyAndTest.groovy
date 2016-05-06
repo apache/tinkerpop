@@ -30,7 +30,7 @@ public abstract class GroovyAndTest {
     public static class Traversals extends AndTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
+        public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.and(has('age',gt(27)), outE().count.is(gte(2l))).name")
         }
 
