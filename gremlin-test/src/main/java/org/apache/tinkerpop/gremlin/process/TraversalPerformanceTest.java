@@ -37,7 +37,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  *
- * @deprecated  As of release 3.2.0.  Provider performance tests may be implemented as needed by providers and will not be included as part of the TinkerPop distribution.
+ * @deprecated  As of release 3.2.0, replaced by gremlin-benchmark.
  */
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-traversal")

@@ -114,6 +114,23 @@ to check `Thread.isInterrupted()` as needed to ensure that the step remains canc
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-946[TINKERPOP-946]
 
+Performance Tests
++++++++++++++++++
+
+All "performance" tests have been deprecated. In the previous 3.2.0-incubating release, the `ProcessPerformanceSuite`
+and `TraversalPerformanceTest` were deprecated, but some other tests remained. It is the remaining tests that have
+been deprecated on this release:
+
+* `StructurePerformanceSuite
+** `GraphReadPerformanceTest`
+** `GraphWriterPerformanceTest`
+* Gremlin Server related performance tests
+
+Providers should implement their own performance tests and not rely on these deprecated tests as they will be removed
+in a future release along with the "JUnit Benchmarks" dependency.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1294[TINKERPOP-1294]
+
 TinkerPop 3.2.0
 ---------------
 
@@ -425,8 +442,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
 Performance Tests
 +++++++++++++++++
+
 The `ProcessPerformanceSuite` and `TraversalPerformanceTest` have been deprecated.  They are still available, but going forward,
-providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based performance test suit.
+providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based performance test suite.
 
 Graph Processor Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^

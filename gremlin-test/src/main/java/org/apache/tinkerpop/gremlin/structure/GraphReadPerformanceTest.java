@@ -45,8 +45,10 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
 @RunWith(Enclosed.class)
+@Deprecated
 public class GraphReadPerformanceTest {
     @AxisRange(min = 0, max = 1)
     @BenchmarkMethodChart(filePrefix = "gremlin-read")
