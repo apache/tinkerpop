@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
  * @author Pieter Martin
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy> {
+public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy> implements TraversalStrategy.ProviderOptimizationStrategy {
 
     private static final Neo4jGraphStepStrategy INSTANCE = new Neo4jGraphStepStrategy();
 
