@@ -46,7 +46,7 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.order.by('name', incr).name")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.order.by('name').name")
         }
 
         @Override
@@ -67,7 +67,7 @@ public abstract class GroovyOrderTest {
         @Override
         public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_decrX_byXkeys_incrX(
                 final Object v1Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", """g.V(v1Id).map {
+            new ScriptTraversal<>(g, "gremlin-groovy", """g.V(v1Id).hasLabel("person").map {
                 final Map map = [:];
                 map[1] = it.age;
                 map[2] = it.age * 2;
