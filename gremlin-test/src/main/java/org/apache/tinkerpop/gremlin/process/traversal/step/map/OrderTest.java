@@ -362,7 +362,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            return g.V().order().by("name", Order.incr).values("name");
+            return g.V().order().by("name").values("name");
         }
 
         @Override
@@ -384,7 +384,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_decrX_byXkeys_incrX(final Object v1Id) {
-            return g.V(v1Id).map(v -> {
+            return g.V(v1Id).hasLabel("person").map(v -> {
                 final Map<Integer, Integer> map = new HashMap<>();
                 map.put(1, (int) v.get().value("age"));
                 map.put(2, (int) v.get().value("age") * 2);
