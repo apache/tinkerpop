@@ -124,7 +124,11 @@ been deprecated on this release:
 * `StructurePerformanceSuite
 ** `GraphReadPerformanceTest`
 ** `GraphWriterPerformanceTest`
+* `GroovyEnvironmentPerformanceSuite`
+** `SugarLoaderPerformanceTest`
+** `GremlinExecutorPerformanceTest`
 * Gremlin Server related performance tests
+* TinkerGraph related performance tests
 
 Providers should implement their own performance tests and not rely on these deprecated tests as they will be removed
 in a future release along with the "JUnit Benchmarks" dependency.

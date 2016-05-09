@@ -27,7 +27,9 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
+@Deprecated
 @RunWith(GroovyEnvironmentPerformanceSuite.class)
 @GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphGroovyEnvironmentPerformanceTest {

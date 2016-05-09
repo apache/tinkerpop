@@ -34,11 +34,13 @@ import org.junit.runners.MethodSorters
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
 @AxisRange(min = 0d, max = 1d)
 @BenchmarkMethodChart(filePrefix = "sugar")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-sugar")
 @FixMethodOrder(MethodSorters.JVM)
+@Deprecated
 class SugarLoaderPerformanceTest extends AbstractGremlinTest {
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule()
