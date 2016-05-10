@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.console.plugin
 
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
+import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.client.methods.RequestBuilder
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
@@ -27,19 +29,13 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
-import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.structure.Direction
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import groovy.json.JsonSlurper
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
-import org.javatuples.Pair
-
-import java.util.stream.Collectors
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -49,11 +45,12 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     private String host = "localhost"
     private int port = 8080
-    private String workspace = "workspace0"
+    private String workspace = "workspace1"
 
     private final Groovysh shell
     private final IO io
 
+    private final Random rand = new Random();
     boolean traversalSubmittedForViz = false
     long vizStepDelay
     private float[] vizStartRGBColor
@@ -76,7 +73,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         vizDefaultRGBColor = [0.6f, 0.6f, 0.6f]  // light grey
         vizColorToFade = 'g'                 // will fade so blue is strongest
         vizColorFadeRate = 0.7               // the multiplicative rate to fade visited vertices
-        vizStartSize = 20
+        vizStartSize = 10
         vizSizeDecrementRate = 0.33f
     }
 
@@ -193,33 +190,12 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             currentColor *= vizColorFadeRate
 
             int currentSize = attrs["size"]
-            currentSize = Math.max(1, currentSize - (currentSize * vizSizeDecrementRate))
+            currentSize = Math.max(vizStartSize, currentSize - (currentSize * vizSizeDecrementRate))
 
             vertexAttributes.get(vertexId).color = currentColor
             vertexAttributes.get(vertexId).size = currentSize
 
             changeVertexAttributes(vertexId)
-        }
-    }
-
-    def touch(Vertex v) {
-        vertexAttributes.get(v.id().toString()).touch++
-    }
-
-    def applyRelativeSizingInGephi() {
-        def touches = vertexAttributes.values().collect{it["touch"]}
-        def max = touches.max()
-        def min = touches.min()
-
-        vertexAttributes.each { k, v ->
-            double touch = v.touch
-
-            // establishes the relative size of the node with a lower limit of 0.25 of vizStartSize
-            def relative = Math.max((touch - min) / Math.max((max - min).doubleValue(), 0.00001), 0.25)
-            int size = Math.max(1, vizStartSize * relative)
-            v.size = size
-
-            changeVertexAttributes(k)
         }
     }
 
@@ -233,28 +209,17 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     /**
      * Visit a vertex traversed and initialize its color and size.
      */
-    def visitVertexInGephi(def Vertex v, def size = vizStartSize) {
+    def visitVertexInGephi(def Vertex v) {
         def props = [:]
         props.put('r', vizStartRGBColor[0])
         props.put('g', vizStartRGBColor[1])
         props.put('b', vizStartRGBColor[2])
-        props.put('size', size)
+        props.put('size', vizStartSize * 2.5)
         props.put('visited', 1)
 
         updateGephiGraph([cn: [(v.id().toString()): props]])
 
-        vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: size, touch: 1]
-    }
-
-    def visitEdgeInGephi(def Edge e) {
-        def props = [:]
-        props.put('r', vizStartRGBColor[0])
-        props.put('g', vizStartRGBColor[1])
-        props.put('b', vizStartRGBColor[2])
-        props.put('size', vizStartSize)
-        props.put('visited', 1)
-
-        updateGephiGraph([ce: [(e.id().toString()): props]])
+        vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: vizStartSize * 2.5, touch: 1]
     }
 
     def fadeColorIndex() {
@@ -273,6 +238,9 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         props.put('r', vizDefaultRGBColor[0])
         props.put('g', vizDefaultRGBColor[1])
         props.put('b', vizDefaultRGBColor[2])
+        props.put('x', rand.nextFloat())
+        props.put('y', rand.nextFloat())
+        props.put('size', 10)
         props.put('visited', 0)
 
         // only add if it does not exist in graph already
@@ -318,7 +286,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         def requestBuilder = RequestBuilder.get("http://$host:$port/$workspace")
         queryArgs.each { requestBuilder = requestBuilder.addParameter(it.key, it.value) }
 
-        def resp = EntityUtils.toString(httpclient.execute(requestBuilder.build()).entity)
+        def httpResp = makeRequest(requestBuilder.build())
+        def resp = EntityUtils.toString(httpResp.entity)
 
         // gephi streaming plugin does not set the content type or respect the Accept header - treat as text
         if (resp.isEmpty())
@@ -332,7 +301,17 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                                            .addParameter("format", "JSON")
                                            .addParameter("operation", "updateGraph")
                                            .setEntity(new StringEntity(JsonOutput.toJson(postBody)))
-        EntityUtils.consume(httpclient.execute(requestBuilder.build()).entity)
+        EntityUtils.consume(makeRequest(requestBuilder.build()).entity)
+    }
+
+    private CloseableHttpResponse makeRequest(HttpUriRequest request) {
+        def httpResp = httpclient.execute(request)
+        if (httpResp.getStatusLine().getStatusCode() == 200) {
+            return httpResp
+        } else {
+            def resp = EntityUtils.toString(httpResp.entity)
+            throw new RuntimeException("Unsuccessful request to Gephi - [${httpResp.getStatusLine().getStatusCode()}] ${httpResp.getStatusLine().getReasonPhrase()} - $resp")
+        }
     }
 
     @Override

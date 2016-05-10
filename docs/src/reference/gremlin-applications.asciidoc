@@ -1630,18 +1630,18 @@ This plugin imports the appropriate classes for managing the credentials graph.
 Gephi Plugin
 ~~~~~~~~~~~~
 
-image:gephi-logo.png[width=200, float=left] link:http://gephi.github.io/[Gephi] is an interactive visualization,
-exploration, and analysis platform for graphs. The link:https://marketplace.gephi.org/plugin/graph-streaming/[Graph Streaming]
-plugin for Gephi provides an link:https://wiki.gephi.org/index.php/Graph_Streaming[API] that can be leveraged to
-stream graphs and visualize traversals interactively through the Gremlin Gephi Plugin.
+image:gephi-logo.png[width=200, float=left] link:http://gephi.org/[Gephi] is an interactive visualization,
+exploration, and analysis platform for graphs. The link:https://gephi.org/plugins/#/plugin/graphstreaming[Graph Streaming]
+plugin for Gephi provides an API that can be leveraged to stream graph data to a running Gephi application. The Gephi
+plugin for Gremlin Console utilizes this API to allow for graph and traversal visualization.
 
-The following instructions assume that Gephi has been download and installed.  It further assumes that the Graph
-Streaming plugin has been installed (`Tools > Plugins`). The following instructions explain how to visualize a `Graph`
-and `Traversal`.
+The Gephi plugin for Gremlin Console is compatible with Gephi 0.9.x. The following instructions assume that Gephi
+has been download and installed.  It further assumes that the Graph Streaming plugin has been installed
+(`Tools > Plugins`). The following instructions explain how to visualize a `Graph` and `Traversal`.
 
 In Gephi, create a new project with `File > New Project`.  In the lower left view, click the "Streaming" tab, open the
 Master drop down, and right click `Master Server > Start` which starts the Graph Streaming server in Gephi and by
-default accepts requests at `http://localhost:8080/workspace0`:
+default accepts requests at `http://localhost:8080/workspace1`:
 
 image::gephi-start-server.png[width=800]
 
@@ -1686,12 +1686,15 @@ that it requires use of the `visualTraversal` option on the `config` function of
 :remote config visualTraversal graph                   <1>
 traversal = vg.V(2).in().out('knows').
                     has('age',gt(30)).outE('created').
-                    has('weight',gt(0.5d)).inV();null
-:> traversal                                           <2>
+                    has('weight',gt(0.5d)).inV();[]    <2>
+:> traversal                                           <3>
 ----
 
-<1> Configure a "visual traversal" from your "graph" - this must be a `Graph` instance.
-<2> Submit the `Traversal` to visualize to Gephi.
+<1> Configure a "visual traversal" from your "graph" - this must be a `Graph` instance. This command will create a
+new `TraversalSource` called "vg" that must be used to visualize any spawned traversals in Gephi.
+<2> Define the traversal to be visualized. Note that ending the line with `;[]` simply prevents iteration of
+the traversal before it is submitted.
+<3> Submit the `Traversal` to visualize to Gephi.
 
 When the `:>` line is called, each step of the `Traversal` that produces or filters vertices generates events to
 Gephi. The events update the color and size of the vertices at that step with `startRGBColor` and `startSize`
@@ -1723,7 +1726,7 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Parameter |Description |Default
-|workspace |The name of the workspace that your Graph Streaming server is started for. |workspace0
+|workspace |The name of the workspace that your Graph Streaming server is started for. |workspace1
 |host |The host URL where the Graph Streaming server is configured for. |localhost
 |port |The port number of the URL that the Graph Streaming server is listening on. |8080
 |sizeDecrementRate |The rate at which the size of an element decreases on each step of the visualization. |0.33
@@ -1732,7 +1735,7 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 |startSize |The size an element should be when it is most recently visited. |20
 |colorToFade |A single char from the set `{r,g,b,R,G,B}` determining which color to fade for vertices visited in prior steps |g
 |colorFadeRate |A float value in the range `(0.0,1.0]` which is multiplied against the current `colorToFade` value for prior vertices; a `1.0` value effectively turns off the color fading of prior step visited vertices |0.7
-|visualTraversal |Creates a `TraversalSource` variable in the Console named `vg` which can be used for visualizing traversals. This configuration option takes two parameters.  The first is required and is the name of the `Graph` instance variable that will generate the `TraversalSource`.  The second parameter is the variable name that the `TraversalSource` should have when referenced in the Console.  If left unspecified, this value defaults to `vg`.
+|visualTraversal |Creates a `TraversalSource` variable in the Console named `vg` which can be used for visualizing traversals. This configuration option takes two parameters.  The first is required and is the name of the `Graph` instance variable that will generate the `TraversalSource`.  The second parameter is the variable name that the `TraversalSource` should have when referenced in the Console.  If left unspecified, this value defaults to `vg`. |vg
 |=========================================================
 
 [[server-plugin]]
