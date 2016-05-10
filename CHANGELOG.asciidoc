@@ -228,6 +228,9 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed bug in `gremlin-driver` where certain channel-level errors would not allow the driver to reconnect.
+* Bumped SLF4J to 1.7.21 as previous versions suffered from a memory leak.
+* Fixed a bug in `Neo4jGraphStepStrategy` where it wasn't defined properly as a `ProviderOptimizationStrategy`.
 * Renamed `AndTest.get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name` to `get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name` to match the traversal being tested.
 * Fixed a self-loop bug in `StarGraph`.
 * Added configuration option for disabling `:remote` timeout with `:remote config timeout none`.
