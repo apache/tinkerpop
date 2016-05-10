@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -66,6 +68,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
 
     private ScriptEngine engine;
     private String parse;
+    private CompiledScript script;
 
     private GraphFilter graphFilter = new GraphFilter();
 
@@ -85,6 +88,9 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
         try (final InputStream stream = fs.open(new Path(configuration.get(SCRIPT_FILE)));
              final InputStreamReader reader = new InputStreamReader(stream)) {
             this.parse = String.join("\n", IOUtils.toString(reader), READ_CALL);
+            script = ((Compilable) engine).compile(this.parse);
+        } catch (ScriptException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -99,7 +105,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
                 bindings.put(GRAPH, graph);
                 bindings.put(LINE, this.lineRecordReader.getCurrentValue().toString());
                 bindings.put(FACTORY, factory);
-                final StarGraph.StarVertex sv = (StarGraph.StarVertex) engine.eval(this.parse, bindings);
+                final StarGraph.StarVertex sv = (StarGraph.StarVertex) script.eval(bindings);
                 if (sv != null) {
                     final Optional<StarGraph.StarVertex> vertex = sv.applyGraphFilter(this.graphFilter);
                     if (vertex.isPresent()) {
