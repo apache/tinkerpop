@@ -135,6 +135,15 @@ in a future release along with the "JUnit Benchmarks" dependency.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1294[TINKERPOP-1294]
 
+Graph Language Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+VertexTest Signatures
++++++++++++++++++++++
+
+The method signatures of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` were changed
+to take arguments for the `Traversal` to be constructed by extending classes.
+
 TinkerPop 3.2.0
 ---------------
 

@@ -27,6 +27,7 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Increased the testing and scope of `TraversalHelper.isLocalStarGraph()`.
+* Changed signature of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` to take arguments for the `Traversal` to be constructed by extending classes.
 * Added `VertexProgramInterceptor` interface as a general pattern for `GraphComputer` providers to use for bypassing `GraphComputer` semantics where appropriate.
 * Added `SparkStarBarrierInterceptor` that uses Spark DSL for local star graph traversals that end with a `ReducingBarrierStep`.
 * Added `SparkInterceptorStrategy` which identifies which interceptor to use (if any) given the submitted `VertexProgram`.
@@ -44,7 +45,6 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 * Deprecated the `ScriptExecutor` - the `-e` option to `gremlin.sh` is now handled by `Console`.
 * `Traversal` now allows cancellation with `Thread.interrupt()`.
 * Added a Gremlin language variant tutorial teaching people how to embed Gremlin in a host programming language.
-* Added precompile of ScriptInputFormat scripts to ScriptRecordReader to improve performance.
 
 [[release-3.2.0-incubating]]
 TinkerPop 3.2.0 (Release Date: April 8, 2016)

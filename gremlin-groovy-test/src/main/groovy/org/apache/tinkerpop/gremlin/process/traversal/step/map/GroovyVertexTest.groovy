@@ -31,13 +31,13 @@ public abstract class GroovyVertexTest {
     public static class Traversals extends VertexTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(ids).name", "ids", [convertToVertex(graph, "marko"), convertToVertex(graph, "vadas"), convertToVertex(graph, "lop")])
+        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name(final Vertex v1, final Vertex v2, final Vertex v3) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(ids).name", "ids", [v1, v2, v3])
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(ids).name", "ids", [convertToVertexId(graph, "marko"), convertToVertexId(graph, "vadas"), convertToVertexId(graph, "lop")])
+        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name(final Object v1Id, final Object v2Id, final Object v3Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(ids).name", "ids", [v1Id, v2Id, v3Id])
         }
 
         @Override
