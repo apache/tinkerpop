@@ -137,7 +137,7 @@ public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializ
 
     @Override
     public boolean equals(final Object object) {
-        return this.map.equals(object);
+        return object instanceof BulkSet && this.map.equals(((BulkSet) object).map);
     }
 
     @Override

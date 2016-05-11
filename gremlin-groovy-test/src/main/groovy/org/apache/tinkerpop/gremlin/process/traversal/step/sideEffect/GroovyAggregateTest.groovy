@@ -44,5 +44,10 @@ public abstract class GroovyAggregateTest {
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.aggregate('a').path")
         }
+
+        @Override
+        public Traversal<Vertex, Collection<Integer>> get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').aggregate('x').by('age').cap('x').as('y').select('y')")
+        }
     }
 }
