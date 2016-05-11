@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -64,7 +63,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Graph> traversal = get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(convertToVertexId("marko"), subgraph);
         printTraversalForm(traversal);
         subgraph = traversal.next();
-        assertVertexEdgeCounts(3, 2).accept(subgraph);
+        assertVertexEdgeCounts(subgraph, 3, 2);
         subgraph.edges().forEachRemaining(e -> {
             assertEquals("knows", e.label());
             assertEquals("marko", e.outVertex().values("name").next());
@@ -97,7 +96,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "josh", "peter"), traversal);
         final Graph subGraph = traversal.asAdmin().getSideEffects().<Graph>get("sg").get();
-        assertVertexEdgeCounts(5, 4).accept(subGraph);
+        assertVertexEdgeCounts(subgraph, 5, 4);
 
         graphProvider.clear(subgraph, config);
     }

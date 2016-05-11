@@ -56,7 +56,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
      */
     @Test
     public void shouldConstructAnEmptyGraph() {
-        assertVertexEdgeCounts(0, 0).accept(graph);
+        assertVertexEdgeCounts(graph, 0, 0);
     }
 
     /**

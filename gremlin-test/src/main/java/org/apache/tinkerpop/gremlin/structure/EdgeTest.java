@@ -21,21 +21,15 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
 import static org.junit.Assert.*;
@@ -260,14 +254,14 @@ public class EdgeTest {
                 v.addEdge("friend", v);
             }
 
-            tryCommit(graph, assertVertexEdgeCounts(25, 25));
+            tryCommit(graph, getAssertVertexEdgeCounts(25, 25));
 
             for (Edge e : g.E().toList()) {
                 e.remove();
                 tryCommit(graph);
             }
 
-            tryCommit(graph, assertVertexEdgeCounts(25, 0));
+            tryCommit(graph, getAssertVertexEdgeCounts(25, 0));
         }
 
         @Test
