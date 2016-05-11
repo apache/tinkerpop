@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -31,8 +32,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
@@ -44,6 +47,7 @@ import java.util.concurrent.Future;
  */
 public abstract class VertexProgramStep extends AbstractStep<ComputerResult, ComputerResult> implements VertexComputing {
 
+    public static final String STEP_ID = "gremlin.vertexProgramStep.stepId";
     protected Computer computer = Computer.compute();
 
     protected boolean first = true;
@@ -96,7 +100,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
     protected boolean previousTraversalVertexProgram() {
         Step<?, ?> currentStep = this;
         while (!(currentStep instanceof EmptyStep)) {
-            if(Thread.interrupted()) throw new TraversalInterruptedException();
+            if (Thread.interrupted()) throw new TraversalInterruptedException();
             if (currentStep instanceof TraversalVertexProgramStep)
                 return true;
             currentStep = currentStep.getPreviousStep();
@@ -106,11 +110,20 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
 
     private void processMemorySideEffects(final Memory memory) {
         // unfortunately there is no easy way to test this in a test case
-        assert this.isEndStep() == memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
+        //  assert this.isEndStep() == memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
         final TraversalSideEffects sideEffects = this.getTraversal().getSideEffects();
         for (final String key : memory.keys()) {
             if (sideEffects.exists(key)) {
                 sideEffects.set(key, memory.get(key));
+            }
+        }
+        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS) && !this.isEndStep()) {
+            final TraverserSet<Object> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
+            if (!haltedTraversers.isEmpty()) {
+                if (sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
+                    sideEffects.set(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversers);
+                else
+                    sideEffects.register(TraversalVertexProgram.HALTED_TRAVERSERS, new ConstantSupplier<>(haltedTraversers), Operator.addAll);
             }
         }
     }
