@@ -64,7 +64,7 @@ Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 AndTest Renaming
-^^^^^^^^^^^^^^^^
+++++++++++++++++
 
 The `get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name` test in `AndTest` was improperly named and did not match the
 nature of the traversal it was providing. It has been renamed to: `get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name`.
