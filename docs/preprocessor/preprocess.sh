@@ -97,7 +97,7 @@ function cleanup() {
 
 trap cleanup EXIT
 
-if [ "${DRYRUN_DOCS}" != "*" ]; then
+if [ "${DRYRUN_DOCS}" != "*" ] || [ ! -z "${FULLRUN_DOCS}" ]; then
 
   # install plugins
   echo
