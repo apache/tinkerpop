@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -36,7 +36,10 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -50,6 +53,8 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX();
 
     public abstract Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path();
+
+    public abstract Traversal<Vertex, Collection<Integer>> get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX();
 
     //public abstract Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id);
 
@@ -110,6 +115,26 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         assertTrue(secondStepCounts.values().contains(1l));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX() {
+        final Traversal<Vertex, Collection<Integer>> traversal = get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX();
+        final Collection<Integer> ages = traversal.next();
+        assertTrue(ages instanceof BulkSet);
+        assertEquals(4, ages.size());
+        assertTrue(ages.contains(29));
+        assertTrue(ages.contains(27));
+        assertTrue(ages.contains(32));
+        assertTrue(ages.contains(35));
+        final BulkSet<Integer> bulkSet = new BulkSet<>();
+        bulkSet.add(29);
+        bulkSet.add(27);
+        bulkSet.add(32);
+        bulkSet.add(35);
+        assertEquals(bulkSet, ages); // ensure bulk set equality
+        assertFalse(traversal.hasNext());
+    }
+
     /*@Test
     @LoadGraphWith(CLASSIC)
     public void g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path() {
@@ -140,6 +165,11 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
             return g.V().out().aggregate("a").path();
+        }
+
+        @Override
+        public Traversal<Vertex, Collection<Integer>> get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX() {
+            return g.V().hasLabel("person").aggregate("x").by("age").cap("x").as("y").select("y");
         }
 
         /*public Traversal<Vertex, Path> get_g_v1_asXxX_bothE_asXeX_valueXweightX_exceptXwX_aggregateXwX_backXeX_otherV_jumpXx_true_trueX_path(final Object v1Id) {

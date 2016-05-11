@@ -26,11 +26,36 @@ import java.util.Random;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class BulkSetTest {
+
+    @Test
+    public void shouldHaveProperHashAndEquality() {
+        final BulkSet<String> a = new BulkSet<>();
+        final BulkSet<String> b = new BulkSet<>();
+        a.add("stephen", 12);
+        a.add("marko", 32);
+        a.add("daniel", 74);
+        b.add("stephen", 12);
+        b.add("marko", 32);
+        b.add("daniel", 74);
+        assertEquals(a, b);
+        assertTrue(a.equals(b));
+        assertEquals(a.hashCode(), b.hashCode());
+        assertTrue(a.hashCode() == b.hashCode());
+        assertEquals(12, a.get("stephen"));
+        assertEquals(12, b.get("stephen"));
+        a.add("matthias", 99);
+        assertFalse(a.equals(b));
+        assertFalse(a.hashCode() == b.hashCode());
+        assertNotEquals(a.hashCode(), b.hashCode());
+    }
 
     @Test
     public void shouldHaveProperCountAndNotOutOfMemoryException() {

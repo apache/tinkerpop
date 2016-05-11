@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -43,6 +43,11 @@ public abstract class GroovyAggregateTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
             TraversalScriptHelper.compute("g.V.out.aggregate('a').path", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Collection<Integer>> get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX() {
+            TraversalScriptHelper.compute("g.V.hasLabel('person').aggregate('x').by('age').cap('x').as('y').select('y')", g);
         }
     }
 }
