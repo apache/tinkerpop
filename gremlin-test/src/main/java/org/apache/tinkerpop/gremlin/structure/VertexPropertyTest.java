@@ -117,7 +117,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(34, v.<Integer>value("age").intValue());
                 assertEquals(1, IteratorUtils.count(v.properties("name")));
                 assertEquals(2, IteratorUtils.count(v.properties()));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
 
             final VertexProperty<String> property = v.property(VertexProperty.Cardinality.list, "name", "marko a. rodriguez");
@@ -134,13 +134,13 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             assertTrue(IteratorUtils.list(v.values("name")).contains("marko a. rodriguez"));
             assertEquals(3, IteratorUtils.count(v.properties()));
             assertEquals(2, IteratorUtils.count(v.properties("name")));
-            assertVertexEdgeCounts(1, 0);
+            assertVertexEdgeCounts(graph, 1, 0);
 
             assertEquals(v, v.property(VertexProperty.Cardinality.list, "name", "mrodriguez").element());
             tryCommit(graph, g -> {
                 assertEquals(3, IteratorUtils.count(v.properties("name")));
                 assertEquals(4, IteratorUtils.count(v.properties()));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
 
             v.<String>properties("name").forEachRemaining(meta -> {
@@ -164,7 +164,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                     }
                 });
 
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
         }
 
@@ -211,9 +211,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             });
 
             v.remove();
-            tryCommit(graph, g -> {
-                assertVertexEdgeCounts(0, 0);
-            });
+            tryCommit(graph, getAssertVertexEdgeCounts(0, 0));
 
             final Vertex u = graph.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(graph);
@@ -394,28 +392,28 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertThat(values, hasItem("marko a. rodriguez"));
                 assertThat(values, hasItem("marko rodriguez"));
                 assertThat(values, hasItem("marko"));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
 
             IteratorUtils.filter(v.properties(), p -> p.value().equals("marko")).forEachRemaining(VertexProperty::remove);
             tryCommit(graph, graph -> {
                 assertEquals(3, IteratorUtils.count(v.properties()));
                 assertEquals(2, IteratorUtils.count(v.properties("name")));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
 
             v.property("age").remove();
             tryCommit(graph, graph -> {
                 assertEquals(2, IteratorUtils.count(v.properties()));
                 assertEquals(2, IteratorUtils.count(v.properties("name")));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
 
             IteratorUtils.filter(v.properties("name"), p -> p.key().equals("name")).forEachRemaining(VertexProperty::remove);
             tryCommit(graph, graph -> {
                 assertEquals(0, IteratorUtils.count(v.properties()));
                 assertEquals(0, IteratorUtils.count(v.properties("name")));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
         }
 
@@ -428,7 +426,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             final Vertex marko = graph.addVertex("name", "marko", "name", "okram");
             final Vertex stephen = graph.addVertex("name", "stephen", "name", "spmallette");
             tryCommit(graph, graph -> {
-                assertVertexEdgeCounts(2, 0);
+                assertVertexEdgeCounts(graph, 2, 0);
                 assertEquals(2, IteratorUtils.count(marko.properties("name")));
                 assertEquals(2, IteratorUtils.count(stephen.properties("name")));
                 assertEquals(2, IteratorUtils.count(marko.properties()));
@@ -439,7 +437,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
             stephen.remove();
             tryCommit(graph, graph -> {
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
                 assertEquals(2, IteratorUtils.count(marko.properties("name")));
                 assertEquals(2, IteratorUtils.count(marko.properties()));
                 assertEquals(0, IteratorUtils.count(marko.properties("blah")));
@@ -449,7 +447,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 marko.property(VertexProperty.Cardinality.list, "name", "Remove-" + String.valueOf(i));
             }
             tryCommit(graph, graph -> {
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
                 assertEquals(102, IteratorUtils.count(marko.properties("name")));
                 assertEquals(102, IteratorUtils.count(marko.properties()));
                 assertEquals(0, IteratorUtils.count(marko.properties("blah")));
@@ -457,15 +455,13 @@ public class VertexPropertyTest extends AbstractGremlinTest {
 
             g.V().properties("name").has(T.value, P.test((a, b) -> ((String) a).startsWith((String) b), "Remove-")).forEachRemaining(Property::remove);
             tryCommit(graph, graph -> {
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
                 assertEquals(2, IteratorUtils.count(marko.properties("name")));
                 assertEquals(2, IteratorUtils.count(marko.properties()));
                 assertEquals(0, IteratorUtils.count(marko.properties("blah")));
             });
             marko.remove();
-            tryCommit(graph, graph -> {
-                assertVertexEdgeCounts(0, 0);
-            });
+            tryCommit(graph, getAssertVertexEdgeCounts(0, 0));
         }
     }
 
@@ -489,7 +485,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             final Vertex v = graph.addVertex("name", "marko", "age", 34);
             tryCommit(graph, g -> {
                 assertEquals(2, IteratorUtils.count(v.properties()));
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
                 assertEquals(v.property("name"), v.property("name").property("acl", "public").element());
                 assertEquals(v.property("age"), v.property("age").property("acl", "private").element());
             });
@@ -506,7 +502,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(1, IteratorUtils.count(v.property("name").properties("acl")));
                 assertEquals("private", v.property("age").values("acl").next());
                 assertEquals("public", v.property("name").values("acl").next());
-                assertVertexEdgeCounts(1, 0);
+                assertVertexEdgeCounts(graph, 1, 0);
             });
 
             v.property("age").property("acl", "public");

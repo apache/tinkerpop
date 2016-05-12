@@ -255,7 +255,11 @@ public abstract class AbstractGremlinTest {
         verifyUniqueStepIds(traversal.asAdmin());
     }
 
-    public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
+    public static void assertVertexEdgeCounts(final Graph graph, final int expectedVertexCount, final int expectedEdgeCount) {
+        getAssertVertexEdgeCounts(expectedVertexCount, expectedEdgeCount).accept(graph);
+    }
+
+    public static Consumer<Graph> getAssertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {
         return (g) -> {
             assertEquals(expectedVertexCount, IteratorUtils.count(g.vertices()));
             assertEquals(expectedEdgeCount, IteratorUtils.count(g.edges()));
