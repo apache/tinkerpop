@@ -125,7 +125,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
                 sideEffects.set(key, memory.get(key));
             }
         }
-        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
+        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS) && !this.isEndStep()) {
             final TraverserSet<Object> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
             if (!haltedTraversers.isEmpty()) {
                 if (sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS))

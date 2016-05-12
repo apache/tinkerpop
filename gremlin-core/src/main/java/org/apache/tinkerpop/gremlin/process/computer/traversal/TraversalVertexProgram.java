@@ -182,6 +182,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, haltedTraversers);
             memory.set(HALTED_TRAVERSERS, haltedTraversers);
             memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
+            sideEffects.remove(TraversalVertexProgram.HALTED_TRAVERSERS);
         } else {
             memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
             memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
