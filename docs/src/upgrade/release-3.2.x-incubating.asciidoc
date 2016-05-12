@@ -135,6 +135,25 @@ in a future release along with the "JUnit Benchmarks" dependency.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1294[TINKERPOP-1294]
 
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Transaction Tests
++++++++++++++++++
+
+Tests and assertions were added to the structure test suite to validate that transaction status was in the appropriate
+state following calls to close the transaction with `commit()` or `rollback()`. It is unlikely that this change would
+cause test breaks for providers, unless the transaction status was inherently disconnected from calls to close the
+transaction somehow.
+
+In addition, other tests were added to enforce the expected semantics for threaded transactions. Threaded transactions
+are expected to behave like manual transactions. They should be open automatically when they are created and once
+closed should no longer be used. This behavior is not new and is the typical expected method for working with these
+types of transactions. The test suite just requires that the provider implementation conform to these semantics.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-947[TINKERPOP-947],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1059[TINKERPOP-1059]
+
 GraphFilter and GraphFilterStrategy
 +++++++++++++++++++++++++++++++++++
 
@@ -152,6 +171,8 @@ static {
     TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().removeStrategies(GraphFilterStrategy.class));
 }
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1293[TINKERPOP-1293]
 
 Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added tests to validate the status of a transaction immediately following calls to close.
+* Added tests to ensure that threaded transactions cannot be re-used.
 * `GraphFilter` helper methods are now more intelligent when determining edge direction/label legality.
 * Added `GraphFilterStrategy` to automatically construct `GraphFilters` via traversal introspection in OLAP.
 * Increased the testing and scope of `TraversalHelper.isLocalStarGraph()`.

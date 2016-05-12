@@ -41,6 +41,8 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgeProperty
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_DOUBLE_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 /**
@@ -174,8 +176,11 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowAutoTransactionToWorkWithoutMutationByDefault() {
         // expecting no exceptions to be thrown here
         g.tx().commit();
+        assertThat(g.tx().isOpen(), is(false));
         g.tx().rollback();
+        assertThat(g.tx().isOpen(), is(false));
         g.tx().commit();
+        assertThat(g.tx().isOpen(), is(false));
     }
 
     @Test
@@ -243,19 +248,25 @@ public class TransactionTest extends AbstractGremlinTest {
         assertVertexEdgeCounts(graph, 1, 1);
         assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
         assertEquals(e1.id(), graph.edges(e1.id()).next().id());
+        assertThat(g.tx().isOpen(), is(true));
         g.tx().commit();
+        assertThat(g.tx().isOpen(), is(false));
         assertVertexEdgeCounts(graph, 1, 1);
+        assertThat(g.tx().isOpen(), is(true));
         assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
         assertEquals(e1.id(), graph.edges(e1.id()).next().id());
 
         graph.vertices(v1.id()).forEachRemaining(Element::remove);
         assertVertexEdgeCounts(graph, 0, 0);
         g.tx().rollback();
+        assertThat(g.tx().isOpen(), is(false));
         assertVertexEdgeCounts(graph, 1, 1);
+        assertThat(g.tx().isOpen(), is(true));
 
         graph.vertices(v1.id()).forEachRemaining(Element::remove);
         assertVertexEdgeCounts(graph, 0, 0);
         g.tx().commit();
+        assertThat(g.tx().isOpen(), is(false));
         assertVertexEdgeCounts(graph, 0, 0);
     }
 
@@ -590,6 +601,55 @@ public class TransactionTest extends AbstractGremlinTest {
         assertVertexEdgeCounts(graph, numberOfThreads, 0);
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS)
+    public void shouldOpenTxWhenThreadedTransactionIsCreated() throws Exception {
+        // threaded transactions should be immediately open on creation
+        final Graph threadedG = g.tx().createThreadedTx();
+        assertThat(threadedG.tx().isOpen(), is(true));
+
+        threadedG.tx().rollback();
+        assertThat(threadedG.tx().isOpen(), is(false));
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS)
+    public void shouldNotReuseThreadedTransaction() throws Exception {
+        final int numberOfThreads = 10;
+        final CountDownLatch latch = new CountDownLatch(numberOfThreads);
+
+        final Graph threadedG = g.tx().createThreadedTx();
+
+        for (int ix = 0; ix < numberOfThreads; ix++) {
+            new Thread(() -> {
+                threadedG.addVertex();
+                latch.countDown();
+            }).start();
+        }
+
+        latch.await(10000, TimeUnit.MILLISECONDS);
+
+        // threaded transaction is not yet committed so g should not reflect any change
+        assertVertexEdgeCounts(graph, 0, 0);
+        threadedG.tx().commit();
+
+        // there should be one vertex for each thread
+        assertVertexEdgeCounts(graph, numberOfThreads, 0);
+
+        try {
+            assertThat(threadedG.tx().isOpen(), is(false));
+            threadedG.addVertex();
+            fail("Shouldn't be able to re-use a threaded transaction");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+        } finally {
+            threadedG.tx().rollback();
+        }
+    }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)

@@ -71,7 +71,8 @@ public abstract class AbstractThreadedTransaction extends AbstractTransaction {
     }
 
     /**
-     * Most implementations should do nothing with this as the tx is already open on creation.
+     * Threaded transactions should be open immediately upon creation so most implementations should do nothing with
+     * this method.
      */
     @Override
     protected void doReadWrite() {
