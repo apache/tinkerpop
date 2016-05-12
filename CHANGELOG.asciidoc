@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphFilter` helper methods are now more intelligent when determining edge direction/label legality.
+* Added `GraphFilterStrategy` to automatically construct `GraphFilters` via traversal introspection in OLAP.
 * Increased the testing and scope of `TraversalHelper.isLocalStarGraph()`.
 * Changed signature of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` to take arguments for the `Traversal` to be constructed by extending classes.
 * Added `VertexProgramInterceptor` interface as a general pattern for `GraphComputer` providers to use for bypassing `GraphComputer` semantics where appropriate.

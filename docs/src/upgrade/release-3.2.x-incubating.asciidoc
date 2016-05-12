@@ -135,6 +135,24 @@ in a future release along with the "JUnit Benchmarks" dependency.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1294[TINKERPOP-1294]
 
+GraphFilter and GraphFilterStrategy
++++++++++++++++++++++++++++++++++++
+
+`GraphFilter` has been significantly advanced where the determination of an edge direction/label legality is more stringent.
+Along with this, `GraphFilter.getLegallyPositiveEdgeLabels()` has been added as a helper method to make it easier for `GraphComputer`
+providers to know the space of labels being accessed by the traversal and thus, better enable provider-specific push-down predicates.
+
+Note that `GraphFilterStrategy` is now a default `TraversalStrategy` registered with `GraphComputer.` If `GraphFilter` is
+expensive for the underlying `GraphComputer` implementation, it can be deactivated as is done for `TinkerGraphComputer`.
+
+[source,java]
+----
+static {
+  TraversalStrategies.GlobalCache.registerStrategies(TinkerGraphComputer.class,
+    TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().removeStrategies(GraphFilterStrategy.class));
+}
+----
+
 Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
