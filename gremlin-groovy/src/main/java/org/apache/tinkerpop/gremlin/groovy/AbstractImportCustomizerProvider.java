@@ -23,12 +23,15 @@ import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -62,7 +65,6 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -103,6 +105,8 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(IdentityRemovalStrategy.class.getPackage().getName() + DOT_STAR); // optimization strategies
         imports.add(ProfileStrategy.class.getPackage().getName() + DOT_STAR);         // finalization strategies
         imports.add(ReadOnlyStrategy.class.getPackage().getName() + DOT_STAR);        // verification strategies
+        imports.add(VertexProgramStrategy.class.getPackage().getName() + DOT_STAR);   // computer decoration strategies
+        imports.add(GraphFilterStrategy.class.getPackage().getName() + DOT_STAR);     // computer optimization strategies
         imports.add(Event.class.getPackage().getName() + DOT_STAR);                   // eventing
 
         staticImports.add(P.class.getCanonicalName() + DOT_STAR);
