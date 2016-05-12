@@ -135,6 +135,6 @@ public class DriverRemoteAcceptorTest {
     public void shouldConnect() throws Exception {
         // there is no gremlin server running for this test, but gremlin-driver lazily connects so this should
         // be ok to just validate that a connection is created
-        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Configured "));
     }
 }

@@ -1025,7 +1025,7 @@ the thread continuously:
 
 [source,groovy]
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
-==>Connected - localhost/127.0.0.1:8182
+==>Configured localhost/127.0.0.1:8182
 gremlin> :> while(true) { }
 Execution timed out after 10000 units. Start time: Fri Jul 24 11:04:52 EDT 2015
 
@@ -1430,7 +1430,7 @@ one command and then expect to access it in the next:
 [source,groovy]
 ----
 gremlin> :remote connect tinkerpop.server conf/remote.yaml
-==>Connected - localhost/127.0.0.1:8182
+==>Configured localhost/127.0.0.1:8182
 gremlin> :> x = 2
 ==>2
 gremlin> :> 2 + x
