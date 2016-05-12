@@ -22,26 +22,20 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
-import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
@@ -323,7 +317,7 @@ public class VertexTest {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.keys().contains("age"));
             assertFalse(v.keys().contains("location"));
-            assertVertexEdgeCounts(1, 0).accept(graph);
+            assertVertexEdgeCounts(graph, 1, 0);
 
             v.properties("name").forEachRemaining(Property::remove);
             v.property(VertexProperty.Cardinality.single, "name", "marko rodriguez");
@@ -336,7 +330,7 @@ public class VertexTest {
             assertTrue(v.keys().contains("name"));
             assertTrue(v.keys().contains("age"));
             assertFalse(v.keys().contains("location"));
-            assertVertexEdgeCounts(1, 0).accept(graph);
+            assertVertexEdgeCounts(graph, 1, 0);
 
             v.property(VertexProperty.Cardinality.single, "location", "santa fe");
             assertEquals(3, IteratorUtils.count(v.properties()));
@@ -348,11 +342,11 @@ public class VertexTest {
             assertTrue(v.keys().contains("age"));
             assertTrue(v.keys().contains("location"));
             v.property("location").remove();
-            assertVertexEdgeCounts(1, 0).accept(graph);
+            assertVertexEdgeCounts(graph, 1, 0);
             assertEquals(2, IteratorUtils.count(v.properties()));
             v.properties().forEachRemaining(Property::remove);
             assertEquals(0, IteratorUtils.count(v.properties()));
-            assertVertexEdgeCounts(1, 0).accept(graph);
+            assertVertexEdgeCounts(graph, 1, 0);
         }
 
         @Test
@@ -515,7 +509,7 @@ public class VertexTest {
             }
             graph.vertices().forEachRemaining(v -> graph.vertices().forEachRemaining(u -> v.addEdge("knows", u, "myEdgeId", 12)));
 
-            tryCommit(graph, assertVertexEdgeCounts(25, 625));
+            tryCommit(graph, getAssertVertexEdgeCounts(25, 625));
 
             final List<Vertex> vertices = new ArrayList<>();
             IteratorUtils.fill(graph.vertices(), vertices);
@@ -524,7 +518,7 @@ public class VertexTest {
                 tryCommit(graph);
             }
 
-            tryCommit(graph, assertVertexEdgeCounts(0, 0));
+            tryCommit(graph, getAssertVertexEdgeCounts(0, 0));
         }
 
         @Test

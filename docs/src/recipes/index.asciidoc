@@ -33,9 +33,17 @@ Recipes assume general familiarity with Gremlin and the TinkerPop stack. Be sure
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
 link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 
+Traversal Recipes
+=================
+
 include::shortest-path.asciidoc[]
 
 include::if-then-based-grouping.asciidoc[]
+
+Implementation Recipes
+======================
+
+include::traversal-component-reuse.asciidoc[]
 
 [[contributing]]
 How to Contribute a Recipe

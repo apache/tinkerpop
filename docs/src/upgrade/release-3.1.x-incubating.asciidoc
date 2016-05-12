@@ -60,6 +60,19 @@ Upgrading for Providers
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Vertex and Edge Counts
+++++++++++++++++++++++
+
+A large number of asserts for vertex and edge counts in the test suite were not being applied. This problem has been
+rectified, but could manifest as test errors for different implementations. The chances of the new assertions
+identifying previously unrecognized bugs seems slim however, as there are many other tests that validate these counts
+in other ways. If those were passing previously, then these new asserts should likely not pose a problem.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1300[TINKERPOP-1300]
+
 Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

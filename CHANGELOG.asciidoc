@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphFilter` helper methods are now more intelligent when determining edge direction/label legality.
+* Added `GraphFilterStrategy` to automatically construct `GraphFilters` via traversal introspection in OLAP.
 * Increased the testing and scope of `TraversalHelper.isLocalStarGraph()`.
 * Changed signature of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` to take arguments for the `Traversal` to be constructed by extending classes.
 * Added `VertexProgramInterceptor` interface as a general pattern for `GraphComputer` providers to use for bypassing `GraphComputer` semantics where appropriate.
@@ -230,6 +232,7 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug in `BulkSet.equals()` which made itself apparent when using `store()` and `aggregate()` with labeled `cap()`.
+* Ensured that all asserts of vertex and edge counts were being applied properly in the test suite.
 * Fixed bug in `gremlin-driver` where certain channel-level errors would not allow the driver to reconnect.
 * Bumped SLF4J to 1.7.21 as previous versions suffered from a memory leak.
 * Fixed a bug in `Neo4jGraphStepStrategy` where it wasn't defined properly as a `ProviderOptimizationStrategy`.
