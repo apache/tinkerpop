@@ -113,7 +113,7 @@ public final class TestHelper {
         String clsPath;
 		try {
 			clsPath = new File(url.toURI()).getAbsolutePath();
-		} catch (URISyntaxException e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Unable to computePath for " + clazz, e);
 		}
         return clsPath.substring(0, clsPath.length() - clsUri.length());
