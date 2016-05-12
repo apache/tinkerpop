@@ -51,7 +51,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MasterExecutor {
+final class MasterExecutor {
 
     private MasterExecutor() {
 

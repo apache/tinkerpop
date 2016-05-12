@@ -38,7 +38,23 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
 
     private TraversalSideEffects sideEffects;
     private Memory memory;
-    private boolean worker;
+    private State state;
+
+    public enum State {
+        SETUP,
+        WORKER_ITERATION_START,
+        EXECUTE,
+        WORKER_ITERATION_END,
+        TERMINATE;
+
+        public boolean masterState() {
+            return this == SETUP || this == TERMINATE;
+        }
+
+        public boolean workerState() {
+            return !this.masterState();
+        }
+    }
 
     private MemoryTraversalSideEffects() {
         // for serialization
@@ -77,7 +93,7 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public void add(final String key, final Object value) {
-        if (this.worker)
+        if (this.state.workerState())
             this.memory.add(key, value);
         else
             this.memory.set(key, this.sideEffects.getReducer(key).apply(this.memory.get(key), value));
@@ -152,19 +168,20 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     }
 
     public void storeSideEffectsInMemory() {
-        if (this.worker)
+        if (this.state.workerState())
             this.sideEffects.forEach(this.memory::add);
         else
             this.sideEffects.forEach(this.memory::set);
     }
 
-    public static void setMemorySideEffects(final Traversal.Admin<?, ?> traversal, final Memory memory, final boolean worker) {
+    public static void setMemorySideEffects(final Traversal.Admin<?, ?> traversal, final Memory memory, final State state) {
         final TraversalSideEffects sideEffects = traversal.getSideEffects();
         if (!(sideEffects instanceof MemoryTraversalSideEffects)) {
             traversal.setSideEffects(new MemoryTraversalSideEffects(sideEffects));
         }
-        ((MemoryTraversalSideEffects) traversal.getSideEffects()).memory = memory;
-        ((MemoryTraversalSideEffects) traversal.getSideEffects()).worker = worker;
+        final MemoryTraversalSideEffects memoryTraversalSideEffects = ((MemoryTraversalSideEffects) traversal.getSideEffects());
+        memoryTraversalSideEffects.memory = memory;
+        memoryTraversalSideEffects.state = state;
     }
 
     public static Set<MemoryComputeKey> getMemoryComputeKeys(final Traversal.Admin<?, ?> traversal) {

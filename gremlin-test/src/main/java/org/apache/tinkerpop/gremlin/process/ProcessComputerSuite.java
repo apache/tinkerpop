@@ -112,7 +112,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
 
             // computer, vertex program, and map/reduce semantics
-            GraphComputerTest.class,
+            /*GraphComputerTest.class,
 
             // branch
             BranchTest.Traversals.class,
@@ -159,7 +159,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             PathTest.Traversals.class,
             PeerPressureTest.Traversals.class,
             ProfileTest.Traversals.class,
-            ProjectTest.Traversals.class,
+            ProjectTest.Traversals.class, */
             ProgramTest.Traversals.class,
             PropertiesTest.Traversals.class,
             SelectTest.Traversals.class,

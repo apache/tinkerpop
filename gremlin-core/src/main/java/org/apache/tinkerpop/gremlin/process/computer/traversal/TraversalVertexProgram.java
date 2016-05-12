@@ -163,15 +163,15 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public void setup(final Memory memory) {
         // memory is local
-        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, false);
+        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.SETUP);
         final MemoryTraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects());
         sideEffects.storeSideEffectsInMemory();
         memory.set(VOTE_TO_HALT, true);
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(COMPLETED_BARRIERS, new HashSet<>());
         // if halted traversers are being sent from a previous VertexProgram in an OLAP chain (non-distributed traversers), get them into the stream
-        if (sideEffects.exists(HALTED_TRAVERSERS)) {
-            final TraverserSet<Object> haltedTraversers = sideEffects.get(HALTED_TRAVERSERS);
+        if (sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
+            final TraverserSet<Object> haltedTraversers = sideEffects.get(TraversalVertexProgram.HALTED_TRAVERSERS);
             final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
             IteratorUtils.removeOnNext(haltedTraversers.iterator()).forEachRemaining(traverser -> {
                 traverser.setStepId(this.traversal.get().getStartStep().getId());
@@ -180,6 +180,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             assert haltedTraversers.isEmpty(); // TODO: this should be empty
             final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
             MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, haltedTraversers);
+            memory.set(HALTED_TRAVERSERS, haltedTraversers);
             memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
         } else {
             memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
@@ -195,8 +196,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final Memory memory) {
         // memory is distributed
-        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, true);
-        // if a barrier was completed in another worker, it is also completed here (ensure distributed barries are synchronized)
+        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.EXECUTE);
+        // if a barrier was completed in another worker, it is also completed here (ensure distributed barriers are synchronized)
         final Set<String> completedBarriers = memory.get(COMPLETED_BARRIERS);
         for (final String stepId : completedBarriers) {
             final Step<?, ?> step = this.traversalMatrix.getStepById(stepId);
@@ -245,7 +246,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public boolean terminate(final Memory memory) {
         // memory is local
-        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, false);
+        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.TERMINATE);
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         memory.set(VOTE_TO_HALT, true);
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
