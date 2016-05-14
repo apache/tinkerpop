@@ -28,6 +28,11 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import java.io.IOException;
 
 /**
+ * ScriptInputFormat and {@link org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat}
+ * take an arbitrary script and use that script to either read or write Vertex objects,
+ * respectively. This can be considered the most general InputFormat/OutputFormat
+ * possible in that Hadoop-Gremlin uses the user provided script for all reading/writing.
+ * @see <a href="http://tinkerpop.apache.org/docs/current/reference/#script-io-format">Script I/O Format Reference Documentation</a>
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
