@@ -95,7 +95,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
                 this.currentClient = this.currentCluster.connect();
             }
             this.currentClient.init();
-            return String.format("Connected - %s", this.currentCluster) + getSessionStringSegment();
+            return String.format("Configured %s", this.currentCluster) + getSessionStringSegment();
         } catch (final FileNotFoundException ignored) {
             throw new RemoteException("The 'connect' option must be accompanied by a valid configuration file");
         } catch (final Exception ex) {

@@ -42,7 +42,6 @@ import org.codehaus.groovy.tools.shell.util.Preferences
 import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.AnsiConsole
 
-import java.util.concurrent.TimeUnit
 import java.util.prefs.PreferenceChangeEvent
 import java.util.prefs.PreferenceChangeListener
 
@@ -108,6 +107,10 @@ class Console {
         })
 
         final Mediator mediator = new Mediator(this)
+
+        // make sure that remotes are closed if console takes a ctrl-c
+        addShutdownHook { mediator.close() }
+
         groovy = new GremlinGroovysh(mediator)
 
         def commandsToRemove = groovy.getRegistry().commands().findAll{it instanceof SetCommand}
@@ -174,13 +177,8 @@ class Console {
         } catch (Throwable t) {
             t.printStackTrace()
         } finally {
-            try {
-                mediator.close().get(3, TimeUnit.SECONDS)
-            } catch (Exception ignored) {
-                // ok if this times out - just trying to be polite on shutdown
-            } finally {
-                System.exit(0)
-            }
+            // shutdown hook defined above will kill any open remotes
+            System.exit(0)
         }
     }
 
