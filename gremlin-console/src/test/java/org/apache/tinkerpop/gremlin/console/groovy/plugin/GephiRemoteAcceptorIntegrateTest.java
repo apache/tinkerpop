@@ -82,31 +82,31 @@ public class GephiRemoteAcceptorIntegrateTest {
 
     @Test
     public void shouldConnectWithDefaults() throws RemoteException {
-        assertThat(acceptor.connect(Collections.emptyList()).toString(), startsWith("Connection to Gephi - http://localhost:" + port + "/workspace0"));
+        assertThat(acceptor.connect(Collections.emptyList()).toString(), startsWith("Connection to Gephi - http://localhost:" + port + "/workspace1"));
     }
 
     @Test
     public void shouldSubmitGraph() throws RemoteException {
-        stubFor(post(urlPathEqualTo("/workspace0"))
+        stubFor(post(urlPathEqualTo("/workspace1"))
                 .withQueryParam("format", equalTo("JSON"))
                 .withQueryParam("operation", equalTo("updateGraph"))
                 .willReturn(aResponse()
                         .withStatus(200)));
 
-        stubFor(get(urlPathEqualTo("/workspace0"))
+        stubFor(get(urlPathEqualTo("/workspace1"))
                 .withQueryParam("operation", equalTo("getNode"))
                 .willReturn(aResponse()
                         .withStatus(200)));
 
         acceptor.submit(Arrays.asList("g = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.open();g.addVertex();g"));
 
-        wireMockRule.verify(4, postRequestedFor(urlPathEqualTo("/workspace0")));
-        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(4, postRequestedFor(urlPathEqualTo("/workspace1")));
+        wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/workspace1")));
     }
 
     @Test
     public void shouldSubmitTraversalAfterConfigWithDefaultG() throws RemoteException {
-        stubFor(post(urlPathEqualTo("/workspace0"))
+        stubFor(post(urlPathEqualTo("/workspace1"))
                 .withQueryParam("format", equalTo("JSON"))
                 .withQueryParam("operation", equalTo("updateGraph"))
                 .willReturn(aResponse()
@@ -118,12 +118,12 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "vg.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
-        wireMockRule.verify(18, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(18, postRequestedFor(urlPathEqualTo("/workspace1")));
     }
 
     @Test
     public void shouldSubmitTraversalAfterConfigWithDefinedG() throws RemoteException {
-        stubFor(post(urlPathEqualTo("/workspace0"))
+        stubFor(post(urlPathEqualTo("/workspace1"))
                 .withQueryParam("format", equalTo("JSON"))
                 .withQueryParam("operation", equalTo("updateGraph"))
                 .willReturn(aResponse()
@@ -135,12 +135,12 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "x.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
-        wireMockRule.verify(18, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(18, postRequestedFor(urlPathEqualTo("/workspace1")));
     }
 
     @Test
     public void shouldSubmitTraversalOverRepeat() throws RemoteException {
-        stubFor(post(urlPathEqualTo("/workspace0"))
+        stubFor(post(urlPathEqualTo("/workspace1"))
                 .withQueryParam("format", equalTo("JSON"))
                 .withQueryParam("operation", equalTo("updateGraph"))
                 .willReturn(aResponse()
@@ -152,12 +152,12 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
 
-        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace1")));
     }
 
     @Test
     public void shouldClearGraph() throws RemoteException {
-        stubFor(post(urlPathEqualTo("/workspace0"))
+        stubFor(post(urlPathEqualTo("/workspace1"))
                 .withQueryParam("format", equalTo("JSON"))
                 .withQueryParam("operation", equalTo("updateGraph"))
                 .withRequestBody(equalToJson("{\"dn\":{\"filter\":\"ALL\"}}"))
@@ -166,7 +166,7 @@ public class GephiRemoteAcceptorIntegrateTest {
 
         acceptor.submit(Arrays.asList("clear"));
 
-        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/workspace1")));
     }
 
     private static int pickOpenPort() {

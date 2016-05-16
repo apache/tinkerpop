@@ -30,6 +30,7 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 * Added tests to ensure that threaded transactions cannot be re-used.
 * `GraphFilter` helper methods are now more intelligent when determining edge direction/label legality.
 * Added `GraphFilterStrategy` to automatically construct `GraphFilters` via traversal introspection in OLAP.
+* Updated the Gephi Plugin to support Gephi 0.9.x.
 * Increased the testing and scope of `TraversalHelper.isLocalStarGraph()`.
 * Changed signature of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` to take arguments for the `Traversal` to be constructed by extending classes.
 * Added `VertexProgramInterceptor` interface as a general pattern for `GraphComputer` providers to use for bypassing `GraphComputer` semantics where appropriate.
