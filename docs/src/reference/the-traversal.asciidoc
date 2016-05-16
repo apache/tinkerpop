@@ -1419,6 +1419,86 @@ g.V().out('created').
   select('a')
 ----
 
+[[program-step]]
+Program Step
+~~~~~~~~~~~~
+
+The `program()`-step (*map*/*sideEffect*) is the "lambda" step for `GraphComputer` jobs. The step takes a
+<<vertexprogram,`VertexProgram`>> as an argument and will process the incoming graph accordingly. Thus, the user
+can create their own `VertexProgram` and have it execute within a traversal. The configuration provided to the
+vertex program includes:
+
+* `gremlin.vertexProgramStep.rootTraversal` is a serialization of a `PureTraversal` form of the root traversal.
+* `gremlin.vertexProgramStep.stepId` is the step string id of the `program()`-step being executed.
+
+The user supplied `VertexProgram` can leverage that information accordingly within their vertex program. Example uses
+are provided below.
+
+[source,java]
+----
+public void loadState(final Graph graph, final Configuration configuration) {
+  VertexProgram.super.loadState(graph, configuration);
+  this.traversal = PureTraversal.loadState(configuration, VertexProgramStep.ROOT_TRAVERSAL, graph);
+  this.programStep = new TraversalMatrix<>(this.traversal.get()).getStepById(configuration.getString(ProgramVertexProgramStep.STEP_ID));
+  // if the traversal sideEffects will be used in the computation, add them as memory compute keys
+  this.memoryComputeKeys.addAll(MemoryTraversalSideEffects.getMemoryComputeKeys(this.traversal.get()));
+  // if master-traversal traversers may be propagated, create a memory compute key
+  this.memoryComputeKeys.add(MemoryComputeKey.of(TraversalVertexProgram.HALTED_TRAVERSERS, Operator.addAll, false, false));
+}
+
+public void setup(final Memory memory) {
+  if(sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
+    // haltedTraversers in setup() represent master-traversal traversers
+    // for example, from a traversal of the form g.V().groupCount().program(...)
+    TraverserSet<Object> haltedTraversers = sideEffects.get(TraversalVertexProgram.HALTED_TRAVERSERS);
+    // do as you please with this information
+  }
+}
+
+public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+  if(vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).isPresent()) {
+    // haltedTraversers in execute() represent worker-traversal traversers
+    // for example, from a traversal of the form g.V().out().program(...)
+    TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS) :
+    // create a new halted traverser set that can be used by the next OLAP job in the chain
+    // these are worker-traversers that are distributed throughout the graph
+    TraverserSet<Object> newHaltedTraversers = new TraverserSet<>();
+    haltedTraversers.forEach(traverser -> {
+       newHaltedTraversers.add(traverser.split(traverser.get().toString(), this.programStep));
+    });
+    vertex.property(VertexProperty.Cardinality.single, TraversalVertexProgram.HALTED_TRAVERSERS, newHaltedTraversers);
+    // it is possible to create master-traversers that are localized to the master traversal (thread)
+    memory.add(TraversalVertexProgram.HALTED_TRAVERSERS,
+               new TraverserSet<>(this.traversal().get().getTraverserGenerator().generate("an example", this.programStep, 1l)));
+  }
+
+public boolean terminate(final Memory memory) {
+  // the master-traversal will have halted traversers
+  assert memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS);
+  final TraverserSet<String> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
+  // it will only have the traversers sent to the master traversal via memory
+  assert haltedTraversers.stream().map(Traverser::get).filter(s -> s.equals("an example")).findAny().isPresent();
+  // it will not contain the worker traversers distributed throughout the vertices
+  assert !haltedTraversers.stream().map(Traverser::get).filter(s -> !s.equals("an example")).findAny().isPresent();
+  return true;
+}
+----
+
+NOTE: The test case `ProgramTest` in `gremlin-test` has an example vertex program called `TestProgram` that demonstrates
+all the various ways in which traversal and traverser information is propagated within a vertex program and ultimately
+usable by other vertex programs (including `TraversalVertexProgram`) down the line in an OLAP compute chain.
+
+Finally, an example is provided using `PageRankVertexProgram` which doesn't use <<pagerank-step,`pageRank()`>>-step.
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().hasLabel('person').
+  program(PageRankVertexProgram.build().property('rank').create(graph)).
+    order().by('rank', incr).
+  valueMap('name', 'rank')
+----
+
 [[range-step]]
 Range Step
 ~~~~~~~~~~

@@ -26,6 +26,9 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in master-traversal traverser propagation.
+* Added useful methods for custom `VertexPrograms` to be used with `program()`-step.
+* Increased the test coverage around traverser propagation within a multi-job OLAP traversal.
 * Added tests to validate the status of a transaction immediately following calls to close.
 * Added tests to ensure that threaded transactions cannot be re-used.
 * `GraphFilter` helper methods are now more intelligent when determining edge direction/label legality.

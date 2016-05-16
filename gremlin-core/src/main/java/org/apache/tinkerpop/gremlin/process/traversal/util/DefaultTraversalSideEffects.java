@@ -185,6 +185,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
         this.objectMap.remove(key);
         this.supplierMap.remove(key);
         this.reducerMap.remove(key);
+        this.keys.remove(key);
     }
 
     /**

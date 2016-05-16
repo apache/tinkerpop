@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorat
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -64,7 +65,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         Step<?, ?> currentStep = traversal.getEndStep();
         final Set<String> currentLabels = new HashSet<>();
         while (!(currentStep instanceof EmptyStep)) {
-            if (currentStep instanceof VertexComputing) {
+            if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {  // todo: is there a general solution?
                 currentLabels.addAll(currentStep.getLabels());
                 currentStep.getLabels().forEach(currentStep::removeLabel);
             } else {
