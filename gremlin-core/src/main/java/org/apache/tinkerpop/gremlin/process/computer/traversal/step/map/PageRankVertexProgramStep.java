@@ -97,11 +97,6 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public GraphComputer generateComputer(final Graph graph) {
-        return this.computer.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
-    }
-
-    @Override
     public Set<TraverserRequirement> getRequirements() {
         return TraversalParent.super.getSelfAndChildRequirements();
     }

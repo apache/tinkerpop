@@ -39,6 +39,11 @@ public abstract class GroovyProgramTest {
         public Traversal<Vertex, Map<String, List<Object>>> get_g_V_hasLabelXpersonX_programXpageRank_rankX_order_byXrank_incrX_valueMapXname_rankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').program(PageRankVertexProgram.build().property('rank').create(graph)).order.by('rank',incr).valueMap('name','rank')");
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_aggregateXxX_byXlangX_groupCount_programXTestProgramX_asXaX_selectXa_xX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').aggregate('x').by('lang').groupCount.program(new ${ProgramTest.TestProgram.class.getCanonicalName()}()).as('a').select('a', 'x')");
+        }
     }
 }
 

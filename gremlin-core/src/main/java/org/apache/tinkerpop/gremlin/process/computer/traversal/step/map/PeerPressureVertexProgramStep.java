@@ -100,11 +100,6 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
     }
 
     @Override
-    public GraphComputer generateComputer(final Graph graph) {
-        return this.computer.apply(graph).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW);
-    }
-
-    @Override
     public PeerPressureVertexProgramStep clone() {
         final PeerPressureVertexProgramStep clone = (PeerPressureVertexProgramStep) super.clone();
         clone.edgeTraversal = this.edgeTraversal.clone();
