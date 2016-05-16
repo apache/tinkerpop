@@ -29,6 +29,7 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 * Fixed a bug in `BulkSet.equals()` which made itself apparent when using `store()` and `aggregate()` with labeled `cap()`.
 * Ensured that all asserts of vertex and edge counts were being applied properly in the test suite.
 * Fixed bug in `gremlin-driver` where certain channel-level errors would not allow the driver to reconnect.
+* Use of `Ctrl-C` in Gremlin Console now triggers closing of open remotes.
 * Bumped SLF4J to 1.7.21 as previous versions suffered from a memory leak.
 * Fixed a bug in `Neo4jGraphStepStrategy` where it wasn't defined properly as a `ProviderOptimizationStrategy`.
 * Renamed `AndTest.get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name` to `get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name` to match the traversal being tested.

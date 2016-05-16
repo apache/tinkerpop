@@ -93,7 +93,7 @@ class Mediator {
         return file.exists() ? file.readLines() : []
     }
 
-    def CompletableFuture<Void> close() {
+    def void close() {
         remotes.each { remote ->
             try {
                 remote.close()
@@ -101,8 +101,6 @@ class Mediator {
 
             }
         }
-
-        return CompletableFuture.completedFuture(null)
     }
 
 }
