@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -169,9 +171,11 @@ public class ScriptEnginesTest {
 
         final AtomicInteger successes = new AtomicInteger(0);
         final AtomicInteger failures = new AtomicInteger(0);
+        final CountDownLatch latch = new CountDownLatch(1);
 
         final Thread threadImport = new Thread(() -> {
             engines.addImports(imports);
+            latch.countDown();
         });
 
         // issue 1000 scripts in one thread using a class that isn't imported.  this will result in failure.
@@ -181,11 +185,23 @@ public class ScriptEnginesTest {
         final Thread threadEvalAndTriggerImport = new Thread(() ->
             IntStream.range(0, 1000).forEach(i -> {
                 try {
+
                     engines.eval("Color.BLACK", new SimpleBindings(), "gremlin-groovy");
                     successes.incrementAndGet();
                 } catch (Exception ex) {
-                    if (failures.incrementAndGet() == 500) threadImport.start();
-                    Thread.yield();
+                    // stop the failures halfway and allow the import thread to start
+                    if (failures.incrementAndGet() == 500) {
+                        threadImport.start();
+
+                        // block until the import occurs
+                        try {
+                            latch.await(30000, TimeUnit.MILLISECONDS);
+                        } catch (Exception inner) {
+                            // this test should fail given that the nubmer of asserts for successes will not implement
+                            // appropriately if this RuntimeException is thrown.
+                            throw new RuntimeException(inner);
+                        }
+                    }
                 }
             })
         );
@@ -193,10 +209,9 @@ public class ScriptEnginesTest {
         threadEvalAndTriggerImport.start();
 
         threadEvalAndTriggerImport.join();
-        threadImport.join();
 
-        assertTrue("Success: " + successes.intValue() + " - Failures: " + failures.intValue(), successes.intValue() > 0);
-        assertTrue("Success: " + successes.intValue() + " - Failures: " + failures.intValue(), failures.intValue() >= 500);
+        assertTrue("Success: " + successes.intValue() + " - Success: " + failures.intValue(), successes.intValue() == 500);
+        assertTrue("Failures: " + successes.intValue() + " - Failures: " + failures.intValue(), failures.intValue() == 500);
 
         engines.close();
     }
