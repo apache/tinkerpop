@@ -169,5 +169,12 @@ public abstract class GroovyVertexTest {
         public Traversal<Vertex, Vertex> get_g_VX1X_to_XOUT_knowsX(final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).to(Direction.OUT, 'knows')", g, "v1Id", v1Id);
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1_2_3_4X_name(
+                final Object v1Id, final Object v2Id, final Object v3Id, final Object v4Id) {
+            g.V(v3Id).drop().iterate();
+            TraversalScriptHelper.compute("g.V(v1Id, v2Id, v4Id, v3Id).name", g, "v1Id", v1Id, "v2Id", v2Id, "v3Id", v3Id, "v4Id", v4Id);
+        }
     }
 }
