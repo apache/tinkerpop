@@ -159,7 +159,10 @@ public final class TraverserExecutor {
                     final TraverserSet<Object> barrierSet = barrier.nextBarrier();
                     IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
                         traverser.addLabels(step.getLabels());  // this might need to be generalized for working with global barriers too
-                        if (traverser.isHalted() && ((!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) || getHostingVertex(traverser.get()).equals(vertex))) {
+                        if (traverser.isHalted() &&
+                                (returnHaltedTraversers ||
+                                        (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
+                                        getHostingVertex(traverser.get()).equals(vertex))) {
                             traverser.detach();
                             if (returnHaltedTraversers)
                                 memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
@@ -181,7 +184,10 @@ public final class TraverserExecutor {
             }
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
-                if (traverser.isHalted() && ((!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) || getHostingVertex(traverser.get()).equals(vertex))) {
+                if (traverser.isHalted() &&
+                        (returnHaltedTraversers ||
+                                (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
+                                getHostingVertex(traverser.get()).equals(vertex))) {
                     traverser.detach();
                     if (returnHaltedTraversers)
                         memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
