@@ -31,12 +31,14 @@ public abstract class GroovyVertexTest {
     public static class Traversals extends VertexTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name(final Vertex v1, final Vertex v2, final Vertex v3) {
+        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name(
+                final Vertex v1, final Vertex v2, final Vertex v3) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(ids).name", "ids", [v1, v2, v3])
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name(final Object v1Id, final Object v2Id, final Object v3Id) {
+        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name(
+                final Object v1Id, final Object v2Id, final Object v3Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(ids).name", "ids", [v1Id, v2Id, v3Id])
         }
 
@@ -168,6 +170,13 @@ public abstract class GroovyVertexTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_to_XOUT_knowsX(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).to(Direction.OUT, 'knows')", "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1_2_3_4X_name(
+                final Object v1Id, final Object v2Id, final Object v3Id, final Object v4Id) {
+            g.V(v3Id).drop().iterate();
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id, v2Id, v4Id, v3Id).name", "v1Id", v1Id, "v2Id", v2Id, "v3Id", v3Id, "v4Id", v4Id)
         }
     }
 }
