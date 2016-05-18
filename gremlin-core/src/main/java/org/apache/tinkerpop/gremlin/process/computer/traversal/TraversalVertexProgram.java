@@ -304,8 +304,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 return false;
             } else {
                 // finalize locally with any last traversers dangling in the local traversal
-                while (this.traversal.get().getEndStep().hasNext()) {
-                    final Traverser.Admin traverser = this.traversal.get().getEndStep().next();
+                final Step<?, ?> endStep = this.traversal.get().getEndStep();
+                while (endStep.hasNext()) {
+                    final Traverser.Admin traverser = endStep.next();
                     traverser.detach();
                     haltedTraversers.add(traverser);
                 }
