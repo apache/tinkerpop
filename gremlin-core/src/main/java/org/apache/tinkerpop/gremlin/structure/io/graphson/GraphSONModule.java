@@ -19,15 +19,19 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
-import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
+import org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV1d0;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV2d0;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -41,8 +45,8 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 /**
  * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
@@ -54,10 +58,144 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-abstract class GraphSONModule extends SimpleModule {
+abstract class GraphSONModule extends TinkerPopJacksonModule {
 
     GraphSONModule(final String name) {
         super(name);
+    }
+
+    /**
+     * Version 2.0 of GraphSON.
+     */
+    static final class GraphSONModuleV2d0 extends GraphSONModule {
+        /**
+         * Constructs a new object.
+         */
+        protected GraphSONModuleV2d0(final boolean normalize) {
+            super("graphson-2.0");
+
+            /////////////////////// SERIALIZERS ////////////////////////////
+
+            // graph
+            addSerializer(Edge.class, new GraphSONSerializersV2d0.EdgeJacksonSerializer(normalize));
+            addSerializer(Vertex.class, new GraphSONSerializersV2d0.VertexJacksonSerializer(normalize));
+            addSerializer(VertexProperty.class, new GraphSONSerializersV2d0.VertexPropertyJacksonSerializer(normalize, true));
+            addSerializer(Property.class, new GraphSONSerializersV2d0.PropertyJacksonSerializer());
+            addSerializer(Metrics.class, new GraphSONSerializersV2d0.MetricsJacksonSerializer());
+            addSerializer(TraversalMetrics.class, new GraphSONSerializersV2d0.TraversalMetricsJacksonSerializer());
+            addSerializer(TraversalExplanation.class, new GraphSONSerializersV2d0.TraversalExplanationJacksonSerializer());
+            addSerializer(Path.class, new GraphSONSerializersV2d0.PathJacksonSerializer());
+            addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV2d0(normalize));
+            addSerializer(Tree.class, new GraphSONSerializersV2d0.TreeJacksonSerializer());
+
+            // java.util
+            addSerializer(Map.Entry.class, new JavaUtilSerializersV2d0.MapEntryJacksonSerializer());
+
+            // need to explicitly add serializers for those types because Jackson doesn't do it at all.
+            addSerializer(Integer.class, new GraphSONSerializersV2d0.IntegerGraphSONSerializer());
+            addSerializer(Double.class, new GraphSONSerializersV2d0.DoubleGraphSONSerializer());
+
+            // java.time
+            addSerializer(Duration.class, new JavaTimeSerializersV2d0.DurationJacksonSerializer());
+            addSerializer(Instant.class, new JavaTimeSerializersV2d0.InstantJacksonSerializer());
+            addSerializer(LocalDate.class, new JavaTimeSerializersV2d0.LocalDateJacksonSerializer());
+            addSerializer(LocalDateTime.class, new JavaTimeSerializersV2d0.LocalDateTimeJacksonSerializer());
+            addSerializer(LocalTime.class, new JavaTimeSerializersV2d0.LocalTimeJacksonSerializer());
+            addSerializer(MonthDay.class, new JavaTimeSerializersV2d0.MonthDayJacksonSerializer());
+            addSerializer(OffsetDateTime.class, new JavaTimeSerializersV2d0.OffsetDateTimeJacksonSerializer());
+            addSerializer(OffsetTime.class, new JavaTimeSerializersV2d0.OffsetTimeJacksonSerializer());
+            addSerializer(Period.class, new JavaTimeSerializersV2d0.PeriodJacksonSerializer());
+            addSerializer(Year.class, new JavaTimeSerializersV2d0.YearJacksonSerializer());
+            addSerializer(YearMonth.class, new JavaTimeSerializersV2d0.YearMonthJacksonSerializer());
+            addSerializer(ZonedDateTime.class, new JavaTimeSerializersV2d0.ZonedDateTimeJacksonSerializer());
+            addSerializer(ZoneOffset.class, new JavaTimeSerializersV2d0.ZoneOffsetJacksonSerializer());
+
+            /////////////////////// DESERIALIZERS ////////////////////////////
+
+            // Tinkerpop Graph
+            addDeserializer(Vertex.class, new GraphSONSerializersV2d0.VertexJacksonDeserializer());
+            addDeserializer(Edge.class, new GraphSONSerializersV2d0.EdgeJacksonDeserializer());
+            addDeserializer(Property.class, new GraphSONSerializersV2d0.PropertyJacksonDeserializer());
+            addDeserializer(Path.class, new GraphSONSerializersV2d0.PathJacksonDeserializer());
+            addDeserializer(VertexProperty.class, new GraphSONSerializersV2d0.VertexPropertyJacksonDeserializer());
+            addDeserializer(Metrics.class, new GraphSONSerializersV2d0.MetricsJacksonDeserializer());
+            addDeserializer(TraversalMetrics.class, new GraphSONSerializersV2d0.TraversalMetricsJacksonDeserializer());
+            addDeserializer(Tree.class, new GraphSONSerializersV2d0.TreeJacksonDeserializer());
+
+            // java.time
+            addDeserializer(Duration.class, new JavaTimeSerializersV2d0.DurationJacksonDeserializer());
+            addDeserializer(Instant.class, new JavaTimeSerializersV2d0.InstantJacksonDeserializer());
+            addDeserializer(LocalDate.class, new JavaTimeSerializersV2d0.LocalDateJacksonDeserializer());
+            addDeserializer(LocalDateTime.class, new JavaTimeSerializersV2d0.LocalDateTimeJacksonDeserializer());
+            addDeserializer(LocalTime.class, new JavaTimeSerializersV2d0.LocalTimeJacksonDeserializer());
+            addDeserializer(MonthDay.class, new JavaTimeSerializersV2d0.MonthDayJacksonDeserializer());
+            addDeserializer(OffsetDateTime.class, new JavaTimeSerializersV2d0.OffsetDateTimeJacksonDeserializer());
+            addDeserializer(OffsetTime.class, new JavaTimeSerializersV2d0.OffsetTimeJacksonDeserializer());
+            addDeserializer(Period.class, new JavaTimeSerializersV2d0.PeriodJacksonDeserializer());
+            addDeserializer(Year.class, new JavaTimeSerializersV2d0.YearJacksonDeserializer());
+            addDeserializer(YearMonth.class, new JavaTimeSerializersV2d0.YearMonthJacksonDeserializer());
+            addDeserializer(ZonedDateTime.class, new JavaTimeSerializersV2d0.ZonedDateTimeJacksonDeserializer());
+            addDeserializer(ZoneOffset.class, new JavaTimeSerializersV2d0.ZoneOffsetJacksonDeserializer());
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            return new LinkedHashMap<Class, String>(){{
+                // Those don't have deserializers because handled by Jackson,
+                // but we still want to rename them in GraphSON
+                put(ByteBuffer.class, "bytebuffer");
+                put(Short.class, "int16");
+                put(Integer.class, "int32");
+                put(Long.class, "int64");
+                put(Double.class, "double");
+                put(Float.class, "float");
+
+                // Time serializers/deserializers
+                put(Duration.class, "duration");
+                put(Instant.class, "instant");
+                put(LocalDate.class, "localdate");
+                put(LocalDateTime.class, "localdatetime");
+                put(LocalTime.class, "localtime");
+                put(MonthDay.class, "monthday");
+                put(OffsetDateTime.class, "offsetdatetime");
+                put(OffsetTime.class, "offsettime");
+                put(Period.class, "period");
+                put(Year.class, "year");
+                put(YearMonth.class, "yearmonth");
+                put(ZonedDateTime.class, "zoneddatetime");
+                put(ZoneOffset.class, "zoneoffset");
+
+                // Tinkerpop Graph objects
+                put(Vertex.class, "vertex");
+                put(Edge.class, "edge");
+                put(Property.class, "property");
+                put(Path.class, "path");
+                put(VertexProperty.class, "vertexproperty");
+                put(Metrics.class, "metrics");
+                put(TraversalMetrics.class, "traversalmetrics");
+                put(Tree.class, "tree");
+            }};
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            return GraphSONTokens.GREMLIN_TYPE_NAMESPACE;
+        }
+
+        static final class Builder implements GraphSONModuleBuilder {
+
+            private Builder() {}
+
+            @Override
+            public GraphSONModule create(final boolean normalize) {
+                return new GraphSONModuleV2d0(normalize);
+            }
+
+        }
     }
 
     /**
@@ -71,51 +209,63 @@ abstract class GraphSONModule extends SimpleModule {
         protected GraphSONModuleV1d0(final boolean normalize) {
             super("graphson-1.0");
             // graph
-            addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer(normalize));
-            addSerializer(Vertex.class, new GraphSONSerializers.VertexJacksonSerializer(normalize));
-            addSerializer(VertexProperty.class, new GraphSONSerializers.VertexPropertyJacksonSerializer(normalize));
-            addSerializer(Property.class, new GraphSONSerializers.PropertyJacksonSerializer());
-            addSerializer(TraversalMetrics.class, new GraphSONSerializers.TraversalMetricsJacksonSerializer());
-            addSerializer(TraversalExplanation.class, new GraphSONSerializers.TraversalExplanationJacksonSerializer());
-            addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
-            addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
-            addSerializer(Tree.class, new GraphSONSerializers.TreeJacksonSerializer());
+            addSerializer(Edge.class, new GraphSONSerializersV1d0.EdgeJacksonSerializer(normalize));
+            addSerializer(Vertex.class, new GraphSONSerializersV1d0.VertexJacksonSerializer(normalize));
+            addSerializer(VertexProperty.class, new GraphSONSerializersV1d0.VertexPropertyJacksonSerializer(normalize));
+            addSerializer(Property.class, new GraphSONSerializersV1d0.PropertyJacksonSerializer());
+            addSerializer(TraversalMetrics.class, new GraphSONSerializersV1d0.TraversalMetricsJacksonSerializer());
+            addSerializer(TraversalExplanation.class, new GraphSONSerializersV1d0.TraversalExplanationJacksonSerializer());
+            addSerializer(Path.class, new GraphSONSerializersV1d0.PathJacksonSerializer());
+            addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV1d0(normalize));
+            addSerializer(Tree.class, new GraphSONSerializersV1d0.TreeJacksonSerializer());
            
             // java.util
-            addSerializer(Map.Entry.class, new JavaUtilSerializers.MapEntryJacksonSerializer());
+            addSerializer(Map.Entry.class, new JavaUtilSerializersV1d0.MapEntryJacksonSerializer());
 
             // java.time
-            addSerializer(Duration.class, new JavaTimeSerializers.DurationJacksonSerializer());
-            addSerializer(Instant.class, new JavaTimeSerializers.InstantJacksonSerializer());
-            addSerializer(LocalDate.class, new JavaTimeSerializers.LocalDateJacksonSerializer());
-            addSerializer(LocalDateTime.class, new JavaTimeSerializers.LocalDateTimeJacksonSerializer());
-            addSerializer(LocalTime.class, new JavaTimeSerializers.LocalTimeJacksonSerializer());
-            addSerializer(MonthDay.class, new JavaTimeSerializers.MonthDayJacksonSerializer());
-            addSerializer(OffsetDateTime.class, new JavaTimeSerializers.OffsetDateTimeJacksonSerializer());
-            addSerializer(OffsetTime.class, new JavaTimeSerializers.OffsetTimeJacksonSerializer());
-            addSerializer(Period.class, new JavaTimeSerializers.PeriodJacksonSerializer());
-            addSerializer(Year.class, new JavaTimeSerializers.YearJacksonSerializer());
-            addSerializer(YearMonth.class, new JavaTimeSerializers.YearMonthJacksonSerializer());
-            addSerializer(ZonedDateTime.class, new JavaTimeSerializers.ZonedDateTimeJacksonSerializer());
-            addSerializer(ZoneOffset.class, new JavaTimeSerializers.ZoneOffsetJacksonSerializer());
+            addSerializer(Duration.class, new JavaTimeSerializersV1d0.DurationJacksonSerializer());
+            addSerializer(Instant.class, new JavaTimeSerializersV1d0.InstantJacksonSerializer());
+            addSerializer(LocalDate.class, new JavaTimeSerializersV1d0.LocalDateJacksonSerializer());
+            addSerializer(LocalDateTime.class, new JavaTimeSerializersV1d0.LocalDateTimeJacksonSerializer());
+            addSerializer(LocalTime.class, new JavaTimeSerializersV1d0.LocalTimeJacksonSerializer());
+            addSerializer(MonthDay.class, new JavaTimeSerializersV1d0.MonthDayJacksonSerializer());
+            addSerializer(OffsetDateTime.class, new JavaTimeSerializersV1d0.OffsetDateTimeJacksonSerializer());
+            addSerializer(OffsetTime.class, new JavaTimeSerializersV1d0.OffsetTimeJacksonSerializer());
+            addSerializer(Period.class, new JavaTimeSerializersV1d0.PeriodJacksonSerializer());
+            addSerializer(Year.class, new JavaTimeSerializersV1d0.YearJacksonSerializer());
+            addSerializer(YearMonth.class, new JavaTimeSerializersV1d0.YearMonthJacksonSerializer());
+            addSerializer(ZonedDateTime.class, new JavaTimeSerializersV1d0.ZonedDateTimeJacksonSerializer());
+            addSerializer(ZoneOffset.class, new JavaTimeSerializersV1d0.ZoneOffsetJacksonSerializer());
 
-            addDeserializer(Duration.class, new JavaTimeSerializers.DurationJacksonDeserializer());
-            addDeserializer(Instant.class, new JavaTimeSerializers.InstantJacksonDeserializer());
-            addDeserializer(LocalDate.class, new JavaTimeSerializers.LocalDateJacksonDeserializer());
-            addDeserializer(LocalDateTime.class, new JavaTimeSerializers.LocalDateTimeJacksonDeserializer());
-            addDeserializer(LocalTime.class, new JavaTimeSerializers.LocalTimeJacksonDeserializer());
-            addDeserializer(MonthDay.class, new JavaTimeSerializers.MonthDayJacksonDeserializer());
-            addDeserializer(OffsetDateTime.class, new JavaTimeSerializers.OffsetDateTimeJacksonDeserializer());
-            addDeserializer(OffsetTime.class, new JavaTimeSerializers.OffsetTimeJacksonDeserializer());
-            addDeserializer(Period.class, new JavaTimeSerializers.PeriodJacksonDeserializer());
-            addDeserializer(Year.class, new JavaTimeSerializers.YearJacksonDeserializer());
-            addDeserializer(YearMonth.class, new JavaTimeSerializers.YearMonthJacksonDeserializer());
-            addDeserializer(ZonedDateTime.class, new JavaTimeSerializers.ZonedDateTimeJacksonDeserializer());
-            addDeserializer(ZoneOffset.class, new JavaTimeSerializers.ZoneOffsetJacksonDeserializer());
+            addDeserializer(Duration.class, new JavaTimeSerializersV1d0.DurationJacksonDeserializer());
+            addDeserializer(Instant.class, new JavaTimeSerializersV1d0.InstantJacksonDeserializer());
+            addDeserializer(LocalDate.class, new JavaTimeSerializersV1d0.LocalDateJacksonDeserializer());
+            addDeserializer(LocalDateTime.class, new JavaTimeSerializersV1d0.LocalDateTimeJacksonDeserializer());
+            addDeserializer(LocalTime.class, new JavaTimeSerializersV1d0.LocalTimeJacksonDeserializer());
+            addDeserializer(MonthDay.class, new JavaTimeSerializersV1d0.MonthDayJacksonDeserializer());
+            addDeserializer(OffsetDateTime.class, new JavaTimeSerializersV1d0.OffsetDateTimeJacksonDeserializer());
+            addDeserializer(OffsetTime.class, new JavaTimeSerializersV1d0.OffsetTimeJacksonDeserializer());
+            addDeserializer(Period.class, new JavaTimeSerializersV1d0.PeriodJacksonDeserializer());
+            addDeserializer(Year.class, new JavaTimeSerializersV1d0.YearJacksonDeserializer());
+            addDeserializer(YearMonth.class, new JavaTimeSerializersV1d0.YearMonthJacksonDeserializer());
+            addDeserializer(ZonedDateTime.class, new JavaTimeSerializersV1d0.ZonedDateTimeJacksonDeserializer());
+            addDeserializer(ZoneOffset.class, new JavaTimeSerializersV1d0.ZoneOffsetJacksonDeserializer());
         }
 
         public static Builder build() {
             return new Builder();
+        }
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            // null is fine and handled by the GraphSONMapper
+            return null;
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            // null is fine and handled by the GraphSONMapper
+            return null;
         }
 
         static final class Builder implements GraphSONModuleBuilder {

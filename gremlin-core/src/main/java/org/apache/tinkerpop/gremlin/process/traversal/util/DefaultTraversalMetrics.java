@@ -54,6 +54,14 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     public DefaultTraversalMetrics() {
     }
 
+    // This is only a convenient constructor needed for GraphSON deserialization.
+    // TODO: see if that's ok to add that.
+    public DefaultTraversalMetrics(long totalStepDurationNs, List<MutableMetrics> metricsMap) {
+        this.totalStepDuration = totalStepDurationNs;
+        this.computedMetrics = new LinkedHashMap<>(metrics.size());
+        metricsMap.forEach(m -> computedMetrics.put(m.getId(), m.getImmutableClone()));
+    }
+
     @Override
     public long getDuration(final TimeUnit unit) {
         return unit.convert(totalStepDuration, MutableMetrics.SOURCE_UNIT);

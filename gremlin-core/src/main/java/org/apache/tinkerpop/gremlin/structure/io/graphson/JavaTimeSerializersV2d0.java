@@ -42,11 +42,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
- * GraphSON serializers for classes in {@code java.time.*}.
+ * GraphSON serializers for classes in {@code java.time.*} for the version 2.0 of GraphSON.
  */
-final class JavaTimeSerializers {
+final class JavaTimeSerializersV2d0 {
 
-    private JavaTimeSerializers() {}
+    private JavaTimeSerializersV2d0() {}
 
     /**
      * Base class for serializing the {@code java.time.*} to ISO-8061 formats.
@@ -66,9 +66,9 @@ final class JavaTimeSerializers {
         @Override
         public void serializeWithType(final T value, final JsonGenerator gen,
                                       final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForObject(value, gen);
-            gen.writeStringField(GraphSONTokens.VALUE, value.toString());
-            typeSer.writeTypeSuffixForObject(value, gen);
+            typeSer.writeTypePrefixForScalar(value, gen);
+            gen.writeString(value.toString());
+            typeSer.writeTypeSuffixForScalar(value, gen);
         }
     }
     /**
@@ -83,10 +83,7 @@ final class JavaTimeSerializers {
 
         @Override
         public T deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
-            if (!jsonParser.getText().equals(GraphSONTokens.VALUE))
-                throw new IOException(String.format("Invalid format for %s - expecting '%s' with a text value in ISO-8061 format", _valueClass.getSimpleName(), GraphSONTokens.VALUE));
-
-            return parse(jsonParser.nextTextValue());
+            return parse(jsonParser.getText());
         }
     }
 

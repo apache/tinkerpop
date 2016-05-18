@@ -29,7 +29,7 @@ scriptEngines: {
     scripts: [scripts/complex-lifecycle.groovy]}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { useMapperFromGraph: graph }}       # application/vnd.gremlin-v1.0+gryo
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}        # application/vnd.gremlin-v1.0+gryo-lite
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}   # application/vnd.gremlin-v1.0+gryo-lite
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}   # application/vnd.gremlin-v1.0+gryo-stringd
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}

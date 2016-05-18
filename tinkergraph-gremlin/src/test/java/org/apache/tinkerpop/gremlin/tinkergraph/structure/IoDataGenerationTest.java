@@ -30,7 +30,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.junit.BeforeClass;
@@ -49,7 +51,7 @@ import java.util.stream.IntStream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IoDataGenerationTest {
-    private static String tempPath;
+    private static final String tempPath;
 
     static {
         tempPath = TestHelper.makeTestDataPath(TinkerGraphTest.class, "tinkerpop-io").getPath() + File.separator;
@@ -195,6 +197,94 @@ public class IoDataGenerationTest {
         os.close();
     }
 
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraphAsGraphSONV2d0NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-v2d0.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
+                .writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphAsGraphSOV2d0NNoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-v2d0.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
+                .writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteCrewGraphAsGraphSONV2d0NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-v2d0.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
+                .writeGraph(os, TinkerFactory.createTheCrew());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraphNormalizedAsGraphSONV2d0() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-normalized-v2d0.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).normalize(true).create()).create()
+                .writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphNormalizedAsGraphSONV2d0() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-normalized-v2d0.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).normalize(true).create()).create()
+                .writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraphAsGraphSONV2d0WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-v2d0-typed.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create()
+                .writeGraph(os, TinkerFactory.createClassic());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphAsGraphSONV2d0WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-v2d0-typed.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create()
+                .writeGraph(os, TinkerFactory.createModern());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteCrewGraphAsGraphSONV2d0WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-v2d0-typed.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create()
+                .writeGraph(os, TinkerFactory.createTheCrew());
+        os.close();
+    }
+
     @Test
     public void shouldWriteSampleForGremlinServer() throws IOException {
         final Graph g = TinkerGraph.open();
@@ -267,12 +357,27 @@ public class IoDataGenerationTest {
         GraphSONWriter.build().mapper(GraphSONMapper.build().create()).create().writeGraph(os2, g);
         os2.close();
 
-        final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead.xml");
-        GraphMLWriter.build().create().writeGraph(os3, g);
+        final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead-v2d0.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0)
+                .typeInfo(TypeInfo.NO_TYPES).create())
+                .create()
+                .writeGraph(os3, g);
         os3.close();
 
-        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-typed.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create()).create().writeGraph(os4, g);
+        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead.xml");
+        GraphMLWriter.build().create().writeGraph(os4, g);
         os4.close();
+
+        final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-typed.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create()).create().writeGraph(os5, g);
+        os5.close();
+
+        final OutputStream os6 = new FileOutputStream(tempPath + "grateful-dead-v2d0-typed.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0)
+                .typeInfo(TypeInfo.PARTIAL_TYPES).create())
+                .create()
+                .writeGraph(os6, g);
+        os6.close();
+
     }
 }

@@ -26,17 +26,24 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.SerializerFactory;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.ToStringSerializer;
 
 /**
- * Implementation of the {@code DefaultSerializerProvider} for Jackson that users the {@code ToStringSerializer} for
+ * Implementation of the {@code DefaultSerializerProvider} for Jackson that uses the {@code ToStringSerializer} for
  * unknown types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class GraphSONSerializerProvider extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
-    private static final ToStringSerializer toStringSerializer = new ToStringSerializer();
+    private static JsonSerializer<Object> unknownTypeSerializer = new ToStringSerializer();
 
-    public GraphSONSerializerProvider() {
+    public GraphSONSerializerProvider(GraphSONVersion version) {
         super();
+        if (version == GraphSONVersion.V1_0) {
+            setDefaultKeySerializer(new GraphSONSerializersV1d0.GraphSONKeySerializer());
+            unknownTypeSerializer = new ToStringSerializer();
+        } else {
+            setDefaultKeySerializer(new GraphSONSerializersV2d0.GraphSONKeySerializer());
+            unknownTypeSerializer = new ToStringGraphSONSerializer();
+        }
     }
 
     protected GraphSONSerializerProvider(final SerializerProvider src,
@@ -46,7 +53,7 @@ final class GraphSONSerializerProvider extends DefaultSerializerProvider {
 
     @Override
     public JsonSerializer<Object> getUnknownTypeSerializer(final Class<?> aClass) {
-        return toStringSerializer;
+        return unknownTypeSerializer;
     }
 
     @Override
