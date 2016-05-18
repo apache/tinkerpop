@@ -196,19 +196,18 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void setup(final Memory memory) {
         // memory is local
         MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.SETUP);
-        final MemoryTraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects());
-        sideEffects.storeSideEffectsInMemory();
+        ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).storeSideEffectsInMemory();
         memory.set(VOTE_TO_HALT, true);
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(COMPLETED_BARRIERS, new HashSet<>());
         // if halted traversers are being sent from a previous VertexProgram in an OLAP chain (non-distributed traversers), get them into the stream
-        if (null != this.haltedTraversers) {
+        if (null != this.haltedTraversers && !this.haltedTraversers.isEmpty()) {
             final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
             IteratorUtils.removeOnNext(this.haltedTraversers.iterator()).forEachRemaining(traverser -> {
                 traverser.setStepId(this.traversal.get().getStartStep().getId());
                 toProcessTraversers.add(traverser);
             });
-            assert haltedTraversers.isEmpty(); // TODO: this should be empty
+            assert haltedTraversers.isEmpty();
             final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
             MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, this.haltedTraversers);
             memory.set(HALTED_TRAVERSERS, this.haltedTraversers);
@@ -217,6 +216,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
             memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
         }
+        // local variable will no longer be used so null it for GC
+        this.haltedTraversers = null;
     }
 
     @Override
