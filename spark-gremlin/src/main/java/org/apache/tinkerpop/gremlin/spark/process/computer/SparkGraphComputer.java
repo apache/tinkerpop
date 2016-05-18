@@ -264,14 +264,13 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             throw new IllegalStateException(e.getMessage());
                         }
                     } else {  // standard GraphComputer semantics
+                        // get a configuration that will be propagated to all workers
+                        final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
+                        this.vertexProgram.storeState(vertexProgramConfiguration);
                         // set up the vertex program and wire up configurations
                         this.vertexProgram.setup(memory);
                         JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
                         memory.broadcastMemory(sparkContext);
-                        final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
-                        this.vertexProgram.storeState(vertexProgramConfiguration);
-                        ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
-                        ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                         // execute the vertex program
                         while (true) {
                             if (Thread.interrupted()) {

@@ -1436,6 +1436,8 @@ are provided below.
 
 [source,java]
 ----
+private TraverserSet<Object> haltedTraversers;
+
 public void loadState(final Graph graph, final Configuration configuration) {
   VertexProgram.super.loadState(graph, configuration);
   this.traversal = PureTraversal.loadState(configuration, VertexProgramStep.ROOT_TRAVERSAL, graph);
@@ -1444,18 +1446,29 @@ public void loadState(final Graph graph, final Configuration configuration) {
   this.memoryComputeKeys.addAll(MemoryTraversalSideEffects.getMemoryComputeKeys(this.traversal.get()));
   // if master-traversal traversers may be propagated, create a memory compute key
   this.memoryComputeKeys.add(MemoryComputeKey.of(TraversalVertexProgram.HALTED_TRAVERSERS, Operator.addAll, false, false));
+  // returns an empty traverser set if there are no halted traversers
+  this.haltedTraversers = TraversalVertexProgram.getHaltedTraversers(configuration);
+}
+
+public void storeState(final Configuration configuration) {
+  VertexProgram.super.storeState(configuration);
+  // if halted traversers is null or empty, it does nothing
+  TraversalVertexProgram.storeHaltedTraversers(configuration, this.haltedTraversers);
 }
 
 public void setup(final Memory memory) {
-  if(sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
-    // haltedTraversers in setup() represent master-traversal traversers
-    // for example, from a traversal of the form g.V().groupCount().program(...)
-    TraverserSet<Object> haltedTraversers = sideEffects.get(TraversalVertexProgram.HALTED_TRAVERSERS);
-    // do as you please with this information
+  if(null != this.haltedTraversers) {
+    // do what you like with the halted master traversal traversers
   }
+  // once used, no need to keep that information around (master)
+  if(null != this.haltedTraversers)
+    this.haltedTraversers.clear()
 }
 
 public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+  // once used, no need to keep that information around (workers)
+  if(null != this.haltedTraversers)
+    this.haltedTraversers.clear()
   if(vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).isPresent()) {
     // haltedTraversers in execute() represent worker-traversal traversers
     // for example, from a traversal of the form g.V().out().program(...)

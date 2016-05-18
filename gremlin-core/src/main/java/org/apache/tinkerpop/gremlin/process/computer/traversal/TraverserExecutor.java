@@ -87,9 +87,16 @@ public final class TraverserExecutor {
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
-                traverser.attach(Attachable.Method.get(vertex));
-                traverser.setSideEffects(traversalSideEffects);
-                toProcessTraversers.add(traverser);
+                if (traverser.isHalted()) {
+                    if (returnHaltedTraversers)
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
+                    else
+                        haltedTraversers.add(traverser);
+                } else {
+                    traverser.attach(Attachable.Method.get(vertex));
+                    traverser.setSideEffects(traversalSideEffects);
+                    toProcessTraversers.add(traverser);
+                }
             }
         }
 
@@ -152,10 +159,10 @@ public final class TraverserExecutor {
                     final TraverserSet<Object> barrierSet = barrier.nextBarrier();
                     IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
                         traverser.addLabels(step.getLabels());  // this might need to be generalized for working with global barriers too
-                        if (traverser.isHalted()) {
+                        if (traverser.isHalted() && ((!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) || getHostingVertex(traverser.get()).equals(vertex))) {
                             traverser.detach();
                             if (returnHaltedTraversers)
-                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
+                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
                             else
                                 haltedTraversers.add(traverser);
                         } else {
@@ -174,10 +181,10 @@ public final class TraverserExecutor {
             }
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
-                if (traverser.isHalted()) {
+                if (traverser.isHalted() && ((!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) || getHostingVertex(traverser.get()).equals(vertex))) {
                     traverser.detach();
                     if (returnHaltedTraversers)
-                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
                     else
                         haltedTraversers.add(traverser);
                 } else {

@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,8 @@ import static org.junit.Assert.fail;
 public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_pageRank();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX();
 
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name();
 
@@ -74,6 +77,20 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
             assertTrue(vertex.property(PageRankVertexProgram.PAGE_RANK).isPresent());
         }
         assertEquals(6, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX();
+        printTraversalForm(traversal);
+        final Map<String, Double> map = new HashMap<>();
+        traversal.forEachRemaining(m -> map.put(((List<String>) m.get("name")).get(0), ((List<Double>) m.get("projectRank")).get(0)));
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("lop"));
+        assertTrue(map.containsKey("ripple"));
+        assertTrue(map.get("lop") > map.get("ripple"));
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -222,6 +239,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_pageRank() {
             return g.V().pageRank();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX() {
+            return g.V().out("created").pageRank().by(__.bothE()).by("projectRank").valueMap("name", "projectRank");
         }
 
         @Override

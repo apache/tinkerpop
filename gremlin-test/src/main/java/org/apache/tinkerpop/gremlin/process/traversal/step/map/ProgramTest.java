@@ -59,6 +59,7 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -160,6 +161,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
     public static class TestProgram implements VertexProgram {
 
         private PureTraversal<?, ?> traversal = new PureTraversal<>(EmptyTraversal.instance());
+        private TraverserSet<Object> haltedTraversers;
         private Step programStep = EmptyStep.instance();
 
         private final Set<MemoryComputeKey> memoryComputeKeys = new HashSet<>();
@@ -168,6 +170,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         public void loadState(final Graph graph, final Configuration configuration) {
             VertexProgram.super.loadState(graph, configuration);
             this.traversal = PureTraversal.loadState(configuration, VertexProgramStep.ROOT_TRAVERSAL, graph);
+            this.haltedTraversers = TraversalVertexProgram.loadHaltedTraversers(configuration);
             this.programStep = new TraversalMatrix<>(this.traversal.get()).getStepById(configuration.getString(ProgramVertexProgramStep.STEP_ID));
             this.memoryComputeKeys.addAll(MemoryTraversalSideEffects.getMemoryComputeKeys(this.traversal.get()));
             this.memoryComputeKeys.add(MemoryComputeKey.of(TraversalVertexProgram.HALTED_TRAVERSERS, Operator.addAll, false, false));
@@ -178,23 +181,23 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         public void storeState(final Configuration configuration) {
             VertexProgram.super.storeState(configuration);
             this.traversal.storeState(configuration, VertexProgramStep.ROOT_TRAVERSAL);
+            TraversalVertexProgram.storeHaltedTraversers(configuration, this.haltedTraversers);
             configuration.setProperty(ProgramVertexProgramStep.STEP_ID, this.programStep.getId());
         }
 
         @Override
         public void setup(final Memory memory) {
             MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.SETUP);
-            final TraversalSideEffects sideEffects = this.traversal.get().getSideEffects();
-            final TraverserSet<Object> haltedTraversers = sideEffects.get(TraversalVertexProgram.HALTED_TRAVERSERS);
-            sideEffects.remove(TraversalVertexProgram.HALTED_TRAVERSERS);
-            this.checkSideEffects(MemoryTraversalSideEffects.State.SETUP);
-            final Map<Vertex, Long> map = (Map<Vertex, Long>) haltedTraversers.iterator().next().get();
+            final Map<Vertex, Long> map = (Map<Vertex, Long>) this.haltedTraversers.iterator().next().get();
             assertEquals(2, map.size());
             assertTrue(map.values().contains(3l));
             assertTrue(map.values().contains(1l));
             final TraverserSet<Object> activeTraversers = new TraverserSet<>();
-            map.keySet().forEach(vertex -> activeTraversers.add(haltedTraversers.peek().split(vertex, EmptyStep.instance())));
+            map.keySet().forEach(vertex -> activeTraversers.add(this.haltedTraversers.peek().split(vertex, EmptyStep.instance())));
+            this.haltedTraversers.clear();
+            this.checkSideEffects();
             memory.set(TraversalVertexProgram.ACTIVE_TRAVERSERS, activeTraversers);
+
 
         }
 
@@ -203,7 +206,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
             assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
             final TraverserGenerator generator = this.traversal.get().getTraverserGenerator();
             MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.EXECUTE);
-            this.checkSideEffects(MemoryTraversalSideEffects.State.EXECUTE);
+            this.checkSideEffects();
             final TraverserSet<Vertex> activeTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
             if (vertex.label().equals("software")) {
                 assertEquals(1, activeTraversers.stream().filter(v -> v.get().equals(vertex)).count());
@@ -231,7 +234,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         public boolean terminate(final Memory memory) {
             final TraverserGenerator generator = this.traversal.get().getTraverserGenerator();
             MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.TERMINATE);
-            checkSideEffects(MemoryTraversalSideEffects.State.TERMINATE);
+            checkSideEffects();
             if (memory.isInitialIteration()) {
                 assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
                 return false;
@@ -248,16 +251,18 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
 
         @Override
         public void workerIterationStart(final Memory memory) {
+            assertNotNull(this.haltedTraversers);
+            this.haltedTraversers.clear();
             assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
             MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.WORKER_ITERATION_START);
-            checkSideEffects(MemoryTraversalSideEffects.State.WORKER_ITERATION_START);
+            checkSideEffects();
         }
 
         @Override
         public void workerIterationEnd(final Memory memory) {
             assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
             MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.WORKER_ITERATION_END);
-            checkSideEffects(MemoryTraversalSideEffects.State.WORKER_ITERATION_END);
+            checkSideEffects();
         }
 
         @Override
@@ -299,16 +304,13 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
 
         ////////
 
-        private void checkSideEffects(final MemoryTraversalSideEffects.State state) {
+        private void checkSideEffects() {
+            assertEquals(0, this.haltedTraversers.size());
+            assertTrue(this.haltedTraversers.isEmpty());
             final TraversalSideEffects sideEffects = this.traversal.get().getSideEffects();
             assertTrue(sideEffects instanceof MemoryTraversalSideEffects);
-            if (state.masterState()) {
-                assertEquals(1, sideEffects.keys().size());
-                assertFalse(sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
-            } else {
-                assertEquals(2, sideEffects.keys().size());
-                assertTrue(sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
-            }
+            assertEquals(1, sideEffects.keys().size());
+            assertFalse(sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
             assertTrue(sideEffects.exists("x"));
             final BulkSet<String> bulkSet = sideEffects.get("x");
             assertEquals(4, bulkSet.size());

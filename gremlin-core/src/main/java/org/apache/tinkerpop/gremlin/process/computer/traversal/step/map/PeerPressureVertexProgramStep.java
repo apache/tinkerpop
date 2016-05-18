@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -84,9 +85,15 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
     }
 
     @Override
-    public PeerPressureVertexProgram generateProgram(final Graph graph) {
+    public PeerPressureVertexProgram generateProgram(final Graph graph, final Optional<Memory> memoryOptional) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
+        /*
+                memoryOptional.ifPresent(memory -> {
+            if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
+                builder.configure(TraversalVertexProgram.HALTED_TRAVERSERS, memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
+        });
+         */
         return PeerPressureVertexProgram.build()
                 .property(this.clusterProperty)
                 .maxIterations(this.times)

@@ -192,7 +192,6 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
                         traversal.getSideEffects();
         sideEffects.keys().
                 stream().
-                filter(key -> !key.equals(TraversalVertexProgram.HALTED_TRAVERSERS)).
                 forEach(key -> keys.add(MemoryComputeKey.of(key, sideEffects.getReducer(key), true, false)));
         return keys;
     }
