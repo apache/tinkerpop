@@ -1,0 +1,61 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[cycle-detection]]
+Cycle Detection
+---------------
+
+A cycle occurs in a graph where a path loops back on itself to the originating vertex. For example, in the graph
+depticted below Gremlin could be use to detect the cycle among vertices `A-B-C`.
+
+image:graph-cycle.png[width=250]
+
+[gremlin-groovy]
+----
+vA = graph.addVertex(id, 'a')
+vB = graph.addVertex(id, 'b')
+vC = graph.addVertex(id, 'c')
+vD = graph.addVertex(id, 'd')
+vA.addEdge("knows", vB)
+vB.addEdge("knows", vC)
+vC.addEdge("knows", vA)
+vA.addEdge("knows", vD)
+vC.addEdge("knows", vD)
+g.V().as("a").repeat(out().simplePath()).times(2).
+  where(out().as("a")).path()                          <1>
+g.V().as("a").repeat(out().simplePath()).times(2).
+  where(out().as("a")).path().
+  dedup().by(unfold().order().by(id).dedup().fold())   <2>
+----
+
+<1> Gremlin starts its traversal from a vertex labeled "a" and traverses `out()` from each vertex filtering on the
+`simplePath`, which removes paths with repeated objects. The steps going `out()` are repeated twice as in this case
+the length of the cycle is known to be three and there is no need to exceed that. The traversal filters with a
+`where()` to see only return paths that end with where it started at "a".
+<2> The previous query returned the `A-B-C` cycle, but it returned three paths which were all technically the same
+cycle. It returned three, because there was one for each vertex that started the cycle (i.e. one for `A`, one for `B`
+and one for `C`). This next line introduce deduplication to only return unique cycles.
+
+The above case assumed that the need was to only detect cycles over a path length of three. It also respected the
+directionality of the edges by only considering outgoing ones. What would need to change to detect cycles of
+arbitrary length over both incoming and outgoing edges in the modern graph?
+
+[gremlin-groovy,modern]
+----
+g.V().as("a").repeat(both().simplePath()).emit(loops().is(gt(1))).
+  both().where(eq("a")).path().
+  dedup().by(unfold().order().by(id).dedup().fold())
+----
