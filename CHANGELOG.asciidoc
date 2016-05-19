@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added a traversal style guide to the recipes cookbook.
 * Fixed a bug in master-traversal traverser propagation.
 * Added useful methods for custom `VertexPrograms` to be used with `program()`-step.
 * Increased the test coverage around traverser propagation within a multi-job OLAP traversal.

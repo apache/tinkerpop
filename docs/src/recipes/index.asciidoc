@@ -36,6 +36,8 @@ link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The G
 Traversal Recipes
 =================
 
+include::style-guide.asciidoc[]
+
 include::between-vertices.asciidoc[]
 
 include::shortest-path.asciidoc[]
