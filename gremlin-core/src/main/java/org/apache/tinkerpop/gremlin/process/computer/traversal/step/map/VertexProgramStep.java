@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
+import org.apache.tinkerpop.gremlin.process.computer.util.EmptyMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -36,7 +37,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedE
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -64,7 +64,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                future = this.generateComputer(graph).program(this.generateProgram(graph, Optional.empty())).submit();
+                future = this.generateComputer(graph).program(this.generateProgram(graph, EmptyMemory.instance())).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);
@@ -72,7 +72,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
                 final Memory memory = traverser.get().memory();
-                future = this.generateComputer(graph).program(this.generateProgram(graph, Optional.of(memory))).submit();
+                future = this.generateComputer(graph).program(this.generateProgram(graph, memory)).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return traverser.split(result, this);

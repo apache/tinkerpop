@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -64,17 +63,15 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     }
 
     @Override
-    public TraversalVertexProgram generateProgram(final Graph graph, final Optional<Memory> memoryOptional) {
+    public TraversalVertexProgram generateProgram(final Graph graph, final Memory memory) {
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
         computerSpecificTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
         this.getTraversal().getStrategies().toList().forEach(computerSpecificTraversal.getStrategies()::addStrategies);
         computerSpecificTraversal.setSideEffects(new MemoryTraversalSideEffects(this.getTraversal().getSideEffects()));
         computerSpecificTraversal.setParent(this);
         final TraversalVertexProgram.Builder builder = TraversalVertexProgram.build().traversal(computerSpecificTraversal);
-        memoryOptional.ifPresent(memory -> {
-            if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
-                builder.haltedTraversers(memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
-        });
+        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
+            builder.haltedTraversers(memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
         return builder.create(graph);
     }
 

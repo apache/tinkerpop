@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -85,15 +84,9 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
     }
 
     @Override
-    public PeerPressureVertexProgram generateProgram(final Graph graph, final Optional<Memory> memoryOptional) {
+    public PeerPressureVertexProgram generateProgram(final Graph graph, final Memory memory) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
-        /*
-                memoryOptional.ifPresent(memory -> {
-            if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
-                builder.configure(TraversalVertexProgram.HALTED_TRAVERSERS, memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
-        });
-         */
         return PeerPressureVertexProgram.build()
                 .property(this.clusterProperty)
                 .maxIterations(this.times)

@@ -25,8 +25,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import java.util.Optional;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -51,11 +49,11 @@ public interface VertexComputing {
     /**
      * Generate the {@link VertexProgram}.
      *
-     * @param graph          the {@link Graph} that the program will be executed over.
-     * @param memoryOptional a reference to a {@link Memory} from the previous OLAP job if it exists.
+     * @param graph  the {@link Graph} that the program will be executed over.
+     * @param memory the {@link Memory} from the previous OLAP job if it exists, else its an empty memory structure.
      * @return the generated vertex program instance.
      */
-    public VertexProgram generateProgram(final Graph graph, final Optional<Memory> memoryOptional);
+    public VertexProgram generateProgram(final Graph graph, final Memory memory);
 
     /**
      * @deprecated As of release 3.2.1. Please use {@link VertexComputing#getComputer()}.
