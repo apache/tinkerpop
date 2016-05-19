@@ -35,8 +35,8 @@ a domain concept such as "young", "old" and "very old".
 g.V().hasLabel("person").groupCount().by(values("age").choose(
   is(lt(28)),constant("young"),
   choose(is(lt(30)),
-    constant("old"),
-    constant("very old"))))
+         constant("old"),
+         constant("very old"))))
 ----
 
 Note that the `by` modulator has been altered from simply taking a string key of "age" to take a `Traversal`. That
@@ -61,10 +61,11 @@ there is another option to consider with `coalesce`:
 
 [gremlin-groovy,modern]
 ----
-g.V().hasLabel("person").groupCount().by(values("age").coalesce(
-  is(lt(28)).constant("young"),
-  is(lt(30)).constant("old"),
-             constant("very old")))
+g.V().hasLabel("person").
+  groupCount().by(values("age").
+  coalesce(is(lt(28)).constant("young"),
+           is(lt(30)).constant("old"),
+           constant("very old")))
 ----
 
 The answer is the same, but this traversal removes the nested `choose`, which makes it easier to read.

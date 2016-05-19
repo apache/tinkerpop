@@ -40,7 +40,8 @@ v3.addEdge("knows", v4)
 g = graph.traversal()
 g.V(1).repeat(out().simplePath()).until(hasId(5)).path().limit(1)     <1>
 g.V(1).repeat(out().simplePath()).until(hasId(5)).path().count(local) <2>
-g.V(1).repeat(out().simplePath()).until(hasId(5)).path().group().by(count(local)).next()  <3>
+g.V(1).repeat(out().simplePath()).until(hasId(5)).path().
+  group().by(count(local)).next()                                     <3>
 ----
 
 <1> The traversal starts at vertex with the identifier of "1" and repeatedly traverses on out edges "until" it finds a
@@ -69,15 +70,19 @@ v4.addEdge("knows", v5, "weight", 0.25)
 v2.addEdge("knows", v3, "weight", 0.25)
 v3.addEdge("knows", v4, "weight", 0.25)
 g = graph.traversal()
-g.V(1).repeat(out().simplePath()).until(hasId(5)).path().group().by(count(local)).next()  <1>
-g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).                                 <2>
-  path().by(coalesce(values('weight'), constant(0.0))).map(unfold().sum())
+g.V(1).repeat(out().simplePath()).until(hasId(5)).path().
+  group().by(count(local)).next()                                                         <1>
+g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
+  path().by(coalesce(values('weight'),
+                     constant(0.0))).
+  map(unfold().sum())                                                                     <2>
 g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
   path().by(constant(0.0)).by('weight').map(unfold().sum())                               <3>
-g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).                                 <4>
+g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
   path().as('p').
-  map(unfold().coalesce(values('weight'),constant(0.0)).sum()).as('cost').
-  select('cost','p')
+  map(unfold().coalesce(values('weight'),
+                        constant(0.0)).sum()).as('cost').
+  select('cost','p')                                                                      <4>
 ----
 
 <1> Note that the shortest path as determined by the structure of the graph is the same.

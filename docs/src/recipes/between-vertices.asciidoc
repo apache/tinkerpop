@@ -47,7 +47,7 @@ two vertices.
 The basic pattern of using `where()` step to find the "other" known vertex can be applied in far more complex
 scenarios. Consider the following schema:
 
-image:recipe-job-schema.png[width=500]
+image:recipe-job-schema.png[width=750]
 
 Assume that the goal is to find information about a known job and a known person. Specifically, the idea would be
 to extract the known job, the company that created the job, the date it was created by the company and whether or not
@@ -83,14 +83,18 @@ g.V(vRexsterJob1).as('job').
   inE('created').as('created').
   outV().as('company').
   select('job').
-  coalesce(__.in('appliesTo').where(__.in('completes').is(vStephen)), constant(false)).as('application').
-  select('job', 'company', 'created', 'application').by().by().by('creationDate').by()
+  coalesce(__.in('appliesTo').where(__.in('completes').is(vStephen)),
+           constant(false)).as('application').
+  select('job', 'company', 'created', 'application').
+    by().by().by('creationDate').by()
 g.V(vRexsterJob1, vBlueprintsJob1).as('job').
   inE('created').as('created').
   outV().as('company').
   select('job').
-  coalesce(__.in('appliesTo').where(__.in('completes').is(vBob)), constant(false)).as('application').
-  select('job', 'company', 'created', 'application').by().by().by('creationDate').by()
+  coalesce(__.in('appliesTo').where(__.in('completes').is(vBob)),
+           constant(false)).as('application').
+  select('job', 'company', 'created', 'application').
+    by().by().by('creationDate').by()
 ----
 
 While the traversals above are more complex, the pattern for finding "things" between two vertices is largely the same.
