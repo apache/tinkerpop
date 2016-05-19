@@ -21,19 +21,71 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyMemory {
+public final class EmptyMemory implements Memory.Admin {
 
-    private static final Memory INSTANCE = new ImmutableMemory(new MapMemory());
+    private static final EmptyMemory INSTANCE = new EmptyMemory();
 
     private EmptyMemory() {
 
     }
 
-    public static Memory instance() {
+    public static EmptyMemory instance() {
         return INSTANCE;
     }
 
+    @Override
+    public void setIteration(final int iteration) {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public void setRuntime(final long runtime) {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public Memory asImmutable() {
+        return this;
+    }
+
+    @Override
+    public Set<String> keys() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public <R> R get(final String key) throws IllegalArgumentException {
+        throw Memory.Exceptions.memoryDoesNotExist(key);
+    }
+
+    @Override
+    public void set(final String key, final Object value) throws IllegalArgumentException, IllegalStateException {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public void add(final String key, final Object value) throws IllegalArgumentException, IllegalStateException {
+        throw Memory.Exceptions.memoryIsCurrentlyImmutable();
+    }
+
+    @Override
+    public int getIteration() {
+        return 0;
+    }
+
+    @Override
+    public long getRuntime() {
+        return 0;
+    }
+
+    @Override
+    public boolean exists(final String key) {
+        return false;
+    }
 }

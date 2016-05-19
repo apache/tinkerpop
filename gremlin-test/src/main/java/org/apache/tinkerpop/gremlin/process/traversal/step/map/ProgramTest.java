@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.ProgramPhase;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
@@ -187,7 +188,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
 
         @Override
         public void setup(final Memory memory) {
-            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.SETUP);
+            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.SETUP);
             final Map<Vertex, Long> map = (Map<Vertex, Long>) this.haltedTraversers.iterator().next().get();
             assertEquals(2, map.size());
             assertTrue(map.values().contains(3l));
@@ -205,7 +206,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
             assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
             final TraverserGenerator generator = this.traversal.get().getTraverserGenerator();
-            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.EXECUTE);
+            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.EXECUTE);
             this.checkSideEffects();
             final TraverserSet<Vertex> activeTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
             if (vertex.label().equals("software")) {
@@ -233,7 +234,7 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
         @Override
         public boolean terminate(final Memory memory) {
             final TraverserGenerator generator = this.traversal.get().getTraverserGenerator();
-            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.TERMINATE);
+            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.TERMINATE);
             checkSideEffects();
             if (memory.isInitialIteration()) {
                 assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
@@ -254,14 +255,14 @@ public abstract class ProgramTest extends AbstractGremlinProcessTest {
             assertNotNull(this.haltedTraversers);
             this.haltedTraversers.clear();
             assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
-            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.WORKER_ITERATION_START);
+            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.WORKER_ITERATION_START);
             checkSideEffects();
         }
 
         @Override
         public void workerIterationEnd(final Memory memory) {
             assertFalse(memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS));
-            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.WORKER_ITERATION_END);
+            MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.WORKER_ITERATION_END);
             checkSideEffects();
         }
 

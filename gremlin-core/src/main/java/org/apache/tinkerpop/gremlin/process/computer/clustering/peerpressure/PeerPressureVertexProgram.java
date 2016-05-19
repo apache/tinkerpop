@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -62,6 +63,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     public static final String CLUSTER = "gremlin.peerPressureVertexProgram.cluster";
     private static final String VOTE_STRENGTH = "gremlin.peerPressureVertexProgram.voteStrength";
+    private static final String INITIAL_VOTE_STRENGTH_TRAVERSAL = "gremlin.pageRankVertexProgram.initialVoteStrengthTraversal";
     private static final String PROPERTY = "gremlin.peerPressureVertexProgram.property";
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
@@ -69,6 +71,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     private static final String VOTE_TO_HALT = "gremlin.peerPressureVertexProgram.voteToHalt";
 
     private PureTraversal<Vertex, Edge> edgeTraversal = null;
+    private PureTraversal<Vertex, ? extends Number> initialVoteStrengthTraversal = null;
     private int maxIterations = 30;
     private boolean distributeVote = false;
     private String property = CLUSTER;
@@ -81,6 +84,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
+        if (configuration.containsKey(INITIAL_VOTE_STRENGTH_TRAVERSAL))
+            this.initialVoteStrengthTraversal = PureTraversal.loadState(configuration, INITIAL_VOTE_STRENGTH_TRAVERSAL, graph);
         if (configuration.containsKey(EDGE_TRAVERSAL)) {
             this.edgeTraversal = PureTraversal.loadState(configuration, EDGE_TRAVERSAL, graph);
             this.voteScope = MessageScope.Local.of(() -> this.edgeTraversal.get().clone());
@@ -99,6 +104,8 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
         configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
         if (null != this.edgeTraversal)
             this.edgeTraversal.storeState(configuration, EDGE_TRAVERSAL);
+        if (null != this.initialVoteStrengthTraversal)
+            this.initialVoteStrengthTraversal.storeState(configuration, INITIAL_VOTE_STRENGTH_TRAVERSAL);
     }
 
     @Override
@@ -137,14 +144,19 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             if (this.distributeVote) {
                 messenger.sendMessage(this.countScope, Pair.with('c', 1.0d));
             } else {
-                double voteStrength = 1.0d;
+                double voteStrength = (null == this.initialVoteStrengthTraversal ?
+                        1.0d :
+                        TraversalUtil.apply(vertex, this.initialVoteStrengthTraversal.get()).doubleValue());
                 vertex.property(VertexProperty.Cardinality.single, this.property, vertex.id());
                 vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
                 messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
                 memory.add(VOTE_TO_HALT, false);
             }
         } else if (1 == memory.getIteration() && this.distributeVote) {
-            double voteStrength = 1.0d / IteratorUtils.reduce(IteratorUtils.map(messenger.receiveMessages(), Pair::getValue1), 0.0d, (a, b) -> a + b);
+            double voteStrength = (null == this.initialVoteStrengthTraversal ?
+                    1.0d :
+                    TraversalUtil.apply(vertex, this.initialVoteStrengthTraversal.get()).doubleValue()) /
+                    IteratorUtils.reduce(IteratorUtils.map(messenger.receiveMessages(), Pair::getValue1), 0.0d, (a, b) -> a + b);
             vertex.property(VertexProperty.Cardinality.single, this.property, vertex.id());
             vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
@@ -224,6 +236,11 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
         public Builder edges(final Traversal.Admin<Vertex, Edge> edgeTraversal) {
             PureTraversal.storeState(this.configuration, EDGE_TRAVERSAL, edgeTraversal);
+            return this;
+        }
+
+        public Builder initialVoteStrength(final Traversal.Admin<Vertex, ? extends Number> initialVoteStrengthTraversal) {
+            PureTraversal.storeState(this.configuration, INITIAL_VOTE_STRENGTH_TRAVERSAL, initialVoteStrengthTraversal);
             return this;
         }
 
