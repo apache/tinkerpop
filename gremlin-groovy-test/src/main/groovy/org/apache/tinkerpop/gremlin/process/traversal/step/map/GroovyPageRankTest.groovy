@@ -71,7 +71,7 @@ public abstract class GroovyPageRankTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').pageRank().by(bothE()).by('projectRank').times(0).valueMap('name','projectRank')")
         }
     }

@@ -49,7 +49,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_pageRank();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
 
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name();
 
@@ -82,10 +82,12 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
         printTraversalForm(traversal);
+        final List<Map<String, List<Object>>> result = traversal.toList();
+        assertEquals(4, result.size());
         final Map<String, Double> map = new HashMap<>();
-        traversal.forEachRemaining(m -> map.put(((List<String>) m.get("name")).get(0), ((List<Double>) m.get("projectRank")).get(0)));
+        result.forEach(m -> map.put((String) m.get("name").get(0), (Double) m.get("projectRank").get(0)));
         assertEquals(2, map.size());
         assertTrue(map.containsKey("lop"));
         assertTrue(map.containsKey("ripple"));
@@ -244,7 +246,7 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
             return g.V().out("created").pageRank().by(__.bothE()).by("projectRank").times(0).valueMap("name", "projectRank");
         }
 
