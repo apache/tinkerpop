@@ -80,8 +80,8 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
      * Called from the {@link #configure(Map, Map)} method right before the call to create the builder. Sub-classes
      * can choose to alter the builder or completely replace it.
      */
-    public GryoMapper.Builder configureBuilder(final GryoMapper.Builder builder, final Map<String, Object> config,
-                                               final Map<String, Graph> graphs) {
+    GryoMapper.Builder configureBuilder(final GryoMapper.Builder builder, final Map<String, Object> config,
+                                        final Map<String, Graph> graphs) {
         return builder;
     }
 
