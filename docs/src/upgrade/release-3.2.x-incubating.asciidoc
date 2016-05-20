@@ -40,6 +40,13 @@ for Gremlin Console.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1297[TINKERPOP-1297]
 
+GryoMapper Construction
+^^^^^^^^^^^^^^^^^^^^^^^
+
+It is now possible to override existing serializers with calls to `addCustom` on the `GryoMapper` builder. This option
+allows complete control over the serializers used by Gryo. Of course, this also makes it possible to produce completely
+non-compliant Gryo files. This feature should be used with caution.
+
 TraversalVertexProgram
 ^^^^^^^^^^^^^^^^^^^^^^
 
