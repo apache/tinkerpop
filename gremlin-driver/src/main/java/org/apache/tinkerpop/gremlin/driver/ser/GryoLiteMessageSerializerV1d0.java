@@ -63,7 +63,7 @@ public class GryoLiteMessageSerializerV1d0 extends AbstractGryoMessageSerializer
     }
 
     @Override
-    public GryoMapper.Builder configureBuilder(final GryoMapper.Builder builder, final Map<String, Object> config,
+    GryoMapper.Builder configureBuilder(final GryoMapper.Builder builder, final Map<String, Object> config,
                                                final Map<String, Graph> graphs) {
         return overrideWithLite(builder);
     }
