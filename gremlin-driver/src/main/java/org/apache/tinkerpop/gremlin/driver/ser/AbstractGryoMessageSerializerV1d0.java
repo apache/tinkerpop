@@ -80,8 +80,8 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
      * Called from the {@link #configure(Map, Map)} method right before the call to create the builder. Sub-classes
      * can choose to alter the builder or completely replace it.
      */
-    public GryoMapper.Builder beforeCreateMapper(final GryoMapper.Builder builder, final Map<String, Object> config,
-                                                 final Map<String, Graph> graphs) {
+    public GryoMapper.Builder configureBuilder(final GryoMapper.Builder builder, final Map<String, Object> config,
+                                               final Map<String, Graph> graphs) {
         return builder;
     }
 
@@ -115,7 +115,7 @@ public abstract class AbstractGryoMessageSerializerV1d0 extends AbstractMessageS
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
         this.bufferSize = Integer.parseInt(config.getOrDefault(TOKEN_BUFFER_SIZE, "4096").toString());
 
-        this.gryoMapper = beforeCreateMapper(builder, config, graphs).create();
+        this.gryoMapper = configureBuilder(builder, config, graphs).create();
     }
 
     private void addClassResolverSupplier(final Map<String, Object> config, final GryoMapper.Builder builder) {
