@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GryoMapper` allows overrides of existing serializers on calls to `addCustom` on the builder.
 * Fixed a `NullPointerException` bug around nested `group()`-steps in OLAP.
 * Fixed a severe bug around halted traversers in a multi-job OLAP traversal chain.
 * Ensure a separation of `GraphComputer` and `VertexProgram` configurations in `SparkGraphComputer` and `GiraphGraphComputer`.

@@ -68,6 +68,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
@@ -104,12 +105,14 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -396,29 +399,43 @@ public final class GryoMapper implements Mapper<Kryo> {
         }
 
         /**
-         * Register custom classes to serializes with gryo using default serialization.
+         * Register custom classes to serializes with gryo using default serialization. Note that calling this method
+         * for a class that is already registered will override that registration.
          */
         public Builder addCustom(final Class... custom) {
-            if (custom != null && custom.length > 0)
-                serializationList.addAll(Arrays.asList(custom).stream()
-                        .map(c -> Triplet.<Class, Function<Kryo, Serializer>, Integer>with(c, null, currentSerializationId.getAndIncrement()))
-                        .collect(Collectors.<Triplet<Class, Function<Kryo, Serializer>, Integer>>toList()));
+            if (custom != null && custom.length > 0) {
+                for (Class clazz : custom) {
+                    addCustom(clazz, (Function<Kryo, Serializer>) null);
+                }
+            }
             return this;
         }
 
         /**
-         * Register custom class to serialize with a custom serialization class.
+         * Register custom class to serialize with a custom serialization class. Note that calling this method for
+         * a class that is already registered will override that registration.
          */
         public Builder addCustom(final Class clazz, final Serializer serializer) {
-            serializationList.add(Triplet.with(clazz, kryo -> serializer, currentSerializationId.getAndIncrement()));
+            if (null == serializer)
+                addCustom(clazz);
+            else
+                addCustom(clazz, kryo -> serializer);
             return this;
         }
 
         /**
-         * Register a custom class to serialize with a custom serializer as returned from a {@link Function}.
+         * Register a custom class to serialize with a custom serializer as returned from a {@link Function}. Note
+         * that calling this method for a class that is already registered will override that registration.
          */
         public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer) {
-            serializationList.add(Triplet.with(clazz, serializer, currentSerializationId.getAndIncrement()));
+            final Optional<Triplet<Class, Function<Kryo, Serializer>, Integer>> found = findSerializer(clazz);
+            if (found.isPresent()) {
+                final Triplet<Class, Function<Kryo, Serializer>, Integer> t = found.get();
+                serializationList.remove(t);
+                serializationList.add(t.setAt1(serializer));
+            } else
+                serializationList.add(Triplet.with(clazz, serializer, currentSerializationId.getAndIncrement()));
+
             return this;
         }
 
@@ -472,6 +489,15 @@ public final class GryoMapper implements Mapper<Kryo> {
             });
 
             return new GryoMapper(this);
+        }
+
+        private Optional<Triplet<Class, Function<Kryo, Serializer>, Integer>> findSerializer(final Class clazz) {
+            final Iterator<Triplet<Class, Function<Kryo, Serializer>, Integer>> itty = IteratorUtils.filter(
+                    serializationList, t -> t.getValue0().equals(clazz)).iterator();
+            if (itty.hasNext())
+                return Optional.of(itty.next());
+            else
+                return Optional.empty();
         }
     }
 }
