@@ -43,6 +43,8 @@ ${SVN_CMD} update --depth empty "docs/${VERSION}"
 ${SVN_CMD} update --depth empty "javadocs/${VERSION}"
 ${SVN_CMD} rm "docs/${VERSION}"
 ${SVN_CMD} rm "javadocs/${VERSION}"
+${SVN_CMD} rm "docs/current"
+${SVN_CMD} rm "javadocs/current"
 ${SVN_CMD} commit . -m "Docs for TinkerPop ${VERSION} are being replaced."
 popd
 
@@ -54,8 +56,19 @@ cp -R target/docs/htmlsingle/.   "target/svn/docs/${VERSION}"
 cp -R target/site/apidocs/core/. "target/svn/javadocs/${VERSION}/core"
 cp -R target/site/apidocs/full/. "target/svn/javadocs/${VERSION}/full"
 
+#Additionally copy most recent docs to /current
+
+mkdir -p "target/svn/docs/current"
+mkdir -p "target/svn/javadocs/current/core"
+mkdir -p "target/svn/javadocs/current/full"
+
+cp -R target/docs/htmlsingle/.   "target/svn/docs/current"
+cp -R target/site/apidocs/core/. "target/svn/javadocs/current/core"
+cp -R target/site/apidocs/full/. "target/svn/javadocs/current/full"
+
 pushd target/svn
 rm "docs/${VERSION}/images/tinkerpop3.graffle"
+rm "docs/current/images/tinkerpop3.graffle"
 ${SVN_CMD} add * --force
 ${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
 popd

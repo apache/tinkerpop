@@ -25,9 +25,9 @@ Documentation
 TinkerPop3 provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
 
 * link:http://tinkerpop.apache.org/[homepage (downloads)]
-* link:http://tinkerpop.apache.org/docs/3.2.1-SNAPSHOT/reference/[reference documentation]
-* link:http://tinkerpop.apache.org/javadocs/3.2.1-SNAPSHOT/core/[core javadoc]
-* link:http://tinkerpop.apache.org/javadocs/3.2.1-SNAPSHOT/full/[full javadoc]
+* link:http://tinkerpop.apache.org/docs/current/reference/[reference documentation]
+* link:http://tinkerpop.apache.org/javadocs/current/core/[core javadoc]
+* link:http://tinkerpop.apache.org/javadocs/current/full/[full javadoc]
 
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
@@ -42,7 +42,7 @@ The zip distributions can be found in the following directories:
 . `gremlin-server/target`
 . `gremlin-console/target`
 
-Please see the link:http://tinkerpop.apache.org/docs/3.2.1-SNAPSHOT/dev/developer/#_contributing[CONTRIBUTING.asciidoc] file for more detailed information and options for building, test running and developing TinkerPop.
+Please see the link:http://tinkerpop.apache.org/docs/current/dev/developer/#_contributing[CONTRIBUTING.asciidoc] file for more detailed information and options for building, test running and developing TinkerPop.
 
 Get Started
 ~~~~~~~~~~~
