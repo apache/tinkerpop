@@ -26,7 +26,6 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `GryoMapper` allows overrides of existing serializers on calls to `addCustom` on the builder.
 * Fixed a `NullPointerException` bug around nested `group()`-steps in OLAP.
 * Fixed a severe bug around halted traversers in a multi-job OLAP traversal chain.
 * Ensure a separation of `GraphComputer` and `VertexProgram` configurations in `SparkGraphComputer` and `GiraphGraphComputer`.
@@ -34,6 +33,8 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 * Added `EmptyMemory` for ease of use when no memory exists.
 * Updated `VertexComputing.generateProgram()` API to include `Memory`. (*breaking*)
 * `ImmutablePath.TailPath` is now serializable like `ImmutablePath`.
+* Intoduced the `application/vnd.gremlin-v1.0+gryo-lite` serialization type to Gremlin Server which users "reference" elements rather than "detached".
+* `GryoMapper` allows overrides of existing serializers on calls to `addCustom` on the builder.
 * Added a traversal style guide to the recipes cookbook.
 * Fixed a bug in master-traversal traverser propagation.
 * Added useful methods for custom `VertexPrograms` to be used with `program()`-step.

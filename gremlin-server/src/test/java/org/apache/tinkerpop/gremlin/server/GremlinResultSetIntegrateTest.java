@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -38,8 +39,10 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -161,6 +164,19 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
             else
                 fail("Should not have any other keys besides 'name' and 'age'");
         });
+    }
+
+    @Test
+    public void shouldHandleVertexResultWithLiteSerialization() throws Exception {
+        final Cluster cluster = Cluster.build().serializer(Serializers.GRYO_LITE_V1D0).create();
+        final Client clientLite = cluster.connect();
+        final ResultSet results = clientLite.submit("g.V(1).next()");
+        final Vertex v = results.all().get().get(0).getVertex();
+        assertThat(v, instanceOf(ReferenceVertex.class));
+
+        assertEquals(1L, v.id());
+        assertEquals("", v.label());
+        assertEquals(0, IteratorUtils.count(v.properties()));
     }
 
     @Test
