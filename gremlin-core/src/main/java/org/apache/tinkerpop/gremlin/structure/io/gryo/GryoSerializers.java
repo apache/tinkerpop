@@ -64,9 +64,6 @@ final class GryoSerializers {
      * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
      */
     final static class VertexSerializer extends Serializer<Vertex> {
-        public VertexSerializer() {
-        }
-
         @Override
         public void write(final Kryo kryo, final Output output, final Vertex vertex) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, true));
@@ -82,9 +79,6 @@ final class GryoSerializers {
      * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
      */
     final static class PropertySerializer extends Serializer<Property> {
-        public PropertySerializer() {
-        }
-
         @Override
         public void write(final Kryo kryo, final Output output, final Property property) {
             kryo.writeClassAndObject(output, property instanceof VertexProperty ? DetachedFactory.detach((VertexProperty) property, true) : DetachedFactory.detach(property));
@@ -100,9 +94,6 @@ final class GryoSerializers {
      * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
      */
     final static class VertexPropertySerializer extends Serializer<VertexProperty> {
-        public VertexPropertySerializer() {
-        }
-
         @Override
         public void write(final Kryo kryo, final Output output, final VertexProperty vertexProperty) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));
@@ -118,9 +109,6 @@ final class GryoSerializers {
      * Serializes any {@link Path} implementation encountered to an {@link DetachedPath}.
      */
     final static class PathSerializer extends Serializer<Path> {
-        public PathSerializer() {
-        }
-
         @Override
         public void write(final Kryo kryo, final Output output, final Path path) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(path, false));

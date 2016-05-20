@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -32,13 +35,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolver;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
@@ -72,28 +72,28 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoMessageSerializerV1d0Test {
+public class GryoLiteMessageSerializerV1d0Test {
     private static final Map<String, Object> config = new HashMap<String, Object>() {{
-        put(GryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
+        put(AbstractGryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
     }};
 
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer binarySerializer = new GryoMessageSerializerV1d0();
+    public MessageSerializer binarySerializer = new GryoLiteMessageSerializerV1d0();
 
-    public MessageSerializer textSerializer = new GryoMessageSerializerV1d0();
+    public MessageSerializer textSerializer = new GryoLiteMessageSerializerV1d0();
 
-    public GryoMessageSerializerV1d0Test() {
+    public GryoLiteMessageSerializerV1d0Test() {
         textSerializer.configure(config, null);
     }
 
     @Test
     public void shouldConfigureIoRegistry() throws Exception {
-        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final MessageSerializer serializer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> config = new HashMap<String, Object>() {{
-            put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+            put(AbstractGryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
         }};
 
         serializer.configure(config, null);
@@ -108,9 +108,9 @@ public class GryoMessageSerializerV1d0Test {
 
     @Test
     public void shouldConfigureCustomClassResolver() {
-        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final MessageSerializer serializer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> config = new HashMap<String, Object>() {{
-            put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplier.class.getName());
+            put(AbstractGryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplier.class.getName());
         }};
 
         serializer.configure(config, null);
@@ -125,9 +125,9 @@ public class GryoMessageSerializerV1d0Test {
 
     @Test
     public void shouldConfigureCustomClassResolverFromInstance() {
-        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final MessageSerializer serializer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> config = new HashMap<String, Object>() {{
-            put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplierAsInstance.class.getName());
+            put(AbstractGryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplierAsInstance.class.getName());
         }};
 
         serializer.configure(config, null);
@@ -268,19 +268,18 @@ public class GryoMessageSerializerV1d0Test {
         final ResponseMessage response = convertBinary(iterable);
         assertCommon(response);
 
-        final List<DetachedEdge> edgeList = (List<DetachedEdge>) response.getResult().getData();
+        final List<ReferenceEdge> edgeList = (List<ReferenceEdge>) response.getResult().getData();
         assertEquals(1, edgeList.size());
 
-        final DetachedEdge deserializedEdge = edgeList.get(0);
+        final ReferenceEdge deserializedEdge = edgeList.get(0);
         assertEquals(e.id(), deserializedEdge.id());
         assertEquals("test", deserializedEdge.label());
 
-        assertEquals(123, deserializedEdge.values("abc").next());
-        assertEquals(1, IteratorUtils.count(deserializedEdge.properties()));
+        assertEquals(0, IteratorUtils.count(deserializedEdge.properties()));
         assertEquals(v1.id(), deserializedEdge.outVertex().id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.outVertex().label());
+        assertEquals("", deserializedEdge.outVertex().label());
         assertEquals(v2.id(), deserializedEdge.inVertex().id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.inVertex().label());
+        assertEquals("", deserializedEdge.inVertex().label());
     }
 
     @Test
@@ -327,24 +326,14 @@ public class GryoMessageSerializerV1d0Test {
         final ResponseMessage response = convertBinary(list);
         assertCommon(response);
 
-        final List<DetachedVertex> vertexList = (List<DetachedVertex>) response.getResult().getData();
+        final List<ReferenceVertex> vertexList = (List<ReferenceVertex>) response.getResult().getData();
         assertEquals(1, vertexList.size());
 
-        final DetachedVertex deserializedVertex = vertexList.get(0);
-        assertEquals(0l, deserializedVertex.id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
+        final ReferenceVertex deserializedVertex = vertexList.get(0);
+        assertEquals(0L, deserializedVertex.id());
+        assertEquals("", deserializedVertex.label());
 
-        assertEquals(1, IteratorUtils.count(deserializedVertex.properties()));
-
-        final List<Object> deserializedInnerList = (List<Object>) deserializedVertex.values("friends").next();
-        assertEquals(3, deserializedInnerList.size());
-        assertEquals("x", deserializedInnerList.get(0));
-        assertEquals(5, deserializedInnerList.get(1));
-
-        final Map<String, Object> deserializedInnerInnerMap = (Map<String, Object>) deserializedInnerList.get(2);
-        assertEquals(2, deserializedInnerInnerMap.size());
-        assertEquals(500, deserializedInnerInnerMap.get("x"));
-        assertEquals("some", deserializedInnerInnerMap.get("y"));
+        assertEquals(0, IteratorUtils.count(deserializedVertex.properties()));
     }
 
     @Test
@@ -361,11 +350,9 @@ public class GryoMessageSerializerV1d0Test {
         assertEquals(1, deserializedMap.size());
 
         final Vertex deserializedMarko = deserializedMap.keySet().iterator().next();
-        assertEquals("marko", deserializedMarko.values("name").next().toString());
+        assertEquals(0, IteratorUtils.count(deserializedMarko.properties()));
         assertEquals(1, deserializedMarko.id());
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedMarko.label());
-        assertEquals(29, deserializedMarko.values("age").next());
-        assertEquals(2, IteratorUtils.count(deserializedMarko.properties()));
+        assertEquals("", deserializedMarko.label());
 
         assertEquals(new Integer(1000), deserializedMap.values().iterator().next());
     }
@@ -423,7 +410,7 @@ public class GryoMessageSerializerV1d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             put("bufferSize", 1);
         }};
@@ -458,7 +445,7 @@ public class GryoMessageSerializerV1d0Test {
                 .statusMessage("worked")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             // set to bufferSize < total message size but still greater than any individual object requires
             put("bufferSize", 50);
@@ -500,7 +487,7 @@ public class GryoMessageSerializerV1d0Test {
                 .addArg("test", "this")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             put("bufferSize", 1);
         }};
@@ -525,7 +512,7 @@ public class GryoMessageSerializerV1d0Test {
                 .addArg("test", "this")
                 .create();
 
-        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoLiteMessageSerializerV1d0();
         final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
             // set to bufferSize < total message size but still greater than any individual object requires
             put("bufferSize", 50);
@@ -534,7 +521,7 @@ public class GryoMessageSerializerV1d0Test {
 
         ByteBuf buf = binarySerializerWithSmallBuffer.serializeRequestAsBinary(request, allocator);
         assertTrue(buf.isReadable());
-        assertEquals(71, buf.readableBytes());
+        assertEquals(76, buf.readableBytes());
     }
 
     private void assertCommon(final ResponseMessage response) {
