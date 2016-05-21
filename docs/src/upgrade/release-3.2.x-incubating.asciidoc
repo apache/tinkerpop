@@ -112,6 +112,15 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+VertexComputing API Change
++++++++++++++++++++++++
+
+The `VertexComputing` API is used by steps that wrap a `VertexProgram`. There is a method called
+`VertexComputing.generateProgram()` that has changed which now takes a second argument of `Memory`. To  upgrade, simply
+fix the method signature of your `VertexComputing` implementations. The `Memory` argument can be safely ignored to
+effect the exact same semantics as prior. However, now previous OLAP job `Memory` can be leveraged when constructing
+the next `VertexProgram` in an OLAP traversal chain.
+
 Interrupting Traversals
 +++++++++++++++++++++++
 
