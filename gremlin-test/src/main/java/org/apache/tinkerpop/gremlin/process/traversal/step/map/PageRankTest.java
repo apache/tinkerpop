@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,8 @@ import static org.junit.Assert.fail;
 public abstract class PageRankTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_pageRank();
+
+    public abstract Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
 
     public abstract Traversal<Vertex, String> get_g_V_pageRank_order_byXpageRank_decrX_name();
 
@@ -74,6 +77,24 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
             assertTrue(vertex.property(PageRankVertexProgram.PAGE_RANK).isPresent());
         }
         assertEquals(6, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_valueMapXname_projectRankX() {
+        final Traversal<Vertex, Map<String, List<Object>>> traversal = get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX();
+        printTraversalForm(traversal);
+        final List<Map<String, List<Object>>> result = traversal.toList();
+        assertEquals(4, result.size());
+        final Map<String, Double> map = new HashMap<>();
+        result.forEach(m -> map.put((String) m.get("name").get(0), (Double) m.get("projectRank").get(0)));
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("lop"));
+        assertTrue(map.containsKey("ripple"));
+        assertTrue(map.get("lop") > map.get("ripple"));
+        assertEquals(3.0d, map.get("lop"), 0.001d);
+        assertEquals(1.0d, map.get("ripple"), 0.001d);
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -222,6 +243,11 @@ public abstract class PageRankTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_pageRank() {
             return g.V().pageRank();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Object>>> get_g_V_outXcreatedX_pageRank_byXbothEX_byXprojectRankX_timesX0X_valueMapXname_projectRankX() {
+            return g.V().out("created").pageRank().by(__.bothE()).by("projectRank").times(0).valueMap("name", "projectRank");
         }
 
         @Override

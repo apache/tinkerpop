@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTraversersCountTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -83,7 +82,7 @@ public final class PageRankVertexProgramStep extends VertexProgramStep implement
     }
 
     @Override
-    public PageRankVertexProgram generateProgram(final Graph graph) {
+    public PageRankVertexProgram generateProgram(final Graph graph, final Memory memory) {
         final Traversal.Admin<Vertex, Edge> detachedTraversal = this.edgeTraversal.getPure();
         detachedTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
         final PageRankVertexProgram.Builder builder = PageRankVertexProgram.build()

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.computer.ProgramPhase;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 
@@ -38,23 +39,7 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
 
     private TraversalSideEffects sideEffects;
     private Memory memory;
-    private State state;
-
-    public enum State {
-        SETUP,
-        WORKER_ITERATION_START,
-        EXECUTE,
-        WORKER_ITERATION_END,
-        TERMINATE;
-
-        public boolean masterState() {
-            return this == SETUP || this == TERMINATE;
-        }
-
-        public boolean workerState() {
-            return !this.masterState();
-        }
-    }
+    private ProgramPhase phase;
 
     private MemoryTraversalSideEffects() {
         // for serialization
@@ -93,7 +78,7 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public void add(final String key, final Object value) {
-        if (this.state.workerState())
+        if (this.phase.workerState())
             this.memory.add(key, value);
         else
             this.memory.set(key, this.sideEffects.getReducer(key).apply(this.memory.get(key), value));
@@ -168,20 +153,20 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     }
 
     public void storeSideEffectsInMemory() {
-        if (this.state.workerState())
+        if (this.phase.workerState())
             this.sideEffects.forEach(this.memory::add);
         else
             this.sideEffects.forEach(this.memory::set);
     }
 
-    public static void setMemorySideEffects(final Traversal.Admin<?, ?> traversal, final Memory memory, final State state) {
+    public static void setMemorySideEffects(final Traversal.Admin<?, ?> traversal, final Memory memory, final ProgramPhase phase) {
         final TraversalSideEffects sideEffects = traversal.getSideEffects();
         if (!(sideEffects instanceof MemoryTraversalSideEffects)) {
             traversal.setSideEffects(new MemoryTraversalSideEffects(sideEffects));
         }
         final MemoryTraversalSideEffects memoryTraversalSideEffects = ((MemoryTraversalSideEffects) traversal.getSideEffects());
         memoryTraversalSideEffects.memory = memory;
-        memoryTraversalSideEffects.state = state;
+        memoryTraversalSideEffects.phase = phase;
     }
 
     public static Set<MemoryComputeKey> getMemoryComputeKeys(final Traversal.Admin<?, ?> traversal) {
@@ -192,7 +177,6 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
                         traversal.getSideEffects();
         sideEffects.keys().
                 stream().
-                filter(key -> !key.equals(TraversalVertexProgram.HALTED_TRAVERSERS)).
                 forEach(key -> keys.add(MemoryComputeKey.of(key, sideEffects.getReducer(key), true, false)));
         return keys;
     }

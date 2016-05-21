@@ -20,7 +20,9 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.commons.configuration.MapConfiguration;
+import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -48,11 +50,13 @@ public final class ProgramVertexProgramStep extends VertexProgramStep {
     }
 
     @Override
-    public VertexProgram generateProgram(final Graph graph) {
+    public VertexProgram generateProgram(final Graph graph, final Memory memory) {
         final MapConfiguration base = new MapConfiguration(this.configuration);
         base.setDelimiterParsingDisabled(true);
         PureTraversal.storeState(base, ROOT_TRAVERSAL, TraversalHelper.getRootTraversal(this.getTraversal()).clone());
         base.setProperty(STEP_ID, this.getId());
+        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
+            TraversalVertexProgram.storeHaltedTraversers(base, memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
         return VertexProgram.createVertexProgram(graph, base);
     }
 

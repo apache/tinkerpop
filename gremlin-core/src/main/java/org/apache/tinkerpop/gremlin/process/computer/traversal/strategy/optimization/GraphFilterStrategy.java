@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.util.EmptyMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -59,7 +60,7 @@ public final class GraphFilterStrategy extends AbstractTraversalStrategy<Travers
             return;
         final Graph graph = traversal.getGraph().orElse(EmptyGraph.instance()); // given that this strategy only works for single OLAP jobs, the graph is the traversal graph
         for (final TraversalVertexProgramStep step : TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, traversal)) {   // will be zero or one step
-            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph).getTraversal().get().clone();
+            final Traversal.Admin<?, ?> computerTraversal = step.generateProgram(graph, EmptyMemory.instance()).getTraversal().get().clone();
             if (!computerTraversal.isLocked())
                 computerTraversal.applyStrategies();
             final Computer computer = step.getComputer();

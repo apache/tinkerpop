@@ -1434,8 +1434,14 @@ vertex program includes:
 The user supplied `VertexProgram` can leverage that information accordingly within their vertex program. Example uses
 are provided below.
 
+WARNING: Developing a `VertexProgram` is for expert users. Moreover, developing one that can be used effectively within
+a traversal requires yet more expertise. This information is recommended to advanced users with a deep understanding of the
+mechanics of Gremlin OLAP (<<graphcomputer,`GraphComputer`>>).
+
 [source,java]
 ----
+private TraverserSet<Object> haltedTraversers;
+
 public void loadState(final Graph graph, final Configuration configuration) {
   VertexProgram.super.loadState(graph, configuration);
   this.traversal = PureTraversal.loadState(configuration, VertexProgramStep.ROOT_TRAVERSAL, graph);
@@ -1444,22 +1450,32 @@ public void loadState(final Graph graph, final Configuration configuration) {
   this.memoryComputeKeys.addAll(MemoryTraversalSideEffects.getMemoryComputeKeys(this.traversal.get()));
   // if master-traversal traversers may be propagated, create a memory compute key
   this.memoryComputeKeys.add(MemoryComputeKey.of(TraversalVertexProgram.HALTED_TRAVERSERS, Operator.addAll, false, false));
+  // returns an empty traverser set if there are no halted traversers
+  this.haltedTraversers = TraversalVertexProgram.loadHaltedTraversers(configuration);
+}
+
+public void storeState(final Configuration configuration) {
+  VertexProgram.super.storeState(configuration);
+  // if halted traversers is null or empty, it does nothing
+  TraversalVertexProgram.storeHaltedTraversers(configuration, this.haltedTraversers);
 }
 
 public void setup(final Memory memory) {
-  if(sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
-    // haltedTraversers in setup() represent master-traversal traversers
-    // for example, from a traversal of the form g.V().groupCount().program(...)
-    TraverserSet<Object> haltedTraversers = sideEffects.get(TraversalVertexProgram.HALTED_TRAVERSERS);
-    // do as you please with this information
+  if(!this.haltedTraversers.isEmpty()) {
+    // do what you like with the halted master traversal traversers
   }
+  // once used, no need to keep that information around (master)
+  this.haltedTraversers = null;
 }
 
 public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+  // once used, no need to keep that information around (workers)
+  if(null != this.haltedTraversers)
+    this.haltedTraversers = null;
   if(vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).isPresent()) {
     // haltedTraversers in execute() represent worker-traversal traversers
     // for example, from a traversal of the form g.V().out().program(...)
-    TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS) :
+    TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
     // create a new halted traverser set that can be used by the next OLAP job in the chain
     // these are worker-traversers that are distributed throughout the graph
     TraverserSet<Object> newHaltedTraversers = new TraverserSet<>();
@@ -1467,7 +1483,7 @@ public void execute(final Vertex vertex, final Messenger messenger, final Memory
        newHaltedTraversers.add(traverser.split(traverser.get().toString(), this.programStep));
     });
     vertex.property(VertexProperty.Cardinality.single, TraversalVertexProgram.HALTED_TRAVERSERS, newHaltedTraversers);
-    // it is possible to create master-traversers that are localized to the master traversal (thread)
+    // it is possible to create master-traversers that are localized to the master traversal (this is how results are ultimately delivered back to the user)
     memory.add(TraversalVertexProgram.HALTED_TRAVERSERS,
                new TraverserSet<>(this.traversal().get().getTraverserGenerator().generate("an example", this.programStep, 1l)));
   }

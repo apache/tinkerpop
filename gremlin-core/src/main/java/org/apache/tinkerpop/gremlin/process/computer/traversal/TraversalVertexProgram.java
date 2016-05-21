@@ -27,12 +27,15 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.ProgramPhase;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import org.apache.tinkerpop.gremlin.process.computer.util.SingleMessenger;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -66,6 +69,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -102,6 +106,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private PureTraversal<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
     private final Set<MapReduce> mapReducers = new HashSet<>();
+    private TraverserSet<Object> haltedTraversers;
     private boolean returnHaltedTraversers = false;
 
     private TraversalVertexProgram() {
@@ -116,6 +121,32 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         return this.traversal;
     }
 
+    public static <R> TraverserSet<R> loadHaltedTraversers(final Configuration configuration) {
+        if (!configuration.containsKey(HALTED_TRAVERSERS))
+            return new TraverserSet<>();
+
+        final Object object = configuration.getProperty(HALTED_TRAVERSERS) instanceof String ?
+                VertexProgramHelper.deserialize(configuration, HALTED_TRAVERSERS) :
+                configuration.getProperty(HALTED_TRAVERSERS);
+        if (object instanceof Traverser.Admin)
+            return new TraverserSet<>((Traverser.Admin<R>) object);
+        else {
+            final TraverserSet<R> traverserSet = new TraverserSet<>();
+            traverserSet.addAll((Collection) object);
+            return traverserSet;
+        }
+    }
+
+    public static <R> void storeHaltedTraversers(final Configuration configuration, final TraverserSet<R> haltedTraversers) {
+        if (null != haltedTraversers && !haltedTraversers.isEmpty()) {
+            try {
+                VertexProgramHelper.serialize(haltedTraversers, configuration, HALTED_TRAVERSERS);
+            } catch (final Exception e) {
+                configuration.setProperty(HALTED_TRAVERSERS, haltedTraversers);
+            }
+        }
+    }
+
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
         if (!configuration.containsKey(TRAVERSAL))
@@ -125,6 +156,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             this.traversal.get().applyStrategies();
         /// traversal is compiled and ready to be introspected
         this.traversalMatrix = new TraversalMatrix<>(this.traversal.get());
+        // get any master-traversal halted traversers
+        this.haltedTraversers = TraversalVertexProgram.loadHaltedTraversers(configuration);
         // if results will be serialized out, don't save halted traversers across the cluster
         this.returnHaltedTraversers =
                 (this.traversal.get().getParent().asStep().getNextStep() instanceof ComputerResultStep || // if its just going to stream it out, don't distribute
@@ -158,35 +191,35 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void storeState(final Configuration configuration) {
         VertexProgram.super.storeState(configuration);
         this.traversal.storeState(configuration, TRAVERSAL);
+        TraversalVertexProgram.storeHaltedTraversers(configuration, this.haltedTraversers);
     }
 
     @Override
     public void setup(final Memory memory) {
         // memory is local
-        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.SETUP);
-        final MemoryTraversalSideEffects sideEffects = ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects());
-        sideEffects.storeSideEffectsInMemory();
+        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.SETUP);
+        ((MemoryTraversalSideEffects) this.traversal.get().getSideEffects()).storeSideEffectsInMemory();
         memory.set(VOTE_TO_HALT, true);
         memory.set(MUTATED_MEMORY_KEYS, new HashSet<>());
         memory.set(COMPLETED_BARRIERS, new HashSet<>());
-        // if halted traversers are being sent from a previous VertexProgram in an OLAP chain (non-distributed traversers), get them into the stream
-        if (sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS)) {
-            final TraverserSet<Object> haltedTraversers = sideEffects.get(TraversalVertexProgram.HALTED_TRAVERSERS);
+        // if halted traversers are being sent from a previous VertexProgram in an OLAP chain (non-distributed traversers), get them into the flow
+        if (!this.haltedTraversers.isEmpty()) {
             final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
-            IteratorUtils.removeOnNext(haltedTraversers.iterator()).forEachRemaining(traverser -> {
+            IteratorUtils.removeOnNext(this.haltedTraversers.iterator()).forEachRemaining(traverser -> {
                 traverser.setStepId(this.traversal.get().getStartStep().getId());
                 toProcessTraversers.add(traverser);
             });
-            assert haltedTraversers.isEmpty(); // TODO: this should be empty
+            assert haltedTraversers.isEmpty();
             final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
-            MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, haltedTraversers);
-            memory.set(HALTED_TRAVERSERS, haltedTraversers);
+            MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, this.haltedTraversers);
+            memory.set(HALTED_TRAVERSERS, this.haltedTraversers);
             memory.set(ACTIVE_TRAVERSERS, remoteActiveTraversers);
-            sideEffects.remove(TraversalVertexProgram.HALTED_TRAVERSERS);
         } else {
             memory.set(HALTED_TRAVERSERS, new TraverserSet<>());
             memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
         }
+        // local variable will no longer be used so null it for GC
+        this.haltedTraversers = null;
     }
 
     @Override
@@ -196,8 +229,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final Memory memory) {
+        // if any global halted traversers, simply don't use them as they were handled by master setup()
+        if (null != this.haltedTraversers)
+            this.haltedTraversers = null;
         // memory is distributed
-        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.EXECUTE);
+        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.EXECUTE);
         // if a barrier was completed in another worker, it is also completed here (ensure distributed barriers are synchronized)
         final Set<String> completedBarriers = memory.get(COMPLETED_BARRIERS);
         for (final String stepId : completedBarriers) {
@@ -211,11 +247,13 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         //////////////////
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> activeTraversers = new TraverserSet<>();
+            // if halted traversers are being sent from a previous VertexProgram in an OLAP chain (distributed traversers), get them into the flow
             IteratorUtils.removeOnNext(haltedTraversers.iterator()).forEachRemaining(traverser -> {
                 traverser.setStepId(this.traversal.get().getStartStep().getId());
                 activeTraversers.add(traverser);
             });
             assert haltedTraversers.isEmpty();
+            // for g.V()/E()
             if (this.traversal.get().getStartStep() instanceof GraphStep) {
                 final GraphStep<Element, Element> graphStep = (GraphStep<Element, Element>) this.traversal.get().getStartStep();
                 graphStep.reset();
@@ -236,9 +274,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                         activeTraversers.add((Traverser.Admin) traverser);
                 });
             }
-            memory.add(VOTE_TO_HALT, activeTraversers.isEmpty() || TraverserExecutor.execute(vertex, new SingleMessenger<>(messenger, activeTraversers), this.traversalMatrix, memory, this.returnHaltedTraversers));
+            memory.add(VOTE_TO_HALT, activeTraversers.isEmpty() || WorkerExecutor.execute(vertex, new SingleMessenger<>(messenger, activeTraversers), this.traversalMatrix, memory, this.returnHaltedTraversers));
         } else {  // ITERATION 1+
-            memory.add(VOTE_TO_HALT, TraverserExecutor.execute(vertex, messenger, this.traversalMatrix, memory, this.returnHaltedTraversers));
+            memory.add(VOTE_TO_HALT, WorkerExecutor.execute(vertex, messenger, this.traversalMatrix, memory, this.returnHaltedTraversers));
         }
         if (this.returnHaltedTraversers || haltedTraversers.isEmpty())
             vertex.<TraverserSet>property(HALTED_TRAVERSERS).remove();
@@ -247,7 +285,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public boolean terminate(final Memory memory) {
         // memory is local
-        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, MemoryTraversalSideEffects.State.TERMINATE);
+        MemoryTraversalSideEffects.setMemorySideEffects(this.traversal.get(), memory, ProgramPhase.TERMINATE);
         final boolean voteToHalt = memory.<Boolean>get(VOTE_TO_HALT);
         memory.set(VOTE_TO_HALT, true);
         memory.set(ACTIVE_TRAVERSERS, new TraverserSet<>());
@@ -270,8 +308,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 return false;
             } else {
                 // finalize locally with any last traversers dangling in the local traversal
-                while (this.traversal.get().getEndStep().hasNext()) {
-                    final Traverser.Admin traverser = this.traversal.get().getEndStep().next();
+                final Step<?, ?> endStep = this.traversal.get().getEndStep();
+                while (endStep.hasNext()) {
+                    final Traverser.Admin traverser = endStep.next();
                     traverser.detach();
                     haltedTraversers.add(traverser);
                 }
@@ -363,6 +402,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
         private Builder() {
             super(TraversalVertexProgram.class);
+        }
+
+        public Builder haltedTraversers(final TraverserSet<Object> haltedTraversers) {
+            TraversalVertexProgram.storeHaltedTraversers(this.configuration, haltedTraversers);
+            return this;
         }
 
         public Builder traversal(final TraversalSource traversalSource, final String scriptEngine, final String traversalScript, final Object... bindings) {

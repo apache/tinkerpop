@@ -58,9 +58,12 @@ import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
 import java.io.NotSerializableException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
@@ -74,6 +77,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
     private MapMemory memory = new MapMemory();
     private boolean useWorkerThreadsInConfiguration;
+    private Set<String> vertexProgramConfigurationKeys = new HashSet<>();
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
@@ -112,6 +116,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         apacheConfiguration.setDelimiterParsingDisabled(true);
         vertexProgram.storeState(apacheConfiguration);
+        IteratorUtils.fill(apacheConfiguration.getKeys(), this.vertexProgramConfigurationKeys);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
         this.vertexProgram.getMessageCombiner().ifPresent(combiner -> this.giraphConfiguration.setMessageCombinerClass(GiraphMessageCombiner.class));
         return this;
@@ -139,6 +144,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             // clear properties that should not be propagated in an OLAP chain
             apacheConfiguration.clearProperty(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
             apacheConfiguration.clearProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR);
+            this.vertexProgramConfigurationKeys.forEach(apacheConfiguration::clearProperty); // clear out vertex program specific configurations
             return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), this.memory.asImmutable());
         }, exec);
     }

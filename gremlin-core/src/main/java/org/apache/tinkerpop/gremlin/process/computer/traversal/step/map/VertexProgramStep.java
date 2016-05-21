@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.VertexComputing;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.computer.util.EmptyMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -33,10 +33,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
@@ -66,14 +64,15 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                future = this.generateComputer(graph).program(this.generateProgram(graph)).submit();
+                future = this.generateComputer(graph).program(this.generateProgram(graph, EmptyMemory.instance())).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
                 final Graph graph = traverser.get().graph();
-                future = this.generateComputer(graph).program(this.generateProgram(graph)).submit();
+                final Memory memory = traverser.get().memory();
+                future = this.generateComputer(graph).program(this.generateProgram(graph, memory)).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return traverser.split(result, this);
@@ -122,20 +121,12 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
         final TraversalSideEffects sideEffects = this.getTraversal().getSideEffects();
         for (final String key : memory.keys()) {
             if (sideEffects.exists(key)) {
+                // halted traversers should never be propagated through sideEffects
+                assert !key.equals(TraversalVertexProgram.HALTED_TRAVERSERS);
                 sideEffects.set(key, memory.get(key));
             }
         }
-        if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS) && !this.isEndStep()) {
-            final TraverserSet<Object> haltedTraversers = memory.get(TraversalVertexProgram.HALTED_TRAVERSERS);
-            if (!haltedTraversers.isEmpty()) {
-                if (sideEffects.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
-                    sideEffects.set(TraversalVertexProgram.HALTED_TRAVERSERS, haltedTraversers);
-                else
-                    sideEffects.register(TraversalVertexProgram.HALTED_TRAVERSERS, new ConstantSupplier<>(haltedTraversers), Operator.addAll);
-            }
-        }
     }
-
 
     protected boolean isEndStep() {
         return this.getNextStep() instanceof ComputerResultStep || (this.getNextStep() instanceof ProfileStep && this.getNextStep().getNextStep() instanceof ComputerResultStep);

@@ -45,9 +45,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserExecutor {
+final class WorkerExecutor {
 
-    public static boolean execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final boolean returnHaltedTraversers) {
+    private WorkerExecutor() {
+
+    }
+
+    protected static boolean execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final boolean returnHaltedTraversers) {
 
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
@@ -64,7 +68,7 @@ public final class TraverserExecutor {
         final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
         while (iterator.hasNext()) {
             final Traverser.Admin<Object> traverser = iterator.next();
-            if (vertex.equals(TraverserExecutor.getHostingVertex(traverser.get()))) {
+            if (vertex.equals(WorkerExecutor.getHostingVertex(traverser.get()))) {
                 // iterator.remove(); ConcurrentModificationException
                 traverser.attach(Attachable.Method.get(vertex));
                 traverser.setSideEffects(traversalSideEffects);
@@ -87,9 +91,16 @@ public final class TraverserExecutor {
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
-                traverser.attach(Attachable.Method.get(vertex));
-                traverser.setSideEffects(traversalSideEffects);
-                toProcessTraversers.add(traverser);
+                if (traverser.isHalted()) {
+                    if (returnHaltedTraversers)
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
+                    else
+                        haltedTraversers.add(traverser);
+                } else {
+                    traverser.attach(Attachable.Method.get(vertex));
+                    traverser.setSideEffects(traversalSideEffects);
+                    toProcessTraversers.add(traverser);
+                }
             }
         }
 
@@ -107,11 +118,11 @@ public final class TraverserExecutor {
                 traversers.remove();
                 final Step<Object, Object> currentStep = traversalMatrix.getStepById(traverser.getStepId());
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
-                    TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
+                    WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
                 currentStep.addStart(traverser);
                 previousStep = currentStep;
             }
-            TraverserExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
+            WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
             assert toProcessTraversers.isEmpty();
             // process all the local objects and send messages or store locally again
             if (!activeTraversers.isEmpty()) {
@@ -121,7 +132,7 @@ public final class TraverserExecutor {
                     traversers.remove();
                     if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
                         // if the element is remote, then message, else store it locally for re-processing
-                        final Vertex hostingVertex = TraverserExecutor.getHostingVertex(traverser.get());
+                        final Vertex hostingVertex = WorkerExecutor.getHostingVertex(traverser.get());
                         if (!vertex.equals(hostingVertex)) { // necessary for path access
                             voteToHalt.set(false);
                             traverser.detach();
@@ -152,10 +163,13 @@ public final class TraverserExecutor {
                     final TraverserSet<Object> barrierSet = barrier.nextBarrier();
                     IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
                         traverser.addLabels(step.getLabels());  // this might need to be generalized for working with global barriers too
-                        if (traverser.isHalted()) {
+                        if (traverser.isHalted() &&
+                                (returnHaltedTraversers ||
+                                        (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
+                                        getHostingVertex(traverser.get()).equals(vertex))) {
                             traverser.detach();
                             if (returnHaltedTraversers)
-                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
+                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
                             else
                                 haltedTraversers.add(traverser);
                         } else {
@@ -174,10 +188,13 @@ public final class TraverserExecutor {
             }
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
-                if (traverser.isHalted()) {
+                if (traverser.isHalted() &&
+                        (returnHaltedTraversers ||
+                                (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
+                                getHostingVertex(traverser.get()).equals(vertex))) {
                     traverser.detach();
                     if (returnHaltedTraversers)
-                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser.split()));
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
                     else
                         haltedTraversers.add(traverser);
                 } else {
