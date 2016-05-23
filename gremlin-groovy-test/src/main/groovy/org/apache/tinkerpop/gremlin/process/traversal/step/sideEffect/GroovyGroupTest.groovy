@@ -111,7 +111,7 @@ public abstract class GroovyGroupTest {
 
         @Override
         public Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group().by(bothE().count).by(group.by(label))")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group().by(bothE().count).by(group().by(label))")
         }
     }
 }

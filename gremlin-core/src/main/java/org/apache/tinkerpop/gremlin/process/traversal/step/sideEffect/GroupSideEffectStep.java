@@ -53,7 +53,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         super(traversal);
         this.sideEffectKey = sideEffectKey;
         this.valueTraversal = this.integrateChild(__.fold().asAdmin());
-        this.preTraversal = this.integrateChild(GroupStep.splitOnBarrierStep(this.valueTraversal).get(0));
+        this.preTraversal = this.integrateChild(GroupStep.generatePreTraversal(this.valueTraversal));
         this.getTraversal().getSideEffects().registerIfAbsent(this.sideEffectKey, HashMapSupplier.instance(), new GroupStep.GroupBiOperator<>(this.valueTraversal));
     }
 
@@ -64,7 +64,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             this.state = 'v';
         } else if ('v' == this.state) {
             this.valueTraversal = this.integrateChild(GroupStep.convertValueTraversal(kvTraversal));
-            this.preTraversal = this.integrateChild(GroupStep.splitOnBarrierStep(this.valueTraversal).get(0));
+            this.preTraversal = this.integrateChild(GroupStep.generatePreTraversal(this.valueTraversal));
             this.getTraversal().getSideEffects().register(this.sideEffectKey, null, new GroupStep.GroupBiOperator<>(this.valueTraversal));
             this.state = 'x';
         } else {
@@ -75,13 +75,15 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
-        final TraverserSet midTraversers = new TraverserSet<>();
-        this.preTraversal.reset();
-        this.preTraversal.addStart(traverser.split());
-        while (this.preTraversal.hasNext()) {
-            midTraversers.add(this.preTraversal.getEndStep().next());
+        if (null == this.preTraversal) {
+            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverser.split());
+        } else {
+            final TraverserSet traverserSet = new TraverserSet<>();
+            this.preTraversal.reset();
+            this.preTraversal.addStart(traverser.split());
+            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
         }
-        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) midTraversers);
         this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 
@@ -115,7 +117,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.preTraversal = this.integrateChild(GroupStep.splitOnBarrierStep(clone.valueTraversal).get(0));
+        clone.preTraversal = this.integrateChild(GroupStep.generatePreTraversal(clone.valueTraversal));
         return clone;
     }
 
