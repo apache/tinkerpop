@@ -86,11 +86,11 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void benchmarkGroup() throws Exception {
         Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal().withComputer();
+        GraphTraversalSource g = graph.traversal();
         graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
         /////////
 
-        g.V().group().by(T.label).by(values("name")).forEachRemaining(x -> logger.info(x.toString()));
+        //g.V().group().by(T.label).by(values("name")).forEachRemaining(x -> logger.info(x.toString()));
 
         System.out.println("group: " + g.V().both("followedBy").both("followedBy").group().by("songType").by(count()).next());
         System.out.println("groupV3d0: " + g.V().both("followedBy").both("followedBy").groupV3d0().by("songType").by().by(__.count(Scope.local)).next());

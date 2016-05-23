@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -39,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,25 +46,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent, GraphComputing {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
-    private Traversal.Admin<S, ?> preTraversal = null;      // used in OLAP
-    private ReducingBarrierStep reducingBarrierStep = null; // used in OLAP
-    private boolean onGraphComputer = false;
+    private Traversal.Admin<S, ?> preTraversal;
+    private Traversal.Admin<S, V> valueTraversal;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer));
+        this.valueTraversal = this.integrateChild(__.fold().asAdmin());
+        this.preTraversal = this.integrateChild(splitOnBarrierStep(this.valueTraversal).get(0));
+        this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal));
         this.setSeedSupplier(HashMapSupplier.instance());
     }
 
@@ -75,7 +74,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             this.state = 'v';
         } else if ('v' == this.state) {
             this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
-            this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer));
+            this.preTraversal = this.integrateChild(splitOnBarrierStep(this.valueTraversal).get(0));
+            this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal));
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
@@ -85,21 +85,11 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     @Override
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
-        final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-        if (this.onGraphComputer) {
-            if (null == this.reducingBarrierStep) {
-                final TraverserSet traverserSet = new TraverserSet();
-                this.preTraversal.reset();
-                this.preTraversal.addStart(traverser.split());
-                this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
-                map.put(key, (V) traverserSet);
-            } else {
-                this.valueTraversal.reset();
-                this.valueTraversal.addStart(traverser.split());
-                map.put(key, (V) this.reducingBarrierStep.nextBarrier());
-            }
-        } else
-            map.put(key, (V) traverser);
+        final TraverserSet traverserSet = new TraverserSet<>();
+        this.preTraversal.reset();
+        this.preTraversal.addStart(traverser.split());
+        this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
         return map;
     }
 
@@ -128,11 +118,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        if (null != this.preTraversal)
-            clone.preTraversal = this.preTraversal.clone();
-        final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, clone.valueTraversal);
-        if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
-            clone.reducingBarrierStep = (ReducingBarrierStep) optional.get();
+        clone.preTraversal = this.integrateChild(GroupStep.splitOnBarrierStep(clone.valueTraversal).get(0));
         return clone;
     }
 
@@ -154,37 +140,19 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Map<K, V> generateFinalResult(final Map<K, V> object) {
-        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal, this.onGraphComputer);
-    }
-
-    @Override
-    public void onGraphComputer() {
-        this.preTraversal = this.integrateChild(splitOnBarrierStep(this.valueTraversal).get(0));
-        final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal);
-        if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
-            this.reducingBarrierStep = (ReducingBarrierStep) optional.get();
-        this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal, this.onGraphComputer = true));
+        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal);
     }
 
     ///////////////////////
 
     public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
-        private boolean onGraphComputer;
-        private BinaryOperator reducingBinaryOperator;          // OLAP (w/ reducer)
-        private transient Traversal.Admin<?, V> valueTraversal; // OLTP
-        private transient Map<K, Integer> counters;             // OLTP
+        private Traversal.Admin<?, V> valueTraversal;
+        private ReducingBarrierStep reducingBarrierStep = null;
 
-        public GroupBiOperator(final Traversal.Admin<?, V> valueTraversal, final boolean onGraphComputer) {
-            this.onGraphComputer = onGraphComputer;
-            if (this.onGraphComputer) {
-                final Optional<Barrier> optional = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal);
-                if (optional.isPresent() && optional.get() instanceof ReducingBarrierStep)
-                    this.reducingBinaryOperator = ((ReducingBarrierStep) optional.get()).getBiOperator();
-            } else {
-                this.valueTraversal = valueTraversal;
-                this.counters = new HashMap<>();
-            }
+        public GroupBiOperator(final Traversal.Admin<?, V> valueTraversal) {
+            this.valueTraversal = valueTraversal.clone();
+            this.reducingBarrierStep = TraversalHelper.getFirstStepOfAssignableClass(ReducingBarrierStep.class, this.valueTraversal).orElse(null);
         }
 
         public GroupBiOperator() {
@@ -194,42 +162,83 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         @Override
         public Map<K, V> apply(final Map<K, V> mapA, final Map<K, V> mapB) {
             for (final K key : mapB.keySet()) {
-                if (this.onGraphComputer) {
-                    final Object objectB = mapB.get(key);
-                    if (null != this.reducingBinaryOperator) {
-                        // OLAP -- if there is a mid-traversal, apply the binary reducer and propagate the mutating barrier
-                        final Object objectA = mapA.get(key);
-                        mapA.put(key, (V) (null == objectA ? objectB : this.reducingBinaryOperator.apply(objectA, objectB)));
-                    } else {
-                        // OLAP -- if there is no mid-traversal reducer, aggregate pre-barrier traversers into a traverser set (expensive, but that's that)
-                        final Object objectA = mapA.get(key);
-                        final TraverserSet traverserSet;
-                        if (null == objectA) {
-                            traverserSet = new TraverserSet();
-                            mapA.put(key, (V) traverserSet);
-                        } else
-                            traverserSet = (TraverserSet) objectA;
-                        traverserSet.addAll((TraverserSet) objectB);
-                    }
+                Object objectA = mapA.get(key);
+                final Object objectB = mapB.get(key);
+                assert null != objectB;
+                if (null == objectA) {
+                    objectA = objectB;
                 } else {
-                    // OLTP -- do mid-barrier reductions if they exist, else don't. Bulking is also available here because of addStart() prior to barrier.
-                    final Traverser.Admin traverser = (Traverser.Admin) mapB.get(key);
-                    Traversal.Admin valueTraversalClone = (Traversal.Admin) mapA.get(key);
-                    if (null == valueTraversalClone) {
-                        this.counters.put(key, 0);
-                        valueTraversalClone = this.valueTraversal.clone();
-                        mapA.put(key, (V) valueTraversalClone);
-                    }
-                    valueTraversalClone.addStart(traverser);
-                    if (this.counters.compute(key, (k, i) -> ++i) > 1000) {
-                        this.counters.put(key, 0);
-                        TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversalClone).ifPresent(Barrier::processAllStarts);
+                    if (objectA instanceof TraverserSet) {
+                        if (objectB instanceof TraverserSet) {
+                            final TraverserSet set = (TraverserSet) objectA;
+                            set.addAll((TraverserSet) objectB);
+                            if (null != this.reducingBarrierStep && set.size() > 1000) {
+                                this.valueTraversal.reset();
+                                this.reducingBarrierStep.addStarts(set.iterator());
+                                objectA = this.reducingBarrierStep.nextBarrier();
+                            }
+                        } else if (objectB instanceof Pair) {
+                            final TraverserSet set = (TraverserSet) objectA;
+                            set.addAll((TraverserSet) ((Pair) objectB).getValue0());
+                            if (set.size() > 1000) {
+                                this.valueTraversal.reset();
+                                this.reducingBarrierStep.addStarts(set.iterator());
+                                this.reducingBarrierStep.addBarrier(((Pair) objectB).getValue1());
+                                objectA = this.reducingBarrierStep.nextBarrier();
+                            } else {
+                                objectA = Pair.with(set, ((Pair) objectB).getValue1());
+                            }
+                        } else {
+                            objectA = Pair.with(objectA, objectB);
+                        }
+                    } else if (objectA instanceof Pair) {
+                        if (objectB instanceof TraverserSet) {
+                            final TraverserSet set = (TraverserSet) ((Pair) objectA).getValue0();
+                            set.addAll((TraverserSet) objectB);
+                            if (null != this.reducingBarrierStep &&set.size() > 1000) {
+                                this.valueTraversal.reset();
+                                this.reducingBarrierStep.addStarts(set.iterator());
+                                this.reducingBarrierStep.addBarrier(((Pair) objectA).getValue1());
+                                objectA = this.reducingBarrierStep.nextBarrier();
+                            }
+                        } else if (objectB instanceof Pair) {
+                            this.valueTraversal.reset();
+                            this.reducingBarrierStep.addBarrier(((Pair) objectA).getValue1());
+                            this.reducingBarrierStep.addBarrier(((Pair) objectB).getValue1());
+                            this.reducingBarrierStep.addStarts(((TraverserSet) ((Pair) objectA).getValue0()).iterator());
+                            this.reducingBarrierStep.addStarts(((TraverserSet) ((Pair) objectB).getValue0()).iterator());
+                            objectA = this.reducingBarrierStep.nextBarrier();
+                        } else {
+                            this.valueTraversal.reset();
+                            this.reducingBarrierStep.addBarrier(((Pair) objectA).getValue1());
+                            this.reducingBarrierStep.addBarrier(objectB);
+                            this.reducingBarrierStep.addStarts(((TraverserSet) ((Pair) objectA).getValue0()).iterator());
+                            objectA = this.reducingBarrierStep.nextBarrier();
+                        }
+                    } else {
+                        if (objectB instanceof TraverserSet) {
+                            objectA = Pair.with(objectB, objectA);
+                        } else if (objectB instanceof Pair) {
+                            this.valueTraversal.reset();
+                            this.reducingBarrierStep.addBarrier(objectA);
+                            this.reducingBarrierStep.addBarrier(((Pair) objectB).getValue1());
+                            this.reducingBarrierStep.addStarts(((TraverserSet) ((Pair) objectB).getValue0()).iterator());
+                            objectA = this.reducingBarrierStep.nextBarrier();
+                        } else {
+                            this.valueTraversal.reset();
+                            this.reducingBarrierStep.addBarrier(objectA);
+                            this.reducingBarrierStep.addBarrier(objectB);
+                            objectA = this.reducingBarrierStep.nextBarrier();
+                        }
                     }
                 }
+                mapA.put(key, (V) objectA);
             }
             return mapA;
+
         }
     }
+
 
     ///////////////////////
 
@@ -263,26 +272,25 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         }
     }
 
-    public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal, final boolean onGraphComputer) {
+    public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal) {
         final Map<K, V> reducedMap = new HashMap<>(map.size());
-        // if not on OLAP, who cares --- don't waste time computing barriers
-        final boolean hasReducingBarrier = onGraphComputer &&
-                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).isPresent() &&
-                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).get() instanceof ReducingBarrierStep;
-        final Traversal.Admin<?, ?> postTraversal = (onGraphComputer & !hasReducingBarrier) ? splitOnBarrierStep(valueTraversal.clone()).get(1) : null;
+        final ReducingBarrierStep reducingBarrierStep = TraversalHelper.getFirstStepOfAssignableClass(ReducingBarrierStep.class, valueTraversal).orElse(null);
         IteratorUtils.removeOnNext(map.entrySet().iterator()).forEachRemaining(entry -> {
-            if (onGraphComputer) {
-                if (hasReducingBarrier) {   // OLAP with reduction (barrier)
-                    valueTraversal.reset();
-                    TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).get().addBarrier(entry.getValue());
-                    reducedMap.put(entry.getKey(), valueTraversal.next());
-                } else {                    // OLAP without reduction (traverser set)
-                    postTraversal.reset();
-                    postTraversal.addStarts(((TraverserSet) entry.getValue()).iterator());
-                    reducedMap.put(entry.getKey(), (V) postTraversal.next());
-                }
-            } else                          // OLTP is just a traversal
-                reducedMap.put(entry.getKey(), ((Traversal.Admin<?, V>) entry.getValue()).next());
+            valueTraversal.reset();
+            if (null == reducingBarrierStep) {
+                reducedMap.put(entry.getKey(), entry.getValue() instanceof TraverserSet ?
+                        ((TraverserSet<V>) entry.getValue()).iterator().next().get() :
+                        (V) entry.getValue());
+            } else {
+                if (entry.getValue() instanceof TraverserSet)
+                    reducingBarrierStep.addStarts(((TraverserSet) entry.getValue()).iterator());
+                else if (entry.getValue() instanceof Pair) {
+                    reducingBarrierStep.addStarts(((TraverserSet) (((Pair) entry.getValue()).getValue0())).iterator());
+                    reducingBarrierStep.addBarrier((((Pair) entry.getValue()).getValue1()));
+                } else
+                    reducingBarrierStep.addBarrier(entry.getValue());
+                reducedMap.put(entry.getKey(), valueTraversal.next());
+            }
         });
         assert map.isEmpty();
         map.clear();
@@ -290,3 +298,5 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         return (Map<K, V>) map;
     }
 }
+
+

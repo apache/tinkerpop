@@ -108,5 +108,10 @@ public abstract class GroovyGroupTest {
         public Traversal<Vertex, Map<String, Map<Object, Object>>> get_g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(union(out('knows').group('a').by('age'), out('created').group('b').by('name').by(count())).group('a').by('name')).times(2).cap('a', 'b')")
         }
+
+        @Override
+        public Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group().by(bothE().count).by(group.by(label))")
+        }
     }
 }

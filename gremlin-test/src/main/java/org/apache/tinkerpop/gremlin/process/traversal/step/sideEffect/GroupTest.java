@@ -84,6 +84,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Map<Object, Object>>> get_g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX();
 
+    public abstract Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
@@ -356,6 +358,41 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class, "b", HashMap.class);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXbothE_countX_byXgroup_byXlabelXX() {
+        final Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> traversal = get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX();
+        final Map<Long, Map<String, List<Vertex>>> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey(1l));
+        assertTrue(map.containsKey(3l));
+        //
+        Map<String, List<Vertex>> submap = map.get(1l);
+        assertEquals(2, submap.size());
+        assertTrue(submap.containsKey("software"));
+        assertTrue(submap.containsKey("person"));
+        List<Vertex> list = submap.get("software");
+        assertEquals(1, list.size());
+        assertEquals(convertToVertex(graph, "ripple"), list.get(0));
+        list = submap.get("person");
+        assertEquals(2, list.size());
+        assertTrue(list.contains(convertToVertex(graph, "vadas")));
+        assertTrue(list.contains(convertToVertex(graph, "peter")));
+        //
+        submap = map.get(3l);
+        assertEquals(2, submap.size());
+        assertTrue(submap.containsKey("software"));
+        assertTrue(submap.containsKey("person"));
+        list = submap.get("software");
+        assertEquals(1, list.size());
+        assertEquals(convertToVertex(graph, "lop"), list.get(0));
+        list = submap.get("person");
+        assertEquals(2, list.size());
+        assertTrue(list.contains(convertToVertex(graph, "marko")));
+        assertTrue(list.contains(convertToVertex(graph, "josh")));
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -436,6 +473,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Map<Object, Object>>> get_g_V_repeatXunionXoutXknowsX_groupXaX_byXageX__outXcreatedX_groupXbX_byXnameX_byXcountXX_groupXaX_byXnameXX_timesX2X_capXa_bX() {
             return g.V().repeat(__.union(__.out("knows").group("a").by("age"), __.out("created").group("b").by("name").by(count())).group("a").by("name")).times(2).cap("a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX() {
+            return g.V().<Long, Map<String, List<Vertex>>>group().by(__.bothE().count()).by(__.group().by(T.label));
         }
     }
 }
