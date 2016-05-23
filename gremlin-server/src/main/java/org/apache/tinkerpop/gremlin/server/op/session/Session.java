@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
+import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -59,11 +61,13 @@ public class Session {
      */
     private final GremlinExecutor gremlinExecutor;
 
+    private final ThreadFactory threadFactoryWorker = ThreadFactoryUtil.create("session-%d");
+
     /**
      * By binding the session to run ScriptEngine evaluations in a specific thread, each request will respect
      * the ThreadLocal nature of Graph implementations.
      */
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(threadFactoryWorker);
 
     private final ConcurrentHashMap<String, Session> sessions;
 
