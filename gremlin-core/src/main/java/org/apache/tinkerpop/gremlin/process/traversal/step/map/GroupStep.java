@@ -40,6 +40,9 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,11 +88,11 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
         final Map<K, V> map = new HashMap<>(1);
         if (null == this.preTraversal) {
-            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverser.split());
+            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverser);
         } else {
             final TraverserSet traverserSet = new TraverserSet<>();
             this.preTraversal.reset();
-            this.preTraversal.addStart(traverser.split());
+            this.preTraversal.addStart(traverser);
             this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
             map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
         }
@@ -150,6 +153,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
 
+        // size limit before Barrier.processAllStarts() to lazy reduce
         private static final int SIZE_LIMIT = 1000;
 
         private Traversal.Admin<?, V> valueTraversal;
@@ -173,6 +177,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 if (null == objectA) {
                     objectA = objectB;
                 } else {
+                    // TRAVERSER
                     if (objectA instanceof Traverser.Admin) {
                         if (objectB instanceof Traverser.Admin) {
                             final TraverserSet set = new TraverserSet();
@@ -186,29 +191,28 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                                 this.valueTraversal.reset();
                                 ((Step) this.barrierStep).addStarts(set.iterator());
                                 objectA = this.barrierStep.nextBarrier();
-                            } else {
+                            } else
                                 objectA = objectB;
-                            }
                         } else if (objectB instanceof Pair) {
                             final TraverserSet set = (TraverserSet) ((Pair) objectB).getValue0();
                             set.add((Traverser.Admin) objectA);
-                            if (set.size() > SIZE_LIMIT) {
+                            if (set.size() > SIZE_LIMIT) {    // barrier step can never be null -- no need to check
                                 this.valueTraversal.reset();
                                 ((Step) this.barrierStep).addStarts(set.iterator());
                                 this.barrierStep.addBarrier(((Pair) objectB).getValue1());
                                 objectA = this.barrierStep.nextBarrier();
-                            } else {
+                            } else
                                 objectA = Pair.with(set, ((Pair) objectB).getValue1());
-                            }
-                        } else {
+                        } else
                             objectA = Pair.with(new TraverserSet((Traverser.Admin) objectA), objectB);
-                        }
+                        // TRAVERSER SET
                     } else if (objectA instanceof TraverserSet) {
                         if (objectB instanceof Traverser.Admin) {
-                            ((TraverserSet) objectA).add((Traverser.Admin) objectB);
-                            if (null != this.barrierStep && ((TraverserSet) objectA).size() > SIZE_LIMIT) {
+                            final TraverserSet set = (TraverserSet) objectA;
+                            set.add((Traverser.Admin) objectB);
+                            if (null != this.barrierStep && set.size() > SIZE_LIMIT) {
                                 this.valueTraversal.reset();
-                                ((Step) this.barrierStep).addStarts(((TraverserSet) objectA).iterator());
+                                ((Step) this.barrierStep).addStarts(set.iterator());
                                 objectA = this.barrierStep.nextBarrier();
                             }
                         } else if (objectB instanceof TraverserSet) {
@@ -222,24 +226,30 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                         } else if (objectB instanceof Pair) {
                             final TraverserSet set = (TraverserSet) objectA;
                             set.addAll((TraverserSet) ((Pair) objectB).getValue0());
-                            if (set.size() > SIZE_LIMIT) {
+                            if (set.size() > SIZE_LIMIT) {  // barrier step can never be null -- no need to check
                                 this.valueTraversal.reset();
                                 ((Step) this.barrierStep).addStarts(set.iterator());
                                 this.barrierStep.addBarrier(((Pair) objectB).getValue1());
                                 objectA = this.barrierStep.nextBarrier();
-                            } else {
+                            } else
                                 objectA = Pair.with(set, ((Pair) objectB).getValue1());
-                            }
-                        } else {
+                        } else
                             objectA = Pair.with(objectA, objectB);
-                        }
+                        // TRAVERSER SET + BARRIER
                     } else if (objectA instanceof Pair) {
                         if (objectB instanceof Traverser.Admin) {
-                            ((TraverserSet) ((Pair) objectA).getValue0()).add((Traverser.Admin) objectB);
+                            final TraverserSet set = ((TraverserSet) ((Pair) objectA).getValue0());
+                            set.add((Traverser.Admin) objectB);
+                            if (set.size() > SIZE_LIMIT) { // barrier step can never be null -- no need to check
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                this.barrierStep.addBarrier(((Pair) objectA).getValue1());
+                                objectA = this.barrierStep.nextBarrier();
+                            }
                         } else if (objectB instanceof TraverserSet) {
                             final TraverserSet set = (TraverserSet) ((Pair) objectA).getValue0();
                             set.addAll((TraverserSet) objectB);
-                            if (null != this.barrierStep && set.size() > SIZE_LIMIT) {
+                            if (set.size() > SIZE_LIMIT) {   // barrier step can never be null -- no need to check
                                 this.valueTraversal.reset();
                                 ((Step) this.barrierStep).addStarts(set.iterator());
                                 this.barrierStep.addBarrier(((Pair) objectA).getValue1());
@@ -259,6 +269,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                             ((Step) this.barrierStep).addStarts(((TraverserSet) ((Pair) objectA).getValue0()).iterator());
                             objectA = this.barrierStep.nextBarrier();
                         }
+                        // BARRIER
                     } else {
                         if (objectB instanceof Traverser.Admin) {
                             objectA = Pair.with(new TraverserSet<>((Traverser.Admin) objectB), objectA);
@@ -281,6 +292,16 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 mapA.put(key, (V) objectA);
             }
             return mapA;
+        }
+
+        // necessary to control Java Serialization to ensure proper clearing of internal traverser data
+        private void writeObject(final ObjectOutputStream outputStream) throws IOException {
+            outputStream.writeObject(this.valueTraversal.clone());
+        }
+
+        private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+            this.valueTraversal = (Traversal.Admin<?, V>) inputStream.readObject();
+            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
         }
     }
 
