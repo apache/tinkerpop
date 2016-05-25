@@ -27,6 +27,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -49,5 +52,9 @@ public final class HaltedTraverserFactoryStrategy extends AbstractTraversalStrat
 
     public static HaltedTraverserFactoryStrategy reference() {
         return new HaltedTraverserFactoryStrategy(ReferenceFactory.class);
+    }
+
+    public Set<Class<? extends DecorationStrategy>> applyPrior() {
+        return Collections.singleton(VertexProgramStrategy.class);
     }
 }
