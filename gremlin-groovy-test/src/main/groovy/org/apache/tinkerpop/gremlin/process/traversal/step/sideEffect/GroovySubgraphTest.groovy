@@ -41,5 +41,10 @@ public abstract class GroovySubgraphTest {
                 final Graph subgraph) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('sg') { subgraph }.V.repeat(__.bothE('created').subgraph('sg').outV).times(5).name.dedup", "subgraph", subgraph)
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_withSideEffectXsgX_V_hasXname_danielX_outE_subgraphXsgX_inV(final Graph subgraph) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('sg') { subgraph }.V.has('name','daniel').outE.subgraph('sg').inV", "subgraph", subgraph)
+        }
     }
 }
