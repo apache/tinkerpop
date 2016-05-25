@@ -58,6 +58,8 @@ final class MasterExecutor {
 
     }
 
+    // the halted traversers can either be reference or detached elements -- this is good for determining how much data around the element the user wants to get
+    // see HaltedTraverserFactoryStrategy for how this is all connected
     protected static <R> Traverser.Admin<R> detach(final Traverser.Admin<R> traverser, final Class haltedTraverserFactory) {
         if (haltedTraverserFactory.equals(DetachedFactory.class))
             traverser.set(DetachedFactory.detach(traverser.get(), true));
@@ -68,11 +70,12 @@ final class MasterExecutor {
         return traverser;
     }
 
+    // handle traversers and data that were sent from the workers to the master traversal via memory
     protected static void processMemory(final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final TraverserSet<Object> traverserSet, final Set<String> completedBarriers) {
         if (memory.exists(TraversalVertexProgram.MUTATED_MEMORY_KEYS)) {
             for (final String key : memory.<Set<String>>get(TraversalVertexProgram.MUTATED_MEMORY_KEYS)) {
                 final Step<Object, Object> step = traversalMatrix.getStepById(key);
-                if (null == step) continue;
+                if (null == step) continue; // why? how can this happen?
                 assert step instanceof Barrier;
                 completedBarriers.add(step.getId());
                 if (!(step instanceof LocalBarrier)) {  // local barriers don't do any processing on the master traversal (they just lock on the workers)
@@ -81,6 +84,7 @@ final class MasterExecutor {
                     while (step.hasNext()) {
                         traverserSet.add(step.next());
                     }
+                    // if it was a reducing barrier step, reset the barrier to its seed value
                     if (step instanceof ReducingBarrierStep)
                         memory.set(step.getId(), ((ReducingBarrierStep) step).getSeedSupplier().get());
                 }

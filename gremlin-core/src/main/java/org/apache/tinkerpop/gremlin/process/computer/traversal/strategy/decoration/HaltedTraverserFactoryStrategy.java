@@ -22,12 +22,14 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorat
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -42,11 +44,16 @@ public final class HaltedTraverserFactoryStrategy extends AbstractTraversalStrat
     }
 
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        TraversalHelper.getStepsOfAssignableClass(TraversalVertexProgramStep.class, traversal)
-                .forEach(step -> step.setHaltedTraverserFactory(this.haltedTraverserFactory));
+        // only the root traversal should be processed
+        if (traversal.getParent() instanceof EmptyStep) {
+            final List<TraversalVertexProgramStep> steps = TraversalHelper.getStepsOfAssignableClass(TraversalVertexProgramStep.class, traversal);
+            // only the last step (the one returning data) needs to have a non-reference traverser factory
+            if (!steps.isEmpty())
+                steps.get(steps.size() - 1).setHaltedTraverserFactory(this.haltedTraverserFactory);
+        }
     }
 
-    public static HaltedTraverserFactoryStrategy detach() {
+    public static HaltedTraverserFactoryStrategy detached() {
         return new HaltedTraverserFactoryStrategy(DetachedFactory.class);
     }
 
