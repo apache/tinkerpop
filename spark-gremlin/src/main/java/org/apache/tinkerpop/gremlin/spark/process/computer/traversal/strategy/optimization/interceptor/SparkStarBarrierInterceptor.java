@@ -126,7 +126,6 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
                 }
             }).fold(endStep.getSeedSupplier().get(), biOperator::apply);
         } else if (endStep instanceof GroupStep) {
-            ((GroupStep) endStep).onGraphComputer();
             final GroupStep.GroupBiOperator<Object, Object> biOperator = (GroupStep.GroupBiOperator) endStep.getBiOperator();
             result = ((GroupStep) endStep).generateFinalResult(nextRDD.
                     mapPartitions(partitions -> {
