@@ -109,6 +109,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                         if (useNotStep) {
                             traversal.asAdmin().removeStep(next); // IsStep
                             traversal.asAdmin().removeStep(curr); // CountStep
+                            i += 2;
                             final Traversal.Admin inner = __.start().asAdmin();
                             TraversalHelper.insertAfterStep(prev, inner.getStartStep(), inner);
                             TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
