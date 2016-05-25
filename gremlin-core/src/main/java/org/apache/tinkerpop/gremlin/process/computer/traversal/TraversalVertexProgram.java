@@ -297,7 +297,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         if (voteToHalt) {
             // local traverser sets to process
             final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
+            // traversers that need to be sent back to the workers (no longer can be processed locally by the master traversal)
             final TraverserSet<Object> remoteActiveTraversers = new TraverserSet<>();
+            // halted traversers that have completed their journey
             final TraverserSet<Object> haltedTraversers = memory.get(HALTED_TRAVERSERS);
             // get all barrier traversers
             final Set<String> completedBarriers = new HashSet<>();

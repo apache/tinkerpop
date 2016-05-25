@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
-import org.apache.tinkerpop.gremlin.process.computer.util.SingleMessenger;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -36,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceElement;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -65,19 +63,18 @@ final class WorkerExecutor {
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
         final TraverserSet<Object> activeTraversers = new TraverserSet<>();
         final TraverserSet<Object> toProcessTraversers = new TraverserSet<>();
-        final boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
         ////////////////////////////////
         // GENERATE LOCAL TRAVERSERS //
         ///////////////////////////////
 
-        // some memory systems are interacted by multiple threads and thus, concurrent modification can happen at iterator.remove()
+        // these are traversers that are going from OLTP (master) to OLAP (workers)
+        // these traversers were broadcasted from the master traversal to the workers for attachment
+        final TraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
+        // some memory systems are interacted with by multiple threads and thus, concurrent modification can happen at iterator.remove().
         // its better to reduce the memory footprint and shorten the active traverser list so synchronization is worth it.
-        // most distributed OLAP systems have the memory partitioned and thus, this synchronization does nothing
-        synchronized (memory) {
-            // these are traversers that are going from OLTP to OLAP
-            // these traversers were broadcasted from the master traversal to the workers for attachment
-            final TraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
+        // most distributed OLAP systems have the memory partitioned and thus, this synchronization does nothing.
+        synchronized (maybeActiveTraversers) {
             final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
             while (iterator.hasNext()) {
                 final Traverser.Admin<Object> traverser = iterator.next();
@@ -97,20 +94,19 @@ final class WorkerExecutor {
                 traverser.setSideEffects(traversalSideEffects);
                 toProcessTraversers.add(traverser);
             });
+            assert previousActiveTraversers.isEmpty();
+            // remove the property to save space
             vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS).remove();
         });
         // these are traversers that have been messaged to the vertex from another vertex
         final Iterator<TraverserSet<Object>> messages = messenger.receiveMessages();
         while (messages.hasNext()) {
             IteratorUtils.removeOnNext(messages.next().iterator()).forEachRemaining(traverser -> {
-                // this is internal testing to ensure that messaged elements are always ReferenceXXX and not DetachedXXX (related to HaltedTraverserFactoryStrategy)
-                if (isTesting && !(messenger instanceof SingleMessenger) && traverser.get() instanceof Element)
-                    assert traverser.get() instanceof ReferenceElement;
                 if (traverser.isHalted()) {
                     if (returnHaltedTraversers)
                         memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(MasterExecutor.detach(traverser, haltedTraverserFactory)));
                     else
-                        haltedTraversers.add(traverser);
+                        haltedTraversers.add(traverser.detach());
                 } else {
                     // traverser is not halted and thus, should be processed locally
                     traverser.attach(Attachable.Method.get(vertex));
@@ -132,6 +128,7 @@ final class WorkerExecutor {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
                 final Step<Object, Object> currentStep = traversalMatrix.getStepById(traverser.getStepId());
+                // try and fill up the current step as much as possible with traversers to get a bulking optimization
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
                     WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers, haltedTraverserFactory);
                 currentStep.addStart(traverser);
@@ -150,12 +147,11 @@ final class WorkerExecutor {
                     if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
                         // if the element is remote, then message, else store it locally for re-processing
                         final Vertex hostingVertex = WorkerExecutor.getHostingVertex(traverser.get());
-                        if (!vertex.equals(hostingVertex)) { // necessary for path access
-                            voteToHalt.set(false);
+                        if (!vertex.equals(hostingVertex)) { // if its host is not the current vertex, then send the traverser to the hosting vertex
+                            voteToHalt.set(false); // if message is passed, then don't vote to halt
                             messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser.detach()));
                         } else {
-                            if (traverser.get() instanceof Attachable)   // necessary for path access to local object
-                                traverser.attach(Attachable.Method.get(vertex));
+                            traverser.attach(Attachable.Method.get(vertex));
                             toProcessTraversers.add(traverser);
                         }
                     } else                                                                              // STANDARD OBJECT
@@ -195,7 +191,7 @@ final class WorkerExecutor {
                             else
                                 haltedTraversers.add(traverser.detach());
                         } else
-                            localBarrierTraversers.add(traverser);
+                            localBarrierTraversers.add(traverser.detach());
                     });
                 }
                 memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));

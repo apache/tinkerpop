@@ -43,7 +43,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,20 +69,17 @@ final class MasterExecutor {
         return traverser;
     }
 
-    // handle traversers and data that were sent from the workers to the master traversal via memory
-    protected static void processMemory(final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final TraverserSet<Object> traverserSet, final Set<String> completedBarriers) {
+    protected static void processMemory(final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final TraverserSet<Object> toProcessTraversers, final Set<String> completedBarriers) {
+        // handle traversers and data that were sent from the workers to the master traversal via memory
         if (memory.exists(TraversalVertexProgram.MUTATED_MEMORY_KEYS)) {
             for (final String key : memory.<Set<String>>get(TraversalVertexProgram.MUTATED_MEMORY_KEYS)) {
                 final Step<Object, Object> step = traversalMatrix.getStepById(key);
-                if (null == step) continue; // why? how can this happen?
                 assert step instanceof Barrier;
                 completedBarriers.add(step.getId());
                 if (!(step instanceof LocalBarrier)) {  // local barriers don't do any processing on the master traversal (they just lock on the workers)
                     final Barrier<Object> barrier = (Barrier<Object>) step;
                     barrier.addBarrier(memory.get(key));
-                    while (step.hasNext()) {
-                        traverserSet.add(step.next());
-                    }
+                    step.forEachRemaining(toProcessTraversers::add);
                     // if it was a reducing barrier step, reset the barrier to its seed value
                     if (step instanceof ReducingBarrierStep)
                         memory.set(step.getId(), ((ReducingBarrierStep) step).getSeedSupplier().get());
@@ -100,34 +96,33 @@ final class MasterExecutor {
                                             final TraverserSet<Object> haltedTraversers,
                                             final Class haltedTraverserFactory) {
 
-
         while (!toProcessTraversers.isEmpty()) {
             final TraverserSet<Object> localActiveTraversers = new TraverserSet<>();
             Step<Object, Object> previousStep = EmptyStep.instance();
             Step<Object, Object> currentStep = EmptyStep.instance();
 
-            final Iterator<Traverser.Admin<Object>> traversers = IteratorUtils.removeOnNext(toProcessTraversers.iterator());
+            // these are traversers that are at the master traversal and will either halt here or be distributed back to the workers as needed
+            final Iterator<Traverser.Admin<Object>> traversers = toProcessTraversers.iterator();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
-                traverser.set(DetachedFactory.detach(traverser.get(), true));
+                traversers.remove();
+                traverser.set(DetachedFactory.detach(traverser.get(), true)); // why?
                 traverser.setSideEffects(traversal.get().getSideEffects());
-                if (traverser.isHalted()) {
+                if (traverser.isHalted())
                     haltedTraversers.add(MasterExecutor.detach(traverser, haltedTraverserFactory));
-                } else if (isRemoteTraverser(traverser, traversalMatrix)) {  // this is so that patterns like order().name work as expected.
+                else if (isRemoteTraverser(traverser, traversalMatrix))  // this is so that patterns like order().name work as expected. try and stay local as long as possible
                     remoteActiveTraversers.add(traverser.detach());
-                } else {
+                else {
                     currentStep = traversalMatrix.getStepById(traverser.getStepId());
                     if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep)) {
                         while (previousStep.hasNext()) {
                             final Traverser.Admin<Object> result = previousStep.next();
-                            if (result.isHalted()) {
+                            if (result.isHalted())
                                 haltedTraversers.add(MasterExecutor.detach(result, haltedTraverserFactory));
-                            } else {
-                                if (isRemoteTraverser(result, traversalMatrix)) {
-                                    remoteActiveTraversers.add(result.detach());
-                                } else
-                                    localActiveTraversers.add(result);
-                            }
+                            else if (isRemoteTraverser(result, traversalMatrix))
+                                remoteActiveTraversers.add(result.detach());
+                            else
+                                localActiveTraversers.add(result);
                         }
                     }
                     currentStep.addStart(traverser);
@@ -137,14 +132,12 @@ final class MasterExecutor {
             if (!(currentStep instanceof EmptyStep)) {
                 while (currentStep.hasNext()) {
                     final Traverser.Admin<Object> traverser = currentStep.next();
-                    if (traverser.isHalted()) {
+                    if (traverser.isHalted())
                         haltedTraversers.add(MasterExecutor.detach(traverser, haltedTraverserFactory));
-                    } else {
-                        if (isRemoteTraverser(traverser, traversalMatrix)) {
-                            remoteActiveTraversers.add(traverser.detach());
-                        } else
-                            localActiveTraversers.add(traverser);
-                    }
+                    else if (isRemoteTraverser(traverser, traversalMatrix))
+                        remoteActiveTraversers.add(traverser.detach());
+                    else
+                        localActiveTraversers.add(traverser);
                 }
             }
             assert toProcessTraversers.isEmpty();

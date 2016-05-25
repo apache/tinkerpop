@@ -23,10 +23,12 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
@@ -64,6 +66,7 @@ public class HaltedTraverserFactoryStrategyTest {
         g.V().out().outE().properties("weight").forEachRemaining(property -> assertEquals(DetachedProperty.class, property.getClass()));
         g.V().out().outE().values("weight").forEachRemaining(value -> assertEquals(Double.class, value.getClass()));
         g.V().out().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
+        g.V().out().out().path().forEachRemaining(path -> assertEquals(DetachedPath.class, path.getClass()));
     }
 
     @Test
@@ -77,7 +80,8 @@ public class HaltedTraverserFactoryStrategyTest {
         g.V().out().outE().properties("weight").forEachRemaining(property -> assertEquals(ReferenceProperty.class, property.getClass()));
         g.V().out().outE().values("weight").forEachRemaining(value -> assertEquals(Double.class, value.getClass()));
         g.V().out().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
-        //
+        g.V().out().out().path().forEachRemaining(path -> assertEquals(ReferencePath.class, path.getClass()));
+        // the default should be reference elements
         g = graph.traversal().withComputer();
         g.V().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         g.V().out().properties("name").forEachRemaining(vertexProperty -> assertEquals(ReferenceVertexProperty.class, vertexProperty.getClass()));
@@ -86,6 +90,7 @@ public class HaltedTraverserFactoryStrategyTest {
         g.V().out().outE().properties("weight").forEachRemaining(property -> assertEquals(ReferenceProperty.class, property.getClass()));
         g.V().out().outE().values("weight").forEachRemaining(value -> assertEquals(Double.class, value.getClass()));
         g.V().out().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
+        g.V().out().out().path().forEachRemaining(path -> assertEquals(ReferencePath.class, path.getClass()));
     }
 
 }
