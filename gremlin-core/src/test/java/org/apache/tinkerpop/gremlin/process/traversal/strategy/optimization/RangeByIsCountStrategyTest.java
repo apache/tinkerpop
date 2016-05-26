@@ -127,6 +127,8 @@ public class RangeByIsCountStrategyTest {
                     {__.out().count().is(0), __.not(__.out())},
                     {__.out().count().is(lt(1)), __.not(__.out())},
                     {__.out().count().is(lte(0)), __.not(__.out())},
+                    {__.out().count().is(0).as("a"), __.out().limit(1).count().is(0).as("a")},
+                    {__.out().count().as("a").is(0), __.out().limit(1).count().as("a").is(0)},
                     {__.out().count().is(neq(4)), __.out().limit(5).count().is(neq(4))},
                     {__.out().count().is(lte(3)), __.out().limit(4).count().is(lte(3))},
                     {__.out().count().is(lt(3)), __.out().limit(3).count().is(lt(3))},

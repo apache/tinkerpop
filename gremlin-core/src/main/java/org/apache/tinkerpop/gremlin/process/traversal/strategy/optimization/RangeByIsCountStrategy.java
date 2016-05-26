@@ -90,8 +90,9 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             final boolean update = highRange == null || highRangeCandidate > highRange;
                             if (update) {
                                 highRange = highRangeCandidate;
-                                useNotStep = (highRange <= 1L && predicate.equals(Compare.lt)) ||
-                                        (highRange == 1L && (predicate.equals(Compare.eq) || predicate.equals(Compare.lte)));
+                                useNotStep = curr.getLabels().isEmpty() && next.getLabels().isEmpty()
+                                        && ((highRange <= 1L && predicate.equals(Compare.lt))
+                                        || (highRange == 1L && (predicate.equals(Compare.eq) || predicate.equals(Compare.lte))));
                             }
                         } else {
                             final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
