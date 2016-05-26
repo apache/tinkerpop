@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.tinkergraph.process.computer.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.HaltedTraverserFactoryStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HaltedTraverserFactoryStrategyTest {
+public class HaltedTraverserStrategyTest {
 
     @Before
     public void setup() {
@@ -57,8 +57,8 @@ public class HaltedTraverserFactoryStrategyTest {
 
     @Test
     public void shouldReturnDetachedElements() {
-        Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserFactoryStrategy.detached());
+        final Graph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserStrategy.detached());
         g.V().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
         g.V().out().properties("name").forEachRemaining(vertexProperty -> assertEquals(DetachedVertexProperty.class, vertexProperty.getClass()));
         g.V().out().values("name").forEachRemaining(value -> assertEquals(String.class, value.getClass()));
@@ -67,12 +67,14 @@ public class HaltedTraverserFactoryStrategyTest {
         g.V().out().outE().values("weight").forEachRemaining(value -> assertEquals(Double.class, value.getClass()));
         g.V().out().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
         g.V().out().out().path().forEachRemaining(path -> assertEquals(DetachedPath.class, path.getClass()));
+        g.V().out().pageRank().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
+        g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
     }
 
     @Test
     public void shouldReturnReferenceElements() {
-        Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserFactoryStrategy.reference());
+        final Graph graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserStrategy.reference());
         g.V().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         g.V().out().properties("name").forEachRemaining(vertexProperty -> assertEquals(ReferenceVertexProperty.class, vertexProperty.getClass()));
         g.V().out().values("name").forEachRemaining(value -> assertEquals(String.class, value.getClass()));
@@ -81,6 +83,8 @@ public class HaltedTraverserFactoryStrategyTest {
         g.V().out().outE().values("weight").forEachRemaining(value -> assertEquals(Double.class, value.getClass()));
         g.V().out().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         g.V().out().out().path().forEachRemaining(path -> assertEquals(ReferencePath.class, path.getClass()));
+        g.V().out().pageRank().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
+        g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         // the default should be reference elements
         g = graph.traversal().withComputer();
         g.V().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
@@ -91,6 +95,8 @@ public class HaltedTraverserFactoryStrategyTest {
         g.V().out().outE().values("weight").forEachRemaining(value -> assertEquals(Double.class, value.getClass()));
         g.V().out().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
         g.V().out().out().path().forEachRemaining(path -> assertEquals(ReferencePath.class, path.getClass()));
+        g.V().out().pageRank().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
+        g.V().out().pageRank().out().forEachRemaining(vertex -> assertEquals(ReferenceVertex.class, vertex.getClass()));
     }
 
 }

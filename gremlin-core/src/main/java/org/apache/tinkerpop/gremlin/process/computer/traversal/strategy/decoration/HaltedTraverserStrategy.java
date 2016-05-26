@@ -19,49 +19,36 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HaltedTraverserFactoryStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private final Class haltedTraverserFactory;
 
-    private HaltedTraverserFactoryStrategy(final Class haltedTraverserFactory) {
+    private HaltedTraverserStrategy(final Class haltedTraverserFactory) {
         this.haltedTraverserFactory = haltedTraverserFactory;
     }
 
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // only the root traversal should be processed
-        if (traversal.getParent() instanceof EmptyStep) {
-            final List<TraversalVertexProgramStep> steps = TraversalHelper.getStepsOfAssignableClass(TraversalVertexProgramStep.class, traversal);
-            // only the last step (the one returning data) needs to have a non-reference traverser factory
-            if (!steps.isEmpty())
-                steps.get(steps.size() - 1).setHaltedTraverserFactory(this.haltedTraverserFactory);
-        }
+        // do nothing as this is simply a metadata strategy
     }
 
-    public static HaltedTraverserFactoryStrategy detached() {
-        return new HaltedTraverserFactoryStrategy(DetachedFactory.class);
+    public Class getHaltedTraverserFactory() {
+        return this.haltedTraverserFactory;
     }
 
-    public static HaltedTraverserFactoryStrategy reference() {
-        return new HaltedTraverserFactoryStrategy(ReferenceFactory.class);
+    public static HaltedTraverserStrategy detached() {
+        return new HaltedTraverserStrategy(DetachedFactory.class);
     }
 
-    public Set<Class<? extends DecorationStrategy>> applyPrior() {
-        return Collections.singleton(VertexProgramStrategy.class);
+    public static HaltedTraverserStrategy reference() {
+        return new HaltedTraverserStrategy(ReferenceFactory.class);
     }
 }

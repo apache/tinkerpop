@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +41,6 @@ import java.util.Set;
 public final class TraversalVertexProgramStep extends VertexProgramStep implements TraversalParent {
 
     public PureTraversal<?, ?> computerTraversal;
-    private Class haltedTraverserFactory = ReferenceFactory.class;
 
     public TraversalVertexProgramStep(final Traversal.Admin traversal, final Traversal.Admin<?, ?> computerTraversal) {
         super(traversal);
@@ -71,9 +69,7 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
         this.getTraversal().getStrategies().toList().forEach(computerSpecificTraversal.getStrategies()::addStrategies);
         computerSpecificTraversal.setSideEffects(new MemoryTraversalSideEffects(this.getTraversal().getSideEffects()));
         computerSpecificTraversal.setParent(this);
-        final TraversalVertexProgram.Builder builder = TraversalVertexProgram.build()
-                .traversal(computerSpecificTraversal)
-                .haltedTraverserFactory(this.haltedTraverserFactory);
+        final TraversalVertexProgram.Builder builder = TraversalVertexProgram.build().traversal(computerSpecificTraversal);
         if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
             builder.haltedTraversers(memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
         return builder.create(graph);
@@ -98,10 +94,6 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
         this.integrateChild(this.computerTraversal.get());
-    }
-
-    public void setHaltedTraverserFactory(final Class haltedTraverserDetachFactory) {
-        this.haltedTraverserFactory = haltedTraverserDetachFactory;
     }
 
     /*@Override
