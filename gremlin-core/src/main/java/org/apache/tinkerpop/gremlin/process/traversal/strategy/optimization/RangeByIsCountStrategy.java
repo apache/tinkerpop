@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
@@ -95,17 +96,16 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             final Long highRangeCandidate = ((Number) value).longValue() + highRangeOffset;
                             final boolean update = highRange == null || highRangeCandidate > highRange;
                             if (update) {
-                                final boolean isNested = !(parent instanceof EmptyStep);
-                                if (isNested) {
+                                if (parent instanceof EmptyStep) {
+                                    useNotStep = true;
+                                } else {
                                     if (parent instanceof RepeatStep) {
                                         final RepeatStep repeatStep = (RepeatStep) parent;
                                         useNotStep = Objects.equals(traversal, repeatStep.getUntilTraversal())
                                                 || Objects.equals(traversal, repeatStep.getEmitTraversal());
                                     } else {
-                                        useNotStep = parent instanceof SideEffectStep;
+                                        useNotStep = parent instanceof FilterStep || parent instanceof SideEffectStep;
                                     }
-                                } else {
-                                    useNotStep = true;
                                 }
                                 highRange = highRangeCandidate;
                                 useNotStep &= curr.getLabels().isEmpty() && next.getLabels().isEmpty()
