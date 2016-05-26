@@ -25,10 +25,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -70,6 +73,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        final TraversalParent parent = traversal.getParent();
         int size = traversal.getSteps().size();
         Step prev = null;
         for (int i = 0; i < size; i++) {
@@ -89,8 +93,11 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             final Long highRangeCandidate = ((Number) value).longValue() + highRangeOffset;
                             final boolean update = highRange == null || highRangeCandidate > highRange;
                             if (update) {
+                                final boolean isNested = !(parent instanceof EmptyStep);
                                 highRange = highRangeCandidate;
                                 useNotStep = curr.getLabels().isEmpty() && next.getLabels().isEmpty()
+                                        && (!isNested || parent instanceof SideEffectStep)
+                                        && next.getNextStep() instanceof EmptyStep
                                         && ((highRange <= 1L && predicate.equals(Compare.lt))
                                         || (highRange == 1L && (predicate.equals(Compare.eq) || predicate.equals(Compare.lte))));
                             }
@@ -111,9 +118,13 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             traversal.asAdmin().removeStep(next); // IsStep
                             traversal.asAdmin().removeStep(curr); // CountStep
                             size -= 2;
-                            final Traversal.Admin inner = __.start().asAdmin();
-                            TraversalHelper.insertAfterStep(prev, inner.getStartStep(), inner);
-                            TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
+                            if (prev != null) {
+                                final Traversal.Admin inner = __.start().asAdmin();
+                                TraversalHelper.insertAfterStep(prev, inner.getStartStep(), inner);
+                                TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
+                            } else {
+                                traversal.asAdmin().addStep(new NotStep<>(traversal, __.identity()));
+                            }
                         } else {
                             TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
                         }

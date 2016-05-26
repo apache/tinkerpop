@@ -124,10 +124,12 @@ public class RangeByIsCountStrategyTest {
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
+                    {__.count().is(0), __.not(__.identity())},
+                    {__.count().is(1), __.limit(2).count().is(1)},
                     {__.out().count().is(0), __.not(__.out())},
-                    {__.out().count().is(lt(1)), __.not(__.out())},
-                    {__.out().count().is(lte(0)), __.not(__.out())},
-                    {__.out().count().is(0).as("a"), __.out().limit(1).count().is(0).as("a")},
+                    {__.outE().count().is(lt(1)), __.not(__.outE())},
+                    {__.both().count().is(lte(0)), __.not(__.both())},
+                    {__.store("x").count().is(0).as("a"), __.store("x").limit(1).count().is(0).as("a")},
                     {__.out().count().as("a").is(0), __.out().limit(1).count().as("a").is(0)},
                     {__.out().count().is(neq(4)), __.out().limit(5).count().is(neq(4))},
                     {__.out().count().is(lte(3)), __.out().limit(4).count().is(lte(3))},
@@ -137,7 +139,13 @@ public class RangeByIsCountStrategyTest {
                     {__.out().count().is(inside(2, 4)), __.out().limit(4).count().is(inside(2, 4))},
                     {__.out().count().is(outside(2, 4)), __.out().limit(5).count().is(outside(2, 4))},
                     {__.out().count().is(within(2, 6, 4)), __.out().limit(7).count().is(within(2, 6, 4))},
-                    {__.out().count().is(without(2, 6, 4)), __.out().limit(6).count().is(without(2, 6, 4))}});
+                    {__.out().count().is(without(2, 6, 4)), __.out().limit(6).count().is(without(2, 6, 4))},
+                    {__.map(__.count().is(0)), __.map(__.count().limit(1).is(0))},
+                    {__.flatMap(__.count().is(0)), __.flatMap(__.count().limit(1).is(0))},
+                    {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
+                    {__.branch(__.count().is(0)), __.branch(__.count().limit(1).is(0))},
+                    {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
+            });
         }
     }
 }
