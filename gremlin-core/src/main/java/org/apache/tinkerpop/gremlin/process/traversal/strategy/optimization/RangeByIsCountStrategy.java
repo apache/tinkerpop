@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
@@ -41,6 +42,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -94,9 +96,19 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             final boolean update = highRange == null || highRangeCandidate > highRange;
                             if (update) {
                                 final boolean isNested = !(parent instanceof EmptyStep);
+                                if (isNested) {
+                                    if (parent instanceof RepeatStep) {
+                                        final RepeatStep repeatStep = (RepeatStep) parent;
+                                        useNotStep = Objects.equals(traversal, repeatStep.getUntilTraversal())
+                                                || Objects.equals(traversal, repeatStep.getEmitTraversal());
+                                    } else {
+                                        useNotStep = parent instanceof SideEffectStep;
+                                    }
+                                } else {
+                                    useNotStep = true;
+                                }
                                 highRange = highRangeCandidate;
-                                useNotStep = curr.getLabels().isEmpty() && next.getLabels().isEmpty()
-                                        && (!isNested || parent instanceof SideEffectStep)
+                                useNotStep &= curr.getLabels().isEmpty() && next.getLabels().isEmpty()
                                         && next.getNextStep() instanceof EmptyStep
                                         && ((highRange <= 1L && predicate.equals(Compare.lt))
                                         || (highRange == 1L && (predicate.equals(Compare.eq) || predicate.equals(Compare.lte))));
