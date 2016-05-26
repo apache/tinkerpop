@@ -107,7 +107,7 @@ public class RangeByIsCountStrategyTest {
 
         protected TraversalEngine traversalEngine;
 
-        void applyAdjacentToIncidentStrategy(final Traversal traversal) {
+        void applyRangeByIsCountStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(RangeByIsCountStrategy.instance());
 
@@ -117,7 +117,7 @@ public class RangeByIsCountStrategyTest {
         }
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyAdjacentToIncidentStrategy(traversal);
+            applyRangeByIsCountStrategy(traversal);
             assertEquals(optimized, traversal);
         }
 
@@ -140,10 +140,10 @@ public class RangeByIsCountStrategyTest {
                     {__.out().count().is(outside(2, 4)), __.out().limit(5).count().is(outside(2, 4))},
                     {__.out().count().is(within(2, 6, 4)), __.out().limit(7).count().is(within(2, 6, 4))},
                     {__.out().count().is(without(2, 6, 4)), __.out().limit(6).count().is(without(2, 6, 4))},
-                    {__.map(__.count().is(0)), __.map(__.count().limit(1).is(0))},
-                    {__.flatMap(__.count().is(0)), __.flatMap(__.count().limit(1).is(0))},
+                    {__.map(__.count().is(0)), __.map(__.limit(1).count().is(0))},
+                    {__.flatMap(__.count().is(0)), __.flatMap(__.limit(1).count().is(0))},
                     {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
-                    {__.branch(__.count().is(0)), __.branch(__.count().limit(1).is(0))},
+                    {__.branch(__.count().is(0)), __.branch(__.limit(1).count().is(0))},
                     {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
                     {__.repeat(__.out()).until(__.outE().count().is(0)), __.repeat(__.out()).until(__.not(__.outE()))},
                     {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
