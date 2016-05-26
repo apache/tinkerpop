@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.tinkergraph.process.computer.traversal.strategy.decoration;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
