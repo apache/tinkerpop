@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorat
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
@@ -33,7 +34,10 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
     private final Class haltedTraverserFactory;
 
     private HaltedTraverserStrategy(final Class haltedTraverserFactory) {
-        this.haltedTraverserFactory = haltedTraverserFactory;
+        if (haltedTraverserFactory.equals(DetachedFactory.class) || haltedTraverserFactory.equals(ReferenceFactory.class))
+            this.haltedTraverserFactory = haltedTraverserFactory;
+        else
+            throw new IllegalArgumentException("The provided traverser detachment factory is unknown: " + haltedTraverserFactory);
     }
 
     public void apply(final Traversal.Admin<?, ?> traversal) {
@@ -44,6 +48,16 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
         return this.haltedTraverserFactory;
     }
 
+    public <R> Traverser.Admin<R> halt(final Traverser.Admin<R> traverser) {
+        if (ReferenceFactory.class.equals(this.haltedTraverserFactory))
+            traverser.set(ReferenceFactory.detach(traverser.get()));
+        else
+            traverser.set(DetachedFactory.detach(traverser.get(), true));
+        return traverser;
+    }
+
+    ////////////
+
     public static HaltedTraverserStrategy detached() {
         return new HaltedTraverserStrategy(DetachedFactory.class);
     }
@@ -51,4 +65,5 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
     public static HaltedTraverserStrategy reference() {
         return new HaltedTraverserStrategy(ReferenceFactory.class);
     }
+
 }

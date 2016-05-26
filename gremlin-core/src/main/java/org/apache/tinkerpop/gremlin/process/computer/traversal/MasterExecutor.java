@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -57,18 +58,6 @@ final class MasterExecutor {
 
     }
 
-    // the halted traversers can either be reference or detached elements -- this is good for determining how much data around the element the user wants to get
-    // see HaltedTraverserFactoryStrategy for how this is all connected
-    protected static <R> Traverser.Admin<R> detach(final Traverser.Admin<R> traverser, final Class haltedTraverserFactory) {
-        if (haltedTraverserFactory.equals(DetachedFactory.class))
-            traverser.set(DetachedFactory.detach(traverser.get(), true));
-        else if (haltedTraverserFactory.equals(ReferenceFactory.class))
-            traverser.set(ReferenceFactory.detach(traverser.get()));
-        else
-            throw new IllegalArgumentException("The following detaching factory is unknown: " + haltedTraverserFactory);
-        return traverser;
-    }
-
     protected static void processMemory(final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final TraverserSet<Object> toProcessTraversers, final Set<String> completedBarriers) {
         // handle traversers and data that were sent from the workers to the master traversal via memory
         if (memory.exists(TraversalVertexProgram.MUTATED_MEMORY_KEYS)) {
@@ -94,7 +83,7 @@ final class MasterExecutor {
                                             TraverserSet<Object> toProcessTraversers,
                                             final TraverserSet<Object> remoteActiveTraversers,
                                             final TraverserSet<Object> haltedTraversers,
-                                            final Class haltedTraverserFactory) {
+                                            final HaltedTraverserStrategy haltedTraverserStrategy) {
 
         while (!toProcessTraversers.isEmpty()) {
             final TraverserSet<Object> localActiveTraversers = new TraverserSet<>();
@@ -109,7 +98,7 @@ final class MasterExecutor {
                 traverser.set(DetachedFactory.detach(traverser.get(), true)); // why?
                 traverser.setSideEffects(traversal.get().getSideEffects());
                 if (traverser.isHalted())
-                    haltedTraversers.add(MasterExecutor.detach(traverser, haltedTraverserFactory));
+                    haltedTraversers.add(haltedTraverserStrategy.halt(traverser));
                 else if (isRemoteTraverser(traverser, traversalMatrix))  // this is so that patterns like order().name work as expected. try and stay local as long as possible
                     remoteActiveTraversers.add(traverser.detach());
                 else {
@@ -118,7 +107,7 @@ final class MasterExecutor {
                         while (previousStep.hasNext()) {
                             final Traverser.Admin<Object> result = previousStep.next();
                             if (result.isHalted())
-                                haltedTraversers.add(MasterExecutor.detach(result, haltedTraverserFactory));
+                                haltedTraversers.add(haltedTraverserStrategy.halt(traverser));
                             else if (isRemoteTraverser(result, traversalMatrix))
                                 remoteActiveTraversers.add(result.detach());
                             else
@@ -133,7 +122,7 @@ final class MasterExecutor {
                 while (currentStep.hasNext()) {
                     final Traverser.Admin<Object> traverser = currentStep.next();
                     if (traverser.isHalted())
-                        haltedTraversers.add(MasterExecutor.detach(traverser, haltedTraverserFactory));
+                        haltedTraversers.add(haltedTraverserStrategy.halt(traverser));
                     else if (isRemoteTraverser(traverser, traversalMatrix))
                         remoteActiveTraversers.add(traverser.detach());
                     else
