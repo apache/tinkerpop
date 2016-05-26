@@ -145,6 +145,8 @@ public class RangeByIsCountStrategyTest {
                     {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
                     {__.branch(__.count().is(0)), __.branch(__.count().limit(1).is(0))},
                     {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
+                    {__.repeat(__.out()).until(__.outE().count().is(0)), __.repeat(__.out()).until(__.not(__.outE()))},
+                    {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
             });
         }
     }
