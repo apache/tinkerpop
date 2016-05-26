@@ -62,7 +62,7 @@ public abstract class GroovySackTest {
         @Override
         public Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(
                 final Object v1Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(1.0d,sum).V(${v1Id}).local(out('knows').barrier(normSack)).in('knows').barrier.sack", "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(1.0d,sum).V(v1Id).local(out('knows').barrier(normSack)).in('knows').barrier.sack", "v1Id", v1Id)
         }
 
         @Override
