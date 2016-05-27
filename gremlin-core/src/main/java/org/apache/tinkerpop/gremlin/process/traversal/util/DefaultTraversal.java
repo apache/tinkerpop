@@ -302,9 +302,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public int hashCode() {
+        int index = 0;
         int result = this.getClass().hashCode();
         for (final Step step : this.asAdmin().getSteps()) {
-            result ^= step.hashCode();
+            result ^= Integer.rotateLeft(step.hashCode(), index++);
         }
         return result;
     }

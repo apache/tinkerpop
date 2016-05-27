@@ -18,24 +18,32 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -47,7 +55,7 @@ import java.util.function.BiPredicate;
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>
- * __.outE().count().is(0)      // is replaced by __.outE().limit(1).count().is(0)
+ * __.outE().count().is(0)      // is replaced by __.not(outE())
  * __.outE().count().is(lt(3))  // is replaced by __.outE().limit(3).count().is(lt(3))
  * __.outE().count().is(gt(3))  // is replaced by __.outE().limit(4).count().is(gt(3))
  * </pre>
@@ -68,7 +76,8 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        final int size = traversal.getSteps().size();
+        final TraversalParent parent = traversal.getParent();
+        int size = traversal.getSteps().size();
         Step prev = null;
         for (int i = 0; i < size; i++) {
             final Step curr = traversal.getSteps().get(i);
@@ -78,6 +87,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                     final IsStep isStep = (IsStep) next;
                     final P isStepPredicate = isStep.getPredicate();
                     Long highRange = null;
+                    boolean useNotStep = false;
                     for (P p : isStepPredicate instanceof ConnectiveP ? ((ConnectiveP<?>) isStepPredicate).getPredicates() : Collections.singletonList(isStepPredicate)) {
                         final Object value = p.getValue();
                         final BiPredicate predicate = p.getBiPredicate();
@@ -85,7 +95,24 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                             final Long highRangeCandidate = ((Number) value).longValue() + highRangeOffset;
                             final boolean update = highRange == null || highRangeCandidate > highRange;
-                            if (update) highRange = highRangeCandidate;
+                            if (update) {
+                                if (parent instanceof EmptyStep) {
+                                    useNotStep = true;
+                                } else {
+                                    if (parent instanceof RepeatStep) {
+                                        final RepeatStep repeatStep = (RepeatStep) parent;
+                                        useNotStep = Objects.equals(traversal, repeatStep.getUntilTraversal())
+                                                || Objects.equals(traversal, repeatStep.getEmitTraversal());
+                                    } else {
+                                        useNotStep = parent instanceof FilterStep || parent instanceof SideEffectStep;
+                                    }
+                                }
+                                highRange = highRangeCandidate;
+                                useNotStep &= curr.getLabels().isEmpty() && next.getLabels().isEmpty()
+                                        && next.getNextStep() instanceof EmptyStep
+                                        && ((highRange <= 1L && predicate.equals(Compare.lt))
+                                        || (highRange == 1L && (predicate.equals(Compare.eq) || predicate.equals(Compare.lte))));
+                            }
                         } else {
                             final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
                             if (value instanceof Collection && highRangeOffset != null) {
@@ -99,7 +126,20 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                         }
                     }
                     if (highRange != null) {
-                        TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
+                        if (useNotStep) {
+                            traversal.asAdmin().removeStep(next); // IsStep
+                            traversal.asAdmin().removeStep(curr); // CountStep
+                            size -= 2;
+                            if (prev != null) {
+                                final Traversal.Admin inner = __.start().asAdmin();
+                                TraversalHelper.insertAfterStep(prev, inner.getStartStep(), inner);
+                                TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
+                            } else {
+                                traversal.asAdmin().addStep(new NotStep<>(traversal, __.identity()));
+                            }
+                        } else {
+                            TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
+                        }
                         i++;
                     }
                 }
