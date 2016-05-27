@@ -23,21 +23,14 @@ import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkExportVerte
 
 def stringify(vertex) {
   def result = null
-  def haltedTraversers = vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS)
-  if (haltedTraversers.isPresent()) {
-    def properties = vertex.value(BulkExportVertexProgram.BULK_EXPORT_PROPERTIES).split("\1")*.split("\2", 2)*.toList()
+  def rows = vertex.property(BulkExportVertexProgram.BULK_EXPORT_PROPERTIES)
+  if (rows.isPresent()) {
     def writer = new StringWriter()
     def w = new CSVWriter(writer)
-    haltedTraversers.value().each { def t ->
-      def values = []
-      properties.each { def property, def format ->
-        def value = t.path(property)
-        values << (format.isEmpty() ? value.toString() : String.format(format, value))
-      }
-      w.writeNext((String[]) values, false)
+    rows.value().each { def row ->
+      w.writeNext((String[]) row, false)
     }
     result = writer.toString().trim()
-    writer.close()
   }
   return result
 }

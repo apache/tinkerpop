@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -37,9 +39,13 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.javatuples.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -50,7 +56,8 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
     public static final String BULK_EXPORT_PROPERTIES = String.join(".", BULK_EXPORT_VERTEX_PROGRAM_CFG_PREFIX, "properties");
 
     private Configuration configuration;
-    private String properties;
+    private Map<String, String> properties;
+    private List<String> sortedProperties;
     private Set<VertexComputeKey> vertexComputeKeys;
 
     private BulkExportVertexProgram() {
@@ -62,7 +69,13 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
         if (config != null) {
             ConfigurationUtils.copy(config, configuration);
         }
-        properties = configuration.getString(BULK_EXPORT_PROPERTIES);
+        properties = new HashMap<>();
+        sortedProperties = new ArrayList<>();
+        for (final String tuple : configuration.getString(BULK_EXPORT_PROPERTIES, "").split("\1")) {
+            final String[] parts = tuple.split("\2", -1);
+            properties.put(parts[0], parts[1]);
+            sortedProperties.add(parts[0]);
+        }
         vertexComputeKeys = Collections.singleton(VertexComputeKey.of(BULK_EXPORT_PROPERTIES, false));
     }
 
@@ -81,9 +94,23 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
     @Override
     public void execute(final Vertex sourceVertex, final Messenger<Tuple> messenger, final Memory memory) {
         final VertexProperty<TraverserSet> haltedTraversers = sourceVertex.property(TraversalVertexProgram.HALTED_TRAVERSERS);
-        if (haltedTraversers.isPresent()) {
-            sourceVertex.property(BULK_EXPORT_PROPERTIES, properties);
-        }
+        haltedTraversers.ifPresent(traverserSet -> {
+            final List<List<String>> rows = new ArrayList<>();
+            for (final Traverser t : (Iterable<Traverser>) traverserSet) {
+                final List<String> columns = new ArrayList<>();
+                final Path path = t.path();
+                final Iterable<String> keys = properties.isEmpty()
+                        ? t.path().labels().stream().flatMap(Collection::stream).sorted().collect(Collectors.toSet())
+                        : sortedProperties;
+                for (final String key : keys) {
+                    final String format = properties.getOrDefault(key, "");
+                    final Object value = path.get(key);
+                    columns.add("".equals(format) ? value.toString() : String.format(format, value));
+                }
+                rows.add(columns);
+            }
+            sourceVertex.property(BULK_EXPORT_PROPERTIES, rows);
+        });
     }
 
     @Override
@@ -139,7 +166,6 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
         @Override
         public BulkExportVertexProgram create(final Graph graph) {
             configuration.setProperty(BULK_EXPORT_PROPERTIES, String.join("\1", properties));
-            graph.configuration().setProperty("gremlin.hadoop.graphWriter", "org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat");
             return (BulkExportVertexProgram) VertexProgram.createVertexProgram(graph, configuration);
         }
 
