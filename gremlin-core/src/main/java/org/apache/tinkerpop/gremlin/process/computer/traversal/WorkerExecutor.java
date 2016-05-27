@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -35,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -51,8 +53,12 @@ final class WorkerExecutor {
 
     }
 
-    protected static boolean execute(final Vertex vertex, final Messenger<TraverserSet<Object>> messenger, final TraversalMatrix<?, ?> traversalMatrix, final Memory memory, final boolean returnHaltedTraversers) {
-
+    protected static boolean execute(final Vertex vertex,
+                                     final Messenger<TraverserSet<Object>> messenger,
+                                     final TraversalMatrix<?, ?> traversalMatrix,
+                                     final Memory memory,
+                                     final boolean returnHaltedTraversers,
+                                     final HaltedTraverserStrategy haltedTraverserStrategy) {
         final TraversalSideEffects traversalSideEffects = traversalMatrix.getTraversal().getSideEffects();
         final AtomicBoolean voteToHalt = new AtomicBoolean(true);
         final TraverserSet<Object> haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
@@ -63,66 +69,82 @@ final class WorkerExecutor {
         // GENERATE LOCAL TRAVERSERS //
         ///////////////////////////////
 
-        // these are traversers that are going from OLTP to OLAP
+        // MASTER ACTIVE
+        // these are traversers that are going from OLTP (master) to OLAP (workers)
+        // these traversers were broadcasted from the master traversal to the workers for attachment
         final TraverserSet<Object> maybeActiveTraversers = memory.get(TraversalVertexProgram.ACTIVE_TRAVERSERS);
-        final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
-        while (iterator.hasNext()) {
-            final Traverser.Admin<Object> traverser = iterator.next();
-            if (vertex.equals(WorkerExecutor.getHostingVertex(traverser.get()))) {
-                // iterator.remove(); ConcurrentModificationException
-                traverser.attach(Attachable.Method.get(vertex));
-                traverser.setSideEffects(traversalSideEffects);
-                toProcessTraversers.add(traverser);
+        // some memory systems are interacted with by multiple threads and thus, concurrent modification can happen at iterator.remove().
+        // its better to reduce the memory footprint and shorten the active traverser list so synchronization is worth it.
+        // most distributed OLAP systems have the memory partitioned and thus, this synchronization does nothing.
+        synchronized (maybeActiveTraversers) {
+            if (!maybeActiveTraversers.isEmpty()) {
+                final Iterator<Traverser.Admin<Object>> iterator = maybeActiveTraversers.iterator();
+                while (iterator.hasNext()) {
+                    final Traverser.Admin<Object> traverser = iterator.next();
+                    if (vertex.equals(WorkerExecutor.getHostingVertex(traverser.get()))) {
+                        iterator.remove();
+                        traverser.attach(Attachable.Method.get(vertex));
+                        traverser.setSideEffects(traversalSideEffects);
+                        toProcessTraversers.add(traverser);
+                    }
+                }
             }
         }
+
+        // WORKER ACTIVE
         // these are traversers that exist from from a local barrier
+        // these traversers will simply saved at the local vertex while the master traversal synchronized the barrier
         vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).ifPresent(previousActiveTraversers -> {
             IteratorUtils.removeOnNext(previousActiveTraversers.iterator()).forEachRemaining(traverser -> {
                 traverser.attach(Attachable.Method.get(vertex));
                 traverser.setSideEffects(traversalSideEffects);
                 toProcessTraversers.add(traverser);
             });
+            assert previousActiveTraversers.isEmpty();
+            // remove the property to save space
             vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS).remove();
         });
-        // these are traversers that have been messaged to the vertex
+
+        // TRAVERSER MESSAGES (WORKER -> WORKER)
+        // these are traversers that have been messaged to the vertex from another vertex
         final Iterator<TraverserSet<Object>> messages = messenger.receiveMessages();
         while (messages.hasNext()) {
-            final Iterator<Traverser.Admin<Object>> traversers = messages.next().iterator();
-            while (traversers.hasNext()) {
-                final Traverser.Admin<Object> traverser = traversers.next();
-                traversers.remove();
+            IteratorUtils.removeOnNext(messages.next().iterator()).forEachRemaining(traverser -> {
                 if (traverser.isHalted()) {
                     if (returnHaltedTraversers)
-                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(haltedTraverserStrategy.halt(traverser)));
                     else
-                        haltedTraversers.add(traverser);
+                        haltedTraversers.add(traverser); // the traverser has already been detached so no need to detach it again
                 } else {
+                    // traverser is not halted and thus, should be processed locally
+                    // attach it and process
                     traverser.attach(Attachable.Method.get(vertex));
                     traverser.setSideEffects(traversalSideEffects);
                     toProcessTraversers.add(traverser);
                 }
-            }
+            });
         }
 
         ///////////////////////////////
         // PROCESS LOCAL TRAVERSERS //
         //////////////////////////////
 
-        // while there are still local traversers, process them until they leave the vertex or halt (i.e. isHalted()).
+        // while there are still local traversers, process them until they leave the vertex (message pass) or halt (store).
         while (!toProcessTraversers.isEmpty()) {
-            // process local traversers and if alive, repeat, else halt.
             Step<Object, Object> previousStep = EmptyStep.instance();
             Iterator<Traverser.Admin<Object>> traversers = toProcessTraversers.iterator();
             while (traversers.hasNext()) {
                 final Traverser.Admin<Object> traverser = traversers.next();
                 traversers.remove();
                 final Step<Object, Object> currentStep = traversalMatrix.getStepById(traverser.getStepId());
+                // try and fill up the current step as much as possible with traversers to get a bulking optimization
                 if (!currentStep.getId().equals(previousStep.getId()) && !(previousStep instanceof EmptyStep))
-                    WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
+                    WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers, haltedTraverserStrategy);
                 currentStep.addStart(traverser);
                 previousStep = currentStep;
             }
-            WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers);
+            WorkerExecutor.drainStep(vertex, previousStep, activeTraversers, haltedTraversers, memory, returnHaltedTraversers, haltedTraverserStrategy);
+            // all processed traversers should be either halted or active
             assert toProcessTraversers.isEmpty();
             // process all the local objects and send messages or store locally again
             if (!activeTraversers.isEmpty()) {
@@ -130,16 +152,15 @@ final class WorkerExecutor {
                 while (traversers.hasNext()) {
                     final Traverser.Admin<Object> traverser = traversers.next();
                     traversers.remove();
+                    // decide whether to message the traverser or to process it locally
                     if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
                         // if the element is remote, then message, else store it locally for re-processing
                         final Vertex hostingVertex = WorkerExecutor.getHostingVertex(traverser.get());
-                        if (!vertex.equals(hostingVertex)) { // necessary for path access
-                            voteToHalt.set(false);
-                            traverser.detach();
-                            messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser));
+                        if (!vertex.equals(hostingVertex)) { // if its host is not the current vertex, then send the traverser to the hosting vertex
+                            voteToHalt.set(false); // if message is passed, then don't vote to halt
+                            messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser.detach()));
                         } else {
-                            if (traverser.get() instanceof Attachable)   // necessary for path access to local object
-                                traverser.attach(Attachable.Method.get(vertex));
+                            traverser.attach(Attachable.Method.get(vertex)); // necessary for select() steps that reference the current object
                             toProcessTraversers.add(traverser);
                         }
                     } else                                                                              // STANDARD OBJECT
@@ -151,14 +172,21 @@ final class WorkerExecutor {
         return voteToHalt.get();
     }
 
-    private static void drainStep(final Vertex vertex, final Step<Object, Object> step, final TraverserSet<Object> activeTraversers, final TraverserSet<Object> haltedTraversers, final Memory memory, final boolean returnHaltedTraversers) {
+    private static void drainStep(final Vertex vertex,
+                                  final Step<Object, Object> step,
+                                  final TraverserSet<Object> activeTraversers,
+                                  final TraverserSet<Object> haltedTraversers,
+                                  final Memory memory,
+                                  final boolean returnHaltedTraversers,
+                                  final HaltedTraverserStrategy haltedTraverserStrategy) {
         if (step instanceof Barrier) {
             if (step instanceof Bypassing)
                 ((Bypassing) step).setBypass(true);
             if (step instanceof LocalBarrier) {
+                // local barrier traversers are stored on the vertex until the master traversal synchronizes the system
                 final LocalBarrier<Object> barrier = (LocalBarrier<Object>) step;
-                final TraverserSet<Object> traverserSet = vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).orElse(new TraverserSet<>());
-                vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS, traverserSet);
+                final TraverserSet<Object> localBarrierTraversers = vertex.<TraverserSet<Object>>property(TraversalVertexProgram.ACTIVE_TRAVERSERS).orElse(new TraverserSet<>());
+                vertex.property(TraversalVertexProgram.ACTIVE_TRAVERSERS, localBarrierTraversers);
                 while (barrier.hasNextBarrier()) {
                     final TraverserSet<Object> barrierSet = barrier.nextBarrier();
                     IteratorUtils.removeOnNext(barrierSet.iterator()).forEachRemaining(traverser -> {
@@ -167,15 +195,12 @@ final class WorkerExecutor {
                                 (returnHaltedTraversers ||
                                         (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
                                         getHostingVertex(traverser.get()).equals(vertex))) {
-                            traverser.detach();
                             if (returnHaltedTraversers)
-                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
+                                memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(haltedTraverserStrategy.halt(traverser)));
                             else
-                                haltedTraversers.add(traverser);
-                        } else {
-                            traverser.detach();
-                            traverserSet.add(traverser);
-                        }
+                                haltedTraversers.add(traverser.detach());
+                        } else
+                            localBarrierTraversers.add(traverser.detach());
                     });
                 }
                 memory.add(TraversalVertexProgram.MUTATED_MEMORY_KEYS, new HashSet<>(Collections.singleton(step.getId())));
@@ -189,14 +214,14 @@ final class WorkerExecutor {
         } else { // LOCAL PROCESSING
             step.forEachRemaining(traverser -> {
                 if (traverser.isHalted() &&
-                        (returnHaltedTraversers ||
+                        // if its a ReferenceFactory (one less iteration required)
+                        ((returnHaltedTraversers || ReferenceFactory.class == haltedTraverserStrategy.getHaltedTraverserFactory()) &&
                                 (!(traverser.get() instanceof Element) && !(traverser.get() instanceof Property)) ||
                                 getHostingVertex(traverser.get()).equals(vertex))) {
-                    traverser.detach();
                     if (returnHaltedTraversers)
-                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(traverser));
+                        memory.add(TraversalVertexProgram.HALTED_TRAVERSERS, new TraverserSet<>(haltedTraverserStrategy.halt(traverser)));
                     else
-                        haltedTraversers.add(traverser);
+                        haltedTraversers.add(traverser.detach());
                 } else {
                     activeTraversers.add(traverser);
                 }
