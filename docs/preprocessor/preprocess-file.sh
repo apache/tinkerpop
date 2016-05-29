@@ -132,7 +132,8 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   fi
 
   if [ ${ec} -eq 0 ]; then
-    ec=`grep -c '\bpb([0-9][0-9]*);' ${output}`
+    tail -n1 ${output} | grep -F '// LAST LINE' > /dev/null
+    ec=$?
   fi
 
   if [ ${ec} -eq 0 ]; then
