@@ -103,7 +103,7 @@ else
   ec=$?
 fi
 
-if [ $ec == 0 ]; then
+if [ $ec -eq 0 ]; then
   mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
   ec=$?
 fi

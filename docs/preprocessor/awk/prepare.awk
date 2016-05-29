@@ -67,3 +67,7 @@ function remove_callouts(code) {
 /^\[gremlin-/ {
   inCodeSection = 1
 }
+
+END {
+  print_string("// LAST LINE")
+}
