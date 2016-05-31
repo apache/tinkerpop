@@ -96,6 +96,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic.txt",
                     "script-input.groovy",
                     "script-output.groovy",
+                    "script-csv-export.groovy",
                     "grateful-dead.txt",
                     "script-input-grateful-dead.groovy",
                     "script-output-grateful-dead.groovy");
