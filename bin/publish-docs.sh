@@ -61,7 +61,7 @@ ${SVN_CMD} update --depth empty "javadocs/${VERSION}"
 
 for dir in "docs" "javadocs"
 do
-  CURRENT=$(${SVN_CMD} list "${dir}" | tr -d '/' | grep -v SNAPSHOT | grep -Fv current | sort -rV | head -n1)
+  CURRENT=$((${SVN_CMD} list "${dir}" ; ls "${dir}") | tr -d '/' | grep -v SNAPSHOT | grep -Fv current | sort -rV | head -n1)
 
   ${SVN_CMD} update --depth empty "${dir}/current"
   ${SVN_CMD} rm "${dir}/current"
