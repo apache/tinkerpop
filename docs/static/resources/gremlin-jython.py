@@ -91,7 +91,7 @@ class JythonGraphTraversal(object):
     return self.traversal.toString()
   def __getitem__(self,index):
     if type(index) is int:
-      self.traversal = self.traversal.range(indices,indices+1)
+      self.traversal = self.traversal.range(index,index+1)
     elif type(index) is slice:
         self.traversal = self.traversal.range(index.start,index.stop)
     else:

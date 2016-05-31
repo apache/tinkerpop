@@ -118,7 +118,7 @@ class PythonGraphTraversal(object):
     return self.traversalString;
   def __getitem__(self,index):
     if type(index) is int:
-      return self.range(indices,indices+1)
+      return self.range(index,index+1)
     elif type(index) is slice:
       return self.range(index.start,index.stop)
     else:
