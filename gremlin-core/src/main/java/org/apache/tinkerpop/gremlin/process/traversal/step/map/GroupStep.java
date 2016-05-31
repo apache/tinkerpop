@@ -30,12 +30,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
@@ -296,12 +298,21 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
         // necessary to control Java Serialization to ensure proper clearing of internal traverser data
         private void writeObject(final ObjectOutputStream outputStream) throws IOException {
-            outputStream.writeObject(this.valueTraversal.clone());
+            if (null != this.valueTraversal) {
+                try {
+                    // if there is a lambda that can not be serialized, then simply use TraverserSets
+                    this.valueTraversal.setParent(EmptyStep.instance());
+                    Serializer.serializeObject(this.valueTraversal);
+                } catch (final IOException e) {
+                    this.valueTraversal = null;
+                }
+            }
+            outputStream.writeObject(null == this.valueTraversal ? null : this.valueTraversal.clone());
         }
 
         private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
             this.valueTraversal = (Traversal.Admin<?, V>) inputStream.readObject();
-            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            this.barrierStep = null == this.valueTraversal ? null : TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
         }
     }
 

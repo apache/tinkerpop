@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
@@ -34,11 +35,13 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * This is an test that is mean to be used in the context of the {@link HadoopGremlinSuite} and shouldn't be
@@ -84,7 +87,14 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
         SugarTestHelper.clearRegistry(this.graphProvider);
         this.console.addBinding("graph", this.graph);
         this.console.addBinding("g", this.g);
-        this.remote.connect(Arrays.asList("graph"));
+        //
+        this.remote.connect(Arrays.asList("graph", "g"));
+        try {
+            this.remote.submit(Arrays.asList("g.V.name.map{it.length()}.sum"));
+            fail("Should not allow sugar usage");
+        } catch (final Exception e) {
+            // this is good
+        }
         //
         this.remote.configure(Arrays.asList("useSugar", "true"));
         this.remote.connect(Arrays.asList("graph", "g"));
@@ -93,6 +103,41 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
         assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
     }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldSupportRemoteGroupTraversal() throws Exception {
+        SugarTestHelper.clearRegistry(this.graphProvider);
+        GremlinLoader.load();
+        this.console.addBinding("graph", this.graph);
+        this.console.addBinding("g", this.g);
+        this.remote.connect(Arrays.asList("graph"));
+        //
+        this.remote.connect(Arrays.asList("graph", "g"));
+        Traversal<?, Map<String, List<String>>> traversal = (Traversal<?, Map<String, List<String>>>) this.remote.submit(Arrays.asList("g.V().out().group().by{it.value('name')[1]}.by('name')"));
+        Map<String, List<String>> map = traversal.next();
+        assertEquals(3, map.size());
+        assertEquals(1, map.get("a").size());
+        assertEquals("vadas", map.get("a").get(0));
+        assertEquals(1, map.get("i").size());
+        assertEquals("ripple", map.get("i").get(0));
+        assertEquals(4, map.get("o").size());
+        assertTrue(map.get("o").contains("josh"));
+        assertTrue(map.get("o").contains("lop"));
+        assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
+        //
+        traversal = (Traversal<?, Map<String, List<String>>>) this.remote.submit(Arrays.asList("g.V().out().group().by(label).by{it.value('name')[1]}"));
+        map = traversal.next();
+        assertEquals(2, map.size());
+        assertEquals(4, map.get("software").size());
+        assertTrue(map.get("software").contains("o"));
+        assertTrue(map.get("software").contains("i"));
+        assertEquals(2, map.get("person").size());
+        assertTrue(map.get("person").contains("o"));
+        assertTrue(map.get("person").contains("a"));
+        assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
+    }
+
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
