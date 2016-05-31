@@ -398,16 +398,17 @@ g = graph.traversal().withComputer()
 g.V().hasLabel('person').match(
     __.as('person').values('name').as('name'),
     __.as('person').values('age').as('age'),
-    __.as('person').outE('created').count().as('projects')
-  ).select('person').
-    coalesce(out('created'), identity()).
-    coalesce(__.in('created'), identity()).
-    groupCount('m').by(select('person','name','age','projects')).cap('m').unfold().as('kv').
+    __.as('person').outE('created').count().as('projects'),
+    __.as('person').coalesce(out('created'), identity()).as('project'),
+    __.as('project').coalesce(__.in('created'), identity()).as('coworker'),
+    __.as('coworker').values('name').as('cname'),
+    __.as('coworker').choose(where(eq('person')), constant(0), constant(1)).as('cc')
+  ).dedup('person','coworker').group().by(select('person','name','age','projects')).by(select('cc').sum()).unfold().as('kv').
     select(keys).select('person').as('person').
     select('kv').select(keys).select('name').as('name').
     select('kv').select(keys).select('age').as('age').
     select('kv').select(keys).select('projects').as('projects').
-    select('kv').select(values).map(union(identity(), constant(-1)).sum()).as('coworkers').
+    select('kv').select(values).as('coworkers').
     select('person','name','age','projects','coworkers').
     program(BulkDumperVertexProgram.build().create(graph))
 

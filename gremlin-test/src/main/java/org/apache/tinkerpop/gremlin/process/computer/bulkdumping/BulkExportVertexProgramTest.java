@@ -34,6 +34,7 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.OUTPUT;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.junit.Assert.assertEquals;
@@ -52,16 +53,17 @@ public class BulkExportVertexProgramTest extends AbstractGremlinProcessTest {
             g.V().hasLabel("person").match(
                     __.as("person").values("name").as("name"),
                     __.as("person").values("age").as("age"),
-                    __.as("person").outE("created").count().as("projects")
-            ).select("person").
-                    coalesce(__.out("created"), __.identity()).
-                    coalesce(__.in("created"), __.identity()).
-                    groupCount("m").by(__.select("person", "name", "age", "projects")).cap("m").unfold().as("kv").
+                    __.as("person").outE("created").count().as("projects"),
+                    __.as("person").coalesce(__.out("created"), __.identity()).as("project"),
+                    __.as("project").coalesce(__.in("created"), __.identity()).as("coworker"),
+                    __.as("coworker").values("name").as("cname"),
+                    __.as("coworker").choose(__.where(eq("person")), __.constant(0), __.constant(1)).as("cc")
+            ).dedup("person", "coworker").group().by(__.select("person", "name", "age", "projects")).by(__.select("cc").sum()).unfold().as("kv").
                     select(keys).select("person").as("person").
                     select("kv").select(keys).select("name").as("name").
                     select("kv").select(keys).select("age").as("age").
                     select("kv").select(keys).select("projects").as("projects").
-                    select("kv").select(values).map(__.union(__.identity(), __.constant(-1)).sum()).as("coworkers").
+                    select("kv").select(values).as("coworkers").
                     select("person", "name", "age", "projects", "coworkers").
                     program(BulkDumperVertexProgram.build().create(graph)).iterate();
         }
@@ -74,7 +76,7 @@ public class BulkExportVertexProgramTest extends AbstractGremlinProcessTest {
             graph.compute().program(BulkExportVertexProgram.build().keys("name", "age", "projects", "coworkers").create(graph)).submit().get();
 
             final Set<String> lines = new HashSet<>();
-            lines.add("josh,32,2,3");
+            lines.add("josh,32,2,2");
             lines.add("marko,29,1,2");
             lines.add("peter,35,1,2");
             lines.add("vadas,27,0,0");
