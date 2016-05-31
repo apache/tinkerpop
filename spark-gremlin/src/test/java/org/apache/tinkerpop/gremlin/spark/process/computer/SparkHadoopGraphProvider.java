@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopGremlinPluginChec
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorageCheck;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkExportVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPageRankTest;
@@ -59,6 +60,7 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
                 !test.equals(GroovyPageRankTest.Traversals.class) &&
                 !test.equals(PeerPressureTest.Traversals.class) &&
                 !test.equals(GroovyPeerPressureTest.Traversals.class) &&
+                !test.equals(BulkExportVertexProgramTest.class) &&
                 !test.equals(FileSystemStorageCheck.class) &&
                 !testMethodName.equals("shouldSupportJobChaining") &&  // GraphComputerTest.shouldSupportJobChaining
                 RANDOM.nextBoolean()) {

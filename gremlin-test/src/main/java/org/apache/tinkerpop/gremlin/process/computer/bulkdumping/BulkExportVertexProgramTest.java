@@ -18,14 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.bulkdumping;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.OUTPUT;
 import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.junit.Assert.assertEquals;
@@ -42,11 +42,12 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BulkExportVertexProgramTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldExportCsvFile() throws Exception {
+    public void shouldExportCsvFilePrepare() {
         if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
             g.V().hasLabel("person").match(
                     __.as("person").values("name").as("name"),
@@ -63,19 +64,13 @@ public class BulkExportVertexProgramTest extends AbstractGremlinProcessTest {
                     select("kv").select(values).map(__.union(__.identity(), __.constant(-1)).sum()).as("coworkers").
                     select("person", "name", "age", "projects", "coworkers").
                     program(BulkDumperVertexProgram.build().create(graph)).iterate();
+        }
+    }
 
-            final Configuration config = graph.configuration();
-            final String outputLocation = config.getString("gremlin.hadoop.outputLocation");
-            final String scriptFileName =
-                    TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, "script-csv-export.groovy", "").
-                            getAbsolutePath().replace('\\', '/');
-
-            config.setProperty("gremlin.hadoop.inputLocation", outputLocation + "/~g");
-            config.setProperty("gremlin.hadoop.outputLocation", outputLocation + "-csv");
-            config.setProperty("gremlin.hadoop.graphReader", "org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat");
-            config.setProperty("gremlin.hadoop.graphWriter", "org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat");
-            config.setProperty("gremlin.hadoop.scriptOutputFormat.script", scriptFileName);
-
+    @Test
+    @LoadGraphWith(OUTPUT)
+    public void shouldExportCsvFileRun() throws Exception {
+        if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
             graph.compute().program(BulkExportVertexProgram.build().keys("name", "age", "projects", "coworkers").create(graph)).submit().get();
 
             final Set<String> lines = new HashSet<>();
@@ -84,7 +79,8 @@ public class BulkExportVertexProgramTest extends AbstractGremlinProcessTest {
             lines.add("peter,35,1,2");
             lines.add("vadas,27,0,0");
 
-            final File output = new File(outputLocation + "-csv/~g");
+            // TODO: use Storage methods
+            final File output = new File(graph.configuration().getString("gremlin.hadoop.outputLocation") + "/~g");
             for (final File f : output.listFiles()) {
                 if (f.getName().startsWith("part-")) {
                     try (final BufferedReader reader = new BufferedReader(new FileReader(f))) {

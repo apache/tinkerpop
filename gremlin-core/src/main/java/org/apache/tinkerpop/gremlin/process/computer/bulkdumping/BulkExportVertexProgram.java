@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
+import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -36,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.javatuples.Tuple;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class BulkExportVertexProgram implements VertexProgram<Tuple> {
+public class BulkExportVertexProgram extends StaticVertexProgram<Object> {
 
     public static final String BULK_EXPORT_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.bulkExportVertexProgram";
     public static final String BULK_EXPORT_PROPERTIES = String.join(".", BULK_EXPORT_VERTEX_PROGRAM_CFG_PREFIX, "properties");
@@ -81,7 +81,7 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
 
     @Override
     public void storeState(final Configuration config) {
-        VertexProgram.super.storeState(config);
+        super.storeState(config);
         if (configuration != null) {
             ConfigurationUtils.copy(configuration, config);
         }
@@ -92,7 +92,7 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
     }
 
     @Override
-    public void execute(final Vertex sourceVertex, final Messenger<Tuple> messenger, final Memory memory) {
+    public void execute(final Vertex sourceVertex, final Messenger<Object> messenger, final Memory memory) {
         final VertexProperty<TraverserSet> haltedTraversers = sourceVertex.property(TraversalVertexProgram.HALTED_TRAVERSERS);
         haltedTraversers.ifPresent(traverserSet -> {
             final List<List<String>> rows = new ArrayList<>();
@@ -121,12 +121,6 @@ public class BulkExportVertexProgram implements VertexProgram<Tuple> {
     @Override
     public Set<MessageScope> getMessageScopes(final Memory memory) {
         return Collections.emptySet();
-    }
-
-    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
-    @Override
-    public VertexProgram<Tuple> clone() {
-        return this;
     }
 
     @Override
