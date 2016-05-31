@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndTest;
@@ -106,7 +106,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
-            /*BranchTest.Traversals.class,
+            BranchTest.Traversals.class,
             ChooseTest.Traversals.class,
             OptionalTest.Traversals.class,
             LocalTest.Traversals.class,
@@ -153,7 +153,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             ProfileTest.Traversals.class,
             ProjectTest.Traversals.class,
             PropertiesTest.Traversals.class,
-            SelectTest.Traversals.class,*/
+            SelectTest.Traversals.class,
             VertexTest.Traversals.class,
             UnfoldTest.Traversals.class,
             ValueMapTest.Traversals.class,

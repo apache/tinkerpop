@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.python
+package org.apache.tinkerpop.gremlin.process.variant.python
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
@@ -63,11 +63,10 @@ class Helper(object):
         Set<String> methods = GraphTraversalSource.getMethods().collect { it.name } as Set;
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
-  def __init__(self, gremlinServerURI, traversalSourceString):
-    self.gremlinServerURI = gremlinServerURI
+  def __init__(self, traversalSourceString):
     self.traversalSourceString = traversalSourceString
   def __repr__(self):
-    return "graphtraversalsource[" + self.gremlinServerURI + ", " + self.traversalSourceString + "]"
+    return "graphtraversalsource[" + self.traversalSourceString + "]"
 """)
         methods.each { method ->
             final Class<?> returnType = (GraphTraversalSource.getMethods() as Set).findAll {
@@ -78,12 +77,12 @@ class Helper(object):
             if (null != returnType && Traversal.isAssignableFrom(returnType)) {
                 pythonClass.append(
                         """  def ${method}(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")", self.gremlinServerURI)
+    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
 """)
             } else {
                 pythonClass.append(
                         """  def ${method}(self, *args):
-    return PythonGraphTraversalSource(self.gremlinServerURI, self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
 """)
             }
         }; []
@@ -102,9 +101,8 @@ class Helper(object):
         methods.remove("toList")
         pythonClass.append(
                 """class PythonGraphTraversal(object):
-  def __init__(self, traversalString, gremlinServerURI=None):
+  def __init__(self, traversalString):
     self.traversalString = traversalString
-    self.gremlinServerURI = gremlinServerURI
   def __repr__(self):
     return self.traversalString;
   def __getitem__(self,index):
@@ -117,7 +115,7 @@ class Helper(object):
   def __getattr__(self,key):
     return self.values(key)
   def toList(self):
-    return IOLoop.current().run_sync(lambda: Helper.submit(self.gremlinServerURI, self.traversalString))
+    return self.traversalString
 """)
         methods.each { method ->
             final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {

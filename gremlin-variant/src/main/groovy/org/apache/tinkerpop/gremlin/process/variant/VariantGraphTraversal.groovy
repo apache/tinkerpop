@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
-import org.apache.tinkerpop.gremlin.python.GremlinPythonGenerator
+import org.apache.tinkerpop.gremlin.process.variant.python.GremlinPythonGenerator
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -34,13 +34,13 @@ import javax.script.ScriptEngineManager
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class JavaVariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
+public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     protected String variantString;
-    protected JavaVariantConverter variantConverter;
+    protected VariantConverter variantConverter;
 
-    public JavaVariantGraphTraversal(
-            final Graph graph, final String start, final JavaVariantConverter variantConverter) {
+    public VariantGraphTraversal(
+            final Graph graph, final String start, final VariantConverter variantConverter) {
         super(graph);
         this.variantConverter = variantConverter;
         this.variantString = start;
@@ -77,7 +77,7 @@ public class JavaVariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E>
         return this;
     }
 
-    public GraphTraversal<S, Vertex> inE(final String... edgeLabels) {
+    public GraphTraversal<S, Edge> inE(final String... edgeLabels) {
         this.variantString = this.variantString + this.variantConverter.step("inE", edgeLabels);
         return this;
     }
@@ -95,7 +95,7 @@ public class JavaVariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E>
                 GremlinPythonGenerator.create("/tmp");
                 ScriptEngine engine = new ScriptEngineManager().getEngineByName("jython");
                 engine.eval("execfile(\"/tmp/gremlin-python-3.2.1-SNAPSHOT.py\")");
-                engine.eval("g = PythonGraphTraversalSource(\"ws://localhost:8182/\", \"g\")");
+                engine.eval("g = PythonGraphTraversalSource(\"g\")");
                 System.out.println(this.variantString + "!!!!!!!!");
                 final ScriptTraversal<?, ?> traversal = new ScriptTraversal(new GraphTraversalSource(this.getGraph().get(), this.getStrategies()), "gremlin-groovy", engine.eval(this.variantString).toString());
                 traversal.applyStrategies();

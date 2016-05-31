@@ -22,14 +22,8 @@ package org.apache.tinkerpop.gremlin.process.variant;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.GraphTest;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.IoEdgeTest;
-import org.apache.tinkerpop.gremlin.structure.io.IoVertexTest;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -69,14 +63,8 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
-            if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
+            if (loadGraphWith == LoadGraphWith.GraphData.CREW)
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
-            if (requiresPersistence(test, testMethodName)) {
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-                final File tempDir = TestHelper.makeTestDataPath(test, "temp");
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,
-                        tempDir.getAbsolutePath() + File.separator + testMethodName + ".kryo");
-            }
         }};
     }
 
@@ -96,23 +84,6 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
     @Override
     public Set<Class> getImplementations() {
         return IMPLEMENTATION;
-    }
-
-    /**
-     * Determines if a test requires TinkerGraph persistence to be configured with graph location and format.
-     */
-    protected static boolean requiresPersistence(final Class<?> test, final String testMethodName) {
-        return test == GraphTest.class && testMethodName.equals("shouldPersistDataOnClose");
-    }
-
-    /**
-     * Determines if a test requires a different cardinality as the default or not.
-     */
-    protected static boolean requiresListCardinalityAsDefault(final LoadGraphWith.GraphData loadGraphWith,
-                                                              final Class<?> test, final String testMethodName) {
-        return loadGraphWith == LoadGraphWith.GraphData.CREW
-                || (test == StarGraphTest.class && testMethodName.equals("shouldAttachWithCreateMethod"))
-                || (test == DetachedGraphTest.class && testMethodName.equals("testAttachableCreateMethod"));
     }
 
     /**

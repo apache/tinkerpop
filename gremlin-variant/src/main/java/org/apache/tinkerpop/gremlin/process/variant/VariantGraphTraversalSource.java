@@ -29,22 +29,22 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class JavaVariantGraphTraversalSource extends GraphTraversalSource {
+public class VariantGraphTraversalSource extends GraphTraversalSource {
 
-    public JavaVariantGraphTraversalSource(final GraphTraversalSource graphTraversalSource) {
+    public VariantGraphTraversalSource(final GraphTraversalSource graphTraversalSource) {
         this(graphTraversalSource.getGraph(), graphTraversalSource.getStrategies());
     }
 
-    public JavaVariantGraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
+    public VariantGraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         super(graph, traversalStrategies);
     }
 
-    public JavaVariantGraphTraversalSource(final Graph graph) {
+    public VariantGraphTraversalSource(final Graph graph) {
         super(graph);
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new JavaVariantGraphTraversal<>(this.getGraph(), "g" + new PythonVariantConverter().step("V", vertexIds), new PythonVariantConverter());
+        return new VariantGraphTraversal<>(this.getGraph(), "g" + new PythonVariantConverter().step("V", vertexIds), new PythonVariantConverter());
     }
 
 }

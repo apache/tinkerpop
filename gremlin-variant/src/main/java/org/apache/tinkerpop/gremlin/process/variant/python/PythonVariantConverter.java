@@ -19,24 +19,22 @@
 
 package org.apache.tinkerpop.gremlin.process.variant.python;
 
-import org.apache.tinkerpop.gremlin.process.variant.JavaVariantConverter;
-
-import java.util.Arrays;
+import org.apache.tinkerpop.gremlin.process.variant.VariantConverter;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonVariantConverter implements JavaVariantConverter {
+public class PythonVariantConverter implements VariantConverter {
     @Override
     public String step(final String stepName, final Object... arguments) {
         if (arguments.length == 0)
             return "." + stepName + "()";
         else {
             String temp = "." + stepName + "(";
-            for(final Object object : arguments)  {
-                temp = temp + object.toString() + ",";
+            for (final Object object : arguments) {
+                temp = temp + (object instanceof String ? "\"" + object + "\"" : object) + ",";
             }
-            return temp.substring(0,temp.length() - 1) + ")";
+            return temp.substring(0, temp.length() - 1) + ")";
         }
     }
 }

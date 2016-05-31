@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.python;
+package org.apache.tinkerpop.gremlin.process.variant;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinPython {
+public interface VariantConverter {
 
-
+    public String step(final String stepName, final Object... arguments);
 }
