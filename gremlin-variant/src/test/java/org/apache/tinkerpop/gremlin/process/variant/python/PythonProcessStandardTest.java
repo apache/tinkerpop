@@ -17,22 +17,26 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.python;
+package org.apache.tinkerpop.gremlin.process.variant.python;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Test {
+@RunWith(ProcessStandardSuite.class)
+@GraphProviderClass(provider = PythonProvider.class, graph = TinkerGraph.class)
+public class PythonProcessStandardTest {
 
-    @org.junit.Test
+    /*@org.junit.Test
     public void test() throws Exception {
         GremlinPythonGenerator.create("/tmp");
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("jython");
         System.out.println(engine.eval("execfile(\"/tmp/gremlin-python-3.2.1-SNAPSHOT.py\")"));
         System.out.println(engine.eval("g = PythonGraphTraversalSource(\"ws://localhost:8182/\", \"g\")"));
         System.out.println(engine.eval("g.V()[1]"));
-    }
+    }*/
 }
