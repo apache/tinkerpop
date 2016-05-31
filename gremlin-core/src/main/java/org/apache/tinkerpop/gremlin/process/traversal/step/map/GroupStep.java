@@ -29,7 +29,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -160,8 +162,14 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         private Barrier barrierStep;
 
         public GroupBiOperator(final Traversal.Admin<?, V> valueTraversal) {
-            this.valueTraversal = valueTraversal.clone();
-            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            // if there is a lambda that can not be serialized, then simply use TraverserSets
+            if (TraversalHelper.hasStepOfAssignableClassRecursively(LambdaHolder.class, valueTraversal)) {
+                this.valueTraversal = null;
+                this.barrierStep = null;
+            } else {
+                this.valueTraversal = valueTraversal;
+                this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            }
         }
 
         public GroupBiOperator() {
@@ -296,12 +304,14 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
         // necessary to control Java Serialization to ensure proper clearing of internal traverser data
         private void writeObject(final ObjectOutputStream outputStream) throws IOException {
-            outputStream.writeObject(this.valueTraversal.clone());
+            // necessary as a non-root child is being sent over the wire
+            if (null != this.valueTraversal) this.valueTraversal.setParent(EmptyStep.instance());
+            outputStream.writeObject(null == this.valueTraversal ? null : this.valueTraversal.clone()); // todo: reset() instead?
         }
 
         private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
             this.valueTraversal = (Traversal.Admin<?, V>) inputStream.readObject();
-            this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            this.barrierStep = null == this.valueTraversal ? null : TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
         }
     }
 
