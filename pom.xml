@@ -125,6 +125,7 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
+        <module>gremlin-variant</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</connection>
