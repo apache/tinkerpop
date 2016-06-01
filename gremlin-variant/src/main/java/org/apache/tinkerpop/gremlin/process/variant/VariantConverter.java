@@ -19,10 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.process.variant;
 
+import javax.script.ScriptException;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface VariantConverter {
 
     public void step(final StringBuilder currentTraversal, final String stepName, final Object... arguments);
+
+    public String compileVariant(final StringBuilder currentTraversal) throws ScriptException;
 }

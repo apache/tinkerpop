@@ -19,13 +19,29 @@
 
 package org.apache.tinkerpop.gremlin.process.variant.python;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.variant.VariantConverter;
+import org.apache.tinkerpop.gremlin.process.variant.VariantGraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,7 +49,30 @@ import java.util.Set;
  */
 public class PythonVariantConverter implements VariantConverter {
 
+    private static ScriptEngine JYTHON_ENGINE = ScriptEngineCache.get("jython");
+
+    static {
+        try {
+            GremlinPythonGenerator.create("/tmp");
+            JYTHON_ENGINE.eval("execfile(\"/tmp/gremlin-python-3.2.1-SNAPSHOT.py\")");
+        } catch (final ScriptException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
     private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from"));
+
+    @Override
+    public String compileVariant(final StringBuilder currentTraversal) throws ScriptException {
+        if (currentTraversal.toString().contains("$"))
+            throw new VerificationException("Lambda: " + currentTraversal.toString(), EmptyTraversal.instance());
+
+        final Bindings jythonBindings = new SimpleBindings();
+        jythonBindings.put("g", JYTHON_ENGINE.eval("PythonGraphTraversalSource(\"g\")"));
+        JYTHON_ENGINE.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
+        System.out.println(currentTraversal.toString());
+        return JYTHON_ENGINE.eval(currentTraversal.toString()).toString();
+    }
 
     @Override
     public void step(final StringBuilder currentTraversal, final String stepName, final Object... arguments) {
@@ -57,14 +96,36 @@ public class PythonVariantConverter implements VariantConverter {
     private static String convertToString(final Object object) {
         if (object instanceof String)
             return "\"" + object + "\"";
+        else if (object instanceof List) {
+            for (int i = 0; i < ((List) object).size(); i++) {
+                ((List) object).set(i, ((List) object).get(i) instanceof String ? "'" + ((List) object).get(i) + "'" : convertToString(((List) object).get(i)));
+            }
+            return object.toString();
+        } else if (object instanceof Long)
+            return object + "L";
         else if (object instanceof Direction)
             return "\"Direction." + object.toString() + "\"";
+        else if (object instanceof Operator)
+            return "\"Operator." + object.toString() + "\"";
+        else if (object instanceof Pop)
+            return "\"Pop." + object.toString() + "\"";
+        else if (object instanceof Column)
+            return "\"Column." + object.toString() + "\"";
         else if (object instanceof P)
-            return "\"P." + object.toString() + "\"";
+            return "\"P." + ((P) object).getBiPredicate() + "(" + (((P) object).getValue() instanceof String ? "'" + ((P) object).getValue() + "'" : convertToString(((P) object).getValue())) + ")" + "\"";
         else if (object instanceof T)
             return "\"T." + object.toString() + "\"";
-        else
-            return object.toString();
+        else if (object instanceof Order)
+            return "\"Order." + object.toString() + "\"";
+        else if (object instanceof Scope)
+            return "\"Scope." + object.toString() + "\"";
+        else if (object instanceof Element)
+            return convertToString(((Element) object).id()); // hack
+        else if (object instanceof VariantGraphTraversal) {
+            final String string = ((VariantGraphTraversal) object).variantString.toString();
+            return string;
+        } else
+            return null == object ? "" : object.toString();
     }
 
     private static String convertStepName(final String stepName) {

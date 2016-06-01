@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.process.variant;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.variant.python.PythonVariantConverter;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -31,22 +30,17 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  */
 public class VariantGraphTraversalSource extends GraphTraversalSource {
 
-    public VariantGraphTraversalSource(final GraphTraversalSource graphTraversalSource) {
-        this(graphTraversalSource.getGraph(), graphTraversalSource.getStrategies());
-    }
+    private VariantConverter variantConverter;
 
-    public VariantGraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
+    public VariantGraphTraversalSource(final VariantConverter variantConverter, final Graph graph, final TraversalStrategies traversalStrategies) {
         super(graph, traversalStrategies);
-    }
-
-    public VariantGraphTraversalSource(final Graph graph) {
-        super(graph);
+        this.variantConverter = variantConverter;
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final StringBuilder variantString = new StringBuilder("g");
-        new PythonVariantConverter().step(variantString,"V",vertexIds);
-        return new VariantGraphTraversal<>(this.getGraph(), variantString, new PythonVariantConverter());
+        this.variantConverter.step(variantString, "V", vertexIds);
+        return new VariantGraphTraversal<>(this.getGraph(), variantString, this.variantConverter);
     }
 
 }

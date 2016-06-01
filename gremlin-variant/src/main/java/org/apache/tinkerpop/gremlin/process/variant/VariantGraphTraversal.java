@@ -31,11 +31,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
-import org.apache.tinkerpop.gremlin.process.variant.python.GremlinPythonGenerator;
-import org.apache.tinkerpop.gremlin.process.variant.python.PythonVariantConverter;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -45,9 +43,11 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -63,20 +63,18 @@ import java.util.function.Predicate;
  */
 public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
-    protected StringBuilder variantString;
-    protected VariantConverter variantConverter;
 
-    static {
-        __.EMPTY_GRAPH_TRAVERSAL = () -> {
-            final StringBuilder builder = new StringBuilder("__");
-            return new VariantGraphTraversal<>(EmptyGraph.instance(), builder, new PythonVariantConverter());
-        };
-    }
+    public StringBuilder variantString;
+    protected VariantConverter variantConverter;
 
     public VariantGraphTraversal(final Graph graph, final StringBuilder variantString, final VariantConverter variantConverter) {
         super(graph);
         this.variantConverter = variantConverter;
         this.variantString = variantString;
+        __.EMPTY_GRAPH_TRAVERSAL = () -> {
+            final StringBuilder builder = new StringBuilder("__");
+            return new VariantGraphTraversal<>(EmptyGraph.instance(), builder, this.variantConverter);
+        };
     }
 
     public String toString() {
@@ -85,23 +83,24 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     @Override
     public void applyStrategies() {
-        if (!this.locked) {
-            try {
-                GremlinPythonGenerator.create("/tmp");
-                ScriptEngine engine = new ScriptEngineManager().getEngineByName("jython");
-                engine.eval("execfile(\"/tmp/gremlin-python-3.2.1-SNAPSHOT.py\")");
-                engine.eval("g = PythonGraphTraversalSource(\"g\")");
-                System.out.println(this.variantString + "!!!!!!!!");
-                final ScriptTraversal<?, ?> traversal = new ScriptTraversal(new GraphTraversalSource(this.getGraph().get(), this.getStrategies()), "gremlin-groovy", engine.eval(this.variantString.toString()).toString());
-                traversal.applyStrategies();
-                traversal.getSideEffects().mergeInto(this.sideEffects);
-                traversal.getSteps().forEach(this::addStep);
-            } catch (final Exception e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
+        if (!(this.getParent() instanceof EmptyStep)) {
+            return;
         }
-        if (!this.locked)
+        try {
+            final String jythonString = this.variantConverter.compileVariant(this.variantString);
+            __.EMPTY_GRAPH_TRAVERSAL = DefaultGraphTraversal::new;
+            ScriptEngine groovy = ScriptEngineCache.get("gremlin-groovy");
+            final Bindings groovyBindings = new SimpleBindings();
+            groovyBindings.put("g", new GraphTraversalSource(this.getGraph().get(), this.getStrategies()));
+            Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) groovy.eval(jythonString, groovyBindings);
+            assert !traversal.isLocked();
+            this.sideEffects = traversal.getSideEffects();
+            this.strategies = traversal.getStrategies();
+            traversal.getSteps().forEach(step -> this.addStep(step));
             super.applyStrategies();
+        } catch (final Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     private static String getMethodName() {
@@ -338,7 +337,7 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     }
 
     public <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
-        this.variantConverter.step(this.variantString, getMethodName(), foldFunction);
+        this.variantConverter.step(this.variantString, getMethodName(), seed, foldFunction);
         return (GraphTraversal) this;
     }
 
@@ -423,9 +422,6 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         return (GraphTraversal) this;
     }
 
-    /**
-     * @deprecated As of release 3.1.0, replaced by {@link #addV()}
-     */
     @Deprecated
     public GraphTraversal<S, Vertex> addV(final Object... propertyKeyValues) {
         this.variantConverter.step(this.variantString, getMethodName(), propertyKeyValues);
@@ -438,7 +434,7 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     }
 
     public GraphTraversal<S, E> to(final String toStepLabel) {
-        this.variantConverter.step(this.variantString, toStepLabel);
+        this.variantConverter.step(this.variantString, getMethodName(), toStepLabel);
         return (GraphTraversal) this;
     }
 

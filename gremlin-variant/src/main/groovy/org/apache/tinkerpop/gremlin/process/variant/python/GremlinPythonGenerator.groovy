@@ -39,13 +39,17 @@ class Helper(object):
     if (type(arg) is str and
        not(arg.startswith("P.")) and
        not(arg.startswith("Order.")) and
+       not(arg.startswith("Scope.")) and
        not(arg.startswith("T.")) and
        not(arg.startswith("Pop.")) and
        not(arg.startswith("Column.")) and
+       not(arg.startswith("Operator.")) and
        not(arg.startswith("Direction."))):
       return "\\"" + arg + "\\""
     elif type(arg) is bool:
       return str(arg).lower()
+    elif type(arg) is long:
+      return str(arg) + "L"
     else:
       return str(arg)
   @staticmethod
