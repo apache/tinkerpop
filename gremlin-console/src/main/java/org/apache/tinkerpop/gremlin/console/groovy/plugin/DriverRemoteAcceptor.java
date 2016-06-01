@@ -64,7 +64,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private static final String TOKEN_SHOW = "show";
 
     /**
-     * @deprecated As of 3.1.3-incubating, replaced by "none" option
+     * @deprecated As of 3.1.3, replaced by "none" option
      */
     @Deprecated
     private static final String TOKEN_MAX = "max";
