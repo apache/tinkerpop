@@ -57,6 +57,14 @@ public class GryoLiteMessageSerializerV1d0 extends AbstractGryoMessageSerializer
         super(overrideWithLite(GryoMapper.build()).create());
     }
 
+    /**
+     * Creates an instance with a standard {@link GryoMapper} instance. Note that the instance created by the supplied
+     * builder will be overridden by {@link #configure} if it is called.
+     */
+    public GryoLiteMessageSerializerV1d0(final GryoMapper.Builder kryo) {
+        super(overrideWithLite(kryo).create());
+    }
+
     @Override
     public String[] mimeTypesSupported() {
         return new String[]{serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE};
@@ -64,7 +72,7 @@ public class GryoLiteMessageSerializerV1d0 extends AbstractGryoMessageSerializer
 
     @Override
     GryoMapper.Builder configureBuilder(final GryoMapper.Builder builder, final Map<String, Object> config,
-                                               final Map<String, Graph> graphs) {
+                                        final Map<String, Graph> graphs) {
         return overrideWithLite(builder);
     }
 
