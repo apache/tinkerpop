@@ -22,8 +22,13 @@ package org.apache.tinkerpop.gremlin.process.variant;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,16 +36,113 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 public class VariantGraphTraversalSource extends GraphTraversalSource {
 
     private VariantConverter variantConverter;
+    private StringBuilder sourceString = new StringBuilder("g");
 
     public VariantGraphTraversalSource(final VariantConverter variantConverter, final Graph graph, final TraversalStrategies traversalStrategies) {
         super(graph, traversalStrategies);
         this.variantConverter = variantConverter;
     }
 
+    private static String getMethodName() {
+        return Thread.currentThread().getStackTrace()[2].getMethodName();
+    }
+
+    ///
+
+    @Override
+    public GraphTraversal<Edge, Edge> E(final Object... edgeIds) {
+        final StringBuilder temp = new StringBuilder(this.sourceString.toString());
+        this.variantConverter.step(temp, getMethodName(), edgeIds);
+        return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    @Override
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final StringBuilder variantString = new StringBuilder("g");
-        this.variantConverter.step(variantString, "V", vertexIds);
-        return new VariantGraphTraversal<>(this.getGraph(), variantString, this.variantConverter);
+        final StringBuilder temp = new StringBuilder(this.sourceString.toString());
+        this.variantConverter.step(temp, getMethodName(), vertexIds);
+        return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        this.variantConverter.step(this.sourceString, getMethodName(), splitOperator, mergeOperator);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue, splitOperator, mergeOperator);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final A initialValue) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue, splitOperator);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue, splitOperator);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue, mergeOperator);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
+        this.variantConverter.step(this.sourceString, getMethodName(), initialValue, mergeOperator);
+        return this;
+    }
+
+    /////
+
+    @Override
+    public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
+        this.variantConverter.step(this.sourceString, getMethodName(), key, initialValue, reducer);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
+        this.variantConverter.step(this.sourceString, getMethodName(), key, initialValue, reducer);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSideEffect(final String key, final A initialValue) {
+        this.variantConverter.step(this.sourceString, getMethodName(), key, initialValue);
+        return this;
+    }
+
+    @Override
+    public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
+        this.variantConverter.step(this.sourceString, getMethodName(), key, initialValue);
+        return this;
+    }
+
+    /////
+
+    @Override
+    public GraphTraversalSource withBulk(final boolean useBulk) {
+        this.variantConverter.step(this.sourceString, getMethodName(), useBulk);
+        return this;
     }
 
 }

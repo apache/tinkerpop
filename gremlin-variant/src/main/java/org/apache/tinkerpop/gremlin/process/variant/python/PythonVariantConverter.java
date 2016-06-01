@@ -64,7 +64,7 @@ public class PythonVariantConverter implements VariantConverter {
 
     @Override
     public String compileVariant(final StringBuilder currentTraversal) throws ScriptException {
-        if (currentTraversal.toString().contains("$"))
+        if (currentTraversal.toString().contains("$") || currentTraversal.toString().contains("@"))
             throw new VerificationException("Lambda: " + currentTraversal.toString(), EmptyTraversal.instance());
 
         final Bindings jythonBindings = new SimpleBindings();
@@ -78,6 +78,10 @@ public class PythonVariantConverter implements VariantConverter {
     public void step(final StringBuilder currentTraversal, final String stepName, final Object... arguments) {
         if (arguments.length == 0)
             currentTraversal.append(".").append(convertStepName(stepName)).append("()");
+        else if (stepName.equals("range") && 2 == arguments.length)
+            currentTraversal.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
+        else if (stepName.equals("limit") && 1 == arguments.length)
+            currentTraversal.append("[0:").append(arguments[0]).append("]");
         else {
             String temp = "." + convertStepName(stepName) + "(";
             for (final Object object : arguments) {
@@ -124,7 +128,9 @@ public class PythonVariantConverter implements VariantConverter {
         else if (object instanceof VariantGraphTraversal) {
             final String string = ((VariantGraphTraversal) object).variantString.toString();
             return string;
-        } else
+        } else if (object instanceof Boolean)
+            return object.equals(Boolean.TRUE) ? "True" : "False";
+        else
             return null == object ? "" : object.toString();
     }
 
