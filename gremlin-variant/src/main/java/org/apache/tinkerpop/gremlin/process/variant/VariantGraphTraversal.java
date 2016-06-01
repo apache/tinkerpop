@@ -77,8 +77,8 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         };
     }
 
-    public String toString() {
-        return this.variantString.toString();
+    public StringBuilder getVariantString() {
+        return this.variantString;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
             return;
         }
         try {
-            final String jythonString = this.variantConverter.compileVariant(this.variantString);
+            final String jythonString = this.variantConverter.generateGremlinGroovy(this.variantString);
             __.EMPTY_GRAPH_TRAVERSAL = DefaultGraphTraversal::new;
             ScriptEngine groovy = ScriptEngineCache.get("gremlin-groovy");
             final Bindings groovyBindings = new SimpleBindings();
@@ -110,788 +110,788 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     //////////////////////////
 
     public <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
-        this.variantConverter.step(this.variantString, getMethodName(), function);
+        this.variantConverter.addStep(this.variantString, getMethodName(), function);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> map(final Traversal<?, E2> mapTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), mapTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), mapTraversal);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> flatMap(final Function<Traverser<E>, Iterator<E2>> function) {
-        this.variantConverter.step(this.variantString, getMethodName(), function);
+        this.variantConverter.addStep(this.variantString, getMethodName(), function);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), flatMapTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), flatMapTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Object> id() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, String> label() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> identity() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> constant(final E2 e) {
-        this.variantConverter.step(this.variantString, getMethodName(), e);
+        this.variantConverter.addStep(this.variantString, getMethodName(), e);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
-        this.variantConverter.step(this.variantString, getMethodName(), vertexIdsOrElements);
+        this.variantConverter.addStep(this.variantString, getMethodName(), vertexIdsOrElements);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), direction, edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), direction, edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> out(final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> in(final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> both(final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), direction, edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), direction, edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Edge> outE(final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Edge> inE(final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> toV(final Direction direction) {
-        this.variantConverter.step(this.variantString, getMethodName(), direction);
+        this.variantConverter.addStep(this.variantString, getMethodName(), direction);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> inV() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> outV() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> bothV() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> otherV() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> order() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> order(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), includeTokens, propertyKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), includeTokens, propertyKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
-        this.variantConverter.step(this.variantString, getMethodName(), column);
+        this.variantConverter.addStep(this.variantString, getMethodName(), column);
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public <E2> GraphTraversal<S, E2> mapValues() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public <E2> GraphTraversal<S, E2> mapKeys() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, String> key() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> value() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Path> path() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
-        this.variantConverter.step(this.variantString, getMethodName(), matchTraversals);
+        this.variantConverter.addStep(this.variantString, getMethodName(), matchTraversals);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> sack() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Integer> loops() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), projectKey, otherProjectKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), projectKey, otherProjectKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectKey1, final String selectKey2, String... otherSelectKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), pop, selectKey1, selectKey2, otherSelectKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), pop, selectKey1, selectKey2, otherSelectKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, Map<String, E2>> select(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), selectKey1, selectKey2, otherSelectKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), selectKey1, selectKey2, otherSelectKeys);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), pop, selectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), pop, selectKey);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> select(final String selectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), selectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), selectKey);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> unfold() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, List<E>> fold() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
-        this.variantConverter.step(this.variantString, getMethodName(), seed, foldFunction);
+        this.variantConverter.addStep(this.variantString, getMethodName(), seed, foldFunction);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Long> count() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Long> count(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> sum() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> max() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> min() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> mean() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <K, V> GraphTraversal<S, Map<K, V>> group() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public <K, V> GraphTraversal<S, Map<K, V>> groupV3d0() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public <K> GraphTraversal<S, Map<K, Long>> groupCount() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Tree> tree() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> addV(final String vertexLabel) {
-        this.variantConverter.step(this.variantString, getMethodName(), vertexLabel);
+        this.variantConverter.addStep(this.variantString, getMethodName(), vertexLabel);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Vertex> addV() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public GraphTraversal<S, Vertex> addV(final Object... propertyKeyValues) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKeyValues);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKeyValues);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Edge> addE(final String edgeLabel) {
-        this.variantConverter.step(this.variantString, getMethodName(), edgeLabel);
+        this.variantConverter.addStep(this.variantString, getMethodName(), edgeLabel);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> to(final String toStepLabel) {
-        this.variantConverter.step(this.variantString, getMethodName(), toStepLabel);
+        this.variantConverter.addStep(this.variantString, getMethodName(), toStepLabel);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> from(final String fromStepLabel) {
-        this.variantConverter.step(this.variantString, getMethodName(), fromStepLabel);
+        this.variantConverter.addStep(this.variantString, getMethodName(), fromStepLabel);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
-        this.variantConverter.step(this.variantString, getMethodName(), toVertex);
+        this.variantConverter.addStep(this.variantString, getMethodName(), toVertex);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {
-        this.variantConverter.step(this.variantString, getMethodName(), fromVertex);
+        this.variantConverter.addStep(this.variantString, getMethodName(), fromVertex);
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        this.variantConverter.step(this.variantString, getMethodName(), direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        this.variantConverter.addStep(this.variantString, getMethodName(), direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public GraphTraversal<S, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        this.variantConverter.step(this.variantString, getMethodName(), firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        this.variantConverter.addStep(this.variantString, getMethodName(), firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
         return (GraphTraversal) this;
     }
 
     @Deprecated
     public GraphTraversal<S, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        this.variantConverter.step(this.variantString, getMethodName(), firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        this.variantConverter.addStep(this.variantString, getMethodName(), firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
         return (GraphTraversal) this;
     }
 
     ///////////////////// FILTER STEPS /////////////////////
 
     public GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> filter(final Traversal<?, ?> filterTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), filterTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), filterTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
-        this.variantConverter.step(this.variantString, getMethodName(), orTraversals);
+        this.variantConverter.addStep(this.variantString, getMethodName(), orTraversals);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
-        this.variantConverter.step(this.variantString, getMethodName(), andTraversals);
+        this.variantConverter.addStep(this.variantString, getMethodName(), andTraversals);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> inject(final E... injections) {
-        this.variantConverter.step(this.variantString, getMethodName(), injections);
+        this.variantConverter.addStep(this.variantString, getMethodName(), injections);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope, dedupLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope, dedupLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> dedup(final String... dedupLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), dedupLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), dedupLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), startKey, predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), startKey, predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> where(final P<String> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), whereTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), whereTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKey, predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKey, predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), accessor, predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), accessor, predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final String propertyKey, final Object value) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKey, value);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKey, value);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final T accessor, final Object value) {
-        this.variantConverter.step(this.variantString, getMethodName(), accessor, value);
+        this.variantConverter.addStep(this.variantString, getMethodName(), accessor, value);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), label, propertyKey, predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), label, propertyKey, predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
-        this.variantConverter.step(this.variantString, getMethodName(), label, propertyKey, value);
+        this.variantConverter.addStep(this.variantString, getMethodName(), label, propertyKey, value);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), accessor, propertyTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), accessor, propertyTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKey, propertyTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKey, propertyTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> has(final String propertyKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> hasNot(final String propertyKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), propertyKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), propertyKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> hasLabel(final String... labels) {
-        this.variantConverter.step(this.variantString, getMethodName(), labels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), labels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> hasId(final Object... ids) {
-        this.variantConverter.step(this.variantString, getMethodName(), ids);
+        this.variantConverter.addStep(this.variantString, getMethodName(), ids);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> hasKey(final String... keys) {
-        this.variantConverter.step(this.variantString, getMethodName(), keys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), keys);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> hasValue(final Object... values) {
-        this.variantConverter.step(this.variantString, getMethodName(), values);
+        this.variantConverter.addStep(this.variantString, getMethodName(), values);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> is(final P<E> predicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), predicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), predicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> is(final Object value) {
-        this.variantConverter.step(this.variantString, getMethodName(), value);
+        this.variantConverter.addStep(this.variantString, getMethodName(), value);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), notTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), notTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> coin(final double probability) {
-        this.variantConverter.step(this.variantString, getMethodName(), probability);
+        this.variantConverter.addStep(this.variantString, getMethodName(), probability);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> range(final long low, final long high) {
-        this.variantConverter.step(this.variantString, getMethodName(), low, high);
+        this.variantConverter.addStep(this.variantString, getMethodName(), low, high);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> range(final Scope scope, final long low, final long high) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope, low, high);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope, low, high);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> limit(final long limit) {
-        this.variantConverter.step(this.variantString, getMethodName(), limit);
+        this.variantConverter.addStep(this.variantString, getMethodName(), limit);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> limit(final Scope scope, final long limit) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope, limit);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope, limit);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> tail() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> tail(final long limit) {
-        this.variantConverter.step(this.variantString, getMethodName(), limit);
+        this.variantConverter.addStep(this.variantString, getMethodName(), limit);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> tail(final Scope scope) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> tail(final Scope scope, final long limit) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope, limit);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope, limit);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> timeLimit(final long timeLimit) {
-        this.variantConverter.step(this.variantString, getMethodName(), timeLimit);
+        this.variantConverter.addStep(this.variantString, getMethodName(), timeLimit);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> simplePath() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> cyclicPath() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> sample(final int amountToSample) {
-        this.variantConverter.step(this.variantString, getMethodName(), amountToSample);
+        this.variantConverter.addStep(this.variantString, getMethodName(), amountToSample);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> sample(final Scope scope, final int amountToSample) {
-        this.variantConverter.step(this.variantString, getMethodName(), scope, amountToSample);
+        this.variantConverter.addStep(this.variantString, getMethodName(), scope, amountToSample);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> drop() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public GraphTraversal<S, E> sideEffect(final Consumer<Traverser<E>> consumer) {
-        this.variantConverter.step(this.variantString, getMethodName(), consumer);
+        this.variantConverter.addStep(this.variantString, getMethodName(), consumer);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> sideEffect(final Traversal<?, ?> sideEffectTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectTraversal);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey, sideEffectKeys);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey, sideEffectKeys);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> aggregate(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> group(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> groupV3d0(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> groupCount(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> tree(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
-        this.variantConverter.step(this.variantString, getMethodName(), sackOperator);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sackOperator);
         return (GraphTraversal) this;
     }
 
 
     @Deprecated
     public <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sackOperator, elementPropertyKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sackOperator, elementPropertyKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> store(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> profile(final String sideEffectKey) {
-        this.variantConverter.step(this.variantString, getMethodName(), sideEffectKey);
+        this.variantConverter.addStep(this.variantString, getMethodName(), sideEffectKey);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
-        this.variantConverter.step(this.variantString, getMethodName(), cardinality, key, value, keyValues);
+        this.variantConverter.addStep(this.variantString, getMethodName(), cardinality, key, value, keyValues);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
-        this.variantConverter.step(this.variantString, getMethodName(), key, value, keyValues);
+        this.variantConverter.addStep(this.variantString, getMethodName(), key, value, keyValues);
         return (GraphTraversal) this;
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
 
     public <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), branchTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), branchTraversal);
         return (GraphTraversal) this;
     }
 
     public <M, E2> GraphTraversal<S, E2> branch(final Function<Traverser<E>, M> function) {
-        this.variantConverter.step(this.variantString, getMethodName(), function);
+        this.variantConverter.addStep(this.variantString, getMethodName(), function);
         return (GraphTraversal) this;
     }
 
     public <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> choiceTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), choiceTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), choiceTraversal);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
                                              final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        this.variantConverter.step(this.variantString, getMethodName(), traversalPredicate, trueChoice, falseChoice);
+        this.variantConverter.addStep(this.variantString, getMethodName(), traversalPredicate, trueChoice, falseChoice);
         return (GraphTraversal) this;
     }
 
     public <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
-        this.variantConverter.step(this.variantString, getMethodName(), choiceFunction);
+        this.variantConverter.addStep(this.variantString, getMethodName(), choiceFunction);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                              final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        this.variantConverter.step(this.variantString, getMethodName(), choosePredicate, trueChoice, falseChoice);
+        this.variantConverter.addStep(this.variantString, getMethodName(), choosePredicate, trueChoice, falseChoice);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), optionalTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), optionalTraversal);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
-        this.variantConverter.step(this.variantString, getMethodName(), unionTraversals);
+        this.variantConverter.addStep(this.variantString, getMethodName(), unionTraversals);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
-        this.variantConverter.step(this.variantString, getMethodName(), coalesceTraversals);
+        this.variantConverter.addStep(this.variantString, getMethodName(), coalesceTraversals);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), repeatTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), repeatTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), emitTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), emitTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), emitPredicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), emitPredicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> emit() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), untilTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), untilTraversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
-        this.variantConverter.step(this.variantString, getMethodName(), untilPredicate);
+        this.variantConverter.addStep(this.variantString, getMethodName(), untilPredicate);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> times(final int maxLoops) {
-        this.variantConverter.step(this.variantString, getMethodName(), maxLoops);
+        this.variantConverter.addStep(this.variantString, getMethodName(), maxLoops);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), localTraversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), localTraversal);
         return (GraphTraversal) this;
     }
 
     /////////////////// VERTEX PROGRAM STEPS ////////////////
 
     public GraphTraversal<S, E> pageRank() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> pageRank(final double alpha) {
-        this.variantConverter.step(this.variantString, getMethodName(), alpha);
+        this.variantConverter.addStep(this.variantString, getMethodName(), alpha);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> peerPressure() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> program(final VertexProgram<?> vertexProgram) {
-        this.variantConverter.step(this.variantString, getMethodName(), vertexProgram);
+        this.variantConverter.addStep(this.variantString, getMethodName(), vertexProgram);
         return (GraphTraversal) this;
     }
 
     ///////////////////// UTILITY STEPS /////////////////////
 
     public GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
-        this.variantConverter.step(this.variantString, getMethodName(), stepLabel, stepLabels);
+        this.variantConverter.addStep(this.variantString, getMethodName(), stepLabel, stepLabels);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> barrier() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> barrier(final int maxBarrierSize) {
-        this.variantConverter.step(this.variantString, getMethodName(), maxBarrierSize);
+        this.variantConverter.addStep(this.variantString, getMethodName(), maxBarrierSize);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> barrier(final Consumer<TraverserSet<Object>> barrierConsumer) {
-        this.variantConverter.step(this.variantString, getMethodName(), barrierConsumer);
+        this.variantConverter.addStep(this.variantString, getMethodName(), barrierConsumer);
         return (GraphTraversal) this;
     }
 
@@ -899,66 +899,66 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
     //// BY-MODULATORS
 
     public GraphTraversal<S, E> by() {
-        this.variantConverter.step(this.variantString, getMethodName());
+        this.variantConverter.addStep(this.variantString, getMethodName());
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> by(final Traversal<?, ?> traversal) {
-        this.variantConverter.step(this.variantString, getMethodName(), traversal);
+        this.variantConverter.addStep(this.variantString, getMethodName(), traversal);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> by(final T token) {
-        this.variantConverter.step(this.variantString, getMethodName(), token);
+        this.variantConverter.addStep(this.variantString, getMethodName(), token);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> by(final String key) {
-        this.variantConverter.step(this.variantString, getMethodName(), key);
+        this.variantConverter.addStep(this.variantString, getMethodName(), key);
         return (GraphTraversal) this;
     }
 
     public <V> GraphTraversal<S, E> by(final Function<V, Object> function) {
-        this.variantConverter.step(this.variantString, getMethodName(), function);
+        this.variantConverter.addStep(this.variantString, getMethodName(), function);
         return (GraphTraversal) this;
     }
 
     //// COMPARATOR BY-MODULATORS
 
     public <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> comparator) {
-        this.variantConverter.step(this.variantString, getMethodName(), traversal, comparator);
+        this.variantConverter.addStep(this.variantString, getMethodName(), traversal, comparator);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> by(final Comparator<E> comparator) {
-        this.variantConverter.step(this.variantString, getMethodName(), comparator);
+        this.variantConverter.addStep(this.variantString, getMethodName(), comparator);
         return (GraphTraversal) this;
     }
 
     public GraphTraversal<S, E> by(final Order order) {
-        this.variantConverter.step(this.variantString, getMethodName(), order);
+        this.variantConverter.addStep(this.variantString, getMethodName(), order);
         return (GraphTraversal) this;
     }
 
     public <V> GraphTraversal<S, E> by(final String key, final Comparator<V> comparator) {
-        this.variantConverter.step(this.variantString, getMethodName(), key, comparator);
+        this.variantConverter.addStep(this.variantString, getMethodName(), key, comparator);
         return (GraphTraversal) this;
     }
 
     public <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
-        this.variantConverter.step(this.variantString, getMethodName(), function, comparator);
+        this.variantConverter.addStep(this.variantString, getMethodName(), function, comparator);
         return (GraphTraversal) this;
     }
 
     ////
 
     public <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<E, E2> traversalOption) {
-        this.variantConverter.step(this.variantString, getMethodName(), pickToken, traversalOption);
+        this.variantConverter.addStep(this.variantString, getMethodName(), pickToken, traversalOption);
         return (GraphTraversal) this;
     }
 
     public <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalOption) {
-        this.variantConverter.step(this.variantString, getMethodName(), traversalOption);
+        this.variantConverter.addStep(this.variantString, getMethodName(), traversalOption);
         return (GraphTraversal) this;
     }
 }

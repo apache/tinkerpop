@@ -65,7 +65,7 @@ public class PythonVariantConverter implements VariantConverter {
     private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from"));
 
     @Override
-    public String compileVariant(final StringBuilder currentTraversal) throws ScriptException {
+    public String generateGremlinGroovy(final StringBuilder currentTraversal) throws ScriptException {
         if (currentTraversal.toString().contains("$") || currentTraversal.toString().contains("@"))
             throw new VerificationException("Lambda: " + currentTraversal.toString(), EmptyTraversal.instance());
 
@@ -77,7 +77,7 @@ public class PythonVariantConverter implements VariantConverter {
     }
 
     @Override
-    public void step(final StringBuilder currentTraversal, final String stepName, final Object... arguments) {
+    public void addStep(final StringBuilder currentTraversal, final String stepName, final Object... arguments) {
         if (arguments.length == 0)
             currentTraversal.append(".").append(convertStepName(stepName)).append("()");
         else if (stepName.equals("range") && 2 == arguments.length)
@@ -130,10 +130,9 @@ public class PythonVariantConverter implements VariantConverter {
             return "\"Scope." + object.toString() + "\"";
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof VariantGraphTraversal) {
-            final String string = ((VariantGraphTraversal) object).variantString.toString();
-            return string;
-        } else if (object instanceof Boolean)
+        else if (object instanceof VariantGraphTraversal)
+            return ((VariantGraphTraversal) object).getVariantString().toString();
+        else if (object instanceof Boolean)
             return object.equals(Boolean.TRUE) ? "True" : "False";
         else
             return null == object ? "" : object.toString();

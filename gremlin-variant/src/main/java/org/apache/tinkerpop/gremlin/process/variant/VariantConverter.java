@@ -26,7 +26,7 @@ import javax.script.ScriptException;
  */
 public interface VariantConverter {
 
-    public void step(final StringBuilder currentTraversal, final String stepName, final Object... arguments);
+    public void addStep(final StringBuilder currentTraversal, final String stepName, final Object... arguments);
 
-    public String compileVariant(final StringBuilder currentTraversal) throws ScriptException;
+    public String generateGremlinGroovy(final StringBuilder currentTraversal) throws ScriptException;
 }

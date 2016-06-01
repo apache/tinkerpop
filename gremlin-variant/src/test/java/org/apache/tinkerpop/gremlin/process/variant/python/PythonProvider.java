@@ -30,8 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 public class PythonProvider extends VariantGraphProvider {
 
     public GraphTraversalSource traversal(final Graph graph) {
-        final GraphTraversalSource traversalSource = graph.traversal();
-        return new VariantGraphTraversalSource(new PythonVariantConverter(), traversalSource.getGraph(), traversalSource.getStrategies());
+        return new VariantGraphTraversalSource(new PythonVariantConverter(), graph, graph.traversal().getStrategies());
     }
 
 }
