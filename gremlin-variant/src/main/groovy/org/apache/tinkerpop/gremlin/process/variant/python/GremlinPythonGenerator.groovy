@@ -44,12 +44,15 @@ class Helper(object):
        not(arg.startswith("Pop.")) and
        not(arg.startswith("Column.")) and
        not(arg.startswith("Operator.")) and
+       not(arg.startswith("SackFunctions.Barrier.")) and
        not(arg.startswith("Direction."))):
       return "\\"" + arg + "\\""
     elif type(arg) is bool:
       return str(arg).lower()
     elif type(arg) is long:
       return str(arg) + "L"
+    elif type(arg) is float:
+      return str(arg) + "f"
     else:
       return str(arg)
   @staticmethod

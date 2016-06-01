@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
@@ -39,6 +40,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -101,12 +103,15 @@ public class PythonVariantConverter implements VariantConverter {
         if (object instanceof String)
             return "\"" + object + "\"";
         else if (object instanceof List) {
-            for (int i = 0; i < ((List) object).size(); i++) {
-                ((List) object).set(i, ((List) object).get(i) instanceof String ? "'" + ((List) object).get(i) + "'" : convertToString(((List) object).get(i)));
+            final List list = new ArrayList<>(((List) object).size());
+            for (final Object item : (List) object) {
+                list.add(item instanceof String ? "'" + item + "'" : convertToString(item));
             }
-            return object.toString();
+            return list.toString();
         } else if (object instanceof Long)
             return object + "L";
+        else if (object instanceof SackFunctions.Barrier)
+            return "\"SackFunctions.Barrier." + object.toString() + "\"";
         else if (object instanceof Direction)
             return "\"Direction." + object.toString() + "\"";
         else if (object instanceof Operator)
