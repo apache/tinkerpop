@@ -19,11 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.process.variant.python
 
+import org.apache.tinkerpop.gremlin.process.traversal.Operator
+import org.apache.tinkerpop.gremlin.process.traversal.Order
 import org.apache.tinkerpop.gremlin.process.traversal.P
+import org.apache.tinkerpop.gremlin.process.traversal.Pop
+import org.apache.tinkerpop.gremlin.process.traversal.Scope
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.Column
+import org.apache.tinkerpop.gremlin.structure.Direction
+import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.structure.VertexProperty
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,7 +39,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 class GremlinPythonGenerator {
 
     public static void create(final String gremlinPythonFile) {
+
         final StringBuilder pythonClass = new StringBuilder()
+
         pythonClass.append("""'''
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -51,6 +61,11 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
+
+        final Map<String, String> methodMap = [global: "_global", as: "_as", in: "_in", and: "_and", or: "_or", is: "_is", not: "_not", from: "_from"]
+                .withDefault { it }
+        final Map<String, String> invertedMethodMap = [:].withDefault { it };
+        methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
 
         pythonClass.append("""
 class Helper(object):
@@ -76,6 +91,7 @@ class Helper(object):
       return str(arg) + "f"
     else:
       return str(arg)
+
   @staticmethod
   def stringify(*args):
     if len(args) == 0:
@@ -84,97 +100,81 @@ class Helper(object):
       return Helper.stringOrObject(args[0])
     else:
       return ", ".join(Helper.stringOrObject(i) for i in args)
-""");
-
-        final Map<String, String> methodMap = [as: "_as", in: "_in", and: "_and", or: "_or", is: "_is", not: "_not", from: "_from"].withDefault {
-            it
-        }
-        final Map<String, String> invertedMethodMap = [_as: "as", _in: "in", _and: "and", _or: "or", _is: "is", _not: "not", _from: "from"].withDefault {
-            it
-        }
+""").append("\n\n");
 
 ///////////
 // Enums //
 ///////////
 
-        pythonClass.append("""class Cardinality(object):
-  single = "VertexProperty.Cardinality.single"
-  list = "VertexProperty.Cardinality.list"
-  set = "VertexProperty.Cardinality.set"
-""").append("\n\n");
+        pythonClass.append("class Cardinality(object):\n");
+        VertexProperty.Cardinality.values().each { value ->
+            pythonClass.append("   ${value} = \"VertexProperty.Cardinality.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
-        pythonClass.append("""class Column(object):
-  keys = "Column.keys"
-  values = "Column.values"
-""").append("\n\n");
+        pythonClass.append("class Column(object):\n");
+        Column.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
-        pythonClass.append("""class Direction(object):
-  IN = "Direction.IN"
-  OUT = "Direction.OUT"
-  BOTH = "Direction.BOTH"
-""").append("\n\n");
+        pythonClass.append("class Direction(object):\n");
+        Direction.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
-        pythonClass.append("""class Operator(object):
-  sum = "Operator.sum"
-  minus = "Operator.minus"
-  mult = "Operator.mult"
-  div = "Operator.div"
-  min = "Operator.min"
-  max = "Operator.max"
-  assign = "Operator.assign"
-  _and = "Operator.and"
-  _or = "Operator.or"
-  addAll = "Operator.addAll"
-  sumLong = "Operator.sumLong"
-""").append("\n\n");
+        pythonClass.append("class Operator(object):\n");
+        Operator.values().each { value ->
+            pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
-        pythonClass.append("""class Order(object):
-  incr = "Order.incr"
-  decr = "Order.decr"
-  shuffle = "Order.shuffle"
-  keyIncr = "Order.keyIncr"
-  keyDecr = "Order.keyDecr"
-  valueIncr = "Order.valueIncr"
-  valueDecr = "Order.valueDecr"
-""").append("\n\n");
+        pythonClass.append("class Order(object):\n");
+        Order.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
-        Set<String> methods = P.getMethods().collect { methodMap[it.name] } as Set; []
         pythonClass.append("class P(object):\n");
-        methods.each { method ->
+        P.getMethods()
+                .findAll { P.class.isAssignableFrom(it.returnType) }
+                .collect { methodMap[it.name] }
+                .toSet()
+                .each { method ->
             pythonClass.append(
-                    """  @staticmethod
-  def ${method}(*args):
-    return "P.${method}(" + Helper.stringify(*args) + ")"
+                    """   @staticmethod
+   def ${method}(*args):
+      return "P.${method}(" + Helper.stringify(*args) + ")"
 """)
         };
         pythonClass.append("\n\n")
 
-        pythonClass.append("""class Pop(object):
-  first = "Pop.first"
-  last = "Pop.last"
-  all = "Pop.all"
-""").append("\n\n");
+        pythonClass.append("class Pop(object):\n");
+        Pop.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
         pythonClass.append("""class Barrier(object):
-  normSack = "SackFunctions.Barrier.normSack"
+   normSack = "SackFunctions.Barrier.normSack"
 """).append("\n\n");
 
-        pythonClass.append("""class Scope(object):
-  _local = "Scope.local"
-  _global = "Scope.global"
-""").append("\n\n");
+        pythonClass.append("class Scope(object):\n");
+        Scope.values().each { value ->
+            pythonClass.append("   _${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
-        pythonClass.append("""class T(object):
-  label = "T.label"
-  id = "T.id"
-  key = "T.key"
-  value = "T.value"
-""").append("\n\n");
+        pythonClass.append("class T(object):\n");
+        T.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n\n");
 
 //////////////////////////
 // GraphTraversalSource //
 //////////////////////////
-        methods = GraphTraversalSource.getMethods().collect { it.name } as Set;
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
   def __init__(self, traversalSourceString):
@@ -182,7 +182,7 @@ class Helper(object):
   def __repr__(self):
     return "graphtraversalsource[" + self.traversalSourceString + "]"
 """)
-        methods.each { method ->
+        GraphTraversalSource.getMethods().collect { it.name }.toSet().each { method ->
             final Class<?> returnType = (GraphTraversalSource.getMethods() as Set).findAll {
                 it.name.equals(method)
             }.collect {
@@ -205,8 +205,6 @@ class Helper(object):
 ////////////////////
 // GraphTraversal //
 ////////////////////
-        methods = GraphTraversal.getMethods().collect { methodMap[it.name] } as Set;
-        methods.remove("toList")
         pythonClass.append(
                 """class PythonGraphTraversal(object):
   def __init__(self, traversalString):
@@ -219,11 +217,14 @@ class Helper(object):
     elif type(index) is slice:
       return self.range(index.start,index.stop)
     else:
-      raise TypeError("index must be int or slice")
+      raise TypeError("Index must be int or slice")
   def __getattr__(self,key):
     return self.values(key)
 """)
-        methods.each { method ->
+        GraphTraversal.getMethods()
+                .collect { methodMap[it.name] }
+                .toSet()
+                .each { method ->
             final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {
                 it.name.equals(invertedMethodMap[method])
             }.collect { it.returnType }[0]
@@ -246,9 +247,11 @@ class Helper(object):
 ////////////////////////
 // AnonymousTraversal //
 ////////////////////////
-        methods = __.getMethods().collect { methodMap[it.name] } as Set; []
         pythonClass.append("class __(object):\n");
-        methods.each { method ->
+        __.getMethods()
+                .collect { methodMap[it.name] }
+                .toSet()
+                .each { method ->
             pythonClass.append(
                     """  @staticmethod
   def ${method}(*args):
