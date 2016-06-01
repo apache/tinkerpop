@@ -81,6 +81,10 @@ public class VariantGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         return this.variantString;
     }
 
+    public String toString() {
+       return this.steps.isEmpty() ? this.variantString.toString() : super.toString();
+    }
+
     @Override
     public void applyStrategies() {
         if (!(this.getParent() instanceof EmptyStep)) {

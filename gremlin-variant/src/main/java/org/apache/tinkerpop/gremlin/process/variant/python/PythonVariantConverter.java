@@ -34,6 +34,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
+import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -45,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,35 +70,37 @@ public class PythonVariantConverter implements VariantConverter {
     @Override
     public String generateGremlinGroovy(final StringBuilder currentTraversal) throws ScriptException {
         if (currentTraversal.toString().contains("$") || currentTraversal.toString().contains("@"))
-            throw new VerificationException("Lambda: " + currentTraversal.toString(), EmptyTraversal.instance());
+            throw new VerificationException("Lambdas are currently not supported: " + currentTraversal.toString(), EmptyTraversal.instance());
 
         final Bindings jythonBindings = new SimpleBindings();
         jythonBindings.put("g", JYTHON_ENGINE.eval("PythonGraphTraversalSource(\"g\")"));
         JYTHON_ENGINE.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
-        System.out.println(currentTraversal.toString());
         return JYTHON_ENGINE.eval(currentTraversal.toString()).toString();
     }
 
     @Override
     public void addStep(final StringBuilder currentTraversal, final String stepName, final Object... arguments) {
-        if (arguments.length == 0)
+        // flatten the arguments into a single array
+        final Object[] objects = Stream.of(arguments)
+                .flatMap(arg ->
+                        IteratorUtils.stream(arg instanceof Object[] ?
+                                new ArrayIterator<>((Object[]) arg) :
+                                IteratorUtils.of(arg)))
+                .toArray();
+        if (objects.length == 0)
             currentTraversal.append(".").append(convertStepName(stepName)).append("()");
-        else if (stepName.equals("range") && 2 == arguments.length)
-            currentTraversal.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
-        else if (stepName.equals("limit") && 1 == arguments.length)
-            currentTraversal.append("[0:").append(arguments[0]).append("]");
-        else if (stepName.equals("values") && 1 == arguments.length && !currentTraversal.toString().equals("__"))
-            currentTraversal.append(".").append(arguments[0]);
+        else if (stepName.equals("range") && 2 == objects.length)
+            currentTraversal.append("[").append(objects[0]).append(":").append(objects[1]).append("]");
+        else if (stepName.equals("limit") && 1 == objects.length)
+            currentTraversal.append("[0:").append(objects[0]).append("]");
+        else if (stepName.equals("values") && 1 == objects.length && !currentTraversal.toString().equals("__"))
+            currentTraversal.append(".").append(objects[0]);
         else {
             String temp = "." + convertStepName(stepName) + "(";
-            for (final Object object : arguments) {
-                if (object instanceof Object[]) {
-                    for (final Object object2 : (Object[]) object) {
-                        temp = temp + convertToString(object2) + ",";
-                    }
-                } else {
-                    temp = temp + convertToString(object) + ",";
-                }
+            for (final Object object : objects) {
+
+                temp = temp + convertToString(object) + ",";
+
             }
             currentTraversal.append(temp.substring(0, temp.length() - 1) + ")");
         }
@@ -115,21 +120,21 @@ public class PythonVariantConverter implements VariantConverter {
         else if (object instanceof SackFunctions.Barrier)
             return "\"SackFunctions.Barrier." + object.toString() + "\"";
         else if (object instanceof Direction)
-            return "\"Direction." + object.toString() + "\"";
+            return "Direction." + object.toString();
         else if (object instanceof Operator)
             return "\"Operator." + object.toString() + "\"";
         else if (object instanceof Pop)
-            return "\"Pop." + object.toString() + "\"";
+            return "Pop." + object.toString();
         else if (object instanceof Column)
-            return "\"Column." + object.toString() + "\"";
+            return "Column." + object.toString();
         else if (object instanceof P)
             return "\"P." + ((P) object).getBiPredicate() + "(" + (((P) object).getValue() instanceof String ? "'" + ((P) object).getValue() + "'" : convertToString(((P) object).getValue())) + ")" + "\"";
         else if (object instanceof T)
-            return "\"T." + object.toString() + "\"";
+            return "T." + object.toString();
         else if (object instanceof Order)
-            return "\"Order." + object.toString() + "\"";
+            return "Order." + object.toString();
         else if (object instanceof Scope)
-            return "\"Scope." + object.toString() + "\"";
+            return "Scope._" + object.toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof VariantGraphTraversal)

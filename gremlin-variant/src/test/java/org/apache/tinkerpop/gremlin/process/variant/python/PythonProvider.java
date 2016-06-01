@@ -32,6 +32,7 @@ public class PythonProvider extends VariantGraphProvider {
     public GraphTraversalSource traversal(final Graph graph) {
         if ((Boolean) graph.configuration().getProperty("skipTest"))
             return graph.traversal();
+            //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else
             return new VariantGraphTraversalSource(new PythonVariantConverter(), graph, graph.traversal().getStrategies());
     }

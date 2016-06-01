@@ -40,9 +40,9 @@ class Helper(object):
        not(arg.startswith("P.")) and
        not(arg.startswith("Order.")) and
        not(arg.startswith("Scope.")) and
-       not(arg.startswith("T.")) and
        not(arg.startswith("Pop.")) and
        not(arg.startswith("Column.")) and
+       not(arg.startswith("T.")) and
        not(arg.startswith("Operator.")) and
        not(arg.startswith("SackFunctions.Barrier.")) and
        not(arg.startswith("Direction."))):
@@ -64,6 +64,49 @@ class Helper(object):
     else:
       return ", ".join(Helper.stringOrObject(i) for i in args)
 """);
+
+///////////
+// Enums //
+///////////
+
+        pythonClass.append("""class Column(object):
+  keys = "Column.keys"
+  values = "Column.values"
+""").append("\n\n");
+
+        pythonClass.append("""class Direction(object):
+  IN = "Direction.IN"
+  OUT = "Direction.OUT"
+  BOTH = "Direction.BOTH"
+""").append("\n\n");
+
+        pythonClass.append("""class Order(object):
+  incr = "Order.incr"
+  decr = "Order.decr"
+  shuffle = "Order.shuffle"
+  keyIncr = "Order.keyIncr"
+  keyDecr = "Order.keyDecr"
+  valueIncr = "Order.valueIncr"
+  valueDecr = "Order.valueDecr"
+""").append("\n\n");
+
+        pythonClass.append("""class Pop(object):
+  first = "Pop.first"
+  last = "Pop.last"
+  all = "Pop.all"
+""").append("\n\n");
+
+        pythonClass.append("""class Scope(object):
+  _local = "Scope.local"
+  _global = "Scope.global"
+""").append("\n\n");
+
+        pythonClass.append("""class T(object):
+  label = "T.label"
+  id = "T.id"
+  key = "T.key"
+  value = "T.value"
+""").append("\n\n");
 
 //////////////////////////
 // GraphTraversalSource //
@@ -122,8 +165,6 @@ class Helper(object):
       raise TypeError("index must be int or slice")
   def __getattr__(self,key):
     return self.values(key)
-  def toList(self):
-    return self.traversalString
 """)
         methods.each { method ->
             final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {
