@@ -19,15 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.process.variant.python
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer
 import org.apache.tinkerpop.gremlin.process.traversal.Operator
 import org.apache.tinkerpop.gremlin.process.traversal.Order
 import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Pop
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions
 import org.apache.tinkerpop.gremlin.process.traversal.Scope
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy
 import org.apache.tinkerpop.gremlin.structure.Column
 import org.apache.tinkerpop.gremlin.structure.Direction
 import org.apache.tinkerpop.gremlin.structure.T
@@ -67,22 +71,21 @@ under the License.
         final Map<String, String> invertedMethodMap = [:].withDefault { it };
         methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
 
+        final Set<String> NO_QUOTE = [VertexProperty.Cardinality, Column, Direction, Operator, Order, P, Pop, Scope, SackFunctions.Barrier, T,
+                                      ReadOnlyStrategy, Computer]
+                .collect { it.getSimpleName() }.toSet();
+        final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
+                .withDefault { it }
+
         pythonClass.append("""
 class Helper(object):
   @staticmethod
   def stringOrObject(arg):
     if (type(arg) is str and
-       not(arg.startswith("VertexProperty.Cardinality.")) and
-       not(arg.startswith("P.")) and
-       not(arg.startswith("Order.")) and
-       not(arg.startswith("Scope.")) and
-       not(arg.startswith("Pop.")) and
-       not(arg.startswith("Column.")) and
-       not(arg.startswith("T.")) and
-       not(arg.startswith("Operator.")) and
-       not(arg.startswith("SackFunctions.Barrier.")) and
-       not(arg.startswith("Direction."))):
-      return "\\"" + arg + "\\""
+""")
+        NO_QUOTE.forEach { pythonClass.append("      not(arg.startswith(\"${enumMap[it]}.\")) and\n") }
+        pythonClass.append("      not(len(arg)==0)):\n")
+        pythonClass.append("""         return "\\"" + arg + "\\""
     elif type(arg) is bool:
       return str(arg).lower()
     elif type(arg) is long:
@@ -188,18 +191,20 @@ class Helper(object):
             }.collect {
                 it.returnType
             }[0]
-            if (null != returnType && Traversal.isAssignableFrom(returnType)) {
-                pythonClass.append(
-                        """  def ${method}(self, *args):
+            if (null != returnType) {
+                if (Traversal.isAssignableFrom(returnType)) {
+                    pythonClass.append(
+                            """  def ${method}(self, *args):
     return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
 """)
-            } else {
-                pythonClass.append(
-                        """  def ${method}(self, *args):
+                } else if (TraversalSource.isAssignableFrom(returnType)) {
+                    pythonClass.append(
+                            """  def ${method}(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
 """)
+                }
             }
-        }; []
+        }
         pythonClass.append("\n\n")
 
 ////////////////////
@@ -234,12 +239,6 @@ class Helper(object):
     self.traversalString = self.traversalString + ".${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")"
     return self
 """)
-            } else {
-                pythonClass.append(
-                        """  def ${method}(self, *args):
-    self.traversalString = self.traversalString + ".${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")"
-    return self.toList()
-""")
             }
         };
         pythonClass.append("\n\n")
@@ -249,6 +248,7 @@ class Helper(object):
 ////////////////////////
         pythonClass.append("class __(object):\n");
         __.getMethods()
+                .findAll { Traversal.isAssignableFrom(it.returnType) }
                 .collect { methodMap[it.name] }
                 .toSet()
                 .each { method ->

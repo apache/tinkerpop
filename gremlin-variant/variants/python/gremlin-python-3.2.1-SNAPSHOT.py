@@ -21,17 +21,20 @@ class Helper(object):
   @staticmethod
   def stringOrObject(arg):
     if (type(arg) is str and
-       not(arg.startswith("VertexProperty.Cardinality.")) and
-       not(arg.startswith("P.")) and
-       not(arg.startswith("Order.")) and
-       not(arg.startswith("Scope.")) and
-       not(arg.startswith("Pop.")) and
-       not(arg.startswith("Column.")) and
-       not(arg.startswith("T.")) and
-       not(arg.startswith("Operator.")) and
-       not(arg.startswith("SackFunctions.Barrier.")) and
-       not(arg.startswith("Direction."))):
-      return "\"" + arg + "\""
+      not(arg.startswith("Operator.")) and
+      not(arg.startswith("Order.")) and
+      not(arg.startswith("P.")) and
+      not(arg.startswith("Pop.")) and
+      not(arg.startswith("ReadOnlyStrategy.")) and
+      not(arg.startswith("VertexProperty.Cardinality.")) and
+      not(arg.startswith("Scope.")) and
+      not(arg.startswith("T.")) and
+      not(arg.startswith("Column.")) and
+      not(arg.startswith("Computer.")) and
+      not(arg.startswith("SackFunctions.Barrier.")) and
+      not(arg.startswith("Direction.")) and
+      not(len(arg)==0)):
+         return "\"" + arg + "\""
     elif type(arg) is bool:
       return str(arg).lower()
     elif type(arg) is long:
@@ -173,28 +176,12 @@ class PythonGraphTraversalSource(object):
     self.traversalSourceString = traversalSourceString
   def __repr__(self):
     return "graphtraversalsource[" + self.traversalSourceString + "]"
-  def standard(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".standard(" + Helper.stringify(*args) + ")")
-  def getClass(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".getClass(" + Helper.stringify(*args) + ")")
-  def wait(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".wait(" + Helper.stringify(*args) + ")")
-  def tx(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".tx(" + Helper.stringify(*args) + ")")
   def E(self, *args):
     return PythonGraphTraversal(self.traversalSourceString + ".E(" + Helper.stringify(*args) + ")")
-  def notifyAll(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".notifyAll(" + Helper.stringify(*args) + ")")
   def withoutStrategies(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".withoutStrategies(" + Helper.stringify(*args) + ")")
-  def notify(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".notify(" + Helper.stringify(*args) + ")")
-  def computer(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".computer(" + Helper.stringify(*args) + ")")
   def V(self, *args):
     return PythonGraphTraversal(self.traversalSourceString + ".V(" + Helper.stringify(*args) + ")")
-  def hashCode(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".hashCode(" + Helper.stringify(*args) + ")")
   def withComputer(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".withComputer(" + Helper.stringify(*args) + ")")
   def withSideEffect(self, *args):
@@ -203,24 +190,14 @@ class PythonGraphTraversalSource(object):
     return PythonGraphTraversalSource(self.traversalSourceString + ".withBulk(" + Helper.stringify(*args) + ")")
   def withPath(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".withPath(" + Helper.stringify(*args) + ")")
-  def getGraph(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".getGraph(" + Helper.stringify(*args) + ")")
   def withSack(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".withSack(" + Helper.stringify(*args) + ")")
-  def getStrategies(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".getStrategies(" + Helper.stringify(*args) + ")")
   def withStrategies(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".withStrategies(" + Helper.stringify(*args) + ")")
-  def build(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".build(" + Helper.stringify(*args) + ")")
-  def equals(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".equals(" + Helper.stringify(*args) + ")")
   def clone(self, *args):
     return PythonGraphTraversalSource(self.traversalSourceString + ".clone(" + Helper.stringify(*args) + ")")
   def addV(self, *args):
     return PythonGraphTraversal(self.traversalSourceString + ".addV(" + Helper.stringify(*args) + ")")
-  def toString(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".toString(" + Helper.stringify(*args) + ")")
   def inject(self, *args):
     return PythonGraphTraversal(self.traversalSourceString + ".inject(" + Helper.stringify(*args) + ")")
 
@@ -236,12 +213,9 @@ class PythonGraphTraversal(object):
     elif type(index) is slice:
       return self.range(index.start,index.stop)
     else:
-      raise TypeError("index must be int or slice")
+      raise TypeError("Index must be int or slice")
   def __getattr__(self,key):
     return self.values(key)
-  def explain(self, *args):
-    self.traversalString = self.traversalString + ".explain(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def asAdmin(self, *args):
     self.traversalString = self.traversalString + ".asAdmin(" + Helper.stringify(*args) + ")"
     return self
@@ -275,18 +249,15 @@ class PythonGraphTraversal(object):
   def coalesce(self, *args):
     self.traversalString = self.traversalString + ".coalesce(" + Helper.stringify(*args) + ")"
     return self
-  def hasValue(self, *args):
-    self.traversalString = self.traversalString + ".hasValue(" + Helper.stringify(*args) + ")"
+  def hasLabel(self, *args):
+    self.traversalString = self.traversalString + ".hasLabel(" + Helper.stringify(*args) + ")"
     return self
   def optional(self, *args):
     self.traversalString = self.traversalString + ".optional(" + Helper.stringify(*args) + ")"
     return self
-  def hasLabel(self, *args):
-    self.traversalString = self.traversalString + ".hasLabel(" + Helper.stringify(*args) + ")"
+  def hasValue(self, *args):
+    self.traversalString = self.traversalString + ".hasValue(" + Helper.stringify(*args) + ")"
     return self
-  def hasNext(self, *args):
-    self.traversalString = self.traversalString + ".hasNext(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def toE(self, *args):
     self.traversalString = self.traversalString + ".toE(" + Helper.stringify(*args) + ")"
     return self
@@ -308,9 +279,6 @@ class PythonGraphTraversal(object):
   def toV(self, *args):
     self.traversalString = self.traversalString + ".toV(" + Helper.stringify(*args) + ")"
     return self
-  def toBulkSet(self, *args):
-    self.traversalString = self.traversalString + ".toBulkSet(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def range(self, *args):
     self.traversalString = self.traversalString + ".range(" + Helper.stringify(*args) + ")"
     return self
@@ -386,9 +354,6 @@ class PythonGraphTraversal(object):
   def filter(self, *args):
     self.traversalString = self.traversalString + ".filter(" + Helper.stringify(*args) + ")"
     return self
-  def toSet(self, *args):
-    self.traversalString = self.traversalString + ".toSet(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def subgraph(self, *args):
     self.traversalString = self.traversalString + ".subgraph(" + Helper.stringify(*args) + ")"
     return self
@@ -413,9 +378,6 @@ class PythonGraphTraversal(object):
   def project(self, *args):
     self.traversalString = self.traversalString + ".project(" + Helper.stringify(*args) + ")"
     return self
-  def toList(self, *args):
-    self.traversalString = self.traversalString + ".toList(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def barrier(self, *args):
     self.traversalString = self.traversalString + ".barrier(" + Helper.stringify(*args) + ")"
     return self
@@ -425,9 +387,6 @@ class PythonGraphTraversal(object):
   def has(self, *args):
     self.traversalString = self.traversalString + ".has(" + Helper.stringify(*args) + ")"
     return self
-  def forEachRemaining(self, *args):
-    self.traversalString = self.traversalString + ".forEachRemaining(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def group(self, *args):
     self.traversalString = self.traversalString + ".group(" + Helper.stringify(*args) + ")"
     return self
@@ -443,9 +402,6 @@ class PythonGraphTraversal(object):
   def propertyMap(self, *args):
     self.traversalString = self.traversalString + ".propertyMap(" + Helper.stringify(*args) + ")"
     return self
-  def fill(self, *args):
-    self.traversalString = self.traversalString + ".fill(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def sideEffect(self, *args):
     self.traversalString = self.traversalString + ".sideEffect(" + Helper.stringify(*args) + ")"
     return self
@@ -470,9 +426,6 @@ class PythonGraphTraversal(object):
   def drop(self, *args):
     self.traversalString = self.traversalString + ".drop(" + Helper.stringify(*args) + ")"
     return self
-  def next(self, *args):
-    self.traversalString = self.traversalString + ".next(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def inE(self, *args):
     self.traversalString = self.traversalString + ".inE(" + Helper.stringify(*args) + ")"
     return self
@@ -491,12 +444,6 @@ class PythonGraphTraversal(object):
   def choose(self, *args):
     self.traversalString = self.traversalString + ".choose(" + Helper.stringify(*args) + ")"
     return self
-  def toStream(self, *args):
-    self.traversalString = self.traversalString + ".toStream(" + Helper.stringify(*args) + ")"
-    return self.toList()
-  def remove(self, *args):
-    self.traversalString = self.traversalString + ".remove(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def aggregate(self, *args):
     self.traversalString = self.traversalString + ".aggregate(" + Helper.stringify(*args) + ")"
     return self
@@ -530,17 +477,14 @@ class PythonGraphTraversal(object):
   def mapValues(self, *args):
     self.traversalString = self.traversalString + ".mapValues(" + Helper.stringify(*args) + ")"
     return self
-  def tryNext(self, *args):
-    self.traversalString = self.traversalString + ".tryNext(" + Helper.stringify(*args) + ")"
-    return self.toList()
   def match(self, *args):
     self.traversalString = self.traversalString + ".match(" + Helper.stringify(*args) + ")"
     return self
-  def peerPressure(self, *args):
-    self.traversalString = self.traversalString + ".peerPressure(" + Helper.stringify(*args) + ")"
-    return self
   def addE(self, *args):
     self.traversalString = self.traversalString + ".addE(" + Helper.stringify(*args) + ")"
+    return self
+  def peerPressure(self, *args):
+    self.traversalString = self.traversalString + ".peerPressure(" + Helper.stringify(*args) + ")"
     return self
   def label(self, *args):
     self.traversalString = self.traversalString + ".label(" + Helper.stringify(*args) + ")"
@@ -600,14 +544,14 @@ class __(object):
   def coalesce(*args):
     return PythonGraphTraversal("__").coalesce(*args)
   @staticmethod
-  def hasValue(*args):
-    return PythonGraphTraversal("__").hasValue(*args)
+  def hasLabel(*args):
+    return PythonGraphTraversal("__").hasLabel(*args)
   @staticmethod
   def optional(*args):
     return PythonGraphTraversal("__").optional(*args)
   @staticmethod
-  def hasLabel(*args):
-    return PythonGraphTraversal("__").hasLabel(*args)
+  def hasValue(*args):
+    return PythonGraphTraversal("__").hasValue(*args)
   @staticmethod
   def toE(*args):
     return PythonGraphTraversal("__").toE(*args)
@@ -630,9 +574,6 @@ class __(object):
   def toV(*args):
     return PythonGraphTraversal("__").toV(*args)
   @staticmethod
-  def wait(*args):
-    return PythonGraphTraversal("__").wait(*args)
-  @staticmethod
   def range(*args):
     return PythonGraphTraversal("__").range(*args)
   @staticmethod
@@ -641,9 +582,6 @@ class __(object):
   @staticmethod
   def local(*args):
     return PythonGraphTraversal("__").local(*args)
-  @staticmethod
-  def notify(*args):
-    return PythonGraphTraversal("__").notify(*args)
   @staticmethod
   def out(*args):
     return PythonGraphTraversal("__").out(*args)
@@ -705,12 +643,6 @@ class __(object):
   def subgraph(*args):
     return PythonGraphTraversal("__").subgraph(*args)
   @staticmethod
-  def equals(*args):
-    return PythonGraphTraversal("__").equals(*args)
-  @staticmethod
-  def toString(*args):
-    return PythonGraphTraversal("__").toString(*args)
-  @staticmethod
   def to(*args):
     return PythonGraphTraversal("__").to(*args)
   @staticmethod
@@ -719,9 +651,6 @@ class __(object):
   @staticmethod
   def addOutE(*args):
     return PythonGraphTraversal("__").addOutE(*args)
-  @staticmethod
-  def getClass(*args):
-    return PythonGraphTraversal("__").getClass(*args)
   @staticmethod
   def _or(*args):
     return PythonGraphTraversal("__")._or(*args)
@@ -792,9 +721,6 @@ class __(object):
   def values(*args):
     return PythonGraphTraversal("__").values(*args)
   @staticmethod
-  def notifyAll(*args):
-    return PythonGraphTraversal("__").notifyAll(*args)
-  @staticmethod
   def _is(*args):
     return PythonGraphTraversal("__")._is(*args)
   @staticmethod
@@ -815,9 +741,6 @@ class __(object):
   @staticmethod
   def cap(*args):
     return PythonGraphTraversal("__").cap(*args)
-  @staticmethod
-  def hashCode(*args):
-    return PythonGraphTraversal("__").hashCode(*args)
   @staticmethod
   def repeat(*args):
     return PythonGraphTraversal("__").repeat(*args)
