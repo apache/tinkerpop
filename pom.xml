@@ -117,6 +117,7 @@ limitations under the License.
         <module>gremlin-groovy</module>
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
+        <module>gremlin-variant</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>giraph-gremlin</module>
@@ -125,7 +126,6 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
-        <module>gremlin-variant</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</connection>

@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -43,6 +44,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,8 +61,9 @@ public class PythonVariantConverter implements VariantConverter {
 
     static {
         try {
-            GremlinPythonGenerator.create("/tmp");
-            JYTHON_ENGINE.eval("execfile(\"/tmp/gremlin-python-3.2.1-SNAPSHOT.py\")");
+            final String fileName = (new File("variants/python").exists() ? "variants/python/" : "gremlin-variants/variants/python/") + "gremlin-python-" + Gremlin.version() + ".py";
+            GremlinPythonGenerator.create(fileName);
+            JYTHON_ENGINE.eval("execfile(\"" + fileName + "\")");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -99,9 +102,7 @@ public class PythonVariantConverter implements VariantConverter {
         else {
             String temp = "." + convertStepName(stepName) + "(";
             for (final Object object : objects) {
-
                 temp = temp + convertToString(object) + ",";
-
             }
             currentTraversal.append(temp.substring(0, temp.length() - 1) + ")");
         }
