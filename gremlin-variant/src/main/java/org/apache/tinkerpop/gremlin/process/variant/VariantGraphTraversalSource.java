@@ -19,11 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.process.variant;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.function.BinaryOperator;
@@ -61,6 +67,65 @@ public class VariantGraphTraversalSource extends GraphTraversalSource {
         final StringBuilder temp = new StringBuilder(this.sourceString.toString());
         this.variantConverter.addStep(temp, getMethodName(), vertexIds);
         return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    @Deprecated
+    public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
+        final StringBuilder temp = new StringBuilder(this.sourceString.toString());
+        this.variantConverter.addStep(temp, getMethodName(), keyValues);
+        return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    public GraphTraversal<Vertex, Vertex> addV(final String label) {
+        final StringBuilder temp = new StringBuilder(this.sourceString.toString());
+        this.variantConverter.addStep(temp, getMethodName(), label);
+        return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    public GraphTraversal<Vertex, Vertex> addV() {
+        final StringBuilder temp = new StringBuilder(this.sourceString.toString());
+        this.variantConverter.addStep(temp, getMethodName());
+        return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    public <S> GraphTraversal<S, S> inject(S... starts) {
+        final StringBuilder temp = new StringBuilder(this.sourceString.toString());
+        this.variantConverter.addStep(temp, getMethodName(), starts);
+        return new VariantGraphTraversal<>(this.getGraph(), temp, this.variantConverter);
+    }
+
+    ///
+
+    @Override
+    public GraphTraversalSource withComputer(final Computer computer) {
+        this.variantConverter.addStep(this.sourceString, getMethodName(), computer);
+        return this;
+    }
+
+    @Override
+    public GraphTraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
+        this.variantConverter.addStep(this.sourceString, getMethodName(), graphComputerClass);
+        return this;
+    }
+
+    @Override
+    public GraphTraversalSource withComputer() {
+        this.variantConverter.addStep(this.sourceString, getMethodName());
+        return this;
+    }
+
+    @Override
+    public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
+        return super.withStrategies(traversalStrategies);
+        //this.variantConverter.addStep(this.sourceString, getMethodName(), traversalStrategies);
+        //return this;
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked", "varargs"})
+    public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
+        this.variantConverter.addStep(this.sourceString, getMethodName(), traversalStrategyClasses);
+        return this;
     }
 
     @Override
@@ -142,6 +207,12 @@ public class VariantGraphTraversalSource extends GraphTraversalSource {
     @Override
     public GraphTraversalSource withBulk(final boolean useBulk) {
         this.variantConverter.addStep(this.sourceString, getMethodName(), useBulk);
+        return this;
+    }
+
+    @Override
+    public GraphTraversalSource withPath() {
+        this.variantConverter.addStep(this.sourceString, getMethodName());
         return this;
     }
 

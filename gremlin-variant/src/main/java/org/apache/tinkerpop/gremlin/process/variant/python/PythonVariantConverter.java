@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -112,23 +113,27 @@ public class PythonVariantConverter implements VariantConverter {
         else if (object instanceof List) {
             final List list = new ArrayList<>(((List) object).size());
             for (final Object item : (List) object) {
-                list.add(item instanceof String ? "'" + item + "'" : convertToString(item));
+                list.add(item instanceof String ? "'" + item + "'" : convertToString(item)); // hack
             }
             return list.toString();
         } else if (object instanceof Long)
             return object + "L";
+        else if (object instanceof Class)
+            return ((Class) object).getCanonicalName();
         else if (object instanceof SackFunctions.Barrier)
-            return "\"SackFunctions.Barrier." + object.toString() + "\"";
+            return "Barrier." + object.toString();
+        else if (object instanceof VertexProperty.Cardinality)
+            return "Cardinality." + object.toString();
         else if (object instanceof Direction)
             return "Direction." + object.toString();
         else if (object instanceof Operator)
-            return "\"Operator." + object.toString() + "\"";
+            return ((object == Operator.and || object == Operator.or) ? "Operator._" : "Operator.") + object.toString();
         else if (object instanceof Pop)
             return "Pop." + object.toString();
         else if (object instanceof Column)
             return "Column." + object.toString();
         else if (object instanceof P)
-            return "\"P." + ((P) object).getBiPredicate() + "(" + (((P) object).getValue() instanceof String ? "'" + ((P) object).getValue() + "'" : convertToString(((P) object).getValue())) + ")" + "\"";
+            return "P." + ((P) object).getBiPredicate() + "(" + (((P) object).getValue() instanceof String ? "'" + ((P) object).getValue() + "'" : convertToString(((P) object).getValue())) + ")";
         else if (object instanceof T)
             return "T." + object.toString();
         else if (object instanceof Order)

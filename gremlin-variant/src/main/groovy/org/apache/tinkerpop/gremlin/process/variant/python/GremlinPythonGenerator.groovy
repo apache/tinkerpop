@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.variant.python
 
+import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -37,6 +38,7 @@ class Helper(object):
   @staticmethod
   def stringOrObject(arg):
     if (type(arg) is str and
+       not(arg.startswith("VertexProperty.Cardinality.")) and
        not(arg.startswith("P.")) and
        not(arg.startswith("Order.")) and
        not(arg.startswith("Scope.")) and
@@ -65,9 +67,22 @@ class Helper(object):
       return ", ".join(Helper.stringOrObject(i) for i in args)
 """);
 
+        final Map<String, String> methodMap = [as: "_as", in: "_in", and: "_and", or: "_or", is: "_is", not: "_not", from: "_from"].withDefault {
+            it
+        }
+        final Map<String, String> invertedMethodMap = [_as: "as", _in: "in", _and: "and", _or: "or", _is: "is", _not: "not", _from: "from"].withDefault {
+            it
+        }
+
 ///////////
 // Enums //
 ///////////
+
+        pythonClass.append("""class Cardinality(object):
+  single = "VertexProperty.Cardinality.single"
+  list = "VertexProperty.Cardinality.list"
+  set = "VertexProperty.Cardinality.set"
+""").append("\n\n");
 
         pythonClass.append("""class Column(object):
   keys = "Column.keys"
@@ -80,6 +95,20 @@ class Helper(object):
   BOTH = "Direction.BOTH"
 """).append("\n\n");
 
+        pythonClass.append("""class Operator(object):
+  sum = "Operator.sum"
+  minus = "Operator.minus"
+  mult = "Operator.mult"
+  div = "Operator.div"
+  min = "Operator.min"
+  max = "Operator.max"
+  assign = "Operator.assign"
+  _and = "Operator.and"
+  _or = "Operator.or"
+  addAll = "Operator.addAll"
+  sumLong = "Operator.sumLong"
+""").append("\n\n");
+
         pythonClass.append("""class Order(object):
   incr = "Order.incr"
   decr = "Order.decr"
@@ -90,10 +119,25 @@ class Helper(object):
   valueDecr = "Order.valueDecr"
 """).append("\n\n");
 
+        Set<String> methods = P.getMethods().collect { methodMap[it.name] } as Set; []
+        pythonClass.append("class P(object):\n");
+        methods.each { method ->
+            pythonClass.append(
+                    """  @staticmethod
+  def ${method}(*args):
+    return "P.${method}(" + Helper.stringify(*args) + ")"
+""")
+        };
+        pythonClass.append("\n\n")
+
         pythonClass.append("""class Pop(object):
   first = "Pop.first"
   last = "Pop.last"
   all = "Pop.all"
+""").append("\n\n");
+
+        pythonClass.append("""class Barrier(object):
+  normSack = "SackFunctions.Barrier.normSack"
 """).append("\n\n");
 
         pythonClass.append("""class Scope(object):
@@ -111,7 +155,7 @@ class Helper(object):
 //////////////////////////
 // GraphTraversalSource //
 //////////////////////////
-        Set<String> methods = GraphTraversalSource.getMethods().collect { it.name } as Set;
+        methods = GraphTraversalSource.getMethods().collect { it.name } as Set;
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
   def __init__(self, traversalSourceString):
@@ -142,12 +186,6 @@ class Helper(object):
 ////////////////////
 // GraphTraversal //
 ////////////////////
-        final Map<String, String> methodMap = [as: "_as", in: "_in", and: "_and", or: "_or", is: "_is", not: "_not", from: "_from"].withDefault {
-            it
-        }
-        final Map<String, String> invertedMethodMap = [_as: "as", _in: "in", _and: "and", _or: "or", _is: "is", _not: "not", _from: "from"].withDefault {
-            it
-        }
         methods = GraphTraversal.getMethods().collect { methodMap[it.name] } as Set;
         methods.remove("toList")
         pythonClass.append(
