@@ -44,7 +44,9 @@ public class VariantGraphTraversalSource extends GraphTraversalSource {
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        return new VariantGraphTraversal<>(this.getGraph(), "g" + new PythonVariantConverter().step("V", vertexIds), new PythonVariantConverter());
+        final StringBuilder variantString = new StringBuilder("g");
+        new PythonVariantConverter().step(variantString,"V",vertexIds);
+        return new VariantGraphTraversal<>(this.getGraph(), variantString, new PythonVariantConverter());
     }
 
 }

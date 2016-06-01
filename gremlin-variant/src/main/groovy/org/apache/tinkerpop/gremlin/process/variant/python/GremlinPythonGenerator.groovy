@@ -41,7 +41,8 @@ class Helper(object):
        not(arg.startswith("Order.")) and
        not(arg.startswith("T.")) and
        not(arg.startswith("Pop.")) and
-       not(arg.startswith("Column."))):
+       not(arg.startswith("Column.")) and
+       not(arg.startswith("Direction."))):
       return "\\"" + arg + "\\""
     elif type(arg) is bool:
       return str(arg).lower()

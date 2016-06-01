@@ -24,5 +24,5 @@ package org.apache.tinkerpop.gremlin.process.variant;
  */
 public interface VariantConverter {
 
-    public String step(final String stepName, final Object... arguments);
+    public void step(final StringBuilder currentTraversal, final String stepName, final Object... arguments);
 }

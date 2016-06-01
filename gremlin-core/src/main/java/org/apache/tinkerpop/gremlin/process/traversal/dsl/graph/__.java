@@ -42,6 +42,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * An anonymous {@link GraphTraversal}.
@@ -50,13 +51,15 @@ import java.util.function.Predicate;
  */
 public class __ {
 
+    public static Supplier<GraphTraversal> EMPTY_GRAPH_TRAVERSAL = () -> new DefaultGraphTraversal<>();
+
     protected __() {
     }
 
     //////////////////////////////////////////////////////////////////////
 
     public static <A> GraphTraversal<A, A> start() {
-        return new DefaultGraphTraversal<>();
+        return EMPTY_GRAPH_TRAVERSAL.get();
     }
 
     public static <A> GraphTraversal<A, A> __(final A... starts) {
