@@ -22,6 +22,14 @@ package org.apache.tinkerpop.gremlin.process.variant;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
@@ -33,6 +41,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,6 +51,20 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class VariantGraphProvider extends AbstractGraphProvider {
+
+    private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
+            "testProfileStrategyCallback",
+            "testProfileStrategyCallbackSideEffect",
+            "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
+            "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
+            InjectTest.Traversals.class.getCanonicalName(),
+            CoreTraversalTest.class.getCanonicalName(),
+            TraversalInterruptionTest.class.getCanonicalName(),
+            ElementIdStrategyProcessTest.class.getCanonicalName(),
+            EventStrategyProcessTest.class.getCanonicalName(),
+            ReadOnlyStrategyProcessTest.class.getCanonicalName(),
+            PartitionStrategyProcessTest.class.getCanonicalName(),
+            SubgraphStrategyProcessTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
@@ -56,6 +79,7 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
+
         final TinkerGraph.DefaultIdManager idManager = selectIdMakerFromGraphData(loadGraphWith);
         final String idMaker = (idManager.equals(TinkerGraph.DefaultIdManager.ANY) ? selectIdMakerFromGraphData(loadGraphWith) : idManager).name();
         return new HashMap<String, Object>() {{
@@ -63,6 +87,7 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
+            put("skipTest", SKIP_TESTS.contains(testMethodName) || SKIP_TESTS.contains(test.getCanonicalName()));
             if (loadGraphWith == LoadGraphWith.GraphData.CREW)
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         }};

@@ -84,6 +84,8 @@ public class PythonVariantConverter implements VariantConverter {
             currentTraversal.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
         else if (stepName.equals("limit") && 1 == arguments.length)
             currentTraversal.append("[0:").append(arguments[0]).append("]");
+        else if (stepName.equals("values") && 1 == arguments.length && !currentTraversal.toString().equals("__"))
+            currentTraversal.append(".").append(arguments[0]);
         else {
             String temp = "." + convertStepName(stepName) + "(";
             for (final Object object : arguments) {

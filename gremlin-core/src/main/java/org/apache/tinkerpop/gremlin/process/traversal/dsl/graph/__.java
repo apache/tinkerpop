@@ -51,6 +51,7 @@ import java.util.function.Supplier;
  */
 public class __ {
 
+    private static final boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
     public static Supplier<GraphTraversal> EMPTY_GRAPH_TRAVERSAL = () -> new DefaultGraphTraversal<>();
 
     protected __() {
@@ -59,7 +60,7 @@ public class __ {
     //////////////////////////////////////////////////////////////////////
 
     public static <A> GraphTraversal<A, A> start() {
-        return EMPTY_GRAPH_TRAVERSAL.get();
+        return isTesting ? EMPTY_GRAPH_TRAVERSAL.get() : new DefaultGraphTraversal<>();
     }
 
     public static <A> GraphTraversal<A, A> __(final A... starts) {
