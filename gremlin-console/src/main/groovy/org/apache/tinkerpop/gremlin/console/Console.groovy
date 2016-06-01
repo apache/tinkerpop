@@ -79,7 +79,7 @@ class Console {
     private final boolean interactive
 
     /**
-     * @deprecated As of release 3.2.1-incubating.
+     * @deprecated As of release 3.2.1.
      */
     @Deprecated
     public Console(final String initScriptFile) {
