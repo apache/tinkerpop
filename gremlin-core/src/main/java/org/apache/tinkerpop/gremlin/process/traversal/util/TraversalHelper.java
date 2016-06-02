@@ -129,7 +129,7 @@ public final class TraversalHelper {
                     state = 'u';
                 else if (states.contains('e'))
                     state = 'e';
-                if (state != currState && step instanceof RepeatStep)
+                if (state != currState && (step instanceof RepeatStep || step instanceof MatchStep))
                     return 'x';
             }
         }
