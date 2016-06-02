@@ -77,7 +77,8 @@ under the License.
         final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
                 .withDefault { it }
 
-        pythonClass.append("import sys")
+        pythonClass.append("import sys\n")
+        pythonClass.append("from gremlin_python_driver import RemoteConnection\n")
         pythonClass.append("""
 class Helper(object):
   @staticmethod
@@ -149,8 +150,9 @@ class Helper(object):
   def __init__(self, traversalString):
     self.traversalString = traversalString
     self.results = None
+    self.lastTraverser = None
   def __repr__(self):
-    return self.traversalString;
+    return self.traversalString
   def __getitem__(self,index):
     if type(index) is int:
       return self.range(index,index+1)
@@ -163,10 +165,15 @@ class Helper(object):
   def __iter__(self):
         return self
   def next(self):
-    if(self.results is None):
-      print "sending " + self.traversalString + " to GremlinServer..."
-      self.results = iter([]) # get iterator from driver
-    return self.results.next()
+     if self.results is None:
+        self.results = RemoteConnection.submit("gremlin-groovy",self.traversalString)
+     if self.lastTraverser is None:
+         self.lastTraverser = self.results.next()
+     object = self.lastTraverser.object
+     self.lastTraverser.bulk = self.lastTraverser.bulk - 1
+     if self.lastTraverser.bulk <= 0:
+         self.lastTraverser = None
+     return object
 """)
         GraphTraversal.getMethods()
                 .collect { methodMap[it.name] }

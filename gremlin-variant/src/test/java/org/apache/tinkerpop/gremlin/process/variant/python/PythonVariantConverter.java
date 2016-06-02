@@ -69,11 +69,15 @@ public class PythonVariantConverter implements VariantConverter {
 
     static {
         try {
-            final String fileName = (new File("variants/python").exists() ? "variants/python/" : "gremlin-variants/variants/python/") + "gremlin-python-" + Gremlin.version() + ".py";
-            GremlinPythonGenerator.create(fileName);
+            final String packageName = (new File("gremlin-variants").exists() ? "gremlin-variants/" : "") +
+                    "src/main/jython/org/apache/tinkerpop/gremlin/process/variant/python";
+            final String fileName = "gremlin_python.py";
+            final String absoluteName = packageName + "/" + fileName;
+            GremlinPythonGenerator.create(absoluteName);
             JYTHON_ENGINE.eval("import sys");
             JYTHON_ENGINE.eval("sys.argv = [" + (IMPORT_STATICS ? "True" : "False") + "]");
-            JYTHON_ENGINE.eval("execfile(\"" + fileName + "\")");
+            JYTHON_ENGINE.eval("sys.path.append('" + packageName + "')");
+            JYTHON_ENGINE.eval("exec(open(\"" + absoluteName + "\").read())");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

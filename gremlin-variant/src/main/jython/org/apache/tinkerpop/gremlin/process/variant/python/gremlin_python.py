@@ -17,6 +17,8 @@ specific language governing permissions and limitations
 under the License.
 '''
 import sys
+from gremlin_python_driver import RemoteConnection
+
 class Helper(object):
   @staticmethod
   def stringOrObject(arg):
@@ -88,8 +90,9 @@ class PythonGraphTraversal(object):
   def __init__(self, traversalString):
     self.traversalString = traversalString
     self.results = None
+    self.lastTraverser = None
   def __repr__(self):
-    return self.traversalString;
+    return self.traversalString
   def __getitem__(self,index):
     if type(index) is int:
       return self.range(index,index+1)
@@ -102,10 +105,15 @@ class PythonGraphTraversal(object):
   def __iter__(self):
         return self
   def next(self):
-    if(self.results is None):
-      print "sending " + self.traversalString + " to GremlinServer..."
-      self.results = iter([]) # get iterator from driver
-    return self.results.next()
+     if self.results is None:
+        self.results = RemoteConnection.submit("gremlin-groovy",self.traversalString)
+     if self.lastTraverser is None:
+         self.lastTraverser = self.results.next()
+     object = self.lastTraverser.object
+     self.lastTraverser.bulk = self.lastTraverser.bulk - 1
+     if self.lastTraverser.bulk <= 0:
+         self.lastTraverser = None
+     return object
   def V(self, *args):
     self.traversalString = self.traversalString + ".V(" + Helper.stringify(*args) + ")"
     return self
