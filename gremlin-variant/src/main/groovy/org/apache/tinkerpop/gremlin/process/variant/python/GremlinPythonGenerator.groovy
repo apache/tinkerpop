@@ -77,6 +77,7 @@ under the License.
         final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
                 .withDefault { it }
 
+        pythonClass.append("import sys")
         pythonClass.append("""
 class Helper(object):
   @staticmethod
@@ -94,7 +95,6 @@ class Helper(object):
       return str(arg) + "f"
     else:
       return str(arg)
-
   @staticmethod
   def stringify(*args):
     if len(args) == 0:
@@ -104,87 +104,6 @@ class Helper(object):
     else:
       return ", ".join(Helper.stringOrObject(i) for i in args)
 """).append("\n\n");
-
-///////////
-// Enums //
-///////////
-
-        pythonClass.append("class Cardinality(object):\n");
-        VertexProperty.Cardinality.values().each { value ->
-            pythonClass.append("   ${value} = \"VertexProperty.Cardinality.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("class Column(object):\n");
-        Column.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("class Direction(object):\n");
-        Direction.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("class Operator(object):\n");
-        Operator.values().each { value ->
-            pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("class Order(object):\n");
-        Order.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("""class P(object):
-   def __init__(self, pString):
-      self.pString = pString
-   def __repr__(self):
-      return self.pString
-""")
-        P.getMethods()
-                .findAll { P.class.isAssignableFrom(it.returnType) }
-                .findAll { !it.name.equals("or") && !it.name.equals("and") }
-                .collect { methodMap[it.name] }
-                .toSet()
-                .each { method ->
-            pythonClass.append(
-                    """   @staticmethod
-   def ${method}(*args):
-      return P("P.${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")")
-""")
-        };
-        pythonClass.append("""   def _and(self, arg):
-      return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
-   def _or(self, arg):
-      return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
-""")
-        pythonClass.append("\n\n")
-
-        pythonClass.append("class Pop(object):\n");
-        Pop.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("""class Barrier(object):
-   normSack = "SackFunctions.Barrier.normSack"
-""").append("\n\n");
-
-        pythonClass.append("class Scope(object):\n");
-        Scope.values().each { value ->
-            pythonClass.append("   _${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
-
-        pythonClass.append("class T(object):\n");
-        T.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n\n");
 
 //////////////////////////
 // GraphTraversalSource //
@@ -270,6 +189,146 @@ class Helper(object):
 """)
         };
         pythonClass.append("\n\n")
+
+        pythonClass.append("if(sys.argv[0]):\n")
+        __.class.getMethods()
+                .findAll { Traversal.class.isAssignableFrom(it.getReturnType()) }
+                .findAll { !it.name.equals("__") }
+                .collect { methodMap[it.name] }
+                .toSet()
+                .forEach { pythonClass.append("   def ${it}(*args):\n").append("      return __.${it}(*args)\n") }
+        pythonClass.append("\n\n")
+
+///////////
+// Enums //
+///////////
+        pythonClass.append("class Cardinality(object):\n");
+        VertexProperty.Cardinality.values().each { value ->
+            pythonClass.append("   ${value} = \"VertexProperty.Cardinality.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        VertexProperty.Cardinality.values().each { value ->
+            pythonClass.append("   ${value} = Cardinality.${value}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+        pythonClass.append("class Column(object):\n");
+        Column.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        Column.values().each { value ->
+            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+        pythonClass.append("class Direction(object):\n");
+        Direction.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        Direction.values().each { value ->
+            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+        pythonClass.append("class Operator(object):\n");
+        Operator.values().each { value ->
+            pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        Operator.values().each { value ->
+            pythonClass.append("   ${methodMap[value.name()]} = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+        pythonClass.append("class Order(object):\n");
+        Order.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        Order.values().each { value ->
+            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+
+        pythonClass.append("""class P(object):
+   def __init__(self, pString):
+      self.pString = pString
+   def __repr__(self):
+      return self.pString
+""")
+        P.getMethods()
+                .findAll { P.class.isAssignableFrom(it.returnType) }
+                .findAll { !it.name.equals("or") && !it.name.equals("and") }
+                .collect { methodMap[it.name] }
+                .toSet()
+                .each { method ->
+            pythonClass.append(
+                    """   @staticmethod
+   def ${method}(*args):
+      return P("P.${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")")
+""")
+        };
+        pythonClass.append("""   def _and(self, arg):
+      return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
+   def _or(self, arg):
+      return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
+""")
+        pythonClass.append("\n")
+        pythonClass.append("if(sys.argv[0]):\n")
+        P.class.getMethods()
+                .findAll { P.class.isAssignableFrom(it.getReturnType()) }
+                .collect { methodMap[it.name] }
+                .toSet()
+                .forEach { pythonClass.append("   def ${it}(*args):\n").append("      return P.${it}(*args)\n") }
+        pythonClass.append("\n")
+        //////////////
+        pythonClass.append("class Pop(object):\n");
+        Pop.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        Pop.values().each { value ->
+            pythonClass.append("   ${value.name()} = ${value.getDeclaringClass().getSimpleName()}.${value.name()}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+        pythonClass.append("""class Barrier(object):
+   normSack = "SackFunctions.Barrier.normSack"
+""");
+        pythonClass.append("\n")
+        pythonClass.append("if(sys.argv[0]):\n")
+        pythonClass.append("   normSack = Barrier.normSack\n\n")
+        //////////////
+        pythonClass.append("class Scope(object):\n");
+        Scope.values().each { value ->
+            pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        Scope.values().each { value ->
+            pythonClass.append("   ${methodMap[value.name()]} = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
+        }
+        pythonClass.append("\n");
+        //////////////
+        pythonClass.append("class T(object):\n");
+        T.values().each { value ->
+            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
+        }
+        pythonClass.append("\n");
+        pythonClass.append("if(sys.argv[0]):\n")
+        T.values().each { value ->
+            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+        }
+        pythonClass.append("\n");
 
 // save to a python file
         final File file = new File(gremlinPythonFile);

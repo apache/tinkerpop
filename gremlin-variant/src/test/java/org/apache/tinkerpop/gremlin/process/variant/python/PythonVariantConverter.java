@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,11 +65,14 @@ import java.util.stream.Stream;
 public class PythonVariantConverter implements VariantConverter {
 
     private static ScriptEngine JYTHON_ENGINE = ScriptEngineCache.get("jython");
+    private static boolean IMPORT_STATICS = new Random().nextBoolean();
 
     static {
         try {
             final String fileName = (new File("variants/python").exists() ? "variants/python/" : "gremlin-variants/variants/python/") + "gremlin-python-" + Gremlin.version() + ".py";
             GremlinPythonGenerator.create(fileName);
+            JYTHON_ENGINE.eval("import sys");
+            JYTHON_ENGINE.eval("sys.argv = [" + (IMPORT_STATICS ? "True" : "False") + "]");
             JYTHON_ENGINE.eval("execfile(\"" + fileName + "\")");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -76,10 +80,15 @@ public class PythonVariantConverter implements VariantConverter {
     }
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
-    private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from"));
+    private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from", "global"));
+    private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
+            .flatMap(arg -> IteratorUtils.stream(new ArrayIterator<>(arg)))
+            .map(arg -> ((Enum) arg).name())
+            .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
 
-    @Override
+
     public String generateGremlinGroovy(final StringBuilder currentTraversal) throws ScriptException {
+        //if (IMPORT_STATICS) assert !currentTraversal.toString().contains("__");
         if (currentTraversal.toString().contains("$"))
             throw new VerificationException("Lambdas are currently not supported: " + currentTraversal.toString(), EmptyTraversal.instance());
 
@@ -107,12 +116,18 @@ public class PythonVariantConverter implements VariantConverter {
         else if (stepName.equals("values") && 1 == objects.length && !currentTraversal.toString().equals("__") && !STEP_NAMES.contains(objects[0].toString()))
             currentTraversal.append(".").append(objects[0]);
         else {
-            String temp = "." + convertStepName(stepName) + "(";
+            currentTraversal.append(".");
+            String temp = convertStepName(stepName) + "(";
             for (final Object object : objects) {
                 temp = temp + convertToString(object) + ",";
             }
             currentTraversal.append(temp.substring(0, temp.length() - 1) + ")");
         }
+        if (IMPORT_STATICS && currentTraversal.toString().startsWith("__.")
+                && !NO_STATIC.stream().filter(name -> currentTraversal.toString().contains(name)).findAny().isPresent())
+            currentTraversal.delete(0, 3);
+        if (!IMPORT_STATICS)
+            assert currentTraversal.toString().startsWith("g.") || currentTraversal.toString().startsWith("__.");
     }
 
     private static String convertToString(final Object object) {
@@ -129,25 +144,25 @@ public class PythonVariantConverter implements VariantConverter {
         else if (object instanceof Class)
             return ((Class) object).getCanonicalName();
         else if (object instanceof SackFunctions.Barrier)
-            return "Barrier." + object.toString();
+            return convertStatic("Barrier.") + object.toString();
         else if (object instanceof VertexProperty.Cardinality)
-            return "Cardinality." + object.toString();
+            return convertStatic("Cardinality.") + object.toString();
         else if (object instanceof Direction)
-            return "Direction." + object.toString();
+            return convertStatic("Direction.") + object.toString();
         else if (object instanceof Operator)
-            return ((object == Operator.and || object == Operator.or) ? "Operator._" : "Operator.") + object.toString();
+            return convertStatic("Operator.") + convertStepName(object.toString()); // to catch and/or
         else if (object instanceof Pop)
-            return "Pop." + object.toString();
+            return convertStatic("Pop.") + object.toString();
         else if (object instanceof Column)
-            return "Column." + object.toString();
+            return convertStatic("Column.") + object.toString();
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof T)
-            return "T." + object.toString();
+            return convertStatic("T.") + object.toString();
         else if (object instanceof Order)
-            return "Order." + object.toString();
+            return convertStatic("Order.") + object.toString();
         else if (object instanceof Scope)
-            return "Scope._" + object.toString();
+            return convertStatic("Scope.") + convertStepName(object.toString()); // to catch global
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof VariantGraphTraversal)
@@ -156,6 +171,10 @@ public class PythonVariantConverter implements VariantConverter {
             return object.equals(Boolean.TRUE) ? "True" : "False";
         else
             return null == object ? "" : object.toString();
+    }
+
+    private static String convertStatic(final String name) {
+        return IMPORT_STATICS ? "" : name;
     }
 
     private static String convertStepName(final String stepName) {
@@ -175,7 +194,7 @@ public class PythonVariantConverter implements VariantConverter {
             }
             current.append(")");
         } else
-            current.append("P.").append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
+            current.append(convertStatic("P.")).append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
         return current;
     }
 }
