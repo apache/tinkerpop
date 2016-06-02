@@ -122,14 +122,17 @@ class P(object):
    def without(*args):
       return P("P.without(" + Helper.stringify(*args) + ")")
    @staticmethod
-   def negate(*args):
-      return P("P.negate(" + Helper.stringify(*args) + ")")
-   @staticmethod
    def outside(*args):
       return P("P.outside(" + Helper.stringify(*args) + ")")
    @staticmethod
+   def negate(*args):
+      return P("P.negate(" + Helper.stringify(*args) + ")")
+   @staticmethod
    def clone(*args):
       return P("P.clone(" + Helper.stringify(*args) + ")")
+   @staticmethod
+   def _not(*args):
+      return P("P.not(" + Helper.stringify(*args) + ")")
    @staticmethod
    def gte(*args):
       return P("P.gte(" + Helper.stringify(*args) + ")")
@@ -146,8 +149,6 @@ class P(object):
       return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
    def _or(self, arg):
       return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
-   def _not(self, arg):
-      return P(self.pString + ".not(" + Helper.stringify(arg) + ")")
 
 
 class Pop(object):
@@ -250,11 +251,11 @@ class PythonGraphTraversal(object):
   def coalesce(self, *args):
     self.traversalString = self.traversalString + ".coalesce(" + Helper.stringify(*args) + ")"
     return self
-  def optional(self, *args):
-    self.traversalString = self.traversalString + ".optional(" + Helper.stringify(*args) + ")"
-    return self
   def hasLabel(self, *args):
     self.traversalString = self.traversalString + ".hasLabel(" + Helper.stringify(*args) + ")"
+    return self
+  def optional(self, *args):
+    self.traversalString = self.traversalString + ".optional(" + Helper.stringify(*args) + ")"
     return self
   def hasValue(self, *args):
     self.traversalString = self.traversalString + ".hasValue(" + Helper.stringify(*args) + ")"
@@ -545,11 +546,11 @@ class __(object):
   def coalesce(*args):
     return PythonGraphTraversal("__").coalesce(*args)
   @staticmethod
-  def optional(*args):
-    return PythonGraphTraversal("__").optional(*args)
-  @staticmethod
   def hasLabel(*args):
     return PythonGraphTraversal("__").hasLabel(*args)
+  @staticmethod
+  def optional(*args):
+    return PythonGraphTraversal("__").optional(*args)
   @staticmethod
   def hasValue(*args):
     return PythonGraphTraversal("__").hasValue(*args)

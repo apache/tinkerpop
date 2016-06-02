@@ -147,22 +147,20 @@ class Helper(object):
 """)
         P.getMethods()
                 .findAll { P.class.isAssignableFrom(it.returnType) }
-                .findAll { !it.name.equals("or") && !it.name.equals("and") && !it.name.equals("not") }
+                .findAll { !it.name.equals("or") && !it.name.equals("and") }
                 .collect { methodMap[it.name] }
                 .toSet()
                 .each { method ->
             pythonClass.append(
                     """   @staticmethod
    def ${method}(*args):
-      return P("P.${method}(" + Helper.stringify(*args) + ")")
+      return P("P.${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")")
 """)
         };
         pythonClass.append("""   def _and(self, arg):
       return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
    def _or(self, arg):
       return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
-   def _not(self, arg):
-      return P(self.pString + ".not(" + Helper.stringify(arg) + ")")
 """)
         pythonClass.append("\n\n")
 

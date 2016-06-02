@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -61,7 +61,7 @@ public final class AndP<V> extends ConnectiveP<V> {
 
     @Override
     public String toString() {
-        return "and(" + this.predicates + ")";
+        return "and(" + StringFactory.removeEndBrackets(this.predicates) + ")";
     }
 
     @Override

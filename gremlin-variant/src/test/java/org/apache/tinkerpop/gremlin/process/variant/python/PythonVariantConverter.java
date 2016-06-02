@@ -25,8 +25,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.variant.VariantConverter;
 import org.apache.tinkerpop.gremlin.process.variant.VariantGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -45,11 +49,13 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -69,11 +75,12 @@ public class PythonVariantConverter implements VariantConverter {
         }
     }
 
+    private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from"));
 
     @Override
     public String generateGremlinGroovy(final StringBuilder currentTraversal) throws ScriptException {
-        if (currentTraversal.toString().contains("$") || currentTraversal.toString().contains("@"))
+        if (currentTraversal.toString().contains("$"))
             throw new VerificationException("Lambdas are currently not supported: " + currentTraversal.toString(), EmptyTraversal.instance());
 
         final Bindings jythonBindings = new SimpleBindings();
@@ -97,7 +104,7 @@ public class PythonVariantConverter implements VariantConverter {
             currentTraversal.append("[").append(objects[0]).append(":").append(objects[1]).append("]");
         else if (stepName.equals("limit") && 1 == objects.length)
             currentTraversal.append("[0:").append(objects[0]).append("]");
-        else if (stepName.equals("values") && 1 == objects.length && !currentTraversal.toString().equals("__"))
+        else if (stepName.equals("values") && 1 == objects.length && !currentTraversal.toString().equals("__") && !STEP_NAMES.contains(objects[0].toString()))
             currentTraversal.append(".").append(objects[0]);
         else {
             String temp = "." + convertStepName(stepName) + "(";
@@ -134,7 +141,7 @@ public class PythonVariantConverter implements VariantConverter {
         else if (object instanceof Column)
             return "Column." + object.toString();
         else if (object instanceof P)
-            return "P." + ((P) object).getBiPredicate() + "(" + (((P) object).getValue() instanceof String ? "'" + ((P) object).getValue() + "'" : convertToString(((P) object).getValue())) + ")";
+            return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof T)
             return "T." + object.toString();
         else if (object instanceof Order)
@@ -158,4 +165,17 @@ public class PythonVariantConverter implements VariantConverter {
             return stepName;
     }
 
+    private static StringBuilder convertPToString(final P p, final StringBuilder current) {
+        if (p instanceof ConnectiveP) {
+            final List<P<?>> list = ((ConnectiveP) p).getPredicates();
+            for (int i = 0; i < list.size(); i++) {
+                convertPToString(list.get(i), current);
+                if (i < list.size() - 1)
+                    current.append(p instanceof OrP ? "._or(" : "._and(");
+            }
+            current.append(")");
+        } else
+            current.append("P.").append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
+        return current;
+    }
 }

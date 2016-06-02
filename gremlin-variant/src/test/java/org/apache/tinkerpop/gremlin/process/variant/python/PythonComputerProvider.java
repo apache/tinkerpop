@@ -19,16 +19,18 @@
 
 package org.apache.tinkerpop.gremlin.process.variant.python;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = PythonProvider.class, graph = TinkerGraph.class)
-public class PythonProcessStandardTest {
+@GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
+public class PythonComputerProvider extends PythonProvider {
 
+    public GraphTraversalSource traversal(final Graph graph) {
+        return super.traversal(graph).withComputer();
+    }
 }

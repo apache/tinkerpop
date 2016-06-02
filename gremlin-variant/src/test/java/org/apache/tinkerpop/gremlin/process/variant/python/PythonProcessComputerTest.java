@@ -20,15 +20,15 @@
 package org.apache.tinkerpop.gremlin.process.variant.python;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = PythonProvider.class, graph = TinkerGraph.class)
-public class PythonProcessStandardTest {
+@RunWith(ProcessComputerSuite.class)
+@GraphProviderClass(provider = PythonComputerProvider.class, graph = TinkerGraph.class)
+public class PythonProcessComputerTest {
 
 }

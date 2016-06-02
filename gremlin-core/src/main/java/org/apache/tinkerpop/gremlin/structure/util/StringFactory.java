@@ -240,4 +240,9 @@ public final class StringFactory {
         return STORAGE + L_BRACKET + internalString + R_BRACKET;
     }
 
+    public static String removeEndBrackets(final Collection collection) {
+        final String string = collection.toString();
+        return string.substring(1,string.length()-1);
+    }
+
 }

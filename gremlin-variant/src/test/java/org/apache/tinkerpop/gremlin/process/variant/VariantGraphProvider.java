@@ -23,7 +23,9 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
@@ -57,9 +59,13 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
             "testProfileStrategyCallbackSideEffect",
             "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
             "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
+            "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
+            "shouldSupportJobChaining",
             InjectTest.Traversals.class.getCanonicalName(),
+            ProgramTest.Traversals.class.getCanonicalName(),
             CoreTraversalTest.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
+            TraversalInterruptionComputerTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
             ReadOnlyStrategyProcessTest.class.getCanonicalName(),
