@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
@@ -55,7 +56,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.channels.ClosedChannelException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,12 +72,15 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -161,6 +164,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForTimedInterrupt();
                 break;
+            case "shouldUseBaseScript":
+                settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForBaseScript();
+                break;
         }
 
         return settings;
@@ -204,6 +210,30 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         interpreterProviderConf.put(InterpreterModeCustomizerProvider.class.getName(), Collections.EMPTY_LIST);
         scriptEngineConf.put("compilerCustomizerProviders", interpreterProviderConf);
         return scriptEngineConf;
+    }
+
+    private static Map<String, Object> getScriptEngineConfForBaseScript() {
+        final Map<String,Object> scriptEngineConf = new HashMap<>();
+        final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
+        final List<Object> keyValues = new ArrayList<>();
+
+        final Map<String,Object> properties = new HashMap<>();
+        properties.put("ScriptBaseClass", BaseScriptForTesting.class.getName());
+        keyValues.add(properties);
+
+        compilerCustomizerProviderConf.put(ConfigurationCustomizerProvider.class.getName(), keyValues);
+        scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+        return scriptEngineConf;
+    }
+
+    @Test
+    public void shouldUseBaseScript() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        assertEquals("hello, stephen", client.submit("hello('stephen')").all().get().get(0).getString());
+
+        cluster.close();
     }
 
     @Test
@@ -368,12 +398,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 });
             });
 
-            assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
+            assertThat(latch.await(30000, TimeUnit.MILLISECONDS), is(true));
             assertEquals(0, latch.getCount());
-            assertFalse(faulty.get());
-            assertTrue(expected.get());
+            assertThat(faulty.get(), is(false));
+            assertThat(expected.get(), is(true));
 
-            assertTrue(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")));
+            assertThat(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
         } catch (Exception ex) {
             fail("Shouldn't have tossed an exception");
         } finally {
@@ -410,7 +440,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             if (!latch.await(3000, TimeUnit.MILLISECONDS))
                 fail("Request should have returned error, but instead timed out");
-            assertTrue(pass.get());
+            assertThat(pass.get(), is(true));
         }
     }
 
@@ -433,7 +463,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             if (!latch.await(3000, TimeUnit.MILLISECONDS))
                 fail("Request should have returned error, but instead timed out");
-            assertTrue(pass.get());
+            assertThat(pass.get(), is(true));
         }
     }
 
@@ -456,7 +486,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
             if (!latch.await(3000, TimeUnit.MILLISECONDS))
                 fail("Request should have returned error, but instead timed out");
-            assertTrue(pass.get());
+            assertThat(pass.get(), is(true));
         }
     }
 
@@ -691,7 +721,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("1+1").all().join();
             fail();
         } catch (RuntimeException re) {
-            assertTrue(re.getCause().getCause() instanceof ClosedChannelException);
+            assertThat(re.getCause().getCause() instanceof ClosedChannelException, is(true));
 
             //
             // should recover when the server comes back
