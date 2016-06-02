@@ -144,6 +144,7 @@ class Helper(object):
                 """class PythonGraphTraversal(object):
   def __init__(self, traversalString):
     self.traversalString = traversalString
+    self.results = None
   def __repr__(self):
     return self.traversalString;
   def __getitem__(self,index):
@@ -155,6 +156,13 @@ class Helper(object):
       raise TypeError("Index must be int or slice")
   def __getattr__(self,key):
     return self.values(key)
+  def __iter__(self):
+        return self
+  def next(self):
+    if(self.results is None):
+      print "sending " + self.traversalString + " to GremlinServer..."
+      self.results = iter([]) # get iterator from driver
+    return self.results.next()
 """)
         GraphTraversal.getMethods()
                 .collect { methodMap[it.name] }
@@ -205,11 +213,6 @@ class Helper(object):
         pythonClass.append("class Cardinality(object):\n");
         VertexProperty.Cardinality.values().each { value ->
             pythonClass.append("   ${value} = \"VertexProperty.Cardinality.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
-        VertexProperty.Cardinality.values().each { value ->
-            pythonClass.append("   ${value} = Cardinality.${value}\n");
         }
         pythonClass.append("\n");
         //////////////

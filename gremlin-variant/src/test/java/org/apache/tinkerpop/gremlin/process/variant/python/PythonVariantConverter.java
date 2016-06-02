@@ -146,7 +146,7 @@ public class PythonVariantConverter implements VariantConverter {
         else if (object instanceof SackFunctions.Barrier)
             return convertStatic("Barrier.") + object.toString();
         else if (object instanceof VertexProperty.Cardinality)
-            return convertStatic("Cardinality.") + object.toString();
+            return "Cardinality." + object.toString();
         else if (object instanceof Direction)
             return convertStatic("Direction.") + object.toString();
         else if (object instanceof Operator)

@@ -156,8 +156,8 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXltX10XX_andXltX29X_orXeqX35XXXX_name() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').has('age', not(lt(10)).and(lt(29).or(eq(35)))).name")
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').has('age', not(lte(10).and(not(between(11,20)))).and(lt(29).or(eq(35)))).name")
         }
     }
 }
