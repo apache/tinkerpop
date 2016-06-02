@@ -36,11 +36,29 @@ public final class GryoMessageSerializerV1d0 extends AbstractGryoMessageSerializ
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
     /**
-     * Creates an instance with a standard {@link GryoMapper} instance. Note that this instance
-     * will be overridden by {@link #configure} is called.
+     * Creates an instance with a standard {@link GryoMapper} instance.
      */
     public GryoMessageSerializerV1d0() {
         super(GryoMapper.build().create());
+    }
+
+    /**
+     * Creates an instance with a standard {@link GryoMapper} instance. Note that the instance created by the supplied
+     * builder will be overridden by {@link #configure} if it is called.
+     */
+    public GryoMessageSerializerV1d0(final GryoMapper.Builder kryo) {
+        super(kryo.create());
+    }
+
+    /**
+     * Creates an instance with a standard {@link GryoMapper} instance. Note that the instance supplied
+     * will be overridden by {@link #configure} if it is called.
+     *
+     * @deprecated As of release 3.2.1, replaced by {@link GryoMessageSerializerV1d0#GryoMessageSerializerV1d0(GryoMapper.Builder)}.
+     */
+    @Deprecated
+    public GryoMessageSerializerV1d0(final GryoMapper kryo) {
+        super(kryo);
     }
 
     @Override

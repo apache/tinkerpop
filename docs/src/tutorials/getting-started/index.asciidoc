@@ -189,7 +189,7 @@ Creating a Graph
 
 As intuitive as it is to you, it is perhaps more intuitive to Gremlin himself, as vertices, edges and properties make
 up the very elements of his existence. It is indeed helpful to think of our friend, Gremlin, moving about a graph when
-developing traversals, as picturing his position as the link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_the_traverser[traverser]
+developing traversals, as picturing his position as the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_the_traverser[traverser]
 helps orient where you need him to go next. Let's use the two vertex, one edge graph we've been discussing above
 as an example. First, you need to create this graph:
 

@@ -58,7 +58,7 @@ How to Contribute a Recipe
 Recipes are generated under the same system as all TinkerPop documentation and is stored directly in the source code
 repository. TinkerPop documentation is all link:http://asciidoc.org/[asciidoc] based and can be generated locally with
 either link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#building-testing[shell script/Maven] or
-link:http://tinkerpop.apache.org/docs/3.2.0-incubating/dev/developer/#docker-integration[Docker] build commands. Once
+link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#docker-integration[Docker] build commands. Once
 changes are complete, submit a pull request for review by TinkerPop committers.
 
 NOTE: Please review existing recipes and attempt to conform to their writing and visual style. It may also be a good

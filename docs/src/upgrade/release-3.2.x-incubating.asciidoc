@@ -27,7 +27,7 @@ TinkerPop 3.2.1
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1-incubating/CHANGELOG.asciidoc#tinkerpop-321-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#tinkerpop-321-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -110,8 +110,8 @@ The console also has a number of new features in addition to `-e` and `-i`:
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1268[TINKERPOP-1268],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1155[TINKERPOP-1155], link:https://issues.apache.org/jira/browse/TINKERPOP-1156[TINKERPOP-1156],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1157[TINKERPOP-1157],
-link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#interactive-mode[Reference Documentation - Interactive Mode],
-link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#execution-mode[Reference Documentation - Execution Mode]
+link:http://tinkerpop.apache.org/docs/3.2.1/reference/#interactive-mode[Reference Documentation - Interactive Mode],
+link:http://tinkerpop.apache.org/docs/3.2.1/reference/#execution-mode[Reference Documentation - Execution Mode]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~

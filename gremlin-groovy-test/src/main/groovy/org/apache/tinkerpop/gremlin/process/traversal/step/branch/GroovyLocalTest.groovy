@@ -79,5 +79,13 @@ public abstract class GroovyLocalTest {
         public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().local(__.inE('knows').limit(2).outV).name");
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """g.V.local(match(
+                    __.as('project').in('created').as('person'),
+                    __.as('person').values('name').as('name'))).
+                     select('name', 'project').by.by('name')""")
+        }
     }
 }
