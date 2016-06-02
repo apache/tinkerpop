@@ -139,18 +139,31 @@ class Helper(object):
         }
         pythonClass.append("\n\n");
 
-        pythonClass.append("class P(object):\n");
+        pythonClass.append("""class P(object):
+   def __init__(self, pString):
+      self.pString = pString
+   def __repr__(self):
+      return self.pString
+""")
         P.getMethods()
                 .findAll { P.class.isAssignableFrom(it.returnType) }
+                .findAll { !it.name.equals("or") && !it.name.equals("and") && !it.name.equals("not") }
                 .collect { methodMap[it.name] }
                 .toSet()
                 .each { method ->
             pythonClass.append(
                     """   @staticmethod
    def ${method}(*args):
-      return "P.${method}(" + Helper.stringify(*args) + ")"
+      return P("P.${method}(" + Helper.stringify(*args) + ")")
 """)
         };
+        pythonClass.append("""   def _and(self, arg):
+      return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
+   def _or(self, arg):
+      return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
+   def _not(self, arg):
+      return P(self.pString + ".not(" + Helper.stringify(arg) + ")")
+""")
         pythonClass.append("\n\n")
 
         pythonClass.append("class Pop(object):\n");

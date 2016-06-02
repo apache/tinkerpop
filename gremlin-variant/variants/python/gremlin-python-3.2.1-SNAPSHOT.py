@@ -96,57 +96,58 @@ class Order(object):
 
 
 class P(object):
-   @staticmethod
-   def _or(*args):
-      return "P._or(" + Helper.stringify(*args) + ")"
+   def __init__(self, pString):
+      self.pString = pString
+   def __repr__(self):
+      return self.pString
    @staticmethod
    def test(*args):
-      return "P.test(" + Helper.stringify(*args) + ")"
+      return P("P.test(" + Helper.stringify(*args) + ")")
    @staticmethod
    def within(*args):
-      return "P.within(" + Helper.stringify(*args) + ")"
+      return P("P.within(" + Helper.stringify(*args) + ")")
    @staticmethod
    def lt(*args):
-      return "P.lt(" + Helper.stringify(*args) + ")"
+      return P("P.lt(" + Helper.stringify(*args) + ")")
    @staticmethod
    def eq(*args):
-      return "P.eq(" + Helper.stringify(*args) + ")"
+      return P("P.eq(" + Helper.stringify(*args) + ")")
    @staticmethod
    def inside(*args):
-      return "P.inside(" + Helper.stringify(*args) + ")"
+      return P("P.inside(" + Helper.stringify(*args) + ")")
    @staticmethod
    def gt(*args):
-      return "P.gt(" + Helper.stringify(*args) + ")"
+      return P("P.gt(" + Helper.stringify(*args) + ")")
    @staticmethod
    def without(*args):
-      return "P.without(" + Helper.stringify(*args) + ")"
-   @staticmethod
-   def _and(*args):
-      return "P._and(" + Helper.stringify(*args) + ")"
-   @staticmethod
-   def outside(*args):
-      return "P.outside(" + Helper.stringify(*args) + ")"
+      return P("P.without(" + Helper.stringify(*args) + ")")
    @staticmethod
    def negate(*args):
-      return "P.negate(" + Helper.stringify(*args) + ")"
+      return P("P.negate(" + Helper.stringify(*args) + ")")
+   @staticmethod
+   def outside(*args):
+      return P("P.outside(" + Helper.stringify(*args) + ")")
    @staticmethod
    def clone(*args):
-      return "P.clone(" + Helper.stringify(*args) + ")"
-   @staticmethod
-   def _not(*args):
-      return "P._not(" + Helper.stringify(*args) + ")"
+      return P("P.clone(" + Helper.stringify(*args) + ")")
    @staticmethod
    def gte(*args):
-      return "P.gte(" + Helper.stringify(*args) + ")"
+      return P("P.gte(" + Helper.stringify(*args) + ")")
    @staticmethod
    def neq(*args):
-      return "P.neq(" + Helper.stringify(*args) + ")"
+      return P("P.neq(" + Helper.stringify(*args) + ")")
    @staticmethod
    def lte(*args):
-      return "P.lte(" + Helper.stringify(*args) + ")"
+      return P("P.lte(" + Helper.stringify(*args) + ")")
    @staticmethod
    def between(*args):
-      return "P.between(" + Helper.stringify(*args) + ")"
+      return P("P.between(" + Helper.stringify(*args) + ")")
+   def _and(self, arg):
+      return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
+   def _or(self, arg):
+      return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
+   def _not(self, arg):
+      return P(self.pString + ".not(" + Helper.stringify(arg) + ")")
 
 
 class Pop(object):
@@ -249,11 +250,11 @@ class PythonGraphTraversal(object):
   def coalesce(self, *args):
     self.traversalString = self.traversalString + ".coalesce(" + Helper.stringify(*args) + ")"
     return self
-  def hasLabel(self, *args):
-    self.traversalString = self.traversalString + ".hasLabel(" + Helper.stringify(*args) + ")"
-    return self
   def optional(self, *args):
     self.traversalString = self.traversalString + ".optional(" + Helper.stringify(*args) + ")"
+    return self
+  def hasLabel(self, *args):
+    self.traversalString = self.traversalString + ".hasLabel(" + Helper.stringify(*args) + ")"
     return self
   def hasValue(self, *args):
     self.traversalString = self.traversalString + ".hasValue(" + Helper.stringify(*args) + ")"
@@ -417,11 +418,11 @@ class PythonGraphTraversal(object):
   def otherV(self, *args):
     self.traversalString = self.traversalString + ".otherV(" + Helper.stringify(*args) + ")"
     return self
-  def coin(self, *args):
-    self.traversalString = self.traversalString + ".coin(" + Helper.stringify(*args) + ")"
-    return self
   def option(self, *args):
     self.traversalString = self.traversalString + ".option(" + Helper.stringify(*args) + ")"
+    return self
+  def coin(self, *args):
+    self.traversalString = self.traversalString + ".coin(" + Helper.stringify(*args) + ")"
     return self
   def drop(self, *args):
     self.traversalString = self.traversalString + ".drop(" + Helper.stringify(*args) + ")"
@@ -501,11 +502,11 @@ class PythonGraphTraversal(object):
   def until(self, *args):
     self.traversalString = self.traversalString + ".until(" + Helper.stringify(*args) + ")"
     return self
-  def outV(self, *args):
-    self.traversalString = self.traversalString + ".outV(" + Helper.stringify(*args) + ")"
-    return self
   def emit(self, *args):
     self.traversalString = self.traversalString + ".emit(" + Helper.stringify(*args) + ")"
+    return self
+  def outV(self, *args):
+    self.traversalString = self.traversalString + ".outV(" + Helper.stringify(*args) + ")"
     return self
   def inject(self, *args):
     self.traversalString = self.traversalString + ".inject(" + Helper.stringify(*args) + ")"
@@ -544,11 +545,11 @@ class __(object):
   def coalesce(*args):
     return PythonGraphTraversal("__").coalesce(*args)
   @staticmethod
-  def hasLabel(*args):
-    return PythonGraphTraversal("__").hasLabel(*args)
-  @staticmethod
   def optional(*args):
     return PythonGraphTraversal("__").optional(*args)
+  @staticmethod
+  def hasLabel(*args):
+    return PythonGraphTraversal("__").hasLabel(*args)
   @staticmethod
   def hasValue(*args):
     return PythonGraphTraversal("__").hasValue(*args)
@@ -784,11 +785,11 @@ class __(object):
   def until(*args):
     return PythonGraphTraversal("__").until(*args)
   @staticmethod
-  def outV(*args):
-    return PythonGraphTraversal("__").outV(*args)
-  @staticmethod
   def emit(*args):
     return PythonGraphTraversal("__").emit(*args)
+  @staticmethod
+  def outV(*args):
+    return PythonGraphTraversal("__").outV(*args)
   @staticmethod
   def inject(*args):
     return PythonGraphTraversal("__").inject(*args)
