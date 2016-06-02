@@ -71,9 +71,9 @@ under the License.
         final Map<String, String> invertedMethodMap = [:].withDefault { it };
         methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
 
-        final Set<String> NO_QUOTE = [VertexProperty.Cardinality, Column, Direction, Operator, Order, P, Pop, Scope, SackFunctions.Barrier, T,
-                                      ReadOnlyStrategy, Computer]
-                .collect { it.getSimpleName() }.toSet();
+        final List<String> NO_QUOTE = [VertexProperty.Cardinality, Column, Direction, Operator, Order, P, Pop, Scope, SackFunctions.Barrier, T,
+                                       ReadOnlyStrategy, Computer]
+                .collect { it.getSimpleName() }.unique().sort { a, b -> a <=> b };
         final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
                 .withDefault { it }
 
@@ -115,7 +115,11 @@ class Helper(object):
   def __repr__(self):
     return "graphtraversalsource[" + self.traversalSourceString + "]"
 """)
-        GraphTraversalSource.getMethods().collect { it.name }.toSet().each { method ->
+        GraphTraversalSource.getMethods()
+                .collect { it.name }
+                .unique()
+                .sort { a, b -> a <=> b }
+                .each { method ->
             final Class<?> returnType = (GraphTraversalSource.getMethods() as Set).findAll {
                 it.name.equals(method)
             }.collect {
@@ -166,7 +170,8 @@ class Helper(object):
 """)
         GraphTraversal.getMethods()
                 .collect { methodMap[it.name] }
-                .toSet()
+                .unique()
+                .sort { a, b -> a <=> b }
                 .each { method ->
             final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {
                 it.name.equals(invertedMethodMap[method])
@@ -188,7 +193,8 @@ class Helper(object):
         __.getMethods()
                 .findAll { Traversal.isAssignableFrom(it.returnType) }
                 .collect { methodMap[it.name] }
-                .toSet()
+                .unique()
+                .sort { a, b -> a <=> b }
                 .each { method ->
             pythonClass.append(
                     """  @staticmethod
@@ -203,7 +209,8 @@ class Helper(object):
                 .findAll { Traversal.class.isAssignableFrom(it.getReturnType()) }
                 .findAll { !it.name.equals("__") }
                 .collect { methodMap[it.name] }
-                .toSet()
+                .unique()
+                .sort { a, b -> a <=> b }
                 .forEach { pythonClass.append("   def ${it}(*args):\n").append("      return __.${it}(*args)\n") }
         pythonClass.append("\n\n")
 
@@ -271,7 +278,8 @@ class Helper(object):
                 .findAll { P.class.isAssignableFrom(it.returnType) }
                 .findAll { !it.name.equals("or") && !it.name.equals("and") }
                 .collect { methodMap[it.name] }
-                .toSet()
+                .unique()
+                .sort { a, b -> a <=> b }
                 .each { method ->
             pythonClass.append(
                     """   @staticmethod
@@ -289,7 +297,8 @@ class Helper(object):
         P.class.getMethods()
                 .findAll { P.class.isAssignableFrom(it.getReturnType()) }
                 .collect { methodMap[it.name] }
-                .toSet()
+                .unique()
+                .sort { a, b -> a <=> b }
                 .forEach { pythonClass.append("   def ${it}(*args):\n").append("      return P.${it}(*args)\n") }
         pythonClass.append("\n")
         //////////////
