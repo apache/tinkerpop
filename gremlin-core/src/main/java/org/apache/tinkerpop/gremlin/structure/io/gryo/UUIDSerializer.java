@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.io.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.kryoshim.SerializerShim;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -28,19 +32,23 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class UUIDSerializer extends Serializer<UUID> {
-    public UUIDSerializer() {
-        setImmutable(true);
-    }
+final class UUIDSerializer implements SerializerShim<UUID> {
+
+    public UUIDSerializer() { }
 
     @Override
-    public void write(final Kryo kryo, final Output output, final UUID uuid) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final UUID uuid) {
         output.writeLong(uuid.getMostSignificantBits());
         output.writeLong(uuid.getLeastSignificantBits());
     }
 
     @Override
-    public UUID read(final Kryo kryo, final Input input, final Class<UUID> uuidClass) {
+    public <I extends InputShim> UUID read(final KryoShim<I, ?> kryo, final I input, final Class<UUID> uuidClass) {
         return new UUID(input.readLong(), input.readLong());
+    }
+
+    @Override
+    public boolean isImmutable() {
+        return true;
     }
 }

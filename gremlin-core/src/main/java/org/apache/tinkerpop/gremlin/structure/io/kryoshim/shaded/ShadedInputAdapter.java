@@ -16,34 +16,51 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.structure.io.kryoshim.shaded;
 
 import org.apache.tinkerpop.gremlin.structure.io.kryoshim.InputShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.KryoShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.OutputShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.SerializerShim;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
 
-import java.net.URI;
+public class ShadedInputAdapter implements InputShim {
 
-/**
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-final class URISerializer implements SerializerShim<URI> {
+    private final Input shadedInput;
 
-    public URISerializer() { }
+    public ShadedInputAdapter(Input shadedInput) {
+        this.shadedInput = shadedInput;
+    }
 
-    @Override
-    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final URI uri) {
-        output.writeString(uri.toString());
+    Input getShadedInput() {
+        return shadedInput;
     }
 
     @Override
-    public <I extends InputShim> URI read(final KryoShim<I, ?> kryo, final I input, final Class<URI> uriClass) {
-        return URI.create(input.readString());
+    public byte readByte()
+    {
+        return shadedInput.readByte();
     }
 
     @Override
-    public boolean isImmutable() {
-        return true;
+    public byte[] readBytes(int size) {
+        return shadedInput.readBytes(size);
+    }
+
+    @Override
+    public String readString() {
+        return shadedInput.readString();
+    }
+
+    @Override
+    public long readLong() {
+        return shadedInput.readLong();
+    }
+
+    @Override
+    public int readInt() {
+        return shadedInput.readInt();
+    }
+
+    @Override
+    public double readDouble() {
+        return shadedInput.readDouble();
     }
 }
