@@ -16,51 +16,63 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim.shaded;
 
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.InputShim;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
+/**
+ * Copyright DataStax, Inc.
+ *
+ * Please see the included license file for details.
+ */
+package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 
-public class ShadedInputAdapter implements InputShim {
+import com.esotericsoftware.kryo.io.Input;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 
-    private final Input shadedInput;
+public class UnshadedInputAdapter implements InputShim
+{
 
-    public ShadedInputAdapter(Input shadedInput) {
-        this.shadedInput = shadedInput;
+    private final Input unshadedInput;
+
+    public UnshadedInputAdapter(Input unshadedInput)
+    {
+        this.unshadedInput = unshadedInput;
     }
 
-    Input getShadedInput() {
-        return shadedInput;
+    Input getUnshadedInput()
+    {
+        return unshadedInput;
     }
 
     @Override
     public byte readByte()
     {
-        return shadedInput.readByte();
+        return unshadedInput.readByte();
     }
 
     @Override
     public byte[] readBytes(int size) {
-        return shadedInput.readBytes(size);
+        return unshadedInput.readBytes(size);
     }
 
     @Override
-    public String readString() {
-        return shadedInput.readString();
+    public String readString()
+    {
+        return unshadedInput.readString();
     }
 
     @Override
-    public long readLong() {
-        return shadedInput.readLong();
+    public long readLong()
+    {
+        return unshadedInput.readLong();
     }
 
     @Override
     public int readInt() {
-        return shadedInput.readInt();
+        return unshadedInput.readInt();
     }
 
     @Override
-    public double readDouble() {
-        return shadedInput.readDouble();
+    public double readDouble()
+    {
+        return unshadedInput.readDouble();
     }
 }

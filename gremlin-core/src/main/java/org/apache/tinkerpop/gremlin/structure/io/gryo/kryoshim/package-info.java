@@ -22,7 +22,7 @@
  * Kryo is often shaded.  For instance, TinkerPop's Gryo
  * serializer relies on a shaded Kryo package.
  * TinkerPop serializers written against a particular shaded
- * Kryo package (or the unshaded Kryo package) are compatible
+ * Kryo package (or an unshaded Kryo package) are compatible
  * only with that package.  In contrast, TinkerPop serializers written
  * against this abstraction can be used with any shaded or
  * unshaded Kryo package, so long as the signatures and behavior
@@ -38,10 +38,11 @@
  * so it would be challenging to cleanly and naturally replicate
  * (i.e. without package spoofing or runtime visibility overrides).
  * By implementing
- * {@link org.apache.tinkerpop.gremlin.structure.io.kryoshim.SerializerShim}
+ * {@link org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim}
  * instead of, say, Gryo's shaded
  * {@link org.apache.tinkerpop.shaded.kryo.Serializer},
- * it can be used with anybody's Kryo package, regardless of whether
+ * such a serializer can be used with anybody's Kryo package,
+ * regardless of whether
  * that package is shaded or not.  This lets third-parties reuse
  * TinkerPop's efficient, internals-aware StarGraph serializer on
  * their own serialization platform (and without altering
@@ -51,4 +52,4 @@
  * package is deliberately small to reduce the likelihood of a
  * new Kryo release introducing an incompatible change.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;

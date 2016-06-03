@@ -27,11 +27,21 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.InputShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.KryoShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.OutputShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 
+/**
+ * Kryo serializer for {@link StarGraph}.  Implements an internal versioning capability for backward compatibility.
+ * The single byte at the front of the serialization stream denotes the version.  That version can be used to choose
+ * the correct deserialization mechanism.  The limitation is that this versioning won't help with backward
+ * compatibility for custom serializers from providers.  Providers should be encouraged to write their serializers
+ * with backward compatibility in mind.
+ *
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
 public class StarGraphSerializer implements SerializerShim<StarGraph> {
 
     private final Direction edgeDirectionToSerialize;

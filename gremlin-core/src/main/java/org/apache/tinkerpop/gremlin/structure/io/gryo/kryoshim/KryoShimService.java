@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 import java.io.InputStream;
 import java.io.OutputStream;

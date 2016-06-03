@@ -16,22 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 /**
- * A minimal {@link org.apache.tinkerpop.shaded.kryo.io.Input}-like abstraction.
+ * A minimal {@link org.apache.tinkerpop.shaded.kryo.Kryo}-like abstraction.
+ * See that class for method documentation.
+ *
+ * @param <I> this interface's complementary InputShim
+ * @param <O> this interface's complementary OutputShim
  */
-public interface InputShim {
+public interface KryoShim<I extends InputShim, O extends OutputShim> {
 
-    byte readByte();
+    <T> T readObject(I input, Class<T> type);
 
-    byte[] readBytes(int size);
+    Object readClassAndObject(I input);
 
-    String readString();
+    void writeObject(O output, Object object);
 
-    long readLong();
+    void writeClassAndObject(O output, Object object);
 
-    int readInt();
+    <T> T readObjectOrNull(I input, Class<T> type);
 
-    double readDouble();
+    void writeObjectOrNull(O output, Object object, Class type);
 }

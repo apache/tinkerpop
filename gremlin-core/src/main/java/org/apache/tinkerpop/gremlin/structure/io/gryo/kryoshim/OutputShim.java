@@ -16,10 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 /**
- * Implementations of the interfaces in
- * {@link org.apache.tinkerpop.gremlin.structure.io.kryoshim}
- * using TinkerPop's shaded copy of Kryo.
+ * A minimal {@link org.apache.tinkerpop.shaded.kryo.io.Output}-like abstraction.
+ * See that class for method documentation.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim.shaded;
+public interface OutputShim {
+
+    void writeByte(byte b);
+
+    void writeBytes(byte[] array, int offset, int count);
+
+    void writeString(String s);
+
+    void writeLong(long l);
+
+    void writeInt(int i);
+
+    void writeDouble(double d);
+
+    void flush();
+}

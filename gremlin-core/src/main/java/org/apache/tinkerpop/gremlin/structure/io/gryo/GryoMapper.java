@@ -57,8 +57,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.SerializerShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.shaded.ShadedSerializerAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
@@ -70,8 +70,6 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
@@ -115,7 +113,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -406,7 +403,7 @@ public final class GryoMapper implements Mapper<Kryo> {
         public Builder addCustom(final Class... custom) {
             if (custom != null && custom.length > 0) {
                 for (Class c : custom) {
-                    addOrOverrideRegistration(GryoTypeReg.of(c, currentSerializationId.getAndIncrement()));
+                    addOrOverrideRegistration(c, id -> GryoTypeReg.of(c, id));
                 }
             }
             return this;
@@ -417,7 +414,7 @@ public final class GryoMapper implements Mapper<Kryo> {
          * a class that is already registered will override that registration.
          */
         public Builder addCustom(final Class clazz, final Serializer serializer) {
-            addOrOverrideRegistration(GryoTypeReg.of(clazz, currentSerializationId.getAndIncrement(), serializer));
+            addOrOverrideRegistration(clazz, id -> GryoTypeReg.of(clazz, id, serializer));
             return this;
         }
 
@@ -425,7 +422,7 @@ public final class GryoMapper implements Mapper<Kryo> {
          * Register custom class to serialize with a custom serialization shim.
          */
         public Builder addCustom(final Class clazz, final SerializerShim serializer) {
-            addOrOverrideRegistration(GryoTypeReg.of(clazz, currentSerializationId.getAndIncrement(), serializer));
+            addOrOverrideRegistration(clazz, id -> GryoTypeReg.of(clazz, id, serializer));
             return this;
         }
 
@@ -434,7 +431,7 @@ public final class GryoMapper implements Mapper<Kryo> {
          * that calling this method for a class that is already registered will override that registration.
          */
         public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> functionOfKryo) {
-            addOrOverrideRegistration(GryoTypeReg.of(clazz, currentSerializationId.getAndIncrement(), functionOfKryo));
+            addOrOverrideRegistration(clazz, id -> GryoTypeReg.of(clazz, id, functionOfKryo));
             return this;
         }
 
@@ -490,16 +487,24 @@ public final class GryoMapper implements Mapper<Kryo> {
             return new GryoMapper(this);
         }
 
-        private <T> void addOrOverrideRegistration(TypeRegistration<T> newRegistration) {
+        private <T> void addOrOverrideRegistration(Class<?> clazz, Function<Integer, TypeRegistration<T>> newRegistrationBuilder) {
             Iterator<TypeRegistration<?>> iter = typeRegistrations.iterator();
+            Integer registrationId = null;
             while (iter.hasNext()) {
                 TypeRegistration<?> existingRegistration = iter.next();
-                if (existingRegistration.getTargetClass().equals(newRegistration.getTargetClass())) {
+                if (existingRegistration.getTargetClass().equals(clazz)) {
+                    // when overridding a registration, use the old id
+                    registrationId = existingRegistration.getId();
+                    // remove the old registration (we install its override below)
                     iter.remove();
                     break;
                 }
             }
-            typeRegistrations.add(newRegistration);
+            if (null == registrationId) {
+                // when not overridding a registration, get an id from the counter
+                registrationId = currentSerializationId.getAndIncrement();
+            }
+            typeRegistrations.add(newRegistrationBuilder.apply(registrationId));
         }
     }
 

@@ -16,26 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim;
-
-import java.io.IOException;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 /**
- * A minimal {@link org.apache.tinkerpop.shaded.kryo.io.Output}-like abstraction.
+ * A minimal {@link org.apache.tinkerpop.shaded.kryo.Serializer}-like abstraction.
+ * See that class for method documentation.
+ *
+ * @param <T> the class this serializer reads/writes from/to bytes.
  */
-public interface OutputShim {
+public interface SerializerShim<T> {
 
-    void writeByte(byte b);
+    <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, T starGraph);
 
-    void writeBytes(byte[] array, int offset, int count);
+    <I extends InputShim> T read(KryoShim<I, ?> kryo, I input, Class<T> clazz);
 
-    void writeString(String s);
-
-    void writeLong(long l);
-
-    void writeInt(int i);
-
-    void writeDouble(double d);
-
-    void flush();
+    default boolean isImmutable() {
+        return false;
+    }
 }

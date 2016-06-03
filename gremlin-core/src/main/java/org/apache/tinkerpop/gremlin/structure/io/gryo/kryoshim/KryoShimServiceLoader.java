@@ -16,8 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.ServiceLoader;
 
+/**
+ * Loads the highest-priority or user-selected {@link KryoShimService}.
+ */
 public class KryoShimServiceLoader {
 
     private static volatile KryoShimService CACHED_SHIM_SERVICE;
@@ -41,6 +46,16 @@ public class KryoShimServiceLoader {
      */
     public static final String SHIM_CLASS_SYSTEM_PROPERTY = "tinkerpop.kryo.shim";
 
+    /**
+     * Return a reference to the shim service.  This method may return a cached shim service
+     * unless {@code forceReload} is true.  Calls to this method need not be externally
+     * synchonized.
+     *
+     * @param forceReload if false, this method may use its internal service cache; if true,
+     *                    this method must ignore cache, and it must invoke {@link ServiceLoader#reload()}
+     *                    before selecting a new service to return
+     * @return the shim service
+     */
     public static KryoShimService load(boolean forceReload) {
 
         if (null != CACHED_SHIM_SERVICE && !forceReload) {
@@ -97,10 +112,23 @@ public class KryoShimServiceLoader {
         return CACHED_SHIM_SERVICE = result;
     }
 
+    /**
+     * Equivalent to {@link #load(boolean)} with the parameter {@code true}.
+     *
+     * @return the (possibly cached) shim service
+     */
     public static KryoShimService load() {
         return load(false);
     }
 
+    /**
+     * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#writeClassAndObject(Output, Object)},
+     * where the {@code output} parameter is an internally-created {@link ByteArrayOutputStream}.  Returns
+     * the byte array underlying that stream.
+     *
+     * @param o an object for which the instance and class are serialized
+     * @return the serialized form
+     */
     public static byte[] writeClassAndObjectToBytes(Object o) {
         KryoShimService shimService = load();
 
@@ -111,12 +139,30 @@ public class KryoShimServiceLoader {
         return baos.toByteArray();
     }
 
+    /**
+     * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#readClassAndObject(Input)},
+     * where the {@code input} parameter is {@code source}.  Returns the deserialized object.
+     *
+     * @param source an input stream containing data for a serialized object class and instance
+     * @param <T> the type to which the deserialized object is cast as it is returned
+     * @return the deserialized object
+     */
     public static <T> T readClassAndObject(InputStream source) {
         KryoShimService shimService = load();
 
         return (T)shimService.readClassAndObject(source);
     }
 
+    /**
+     * Selects the service with greatest {@link KryoShimService#getPriority()}
+     * (not absolute value).
+     *
+     * Breaks ties with lexicographical comparison of classnames where the
+     * name that sorts last is considered to have highest priority.  Ideally
+     * nothing should rely on that tiebreaking behavior, but it beats random
+     * selection in case a user ever gets into that situation by accident and
+     * tries to figure out what's going on.
+     */
     private enum KryoShimServiceComparator implements Comparator<KryoShimService> {
         INSTANCE;
 
@@ -130,7 +176,23 @@ public class KryoShimServiceLoader {
             } else if (bp < ap) {
                 return 1;
             } else {
-                return a.getClass().getCanonicalName().compareTo(b.getClass().getCanonicalName());
+                int result = a.getClass().getCanonicalName().compareTo(b.getClass().getCanonicalName());
+
+                if (0 == result) {
+                    log.warn("Found two {} implementations with the same canonical classname: {}.  " +
+                             "This may indicate a problem with the classpath/classloader such as " +
+                             "duplicate or conflicting copies of the file " +
+                             "META-INF/services/org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService.",
+                             a.getClass().getCanonicalName());
+                } else {
+                    String winner = 0 < result ? a.getClass().getCanonicalName() : b.getClass().getCanonicalName();
+                    log.warn("{} implementations {} and {} are tied with priority value {}.  " +
+                             "Preferring {} to the other because it has a lexicographically greater classname.  " +
+                             "Consider setting the system property \"{}\" instead of relying on priority tie-breaking.",
+                             KryoShimService.class.getSimpleName(), a, b, ap, winner, SHIM_CLASS_SYSTEM_PROPERTY);
+                }
+
+                return result;
             }
         }
     }

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.kryoshim.shaded;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded;
 
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 
 public class ShadedKryoAdapter implements KryoShim<ShadedInputAdapter, ShadedOutputAdapter> {

@@ -18,14 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.InputShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.KryoShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.OutputShim;
-import org.apache.tinkerpop.gremlin.structure.io.kryoshim.SerializerShim;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 
 import java.util.UUID;
 
