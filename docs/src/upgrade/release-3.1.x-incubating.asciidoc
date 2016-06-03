@@ -88,7 +88,7 @@ Graph Database Providers
 Property Keys and Hyphens
 +++++++++++++++++++++++++
 
-Graph providers should no longer rely on the test suite to validate that hyphens work for property keys.
+Graph providers should no longer rely on the test suite to validate that hyphens work for labels and property keys.
 
 Vertex and Edge Counts
 ++++++++++++++++++++++
