@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 import sys
-from gremlin_python_driver import RemoteConnection
+from gremlin_driver import RemoteConnection
 
 class Helper(object):
   @staticmethod
@@ -91,6 +91,7 @@ class PythonGraphTraversal(object):
     self.traversalString = traversalString
     self.results = None
     self.lastTraverser = None
+    self.remoteConnection = RemoteConnection("http://tinkerpop.apache.org","gremlin-groovy")
   def __repr__(self):
     return self.traversalString
   def __getitem__(self,index):
@@ -106,7 +107,7 @@ class PythonGraphTraversal(object):
         return self
   def next(self):
      if self.results is None:
-        self.results = RemoteConnection.submit("gremlin-groovy",self.traversalString)
+        self.results = self.remoteConnection.submit(self.traversalString)
      if self.lastTraverser is None:
          self.lastTraverser = self.results.next()
      object = self.lastTraverser.object

@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -69,15 +68,16 @@ public class PythonVariantConverter implements VariantConverter {
 
     static {
         try {
-            final String packageName = (new File("gremlin-variants").exists() ? "gremlin-variants/" : "") +
-                    "src/main/jython/org/apache/tinkerpop/gremlin/process/variant/python";
-            final String fileName = "gremlin_python.py";
-            final String absoluteName = packageName + "/" + fileName;
-            GremlinPythonGenerator.create(absoluteName);
+            final String rootPackageName = (new File("gremlin-variants").exists() ? "gremlin-variants/" : "") + "src/main/jython/";
+            final String gremlinPythonPackageName = rootPackageName + "/gremlin_python";
+            final String gremlinDriverPackageName = rootPackageName + "/gremlin_driver";
+            final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
+            GremlinPythonGenerator.create(gremlinPythonModuleName);
             JYTHON_ENGINE.eval("import sys");
             JYTHON_ENGINE.eval("sys.argv = [" + (IMPORT_STATICS ? "True" : "False") + "]");
-            JYTHON_ENGINE.eval("sys.path.append('" + packageName + "')");
-            JYTHON_ENGINE.eval("exec(open(\"" + absoluteName + "\").read())");
+            JYTHON_ENGINE.eval("sys.path.append('" + gremlinPythonPackageName + "')");
+            JYTHON_ENGINE.eval("sys.path.append('" + gremlinDriverPackageName + "')");
+            JYTHON_ENGINE.eval("exec(open(\"" + gremlinPythonModuleName + "\").read())");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

@@ -16,6 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+from abc import abstractmethod
+
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
@@ -25,9 +27,12 @@ class Traverser(object):
         self.bulk = bulk
 
 
-class RemoteConnection(object):  # (metaclass=ABCMeta):
-    # @abstractmethod
-    @staticmethod
-    def submit(scriptEngine, script):
-        print "sending " + script + " to GremlinServer using " + scriptEngine + "..."
+class RemoteConnection(object):
+    def __init__(self, url, scriptEngine):
+        self.url = url
+        self.scriptEngine = scriptEngine
+
+    @abstractmethod
+    def submit(self, script):
+        print "sending " + script + " to GremlinServer..."
         return iter([])
