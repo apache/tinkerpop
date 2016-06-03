@@ -25,14 +25,15 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class RESTRemoteConnection(RemoteConnection):
-    def __init__(self, url, scriptEngine):
-        RemoteConnection.__init__(self, url, scriptEngine)
+    def __init__(self, url, script_engine):
+        RemoteConnection.__init__(self, url, script_engine)
 
     def __repr__(self):
         return "RESTRemoteConnection[" + self.url + "]"
 
-    def submit(self, script):
-        response = requests.post(self.url, data=json.dumps({"gremlin": script}))
+    def submit(self, script, bindings):
+        response = requests.post(self.url, data=json.dumps(
+            {"gremlin": script, "language": self.script_engine, "bindings": bindings}))
         if response.status_code != requests.codes.ok:
             raise BaseException(response.text)
         results = []

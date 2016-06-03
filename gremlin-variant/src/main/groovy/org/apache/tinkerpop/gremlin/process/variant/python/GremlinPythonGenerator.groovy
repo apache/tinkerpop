@@ -77,9 +77,20 @@ under the License.
         final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
                 .withDefault { it }
 
-        pythonClass.append("from collections import OrderedDict\n\n")
+        pythonClass.append("from collections import OrderedDict\n")
+        pythonClass.append("import inspect\n\n")
         pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
+class B(object):
+  def __init__(self, symbol, value="~empty"):
+    self.symbol = symbol
+    if value == "~empty":
+      self.value = inspect.currentframe().f_back.f_locals[symbol]
+    else:
+      self.value = value
+  def __repr__(self):
+    return self.symbol
+
 class Helper(object):
   @staticmethod
   def stringOrObject(arg):
@@ -111,14 +122,14 @@ class Helper(object):
 //////////////////////////
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
-  def __init__(self, traversalSourceString, remoteConnection):
-    self.traversalSourceString = traversalSourceString
-    self.remoteConnection = remoteConnection
+  def __init__(self, traversal_source_string, remote_connection=None):
+    self.traversal_source_string = traversal_source_string
+    self.remote_connection = remote_connection
   def __repr__(self):
-    if self.remoteConnection is None:
-      return "graphtraversalsource[no connection, " + self.traversalSourceString + "]"
+    if self.remote_connection is None:
+      return "graphtraversalsource[no connection, " + self.traversal_source_string + "]"
     else:
-      return "graphtraversalsource[" + str(self.remoteConnection) + ", " + self.traversalSourceString + "]"
+      return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.traversal_source_string + "]"
 """)
         GraphTraversalSource.getMethods()
                 .collect { it.name }
@@ -134,12 +145,12 @@ class Helper(object):
                 if (Traversal.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")", self.remoteConnection)
+    return PythonGraphTraversal(self.traversal_source_string + ".${method}(" + Helper.stringify(*args) + ")", self.remote_connection)
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")", self.remoteConnection)
+    return PythonGraphTraversalSource(self.traversal_source_string + ".${method}(" + Helper.stringify(*args) + ")", self.remote_connection)
 """)
                 }
             }
@@ -151,13 +162,14 @@ class Helper(object):
 ////////////////////
         pythonClass.append(
                 """class PythonGraphTraversal(object):
-  def __init__(self, traversalString, remoteConnection=None):
-    self.traversalString = traversalString
-    self.remoteConnection = remoteConnection
+  def __init__(self, traversal_string, remote_connection=None):
+    self.traversal_string = traversal_string
+    self.remote_connection = remote_connection
     self.results = None
-    self.lastTraverser = None
+    self.last_traverser = None
+    self.bindings = {}
   def __repr__(self):
-    return self.traversalString
+    return self.traversal_string
   def __getitem__(self,index):
     if type(index) is int:
       return self.range(index,index+1)
@@ -173,13 +185,13 @@ class Helper(object):
     return list(iter(self))
   def next(self):
      if self.results is None:
-        self.results = self.remoteConnection.submit(self.traversalString)
-     if self.lastTraverser is None:
-         self.lastTraverser = self.results.next()
-     object = self.lastTraverser.object
-     self.lastTraverser.bulk = self.lastTraverser.bulk - 1
-     if self.lastTraverser.bulk <= 0:
-         self.lastTraverser = None
+        self.results = self.remote_connection.submit(self.traversal_string, self.bindings)
+     if self.last_traverser is None:
+         self.last_traverser = self.results.next()
+     object = self.last_traverser.object
+     self.last_traverser.bulk = self.last_traverser.bulk - 1
+     if self.last_traverser.bulk <= 0:
+         self.last_traverser = None
      return object
 """)
         GraphTraversal.getMethods()
@@ -193,7 +205,10 @@ class Helper(object):
             if (null != returnType && Traversal.isAssignableFrom(returnType)) {
                 pythonClass.append(
                         """  def ${method}(self, *args):
-    self.traversalString = self.traversalString + ".${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")"
+    self.traversal_string = self.traversal_string + ".${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")"
+    for arg in args:
+      if type(arg) is B:
+        self.bindings[arg.symbol] = arg.value
     return self
 """)
             }

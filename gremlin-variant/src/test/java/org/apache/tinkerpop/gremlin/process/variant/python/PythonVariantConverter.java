@@ -68,7 +68,7 @@ public class PythonVariantConverter implements VariantConverter {
 
     static {
         try {
-            final String rootPackageName = (new File("gremlin-variants").exists() ? "gremlin-variants/" : "") + "src/main/jython/";
+            final String rootPackageName = (new File("gremlin-variant").exists() ? "gremlin-variant/" : "") + "src/main/jython/";
             final String gremlinPythonPackageName = rootPackageName + "/gremlin_python";
             final String gremlinDriverPackageName = rootPackageName + "/gremlin_driver";
             final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
