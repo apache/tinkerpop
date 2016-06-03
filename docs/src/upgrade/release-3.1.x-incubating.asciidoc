@@ -85,6 +85,11 @@ changes there may prove important for the provider's implementation.
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Property Keys and Hyphens
++++++++++++++++++++++++++
+
+Graph providers should no longer rely on the test suite to validate that hyphens work for property keys.
+
 Vertex and Edge Counts
 ++++++++++++++++++++++
 

@@ -35,6 +35,7 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 * Fixed bug in `IoGraphTest` causing IllegalArgumentException: URI is not hierarchical error for external graph implementations.
 * Improved `TinkerGraph` performance when iterating vertices and edges.
 * Fixed a bug where timeout functions provided to the `GremlinExecutor` were not executing in the same thread as the script evaluation.
+* Graph providers should no longer rely on the test suite to validate that hyphens work for property keys.
 * Optimized a few special cases in `RangeByIsCountStrategy`.
 * Added more "invalid" variable bindings to the list used by Gremlin Server to validate incoming bindings on requests.
 * Named the thread pool used by Gremlin Server sessions: "gremlin-server-session-$n".
