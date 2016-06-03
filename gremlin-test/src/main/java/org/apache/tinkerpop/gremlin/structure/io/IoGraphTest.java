@@ -96,7 +96,7 @@ public class IoGraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteClassicToFileWithHelpers() throws Exception {
-        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), fileExtension);
+        final File f = TestHelper.generateTempFile(this.graph.getClass(), name.getMethodName(), fileExtension);
         try {
             graph.io(ioBuilderToTest).writeGraph(f.getAbsolutePath());
 
@@ -161,7 +161,7 @@ public class IoGraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldReadWriteModernToFileWithHelpers() throws Exception {
-        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), fileExtension);
+        final File f = TestHelper.generateTempFile(this.graph.getClass(), name.getMethodName(), fileExtension);
         try {
             graph.io(ioBuilderToTest).writeGraph(f.getAbsolutePath());
 
