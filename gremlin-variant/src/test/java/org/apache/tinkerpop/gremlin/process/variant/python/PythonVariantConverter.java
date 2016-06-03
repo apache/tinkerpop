@@ -74,10 +74,12 @@ public class PythonVariantConverter implements VariantConverter {
             final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
             GremlinPythonGenerator.create(gremlinPythonModuleName);
             JYTHON_ENGINE.eval("import sys");
-            JYTHON_ENGINE.eval("sys.argv = [" + (IMPORT_STATICS ? "True" : "False") + "]");
             JYTHON_ENGINE.eval("sys.path.append('" + gremlinPythonPackageName + "')");
             JYTHON_ENGINE.eval("sys.path.append('" + gremlinDriverPackageName + "')");
-            JYTHON_ENGINE.eval("exec(open(\"" + gremlinPythonModuleName + "\").read())");
+            JYTHON_ENGINE.eval("from gremlin_python import *");
+            JYTHON_ENGINE.eval("from gremlin_python import __");
+            if (IMPORT_STATICS)
+                JYTHON_ENGINE.eval("for k in statics:\n  globals()[k] = statics[k]");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -97,7 +99,7 @@ public class PythonVariantConverter implements VariantConverter {
             throw new VerificationException("Lambdas are currently not supported: " + currentTraversal.toString(), EmptyTraversal.instance());
 
         final Bindings jythonBindings = new SimpleBindings();
-        jythonBindings.put("g", JYTHON_ENGINE.eval("PythonGraphTraversalSource(\"g\")"));
+        jythonBindings.put("g", JYTHON_ENGINE.eval("PythonGraphTraversalSource(\"g\", None)"));
         JYTHON_ENGINE.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
         return JYTHON_ENGINE.eval(currentTraversal.toString()).toString();
     }

@@ -17,21 +17,23 @@ specific language governing permissions and limitations
 under the License.
 '''
 import requests
-from gremlin_driver.gremlin_driver import RemoteConnection
+import json
+from gremlin_driver import RemoteConnection
+from gremlin_driver import Traverser
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-try:
-    import ujson as json
-except ImportError:
-    import json
 
 class RESTRemoteConnection(RemoteConnection):
-    def __init__(self,url,scriptEngine):
-        self.url = url
-        self.scriptEngine = scriptEngine
+    def __init__(self, url, scriptEngine):
+        RemoteConnection.__init__(self, url,scriptEngine)
 
-    def submit(self,script):
-        requests.get(self.url + "?" + script)
-        return [requests.json()]
+    def __repr__(self):
+        return "RESTRemoteConnection[" + self.url + "]"
 
+    def submit(self, script):
+        response = requests.post(self.url, data=json.dumps({"gremlin": script})).json()
+        results = []
+        for x in response['result']['data']:
+            results.append(Traverser(x, 1))
+        return iter(results)

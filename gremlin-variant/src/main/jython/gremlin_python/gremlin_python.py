@@ -16,8 +16,10 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-import sys
-from gremlin_driver import RemoteConnection
+from collections import OrderedDict
+
+statics = OrderedDict()
+
 
 class Helper(object):
   @staticmethod
@@ -56,42 +58,46 @@ class Helper(object):
 
 
 class PythonGraphTraversalSource(object):
-  def __init__(self, traversalSourceString):
+  def __init__(self, traversalSourceString, remoteConnection):
     self.traversalSourceString = traversalSourceString
+    self.remoteConnection = remoteConnection
   def __repr__(self):
-    return "graphtraversalsource[" + self.traversalSourceString + "]"
+    if self.remoteConnection is None:
+      return "graphtraversalsource[no connection, " + self.traversalSourceString + "]"
+    else:
+      return "graphtraversalsource[" + str(self.remoteConnection) + ", " + self.traversalSourceString + "]"
   def E(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".E(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversal(self.traversalSourceString + ".E(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def V(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".V(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversal(self.traversalSourceString + ".V(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def addV(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".addV(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversal(self.traversalSourceString + ".addV(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def clone(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".clone(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".clone(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def inject(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".inject(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversal(self.traversalSourceString + ".inject(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withBulk(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withBulk(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withBulk(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withComputer(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withComputer(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withComputer(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withPath(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withPath(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withPath(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withSack(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withSack(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withSack(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withSideEffect(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withSideEffect(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withSideEffect(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withStrategies(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withStrategies(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withStrategies(" + Helper.stringify(*args) + ")", self.remoteConnection)
   def withoutStrategies(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".withoutStrategies(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".withoutStrategies(" + Helper.stringify(*args) + ")", self.remoteConnection)
 
 
 class PythonGraphTraversal(object):
-  def __init__(self, traversalString):
+  def __init__(self, traversalString, remoteConnection=None):
     self.traversalString = traversalString
+    self.remoteConnection = remoteConnection
     self.results = None
     self.lastTraverser = None
-    self.remoteConnection = RemoteConnection("http://tinkerpop.apache.org","gremlin-groovy")
   def __repr__(self):
     return self.traversalString
   def __getitem__(self,index):
@@ -105,6 +111,8 @@ class PythonGraphTraversal(object):
     return self.values(key)
   def __iter__(self):
         return self
+  def toList(self):
+    return list(iter(self))
   def next(self):
      if self.results is None:
         self.results = self.remoteConnection.submit(self.traversalString)
@@ -699,191 +707,374 @@ class __(object):
     return PythonGraphTraversal("__").where(*args)
 
 
-if(sys.argv[0]):
-   def V(*args):
+def V(*args):
       return __.V(*args)
-   def _and(*args):
+
+statics['V'] = V
+def _and(*args):
       return __._and(*args)
-   def _as(*args):
+
+statics['_and'] = _and
+def _as(*args):
       return __._as(*args)
-   def _in(*args):
+
+statics['_as'] = _as
+def _in(*args):
       return __._in(*args)
-   def _is(*args):
+
+statics['_in'] = _in
+def _is(*args):
       return __._is(*args)
-   def _not(*args):
+
+statics['_is'] = _is
+def _not(*args):
       return __._not(*args)
-   def _or(*args):
+
+statics['_not'] = _not
+def _or(*args):
       return __._or(*args)
-   def addE(*args):
+
+statics['_or'] = _or
+def addE(*args):
       return __.addE(*args)
-   def addInE(*args):
+
+statics['addE'] = addE
+def addInE(*args):
       return __.addInE(*args)
-   def addOutE(*args):
+
+statics['addInE'] = addInE
+def addOutE(*args):
       return __.addOutE(*args)
-   def addV(*args):
+
+statics['addOutE'] = addOutE
+def addV(*args):
       return __.addV(*args)
-   def aggregate(*args):
+
+statics['addV'] = addV
+def aggregate(*args):
       return __.aggregate(*args)
-   def barrier(*args):
+
+statics['aggregate'] = aggregate
+def barrier(*args):
       return __.barrier(*args)
-   def both(*args):
+
+statics['barrier'] = barrier
+def both(*args):
       return __.both(*args)
-   def bothE(*args):
+
+statics['both'] = both
+def bothE(*args):
       return __.bothE(*args)
-   def bothV(*args):
+
+statics['bothE'] = bothE
+def bothV(*args):
       return __.bothV(*args)
-   def branch(*args):
+
+statics['bothV'] = bothV
+def branch(*args):
       return __.branch(*args)
-   def cap(*args):
+
+statics['branch'] = branch
+def cap(*args):
       return __.cap(*args)
-   def choose(*args):
+
+statics['cap'] = cap
+def choose(*args):
       return __.choose(*args)
-   def coalesce(*args):
+
+statics['choose'] = choose
+def coalesce(*args):
       return __.coalesce(*args)
-   def coin(*args):
+
+statics['coalesce'] = coalesce
+def coin(*args):
       return __.coin(*args)
-   def constant(*args):
+
+statics['coin'] = coin
+def constant(*args):
       return __.constant(*args)
-   def count(*args):
+
+statics['constant'] = constant
+def count(*args):
       return __.count(*args)
-   def cyclicPath(*args):
+
+statics['count'] = count
+def cyclicPath(*args):
       return __.cyclicPath(*args)
-   def dedup(*args):
+
+statics['cyclicPath'] = cyclicPath
+def dedup(*args):
       return __.dedup(*args)
-   def drop(*args):
+
+statics['dedup'] = dedup
+def drop(*args):
       return __.drop(*args)
-   def emit(*args):
+
+statics['drop'] = drop
+def emit(*args):
       return __.emit(*args)
-   def filter(*args):
+
+statics['emit'] = emit
+def filter(*args):
       return __.filter(*args)
-   def flatMap(*args):
+
+statics['filter'] = filter
+def flatMap(*args):
       return __.flatMap(*args)
-   def fold(*args):
+
+statics['flatMap'] = flatMap
+def fold(*args):
       return __.fold(*args)
-   def group(*args):
+
+statics['fold'] = fold
+def group(*args):
       return __.group(*args)
-   def groupCount(*args):
+
+statics['group'] = group
+def groupCount(*args):
       return __.groupCount(*args)
-   def groupV3d0(*args):
+
+statics['groupCount'] = groupCount
+def groupV3d0(*args):
       return __.groupV3d0(*args)
-   def has(*args):
+
+statics['groupV3d0'] = groupV3d0
+def has(*args):
       return __.has(*args)
-   def hasId(*args):
+
+statics['has'] = has
+def hasId(*args):
       return __.hasId(*args)
-   def hasKey(*args):
+
+statics['hasId'] = hasId
+def hasKey(*args):
       return __.hasKey(*args)
-   def hasLabel(*args):
+
+statics['hasKey'] = hasKey
+def hasLabel(*args):
       return __.hasLabel(*args)
-   def hasNot(*args):
+
+statics['hasLabel'] = hasLabel
+def hasNot(*args):
       return __.hasNot(*args)
-   def hasValue(*args):
+
+statics['hasNot'] = hasNot
+def hasValue(*args):
       return __.hasValue(*args)
-   def id(*args):
+
+statics['hasValue'] = hasValue
+def id(*args):
       return __.id(*args)
-   def identity(*args):
+
+statics['id'] = id
+def identity(*args):
       return __.identity(*args)
-   def inE(*args):
+
+statics['identity'] = identity
+def inE(*args):
       return __.inE(*args)
-   def inV(*args):
+
+statics['inE'] = inE
+def inV(*args):
       return __.inV(*args)
-   def inject(*args):
+
+statics['inV'] = inV
+def inject(*args):
       return __.inject(*args)
-   def key(*args):
+
+statics['inject'] = inject
+def key(*args):
       return __.key(*args)
-   def label(*args):
+
+statics['key'] = key
+def label(*args):
       return __.label(*args)
-   def limit(*args):
+
+statics['label'] = label
+def limit(*args):
       return __.limit(*args)
-   def local(*args):
+
+statics['limit'] = limit
+def local(*args):
       return __.local(*args)
-   def loops(*args):
+
+statics['local'] = local
+def loops(*args):
       return __.loops(*args)
-   def map(*args):
+
+statics['loops'] = loops
+def map(*args):
       return __.map(*args)
-   def mapKeys(*args):
+
+statics['map'] = map
+def mapKeys(*args):
       return __.mapKeys(*args)
-   def mapValues(*args):
+
+statics['mapKeys'] = mapKeys
+def mapValues(*args):
       return __.mapValues(*args)
-   def match(*args):
+
+statics['mapValues'] = mapValues
+def match(*args):
       return __.match(*args)
-   def max(*args):
+
+statics['match'] = match
+def max(*args):
       return __.max(*args)
-   def mean(*args):
+
+statics['max'] = max
+def mean(*args):
       return __.mean(*args)
-   def min(*args):
+
+statics['mean'] = mean
+def min(*args):
       return __.min(*args)
-   def optional(*args):
+
+statics['min'] = min
+def optional(*args):
       return __.optional(*args)
-   def order(*args):
+
+statics['optional'] = optional
+def order(*args):
       return __.order(*args)
-   def otherV(*args):
+
+statics['order'] = order
+def otherV(*args):
       return __.otherV(*args)
-   def out(*args):
+
+statics['otherV'] = otherV
+def out(*args):
       return __.out(*args)
-   def outE(*args):
+
+statics['out'] = out
+def outE(*args):
       return __.outE(*args)
-   def outV(*args):
+
+statics['outE'] = outE
+def outV(*args):
       return __.outV(*args)
-   def path(*args):
+
+statics['outV'] = outV
+def path(*args):
       return __.path(*args)
-   def project(*args):
+
+statics['path'] = path
+def project(*args):
       return __.project(*args)
-   def properties(*args):
+
+statics['project'] = project
+def properties(*args):
       return __.properties(*args)
-   def property(*args):
+
+statics['properties'] = properties
+def property(*args):
       return __.property(*args)
-   def propertyMap(*args):
+
+statics['property'] = property
+def propertyMap(*args):
       return __.propertyMap(*args)
-   def range(*args):
+
+statics['propertyMap'] = propertyMap
+def range(*args):
       return __.range(*args)
-   def repeat(*args):
+
+statics['range'] = range
+def repeat(*args):
       return __.repeat(*args)
-   def sack(*args):
+
+statics['repeat'] = repeat
+def sack(*args):
       return __.sack(*args)
-   def sample(*args):
+
+statics['sack'] = sack
+def sample(*args):
       return __.sample(*args)
-   def select(*args):
+
+statics['sample'] = sample
+def select(*args):
       return __.select(*args)
-   def sideEffect(*args):
+
+statics['select'] = select
+def sideEffect(*args):
       return __.sideEffect(*args)
-   def simplePath(*args):
+
+statics['sideEffect'] = sideEffect
+def simplePath(*args):
       return __.simplePath(*args)
-   def start(*args):
+
+statics['simplePath'] = simplePath
+def start(*args):
       return __.start(*args)
-   def store(*args):
+
+statics['start'] = start
+def store(*args):
       return __.store(*args)
-   def subgraph(*args):
+
+statics['store'] = store
+def subgraph(*args):
       return __.subgraph(*args)
-   def sum(*args):
+
+statics['subgraph'] = subgraph
+def sum(*args):
       return __.sum(*args)
-   def tail(*args):
+
+statics['sum'] = sum
+def tail(*args):
       return __.tail(*args)
-   def timeLimit(*args):
+
+statics['tail'] = tail
+def timeLimit(*args):
       return __.timeLimit(*args)
-   def times(*args):
+
+statics['timeLimit'] = timeLimit
+def times(*args):
       return __.times(*args)
-   def to(*args):
+
+statics['times'] = times
+def to(*args):
       return __.to(*args)
-   def toE(*args):
+
+statics['to'] = to
+def toE(*args):
       return __.toE(*args)
-   def toV(*args):
+
+statics['toE'] = toE
+def toV(*args):
       return __.toV(*args)
-   def tree(*args):
+
+statics['toV'] = toV
+def tree(*args):
       return __.tree(*args)
-   def unfold(*args):
+
+statics['tree'] = tree
+def unfold(*args):
       return __.unfold(*args)
-   def union(*args):
+
+statics['unfold'] = unfold
+def union(*args):
       return __.union(*args)
-   def until(*args):
+
+statics['union'] = union
+def until(*args):
       return __.until(*args)
-   def value(*args):
+
+statics['until'] = until
+def value(*args):
       return __.value(*args)
-   def valueMap(*args):
+
+statics['value'] = value
+def valueMap(*args):
       return __.valueMap(*args)
-   def values(*args):
+
+statics['valueMap'] = valueMap
+def values(*args):
       return __.values(*args)
-   def where(*args):
+
+statics['values'] = values
+def where(*args):
       return __.where(*args)
+
+statics['where'] = where
 
 
 class Cardinality(object):
@@ -895,19 +1086,17 @@ class Column(object):
    keys = "Column.keys"
    values = "Column.values"
 
-if(sys.argv[0]):
-   keys = Column.keys
-   values = Column.values
+statics['keys'] = Column.keys
+statics['values'] = Column.values
 
 class Direction(object):
    OUT = "Direction.OUT"
    IN = "Direction.IN"
    BOTH = "Direction.BOTH"
 
-if(sys.argv[0]):
-   OUT = Direction.OUT
-   IN = Direction.IN
-   BOTH = Direction.BOTH
+statics['OUT'] = Direction.OUT
+statics['IN'] = Direction.IN
+statics['BOTH'] = Direction.BOTH
 
 class Operator(object):
    sum = "Operator.sum"
@@ -922,18 +1111,17 @@ class Operator(object):
    addAll = "Operator.addAll"
    sumLong = "Operator.sumLong"
 
-if(sys.argv[0]):
-   sum = Operator.sum
-   minus = Operator.minus
-   mult = Operator.mult
-   div = Operator.div
-   min = Operator.min
-   max = Operator.max
-   assign = Operator.assign
-   _and = Operator._and
-   _or = Operator._or
-   addAll = Operator.addAll
-   sumLong = Operator.sumLong
+statics['sum'] = Operator.sum
+statics['minus'] = Operator.minus
+statics['mult'] = Operator.mult
+statics['div'] = Operator.div
+statics['min'] = Operator.min
+statics['max'] = Operator.max
+statics['assign'] = Operator.assign
+statics['_and'] = Operator._and
+statics['_or'] = Operator._or
+statics['addAll'] = Operator.addAll
+statics['sumLong'] = Operator.sumLong
 
 class Order(object):
    incr = "Order.incr"
@@ -944,14 +1132,13 @@ class Order(object):
    valueDecr = "Order.valueDecr"
    shuffle = "Order.shuffle"
 
-if(sys.argv[0]):
-   incr = Order.incr
-   decr = Order.decr
-   keyIncr = Order.keyIncr
-   valueIncr = Order.valueIncr
-   keyDecr = Order.keyDecr
-   valueDecr = Order.valueDecr
-   shuffle = Order.shuffle
+statics['incr'] = Order.incr
+statics['decr'] = Order.decr
+statics['keyIncr'] = Order.keyIncr
+statics['valueIncr'] = Order.valueIncr
+statics['keyDecr'] = Order.keyDecr
+statics['valueDecr'] = Order.valueDecr
+statics['shuffle'] = Order.shuffle
 
 class P(object):
    def __init__(self, pString):
@@ -1008,65 +1195,95 @@ class P(object):
    def _or(self, arg):
       return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
 
-if(sys.argv[0]):
-   def _and(*args):
+def _and(*args):
       return P._and(*args)
-   def _not(*args):
+
+statics['_and'] = _and
+def _not(*args):
       return P._not(*args)
-   def _or(*args):
+
+statics['_not'] = _not
+def _or(*args):
       return P._or(*args)
-   def between(*args):
+
+statics['_or'] = _or
+def between(*args):
       return P.between(*args)
-   def clone(*args):
+
+statics['between'] = between
+def clone(*args):
       return P.clone(*args)
-   def eq(*args):
+
+statics['clone'] = clone
+def eq(*args):
       return P.eq(*args)
-   def gt(*args):
+
+statics['eq'] = eq
+def gt(*args):
       return P.gt(*args)
-   def gte(*args):
+
+statics['gt'] = gt
+def gte(*args):
       return P.gte(*args)
-   def inside(*args):
+
+statics['gte'] = gte
+def inside(*args):
       return P.inside(*args)
-   def lt(*args):
+
+statics['inside'] = inside
+def lt(*args):
       return P.lt(*args)
-   def lte(*args):
+
+statics['lt'] = lt
+def lte(*args):
       return P.lte(*args)
-   def negate(*args):
+
+statics['lte'] = lte
+def negate(*args):
       return P.negate(*args)
-   def neq(*args):
+
+statics['negate'] = negate
+def neq(*args):
       return P.neq(*args)
-   def outside(*args):
+
+statics['neq'] = neq
+def outside(*args):
       return P.outside(*args)
-   def test(*args):
+
+statics['outside'] = outside
+def test(*args):
       return P.test(*args)
-   def within(*args):
+
+statics['test'] = test
+def within(*args):
       return P.within(*args)
-   def without(*args):
+
+statics['within'] = within
+def without(*args):
       return P.without(*args)
+
+statics['without'] = without
 
 class Pop(object):
    first = "Pop.first"
    last = "Pop.last"
    all = "Pop.all"
 
-if(sys.argv[0]):
-   first = Pop.first
-   last = Pop.last
-   all = Pop.all
+statics['first'] =  Pop.first
+statics['last'] =  Pop.last
+statics['all'] =  Pop.all
 
 class Barrier(object):
    normSack = "SackFunctions.Barrier.normSack"
 
-if(sys.argv[0]):
-   normSack = Barrier.normSack
+statics['normSack'] = Barrier.normSack
 
 class Scope(object):
    _global = "Scope.global"
    local = "Scope.local"
 
-if(sys.argv[0]):
-   _global = Scope._global
-   local = Scope.local
+statics['_global'] = Scope._global
+statics['local'] = Scope.local
 
 class T(object):
    label = "T.label"
@@ -1074,9 +1291,9 @@ class T(object):
    key = "T.key"
    value = "T.value"
 
-if(sys.argv[0]):
-   label = T.label
-   id = T.id
-   key = T.key
-   value = T.value
+statics['label'] = T.label
+statics['id'] = T.id
+statics['key'] = T.key
+statics['value'] = T.value
 
+statics = OrderedDict(reversed(list(statics.items())))

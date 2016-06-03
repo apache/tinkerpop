@@ -77,8 +77,8 @@ under the License.
         final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
                 .withDefault { it }
 
-        pythonClass.append("import sys\n")
-        pythonClass.append("from gremlin_driver import RemoteConnection\n")
+        pythonClass.append("from collections import OrderedDict\n\n")
+        pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
 class Helper(object):
   @staticmethod
@@ -111,10 +111,14 @@ class Helper(object):
 //////////////////////////
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
-  def __init__(self, traversalSourceString):
+  def __init__(self, traversalSourceString, remoteConnection):
     self.traversalSourceString = traversalSourceString
+    self.remoteConnection = remoteConnection
   def __repr__(self):
-    return "graphtraversalsource[" + self.traversalSourceString + "]"
+    if self.remoteConnection is None:
+      return "graphtraversalsource[no connection, " + self.traversalSourceString + "]"
+    else:
+      return "graphtraversalsource[" + str(self.remoteConnection) + ", " + self.traversalSourceString + "]"
 """)
         GraphTraversalSource.getMethods()
                 .collect { it.name }
@@ -130,12 +134,12 @@ class Helper(object):
                 if (Traversal.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversal(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")", self.remoteConnection)
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    return PythonGraphTraversalSource(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")")
+    return PythonGraphTraversalSource(self.traversalSourceString + ".${method}(" + Helper.stringify(*args) + ")", self.remoteConnection)
 """)
                 }
             }
@@ -147,11 +151,11 @@ class Helper(object):
 ////////////////////
         pythonClass.append(
                 """class PythonGraphTraversal(object):
-  def __init__(self, traversalString):
+  def __init__(self, traversalString, remoteConnection=None):
     self.traversalString = traversalString
+    self.remoteConnection = remoteConnection
     self.results = None
     self.lastTraverser = None
-    self.remoteConnection = RemoteConnection("http://tinkerpop.apache.org","gremlin-groovy")
   def __repr__(self):
     return self.traversalString
   def __getitem__(self,index):
@@ -165,6 +169,8 @@ class Helper(object):
     return self.values(key)
   def __iter__(self):
         return self
+  def toList(self):
+    return list(iter(self))
   def next(self):
      if self.results is None:
         self.results = self.remoteConnection.submit(self.traversalString)
@@ -212,14 +218,16 @@ class Helper(object):
         };
         pythonClass.append("\n\n")
 
-        pythonClass.append("if(sys.argv[0]):\n")
         __.class.getMethods()
                 .findAll { Traversal.class.isAssignableFrom(it.getReturnType()) }
                 .findAll { !it.name.equals("__") }
                 .collect { methodMap[it.name] }
                 .unique()
                 .sort { a, b -> a <=> b }
-                .forEach { pythonClass.append("   def ${it}(*args):\n").append("      return __.${it}(*args)\n") }
+                .forEach {
+            pythonClass.append("def ${it}(*args):\n").append("      return __.${it}(*args)\n\n")
+            pythonClass.append("statics['${it}'] = ${it}\n")
+        }
         pythonClass.append("\n\n")
 
 ///////////
@@ -236,9 +244,8 @@ class Helper(object):
             pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         Column.values().each { value ->
-            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
         }
         pythonClass.append("\n");
         //////////////
@@ -247,9 +254,8 @@ class Helper(object):
             pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         Direction.values().each { value ->
-            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
         }
         pythonClass.append("\n");
         //////////////
@@ -258,9 +264,8 @@ class Helper(object):
             pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         Operator.values().each { value ->
-            pythonClass.append("   ${methodMap[value.name()]} = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
+            pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
         }
         pythonClass.append("\n");
         //////////////
@@ -269,9 +274,8 @@ class Helper(object):
             pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         Order.values().each { value ->
-            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
         }
         pythonClass.append("\n");
         //////////////
@@ -301,13 +305,15 @@ class Helper(object):
       return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
 """)
         pythonClass.append("\n")
-        pythonClass.append("if(sys.argv[0]):\n")
         P.class.getMethods()
                 .findAll { P.class.isAssignableFrom(it.getReturnType()) }
                 .collect { methodMap[it.name] }
                 .unique()
                 .sort { a, b -> a <=> b }
-                .forEach { pythonClass.append("   def ${it}(*args):\n").append("      return P.${it}(*args)\n") }
+                .forEach {
+            pythonClass.append("def ${it}(*args):\n").append("      return P.${it}(*args)\n\n")
+            pythonClass.append("statics['${it}'] = ${it}\n")
+        }
         pythonClass.append("\n")
         //////////////
         pythonClass.append("class Pop(object):\n");
@@ -315,9 +321,8 @@ class Helper(object):
             pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         Pop.values().each { value ->
-            pythonClass.append("   ${value.name()} = ${value.getDeclaringClass().getSimpleName()}.${value.name()}\n");
+            pythonClass.append("statics['${value}'] =  ${value.getDeclaringClass().getSimpleName()}.${value.name()}\n");
         }
         pythonClass.append("\n");
         //////////////
@@ -325,17 +330,15 @@ class Helper(object):
    normSack = "SackFunctions.Barrier.normSack"
 """);
         pythonClass.append("\n")
-        pythonClass.append("if(sys.argv[0]):\n")
-        pythonClass.append("   normSack = Barrier.normSack\n\n")
+        pythonClass.append("statics['normSack'] = Barrier.normSack\n\n")
         //////////////
         pythonClass.append("class Scope(object):\n");
         Scope.values().each { value ->
             pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         Scope.values().each { value ->
-            pythonClass.append("   ${methodMap[value.name()]} = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
+            pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
         }
         pythonClass.append("\n");
         //////////////
@@ -344,11 +347,12 @@ class Helper(object):
             pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
         }
         pythonClass.append("\n");
-        pythonClass.append("if(sys.argv[0]):\n")
         T.values().each { value ->
-            pythonClass.append("   ${value} = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
+            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
         }
         pythonClass.append("\n");
+
+        pythonClass.append("statics = OrderedDict(reversed(list(statics.items())))\n")
 
 // save to a python file
         final File file = new File(gremlinPythonFile);

@@ -25,6 +25,8 @@ class Traverser(object):
     def __init__(self, object, bulk):
         self.object = object
         self.bulk = bulk
+    def __repr__(self):
+        return str(self.object)
 
 
 class RemoteConnection(object):
