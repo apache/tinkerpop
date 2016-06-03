@@ -714,13 +714,13 @@ Gremlin Server will send:
 |=========================================================
 
 OpProcessors Arguments
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 The following sections define a non-exhaustive list of available operations and arguments for embedded `OpProcessors`
 (i.e. ones packaged with Gremlin Server).
 
 Common
-++++++
+^^^^^^
 
 All `OpProcessor` instances support these arguments.
 
@@ -731,7 +731,7 @@ All `OpProcessor` instances support these arguments.
 |=========================================================
 
 Standard OpProcessor
-++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^
 
 The "standard" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin.
 Requests made to this `OpProcessor` are "sessionless" in the sense that a request must encapsulate the entirety
@@ -773,7 +773,7 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 |=========================================================
 
 Session OpProcessor
-+++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^
 
 The "session" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. It is
 like the "standard" `OpProcessor`, but instead maintains state between sessions and allows the option to leave all
@@ -828,7 +828,7 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 |=========================================================
 
 Authentication
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 Gremlin Server supports link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based]
 authentication.  A SASL implementation provides a series of challenges and responses that a driver must comply with
