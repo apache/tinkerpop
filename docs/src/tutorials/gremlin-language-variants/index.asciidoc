@@ -120,6 +120,10 @@ Any Gremlin language variant, regardless of the implementation model chosen, **m
 host language, be in 1-to-1 correspondence with Gremlin-Java. This ensures that language variants are collectively
 consistent and easily leveraged by anyone versed in Gremlin.
 
+IMPORTANT: The "Gremlin-Python" presented in this tutorial is basic and provided to show the primary techniques used to
+construct a Gremlin language variant. Apache TinkerPop distributes with a full fledged Gremlin-Python variant
+that uses many of the techniques presented in this tutorial.
+
 [[language-drivers-vs-language-variants]]
 Language Drivers vs. Language Variants
 --------------------------------------
@@ -328,7 +332,7 @@ corresponding Jython classes. Unfortunately, adding the near 200 `GraphTraversal
 both tedious and error-prone. To alleviate this pain, Python classes can be dynamically created using Groovy and
 link:https://en.wikipedia.org/wiki/Reflection_(computer_programming)#Java[Java reflection].
 The Groovy code for constructing the `JythonGraphTraversal` class source is reviewed below. By simply executing this code
-in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console], the `gremlin-jython.py` file
+in the link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[Gremlin Console], the `gremlin-jython-demo.py` file
 is generated and can be `execfile()`'d by Jython.
 
 NOTE: Any JVM language can use Java reflection to generate source code. The examples in this tutorial use Groovy because of
@@ -429,7 +433,7 @@ methods.each{ method ->
 pythonClass.append("\n\n")
 
 // save to a python file
-file = new File("/tmp/gremlin-jython.py")                                    //// <6>
+file = new File("/tmp/gremlin-jython-demo.py")                                    //// <6>
 file.delete()
 pythonClass.eachLine{ file.append(it + "\n") }
 ----
@@ -439,24 +443,26 @@ pythonClass.eachLine{ file.append(it + "\n") }
 <3> Use Java reflection to get all the methods of `GraphTraversal`.
 <4> If the method is a fluent traversal-method, then mutate the underlying/wrapped `GraphTraversal` instance accordingly.
 <5> If the method is not a fluent traversal-method, return the result of applying the method.
-<6> Save the string representation of the Jython source code to `gremlin-jython.py`.
+<6> Save the string representation of the Jython source code to `gremlin-jython-demo.py`.
 
-From the Jython console, `gremlin-jython.py` is loaded and a complete Gremlin language variant is born: **Gremlin-Jython**.
-The generated file is available at link:../../resources/gremlin-jython.py[gremlin-jython.py].
+From the Jython console, `gremlin-jython-demo.py` is loaded and a complete Gremlin language variant is born: **Gremlin-Jython (demo)**.
+The generated file is available at link:../../resources/gremlin-jython-demo.py[gremlin-jython-demo.py]. This is called "demo"
+because it is a quick and dirty implementation to demonstrate the main concepts behind developing a JVM-based language variant
+and should not be considered the defacto, production-ready Gremlin-Jython implementation.
 
 [source,python]
 ----
 Jython 2.7.0 (default:9987c746f838, Apr 29 2015, 02:25:11)
 [Java HotSpot(TM) 64-Bit Server VM (Oracle Corporation)] on java1.8.0_40
 Type "help", "copyright", "credits" or "license" for more information.
->>> execfile("/tmp/gremlin-jython.py")
+>>> execfile("/tmp/gremlin-jython-demo.py")
 >>> from org.apache.tinkerpop.gremlin.tinkergraph.structure import TinkerFactory
 >>> graph = TinkerFactory.createModern()
 >>> g = JythonGraphTraversalSource(graph.traversal())
-# using the Gremlin-Jython __getattr__ and __getitem__ extensions and anonymous traversals
+# using the Gremlin-Jython (demo) __getattr__ and __getitem__ extensions and anonymous traversals
 >>> g.V().repeat(__.both("created")).times(2).name[1:3].path().toList()
 [[v[1], v[3], v[4], josh], [v[1], v[3], v[6], peter]]
-# JythonGraphTraversalSource works as expected -- an example using Gremlin-Jython w/ OLAP
+# JythonGraphTraversalSource works as expected -- an example using Gremlin-Jython (demo) w/ OLAP
 >>> g = g.withComputer()
 >>> g
 graphtraversalsource[tinkergraph[vertices:6 edges:6], graphcomputer]
@@ -465,10 +471,10 @@ graphtraversalsource[tinkergraph[vertices:6 edges:6], graphcomputer]
 >>>
 ----
 
-Gremlin-Jython was simple to create. Unfortunately, this simplicity is not without some problems. These problems are itemized below.
+Gremlin-Jython (demo) was simple to create. Unfortunately, this simplicity is not without some problems. These problems are itemized below.
 The interested reader can solve the aforementioned problems as a training exercise.
 
-* The Gremlin-Jython API is non-informative as all methods take a tuple reference (`*args`).
+* The Gremlin-Jython (demo) API is non-informative as all methods take a tuple reference (`*args`).
 ** The Gremlin-Java link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[JavaDoc] would be a sufficient guide to Gremlin-Jython (minus the extensions).
 * Lambdas are not supported as `map(lambda x: x.get())` will throw an exception about not being able to coerce `lamba` into `java.util.function.Function`.
 ** Python type inspection with a creation of `Function` lambda wrapper would solve this problem.
@@ -647,19 +653,20 @@ methods.each{ method ->
 pythonClass.append("\n\n")
 
 // save to a python file
-file = new File("/tmp/gremlin-python.py")                                                //// <3>
+file = new File("/tmp/gremlin-python-demo.py")                                                //// <3>
 file.delete()
 pythonClass.eachLine{ file.append(it + "\n") }
 ----
 
 <1> The `Helper` class contains static methods that are generally useful to the other classes. This could have been a separate file, but was included in the Groovy script so that the tutorial's code is consolidated.
 <2> `toList()`'s method `def` is not generated programmatically, but instead is hardcoded and uses the gremlinclient driver to communicate with GremlinServer.
-<3> Save the string representation of the Python source code to `gremlin-python.py`.
+<3> Save the string representation of the Python source code to `gremlin-python-demo.py`.
 
-When the above Groovy script is evaluated in GremlinConsole, **Gremlin-Python** is born.
-The generated file is available at link:../../resources/gremlin-python.py[gremlin-python.py]. Now, from any Python
-virtual machine (not just Jython), Gremlin traversals can be expressed in native Python and a legal Gremlin-Groovy
-string is created behind the scenes.
+When the above Groovy script is evaluated in GremlinConsole, **Gremlin-Python (demo)** is born.
+The generated file is available at link:../../resources/gremlin-python-demo.py[gremlin-python-demo.py]. Again, Gremlin-Python (demo)
+should not be considered production ready. It is provided in this tutorial to explain the concepts behind Gremlin language
+variant development. Now, from any Python virtual machine (not just Jython), Gremlin traversals can be expressed in native Python
+and a legal Gremlin-Groovy string is created behind the scenes.
 
 NOTE: The string that is generated for submission to a GremlinServer or `RemoteConnection` does not have to be a
 Gremlin-Groovy string. However, it must be a string that has a respective `ScriptEngine` that is enabled on the remote
@@ -667,17 +674,11 @@ location. It is recommended that a Gremlin-Groovy string be constructed as Greml
 Apache TinkerPop and is guaranteed to always be aligned with Gremlin-Java.
 
 Be sure that GremlinServer is running and has a link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graphson-reader-writer[GraphSON]
-endpoint. The following serializers were added to `conf/gremlin-server-modern.yaml`.
-
-[source,yaml]
-- { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { useMapperFromGraph: graph }} # application/vnd.gremlin-v1.0+json
-- { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { useMapperFromGraph: graph }}        # application/json
-
-Then GremlinServer was started.
+endpoint.
 
 [source,bash]
 ----
-$ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
+$ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
@@ -710,7 +711,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 Python 2.7.2 (default, Oct 11 2012, 20:14:37)
 [GCC 4.2.1 Compatible Apple Clang 4.0 (tags/Apple/clang-418.0.60)] on darwin
 Type "help", "copyright", "credits" or "license" for more information.
->>> execfile("/tmp/gremlin-python.py")
+>>> execfile("/tmp/gremlin-python-demo.py")
 # PythonGraphTraversalSource requires a GremlinServer endpoint and a traversal alias
 >>> g = PythonGraphTraversalSource("ws://localhost:8182/", "g")
 >>> g
@@ -720,7 +721,7 @@ graphtraversalsource[ws://localhost:8182/, g]
 g.V().repeat(__.both("created")).times(2).values("name").range(1, 3).path()
 >>> g.V().hasLabel("person").repeat(__.both()).times(2).name[0:2].toList()
 [u'marko', u'josh']
-# PythonGraphTraversalSource works as expected -- an example using Gremlin-Python w/ OLAP
+# PythonGraphTraversalSource works as expected -- an example using Gremlin-Python (demo) w/ OLAP
 >>> g = g.withComputer()
 >>> g
 graphtraversalsource[ws://localhost:8182/, g.withComputer()]
@@ -738,7 +739,7 @@ graphtraversalsource[ws://localhost:8182/, g.withComputer()]
 >>>
 ----
 
-Finally, for the sake of brevity, Gremlin-Python is simple and as such, incurs a few peculiarities that the interested
+Finally, for the sake of brevity, Gremlin-Python (demo) is simple and as such, incurs a few peculiarities that the interested
 reader may want to remedy as an exercise.
 
 * `P`, `T`, `Order`, etc. are handled via string analysis and are used as `has("age","P.gt(36)")`. It would be better to create `P`, `T`, etc. Python classes that yield the appropriate string representation.
@@ -754,16 +755,16 @@ conventions of the host language and ensuring consistency with Gremlin-Java. A c
 this dual-language bridge are provided.
 
 * If camelCase is not an accepted method naming convention in the host language, then the host language's convention should be used instead. For instance, in a Gremlin-Ruby implementation, `outE("created")` should be `out_e("created")`.
-* If Gremlin-Java step names conflict with the host language's reserved words, then a consistent amelioration should be used. For instance, in Python `as` is a reserved word, thus, Gremlin-Python uses `_as`.
+* If Gremlin-Java step names conflict with the host language's reserved words, then a consistent amelioration should be used. For instance, in Python `as` is a reserved word, thus, Gremlin-Python (demo) uses `_as`.
 * If the host language does not use dot-notion for method chaining, then its method chaining convention should be used instead of going the route of operator overloading. For instance, a Gremlin-PHP implementation should do `$g->V()->out()`.
-* If a programming language does not support method overloading, then varargs and type introspection should be used. In Gremlin-Python, `*args` does just this and that is why there are not 200 methods off of `PythonGraphTraversal`.
+* If a programming language does not support method overloading, then varargs and type introspection should be used. In Gremlin-Python (demo), `*args` does just this and that is why there are not 200 methods off of `PythonGraphTraversal`.
 
 As stated in <<language-drivers-vs-language-variants,"Language Drivers vs. Language Variants">>, drivers and variants should
 be separate libraries. A proposed naming convention for each library type is `gremlin-<language>-driver` and
 `gremlin-<language>`. Unfortunately, numerous drivers and languages already exist for Gremlin that don't use this convention.
 However, moving forward, it might be good to be explicit in the naming so its obvious to users what is what.
 
-Finally, note that Gremlin-Jython and Gremlin-Python (as presented in this tutorial) were only manually tested. This
+Finally, note that the Gremlin-Jython and Gremlin-Python demos (as presented in this tutorial) were only manually tested. This
 means that there are most likely errors in the translation and thus, some traversals may break. A future addition to this
 tutorial will explain how to leverage TinkerPop's `ProcessStandardSuite` and `ProcessComputerSuite` to test not only
 JVM-based language variants, but also non-JVM variants. In doing so, every Gremlin language variant's syntax and
