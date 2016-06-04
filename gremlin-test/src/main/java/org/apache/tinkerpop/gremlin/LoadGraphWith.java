@@ -77,7 +77,12 @@ public @interface LoadGraphWith {
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
          * complex traversals.
          */
-        GRATEFUL;
+        GRATEFUL,
+
+        /**
+         * Loads the output graph of a previous job.
+         */
+        OUTPUT;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -126,6 +131,7 @@ public @interface LoadGraphWith {
                 case CREW:
                     return featuresRequiredByCrew;
                 case MODERN:
+                case OUTPUT:
                     return featuresRequiredByModern;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;

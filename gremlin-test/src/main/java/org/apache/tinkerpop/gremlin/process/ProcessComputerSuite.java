@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgramTest;
+import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkExportVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest;
@@ -29,8 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndTest;
@@ -191,6 +192,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             PeerPressureVertexProgramTest.class,
             BulkLoaderVertexProgramTest.class,
             BulkDumperVertexProgramTest.class,
+            BulkExportVertexProgramTest.class,
 
             // decorations
             ReadOnlyStrategyProcessTest.class,

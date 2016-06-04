@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
@@ -96,6 +97,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-classic.txt",
                     "script-input.groovy",
                     "script-output.groovy",
+                    "script-csv-export.groovy",
                     "grateful-dead.txt",
                     "script-input-grateful-dead.groovy",
                     "script-output-grateful-dead.groovy");
@@ -112,9 +114,16 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         this.graphSONInput = RANDOM.nextBoolean();
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, HadoopGraph.class.getName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_READER, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
+            if (loadGraphWith.equals(LoadGraphWith.GraphData.OUTPUT)) {
+                put(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
+                put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, ScriptOutputFormat.class.getCanonicalName());
+                put("gremlin.hadoop.scriptOutputFormat.script", PATHS.get("script-csv-export.groovy"));
+                put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory() + "_");
+            } else {
+                put(Constants.GREMLIN_HADOOP_GRAPH_READER, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
+                put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
+                put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
+            }
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         }};
     }
@@ -146,6 +155,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.OUTPUT)) {
+            ((HadoopGraph) g).configuration().setInputLocation(getWorkingDirectory() + "/~g");
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

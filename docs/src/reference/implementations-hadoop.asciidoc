@@ -379,6 +379,47 @@ hdfs.ls('output')
 hdfs.head('output/~g')
 ----
 
+[[bulkexportvertexprogramusingspark]]
+Exporting CSV-formatted data with BulkExportVertexProgram
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The <<bulkexportvertexprogram, BulkExportVertexProgram>> exports a chunk of preselected data using the `ScriptOutputFormat`. The example below takes a Hadoop
+graph as the input (in `GryoInputFormat`), selects multiple values (a person's name and age, the number of projects created by this person and the number of
+coworkers) from the modern sample graph  and writes them out in CSV format.
+
+[gremlin-groovy]
+----
+hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
+hdfs.copyFromLocal('data/script-csv-export.groovy', 'script-csv-export.groovy')
+
+graph = GraphFactory.open("conf/hadoop/hadoop-gryo.properties")
+g = graph.traversal().withComputer()
+
+g.V().hasLabel('person').match(
+    __.as('person').values('name').as('name'),
+    __.as('person').values('age').as('age'),
+    __.as('person').outE('created').count().as('projects'),
+    __.as('person').coalesce(out('created'), identity()).as('project'),
+    __.as('project').coalesce(__.in('created'), identity()).as('coworker'),
+    __.as('coworker').values('name').as('cname'),
+    __.as('coworker').choose(where(eq('person')), constant(0), constant(1)).as('cc')
+  ).dedup('person','coworker').group().by(select('person','name','age','projects')).by(select('cc').sum()).unfold().as('kv').
+    select(keys).select('person').as('person').
+    select('kv').select(keys).select('name').as('name').
+    select('kv').select(keys).select('age').as('age').
+    select('kv').select(keys).select('projects').as('projects').
+    select('kv').select(values).as('coworkers').
+    select('person','name','age','projects','coworkers').
+    program(BulkDumperVertexProgram.build().create(graph))
+
+hdfs.head('output/~g', GryoInputFormat)
+hdfs.head('output/~g', GryoInputFormat).each {println it.property(BulkExportVertexProgram.BULK_EXPORT_PROPERTIES)}
+
+graph = GraphFactory.open('conf/hadoop/hadoop-csv-export.properties')
+graph.compute().program(BulkExportVertexProgram.build().keys('name','age','projects','coworkers').create(graph)).submit().get()
+println String.join('\n', hdfs.head('export/~g').toList()); []
+----
+
 Loading with BulkLoaderVertexProgram
 ++++++++++++++++++++++++++++++++++++
 

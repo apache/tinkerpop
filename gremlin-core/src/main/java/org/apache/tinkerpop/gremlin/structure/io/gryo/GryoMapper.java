@@ -95,6 +95,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -295,6 +296,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(UUID.class, kryo -> new UUIDSerializer(), 17));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(URI.class, kryo -> new URISerializer(), 72));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexTerminator.class, null, 13));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AbstractMap.SimpleEntry.class, kryo -> new EntrySerializer(), 120)); // ***LAST ID***
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceEdge.class, null, 81));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceVertexProperty.class, null, 82));
@@ -356,7 +358,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 113));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(RangeGlobalStep.RangeBiOperator.class, null, 114));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OrderGlobalStep.OrderBiOperator.class, kryo -> new JavaSerializer(), 118)); // because they contain traversals
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ProfileStep.ProfileBiOperator.class, null, 119)); // ***LAST ID***
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ProfileStep.ProfileBiOperator.class, null, 119));
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
