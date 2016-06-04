@@ -997,6 +997,9 @@ limitations under the License.
                                         <include>
                                             org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java
                                         </include>
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.java
+                                        </include>
                                         <!-- driver -->
                                         <include>org/apache/tinkerpop/gremlin/driver/*.java
                                         </include>
