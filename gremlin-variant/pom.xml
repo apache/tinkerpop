@@ -26,7 +26,7 @@
         <artifactId>tinkerpop</artifactId>
         <version>3.2.1-SNAPSHOT</version>
     </parent>
-    <artifactId>gremlin-variants</artifactId>
+    <artifactId>gremlin-variant</artifactId>
     <name>Apache TinkerPop :: Gremlin Language Variants</name>
     <dependencies>
         <dependency>
