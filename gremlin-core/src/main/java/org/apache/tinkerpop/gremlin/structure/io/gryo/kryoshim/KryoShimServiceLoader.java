@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.slf4j.Logger;
@@ -35,7 +36,9 @@ import java.util.ServiceLoader;
  */
 public class KryoShimServiceLoader {
 
-    private static volatile KryoShimService CACHED_SHIM_SERVICE;
+    private static volatile KryoShimService cachedShimService;
+
+    private static volatile Configuration conf;
 
     private static final Logger log = LoggerFactory.getLogger(KryoShimServiceLoader.class);
 
@@ -45,6 +48,10 @@ public class KryoShimServiceLoader {
      * priority-selection mechanism ({@link KryoShimService#getPriority()}) to be ignored.
      */
     public static final String SHIM_CLASS_SYSTEM_PROPERTY = "tinkerpop.kryo.shim";
+
+    public static void applyConfiguration(Configuration conf) {
+        KryoShimServiceLoader.conf = conf;
+    }
 
     /**
      * Return a reference to the shim service.  This method may return a cached shim service
@@ -58,8 +65,8 @@ public class KryoShimServiceLoader {
      */
     public static KryoShimService load(boolean forceReload) {
 
-        if (null != CACHED_SHIM_SERVICE && !forceReload) {
-            return CACHED_SHIM_SERVICE;
+        if (null != cachedShimService && !forceReload) {
+            return cachedShimService;
         }
 
         ArrayList<KryoShimService> services = new ArrayList<>();
@@ -109,7 +116,15 @@ public class KryoShimServiceLoader {
         log.info("Set {} provider to {} ({}) because its priority value ({}) is the highest available",
                 KryoShimService.class.getSimpleName(), result, result.getClass(), result.getPriority());
 
-        return CACHED_SHIM_SERVICE = result;
+        Configuration userConf = conf;
+
+        if (null != userConf) {
+            log.info("Configuring {} provider {} with user-provided configuration",
+                    KryoShimService.class.getSimpleName(), result);
+            result.applyConfiguration(userConf);
+        }
+
+        return cachedShimService = result;
     }
 
     /**

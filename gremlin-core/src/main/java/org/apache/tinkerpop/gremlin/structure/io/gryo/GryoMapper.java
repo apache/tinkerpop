@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
@@ -369,6 +370,20 @@ public final class GryoMapper implements Mapper<Kryo> {
         private Supplier<ClassResolver> classResolver = GryoClassResolver::new;
 
         private Builder() {
+            // Validate the default registrations
+            // For justification of these default registration rules, see TinkerPopKryoRegistrator
+            for (TypeRegistration<?> tr : typeRegistrations) {
+                if (tr.hasSerializer() /* no serializer is acceptable */ &&
+                    null == tr.getSerializerShim() /* a shim serializer is acceptable */ &&
+                    !(tr.getShadedSerializer() instanceof JavaSerializer) /* shaded JavaSerializer is acceptable */) {
+                    // everything else is invalid
+                    String msg = String.format("The default GryoMapper type registration %s is invalid.  " +
+                            "It must supply either an implementation of %s or %s, but supplies neither.  " +
+                            "This is probably a bug in GryoMapper's default serialization class registrations.", tr,
+                            SerializerShim.class.getCanonicalName(), JavaSerializer.class.getCanonicalName());
+                    throw new IllegalStateException(msg);
+                }
+            }
         }
 
         /**
@@ -538,8 +553,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             if (1 < serializerCount) {
                 String msg = String.format(
                         "GryoTypeReg accepts at most one kind of serializer, but multiple " +
-                                "serializers were supplied for class %s (id %s).  " +
-                                "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
+                        "serializers were supplied for class %s (id %s).  " +
+                        "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
                         this.clazz.getCanonicalName(), id,
                         this.shadedSerializer, this.serializerShim, this.functionOfShadedKryo);
                 throw new IllegalArgumentException(msg);
@@ -602,6 +617,17 @@ public final class GryoMapper implements Mapper<Kryo> {
             }
 
             return kryo;
+        }
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("targetClass", clazz)
+                    .append("id", id)
+                    .append("shadedSerializer", shadedSerializer)
+                    .append("serializerShim", serializerShim)
+                    .append("functionOfShadedKryo", functionOfShadedKryo)
+                    .toString();
         }
     }
 }

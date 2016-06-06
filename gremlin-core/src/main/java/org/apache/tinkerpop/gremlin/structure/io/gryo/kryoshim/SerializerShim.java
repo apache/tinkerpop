@@ -26,7 +26,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
  */
 public interface SerializerShim<T> {
 
-    <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, T starGraph);
+    <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, T object);
 
     <I extends InputShim> T read(KryoShim<I, ?> kryo, I input, Class<T> clazz);
 

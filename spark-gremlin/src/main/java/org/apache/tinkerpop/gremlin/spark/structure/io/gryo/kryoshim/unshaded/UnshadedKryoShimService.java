@@ -24,92 +24,131 @@
  */
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 
-import com.twitter.chill.KryoInstantiator;
-import com.twitter.chill.KryoPool;
-import com.twitter.chill.SerDeState;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
-import org.apache.spark.serializer.KryoSerializer;
-import org.apache.tinkerpop.gremlin.spark.structure.io.TinkerPopKryoRegistrator;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.IoRegistryAwareKryoSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class UnshadedKryoShimService implements KryoShimService {
 
-    public static final String SPARK_KRYO_POOL_SIZE_SYSTEM_PROPERTY = "tinkerpop.kryo.poolsize";
-
     private static final Logger log = LoggerFactory.getLogger(UnshadedKryoShimService.class);
-    private static final int SPARK_KRYO_POOL_SIZE_DEFAULT = 8;
 
-    private final KryoSerializer sparkKryoSerializer;
-    private final KryoPool kryoPool;
+    private static final LinkedBlockingQueue<Kryo> KRYOS = new LinkedBlockingQueue<>();
 
-    public UnshadedKryoShimService() {
-        this(TinkerPopKryoRegistrator.class.getCanonicalName(), getDefaultKryoPoolSize());
-    }
+    private static volatile boolean initialized;
 
-    public UnshadedKryoShimService(String sparkKryoRegistratorClassname, int kryoPoolSize) {
-        SparkConf sparkConf = new SparkConf();
-        sparkConf.set("spark.serializer", KryoSerializer.class.getCanonicalName());
-        sparkConf.set("spark.kryo.registrator", sparkKryoRegistratorClassname);
-        sparkKryoSerializer = new KryoSerializer(sparkConf);
-        kryoPool = KryoPool.withByteArrayOutputStream(kryoPoolSize, new KryoInstantiator());
-    }
+    public UnshadedKryoShimService() { }
 
     @Override
     public Object readClassAndObject(InputStream source) {
-        SerDeState sds = null;
+
+        LinkedBlockingQueue<Kryo> kryos = initialize();
+
+        Kryo k = null;
         try {
-            sds = kryoPool.borrow();
+            k = kryos.take();
 
-            sds.setInput(source);
-
-            return sds.readClassAndObject();
+            return k.readClassAndObject(new Input(source));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
-            kryoPool.release(sds);
+            try {
+                kryos.put(k);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public void writeClassAndObject(Object o, OutputStream sink) {
-        SerDeState sds = null;
+
+        LinkedBlockingQueue<Kryo> kryos = initialize();
+
+        Kryo k = null;
         try {
-            sds = kryoPool.borrow();
+            k = kryos.take();
 
-            sds.writeClassAndObject(o); // this writes to an internal buffer
+            Output kryoOutput = new Output(sink);
 
-            sds.writeOutputTo(sink); // this copies the internal buffer to sink
+            k.writeClassAndObject(kryoOutput, o);
 
-            sink.flush();
-        } catch (IOException e) {
+            kryoOutput.flush();
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            kryoPool.release(sds);
+            try {
+                kryos.put(k);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public int getPriority() {
-        return 1024;
+        return 50;
     }
 
-    private static int getDefaultKryoPoolSize() {
-        String raw = System.getProperty(SPARK_KRYO_POOL_SIZE_SYSTEM_PROPERTY);
+    @Override
+    public void applyConfiguration(Configuration conf) {
+        initialize(conf);
+    }
 
-        int size = SPARK_KRYO_POOL_SIZE_DEFAULT;
-        try {
-            size = Integer.valueOf(raw);
-            log.info("Setting kryo pool size to {} according to system property {}", size,
-                    SPARK_KRYO_POOL_SIZE_SYSTEM_PROPERTY);
-        } catch (NumberFormatException e) {
-            log.error("System property {}={} could not be parsed as an integer, using default value {}",
-                    SPARK_KRYO_POOL_SIZE_SYSTEM_PROPERTY, raw, size, e);
+    private LinkedBlockingQueue<Kryo> initialize() {
+        return initialize(new BaseConfiguration());
+    }
+
+    private LinkedBlockingQueue<Kryo> initialize(Configuration conf) {
+        // DCL is safe in this case due to volatility
+        if (!initialized) {
+            synchronized (UnshadedKryoShimService.class) {
+                if (!initialized) {
+                    SparkConf sparkConf = new SparkConf();
+
+                    // Copy the user's IoRegistry from the param conf to the SparkConf we just created
+                    String regStr = conf.getString(GryoPool.CONFIG_IO_REGISTRY);
+                    if (null != regStr) { // SparkConf rejects null values with NPE, so this has to be checked before set(...)
+                        sparkConf.set(GryoPool.CONFIG_IO_REGISTRY, regStr);
+                    }
+                    // Setting spark.serializer here almost certainly isn't necessary, but it doesn't hurt
+                    sparkConf.set("spark.serializer", IoRegistryAwareKryoSerializer.class.getCanonicalName());
+
+                    String registrator = conf.getString("spark.kryo.registrator");
+                    if (null != registrator) {
+                        sparkConf.set("spark.kryo.registrator", registrator);
+                        log.info("Copied spark.kryo.registrator: {}", registrator);
+                    } else {
+                        log.info("Not copying spark.kryo.registrator");
+                    }
+
+                    // Reuse Gryo poolsize for Kryo poolsize (no need to copy this to SparkConf)
+                    int poolSize = conf.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE,
+                            GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
+                    // Instantiate the spark.serializer
+                    final IoRegistryAwareKryoSerializer ioReg = new IoRegistryAwareKryoSerializer(sparkConf);
+                    // Setup a pool backed by our spark.serializer instance
+
+                    for (int i = 0; i < poolSize; i++) {
+                        KRYOS.add(ioReg.newKryo());
+                    }
+
+                    initialized = true;
+                }
+            }
         }
 
-        return size;
+        return KRYOS;
     }
 }

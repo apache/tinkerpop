@@ -67,4 +67,16 @@ public interface TypeRegistration<T> {
      * @return the sole parameter
      */
     Kryo registerWith(Kryo kryo);
+
+    /**
+     * Returns true if at least one of {@link #getShadedSerializer()}, {@link #getSerializerShim()}, or
+     * {@link #getFunctionOfShadedKryo()} is non null.  Returns false if all are null.
+     *
+     * @return whether a serializer is defined for this type registration
+     */
+    default boolean hasSerializer() {
+        return null != getFunctionOfShadedKryo() ||
+                null != getSerializerShim() ||
+                null != getShadedSerializer();
+    }
 }

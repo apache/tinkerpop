@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
@@ -65,5 +67,10 @@ public class HadoopPoolShimService implements KryoShimService {
     @Override
     public int getPriority() {
         return 0;
+    }
+
+    @Override
+    public void applyConfiguration(Configuration conf) {
+        KryoShimServiceLoader.applyConfiguration(conf);
     }
 }

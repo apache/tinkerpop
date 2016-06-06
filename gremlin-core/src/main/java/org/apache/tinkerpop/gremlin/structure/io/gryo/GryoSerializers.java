@@ -23,16 +23,16 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 /**
  * Class used to serialize graph-based objects such as vertices, edges, properties, and paths. These objects are
@@ -42,19 +42,19 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-final class GryoSerializers {
+public final class GryoSerializers {
 
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
      */
-    final static class EdgeSerializer extends Serializer<Edge> {
+    final static class EdgeSerializer implements SerializerShim<Edge> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Edge edge) {
+        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Edge edge) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(edge, true));
         }
 
         @Override
-        public Edge read(final Kryo kryo, final Input input, final Class<Edge> edgeClass) {
+        public <I extends InputShim> Edge read(KryoShim<I, ?> kryo, I input, Class<Edge> edgeClass) {
             final Object o = kryo.readClassAndObject(input);
             return (Edge) o;
         }
@@ -63,14 +63,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
      */
-    final static class VertexSerializer extends Serializer<Vertex> {
+    final static class VertexSerializer implements SerializerShim<Vertex> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Vertex vertex) {
+        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Vertex vertex) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, true));
         }
 
         @Override
-        public Vertex read(final Kryo kryo, final Input input, final Class<Vertex> vertexClass) {
+        public <I extends InputShim> Vertex read(KryoShim<I, ?> kryo, I input, Class<Vertex> vertexClass) {
             return (Vertex) kryo.readClassAndObject(input);
         }
     }
@@ -78,14 +78,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
      */
-    final static class PropertySerializer extends Serializer<Property> {
+    final static class PropertySerializer implements SerializerShim<Property> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Property property) {
+        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Property property) {
             kryo.writeClassAndObject(output, property instanceof VertexProperty ? DetachedFactory.detach((VertexProperty) property, true) : DetachedFactory.detach(property));
         }
 
         @Override
-        public Property read(final Kryo kryo, final Input input, final Class<Property> propertyClass) {
+        public <I extends InputShim> Property read(KryoShim<I, ?> kryo, I input, Class<Property> propertyClass) {
             return (Property) kryo.readClassAndObject(input);
         }
     }
@@ -93,14 +93,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
      */
-    final static class VertexPropertySerializer extends Serializer<VertexProperty> {
+    final static class VertexPropertySerializer implements SerializerShim<VertexProperty> {
         @Override
-        public void write(final Kryo kryo, final Output output, final VertexProperty vertexProperty) {
+        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, VertexProperty vertexProperty) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));
         }
 
         @Override
-        public VertexProperty read(final Kryo kryo, final Input input, final Class<VertexProperty> vertexPropertyClass) {
+        public <I extends InputShim> VertexProperty read(KryoShim<I, ?> kryo, I input, Class<VertexProperty> vertexPropertyClass) {
             return (VertexProperty) kryo.readClassAndObject(input);
         }
     }
@@ -108,14 +108,14 @@ final class GryoSerializers {
     /**
      * Serializes any {@link Path} implementation encountered to an {@link DetachedPath}.
      */
-    final static class PathSerializer extends Serializer<Path> {
+    public final static class PathSerializer implements SerializerShim<Path> {
         @Override
-        public void write(final Kryo kryo, final Output output, final Path path) {
+        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Path path) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(path, false));
         }
 
         @Override
-        public Path read(final Kryo kryo, final Input input, final Class<Path> pathClass) {
+        public <I extends InputShim> Path read(KryoShim<I, ?> kryo, I input, Class<Path> pathClass) {
             return (Path) kryo.readClassAndObject(input);
         }
     }
