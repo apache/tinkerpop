@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io;
-
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * A minimal {@link org.apache.tinkerpop.shaded.kryo.io.Output}-like abstraction.
+ * See that class for method documentation.
  */
-public interface HadoopPoolsConfigurable extends Configurable {
+public interface OutputShim {
 
-    @Override
-    public default void setConf(final Configuration configuration) {
-        KryoShimServiceLoader.applyConfiguration(ConfUtil.makeApacheConfiguration(configuration));
-    }
+    void writeByte(byte b);
 
-    @Override
-    public default Configuration getConf() {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " can only have its configuration set, not received");
-    }
+    void writeBytes(byte[] array, int offset, int count);
+
+    void writeString(String s);
+
+    void writeLong(long l);
+
+    void writeInt(int i);
+
+    void writeDouble(double d);
+
+    void flush();
 }

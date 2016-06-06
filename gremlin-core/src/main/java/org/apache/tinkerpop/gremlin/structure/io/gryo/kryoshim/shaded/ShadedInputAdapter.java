@@ -16,30 +16,51 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded;
 
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
-import org.javatuples.Pair;
 
-/**
- * @author Daniel Kuppitz (http://gremlin.guru)
- */
-final class PairSerializer implements SerializerShim<Pair> {
-    @Override
-    public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Pair pair) {
-        kryo.writeClassAndObject(output, pair.getValue0());
-        kryo.writeClassAndObject(output, pair.getValue1());
+public class ShadedInputAdapter implements InputShim {
+
+    private final Input shadedInput;
+
+    public ShadedInputAdapter(Input shadedInput) {
+        this.shadedInput = shadedInput;
+    }
+
+    Input getShadedInput() {
+        return shadedInput;
     }
 
     @Override
-    public <I extends InputShim> Pair read(KryoShim<I, ?> kryo, I input, Class<Pair> pairClass) {
-        return Pair.with(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
+    public byte readByte()
+    {
+        return shadedInput.readByte();
+    }
+
+    @Override
+    public byte[] readBytes(int size) {
+        return shadedInput.readBytes(size);
+    }
+
+    @Override
+    public String readString() {
+        return shadedInput.readString();
+    }
+
+    @Override
+    public long readLong() {
+        return shadedInput.readLong();
+    }
+
+    @Override
+    public int readInt() {
+        return shadedInput.readInt();
+    }
+
+    @Override
+    public double readDouble() {
+        return shadedInput.readDouble();
     }
 }
