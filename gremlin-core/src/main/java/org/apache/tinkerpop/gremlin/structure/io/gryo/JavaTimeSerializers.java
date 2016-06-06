@@ -139,7 +139,7 @@ final class JavaTimeSerializers {
 
         @Override
         public <I extends InputShim> MonthDay read(KryoShim<I, ?> kryo, I input, Class<MonthDay> clazz) {
-            return null;
+            return MonthDay.of(input.readInt(), input.readInt());
         }
     }
 
