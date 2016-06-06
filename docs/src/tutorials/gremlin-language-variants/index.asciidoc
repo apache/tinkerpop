@@ -22,7 +22,7 @@ image::apache-tinkerpop-logo.png[width=500,link="http://tinkerpop.apache.org"]
 Gremlin Language Variants
 -------------------------
 
-Gremlin is an embeddable query language able to represent itself within the constructs of a host programming language.
+Gremlin is an embeddable query language that can easily be represented using the constructs of a host programming language.
 Any programming language that supports link:https://en.wikipedia.org/wiki/Function_composition[function composition]
 (e.g. fluent chaining) and link:https://en.wikipedia.org/wiki/Nested_function[function nesting] (e.g. call stacks)
 can support Gremlin. Nearly every modern programming language is capable of meeting both requirements.
