@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.io.ToyGraphInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -79,9 +81,14 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
 
-        /// spark configuration
+
         config.put("spark.master", "local[4]");
-        config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
+        if (false) {
+            config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
+        } else {
+            config.put("spark.serializer", KryoSerializer.class.getCanonicalName());
+            config.put("spark.kryo.registrator", GryoRegistrator.class.getCanonicalName());
+        }
         config.put("spark.kryo.registrationRequired", true);
         return config;
     }

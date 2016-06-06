@@ -98,7 +98,7 @@ public class UnshadedKryoShimService implements KryoShimService {
 
     @Override
     public int getPriority() {
-        return 50;
+        return -50;
     }
 
     @Override

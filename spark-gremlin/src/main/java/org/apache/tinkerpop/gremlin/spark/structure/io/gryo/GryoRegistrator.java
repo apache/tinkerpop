@@ -42,9 +42,9 @@ import java.util.*;
  * A spark.kryo.registrator implementation that installs TinkerPop types.
  * This is intended for use with spark.serializer=KryoSerializer, not GryoSerializer.
  */
-public class TinkerPopKryoRegistrator implements KryoRegistrator {
+public class GryoRegistrator implements KryoRegistrator {
 
-    private static final Logger log = LoggerFactory.getLogger(TinkerPopKryoRegistrator.class);
+    private static final Logger log = LoggerFactory.getLogger(GryoRegistrator.class);
 
     @Override
     public void registerClasses(Kryo kryo) {
