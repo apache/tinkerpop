@@ -34,6 +34,7 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 * Added `EmptyMemory` for ease of use when no memory exists.
 * Updated `VertexComputing.generateProgram()` API to include `Memory`. (*breaking*)
 * `ImmutablePath.TailPath` is now serializable like `ImmutablePath`.
+* Added `ConfigurationCompilerProvider` which allows fine-grained control of some of the internal `GremlinGroovyScriptEngine` settings at the Groovy compilation level.
 * Intoduced the `application/vnd.gremlin-v1.0+gryo-lite` serialization type to Gremlin Server which users "reference" elements rather than "detached".
 * `GryoMapper` allows overrides of existing serializers on calls to `addCustom` on the builder.
 * Added a traversal style guide to the recipes cookbook.
