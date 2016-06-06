@@ -51,6 +51,7 @@ public class KryoShimServiceLoader {
 
     public static void applyConfiguration(Configuration conf) {
         KryoShimServiceLoader.conf = conf;
+        load(true);
     }
 
     /**
@@ -195,16 +196,16 @@ public class KryoShimServiceLoader {
 
                 if (0 == result) {
                     log.warn("Found two {} implementations with the same canonical classname: {}.  " +
-                             "This may indicate a problem with the classpath/classloader such as " +
-                             "duplicate or conflicting copies of the file " +
-                             "META-INF/services/org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService.",
-                             a.getClass().getCanonicalName());
+                                    "This may indicate a problem with the classpath/classloader such as " +
+                                    "duplicate or conflicting copies of the file " +
+                                    "META-INF/services/org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService.",
+                            a.getClass().getCanonicalName());
                 } else {
                     String winner = 0 < result ? a.getClass().getCanonicalName() : b.getClass().getCanonicalName();
                     log.warn("{} implementations {} and {} are tied with priority value {}.  " +
-                             "Preferring {} to the other because it has a lexicographically greater classname.  " +
-                             "Consider setting the system property \"{}\" instead of relying on priority tie-breaking.",
-                             KryoShimService.class.getSimpleName(), a, b, ap, winner, SHIM_CLASS_SYSTEM_PROPERTY);
+                                    "Preferring {} to the other because it has a lexicographically greater classname.  " +
+                                    "Consider setting the system property \"{}\" instead of relying on priority tie-breaking.",
+                            KryoShimService.class.getSimpleName(), a, b, ap, winner, SHIM_CLASS_SYSTEM_PROPERTY);
                 }
 
                 return result;

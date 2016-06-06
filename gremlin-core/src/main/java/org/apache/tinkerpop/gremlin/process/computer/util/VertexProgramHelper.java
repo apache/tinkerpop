@@ -25,13 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.apache.tinkerpop.gremlin.util.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -41,8 +36,6 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class VertexProgramHelper {
-
-    private static final GryoPool GRYO_POOL = GryoPool.build().create();
 
     private VertexProgramHelper() {
     }
@@ -74,33 +67,21 @@ public final class VertexProgramHelper {
             final String byteString = Arrays.toString(Serializer.serializeObject(object));
             configuration.setProperty(key, byteString.substring(1, byteString.length() - 1));
         } catch (final IOException e) {
-            try {
-                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                GRYO_POOL.doWithWriter(kryo -> kryo.writeObject(outputStream, object));
-                String byteString = Arrays.toString(outputStream.toByteArray());
-                configuration.setProperty(key, byteString.substring(1, byteString.length() - 1));
-            } catch (final Exception e1) {
-                throw new IllegalArgumentException(e1.getMessage(), e1);
-            }
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 
     public static <T> T deserialize(final Configuration configuration, final String key) {
-        final String[] stringBytes = configuration.getString(key).split(",");
-        byte[] bytes = new byte[stringBytes.length];
-        for (int i = 0; i < stringBytes.length; i++) {
-            bytes[i] = Byte.valueOf(stringBytes[i].trim());
-        }
         try {
+            final String[] stringBytes = configuration.getString(key).split(",");
+            byte[] bytes = new byte[stringBytes.length];
+            for (int i = 0; i < stringBytes.length; i++) {
+                bytes[i] = Byte.valueOf(stringBytes[i].trim());
+            }
             return (T) Serializer.deserializeObject(bytes);
         } catch (final IOException | ClassNotFoundException e) {
-            try {
-                return (T) GRYO_POOL.readWithKryo(kryo -> kryo.readClassAndObject(new Input(new ByteArrayInputStream(bytes))));
-            } catch (final Exception e1) {
-                throw new IllegalArgumentException(e1.getMessage(), e1);
-            }
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
-
     }
 
     public static <S, E> Traversal.Admin<S, E> reverse(final Traversal.Admin<S, E> traversal) {

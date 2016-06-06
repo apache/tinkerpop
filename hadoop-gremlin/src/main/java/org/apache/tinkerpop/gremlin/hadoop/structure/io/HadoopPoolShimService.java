@@ -71,6 +71,6 @@ public class HadoopPoolShimService implements KryoShimService {
 
     @Override
     public void applyConfiguration(Configuration conf) {
-        KryoShimServiceLoader.applyConfiguration(conf);
+        HadoopPools.initialize(conf);
     }
 }
