@@ -171,6 +171,15 @@ public class GryoRegistrator implements KryoRegistrator {
         m.put(VertexWritable.class, new UnshadedSerializerAdapter<>(new VertexWritableSerializer()));
         m.put(ObjectWritable.class, new UnshadedSerializerAdapter<>(new ObjectWritableSerializer<>()));
 
+        if (Boolean.valueOf(System.getProperty("is.testing", "false"))) {
+            try {
+                m.put(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
+                m.put(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+
         return m;
     }
 
