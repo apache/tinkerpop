@@ -47,7 +47,7 @@ public final class GryoSerializers {
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
      */
-    final static class EdgeSerializer implements SerializerShim<Edge> {
+    public final static class EdgeSerializer implements SerializerShim<Edge> {
         @Override
         public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Edge edge) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(edge, true));
@@ -63,7 +63,7 @@ public final class GryoSerializers {
     /**
      * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
      */
-    final static class VertexSerializer implements SerializerShim<Vertex> {
+    public final static class VertexSerializer implements SerializerShim<Vertex> {
         @Override
         public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Vertex vertex) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, true));
@@ -78,7 +78,7 @@ public final class GryoSerializers {
     /**
      * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
      */
-    final static class PropertySerializer implements SerializerShim<Property> {
+    public final static class PropertySerializer implements SerializerShim<Property> {
         @Override
         public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Property property) {
             kryo.writeClassAndObject(output, property instanceof VertexProperty ? DetachedFactory.detach((VertexProperty) property, true) : DetachedFactory.detach(property));
@@ -93,7 +93,7 @@ public final class GryoSerializers {
     /**
      * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
      */
-    final static class VertexPropertySerializer implements SerializerShim<VertexProperty> {
+    public final static class VertexPropertySerializer implements SerializerShim<VertexProperty> {
         @Override
         public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, VertexProperty vertexProperty) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));

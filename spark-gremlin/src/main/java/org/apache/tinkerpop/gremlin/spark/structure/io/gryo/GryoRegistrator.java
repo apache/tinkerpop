@@ -22,19 +22,44 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.spark.serializer.KryoRegistrator;
+import org.apache.spark.util.SerializableConfiguration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.MessagePayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedSerializerAdapter;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializers;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.TypeRegistration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.collection.mutable.WrappedArray;
 
 import java.util.*;
 
@@ -55,11 +80,11 @@ public class GryoRegistrator implements KryoRegistrator {
      * Register TinkerPop's classes with the supplied {@link Kryo} instance
      * while honoring optional overrides and optional class blacklist ("blackset"?).
      *
-     * @param kryo the Kryo serializer instance with which to register types
+     * @param kryo                the Kryo serializer instance with which to register types
      * @param serializerOverrides serializer mappings that override this class's defaults
-     * @param blacklist classes which should not be registered at all, even if there is an override entry
-     *                  or if they would be registered by this class by default (does not affect Kryo's
-     *                  built-in registrations, e.g. String.class).
+     * @param blacklist           classes which should not be registered at all, even if there is an override entry
+     *                            or if they would be registered by this class by default (does not affect Kryo's
+     *                            built-in registrations, e.g. String.class).
      */
     public void registerClasses(Kryo kryo, Map<Class<?>, Serializer<?>> serializerOverrides, Set<Class<?>> blacklist) {
         // Apply TinkerPop type registrations copied from GyroSerializer's constructor
@@ -111,11 +136,11 @@ public class GryoRegistrator implements KryoRegistrator {
                 } else {
                     // There's supposed to be a check in GryoMapper that prevents this from happening
                     log.error("GryoMapper's default serialization registration for {} is a {}. " +
-                              "This is probably a bug in TinkerPop (this is not a valid default registration). " +
-                              "I am configuring Spark to use Kryo's default serializer for this class, " +
-                              "but this may cause serialization failures at runtime.",
-                              tr.getTargetClass(),
-                              org.apache.tinkerpop.shaded.kryo.Serializer.class.getCanonicalName());
+                                    "This is probably a bug in TinkerPop (this is not a valid default registration). " +
+                                    "I am configuring Spark to use Kryo's default serializer for this class, " +
+                                    "but this may cause serialization failures at runtime.",
+                            tr.getTargetClass(),
+                            org.apache.tinkerpop.shaded.kryo.Serializer.class.getCanonicalName());
                     kryo.register(tr.getTargetClass());
                 }
             } else if (null != serializerShim) {
@@ -127,12 +152,12 @@ public class GryoRegistrator implements KryoRegistrator {
             } else if (null != functionOfShadedKryo) {
                 // As with shaded serializers, there's supposed to be a check in GryoMapper that prevents this from happening
                 log.error("GryoMapper's default serialization registration for {} is a Function<{},{}>.  " +
-                          "This is probably a bug in TinkerPop (this is not a valid default registration). " +
-                          "I am configuring Spark to use Kryo's default serializer instead of this function, " +
-                          "but this may cause serialization failures at runtime.",
-                          tr.getTargetClass(),
-                          org.apache.tinkerpop.shaded.kryo.Kryo.class.getCanonicalName(),
-                          org.apache.tinkerpop.shaded.kryo.Serializer.class.getCanonicalName());
+                                "This is probably a bug in TinkerPop (this is not a valid default registration). " +
+                                "I am configuring Spark to use Kryo's default serializer instead of this function, " +
+                                "but this may cause serialization failures at runtime.",
+                        tr.getTargetClass(),
+                        org.apache.tinkerpop.shaded.kryo.Kryo.class.getCanonicalName(),
+                        org.apache.tinkerpop.shaded.kryo.Serializer.class.getCanonicalName());
                 kryo.register(tr.getTargetClass());
             } else {
                 // Register all other classes with the default behavior (FieldSerializer)
@@ -164,13 +189,46 @@ public class GryoRegistrator implements KryoRegistrator {
         // duplication, but it would be a bit cumbersome to do so without disturbing
         // the ordering of the existing entries in that constructor, since not all
         // of the entries are for TinkerPop (and the ordering is significant).
+        if (Boolean.valueOf(System.getProperty("is.testing", "false"))) {
+            try {
+                m.put(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
+                m.put(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+        m.put(WrappedArray.ofRef.class, null);
         m.put(MessagePayload.class, null);
         m.put(ViewIncomingPayload.class, null);
         m.put(ViewOutgoingPayload.class, null);
         m.put(ViewPayload.class, null);
         m.put(VertexWritable.class, new UnshadedSerializerAdapter<>(new VertexWritableSerializer()));
         m.put(ObjectWritable.class, new UnshadedSerializerAdapter<>(new ObjectWritableSerializer<>()));
-
+        //
+        m.put(HadoopConfiguration.class, null);
+        //
+        m.put(HadoopVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializers.VertexSerializer()));
+        m.put(HadoopVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializers.VertexPropertySerializer()));
+        m.put(HadoopProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PropertySerializer()));
+        m.put(HadoopEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializers.EdgeSerializer()));
+        //
+        m.put(ComputerGraph.ComputerVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializers.VertexSerializer()));
+        m.put(ComputerGraph.ComputerVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializers.VertexPropertySerializer()));
+        m.put(ComputerGraph.ComputerProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PropertySerializer()));
+        m.put(ComputerGraph.ComputerEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializers.EdgeSerializer()));
+        //
+        m.put(StarGraph.StarEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializers.EdgeSerializer()));
+        m.put(StarGraph.StarVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializers.VertexSerializer()));
+        m.put(StarGraph.StarProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PropertySerializer()));
+        m.put(StarGraph.StarVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializers.VertexPropertySerializer()));
+        //
+        m.put(MutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PathSerializer()));
+        m.put(ImmutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PathSerializer()));
+        try {
+            m.put(Class.forName(ImmutablePath.class.getCanonicalName() + "$TailPath"), new UnshadedSerializerAdapter<>(new GryoSerializers.PathSerializer()));
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
         return m;
     }
 
