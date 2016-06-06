@@ -127,11 +127,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <libraries>
-                        <param>nose</param>
-                    </libraries>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
