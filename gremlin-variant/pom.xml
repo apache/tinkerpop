@@ -179,4 +179,94 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+        Provides a way to deploy the gremlinpython GLV to pypi. Requires installation of pip/virtualenv. See the
+        developer docs for more information on how to configure these settings to get this profile to work. The profile
+        largely uses antrun to execute raw pip/twine/python commands against a copy of what's in the jython directory
+        which is copied to target/py.
+        -->
+        <profile>
+            <id>glv-python</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>glvPython</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <!-- copy files in jython directory to target/py and run virtual env to sandbox python -->
+                            <execution>
+                                <id>setup-py-env</id>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <tasks>
+                                        <mkdir dir="${project.build.directory}/py/env"/>
+                                        <copy todir="${project.build.directory}/py">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <exec dir="${project.build.directory}/py" executable="virtualenv" failonerror="true">
+                                            <arg line="env"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <!--
+                            build/package python source distribution and wheel archive. the version is bound to an
+                            environment variable that gets used in setup.py to dynamically construct a module
+                            __version__file
+                             -->
+                            <execution>
+                                <id>package-py</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/python" failonerror="true">
+                                            <env key="VERSION" value="${project.version}"/>
+                                            <arg line="setup.py sdist"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/python" failonerror="true">
+                                            <env key="VERSION" value="${project.version}"/>
+                                            <arg line="setup.py bdist_wheel"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <!-- deploy to pypi. assumes that ~/.pypirc is configured appropriately -->
+
+                            <execution>
+                                <id>deploy-py</id>
+                                <phase>deploy</phase>
+                                <configuration>
+                                    <tasks>
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/pip" failonerror="true">
+                                            <arg line="install twine"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/twine" failonerror="true">
+                                            <arg line="upload dist/* -r pypitest"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
