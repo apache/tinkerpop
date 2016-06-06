@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -330,6 +331,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new PairSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
+            add(GryoTypeReg.of(GraphFilter.class, 120, new JavaSerializer())); // ***LAST ID***
+            //add(GryoTypeReg.of(PureTraversal.class, 121, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
             add(GryoTypeReg.of(Instant.class, 94, new JavaTimeSerializers.InstantSerializer()));
@@ -355,7 +358,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer())); // because they contain traversals
-            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119)); // ***LAST ID***
+            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
@@ -374,12 +377,12 @@ public final class GryoMapper implements Mapper<Kryo> {
             // For justification of these default registration rules, see TinkerPopKryoRegistrator
             for (TypeRegistration<?> tr : typeRegistrations) {
                 if (tr.hasSerializer() /* no serializer is acceptable */ &&
-                    null == tr.getSerializerShim() /* a shim serializer is acceptable */ &&
-                    !(tr.getShadedSerializer() instanceof JavaSerializer) /* shaded JavaSerializer is acceptable */) {
+                        null == tr.getSerializerShim() /* a shim serializer is acceptable */ &&
+                        !(tr.getShadedSerializer() instanceof JavaSerializer) /* shaded JavaSerializer is acceptable */) {
                     // everything else is invalid
                     String msg = String.format("The default GryoMapper type registration %s is invalid.  " +
-                            "It must supply either an implementation of %s or %s, but supplies neither.  " +
-                            "This is probably a bug in GryoMapper's default serialization class registrations.", tr,
+                                    "It must supply either an implementation of %s or %s, but supplies neither.  " +
+                                    "This is probably a bug in GryoMapper's default serialization class registrations.", tr,
                             SerializerShim.class.getCanonicalName(), JavaSerializer.class.getCanonicalName());
                     throw new IllegalStateException(msg);
                 }
@@ -553,8 +556,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             if (1 < serializerCount) {
                 String msg = String.format(
                         "GryoTypeReg accepts at most one kind of serializer, but multiple " +
-                        "serializers were supplied for class %s (id %s).  " +
-                        "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
+                                "serializers were supplied for class %s (id %s).  " +
+                                "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
                         this.clazz.getCanonicalName(), id,
                         this.shadedSerializer, this.serializerShim, this.functionOfShadedKryo);
                 throw new IllegalArgumentException(msg);
