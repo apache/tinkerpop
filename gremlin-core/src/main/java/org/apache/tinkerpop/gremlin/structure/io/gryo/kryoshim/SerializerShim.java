@@ -16,25 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io;
-
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * A minimal {@link org.apache.tinkerpop.shaded.kryo.Serializer}-like abstraction.
+ * See that class for method documentation.
+ *
+ * @param <T> the class this serializer reads/writes from/to bytes.
  */
-public interface HadoopPoolsConfigurable extends Configurable {
+public interface SerializerShim<T> {
 
-    @Override
-    public default void setConf(final Configuration configuration) {
-        KryoShimServiceLoader.applyConfiguration(ConfUtil.makeApacheConfiguration(configuration));
-    }
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final T object);
 
-    @Override
-    public default Configuration getConf() {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " can only have its configuration set, not received");
+    public <I extends InputShim> T read(final KryoShim<I, ?> kryo, final I input, final Class<T> clazz);
+
+    public default boolean isImmutable() {
+        return false;
     }
 }

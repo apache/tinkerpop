@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public final class HadoopCombine extends Reducer<ObjectWritable, ObjectWritable,
     @Override
     public void setup(final Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable>.Context context) {
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(context.getConfiguration());
-        HadoopPools.initialize(apacheConfiguration);
+        KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
         this.mapReduce = MapReduce.createMapReduce(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
         this.mapReduce.workerStart(MapReduce.Stage.COMBINE);
     }

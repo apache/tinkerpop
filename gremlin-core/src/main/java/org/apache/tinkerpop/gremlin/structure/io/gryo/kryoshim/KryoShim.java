@@ -16,25 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io;
-
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
+package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * A minimal {@link org.apache.tinkerpop.shaded.kryo.Kryo}-like abstraction.
+ * See that class for method documentation.
+ *
+ * @param <I> this interface's complementary InputShim
+ * @param <O> this interface's complementary OutputShim
  */
-public interface HadoopPoolsConfigurable extends Configurable {
+public interface KryoShim<I extends InputShim, O extends OutputShim> {
 
-    @Override
-    public default void setConf(final Configuration configuration) {
-        KryoShimServiceLoader.applyConfiguration(ConfUtil.makeApacheConfiguration(configuration));
-    }
+    public <T> T readObject(final I input, final Class<T> type);
 
-    @Override
-    public default Configuration getConf() {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " can only have its configuration set, not received");
-    }
+    public Object readClassAndObject(final I input);
+
+    public void writeObject(final O output, final Object object);
+
+    public void writeClassAndObject(final O output, final Object object);
+
+    public <T> T readObjectOrNull(final I input, final Class<T> type);
+
+    public void writeObjectOrNull(final O output, final Object object, final Class type);
 }

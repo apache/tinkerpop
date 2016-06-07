@@ -20,6 +20,10 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
@@ -29,14 +33,16 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class VertexWritableSerializer extends Serializer<VertexWritable> {
+public final class VertexWritableSerializer implements SerializerShim<VertexWritable> {
+
     @Override
-    public void write(final Kryo kryo, final Output output, final VertexWritable vertexWritable) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final VertexWritable vertexWritable) {
         kryo.writeObject(output, vertexWritable.get().graph());
+        output.flush();
     }
 
     @Override
-    public VertexWritable read(final Kryo kryo, final Input input, final Class<VertexWritable> aClass) {
+    public <I extends InputShim> VertexWritable read(final KryoShim<I, ?> kryo, final I input, final Class<VertexWritable> clazz) {
         return new VertexWritable(kryo.readObject(input, StarGraph.class).getStarVertex());
     }
 }
