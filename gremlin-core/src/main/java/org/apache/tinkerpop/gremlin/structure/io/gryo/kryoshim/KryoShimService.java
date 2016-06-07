@@ -64,7 +64,7 @@ public interface KryoShimService {
 
     /**
      * Returns this service's relative priority number.  Unless explicitly overridden through a
-     * system property ({@link KryoShimServiceLoader#SHIM_CLASS_SYSTEM_PROPERTY}),
+     * system property ({@link KryoShimServiceLoader#KRYO_SHIM_SERVICE}),
      * the service implementation with the numerically highest priority will be used
      * and all others ignored.  In other words, the highest priority wins (in the absence of a
      * system property override).

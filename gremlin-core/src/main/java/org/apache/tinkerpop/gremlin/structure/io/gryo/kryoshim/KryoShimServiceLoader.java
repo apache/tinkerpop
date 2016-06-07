@@ -47,7 +47,7 @@ public class KryoShimServiceLoader {
      * package-and-classname to force it into service.  Setting this property causes the
      * priority-selection mechanism ({@link KryoShimService#getPriority()}) to be ignored.
      */
-    public static final String SHIM_CLASS_SYSTEM_PROPERTY = "tinkerpop.kryo.shim";
+    public static final String KRYO_SHIM_SERVICE = "gremlin.io.kryoShimService";
 
     public static void applyConfiguration(final Configuration conf) {
         KryoShimServiceLoader.conf = conf;
@@ -86,14 +86,14 @@ public class KryoShimServiceLoader {
             }
         }
 
-        String shimClass = System.getProperty(SHIM_CLASS_SYSTEM_PROPERTY);
+        String shimClass = System.getProperty(KRYO_SHIM_SERVICE);
 
         if (null != shimClass) {
             for (KryoShimService kss : services) {
                 if (kss.getClass().getCanonicalName().equals(shimClass)) {
                     log.info("Set {} provider to {} ({}) from system property {}={}",
                             KryoShimService.class.getSimpleName(), kss, kss.getClass(),
-                            SHIM_CLASS_SYSTEM_PROPERTY, shimClass);
+                            KRYO_SHIM_SERVICE, shimClass);
                     result = kss;
                 }
             }
@@ -160,19 +160,19 @@ public class KryoShimServiceLoader {
      * where the {@code input} parameter is {@code source}.  Returns the deserialized object.
      *
      * @param source an input stream containing data for a serialized object class and instance
-     * @param <T> the type to which the deserialized object is cast as it is returned
+     * @param <T>    the type to which the deserialized object is cast as it is returned
      * @return the deserialized object
      */
     public static <T> T readClassAndObject(final InputStream source) {
         final KryoShimService shimService = load();
 
-        return (T)shimService.readClassAndObject(source);
+        return (T) shimService.readClassAndObject(source);
     }
 
     /**
      * Selects the service with greatest {@link KryoShimService#getPriority()}
      * (not absolute value).
-     *
+     * <p>
      * Breaks ties with lexicographical comparison of classnames where the
      * name that sorts last is considered to have highest priority.  Ideally
      * nothing should rely on that tiebreaking behavior, but it beats random
@@ -205,7 +205,7 @@ public class KryoShimServiceLoader {
                     log.warn("{} implementations {} and {} are tied with priority value {}.  " +
                                     "Preferring {} to the other because it has a lexicographically greater classname.  " +
                                     "Consider setting the system property \"{}\" instead of relying on priority tie-breaking.",
-                            KryoShimService.class.getSimpleName(), a, b, ap, winner, SHIM_CLASS_SYSTEM_PROPERTY);
+                            KryoShimService.class.getSimpleName(), a, b, ap, winner, KRYO_SHIM_SERVICE);
                 }
 
                 return result;

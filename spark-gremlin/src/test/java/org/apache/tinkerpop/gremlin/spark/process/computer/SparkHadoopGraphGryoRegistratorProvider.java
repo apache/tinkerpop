@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLo
 
 import java.util.Map;
 
-import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader.SHIM_CLASS_SYSTEM_PROPERTY;
+import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader.KRYO_SHIM_SERVICE;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,9 +44,9 @@ public final class SparkHadoopGraphGryoRegistratorProvider extends SparkHadoopGr
         config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
         config.put("spark.serializer", KryoSerializer.class.getCanonicalName());
         config.put("spark.kryo.registrator", GryoRegistrator.class.getCanonicalName());
-        System.setProperty(SHIM_CLASS_SYSTEM_PROPERTY, UnshadedKryoShimService.class.getCanonicalName());
+        System.setProperty(KRYO_SHIM_SERVICE, UnshadedKryoShimService.class.getCanonicalName());
         KryoShimServiceLoader.load(true);
-        System.clearProperty(SHIM_CLASS_SYSTEM_PROPERTY);
+        System.clearProperty(KRYO_SHIM_SERVICE);
         return config;
     }
 }
