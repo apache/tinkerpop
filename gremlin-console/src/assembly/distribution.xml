@@ -76,9 +76,5 @@ limitations under the License.
             <source>src/main/static/NOTICE</source>
             <outputDirectory></outputDirectory>
         </file>
-        <file>
-            <source>../DISCLAIMER</source>
-            <outputDirectory></outputDirectory>
-        </file>
     </files>
 </assembly>
