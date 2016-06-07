@@ -127,11 +127,7 @@ public final class ResultSet implements Iterable<Result> {
 
             @Override
             public boolean hasNext() {
-                final List<Result> list = some(1).join();
-                assert list.size() <= 1;
-
-                nextOne = list.size() == 0 ? null : list.get(0);
-
+                nextOne = one();
                 return nextOne != null;
             }
 
