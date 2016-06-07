@@ -51,9 +51,9 @@ public class UnshadedKryoShimService implements KryoShimService {
     public UnshadedKryoShimService() { }
 
     @Override
-    public Object readClassAndObject(InputStream source) {
+    public Object readClassAndObject(final InputStream source) {
 
-        LinkedBlockingQueue<Kryo> kryos = initialize();
+        final LinkedBlockingQueue<Kryo> kryos = initialize();
 
         Kryo k = null;
         try {
@@ -72,15 +72,15 @@ public class UnshadedKryoShimService implements KryoShimService {
     }
 
     @Override
-    public void writeClassAndObject(Object o, OutputStream sink) {
+    public void writeClassAndObject(final Object o, OutputStream sink) {
 
-        LinkedBlockingQueue<Kryo> kryos = initialize();
+        final LinkedBlockingQueue<Kryo> kryos = initialize();
 
         Kryo k = null;
         try {
             k = kryos.take();
 
-            Output kryoOutput = new Output(sink);
+            final Output kryoOutput = new Output(sink);
 
             k.writeClassAndObject(kryoOutput, o);
 
@@ -102,7 +102,7 @@ public class UnshadedKryoShimService implements KryoShimService {
     }
 
     @Override
-    public void applyConfiguration(Configuration conf) {
+    public void applyConfiguration(final Configuration conf) {
         initialize(conf);
     }
 
@@ -110,22 +110,22 @@ public class UnshadedKryoShimService implements KryoShimService {
         return initialize(new BaseConfiguration());
     }
 
-    private LinkedBlockingQueue<Kryo> initialize(Configuration conf) {
+    private LinkedBlockingQueue<Kryo> initialize(final Configuration conf) {
         // DCL is safe in this case due to volatility
         if (!initialized) {
             synchronized (UnshadedKryoShimService.class) {
                 if (!initialized) {
-                    SparkConf sparkConf = new SparkConf();
+                    final SparkConf sparkConf = new SparkConf();
 
                     // Copy the user's IoRegistry from the param conf to the SparkConf we just created
-                    String regStr = conf.getString(GryoPool.CONFIG_IO_REGISTRY);
+                    final String regStr = conf.getString(GryoPool.CONFIG_IO_REGISTRY);
                     if (null != regStr) { // SparkConf rejects null values with NPE, so this has to be checked before set(...)
                         sparkConf.set(GryoPool.CONFIG_IO_REGISTRY, regStr);
                     }
                     // Setting spark.serializer here almost certainly isn't necessary, but it doesn't hurt
                     sparkConf.set("spark.serializer", IoRegistryAwareKryoSerializer.class.getCanonicalName());
 
-                    String registrator = conf.getString("spark.kryo.registrator");
+                    final String registrator = conf.getString("spark.kryo.registrator");
                     if (null != registrator) {
                         sparkConf.set("spark.kryo.registrator", registrator);
                         log.info("Copied spark.kryo.registrator: {}", registrator);
@@ -134,7 +134,7 @@ public class UnshadedKryoShimService implements KryoShimService {
                     }
 
                     // Reuse Gryo poolsize for Kryo poolsize (no need to copy this to SparkConf)
-                    int poolSize = conf.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE,
+                    final int poolSize = conf.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE,
                             GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
                     // Instantiate the spark.serializer
                     final IoRegistryAwareKryoSerializer ioReg = new IoRegistryAwareKryoSerializer(sparkConf);

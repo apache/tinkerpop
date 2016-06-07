@@ -31,7 +31,7 @@ public class UnshadedOutputAdapter implements OutputShim
 {
     private final Output unshadedOutput;
 
-    public UnshadedOutputAdapter(Output unshadedOutput)
+    public UnshadedOutputAdapter(final Output unshadedOutput)
     {
         this.unshadedOutput = unshadedOutput;
     }
@@ -42,35 +42,35 @@ public class UnshadedOutputAdapter implements OutputShim
     }
 
     @Override
-    public void writeByte(byte b)
+    public void writeByte(final byte b)
     {
         unshadedOutput.writeByte(b);
     }
 
     @Override
-    public void writeBytes(byte[] array, int offset, int count) {
+    public void writeBytes(final byte[] array, final int offset, final int count) {
         unshadedOutput.writeBytes(array, offset, count);
     }
 
     @Override
-    public void writeString(String s)
+    public void writeString(final String s)
     {
         unshadedOutput.writeString(s);
     }
 
     @Override
-    public void writeLong(long l)
+    public void writeLong(final long l)
     {
         unshadedOutput.writeLong(l);
     }
 
     @Override
-    public void writeInt(int i) {
+    public void writeInt(final int i) {
         unshadedOutput.writeInt(i);
     }
 
     @Override
-    public void writeDouble(double d)
+    public void writeDouble(final double d)
     {
         unshadedOutput.writeDouble(d);
     }

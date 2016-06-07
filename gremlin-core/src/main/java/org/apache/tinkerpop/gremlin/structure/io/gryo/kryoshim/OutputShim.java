@@ -24,17 +24,17 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
  */
 public interface OutputShim {
 
-    void writeByte(byte b);
+    public void writeByte(final byte b);
 
-    void writeBytes(byte[] array, int offset, int count);
+    public void writeBytes(final byte[] array, final int offset, final int count);
 
-    void writeString(String s);
+    public void writeString(final String s);
 
-    void writeLong(long l);
+    public void writeLong(final long l);
 
-    void writeInt(int i);
+    public void writeInt(final int i);
 
-    void writeDouble(double d);
+    public void writeDouble(final double d);
 
-    void flush();
+    public void flush();
 }

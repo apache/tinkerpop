@@ -46,7 +46,7 @@ public class IoRegistryAwareKryoSerializer extends KryoSerializer {
 
     private static final Logger log = LoggerFactory.getLogger(IoRegistryAwareKryoSerializer.class);
 
-    public IoRegistryAwareKryoSerializer(SparkConf conf) {
+    public IoRegistryAwareKryoSerializer(final SparkConf conf) {
         super(conf);
         // store conf so that we can access its registry (if one is present) in newKryo()
         this.conf = conf;
@@ -54,19 +54,19 @@ public class IoRegistryAwareKryoSerializer extends KryoSerializer {
 
     @Override
     public Kryo newKryo() {
-        Kryo kryo = super.newKryo();
+        final Kryo kryo = super.newKryo();
 
         return applyIoRegistryIfPresent(kryo);
     }
 
-    private Kryo applyIoRegistryIfPresent(Kryo kryo) {
+    private Kryo applyIoRegistryIfPresent(final Kryo kryo) {
         if (!conf.contains(GryoPool.CONFIG_IO_REGISTRY)) {
             log.info("SparkConf {} does not contain setting {}, skipping {} handling",
                     GryoPool.CONFIG_IO_REGISTRY, conf, IoRegistry.class.getCanonicalName());
             return kryo;
         }
 
-        String registryClassnames = conf.get(GryoPool.CONFIG_IO_REGISTRY);
+        final String registryClassnames = conf.get(GryoPool.CONFIG_IO_REGISTRY);
 
         for (String registryClassname : registryClassnames.split(",")) {
             final IoRegistry registry;

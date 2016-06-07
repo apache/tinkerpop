@@ -24,15 +24,15 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
  */
 public interface InputShim {
 
-    byte readByte();
+    public byte readByte();
 
-    byte[] readBytes(int size);
+    public byte[] readBytes(final int size);
 
-    String readString();
+    public String readString();
 
-    long readLong();
+    public long readLong();
 
-    int readInt();
+    public int readInt();
 
-    double readDouble();
+    public double readDouble();
 }

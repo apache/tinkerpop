@@ -74,11 +74,11 @@ public class GryoRegistrator implements KryoRegistrator {
      *                            or if they would be registered by this class by default (does not affect Kryo's
      *                            built-in registrations, e.g. String.class).
      */
-    public void registerClasses(Kryo kryo, Map<Class<?>, Serializer<?>> serializerOverrides, Set<Class<?>> blacklist) {
+    public void registerClasses(final Kryo kryo, final Map<Class<?>, Serializer<?>> serializerOverrides, final Set<Class<?>> blacklist) {
         // Apply TinkerPop type registrations copied from GyroSerializer's constructor
         for (Map.Entry<Class<?>, Serializer<?>> ent : getExtraRegistrations().entrySet()) {
-            Class<?> targetClass = ent.getKey();
-            Serializer<?> ser = ent.getValue();
+            final Class<?> targetClass = ent.getKey();
+            final Serializer<?> ser = ent.getValue();
 
             // Is this class blacklisted?  Skip it. (takes precedence over serializerOverrides)
             if (blacklist.contains(targetClass)) {
@@ -97,7 +97,7 @@ public class GryoRegistrator implements KryoRegistrator {
             }
         }
 
-        Set<Class<?>> shimmedClassesFromGryoMapper = new HashSet<>();
+        final Set<Class<?>> shimmedClassesFromGryoMapper = new HashSet<>();
 
         // Apply GryoMapper's default registrations
         for (TypeRegistration<?> tr : GryoMapper.build().create().getTypeRegistrations()) {
@@ -171,7 +171,7 @@ public class GryoRegistrator implements KryoRegistrator {
          * iteration in key-insertion-order).
          */
 
-        LinkedHashMap<Class<?>, Serializer<?>> m = new LinkedHashMap<>();
+        final LinkedHashMap<Class<?>, Serializer<?>> m = new LinkedHashMap<>();
         // The following entries were copied from GryoSerializer's constructor
         // This could be turned into a static collection on GryoSerializer to avoid
         // duplication, but it would be a bit cumbersome to do so without disturbing
@@ -218,10 +218,10 @@ public class GryoRegistrator implements KryoRegistrator {
         return m;
     }
 
-    private boolean checkForAndApplySerializerOverride(Map<Class<?>, Serializer<?>> serializerOverrides,
-                                                       Kryo kryo, Class<?> targetClass) {
+    private boolean checkForAndApplySerializerOverride(final Map<Class<?>, Serializer<?>> serializerOverrides,
+                                                       final Kryo kryo, Class<?> targetClass) {
         if (serializerOverrides.containsKey(targetClass)) {
-            Serializer<?> ser = serializerOverrides.get(targetClass);
+            final Serializer<?> ser = serializerOverrides.get(targetClass);
             if (null == ser) {
                 // null means use Kryo's default serializer
                 log.debug("Registering {} with default serializer per overrides", targetClass);

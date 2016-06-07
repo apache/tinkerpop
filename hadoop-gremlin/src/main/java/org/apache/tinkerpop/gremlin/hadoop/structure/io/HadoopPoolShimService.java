@@ -29,7 +29,7 @@ import java.io.OutputStream;
 
 public class HadoopPoolShimService implements KryoShimService {
 
-    public Object readClassAndObject(InputStream source) {
+    public Object readClassAndObject(final InputStream source) {
 
         Kryo k = null;
 
@@ -44,14 +44,14 @@ public class HadoopPoolShimService implements KryoShimService {
         }
     }
 
-    public void writeClassAndObject(Object o, OutputStream sink) {
+    public void writeClassAndObject(final Object o, final OutputStream sink) {
 
         Kryo k = null;
 
         try {
             k = HadoopPools.getGryoPool().takeKryo();
 
-            Output output = new Output(sink);
+            final Output output = new Output(sink);
 
             k.writeClassAndObject(output, o);
 
@@ -69,7 +69,7 @@ public class HadoopPoolShimService implements KryoShimService {
     }
 
     @Override
-    public void applyConfiguration(Configuration conf) {
+    public void applyConfiguration(final Configuration conf) {
         HadoopPools.initialize(conf);
     }
 }

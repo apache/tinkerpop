@@ -35,20 +35,20 @@ public class UnshadedSerializerAdapter<T> extends Serializer<T>
 
     SerializerShim<T> serializer;
 
-    public UnshadedSerializerAdapter(SerializerShim<T> serializer) {
+    public UnshadedSerializerAdapter(final SerializerShim<T> serializer) {
         this.serializer = serializer;
         setImmutable(this.serializer.isImmutable());
     }
 
     @Override
-    public void write(Kryo kryo, Output output, T t) {
+    public void write(final Kryo kryo, final Output output, final T t) {
         UnshadedKryoAdapter shadedKryoAdapter = new UnshadedKryoAdapter(kryo);
         UnshadedOutputAdapter shadedOutputAdapter = new UnshadedOutputAdapter(output);
         serializer.write(shadedKryoAdapter, shadedOutputAdapter, t);
     }
 
     @Override
-    public T read(Kryo kryo, Input input, Class<T> aClass)
+    public T read(final Kryo kryo, final Input input, final Class<T> aClass)
     {
         UnshadedKryoAdapter shadedKryoAdapter = new UnshadedKryoAdapter(kryo);
         UnshadedInputAdapter shadedInputAdapter = new UnshadedInputAdapter(input);

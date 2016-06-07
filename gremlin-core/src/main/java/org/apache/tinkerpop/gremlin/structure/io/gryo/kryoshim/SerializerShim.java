@@ -26,11 +26,11 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
  */
 public interface SerializerShim<T> {
 
-    <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, T object);
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final T object);
 
-    <I extends InputShim> T read(KryoShim<I, ?> kryo, I input, Class<T> clazz);
+    public <I extends InputShim> T read(final KryoShim<I, ?> kryo, final I input, final Class<T> clazz);
 
-    default boolean isImmutable() {
+    public default boolean isImmutable() {
         return false;
     }
 }

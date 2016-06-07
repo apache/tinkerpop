@@ -25,38 +25,38 @@ public class ShadedOutputAdapter implements OutputShim {
 
     private final Output shadedOutput;
 
-    public ShadedOutputAdapter(Output shadedOutput) {
+    public ShadedOutputAdapter(final Output shadedOutput) {
         this.shadedOutput = shadedOutput;
     }
 
     @Override
-    public void writeByte(byte b)
+    public void writeByte(final byte b)
     {
         shadedOutput.writeByte(b);
     }
 
     @Override
-    public void writeBytes(byte[] array, int offset, int count) {
+    public void writeBytes(final byte[] array, final int offset, final int count) {
         shadedOutput.writeBytes(array, offset, count);
     }
 
     @Override
-    public void writeString(String s) {
+    public void writeString(final String s) {
         shadedOutput.writeString(s);
     }
 
     @Override
-    public void writeLong(long l) {
+    public void writeLong(final long l) {
         shadedOutput.writeLong(l);
     }
 
     @Override
-    public void writeInt(int i) {
+    public void writeInt(final int i) {
         shadedOutput.writeInt(i);
     }
 
     @Override
-    public void writeDouble(double d) {
+    public void writeDouble(final double d) {
         shadedOutput.writeDouble(d);
     }
 
@@ -65,8 +65,7 @@ public class ShadedOutputAdapter implements OutputShim {
         shadedOutput.flush();
     }
 
-    Output getShadedOutput()
-    {
+    Output getShadedOutput() {
         return shadedOutput;
     }
 }

@@ -33,13 +33,13 @@ import org.javatuples.Pair;
  */
 final class PairSerializer implements SerializerShim<Pair> {
     @Override
-    public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Pair pair) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Pair pair) {
         kryo.writeClassAndObject(output, pair.getValue0());
         kryo.writeClassAndObject(output, pair.getValue1());
     }
 
     @Override
-    public <I extends InputShim> Pair read(KryoShim<I, ?> kryo, I input, Class<Pair> pairClass) {
+    public <I extends InputShim> Pair read(final KryoShim<I, ?> kryo, final I input, final Class<Pair> pairClass) {
         return Pair.with(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
     }
 }

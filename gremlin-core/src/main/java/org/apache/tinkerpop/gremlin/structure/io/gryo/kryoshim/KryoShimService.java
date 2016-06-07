@@ -52,7 +52,7 @@ public interface KryoShimService {
      * @param source the stream from which to read an object's serialized form
      * @return the first deserialized object available from {@code source}
      */
-    Object readClassAndObject(InputStream source);
+    public Object readClassAndObject(final InputStream source);
 
     /**
      * Serializes an object to an output stream.  This may flush the output stream.
@@ -60,7 +60,7 @@ public interface KryoShimService {
      * @param o the object to serialize
      * @param sink the stream into which the serialized object is written
      */
-    void writeClassAndObject(Object o, OutputStream sink);
+    public void writeClassAndObject(final Object o, final OutputStream sink);
 
     /**
      * Returns this service's relative priority number.  Unless explicitly overridden through a
@@ -81,7 +81,7 @@ public interface KryoShimService {
      *
      * @return this implementation's priority value
      */
-    int getPriority();
+    public int getPriority();
 
     /**
      * Attempt to incorporate the supplied configuration in future read/write calls.
@@ -95,5 +95,5 @@ public interface KryoShimService {
      *
      * @param conf the configuration to apply to this service's internal serializer
      */
-    void applyConfiguration(Configuration conf);
+    public void applyConfiguration(final Configuration conf);
 }

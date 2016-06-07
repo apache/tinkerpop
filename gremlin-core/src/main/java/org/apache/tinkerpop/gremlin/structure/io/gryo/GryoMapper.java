@@ -48,7 +48,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -380,7 +379,7 @@ public final class GryoMapper implements Mapper<Kryo> {
                         null == tr.getSerializerShim() /* a shim serializer is acceptable */ &&
                         !(tr.getShadedSerializer() instanceof JavaSerializer) /* shaded JavaSerializer is acceptable */) {
                     // everything else is invalid
-                    String msg = String.format("The default GryoMapper type registration %s is invalid.  " +
+                    final String msg = String.format("The default GryoMapper type registration %s is invalid.  " +
                                     "It must supply either an implementation of %s or %s, but supplies neither.  " +
                                     "This is probably a bug in GryoMapper's default serialization class registrations.", tr,
                             SerializerShim.class.getCanonicalName(), JavaSerializer.class.getCanonicalName());
@@ -505,11 +504,12 @@ public final class GryoMapper implements Mapper<Kryo> {
             return new GryoMapper(this);
         }
 
-        private <T> void addOrOverrideRegistration(Class<?> clazz, Function<Integer, TypeRegistration<T>> newRegistrationBuilder) {
-            Iterator<TypeRegistration<?>> iter = typeRegistrations.iterator();
+        private <T> void addOrOverrideRegistration(final Class<?> clazz,
+                                                   final Function<Integer, TypeRegistration<T>> newRegistrationBuilder) {
+            final Iterator<TypeRegistration<?>> iter = typeRegistrations.iterator();
             Integer registrationId = null;
             while (iter.hasNext()) {
-                TypeRegistration<?> existingRegistration = iter.next();
+                final TypeRegistration<?> existingRegistration = iter.next();
                 if (existingRegistration.getTargetClass().equals(clazz)) {
                     // when overridding a registration, use the old id
                     registrationId = existingRegistration.getId();
@@ -534,11 +534,11 @@ public final class GryoMapper implements Mapper<Kryo> {
         private final Function<Kryo, Serializer> functionOfShadedKryo;
         private final int id;
 
-        private GryoTypeReg(Class<T> clazz,
-                            Serializer<T> shadedSerializer,
-                            SerializerShim<T> serializerShim,
-                            Function<Kryo, Serializer> functionOfShadedKryo,
-                            int id) {
+        private GryoTypeReg(final Class<T> clazz,
+                            final Serializer<T> shadedSerializer,
+                            final SerializerShim<T> serializerShim,
+                            final Function<Kryo, Serializer> functionOfShadedKryo,
+                            final int id) {
             this.clazz = clazz;
             this.shadedSerializer = shadedSerializer;
             this.serializerShim = serializerShim;
@@ -554,7 +554,7 @@ public final class GryoMapper implements Mapper<Kryo> {
                 serializerCount++;
 
             if (1 < serializerCount) {
-                String msg = String.format(
+                final String msg = String.format(
                         "GryoTypeReg accepts at most one kind of serializer, but multiple " +
                                 "serializers were supplied for class %s (id %s).  " +
                                 "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
@@ -564,19 +564,19 @@ public final class GryoMapper implements Mapper<Kryo> {
             }
         }
 
-        private static <T> GryoTypeReg<T> of(Class<T> clazz, int id) {
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id) {
             return new GryoTypeReg<>(clazz, null, null, null, id);
         }
 
-        private static <T> GryoTypeReg<T> of(Class<T> clazz, int id, Serializer<T> shadedSerializer) {
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id, final Serializer<T> shadedSerializer) {
             return new GryoTypeReg<>(clazz, shadedSerializer, null, null, id);
         }
 
-        private static <T> GryoTypeReg<T> of(Class<T> clazz, int id, SerializerShim<T> serializerShim) {
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id, final SerializerShim<T> serializerShim) {
             return new GryoTypeReg<>(clazz, null, serializerShim, null, id);
         }
 
-        private static <T> GryoTypeReg<T> of(Class clazz, int id, Function<Kryo, Serializer> fct) {
+        private static <T> GryoTypeReg<T> of(final Class clazz, final int id, final Function<Kryo, Serializer> fct) {
             return new GryoTypeReg<>(clazz, null, null, fct, id);
         }
 
@@ -606,7 +606,7 @@ public final class GryoMapper implements Mapper<Kryo> {
         }
 
         @Override
-        public Kryo registerWith(Kryo kryo) {
+        public Kryo registerWith(final Kryo kryo) {
             if (null != functionOfShadedKryo)
                 kryo.register(clazz, functionOfShadedKryo.apply(kryo), id);
             else if (null != shadedSerializer)

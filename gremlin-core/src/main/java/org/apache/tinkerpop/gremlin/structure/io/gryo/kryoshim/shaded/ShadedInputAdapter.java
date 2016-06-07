@@ -25,7 +25,7 @@ public class ShadedInputAdapter implements InputShim {
 
     private final Input shadedInput;
 
-    public ShadedInputAdapter(Input shadedInput) {
+    public ShadedInputAdapter(final Input shadedInput) {
         this.shadedInput = shadedInput;
     }
 
@@ -40,7 +40,7 @@ public class ShadedInputAdapter implements InputShim {
     }
 
     @Override
-    public byte[] readBytes(int size) {
+    public byte[] readBytes(final int size) {
         return shadedInput.readBytes(size);
     }
 

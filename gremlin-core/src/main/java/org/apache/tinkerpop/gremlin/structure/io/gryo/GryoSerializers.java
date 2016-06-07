@@ -49,12 +49,12 @@ public final class GryoSerializers {
      */
     public final static class EdgeSerializer implements SerializerShim<Edge> {
         @Override
-        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Edge edge) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Edge edge) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(edge, true));
         }
 
         @Override
-        public <I extends InputShim> Edge read(KryoShim<I, ?> kryo, I input, Class<Edge> edgeClass) {
+        public <I extends InputShim> Edge read(final KryoShim<I, ?> kryo, final I input, final Class<Edge> edgeClass) {
             final Object o = kryo.readClassAndObject(input);
             return (Edge) o;
         }
@@ -65,12 +65,12 @@ public final class GryoSerializers {
      */
     public final static class VertexSerializer implements SerializerShim<Vertex> {
         @Override
-        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Vertex vertex) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Vertex vertex) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertex, true));
         }
 
         @Override
-        public <I extends InputShim> Vertex read(KryoShim<I, ?> kryo, I input, Class<Vertex> vertexClass) {
+        public <I extends InputShim> Vertex read(final KryoShim<I, ?> kryo, final I input, final Class<Vertex> vertexClass) {
             return (Vertex) kryo.readClassAndObject(input);
         }
     }
@@ -80,12 +80,12 @@ public final class GryoSerializers {
      */
     public final static class PropertySerializer implements SerializerShim<Property> {
         @Override
-        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Property property) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Property property) {
             kryo.writeClassAndObject(output, property instanceof VertexProperty ? DetachedFactory.detach((VertexProperty) property, true) : DetachedFactory.detach(property));
         }
 
         @Override
-        public <I extends InputShim> Property read(KryoShim<I, ?> kryo, I input, Class<Property> propertyClass) {
+        public <I extends InputShim> Property read(final KryoShim<I, ?> kryo, final I input, final Class<Property> propertyClass) {
             return (Property) kryo.readClassAndObject(input);
         }
     }
@@ -95,12 +95,12 @@ public final class GryoSerializers {
      */
     public final static class VertexPropertySerializer implements SerializerShim<VertexProperty> {
         @Override
-        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, VertexProperty vertexProperty) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final VertexProperty vertexProperty) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(vertexProperty, true));
         }
 
         @Override
-        public <I extends InputShim> VertexProperty read(KryoShim<I, ?> kryo, I input, Class<VertexProperty> vertexPropertyClass) {
+        public <I extends InputShim> VertexProperty read(final KryoShim<I, ?> kryo, final I input, final Class<VertexProperty> vertexPropertyClass) {
             return (VertexProperty) kryo.readClassAndObject(input);
         }
     }
@@ -110,12 +110,12 @@ public final class GryoSerializers {
      */
     public final static class PathSerializer implements SerializerShim<Path> {
         @Override
-        public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, Path path) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Path path) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(path, false));
         }
 
         @Override
-        public <I extends InputShim> Path read(KryoShim<I, ?> kryo, I input, Class<Path> pathClass) {
+        public <I extends InputShim> Path read(final KryoShim<I, ?> kryo, final I input, final Class<Path> pathClass) {
             return (Path) kryo.readClassAndObject(input);
         }
     }

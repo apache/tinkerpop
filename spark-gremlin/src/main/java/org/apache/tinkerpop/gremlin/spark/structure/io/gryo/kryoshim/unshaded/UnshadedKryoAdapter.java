@@ -31,43 +31,43 @@ public class UnshadedKryoAdapter implements KryoShim<UnshadedInputAdapter, Unsha
 {
     private final Kryo unshadedKryo;
 
-    public UnshadedKryoAdapter(Kryo unshadedKryo)
+    public UnshadedKryoAdapter(final Kryo unshadedKryo)
     {
         this.unshadedKryo = unshadedKryo;
     }
 
     @Override
-    public <T> T readObject(UnshadedInputAdapter input, Class<T> type)
+    public <T> T readObject(final UnshadedInputAdapter input, final Class<T> type)
     {
         return unshadedKryo.readObject(input.getUnshadedInput(), type);
     }
 
     @Override
-    public Object readClassAndObject(UnshadedInputAdapter input)
+    public Object readClassAndObject(final UnshadedInputAdapter input)
     {
         return unshadedKryo.readClassAndObject(input.getUnshadedInput());
     }
 
     @Override
-    public void writeObject(UnshadedOutputAdapter output, Object object)
+    public void writeObject(final UnshadedOutputAdapter output, final Object object)
     {
         unshadedKryo.writeObject(output.getUnshadedOutput(), object);
     }
 
     @Override
-    public void writeClassAndObject(UnshadedOutputAdapter output, Object object)
+    public void writeClassAndObject(final UnshadedOutputAdapter output, final Object object)
     {
         unshadedKryo.writeClassAndObject(output.getUnshadedOutput(), object);
     }
 
     @Override
-    public <T> T readObjectOrNull(UnshadedInputAdapter input, Class<T> type)
+    public <T> T readObjectOrNull(final UnshadedInputAdapter input, final Class<T> type)
     {
         return unshadedKryo.readObjectOrNull(input.getUnshadedInput(), type);
     }
 
     @Override
-    public void writeObjectOrNull(UnshadedOutputAdapter output, Object object, Class type)
+    public void writeObjectOrNull(final UnshadedOutputAdapter output, final Object object, final Class type)
     {
         unshadedKryo.writeObjectOrNull(output.getUnshadedOutput(), object, type);
     }

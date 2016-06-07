@@ -63,13 +63,13 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
+        final ByteArrayInputStream bais = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
         this.t = KryoShimServiceLoader.readClassAndObject(bais);
     }
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        byte serialized[] = KryoShimServiceLoader.writeClassAndObjectToBytes(this.t);
+        final byte serialized[] = KryoShimServiceLoader.writeClassAndObjectToBytes(this.t);
         WritableUtils.writeCompressedByteArray(output, serialized);
     }
 

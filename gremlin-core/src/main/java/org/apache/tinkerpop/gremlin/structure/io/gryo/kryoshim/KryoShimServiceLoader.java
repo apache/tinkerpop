@@ -49,7 +49,7 @@ public class KryoShimServiceLoader {
      */
     public static final String SHIM_CLASS_SYSTEM_PROPERTY = "tinkerpop.kryo.shim";
 
-    public static void applyConfiguration(Configuration conf) {
+    public static void applyConfiguration(final Configuration conf) {
         KryoShimServiceLoader.conf = conf;
         load(true);
     }
@@ -64,15 +64,15 @@ public class KryoShimServiceLoader {
      *                    before selecting a new service to return
      * @return the shim service
      */
-    public static KryoShimService load(boolean forceReload) {
+    public static KryoShimService load(final boolean forceReload) {
 
         if (null != cachedShimService && !forceReload) {
             return cachedShimService;
         }
 
-        ArrayList<KryoShimService> services = new ArrayList<>();
+        final ArrayList<KryoShimService> services = new ArrayList<>();
 
-        ServiceLoader<KryoShimService> sl = ServiceLoader.load(KryoShimService.class);
+        final ServiceLoader<KryoShimService> sl = ServiceLoader.load(KryoShimService.class);
 
         KryoShimService result = null;
 
@@ -117,7 +117,7 @@ public class KryoShimServiceLoader {
         log.info("Set {} provider to {} ({}) because its priority value ({}) is the highest available",
                 KryoShimService.class.getSimpleName(), result, result.getClass(), result.getPriority());
 
-        Configuration userConf = conf;
+        final Configuration userConf = conf;
 
         if (null != userConf) {
             log.info("Configuring {} provider {} with user-provided configuration",
@@ -145,10 +145,10 @@ public class KryoShimServiceLoader {
      * @param o an object for which the instance and class are serialized
      * @return the serialized form
      */
-    public static byte[] writeClassAndObjectToBytes(Object o) {
-        KryoShimService shimService = load();
+    public static byte[] writeClassAndObjectToBytes(final Object o) {
+        final KryoShimService shimService = load();
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         shimService.writeClassAndObject(o, baos);
 
@@ -163,8 +163,8 @@ public class KryoShimServiceLoader {
      * @param <T> the type to which the deserialized object is cast as it is returned
      * @return the deserialized object
      */
-    public static <T> T readClassAndObject(InputStream source) {
-        KryoShimService shimService = load();
+    public static <T> T readClassAndObject(final InputStream source) {
+        final KryoShimService shimService = load();
 
         return (T)shimService.readClassAndObject(source);
     }
@@ -183,16 +183,16 @@ public class KryoShimServiceLoader {
         INSTANCE;
 
         @Override
-        public int compare(KryoShimService a, KryoShimService b) {
-            int ap = a.getPriority();
-            int bp = b.getPriority();
+        public int compare(final KryoShimService a, final KryoShimService b) {
+            final int ap = a.getPriority();
+            final int bp = b.getPriority();
 
             if (ap < bp) {
                 return -1;
             } else if (bp < ap) {
                 return 1;
             } else {
-                int result = a.getClass().getCanonicalName().compareTo(b.getClass().getCanonicalName());
+                final int result = a.getClass().getCanonicalName().compareTo(b.getClass().getCanonicalName());
 
                 if (0 == result) {
                     log.warn("Found two {} implementations with the same canonical classname: {}.  " +
@@ -201,7 +201,7 @@ public class KryoShimServiceLoader {
                                     "META-INF/services/org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService.",
                             a.getClass().getCanonicalName());
                 } else {
-                    String winner = 0 < result ? a.getClass().getCanonicalName() : b.getClass().getCanonicalName();
+                    final String winner = 0 < result ? a.getClass().getCanonicalName() : b.getClass().getCanonicalName();
                     log.warn("{} implementations {} and {} are tied with priority value {}.  " +
                                     "Preferring {} to the other because it has a lexicographically greater classname.  " +
                                     "Consider setting the system property \"{}\" instead of relying on priority tie-breaking.",

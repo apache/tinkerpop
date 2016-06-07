@@ -32,7 +32,7 @@ public class UnshadedInputAdapter implements InputShim
 
     private final Input unshadedInput;
 
-    public UnshadedInputAdapter(Input unshadedInput)
+    public UnshadedInputAdapter(final Input unshadedInput)
     {
         this.unshadedInput = unshadedInput;
     }
@@ -49,7 +49,7 @@ public class UnshadedInputAdapter implements InputShim
     }
 
     @Override
-    public byte[] readBytes(int size) {
+    public byte[] readBytes(final int size) {
         return unshadedInput.readBytes(size);
     }
 

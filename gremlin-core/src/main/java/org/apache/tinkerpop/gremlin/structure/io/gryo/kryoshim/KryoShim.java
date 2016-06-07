@@ -27,15 +27,15 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
  */
 public interface KryoShim<I extends InputShim, O extends OutputShim> {
 
-    <T> T readObject(I input, Class<T> type);
+    public <T> T readObject(final I input, final Class<T> type);
 
-    Object readClassAndObject(I input);
+    public Object readClassAndObject(final I input);
 
-    void writeObject(O output, Object object);
+    public void writeObject(final O output, final Object object);
 
-    void writeClassAndObject(O output, Object object);
+    public void writeClassAndObject(final O output, final Object object);
 
-    <T> T readObjectOrNull(I input, Class<T> type);
+    public <T> T readObjectOrNull(final I input, final Class<T> type);
 
-    void writeObjectOrNull(O output, Object object, Class type);
+    public void writeObjectOrNull(final O output, final Object object, final Class type);
 }

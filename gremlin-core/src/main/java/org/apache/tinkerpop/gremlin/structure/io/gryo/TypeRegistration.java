@@ -66,7 +66,7 @@ public interface TypeRegistration<T> {
      * @param kryo Kryo instance into which this type is registered
      * @return the sole parameter
      */
-    Kryo registerWith(Kryo kryo);
+    Kryo registerWith(final Kryo kryo);
 
     /**
      * Returns true if at least one of {@link #getShadedSerializer()}, {@link #getSerializerShim()}, or

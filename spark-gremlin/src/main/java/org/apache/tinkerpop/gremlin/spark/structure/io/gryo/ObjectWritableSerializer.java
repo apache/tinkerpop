@@ -35,13 +35,13 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 public final class ObjectWritableSerializer<T> implements SerializerShim<ObjectWritable<T>> {
 
     @Override
-    public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, ObjectWritable<T> starGraph) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ObjectWritable<T> starGraph) {
         kryo.writeClassAndObject(output, starGraph.get());
         output.flush();
     }
 
     @Override
-    public <I extends InputShim> ObjectWritable<T> read(KryoShim<I, ?> kryo, I input, Class<ObjectWritable<T>> clazz) {
+    public <I extends InputShim> ObjectWritable<T> read(final KryoShim<I, ?> kryo, final I input, final Class<ObjectWritable<T>> clazz) {
         return new ObjectWritable(kryo.readClassAndObject(input));
     }
 }

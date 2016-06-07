@@ -81,7 +81,7 @@ public class StarGraphSerializer implements SerializerShim<StarGraph> {
      * If the returned {@link StarGraph} is null, that means that the {@link GraphFilter} filtered the vertex.
      */
     @Override
-    public <I extends InputShim> StarGraph read(KryoShim<I, ?> kryo, I input, Class<StarGraph> clazz) {
+    public <I extends InputShim> StarGraph read(final KryoShim<I, ?> kryo, final I input, final Class<StarGraph> clazz) {
         final StarGraph starGraph = StarGraph.open();
         input.readByte();  // version field ignored for now - for future use with backward compatibility
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);

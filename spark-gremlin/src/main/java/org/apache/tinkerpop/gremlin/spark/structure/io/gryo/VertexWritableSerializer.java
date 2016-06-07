@@ -36,13 +36,13 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 public final class VertexWritableSerializer implements SerializerShim<VertexWritable> {
 
     @Override
-    public <O extends OutputShim> void write(KryoShim<?, O> kryo, O output, VertexWritable vertexWritable) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final VertexWritable vertexWritable) {
         kryo.writeObject(output, vertexWritable.get().graph());
         output.flush();
     }
 
     @Override
-    public <I extends InputShim> VertexWritable read(KryoShim<I, ?> kryo, I input, Class<VertexWritable> clazz) {
+    public <I extends InputShim> VertexWritable read(final KryoShim<I, ?> kryo, final I input, final Class<VertexWritable> clazz) {
         return new VertexWritable(kryo.readObject(input, StarGraph.class).getStarVertex());
     }
 }

@@ -61,13 +61,13 @@ public final class VertexWritable implements Writable, Serializable {
     @Override
     public void readFields(final DataInput input) throws IOException {
         this.vertex = null;
-        ByteArrayInputStream bais = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
+        final ByteArrayInputStream bais = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
         this.vertex = ((StarGraph)KryoShimServiceLoader.readClassAndObject(bais)).getStarVertex(); // read the star graph;
     }
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        byte serialized[] = KryoShimServiceLoader.writeClassAndObjectToBytes(this.vertex.graph());
+        final byte serialized[] = KryoShimServiceLoader.writeClassAndObjectToBytes(this.vertex.graph());
         WritableUtils.writeCompressedByteArray(output, serialized);
     }
 

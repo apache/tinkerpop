@@ -28,27 +28,27 @@ public class ShadedSerializerAdapter<T> extends Serializer<T> {
 
     SerializerShim<T> serializer;
 
-    public ShadedSerializerAdapter(SerializerShim<T> serializer) {
+    public ShadedSerializerAdapter(final SerializerShim<T> serializer) {
         this.serializer = serializer;
         setImmutable(this.serializer.isImmutable());
     }
 
     @Override
-    public void write(Kryo kryo, Output output, T t) {
+    public void write(final Kryo kryo, final Output output, final T t) {
         /* These adapters could be cached pretty efficiently in instance fields if it were guaranteed that this
          * class was never subject to concurrent use.  That's true of Kryo instances, but it is not clear that
          * it is true of Serializer instances.
          */
-        ShadedKryoAdapter shadedKryoAdapter = new ShadedKryoAdapter(kryo);
-        ShadedOutputAdapter shadedOutputAdapter = new ShadedOutputAdapter(output);
+        final ShadedKryoAdapter shadedKryoAdapter = new ShadedKryoAdapter(kryo);
+        final ShadedOutputAdapter shadedOutputAdapter = new ShadedOutputAdapter(output);
         serializer.write(shadedKryoAdapter, shadedOutputAdapter, t);
     }
 
     @Override
-    public T read(Kryo kryo, Input input, Class<T> aClass) {
+    public T read(final Kryo kryo, final Input input, final Class<T> aClass) {
         // Same caching opportunity as in write(...)
-        ShadedKryoAdapter shadedKryoAdapter = new ShadedKryoAdapter(kryo);
-        ShadedInputAdapter shadedInputAdapter = new ShadedInputAdapter(input);
+        final ShadedKryoAdapter shadedKryoAdapter = new ShadedKryoAdapter(kryo);
+        final ShadedInputAdapter shadedInputAdapter = new ShadedInputAdapter(input);
         return serializer.read(shadedKryoAdapter, shadedInputAdapter, aClass);
     }
 }
