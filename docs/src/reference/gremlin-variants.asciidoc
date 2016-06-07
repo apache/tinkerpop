@@ -1,0 +1,136 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[gremlin-variants]]
+Gremlin Variants
+================
+
+image::gremlin-house-of-mirrors.png[width=1024]
+
+Gremlin is a graph traversal language that makes use of two fundamental programming constructs:
+link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
+link:https://en.wikipedia.org/wiki/Nested_function[function nesting]. Given this generality, it is possible to embed
+Gremlin any modern programming language. Gremlin is a "link:https://en.wikipedia.org/wiki/Platonic_idealism[Plantoic concept]"
+with two *variants* that are distributed by Apache TinkerPop that can be used on the Java Virtual Machine: Gremlin-Java and
+Gremlin-Groovy. Apache TinkerPop also distributed Gremlin-Python for use with either the JVM (Jython) or CPython.
+
+IMPORTANT: Gremlin-Java is the canonical representation of Gremlin and any (proper) Gremlin language variant will emulate its
+constructs as best as possible given the constructs of the host language. This ensures that the general Gremlin reference
+documentation is applicable to other languages variants.
+
+NOTE: The information in this section only provides information on how to use the Gremlin language variants distributed
+with Apache TinkerPop. For information on how to build a Gremlin language variant,
+please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
+tutorial.
+
+[[gremlin-python]]
+Gremlin-Python
+--------------
+
+Apache TinkerPop's Gremlin-Python represents Gremlin within the link:https://www.python.org/[Python] language and can be used on any Python virtual machine
+including the popular link:https://en.wikipedia.org/wiki/CPython[CPython] machine.
+
+[source,bash]
+pip install requests
+pip install gremlin_python
+pip install gremlin_driver
+pip install gremlin_rest_driver
+
+There are three primary classes distributed with Gremlin-Python: `PythonGraphTraversalSource`, `PythonGraphTraversal`, and `__`.
+
+[source,python]
+from gremlin_python import PythonGraphTraversalSource
+from gremlin_python import PythonGraphTraversal
+from gremlin_python import __
+from gremlin_rest_driver import RESTRemoteConnection
+
+These classes mirror `GraphTraversalSource`, `GraphTraversal`, and `__`, respectively in Gremlin-Java. The `PythonGraphTraversalSource`
+requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any <<connecting-via-remotegraph,`RemoteConnection`>>-enabled server).
+The `gremlin_rest_driver` is provided with Apache TinkerPop and it serves as a simple (though verbose) driver that sends traversals to GremlinServer
+via HTTP POST (using link:http://docs.python-requests.org/[requests]) and in return, is provided <<graphson-reader-writer,GraphSON>>-encoded results.
+When GremlinServer is running, Gremlin-Python can communicate with GremlinServer.
+
+[source,bash]
+----
+$ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
+[INFO] GremlinServer -
+       \,,,/
+       (o o)
+---oOOo-(3)-oOOo---
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-rest-modern.yaml
+[INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
+[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+Within CPython, its possible to evaluate the following.
+
+[source,python]
+conn = RESTRemoteConnection('http://localhost:8182','gremlin-groovy')
+g = PythonGraphTraversalSource("g",conn)
+g.V().repeat(__.out()).times(2).name.toList()
+
+CAUTION: Python has `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` as reserved words. Gremlin-Python simply
+prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
+
+Statics Tokens and Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python.
+
+[source,python]
+from gremlin_python import T
+from gremlin_python import Order
+from gremlin_python import Column
+from gremlin_python import Operator
+from gremlin_python import P
+
+These can be used analagously to how they are used in Gremlin-Java.
+
+[source,python]
+g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr)
+
+Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be removed.
+
+[source,python]
+from gremlin_python import statics
+for k in statics:
+  globals()[k] = statics[k]
+
+With statics, loaded its possible to represent the above traversal as below.
+
+[source,python]
+g.V().hasLabel('person').has('age',gt(30)).order().by('age',decr)
+
+Moreover, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
+
+[source,python]
+g.V().repeat(out()).times(2).name.toList()
+
+Gremlin-Python Sugar
+~~~~~~~~~~~~~~~~~~~~
+
+Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
+makes traversals a bit more succinct.
+
+[source,python]
+g.V().both()[1:3]
+g.V().both()[1]
+g.V().both().name
