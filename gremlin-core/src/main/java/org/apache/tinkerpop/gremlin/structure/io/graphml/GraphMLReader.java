@@ -188,8 +188,7 @@ public final class GraphMLReader implements GraphReader {
                         final Object[] propsAsArray = edgeProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
                         final Object[] propsReady = edgeFeatures.willAllowId(edgeId) ? ElementHelper.upsert(propsAsArray, T.id, edgeId) : propsAsArray;
                         
-			final String currentEdgeLabel = Optional.ofNullable(edgeLabel).orElse(Edge.DEFAULT_LABEL);
-                        edgeOutVertex.addEdge(currentEdgeLabel, edgeInVertex, propsReady);
+			edgeOutVertex.addEdge(null == edgeLabel ? Edge.DEFAULT_LABEL : edgeLabel, edgeInVertex, propsReady);
 
                         if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                             graphToWriteTo.tx().commit();

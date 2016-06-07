@@ -114,7 +114,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLWithNoEdgeLabels() throws IOException {
             readGraphMLIntoGraph(graph, "tinkerpop-no-edge-labels.xml");
-            assertClassicGraph(graph, false, true);
+            assertNoEdgeGraph(graph, false, true);
         }
 
         @Test
@@ -735,6 +735,33 @@ public class IoTest {
         assertToyGraph(g1, assertDouble, lossyForId, false);
     }
 
+    public static void assertNoEdgeGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
+        assertEquals(2, IteratorUtils.count(g1.vertices()));
+        assertEquals(1, IteratorUtils.count(g1.edges()));
+
+        final Vertex v1 = g1.traversal().V().has("name", "marko").next();
+        assertEquals(29, v1.<Integer>value("age").intValue());
+        assertEquals(2, v1.keys().size());
+        assertEquals(Vertex.DEFAULT_LABEL, v1.label());
+        assertId(g1, lossyForId, v1, 1);
+
+        final List<Edge> v1Edges = IteratorUtils.list(v1.edges(Direction.BOTH));
+        assertEquals(1, v1Edges.size());
+        v1Edges.forEach(e -> {        	
+            if (e.inVertex().value("name").equals("vadas")) {
+                assertEquals(Edge.DEFAULT_LABEL, e.label());
+                if (assertDouble)
+                    assertWeightLoosely(0.5d, e);
+                else
+                    assertWeightLoosely(0.5f, e);
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 7);
+            } else {
+                fail("Edge not expected");
+            }
+        });
+    }
+    
     public static void assertModernGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
         assertToyGraph(g1, assertDouble, lossyForId, true);
     }
