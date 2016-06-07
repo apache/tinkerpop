@@ -55,13 +55,12 @@ import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimSe
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
-public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
+public class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT,
-                !test.equals(ProgramTest.Traversals.class) && !test.equals(GroovyProgramTest.class));  // this makes the test suite go really fast
+        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
 
         // toy graph inputRDD does not have corresponding outputRDD so where jobs chain, it fails (failing makes sense)
         if (null != loadGraphWith &&
@@ -89,20 +88,10 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
             SugarTestHelper.clearRegistry(this);
         }
 
+        System.clearProperty(SHIM_CLASS_SYSTEM_PROPERTY);
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-
-
         config.put("spark.master", "local[4]");
-        if (RANDOM.nextBoolean()) {
-            System.setProperty(SHIM_CLASS_SYSTEM_PROPERTY, HadoopPoolShimService.class.getCanonicalName());
-            KryoShimServiceLoader.load(true);
-            config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
-        } else {
-            System.setProperty(SHIM_CLASS_SYSTEM_PROPERTY, UnshadedKryoShimService.class.getCanonicalName());
-            KryoShimServiceLoader.load(true);
-            config.put("spark.serializer", KryoSerializer.class.getCanonicalName());
-            config.put("spark.kryo.registrator", GryoRegistrator.class.getCanonicalName());
-        }
+        config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
         config.put("spark.kryo.registrationRequired", true);
         return config;
     }

@@ -26,6 +26,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolShimService;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -33,6 +34,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader.SHIM_CLASS_SYSTEM_PROPERTY;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,6 +46,7 @@ public abstract class AbstractSparkTest {
     @After
     @Before
     public void setupTest() {
+        System.clearProperty(SHIM_CLASS_SYSTEM_PROPERTY);
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName(this.getClass().getCanonicalName() + "-setupTest");
         sparkConfiguration.set("spark.master", "local[4]");
