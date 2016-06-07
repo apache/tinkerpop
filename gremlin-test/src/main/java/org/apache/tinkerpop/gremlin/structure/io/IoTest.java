@@ -112,6 +112,17 @@ public class IoTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphMLWithNoEdgeLabels() throws IOException {
+            readGraphMLIntoGraph(graph, "tinkerpop-no-edge-labels.xml");
+            assertClassicGraph(graph, false, true);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLUnorderedElements() throws IOException {
             readGraphMLIntoGraph(graph, "tinkerpop-classic-unordered.xml");
             assertClassicGraph(graph, false, true);
