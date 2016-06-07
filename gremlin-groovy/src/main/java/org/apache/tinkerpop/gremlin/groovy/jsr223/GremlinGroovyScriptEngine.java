@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
@@ -610,7 +611,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final CompilerConfiguration conf = new CompilerConfiguration();
         conf.addCompilationCustomizers(this.importCustomizerProvider.create());
 
-        customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
+        // ConfigurationCustomizerProvider is treated separately
+        customizerProviders.stream().filter(cp -> !(cp instanceof ConfigurationCustomizerProvider))
+                .forEach(p -> conf.addCompilationCustomizers(p.create()));
+
+        customizerProviders.stream().filter(cp -> cp instanceof ConfigurationCustomizerProvider).findFirst()
+                .ifPresent(cp -> ((ConfigurationCustomizerProvider) cp).applyCustomization(conf));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
     }

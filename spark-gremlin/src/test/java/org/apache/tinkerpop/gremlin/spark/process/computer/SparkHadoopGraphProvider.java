@@ -31,8 +31,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
@@ -46,7 +48,7 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
-public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
+public class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
@@ -55,6 +57,8 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
         // toy graph inputRDD does not have corresponding outputRDD so where jobs chain, it fails (failing makes sense)
         if (null != loadGraphWith &&
+                !test.equals(ProgramTest.Traversals.class) &&
+                !test.equals(GroovyProgramTest.Traversals.class) &&
                 !test.equals(PageRankTest.Traversals.class) &&
                 !test.equals(GroovyPageRankTest.Traversals.class) &&
                 !test.equals(PeerPressureTest.Traversals.class) &&
@@ -78,8 +82,6 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-
-        /// spark configuration
         config.put("spark.master", "local[4]");
         config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
         config.put("spark.kryo.registrationRequired", true);

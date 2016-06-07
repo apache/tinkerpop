@@ -927,7 +927,7 @@ determine how to read and write data to and from Hadoop. For instance, `gremlin.
 `gremlin.hadoop.graphWriter`.
 
 GraphFilterAware Interface
-++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 <<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
 example below constructs a `GraphFilter` that will only pull the the "knows"-graph amongst people into the `GraphComputer`
@@ -949,7 +949,7 @@ if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
 ----
 
 PersistResultGraphAware Interface
-+++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
 determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided

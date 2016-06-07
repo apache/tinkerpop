@@ -40,6 +40,7 @@ import java.util.function.Function;
 public final class GryoPool {
     public static final String CONFIG_IO_REGISTRY = "gremlin.io.registry";
     public static final String CONFIG_IO_GRYO_POOL_SIZE = "gremlin.io.gryo.poolSize";
+    public static final int CONFIG_IO_GRYO_POOL_SIZE_DEFAULT = 256;
 
     public enum Type {READER, WRITER, READER_WRITER}
 

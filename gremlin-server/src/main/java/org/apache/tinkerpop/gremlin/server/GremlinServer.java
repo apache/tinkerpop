@@ -80,6 +80,7 @@ public class GremlinServer {
      * Construct a Gremlin Server instance from {@link Settings}.
      */
     public GremlinServer(final Settings settings) {
+        settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
         this.settings = settings;
         this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
         if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
@@ -341,7 +342,6 @@ public class GremlinServer {
         }
 
         logger.info("Configuring Gremlin Server from {}", file);
-        settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
         final GremlinServer server = new GremlinServer(settings);
         server.start().exceptionally(t -> {
             logger.error("Gremlin Server was unable to start and will now begin shutdown: {}", t.getMessage());

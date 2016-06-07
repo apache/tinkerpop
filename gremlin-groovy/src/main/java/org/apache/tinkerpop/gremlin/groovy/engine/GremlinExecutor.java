@@ -249,7 +249,7 @@ public class GremlinExecutor implements AutoCloseable {
         bindings.putAll(boundVars);
 
         // override the timeout if the lifecycle has a value assigned
-        final long seto = lifeCycle.scriptEvaluationTimeoutOverride.orElse(scriptEvaluationTimeout);
+        final long seto = lifeCycle.getScriptEvaluationTimeoutOverride().orElse(scriptEvaluationTimeout);
 
         final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
         final FutureTask<Void> f = new FutureTask<>(() -> {
@@ -283,10 +283,11 @@ public class GremlinExecutor implements AutoCloseable {
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
                 // check for that situation and convert to TimeoutException
-                if (root instanceof InterruptedException)
+                if (root instanceof InterruptedException) {
+                    lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
                     evaluationFuture.completeExceptionally(new TimeoutException(
                             String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms for request [%s]: %s", seto, script, root.getMessage())));
-                else {
+                } else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
                 }
@@ -301,10 +302,7 @@ public class GremlinExecutor implements AutoCloseable {
             // Schedule a timeout in the thread pool for future execution
             final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
                 logger.warn("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
-                if (!f.isDone()) {
-                    lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
-                    f.cancel(true);
-                }
+                if (!f.isDone()) f.cancel(true);
             }, seto, TimeUnit.MILLISECONDS);
 
             // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed

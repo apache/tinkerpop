@@ -120,7 +120,7 @@ Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
 VertexComputing API Change
-+++++++++++++++++++++++
+++++++++++++++++++++++++++
 
 The `VertexComputing` API is used by steps that wrap a `VertexProgram`. There is a method called
 `VertexComputing.generateProgram()` that has changed which now takes a second argument of `Memory`. To  upgrade, simply
@@ -218,7 +218,7 @@ Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
 Hadoop FileSystem Variable
-++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `HadoopGremlinPlugin` defines two variables: `hdfs` and `fs`. The first is a reference to the HDFS `FileSystemStorage`
 and the latter is a reference to the the local `FileSystemStorage`. Prior to 3.2.x, `fs` was called `local`. However,
@@ -226,7 +226,7 @@ there was a variable name conflict with `Scope.local`. As such `local` is now `f
 but was not realized until this release. Finally, this only effects Gremlin Console users.
 
 Hadoop Configurations
-+++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^
 
 Note that `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and
 `gremlin.spark.graphOuputRDD` have all been deprecated. Using them still works, but moving forward, users only need to

@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -27,16 +31,15 @@ import org.javatuples.Pair;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-final class PairSerializer extends Serializer<Pair> {
-
+final class PairSerializer implements SerializerShim<Pair> {
     @Override
-    public void write(final Kryo kryo, final Output output, final Pair pair) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Pair pair) {
         kryo.writeClassAndObject(output, pair.getValue0());
         kryo.writeClassAndObject(output, pair.getValue1());
     }
 
     @Override
-    public Pair read(final Kryo kryo, final Input input, final Class<Pair> pairClass) {
+    public <I extends InputShim> Pair read(final KryoShim<I, ?> kryo, final I input, final Class<Pair> pairClass) {
         return Pair.with(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
     }
 }

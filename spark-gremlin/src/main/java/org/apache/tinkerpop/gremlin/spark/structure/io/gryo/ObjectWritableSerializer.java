@@ -20,6 +20,10 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -28,16 +32,16 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ObjectWritableSerializer<T> extends Serializer<ObjectWritable<T>> {
+public final class ObjectWritableSerializer<T> implements SerializerShim<ObjectWritable<T>> {
 
     @Override
-    public void write(final Kryo kryo, final Output output, final ObjectWritable<T> objectWritable) {
-        kryo.writeClassAndObject(output, objectWritable.get());
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ObjectWritable<T> starGraph) {
+        kryo.writeClassAndObject(output, starGraph.get());
         output.flush();
     }
 
     @Override
-    public ObjectWritable<T> read(final Kryo kryo, final Input input, final Class<ObjectWritable<T>> clazz) {
+    public <I extends InputShim> ObjectWritable<T> read(final KryoShim<I, ?> kryo, final I input, final Class<ObjectWritable<T>> clazz) {
         return new ObjectWritable(kryo.readClassAndObject(input));
     }
 }

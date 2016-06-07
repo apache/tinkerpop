@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
@@ -56,6 +58,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
@@ -67,8 +71,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
@@ -77,7 +80,6 @@ import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.apache.tinkerpop.shaded.kryo.util.DefaultStreamFactory;
 import org.apache.tinkerpop.shaded.kryo.util.MapReferenceResolver;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -112,7 +114,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -156,13 +157,13 @@ import java.util.stream.Collectors;
 public final class GryoMapper implements Mapper<Kryo> {
     public static final byte[] GIO = "gio".getBytes();
     public static final byte[] HEADER = Arrays.copyOf(GIO, 16);
-    private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
+    private final List<TypeRegistration<?>> typeRegistrations;
     private final boolean registrationRequired;
     private final boolean referenceTracking;
     private final Supplier<ClassResolver> classResolver;
 
     private GryoMapper(final Builder builder) {
-        this.serializationList = builder.serializationList;
+        this.typeRegistrations = builder.typeRegistrations;
         validate();
 
         this.registrationRequired = builder.registrationRequired;
@@ -176,19 +177,17 @@ public final class GryoMapper implements Mapper<Kryo> {
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(registrationRequired);
         kryo.setReferences(referenceTracking);
-
-        serializationList.forEach(p -> {
-            final Function<Kryo, Serializer> serializer = p.getValue1();
-            if (null == serializer)
-                kryo.register(p.getValue0(), kryo.getDefaultSerializer(p.getValue0()), p.getValue2());
-            else
-                kryo.register(p.getValue0(), serializer.apply(kryo), p.getValue2());
-        });
+        for (TypeRegistration tr : typeRegistrations)
+            tr.registerWith(kryo);
         return kryo;
     }
 
     public List<Class> getRegisteredClasses() {
-        return this.serializationList.stream().map(Triplet::getValue0).collect(Collectors.toList());
+        return this.typeRegistrations.stream().map(TypeRegistration::getTargetClass).collect(Collectors.toList());
+    }
+
+    public List<TypeRegistration<?>> getTypeRegistrations() {
+        return typeRegistrations;
     }
 
     public static Builder build() {
@@ -199,11 +198,11 @@ public final class GryoMapper implements Mapper<Kryo> {
         final Set<Integer> duplicates = new HashSet<>();
 
         final Set<Integer> ids = new HashSet<>();
-        serializationList.forEach(t -> {
-            if (!ids.contains(t.getValue2()))
-                ids.add(t.getValue2());
+        typeRegistrations.forEach(t -> {
+            if (!ids.contains(t.getId()))
+                ids.add(t.getId());
             else
-                duplicates.add(t.getValue2());
+                duplicates.add(t.getId());
         });
 
         if (duplicates.size() > 0)
@@ -244,119 +243,119 @@ public final class GryoMapper implements Mapper<Kryo> {
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
          * int, Integer, float, Float, long, Long, short, Short, String, void.
          */
-        private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList = new ArrayList<Triplet<Class, Function<Kryo, Serializer>, Integer>>() {{
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(byte[].class, null, 25));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(char[].class, null, 26));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(short[].class, null, 27));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(int[].class, null, 28));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(long[].class, null, 29));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(float[].class, null, 30));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(double[].class, null, 31));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(String[].class, null, 32));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Object[].class, null, 33));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ArrayList.class, null, 10));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BigInteger.class, null, 34));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BigDecimal.class, null, 35));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Calendar.class, null, 39));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Class.class, null, 41));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collection.class, null, 37));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.EMPTY_LIST.getClass(), null, 51));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.EMPTY_MAP.getClass(), null, 52));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.EMPTY_SET.getClass(), null, 53));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.singleton(null).getClass(), null, 54));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.singletonList(null).getClass(), null, 24));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Collections.singletonMap(null, null).getClass(), null, 23));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Contains.class, null, 49));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Currency.class, null, 40));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Date.class, null, 38));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Direction.class, null, 12));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedEdge.class, null, 21));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedVertexProperty.class, null, 20));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedProperty.class, null, 18));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedVertex.class, null, 19));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedPath.class, null, 60));
+        private final List<TypeRegistration<?>> typeRegistrations = new ArrayList<TypeRegistration<?>>() {{
+            add(GryoTypeReg.of(byte[].class, 25));
+            add(GryoTypeReg.of(char[].class, 26));
+            add(GryoTypeReg.of(short[].class, 27));
+            add(GryoTypeReg.of(int[].class, 28));
+            add(GryoTypeReg.of(long[].class, 29));
+            add(GryoTypeReg.of(float[].class, 30));
+            add(GryoTypeReg.of(double[].class, 31));
+            add(GryoTypeReg.of(String[].class, 32));
+            add(GryoTypeReg.of(Object[].class, 33));
+            add(GryoTypeReg.of(ArrayList.class, 10));
+            add(GryoTypeReg.of(BigInteger.class, 34));
+            add(GryoTypeReg.of(BigDecimal.class, 35));
+            add(GryoTypeReg.of(Calendar.class, 39));
+            add(GryoTypeReg.of(Class.class, 41));
+            add(GryoTypeReg.of(Collection.class, 37));
+            add(GryoTypeReg.of(Collections.EMPTY_LIST.getClass(), 51));
+            add(GryoTypeReg.of(Collections.EMPTY_MAP.getClass(), 52));
+            add(GryoTypeReg.of(Collections.EMPTY_SET.getClass(), 53));
+            add(GryoTypeReg.of(Collections.singleton(null).getClass(), 54));
+            add(GryoTypeReg.of(Collections.singletonList(null).getClass(), 24));
+            add(GryoTypeReg.of(Collections.singletonMap(null, null).getClass(), 23));
+            add(GryoTypeReg.of(Contains.class, 49));
+            add(GryoTypeReg.of(Currency.class, 40));
+            add(GryoTypeReg.of(Date.class, 38));
+            add(GryoTypeReg.of(Direction.class, 12));
+            add(GryoTypeReg.of(DetachedEdge.class, 21));
+            add(GryoTypeReg.of(DetachedVertexProperty.class, 20));
+            add(GryoTypeReg.of(DetachedProperty.class, 18));
+            add(GryoTypeReg.of(DetachedVertex.class, 19));
+            add(GryoTypeReg.of(DetachedPath.class, 60));
             // skip 14
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EnumSet.class, null, 46));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.class, null, 11));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.Entry.class, null, 16));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HASH_MAP_NODE, null, 92));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedList.class, null, 116));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LINKED_HASH_MAP_ENTRY_CLASS, null, 15));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Locale.class, null, 22));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuffer.class, null, 43));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StringBuilder.class, null, 44));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(T.class, null, 48));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TimeZone.class, null, 42));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeMap.class, null, 45));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeSet.class, null, 50));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(UUID.class, kryo -> new UUIDSerializer(), 17));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(URI.class, kryo -> new URISerializer(), 72));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexTerminator.class, null, 13));
+            add(GryoTypeReg.of(EnumSet.class, 46));
+            add(GryoTypeReg.of(HashMap.class, 11));
+            add(GryoTypeReg.of(HashMap.Entry.class, 16));
+            add(GryoTypeReg.of(HASH_MAP_NODE, 92));
+            add(GryoTypeReg.of(KryoSerializable.class, 36));
+            add(GryoTypeReg.of(LinkedHashMap.class, 47));
+            add(GryoTypeReg.of(LinkedHashSet.class, 71));
+            add(GryoTypeReg.of(LinkedList.class, 116));
+            add(GryoTypeReg.of(LINKED_HASH_MAP_ENTRY_CLASS, 15));
+            add(GryoTypeReg.of(Locale.class, 22));
+            add(GryoTypeReg.of(StringBuffer.class, 43));
+            add(GryoTypeReg.of(StringBuilder.class, 44));
+            add(GryoTypeReg.of(T.class, 48));
+            add(GryoTypeReg.of(TimeZone.class, 42));
+            add(GryoTypeReg.of(TreeMap.class, 45));
+            add(GryoTypeReg.of(TreeSet.class, 50));
+            add(GryoTypeReg.of(UUID.class, 17, new UUIDSerializer()));
+            add(GryoTypeReg.of(URI.class, 72, new URISerializer()));
+            add(GryoTypeReg.of(VertexTerminator.class, 13));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceEdge.class, null, 81));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceVertexProperty.class, null, 82));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceProperty.class, null, 83));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceVertex.class, null, 84));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferencePath.class, null, 85));
+            add(GryoTypeReg.of(ReferenceEdge.class, 81));
+            add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
+            add(GryoTypeReg.of(ReferenceProperty.class, 83));
+            add(GryoTypeReg.of(ReferenceVertex.class, 84));
+            add(GryoTypeReg.of(ReferencePath.class, 85));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StarGraph.class, kryo -> StarGraphGryoSerializer.with(Direction.BOTH), 86));
+            add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new GryoSerializers.EdgeSerializer(), 65));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new GryoSerializers.VertexSerializer(), 66));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new GryoSerializers.PropertySerializer(), 67));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GryoSerializers.VertexPropertySerializer(), 68));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GryoSerializers.PathSerializer(), 59));
+            add(GryoTypeReg.of(Edge.class, 65, new GryoSerializers.EdgeSerializer()));
+            add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializers.VertexSerializer()));
+            add(GryoTypeReg.of(Property.class, 67, new GryoSerializers.PropertySerializer()));
+            add(GryoTypeReg.of(VertexProperty.class, 68, new GryoSerializers.VertexPropertySerializer()));
+            add(GryoTypeReg.of(Path.class, 59, new GryoSerializers.PathSerializer()));
             // skip 55
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_LP_O_P_S_SE_SL_Traverser.class, null, 77));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_S_SE_SL_Traverser.class, null, 78));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_LP_O_S_SE_SL_Traverser.class, null, 87));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_OB_S_SE_SL_Traverser.class, null, 89));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LP_O_OB_S_SE_SL_Traverser.class, null, 90));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LP_O_OB_P_S_SE_SL_Traverser.class, null, 91));
+            add(GryoTypeReg.of(B_O_Traverser.class, 75));
+            add(GryoTypeReg.of(O_Traverser.class, 76));
+            add(GryoTypeReg.of(B_LP_O_P_S_SE_SL_Traverser.class, 77));
+            add(GryoTypeReg.of(B_O_S_SE_SL_Traverser.class, 78));
+            add(GryoTypeReg.of(B_LP_O_S_SE_SL_Traverser.class, 87));
+            add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
+            add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
+            add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashSet.class, null, 62));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BulkSet.class, null, 64));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MutableMetrics.class, null, 69));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ImmutableMetrics.class, null, 115));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DefaultTraversalMetrics.class, null, 70));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapMemory.class, null, 73));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 88));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraversalExplanation.class, kryo -> new JavaSerializer(), 106));
+            add(GryoTypeReg.of(TraverserSet.class, 58));
+            add(GryoTypeReg.of(Tree.class, 61));
+            add(GryoTypeReg.of(HashSet.class, 62));
+            add(GryoTypeReg.of(BulkSet.class, 64));
+            add(GryoTypeReg.of(MutableMetrics.class, 69));
+            add(GryoTypeReg.of(ImmutableMetrics.class, 115));
+            add(GryoTypeReg.of(DefaultTraversalMetrics.class, 70));
+            add(GryoTypeReg.of(MapMemory.class, 73));
+            add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
+            add(GryoTypeReg.of(AtomicLong.class, 79));
+            add(GryoTypeReg.of(Pair.class, 88, new PairSerializer()));
+            add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Duration.class, kryo -> new JavaTimeSerializers.DurationSerializer(), 93));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Instant.class, kryo -> new JavaTimeSerializers.InstantSerializer(), 94));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LocalDate.class, kryo -> new JavaTimeSerializers.LocalDateSerializer(), 95));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LocalDateTime.class, kryo -> new JavaTimeSerializers.LocalDateTimeSerializer(), 96));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LocalTime.class, kryo -> new JavaTimeSerializers.LocalTimeSerializer(), 97));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MonthDay.class, kryo -> new JavaTimeSerializers.MonthDaySerializer(), 98));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OffsetDateTime.class, kryo -> new JavaTimeSerializers.OffsetDateTimeSerializer(), 99));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OffsetTime.class, kryo -> new JavaTimeSerializers.OffsetTimeSerializer(), 100));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Period.class, kryo -> new JavaTimeSerializers.PeriodSerializer(), 101));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Year.class, kryo -> new JavaTimeSerializers.YearSerializer(), 102));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(YearMonth.class, kryo -> new JavaTimeSerializers.YearMonthSerializer(), 103));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZonedDateTime.class, kryo -> new JavaTimeSerializers.ZonedDateTimeSerializer(), 104));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZoneOffset.class, kryo -> new JavaTimeSerializers.ZoneOffsetSerializer(), 105));
+            add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
+            add(GryoTypeReg.of(Instant.class, 94, new JavaTimeSerializers.InstantSerializer()));
+            add(GryoTypeReg.of(LocalDate.class, 95, new JavaTimeSerializers.LocalDateSerializer()));
+            add(GryoTypeReg.of(LocalDateTime.class, 96, new JavaTimeSerializers.LocalDateTimeSerializer()));
+            add(GryoTypeReg.of(LocalTime.class, 97, new JavaTimeSerializers.LocalTimeSerializer()));
+            add(GryoTypeReg.of(MonthDay.class, 98, new JavaTimeSerializers.MonthDaySerializer()));
+            add(GryoTypeReg.of(OffsetDateTime.class, 99, new JavaTimeSerializers.OffsetDateTimeSerializer()));
+            add(GryoTypeReg.of(OffsetTime.class, 100, new JavaTimeSerializers.OffsetTimeSerializer()));
+            add(GryoTypeReg.of(Period.class, 101, new JavaTimeSerializers.PeriodSerializer()));
+            add(GryoTypeReg.of(Year.class, 102, new JavaTimeSerializers.YearSerializer()));
+            add(GryoTypeReg.of(YearMonth.class, 103, new JavaTimeSerializers.YearMonthSerializer()));
+            add(GryoTypeReg.of(ZonedDateTime.class, 104, new JavaTimeSerializers.ZonedDateTimeSerializer()));
+            add(GryoTypeReg.of(ZoneOffset.class, 105, new JavaTimeSerializers.ZoneOffsetSerializer()));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Operator.class, null, 107));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(FoldStep.FoldBiOperator.class, null, 108));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupCountStep.GroupCountBiOperator.class, null, 109));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStep.GroupBiOperator.class, kryo -> new JavaSerializer(), 117)); // because they contain traversals
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanGlobalBiOperator.class, null, 110));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MeanGlobalStep.MeanNumber.class, null, 111));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TreeStep.TreeBiOperator.class, null, 112));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(GroupStepV3d0.GroupBiOperatorV3d0.class, null, 113));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(RangeGlobalStep.RangeBiOperator.class, null, 114));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OrderGlobalStep.OrderBiOperator.class, kryo -> new JavaSerializer(), 118)); // because they contain traversals
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ProfileStep.ProfileBiOperator.class, null, 119)); // ***LAST ID***
+            add(GryoTypeReg.of(Operator.class, 107));
+            add(GryoTypeReg.of(FoldStep.FoldBiOperator.class, 108));
+            add(GryoTypeReg.of(GroupCountStep.GroupCountBiOperator.class, 109));
+            add(GryoTypeReg.of(GroupStep.GroupBiOperator.class, 117, new JavaSerializer())); // because they contain traversals
+            add(GryoTypeReg.of(MeanGlobalStep.MeanGlobalBiOperator.class, 110));
+            add(GryoTypeReg.of(MeanGlobalStep.MeanNumber.class, 111));
+            add(GryoTypeReg.of(TreeStep.TreeBiOperator.class, 112));
+            add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
+            add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
+            add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer())); // because they contain traversals
+            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119)); // ***LAST ID***
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
@@ -371,6 +370,20 @@ public final class GryoMapper implements Mapper<Kryo> {
         private Supplier<ClassResolver> classResolver = GryoClassResolver::new;
 
         private Builder() {
+            // Validate the default registrations
+            // For justification of these default registration rules, see TinkerPopKryoRegistrator
+            for (TypeRegistration<?> tr : typeRegistrations) {
+                if (tr.hasSerializer() /* no serializer is acceptable */ &&
+                        null == tr.getSerializerShim() /* a shim serializer is acceptable */ &&
+                        !(tr.getShadedSerializer() instanceof JavaSerializer) /* shaded JavaSerializer is acceptable */) {
+                    // everything else is invalid
+                    final String msg = String.format("The default GryoMapper type registration %s is invalid.  " +
+                                    "It must supply either an implementation of %s or %s, but supplies neither.  " +
+                                    "This is probably a bug in GryoMapper's default serialization class registrations.", tr,
+                            SerializerShim.class.getCanonicalName(), JavaSerializer.class.getCanonicalName());
+                    throw new IllegalStateException(msg);
+                }
+            }
         }
 
         /**
@@ -404,8 +417,8 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         public Builder addCustom(final Class... custom) {
             if (custom != null && custom.length > 0) {
-                for (Class clazz : custom) {
-                    addCustom(clazz, (Function<Kryo, Serializer>) null);
+                for (Class c : custom) {
+                    addOrOverrideRegistration(c, id -> GryoTypeReg.of(c, id));
                 }
             }
             return this;
@@ -416,10 +429,15 @@ public final class GryoMapper implements Mapper<Kryo> {
          * a class that is already registered will override that registration.
          */
         public Builder addCustom(final Class clazz, final Serializer serializer) {
-            if (null == serializer)
-                addCustom(clazz);
-            else
-                addCustom(clazz, kryo -> serializer);
+            addOrOverrideRegistration(clazz, id -> GryoTypeReg.of(clazz, id, serializer));
+            return this;
+        }
+
+        /**
+         * Register custom class to serialize with a custom serialization shim.
+         */
+        public Builder addCustom(final Class clazz, final SerializerShim serializer) {
+            addOrOverrideRegistration(clazz, id -> GryoTypeReg.of(clazz, id, serializer));
             return this;
         }
 
@@ -427,15 +445,8 @@ public final class GryoMapper implements Mapper<Kryo> {
          * Register a custom class to serialize with a custom serializer as returned from a {@link Function}. Note
          * that calling this method for a class that is already registered will override that registration.
          */
-        public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer) {
-            final Optional<Triplet<Class, Function<Kryo, Serializer>, Integer>> found = findSerializer(clazz);
-            if (found.isPresent()) {
-                final Triplet<Class, Function<Kryo, Serializer>, Integer> t = found.get();
-                serializationList.remove(t);
-                serializationList.add(t.setAt1(serializer));
-            } else
-                serializationList.add(Triplet.with(clazz, serializer, currentSerializationId.getAndIncrement()));
-
+        public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> functionOfKryo) {
+            addOrOverrideRegistration(clazz, id -> GryoTypeReg.of(clazz, id, functionOfKryo));
             return this;
         }
 
@@ -481,23 +492,143 @@ public final class GryoMapper implements Mapper<Kryo> {
                         addCustom(p.getValue0(), (Function<Kryo, Serializer>) p.getValue1());
                     else
                         throw new IllegalStateException(String.format(
-                                "Unexpected value provided by the %s for %s - expects [null, %s implementation or Function<%s, %s>]",
-                                IoRegistry.class.getSimpleName(), p.getValue0().getClass().getSimpleName(),
+                                "Unexpected value provided by %s for serializable class %s - expected a parameter in [null, %s implementation or Function<%s, %s>], but received %s",
+                                registry.getClass().getSimpleName(), p.getValue0().getClass().getCanonicalName(),
                                 Serializer.class.getName(), Kryo.class.getSimpleName(),
-                                Serializer.class.getSimpleName()));
+                                Serializer.class.getSimpleName(), p.getValue1()));
                 });
             });
 
             return new GryoMapper(this);
         }
 
-        private Optional<Triplet<Class, Function<Kryo, Serializer>, Integer>> findSerializer(final Class clazz) {
-            final Iterator<Triplet<Class, Function<Kryo, Serializer>, Integer>> itty = IteratorUtils.filter(
-                    serializationList, t -> t.getValue0().equals(clazz)).iterator();
-            if (itty.hasNext())
-                return Optional.of(itty.next());
-            else
-                return Optional.empty();
+        private <T> void addOrOverrideRegistration(final Class<?> clazz,
+                                                   final Function<Integer, TypeRegistration<T>> newRegistrationBuilder) {
+            final Iterator<TypeRegistration<?>> iter = typeRegistrations.iterator();
+            Integer registrationId = null;
+            while (iter.hasNext()) {
+                final TypeRegistration<?> existingRegistration = iter.next();
+                if (existingRegistration.getTargetClass().equals(clazz)) {
+                    // when overridding a registration, use the old id
+                    registrationId = existingRegistration.getId();
+                    // remove the old registration (we install its override below)
+                    iter.remove();
+                    break;
+                }
+            }
+            if (null == registrationId) {
+                // when not overridding a registration, get an id from the counter
+                registrationId = currentSerializationId.getAndIncrement();
+            }
+            typeRegistrations.add(newRegistrationBuilder.apply(registrationId));
+        }
+    }
+
+    private static class GryoTypeReg<T> implements TypeRegistration<T> {
+
+        private final Class<T> clazz;
+        private final Serializer<T> shadedSerializer;
+        private final SerializerShim<T> serializerShim;
+        private final Function<Kryo, Serializer> functionOfShadedKryo;
+        private final int id;
+
+        private GryoTypeReg(final Class<T> clazz,
+                            final Serializer<T> shadedSerializer,
+                            final SerializerShim<T> serializerShim,
+                            final Function<Kryo, Serializer> functionOfShadedKryo,
+                            final int id) {
+            this.clazz = clazz;
+            this.shadedSerializer = shadedSerializer;
+            this.serializerShim = serializerShim;
+            this.functionOfShadedKryo = functionOfShadedKryo;
+            this.id = id;
+
+            int serializerCount = 0;
+            if (null != this.shadedSerializer)
+                serializerCount++;
+            if (null != this.serializerShim)
+                serializerCount++;
+            if (null != this.functionOfShadedKryo)
+                serializerCount++;
+
+            if (1 < serializerCount) {
+                final String msg = String.format(
+                        "GryoTypeReg accepts at most one kind of serializer, but multiple " +
+                                "serializers were supplied for class %s (id %s).  " +
+                                "Shaded serializer: %s.  Shim serializer: %s.  Shaded serializer function: %s.",
+                        this.clazz.getCanonicalName(), id,
+                        this.shadedSerializer, this.serializerShim, this.functionOfShadedKryo);
+                throw new IllegalArgumentException(msg);
+            }
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id) {
+            return new GryoTypeReg<>(clazz, null, null, null, id);
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id, final Serializer<T> shadedSerializer) {
+            return new GryoTypeReg<>(clazz, shadedSerializer, null, null, id);
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class<T> clazz, final int id, final SerializerShim<T> serializerShim) {
+            return new GryoTypeReg<>(clazz, null, serializerShim, null, id);
+        }
+
+        private static <T> GryoTypeReg<T> of(final Class clazz, final int id, final Function<Kryo, Serializer> fct) {
+            return new GryoTypeReg<>(clazz, null, null, fct, id);
+        }
+
+        @Override
+        public Serializer<T> getShadedSerializer() {
+            return shadedSerializer;
+        }
+
+        @Override
+        public SerializerShim<T> getSerializerShim() {
+            return serializerShim;
+        }
+
+        @Override
+        public Function<Kryo, Serializer> getFunctionOfShadedKryo() {
+            return functionOfShadedKryo;
+        }
+
+        @Override
+        public Class<T> getTargetClass() {
+            return clazz;
+        }
+
+        @Override
+        public int getId() {
+            return id;
+        }
+
+        @Override
+        public Kryo registerWith(final Kryo kryo) {
+            if (null != functionOfShadedKryo)
+                kryo.register(clazz, functionOfShadedKryo.apply(kryo), id);
+            else if (null != shadedSerializer)
+                kryo.register(clazz, shadedSerializer, id);
+            else if (null != serializerShim)
+                kryo.register(clazz, new ShadedSerializerAdapter<>(serializerShim), id);
+            else {
+                kryo.register(clazz, kryo.getDefaultSerializer(clazz), id);
+                // Suprisingly, the preceding call is not equivalent to
+                //   kryo.register(clazz, id);
+            }
+
+            return kryo;
+        }
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("targetClass", clazz)
+                    .append("id", id)
+                    .append("shadedSerializer", shadedSerializer)
+                    .append("serializerShim", serializerShim)
+                    .append("functionOfShadedKryo", functionOfShadedKryo)
+                    .toString();
         }
     }
 }

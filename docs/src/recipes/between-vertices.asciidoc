@@ -45,7 +45,19 @@ vertices with identifiers "2" and "3".
 two vertices.
 
 The basic pattern of using `where()` step to find the "other" known vertex can be applied in far more complex
-scenarios. Consider the following schema:
+scenarios. For one such example, consider the following traversal that finds all the paths between a group of defined
+vertices:
+
+[gremlin-groovy,modern]
+----
+ids = [2,4,6].toArray()
+g.V(ids).as("a").
+  repeat(bothE().otherV().simplePath()).times(5).emit(hasId(within(ids))).as("b").
+  filter(select(last,"a","b").by(id).where("a", lt("b"))).
+  path().by().by(label)
+----
+
+For another example, consider the following schema:
 
 image:recipe-job-schema.png[width=750]
 
