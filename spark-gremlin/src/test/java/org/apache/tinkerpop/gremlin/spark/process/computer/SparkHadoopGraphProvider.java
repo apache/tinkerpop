@@ -88,7 +88,6 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
             SugarTestHelper.clearRegistry(this);
         }
 
-        System.clearProperty(SHIM_CLASS_SYSTEM_PROPERTY);
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
         config.put("spark.master", "local[4]");
         config.put("spark.serializer", GryoSerializer.class.getCanonicalName());

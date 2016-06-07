@@ -36,21 +36,17 @@ import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimSe
  */
 public final class SparkHadoopGraphGryoRegistratorProvider extends SparkHadoopGraphProvider {
 
-    private static boolean firstTest = true;
-
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
+        Spark.close();
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);  // ensure the context doesn't stay open for the GryoSerializer tests
+        // ensure the context doesn't stay open for the GryoSerializer tests to follow
+        // this is primarily to ensure that the KryoShimService loaded specifically in these tests don't leak to the other tests
+        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
         config.put("spark.serializer", KryoSerializer.class.getCanonicalName());
         config.put("spark.kryo.registrator", GryoRegistrator.class.getCanonicalName());
-        //
-        if (firstTest) {
-            firstTest = false;
-            Spark.close();
-            System.setProperty(SHIM_CLASS_SYSTEM_PROPERTY, UnshadedKryoShimService.class.getCanonicalName());
-            KryoShimServiceLoader.load(true);
-        }
-        //
+        System.setProperty(SHIM_CLASS_SYSTEM_PROPERTY, UnshadedKryoShimService.class.getCanonicalName());
+        KryoShimServiceLoader.load(true);
+        System.clearProperty(SHIM_CLASS_SYSTEM_PROPERTY);
         return config;
     }
 }

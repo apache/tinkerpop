@@ -330,8 +330,6 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(AtomicLong.class, 79));
             add(GryoTypeReg.of(Pair.class, 88, new PairSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
-            add(GryoTypeReg.of(GraphFilter.class, 120, new JavaSerializer())); // ***LAST ID***
-            //add(GryoTypeReg.of(PureTraversal.class, 121, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));
             add(GryoTypeReg.of(Instant.class, 94, new JavaTimeSerializers.InstantSerializer()));
@@ -357,7 +355,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer())); // because they contain traversals
-            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
+            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119)); // ***LAST ID***
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();

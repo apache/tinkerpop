@@ -46,7 +46,6 @@ public abstract class AbstractSparkTest {
     @After
     @Before
     public void setupTest() {
-        System.clearProperty(SHIM_CLASS_SYSTEM_PROPERTY);
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName(this.getClass().getCanonicalName() + "-setupTest");
         sparkConfiguration.set("spark.master", "local[4]");
