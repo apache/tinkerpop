@@ -28,8 +28,9 @@ with two *variants* that are distributed by Apache TinkerPop that can be used on
 Gremlin-Groovy. Apache TinkerPop also distributed Gremlin-Python for use with either the JVM (Jython) or CPython.
 
 IMPORTANT: Gremlin-Java is the canonical representation of Gremlin and any (proper) Gremlin language variant will emulate its
-constructs as best as possible given the constructs of the host language. This ensures that the general Gremlin reference
-documentation is applicable to other languages variants.
+structure as best as possible given the constructs of the host language. A strong correspondence between variants ensures
+that the general Gremlin reference documentation is applicable to all variants and that users moving between development
+languages can easily adopt the Gremlin language variant for that language.
 
 NOTE: The information in this section only provides information on how to use the Gremlin language variants distributed
 with Apache TinkerPop. For information on how to build a Gremlin language variant,
@@ -40,8 +41,14 @@ tutorial.
 Gremlin-Python
 --------------
 
-Apache TinkerPop's Gremlin-Python represents Gremlin within the link:https://www.python.org/[Python] language and can be used on any Python virtual machine
-including the popular link:https://en.wikipedia.org/wiki/CPython[CPython] machine.
+image:gremlin-python-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Python implements Gremlin within
+the link:https://www.python.org/[Python] language and can be used on any Python virtual machine including the popular
+link:https://en.wikipedia.org/wiki/CPython[CPython] machine. Python's syntax has the same constructs as Java including
+"dot notation" for function chaining (`a.b.c`), round bracket function arguments (`a(b,c)`), and support for global
+namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
+with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
+
+To install Gremlin-Python, simply use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
 [source,bash]
 pip install requests
@@ -61,7 +68,14 @@ These classes mirror `GraphTraversalSource`, `GraphTraversal`, and `__`, respect
 requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any <<connecting-via-remotegraph,`RemoteConnection`>>-enabled server).
 The `gremlin_rest_driver` is provided with Apache TinkerPop and it serves as a simple (though verbose) driver that sends traversals to GremlinServer
 via HTTP POST (using link:http://docs.python-requests.org/[requests]) and in return, is provided <<graphson-reader-writer,GraphSON>>-encoded results.
-When GremlinServer is running, Gremlin-Python can communicate with GremlinServer.
+`RESTRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_driver`.
+
+NOTE: For developers wishing to provide another driver implementation (e.g. one using the more efficient
+link:https://en.wikipedia.org/wiki/WebSocket[WebSockets] protocol), be sure to extend `RemoteConnection` in `gremlin_driver` so it
+can then be used by `PythonGraphTraversal`.
+
+When GremlinServer is running, Gremlin-Python can communicate with GremlinServer. The `conf/gremlin-server-rest.modern.yaml`
+configuration is used to expose GremlinServer's REST interface.
 
 [source,bash]
 ----
@@ -80,7 +94,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 
-Within CPython, its possible to evaluate the following.
+Within the CPython console, it is possible to evaluate the following.
 
 [source,python]
 conn = RESTRemoteConnection('http://localhost:8182','gremlin-groovy')
@@ -90,8 +104,8 @@ g.V().repeat(__.out()).times(2).name.toList()
 CAUTION: Python has `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` as reserved words. Gremlin-Python simply
 prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
 
-Statics Tokens and Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Static Tokens and Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python.
 
