@@ -21,42 +21,207 @@ Contributions via GitHub pull requests are gladly accepted from their original a
 material via pull request, email, or other means you agree to license the material under the project's open source
 license and warrant that you have the legal authority to do so.
 
-Getting Started
----------------
+Ways to Contribute
+------------------
 
-image:gremlin-apache.png[width=250,float=left] New contributors can start development with TinkerPop by first
-link:https://help.github.com/articles/fork-a-repo/[forking then cloning] the Apache TinkerPop
-link:https://github.com/apache/incubator-tinkerpop[GitHub repository]. Generally speaking it is best to tie any
-work done to an issue in link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA]. Either scan through JIRA for an
-existing open issue to work on or create a new one.
+image:gremlin-apache.png[width=250,float=left] While the concept of an open source contribution can refer to doing
+development work on the code base, there are many other ways outside of coding to contribute to Apache TinkerPop.
+Participating on the various mailing lists, offering ideas, reporting bugs, writing documentation are all welcome
+contributions to the project that help improve the The TinkerPop. This section of the document is designed to help
+provide some structure for potential contributors and to give them ideas for how they could get started becoming more
+involved in the TinkerPop community.
 
-After making changes, submit a link:https://help.github.com/articles/using-pull-requests/[pull request] through
-GitHub, where the name of the pull request is prefixed with the JIRA issue number.  In this way, the pull request
-and its comments get tied back to the JIRA issue it references, thus triggering automation that pushes GitHub comments
-into the JIRA ticket.
+NOTE: As a quick acknowledgement, this section was influenced by Apache Spark's well organized
+link:https://cwiki.apache.org/confluence/display/SPARK/Contributing+to+Spark["Contributing to Spark"] document.
 
-Before issuing your pull request, please be sure of the following:
+Mailing List Participation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-. `mvn clean install` works successfully.
-. If the change requires modification to the documentation, which can be found in `docs/src`, please be sure to try to
-generate the docs.  If the changes are minimal and do not include code examples, it might be sufficient to test
-generate the docs to validate formatting by just doing `bin/process-docs.sh --dryRun`.  If there are code examples,
-please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  If no code changes were made,
-one can also use the `--noClean` option. This will prevent the processor from cleaning up the local Grapes directory and
-the Hadoop Gremlin Libs directory in HDFS, resulting in a slightly faster execution time. The documentation is generated
-to `/target/docs/htmlsingle`. Once a full run of the documentation is executed, it is possible to run just one file by
-deleting the file to regenerated from `target/postprocess-asciidoc` then re-executing `bin/process-docs.sh`.
-. If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
-operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
-a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -pl gremlin-server`.
+TinkerPop has two mailing lists: link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users] and
+link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[dev]. Subscribing to and
+participating on one or both of these mailing lists is a great way to contribute to TinkerPop. Helping users with their
+problems by answering their questions on gremlin-users is a great help to the community and an easy way for
+the community to become familiar with the contributor.
 
-Once a pull request is submitted it must go through <<rtc,review>> and will be merged once three TinkerPop committers
-offer positive vote and achieve Apache consensus.
+The dev@tinkerpop.apache.org mailing list is where all design discussion, early feature announcements, release
+discussions and other similar communication takes place. Having insight into the project at this level, will yield a
+lot of information about the day-to-day course of TinkerPop and many of the other ways contributors can be involved
+require a subscription to this list.
+
+Testing Releases
+~~~~~~~~~~~~~~~~
+
+Proposed TinkerPop releases are not official until after they are evaluated by the community. The process of evaluation
+occurs on the dev@tinkerpop.apache.org mailing list where the community is invited to review release artifacts and
+vote if they should be released or not. Anyone is free to comment and provide a vote (+1/+0/-1) on a release. Note
+that votes of non-PMC members are considered non-binding, but are certainly considered in the review process.
+
+Reviewing Changes
+~~~~~~~~~~~~~~~~~
+
+Virtually all changes to TinkerPop's source code are performed via GitHub
+link:https://github.com/apache/incubator-tinkerpop/pulls[pull requests]. When a pull request is issue it undergoes a
+<<rtc,review process>> prior to be merged to a release branch. Anyone is free to comment and provide a vote (+1/+0/-1)
+on a pull request. Note that votes of non-commiters are considered non-binding, but are certainly considered in the
+review process.
+
+Writing Documentation
+~~~~~~~~~~~~~~~~~~~~~
+
+TinkerPop has a robust documentation system that is based on link:http://asciidoc.org/[asciidoc]. Proposing a
+documentation change is quite similar to providing a source code change, which is described below in more detail.
+Note that there is a difference between project documentation and the TinkerPop web site. Changes to
+project documentation can be performed via pull request, but only TinkerPop committers can make web site changes.
+Feel free to propose web site changes on the dev@tinkerpop.apache.org mailing list.
+
+Reporting Bugs
+~~~~~~~~~~~~~~
+
+Well formed bug reports (especially when accompanied by a pull request that fixes the problem) are welcome
+contributions that ultimately help improve the quality of TinkerPop. Of course, a bug report is only as good as its
+reproduction steps and the surrounding details of the issue. When a bug is encountered, it should be documented in
+link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA], where it will likely trigger some discussion and
+ultimately a resolution.
+
+TinkerPop Libraries
+~~~~~~~~~~~~~~~~~~~
+
+TinkerPop is more than just the core source code repository. It is a rich ecosystem of libraries developed by
+link:http://tinkerpop.apache.org/providers.html[providers], who look to use or extend upon the TinkerPop interfaces.
+TinkerPop is highly focused on its interfaces and a small set of reference implementations of those interfaces as part
+of its core code base. As such, large and independent new functionality is often rejected from inclusion in TinkerPop
+itself, however, it is very much encouraged that such a project stand on its own as separate repository. Projects like
+this that meet the TinkerPop link:http://tinkerpop.apache.org/policy.html[listing policy] can be added to the
+TinkerPop web site and promoted there. Please see the current listing of such libraries on the TinkerPop
+link:http://tinkerpop.apache.org/#graph-systems[home page] to get an idea as to what kinds of libraries are available
+from the community.
+
+Considering Code Changes
+------------------------
+
+Code changes can take a fair bit of effort from both the contributor doing the work, as well as the people who
+will be reviewing and testing that work. It is beneficial to all involved that some basic considerations be made by
+the contributor to ensure the best use is made of everyone's time.
 
 NOTE: For those who are trying to find a place to start to contribute, consider looking at unresolved issues that
 have the "trivial" priority as these issues are specifically set aside as
 link:https://issues.apache.org/jira/issues/?jql=project%20%3D%20TINKERPOP%20AND%20resolution%20%3D%20Unresolved%20AND%20priority%20%3D%20Trivial%20ORDER%20BY%20key%20DESC[low-hanging fruit]
 for newcomers.
+
+Before proceeding, contributors should evaluate if the proposed change is likely to be relevant, new and actionable:
+
+* Is it clear that code must change? Proposing a JIRA issue and pull request is appropriate only when a clear problem
+or change has been identified. When in doubt, email dev@tinkerpop.apache.org first about the possible change.
+* Search the the mailing list archives for related discussions. Often, the problem has been discussed before, with
+a resolution that doesn't require a code change, or recording what kinds of changes will not be accepted as a
+resolution.
+* Search link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] for existing issues.
+* Is the scope of the change matched to the contributor's level of experience? Anyone is qualified to suggest a typo
+fix, but refactoring a core feature in serialization or OLAP requires much more understanding of TinkerPop. Some
+changes require building up experience first.
+
+Before considering how to contribute code, it is useful to understand how code is reviewed, and why changes may be
+rejected. Simply put, changes that have many or large positives, and few negative effects or risks, are much more
+likely to be merged, and merged quickly. Risky and less valuable changes are very unlikely to be merged, and may be
+rejected outright rather than receive iterations of review.
+
+*Positives*
+
+* Change has already been discussed and is known to committers
+* Fixes the root cause of a bug in existing functionality
+* Adds functionality or fixes a problem needed by a large number of users
+* Simple, targeted
+* Easily tested; has tests
+* Reduces complexity and lines of code
+
+*Negatives, Risks*
+
+* Band-aids a symptom of a bug only
+* Introduces complex new functionality, especially an API that needs to be supported
+* Adds complexity that only helps a niche use case
+* Adds user-space functionality that does not need to be maintained in TinkerPop, but could be hosted externally and
+promoted in link:http://tinkerpop.apache.org/#graph-systems[provider listings]
+* Changes a public API or semantics thus introducing a breaking change
+* Adds large dependencies
+* Changes versions of existing dependencies
+* Adds a large amount of code
+* Makes lots of modifications in one "big bang" change
+
+Contributing Code Changes
+-------------------------
+
+Generally, TinkerPop uses link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] to track logical issues,
+including bugs and improvements, and uses GitHub pull requests to manage the review and merge of specific code
+changes. That is, JIRA issues are used to describe what should be fixed or changed, and high-level approaches, and pull
+requests describe how to implement that change in the project's source code.
+
+As a first step to making a contribution, consider *JIRA*:
+
+. Find the existing JIRA ticket that the change pertains to.
+.. Do not create a new ticket if creating a change to address an existing issue in JIRA; add to the existing
+discussion and work instead.
+.. Look for existing pull requests that are linked from the ticket, to understand if someone is already working on
+the JIRA.
+. If the change is new, then it usually needs a new ticket. However, trivial changes, where the change is virtually
+the same as the how it should change do not require a JIRA (e.g. "Fix typos in Foo javadoc").
+. If required, create a new ticket:
+.. Provide a descriptive Title and a detailed Description. For bug reports, this should ideally include a short
+reproduction of the problem.
+.. Set required fields - these are detailed later in this document in the <<_issue_tracker_conventions, Issue Tracker
+Conventions>> section.
+. If the change is a large change, consider inviting discussion on the issue at dev@tinkerpop.apache.org first
+before proceeding to implement the change.
+
+Next, *make changes* and prepare a *pull request*:
+
+. link:https://help.github.com/articles/fork-a-repo/[Fork and then clone] the Apache TinkerPop
+link:https://github.com/apache/incubator-tinkerpop[GitHub repository] if not already done.
+. Make changes in the fork
+.. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
+to easily track what that branch is for.
+.. Consider which branch to create the branch from in the first place. In other words, is the change to be targetted
+at a specific TinkerPop version (e.g. a patch to an older version)? When in doubt, please ask on
+dev@tinkerpop.apache.org.
+. Bulid the project and run tests.
+.. A simple build can be accomplished with maven: `mvn clean install`.
+.. Often, a "simple build" isn't sufficient and integration tests are required:
+`mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`. Note that Hadoop must be running for the integration
+tests to execute.
+.. Docker can help simplify building and testing: `docker/build.sh -t -i -n`
+.. Please see the <<building-test,Building and Testing>> section for more building and testing options.
+. Consider whether documentation or tests need to be added or updated as part of the change, and add them as needed.
+.. Nearly all changes should include a modification to the `CHANGELOG.asciidoc` file - one more entries to
+help summarize the change.
+.. Some changes will require updates to the "upgrade documentation" - usually reserved for major new features and
+breaking changes.
+.. Docker can help simplify documentation generation: `docker/build.sh -d`
+.. Please see the <<building-test,Building and Testing>> section for more documentation generation options.
+. Open the link:https://help.github.com/articles/using-pull-requests/[pull request] against the appropriate branch
+on the Apache TinkerPop repository.
+.. Target the pull request at the appropriate branch in TinkerPop's repository
+.. Prefix the name of the pull request with the JIRA issue number (include a brief description after that).
+.. Include a link to the ticket in JIRA in the pull request description.
+.. Include a rough synopsis of how the changes were tested. This might be as simple as "Ran mvn clean install to
+success and performed manual testing in the Gremlin Console".
+.. Include other descriptive elements about the change if they are not already included in the JIRA ticket.
+.. Automated builds will occur with Travis and AppVeyor. Please be sure that the pull request passes those builds and
+correct them if there are problems.
+
+Once the pull request has been placed it will go into *review*:
+
+. Other reviewers, including committers, may comment on the changes and suggest modifications. Changes can be added by
+simply pushing more commits to the same branch.
+. Lively, polite, rapid technical debate is encouraged from everyone in the community. The outcome may be a rejection
+of the entire change.
+. Reviewers can indicate that a change looks suitable for merging with by providing a "+1". Please see the
+<<rtc, Review then Commit>> process for more details.
+. Sometimes, other changes will be merged which conflict with your pull request's changes. The PR can't be merged
+until the conflict is resolved. This can be resolved with "git fetch origin" followed by "git merge origin/master"
+and resolving the conflicts by hand, then pushing the result to your branch. Or more nicely, consider rebasing changes
+and force pushing the branch.
+. Try to be responsive to the discussion rather than let days pass between replies
+
+On successful review, the *pull request will be merged* to the main repository and the JIRA issue will be closed.
 
 [[building-testing]]
 Building and Testing
@@ -232,7 +397,7 @@ this property set.
 affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that is about removing a deprecated portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed.
+which that particular issue will completed. This is a field usually only set by committers.
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
