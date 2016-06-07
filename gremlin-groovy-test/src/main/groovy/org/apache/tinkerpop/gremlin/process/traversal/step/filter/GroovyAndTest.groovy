@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,22 +31,22 @@ public abstract class GroovyAndTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gte_2X_name() {
-            TraversalScriptHelper.compute("g.V.and(has('age',gt(27)), outE().count.is(gte(2l))).name", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.and(has('age',gt(27)), outE().count.is(gte(2l))).name")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            TraversalScriptHelper.compute("g.V.and(outE(), has(label, 'person') & has('age', gte(32))).name", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.and(outE(), has(label, 'person') & has('age',gte(32))).name")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name() {
-            TraversalScriptHelper.compute("g.V.as('a').out('knows') & out('created').in('created').as('a').name", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('knows') & out('created').in('created').as('a').name")
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_andXselectXaX_selectXaXX() {
-            TraversalScriptHelper.compute("g.V().as('a').and(__.select('a'), __.select('a'))", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').and(__.select('a'), __.select('a'))");
         }
     }
 }

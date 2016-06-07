@@ -19,13 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -41,114 +38,61 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.outside;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(Enclosed.class)
+@RunWith(Parameterized.class)
 public class RangeByIsCountStrategyTest {
 
-    @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractRangeByIsCountStrategyTest {
+    @Parameterized.Parameter(value = 0)
+    public Traversal original;
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
+    @Parameterized.Parameter(value = 1)
+    public Traversal optimized;
 
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+    void applyRangeByIsCountStrategy(final Traversal traversal) {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(RangeByIsCountStrategy.instance());
+        traversal.asAdmin().setStrategies(strategies);
+        traversal.asAdmin().applyStrategies();
     }
 
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractRangeByIsCountStrategyTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+    @Test
+    public void doTest() {
+        applyRangeByIsCountStrategy(original);
+        assertEquals(optimized, original);
     }
 
-    private static abstract class AbstractRangeByIsCountStrategyTest {
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
 
-        protected TraversalEngine traversalEngine;
-
-        void applyRangeByIsCountStrategy(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(RangeByIsCountStrategy.instance());
-
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
-            traversal.asAdmin().applyStrategies();
-        }
-
-        public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyRangeByIsCountStrategy(traversal);
-            assertEquals(optimized, traversal);
-        }
-
-        static Iterable<Object[]> generateTestParameters() {
-
-            return Arrays.asList(new Traversal[][]{
-                    {__.count().is(0), __.not(__.identity())},
-                    {__.count().is(1), __.limit(2).count().is(1)},
-                    {__.out().count().is(0), __.not(__.out())},
-                    {__.outE().count().is(lt(1)), __.not(__.outE())},
-                    {__.both().count().is(lte(0)), __.not(__.both())},
-                    {__.store("x").count().is(0).as("a"), __.store("x").limit(1).count().is(0).as("a")},
-                    {__.out().count().as("a").is(0), __.out().limit(1).count().as("a").is(0)},
-                    {__.out().count().is(neq(4)), __.out().limit(5).count().is(neq(4))},
-                    {__.out().count().is(lte(3)), __.out().limit(4).count().is(lte(3))},
-                    {__.out().count().is(lt(3)), __.out().limit(3).count().is(lt(3))},
-                    {__.out().count().is(gt(2)), __.out().limit(3).count().is(gt(2))},
-                    {__.out().count().is(gte(2)), __.out().limit(2).count().is(gte(2))},
-                    {__.out().count().is(inside(2, 4)), __.out().limit(4).count().is(inside(2, 4))},
-                    {__.out().count().is(outside(2, 4)), __.out().limit(5).count().is(outside(2, 4))},
-                    {__.out().count().is(within(2, 6, 4)), __.out().limit(7).count().is(within(2, 6, 4))},
-                    {__.out().count().is(without(2, 6, 4)), __.out().limit(6).count().is(without(2, 6, 4))},
-                    {__.map(__.count().is(0)), __.map(__.limit(1).count().is(0))},
-                    {__.flatMap(__.count().is(0)), __.flatMap(__.limit(1).count().is(0))},
-                    {__.filter(__.count().is(0)), __.filter(__.not(__.identity()))},
-                    {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
-                    {__.branch(__.count().is(0)), __.branch(__.limit(1).count().is(0))},
-                    {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
-                    {__.repeat(__.out()).until(__.outE().count().is(0)), __.repeat(__.out()).until(__.not(__.outE()))},
-                    {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
-            });
-        }
+        return Arrays.asList(new Traversal[][]{
+                {__.count().is(0), __.not(__.identity())},
+                {__.count().is(1), __.limit(2).count().is(1)},
+                {__.out().count().is(0), __.not(__.out())},
+                {__.outE().count().is(lt(1)), __.not(__.outE())},
+                {__.both().count().is(lte(0)), __.not(__.both())},
+                {__.store("x").count().is(0).as("a"), __.store("x").limit(1).count().is(0).as("a")},
+                {__.out().count().as("a").is(0), __.out().limit(1).count().as("a").is(0)},
+                {__.out().count().is(neq(4)), __.out().limit(5).count().is(neq(4))},
+                {__.out().count().is(lte(3)), __.out().limit(4).count().is(lte(3))},
+                {__.out().count().is(lt(3)), __.out().limit(3).count().is(lt(3))},
+                {__.out().count().is(gt(2)), __.out().limit(3).count().is(gt(2))},
+                {__.out().count().is(gte(2)), __.out().limit(2).count().is(gte(2))},
+                {__.out().count().is(inside(2, 4)), __.out().limit(4).count().is(inside(2, 4))},
+                {__.out().count().is(outside(2, 4)), __.out().limit(5).count().is(outside(2, 4))},
+                {__.out().count().is(within(2, 6, 4)), __.out().limit(7).count().is(within(2, 6, 4))},
+                {__.out().count().is(without(2, 6, 4)), __.out().limit(6).count().is(without(2, 6, 4))},
+                {__.map(__.count().is(0)), __.map(__.limit(1).count().is(0))},
+                {__.flatMap(__.count().is(0)), __.flatMap(__.limit(1).count().is(0))},
+                {__.filter(__.count().is(0)), __.filter(__.not(__.identity()))},
+                {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
+                {__.branch(__.count().is(0)), __.branch(__.limit(1).count().is(0))},
+                {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
+                {__.repeat(__.out()).until(__.outE().count().is(0)), __.repeat(__.out()).until(__.not(__.outE()))},
+                {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
+        });
     }
 }

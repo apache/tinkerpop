@@ -43,10 +43,12 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-executor")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-executor")
+@Deprecated
 public class GremlinExecutorPerformanceTest extends AbstractGremlinTest {
 
     private static final Random rand = new Random(9585834534l);

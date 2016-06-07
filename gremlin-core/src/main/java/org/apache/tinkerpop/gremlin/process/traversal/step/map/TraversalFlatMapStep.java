@@ -55,8 +55,14 @@ public final class TraversalFlatMapStep<S, E> extends FlatMapStep<S, E> implemen
     @Override
     public TraversalFlatMapStep<S, E> clone() {
         final TraversalFlatMapStep<S, E> clone = (TraversalFlatMapStep<S, E>) super.clone();
-        clone.flatMapTraversal = clone.integrateChild(this.flatMapTraversal.clone());
+        clone.flatMapTraversal = this.flatMapTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.flatMapTraversal);
     }
 
     @Override

@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.spark.SerializableWritable;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.python.PythonBroadcast;
 import org.apache.spark.broadcast.HttpBroadcast;
@@ -31,6 +30,7 @@ import org.apache.spark.scheduler.CompressedMapStatus;
 import org.apache.spark.scheduler.HighlyCompressedMapStatus;
 import org.apache.spark.serializer.Serializer;
 import org.apache.spark.serializer.SerializerInstance;
+import org.apache.spark.storage.BlockManagerId;
 import org.apache.spark.util.SerializableConfiguration;
 import org.apache.spark.util.collection.CompactBuffer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingP
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo.serializers.ExternalizableSerializer;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import scala.Tuple2;
 import scala.Tuple3;
@@ -77,31 +78,32 @@ public final class GryoSerializer extends Serializer {
             }
         }
         this.gryoPool = GryoPool.build().
-                poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
+                poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT)).
                 ioRegistries(makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
                 initializeMapper(builder -> {
                     try {
-                        builder.addCustom(SerializableWritable.class, new JavaSerializer())
-                                .addCustom(Tuple2.class, new JavaSerializer())
-                                .addCustom(Tuple2[].class, new JavaSerializer())
-                                .addCustom(Tuple3.class, new JavaSerializer())
-                                .addCustom(Tuple3[].class, new JavaSerializer())
-                                .addCustom(CompactBuffer.class, new JavaSerializer())
-                                .addCustom(CompactBuffer[].class, new JavaSerializer())
-                                .addCustom(CompressedMapStatus.class, new JavaSerializer())
-                                .addCustom(HighlyCompressedMapStatus.class, new JavaSerializer())
-                                .addCustom(HttpBroadcast.class, new JavaSerializer())
-                                .addCustom(PythonBroadcast.class, new JavaSerializer())
-                                .addCustom(BoxedUnit.class, new JavaSerializer())
+                        builder.addCustom(Tuple2.class, new Tuple2Serializer())
+                                .addCustom(Tuple2[].class)
+                                .addCustom(Tuple3.class, new Tuple3Serializer())
+                                .addCustom(Tuple3[].class)
+                                .addCustom(CompactBuffer.class, new CompactBufferSerializer())
+                                .addCustom(CompactBuffer[].class)
+                                .addCustom(CompressedMapStatus.class)
+                                .addCustom(BlockManagerId.class)
+                                .addCustom(HighlyCompressedMapStatus.class, new ExternalizableSerializer())   // externalizable implemented so its okay
+                                .addCustom(HttpBroadcast.class)
+                                .addCustom(PythonBroadcast.class)
+                                .addCustom(BoxedUnit.class)
                                 .addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer())
+                                .addCustom(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer())
                                 .addCustom(WrappedArray.ofRef.class, new WrappedArraySerializer())
                                 .addCustom(MessagePayload.class)
                                 .addCustom(ViewIncomingPayload.class)
                                 .addCustom(ViewOutgoingPayload.class)
                                 .addCustom(ViewPayload.class)
                                 .addCustom(SerializableConfiguration.class, new JavaSerializer())
-                                .addCustom(VertexWritable.class, new JavaSerializer())
-                                .addCustom(ObjectWritable.class, new JavaSerializer())
+                                .addCustom(VertexWritable.class, new VertexWritableSerializer())
+                                .addCustom(ObjectWritable.class, new ObjectWritableSerializer())
                                 .referenceTracking(referenceTracking)
                                 .registrationRequired(registrationRequired);
                         // add these as we find ClassNotFoundExceptions

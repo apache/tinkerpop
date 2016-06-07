@@ -18,22 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier {
-    private TraverserSet<S> traverserSet = new TraverserSet<>();
+public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier<TraverserSet<S>> {
 
+    private TraverserSet<S> traverserSet = new TraverserSet<>();
     private int maxBarrierSize;
 
     public CollectingBarrierStep(final Traversal.Admin traversal) {
@@ -57,18 +63,46 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
         if (this.starts.hasNext()) {
             if (Integer.MAX_VALUE == this.maxBarrierSize) {
                 this.starts.forEachRemaining(this.traverserSet::add);
-                this.barrierConsumer(this.traverserSet);
             } else {
                 while (this.starts.hasNext() && this.traverserSet.size() < this.maxBarrierSize) {
                     this.traverserSet.add(this.starts.next());
                 }
-                this.barrierConsumer(this.traverserSet);
             }
+            this.barrierConsumer(this.traverserSet);
         }
     }
 
     @Override
-    public Traverser<S> processNextStart() {
+    public boolean hasNextBarrier() {
+        this.processAllStarts();
+        return !this.traverserSet.isEmpty();
+    }
+
+    @Override
+    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        this.processAllStarts();
+        if (this.traverserSet.isEmpty())
+            throw FastNoSuchElementException.instance();
+        else {
+            final TraverserSet<S> temp = new TraverserSet<>();
+            this.traverserSet.iterator().forEachRemaining(t -> {
+                DetachedFactory.detach(t, true); // this should be dynamic
+                temp.add(t);
+            });
+            this.traverserSet.clear();
+            return temp;
+        }
+    }
+
+    @Override
+    public void addBarrier(final TraverserSet<S> barrier) {
+        this.traverserSet = barrier;
+        this.traverserSet.forEach(traverser -> traverser.setSideEffects(this.getTraversal().getSideEffects()));
+        this.barrierConsumer(this.traverserSet);
+    }
+
+    @Override
+    public Traverser.Admin<S> processNextStart() {
         if (!this.traverserSet.isEmpty()) {
             return this.traverserSet.remove();
         } else if (this.starts.hasNext()) {
@@ -98,5 +132,10 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
     public void reset() {
         super.reset();
         this.traverserSet.clear();
+    }
+
+    @Override
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.addAll, false, true);
     }
 }

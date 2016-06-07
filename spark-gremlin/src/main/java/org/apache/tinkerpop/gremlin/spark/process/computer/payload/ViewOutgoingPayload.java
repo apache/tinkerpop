@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import scala.Tuple2;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,8 +37,8 @@ public final class ViewOutgoingPayload<M> implements Payload {
     }
 
     public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object, M>> outgoingMessages) {
-        this.view = view;
-        this.outgoingMessages = outgoingMessages;
+        this.view = view.isEmpty() ? null : view;
+        this.outgoingMessages = outgoingMessages.isEmpty() ? null : outgoingMessages;
     }
 
     public ViewPayload getView() {
@@ -45,6 +46,6 @@ public final class ViewOutgoingPayload<M> implements Payload {
     }
 
     public List<Tuple2<Object, M>> getOutgoingMessages() {
-        return this.outgoingMessages;
+        return null == this.outgoingMessages ? Collections.emptyList() : this.outgoingMessages;
     }
 }

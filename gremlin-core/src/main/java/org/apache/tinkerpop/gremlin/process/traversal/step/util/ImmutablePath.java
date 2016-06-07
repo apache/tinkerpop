@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -177,7 +176,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     }
 
 
-    private static class TailPath implements Path, ImmutablePathImpl {
+    private static class TailPath implements Path, ImmutablePathImpl, Serializable {
         private static final TailPath INSTANCE = new TailPath();
 
         private TailPath() {

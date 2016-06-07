@@ -34,7 +34,7 @@ public final class AndStep<S> extends ConnectiveStep<S> {
     }
 
     @Override
-    protected Traverser<S> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
         while (true) {
             final Traverser.Admin<S> start = this.starts.next();
             boolean alive = true;

@@ -18,16 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.function.BinaryOperator;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
+public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier<Boolean> {
 
     private boolean done = false;
 
@@ -38,18 +44,32 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
     protected abstract E supply();
 
     @Override
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
+        if (starts.hasNext()) {
+            this.done = false;
+            super.addStarts(starts);
+        }
+    }
+
+    @Override
+    public void addStart(final Traverser.Admin<S> start) {
+        this.done = false;
+        super.addStart(start);
+    }
+
+    @Override
     public void reset() {
         super.reset();
         this.done = false;
     }
 
     @Override
-    public Traverser<E> processNextStart() {
+    public Traverser.Admin<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
         this.processAllStarts();
         this.done = true;
-        return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supply(), (Step) this, 1l);
+        return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supply(), (Step<E, E>) this, 1l);
     }
 
     @Override
@@ -62,5 +82,32 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> impl
     public void processAllStarts() {
         while (this.starts.hasNext())
             this.starts.next();
+    }
+
+    @Override
+    public boolean hasNextBarrier() {
+        return !this.done;
+    }
+
+    @Override
+    public Boolean nextBarrier() throws NoSuchElementException {
+        this.processAllStarts();
+        this.done = true;
+        return true;
+    }
+
+    @Override
+    public void addBarrier(final Boolean barrier) {
+        this.done = false;
+    }
+
+    @Override
+    public void done() {
+        this.done = true;
+    }
+
+    @Override
+    public MemoryComputeKey<Boolean> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.and, false, true);
     }
 }

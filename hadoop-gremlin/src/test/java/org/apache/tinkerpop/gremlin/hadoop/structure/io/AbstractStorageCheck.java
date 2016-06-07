@@ -54,7 +54,7 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
 
         ////////////////////
 
-        final ComputerResult result = graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+        final ComputerResult result = graphProvider.getGraphComputer(graph).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
         // TEST OUTPUT GRAPH
         assertTrue(storage.exists(outputLocation));
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
@@ -77,7 +77,7 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
     }
 
     public void checkRemoveAndListMethods(final Storage storage, final String outputLocation) throws Exception {
-        graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+        graphProvider.getGraphComputer(graph).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
         assertTrue(storage.exists(outputLocation));
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
@@ -95,7 +95,7 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
 
         ////////////////
 
-        graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+        graphProvider.getGraphComputer(graph).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
         assertTrue(storage.exists(outputLocation));
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
@@ -106,7 +106,7 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
     }
 
     public void checkCopyMethods(final Storage storage, final String outputLocation, final String newOutputLocation, final Class outputGraphParserClass, final Class outputMemoryParserClass) throws Exception {
-        graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+        graphProvider.getGraphComputer(graph).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
         assertTrue(storage.exists(outputLocation));
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
@@ -131,17 +131,12 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         final GraphTraversal<Vertex, Long> traversal = g.V().both("knows").groupCount("m").by("age").count();
         assertEquals(4l, traversal.next().longValue());
         assertFalse(storage.exists(outputLocation));
-        assertFalse(storage.exists(Constants.getMemoryLocation(outputLocation, "m")));
-        assertFalse(storage.exists(Constants.getMemoryLocation(outputLocation, Graph.Hidden.hide("reducing"))));
         assertFalse(storage.exists(Constants.getGraphLocation(outputLocation)));
         ///
-        assertEquals(3, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().size());
-        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(27).longValue());
-        assertEquals(2, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(29).longValue());
-        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(32).longValue());
-        ///
-        assertEquals(4l, traversal.asAdmin().getSideEffects().<Long>get(Graph.Hidden.hide("reducing")).get().longValue());
-
+        assertEquals(3, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").size());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get(27).longValue());
+        assertEquals(2, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get(29).longValue());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get(32).longValue());
     }
 
     public void checkFileDirectoryDistinction(final Storage storage, final String directory1, final String directory2) throws Exception {

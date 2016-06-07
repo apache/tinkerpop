@@ -18,16 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 
-import java.io.Serializable;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraverserGeneratorFactory extends Serializable {
+public interface TraverserGeneratorFactory {
 
-    public TraverserGenerator getTraverserGenerator(final Traversal.Admin<?, ?> traversal);
+    public TraverserGenerator getTraverserGenerator(final Set<TraverserRequirement> requirements);
 
 }

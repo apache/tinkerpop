@@ -31,7 +31,9 @@ import java.util.concurrent.CountDownLatch;
  * Starts and stops one instance for all tests that extend from this class.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
+@Deprecated
 public abstract class AbstractGremlinServerPerformanceTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerPerformanceTest.class);
 

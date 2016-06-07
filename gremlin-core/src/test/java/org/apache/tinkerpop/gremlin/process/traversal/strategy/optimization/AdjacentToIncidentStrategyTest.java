@@ -19,116 +19,65 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-@RunWith(Enclosed.class)
+@RunWith(Parameterized.class)
 public class AdjacentToIncidentStrategyTest {
 
-    @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractAdjacentToIncidentStrategyTest {
+    @Parameterized.Parameter(value = 0)
+    public Traversal original;
 
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
+    @Parameterized.Parameter(value = 1)
+    public Traversal optimized;
 
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
 
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+    void applyAdjacentToIncidentStrategy(final Traversal traversal) {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(AdjacentToIncidentStrategy.instance());
+        traversal.asAdmin().setStrategies(strategies);
+        traversal.asAdmin().applyStrategies();
     }
 
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractAdjacentToIncidentStrategyTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
+    @Test
+    public void doTest() {
+        applyAdjacentToIncidentStrategy(original);
+        assertEquals(optimized, original);
     }
 
-    private static abstract class AbstractAdjacentToIncidentStrategyTest {
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
 
-        protected TraversalEngine traversalEngine;
-
-        void applyAdjacentToIncidentStrategy(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(AdjacentToIncidentStrategy.instance());
-
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
-            traversal.asAdmin().applyStrategies();
-        }
-
-        public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyAdjacentToIncidentStrategy(traversal);
-            assertEquals(optimized, traversal);
-        }
-
-        static Iterable<Object[]> generateTestParameters() {
-
-            return Arrays.asList(new Traversal[][]{
-                    {__.out().count(), __.outE().count()},
-                    {__.in().count(), __.inE().count()},
-                    {__.both().count(), __.bothE().count()},
-                    {__.out("knows").count(), __.outE("knows").count()},
-                    {__.out("knows", "likes").count(), __.outE("knows", "likes").count()},
-                    {__.filter(__.out()), __.filter(__.outE())},
-                    {__.where(__.not(__.out())), __.where(__.not(__.outE()))},
-                    {__.where(__.out("knows")), __.where(__.outE("knows"))},
-                    {__.values().count(), __.properties().count()},
-                    {__.values("name").count(), __.properties("name").count()},
-                    {__.where(__.values()), __.where(__.properties())},
-                    {__.and(__.out(), __.in()), __.and(__.outE(), __.inE())},
-                    {__.or(__.out(), __.in()), __.or(__.outE(), __.inE())},
-                    {__.out().as("a").count(),__.outE().count()},   // TODO: is this good?
-                    {__.where(__.as("a").out("knows").as("b")), __.where(__.as("a").out("knows").as("b"))}});
-        }
+        return Arrays.asList(new Traversal[][]{
+                {__.outE().count(), __.outE().count()},
+                {__.bothE("knows").count(), __.bothE("knows").count()},
+                {__.properties().count(), __.properties().count()},
+                {__.properties("name").count(), __.properties("name").count()},
+                {__.out().count(), __.outE().count()},
+                {__.in().count(), __.inE().count()},
+                {__.both().count(), __.bothE().count()},
+                {__.out("knows").count(), __.outE("knows").count()},
+                {__.out("knows", "likes").count(), __.outE("knows", "likes").count()},
+                {__.filter(__.out()), __.filter(__.outE())},
+                {__.where(__.not(__.out())), __.where(__.not(__.outE()))},
+                {__.where(__.out("knows")), __.where(__.outE("knows"))},
+                {__.values().count(), __.properties().count()},
+                {__.values("name").count(), __.properties("name").count()},
+                {__.where(__.values()), __.where(__.properties())},
+                {__.and(__.out(), __.in()), __.and(__.outE(), __.inE())},
+                {__.or(__.out(), __.in()), __.or(__.outE(), __.inE())},
+                {__.out().as("a").count(), __.outE().count()},   // TODO: is this good?
+                {__.where(__.as("a").out("knows").as("b")), __.where(__.as("a").out("knows").as("b"))}});
     }
 }

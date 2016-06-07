@@ -24,7 +24,10 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -36,13 +39,16 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +71,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Override
     public Settings overrideSettings(final Settings settings) {
-        settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList("scripts/generate-modern.groovy");
+        settings.scriptEngines.get("gremlin-groovy").scripts = Collections.singletonList("scripts/generate-modern.groovy");
         return settings;
     }
 
@@ -73,8 +79,8 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void beforeTest() {
         final MessageSerializer serializer = new GryoMessageSerializerV1d0();
         final Map<String,Object> c = new HashMap<>();
-        c.put("ioRegistries", Arrays.asList(TinkerIoRegistry.class.getName()));
-        c.put("custom", Arrays.asList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
+        c.put("ioRegistries", Collections.singletonList(TinkerIoRegistry.class.getName()));
+        c.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
 
         serializer.configure(c, null);
         cluster = Cluster.build().serializer(serializer).create();
@@ -84,6 +90,45 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     @After
     public void afterTest() {
         cluster.close();
+    }
+
+    @Test
+    public void shouldHandleVertexResultFromTraversal() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final Client aliased = client.alias("graph");
+        final ResultSet resultSet = aliased.submit(g.V().both().both());
+        final List<Result> results = resultSet.all().get();
+
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
+        assertEquals(30, results.size());
+    }
+
+    @Test
+    public void shouldHandleVertexResultFromTraversalAsTraversersUnrolled() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final Client aliased = client.alias("graph");
+        final ResultSet resultSetUnrolled = aliased.submit(g.V().both().barrier().both().barrier());
+        final List<Result> results = resultSetUnrolled.all().get();
+
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
+        assertEquals(30, results.size());
+    }
+
+    @Test
+    public void shouldHandleVertexResultFromTraversalAsTraversers() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final Client clientWithUnrolling = cluster.connect(Client.Settings.build().unrollTraversers(false).create());
+        final Client aliased = clientWithUnrolling.alias("graph");
+        final ResultSet resultSet = aliased.submit(g.V().both().barrier().both().barrier());
+        final List<Result> results = resultSet.all().get();
+
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
+        assertEquals(6, results.size());
+
+        aliased.close();
     }
 
     @Test
@@ -119,6 +164,19 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
             else
                 fail("Should not have any other keys besides 'name' and 'age'");
         });
+    }
+
+    @Test
+    public void shouldHandleVertexResultWithLiteSerialization() throws Exception {
+        final Cluster cluster = Cluster.build().serializer(Serializers.GRYO_LITE_V1D0).create();
+        final Client clientLite = cluster.connect();
+        final ResultSet results = clientLite.submit("g.V(1).next()");
+        final Vertex v = results.all().get().get(0).getVertex();
+        assertThat(v, instanceOf(ReferenceVertex.class));
+
+        assertEquals(1L, v.id());
+        assertEquals("", v.label());
+        assertEquals(0, IteratorUtils.count(v.properties()));
     }
 
     @Test
@@ -166,8 +224,8 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final List<Result> resultList = results.all().get();
         final Map m = resultList.get(0).get(HashMap.class);
         assertEquals(2, m.size());
-        assertEquals(3l, m.get(1l));
-        assertEquals(3l, m.get(3l));
+        assertEquals(3L, m.get(1L));
+        assertEquals(3L, m.get(3L));
     }
 
     @Test
@@ -177,9 +235,9 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         assertEquals(2, resultList.size());
         final Map.Entry firstEntry = resultList.get(0).get(HashMap.Entry.class);
         final Map.Entry secondEntry = resultList.get(1).get(HashMap.Entry.class);
-        assertThat(firstEntry.getKey(), anyOf(is(3l), is(1l)));
-        assertThat(firstEntry.getValue(), is(3l));
-        assertThat(secondEntry.getKey(), anyOf(is(3l), is(1l)));
-        assertThat(secondEntry.getValue(), is(3l));
+        assertThat(firstEntry.getKey(), anyOf(is(3L), is(1L)));
+        assertThat(firstEntry.getValue(), is(3L));
+        assertThat(secondEntry.getKey(), anyOf(is(3L), is(1L)));
+        assertThat(secondEntry.getValue(), is(3L));
     }
 }

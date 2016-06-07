@@ -18,21 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -52,9 +60,23 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected ResultGraph resultGraph = null;
     protected Persist persist = null;
 
+    protected GraphFilter graphFilter = new GraphFilter();
+
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
         this.logger = LoggerFactory.getLogger(this.getClass());
+    }
+
+    @Override
+    public GraphComputer vertices(final Traversal<Vertex, Vertex> vertexFilter) {
+        this.graphFilter.setVertexFilter(vertexFilter);
+        return this;
+    }
+
+    @Override
+    public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
+        this.graphFilter.setEdgeFilter(edgeFilter);
+        return this;
     }
 
     @Override
@@ -161,16 +183,16 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
         @Override
         public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-            if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT)) {
-                final OutputFormat<NullWritable, VertexWritable> outputFormat = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphOutputFormat(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
-                if (outputFormat instanceof PersistResultGraphAware)
-                    return ((PersistResultGraphAware) outputFormat).supportsResultGraphPersistCombination(resultGraph, persist);
+            if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_WRITER)) {
+                final Object writer = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphWriter(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
+                if (writer instanceof PersistResultGraphAware)
+                    return ((PersistResultGraphAware) writer).supportsResultGraphPersistCombination(resultGraph, persist);
                 else {
-                    logger.warn(outputFormat.getClass() + " does not implement " + PersistResultGraphAware.class.getSimpleName() + " and thus, persistence options are unknown -- assuming all options are possible");
+                    logger.warn(writer.getClass() + " does not implement " + PersistResultGraphAware.class.getSimpleName() + " and thus, persistence options are unknown -- assuming all options are possible");
                     return true;
                 }
             } else {
-                logger.warn("Unknown OutputFormat class and thus, persistence options are unknown -- assuming all options are possible");
+                logger.warn("No " + Constants.GREMLIN_HADOOP_GRAPH_WRITER + " property provided and thus, persistence options are unknown -- assuming all options are possible");
                 return true;
             }
         }
@@ -178,6 +200,29 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
         @Override
         public boolean supportsDirectObjects() {
             return false;
+        }
+    }
+
+    //////////
+
+    public static File copyDirectoryIfNonExistent(final FileSystem fileSystem, final String localDirectory) {
+        try {
+            final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
+            File file = new File(localDirectory);
+            if ((Boolean.valueOf(System.getProperty("is.testing", "false")) || !file.exists()) && fileSystem.exists(new Path(localDirectory)) && fileSystem.isDirectory(new Path(localDirectory))) {
+                final File tempDirectory = new File(System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + hadoopGremlinLibsRemote);
+                if (!tempDirectory.exists()) assert tempDirectory.mkdirs();
+                final String tempPath = tempDirectory.getAbsolutePath() + System.getProperty("file.separator") + new File(localDirectory).getName();
+                final RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(new Path(localDirectory), false);
+                while (files.hasNext()) {
+                    final LocatedFileStatus f = files.next();
+                    fileSystem.copyToLocalFile(f.getPath(), new Path(tempPath + System.getProperty("file.separator") + f.getPath().getName()));
+                }
+                return new File(tempPath);
+            } else
+                return file;
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

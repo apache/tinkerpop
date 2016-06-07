@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractStorageCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,6 +39,13 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     public void setup() throws Exception {
         super.setup();
         SparkContextStorage.open("local[4]");
+        Spark.close();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        Spark.create("local[4]");
         Spark.close();
     }
 

@@ -62,6 +62,8 @@ public interface Memory {
      */
     public <R> R get(final String key) throws IllegalArgumentException;
 
+    public void set(final String key, final Object value) throws IllegalArgumentException, IllegalStateException;
+
     /**
      * Set the value of the provided key. This is typically called in setup() and/or terminate() of the {@link VertexProgram}.
      * If this is called during execute(), there is no guarantee as to the ultimately stored value as call order is indeterminate.
@@ -69,7 +71,7 @@ public interface Memory {
      * @param key   they key to set a value for
      * @param value the value to set for the key
      */
-    public void set(final String key, final Object value);
+    public void add(final String key, final Object value) throws IllegalArgumentException, IllegalStateException;
 
     /**
      * A helper method that generates a {@link Map} of the memory key/values.
@@ -78,9 +80,8 @@ public interface Memory {
      */
     public default Map<String, Object> asMap() {
         final Map<String, Object> map = keys().stream()
-                .filter(this::exists)
                 .map(key -> Pair.with(key, get(key)))
-                .collect(Collectors.toMap(kv -> kv.getValue0(), Pair::getValue1));
+                .collect(Collectors.toMap(Pair::getValue0, Pair::getValue1));
         return Collections.unmodifiableMap(map);
     }
 
@@ -97,30 +98,6 @@ public interface Memory {
      * @return the total time in milliseconds
      */
     public long getRuntime();
-
-    /**
-     * Add the provided delta value to the long value currently stored at the key.
-     *
-     * @param key   the key of the long value
-     * @param delta the adjusting amount (can be negative for decrement)
-     */
-    public void incr(final String key, final long delta);
-
-    /**
-     * Logically AND the provided boolean value with the boolean value currently stored at the key.
-     *
-     * @param key  the key of the boolean value
-     * @param bool the boolean to AND
-     */
-    public void and(final String key, final boolean bool);
-
-    /**
-     * Logically OR the provided boolean value with the boolean value currently stored at the key.
-     *
-     * @param key  the key of the boolean value
-     * @param bool the boolean to OR
-     */
-    public void or(final String key, final boolean bool);
 
     /**
      * A helper method that states whether the current iteration is 0.
@@ -176,8 +153,12 @@ public interface Memory {
             return new IllegalArgumentException("The memory does not have a value for provided key: " + key);
         }
 
-        public static UnsupportedOperationException dataTypeOfMemoryValueNotSupported(final Object val) {
-            return new UnsupportedOperationException(String.format("Graph computer memory value [%s] is of type %s is not supported", val, val.getClass()));
+        public static IllegalArgumentException memorySetOnlyDuringVertexProgramSetUpAndTerminate(final String key) {
+            return new IllegalArgumentException("The memory can only be set() during vertex program setup and terminate: " + key);
+        }
+
+        public static IllegalArgumentException memoryAddOnlyDuringVertexProgramExecute(final String key) {
+            return new IllegalArgumentException("The memory can only be add() during vertex program execute: " + key);
         }
     }
 

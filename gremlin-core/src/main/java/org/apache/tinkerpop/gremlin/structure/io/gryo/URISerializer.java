@@ -18,29 +18,32 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 
 import java.net.URI;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class URISerializer extends Serializer<URI> {
+final class URISerializer implements SerializerShim<URI> {
 
-    public URISerializer() {
-        setImmutable(true);
-    }
+    public URISerializer() { }
 
     @Override
-    public void write(final Kryo kryo, final Output output, final URI uri) {
+    public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final URI uri) {
         output.writeString(uri.toString());
     }
 
     @Override
-    public URI read(final Kryo kryo, final Input input, final Class<URI> uriClass) {
+    public <I extends InputShim> URI read(final KryoShim<I, ?> kryo, final I input, final Class<URI> uriClass) {
         return URI.create(input.readString());
+    }
+
+    @Override
+    public boolean isImmutable() {
+        return true;
     }
 }

@@ -21,12 +21,13 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,25 +39,23 @@ public final class MapMemory implements Memory.Admin, Serializable {
     private long runtime = 0l;
     private int iteration = -1;
     private final Map<String, Object> memoryMap = new HashMap<>();
-    private final Set<String> memoryComputeKeys = new HashSet<>();
+    private final Map<String, MemoryComputeKey> memoryComputeKeys = new HashMap<>();
 
     public MapMemory() {
 
     }
 
     public MapMemory(final Memory otherMemory) {
-        otherMemory.keys().forEach(key -> {
-            this.memoryMap.put(key, otherMemory.get(key));
-        });
+        otherMemory.keys().forEach(key -> this.memoryMap.put(key, otherMemory.get(key)));
         this.iteration = otherMemory.getIteration();
     }
 
     public void addVertexProgramMemoryComputeKeys(final VertexProgram<?> vertexProgram) {
-        this.memoryComputeKeys.addAll(vertexProgram.getMemoryComputeKeys());
+        vertexProgram.getMemoryComputeKeys().forEach(key -> this.memoryComputeKeys.put(key.getKey(), key));
     }
 
     public void addMapReduceMemoryKey(final MapReduce mapReduce) {
-        this.memoryComputeKeys.add(mapReduce.getMemoryKey());
+        this.memoryComputeKeys.put(mapReduce.getMemoryKey(), MemoryComputeKey.of(mapReduce.getMemoryKey(), Operator.assign, false, false));
     }
 
     @Override
@@ -75,6 +74,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
 
     @Override
     public void set(final String key, Object value) {
+        // this.checkKeyValue(key, value);
         this.memoryMap.put(key, value);
     }
 
@@ -89,35 +89,13 @@ public final class MapMemory implements Memory.Admin, Serializable {
     }
 
     @Override
-    public void incr(final String key, final long delta) {
-        this.checkKeyValue(key, delta);
+    public void add(final String key, final Object value) {
+        this.checkKeyValue(key, value);
         if (this.memoryMap.containsKey(key)) {
-            final long newValue = (long) this.memoryMap.get(key) + delta;
+            final Object newValue = this.memoryComputeKeys.get(key).getReducer().apply(this.memoryMap.get(key), value);
             this.memoryMap.put(key, newValue);
         } else {
-            this.memoryMap.put(key, delta);
-        }
-    }
-
-    @Override
-    public void and(final String key, final boolean bool) {
-        this.checkKeyValue(key, bool);
-        if (this.memoryMap.containsKey(key)) {
-            final boolean newValue = (boolean) this.memoryMap.get(key) && bool;
-            this.memoryMap.put(key, newValue);
-        } else {
-            this.memoryMap.put(key, bool);
-        }
-    }
-
-    @Override
-    public void or(final String key, final boolean bool) {
-        this.checkKeyValue(key, bool);
-        if (this.memoryMap.containsKey(key)) {
-            final boolean newValue = (boolean) this.memoryMap.get(key) || bool;
-            this.memoryMap.put(key, newValue);
-        } else {
-            this.memoryMap.put(key, bool);
+            this.memoryMap.put(key, value);
         }
     }
 
@@ -142,7 +120,7 @@ public final class MapMemory implements Memory.Admin, Serializable {
     }
 
     private final void checkKeyValue(final String key, final Object value) {
-        if (!this.memoryComputeKeys.contains(key))
+        if (!this.memoryComputeKeys.containsKey(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }

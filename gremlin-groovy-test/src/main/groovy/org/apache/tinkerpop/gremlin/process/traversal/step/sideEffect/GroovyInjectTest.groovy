@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,12 +31,12 @@ public abstract class GroovyInjectTest {
     public static class Traversals extends InjectTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out.inject(g.V(v2Id).next()).name", g, "v1Id", v1Id, "v2Id", v2Id);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out.inject(g.V(v2Id).next()).name", "v1Id", v1Id, "v2Id", v2Id);
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path", g, "v1Id", v1Id);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path", "v1Id", v1Id);
         }
     }
 }

@@ -28,8 +28,10 @@ import org.junit.runner.RunWith;
  * Executes the Performance Gremlin Process Test Suite using TinkerGraph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
 @RunWith(ProcessPerformanceSuite.class)
 @GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
+@Deprecated
 public class TinkerGraphProcessPerformanceTest {
 }

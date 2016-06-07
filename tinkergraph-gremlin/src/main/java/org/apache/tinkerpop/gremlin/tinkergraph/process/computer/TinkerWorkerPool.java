@@ -59,7 +59,7 @@ public final class TinkerWorkerPool implements AutoCloseable {
         this.mapReducePool = new MapReducePool(mapReduce, this.numberOfWorkers);
     }
 
-    public void executeVertexProgram(final Consumer<VertexProgram> worker) {
+    public void executeVertexProgram(final Consumer<VertexProgram> worker) throws InterruptedException {
         for (int i = 0; i < this.numberOfWorkers; i++) {
             this.completionService.submit(() -> {
                 final VertexProgram vp = this.vertexProgramPool.take();
@@ -71,13 +71,15 @@ public final class TinkerWorkerPool implements AutoCloseable {
         for (int i = 0; i < this.numberOfWorkers; i++) {
             try {
                 this.completionService.take().get();
+            } catch (InterruptedException ie) {
+                throw ie;
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
     }
 
-    public void executeMapReduce(final Consumer<MapReduce> worker) {
+    public void executeMapReduce(final Consumer<MapReduce> worker) throws InterruptedException {
         for (int i = 0; i < this.numberOfWorkers; i++) {
             this.completionService.submit(() -> {
                 final MapReduce mr = this.mapReducePool.take();
@@ -89,10 +91,16 @@ public final class TinkerWorkerPool implements AutoCloseable {
         for (int i = 0; i < this.numberOfWorkers; i++) {
             try {
                 this.completionService.take().get();
+            } catch (InterruptedException ie) {
+                throw ie;
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
+    }
+
+    public void closeNow() throws Exception {
+        this.workerPool.shutdownNow();
     }
 
     @Override

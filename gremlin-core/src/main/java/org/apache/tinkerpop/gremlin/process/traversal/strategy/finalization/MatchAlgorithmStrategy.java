@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
@@ -38,9 +38,11 @@ public final class MatchAlgorithmStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
-            return;
-        TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> matchStep.setMatchAlgorithm(this.matchAlgorithmClass));
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof MatchStep) {
+                ((MatchStep) step).setMatchAlgorithm(this.matchAlgorithmClass);
+            }
+        }
     }
 
     public static Builder build() {

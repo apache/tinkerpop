@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -33,18 +33,23 @@ public abstract class GroovyGraphTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_V_valuesXnameX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).V.name", g, "v1Id", v1Id);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).V.name", "v1Id", v1Id);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outXknowsX_V_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('knows').V.name")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name() {
-            TraversalScriptHelper.compute("g.V.has('name','Garcia').in('sungBy').as('song').V.has('name','Willie_Dixon').in('writtenBy').where(eq('song')).name", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('name','Garcia').in('sungBy').as('song').V.has('name','Willie_Dixon').in('writtenBy').where(eq('song')).name")
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX() {
             def software = g.V().hasLabel("software").toList()
-            TraversalScriptHelper.compute("g.V().hasLabel('person').as('p').V(software).addE('uses').from('p')", g, "software", software)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('person').as('p').V(software).addE('uses').from('p')", "software", software)
         }
     }
 }

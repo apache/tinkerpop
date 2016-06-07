@@ -1,0 +1,606 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+TinkerPop 3.2.0
+===============
+
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=225]
+
+*Nine Inch Gremlins*
+
+TinkerPop 3.2.1
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#tinkerpop-321-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Gephi Plugin
+^^^^^^^^^^^^
+
+The Gephi Plugin has been updated to support Gephi 0.9.x. Please upgrade to this latest version to use the Gephi Plugin
+for Gremlin Console.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1297[TINKERPOP-1297]
+
+GryoMapper Construction
+^^^^^^^^^^^^^^^^^^^^^^^
+
+It is now possible to override existing serializers with calls to `addCustom` on the `GryoMapper` builder. This option
+allows complete control over the serializers used by Gryo. Of course, this also makes it possible to produce completely
+non-compliant Gryo files. This feature should be used with caution.
+
+TraversalVertexProgram
+^^^^^^^^^^^^^^^^^^^^^^
+
+`TraversalVertexProgram` always maintained a `HALTED_TRAVERSERS` `TraverserSet` for each vertex throughout the life
+of the OLAP computation. However, if there are no halted traversers in the set, then there is no point in keeping that
+compute property around as without it, time and space can be saved. Users that have `VertexPrograms` that are chained off
+of `TraversalVertexProgram` and have previously assumed that `HALTED_TRAVERSERS` always exists at each vertex, should no
+longer assume that.
+
+[source,java]
+// bad code
+TraverserSet haltedTraversers = vertex.value(TraversalVertexProgram.HALTED_TRAVERSERS);
+// good code
+TraverserSet haltedTraversers = vertex.property(TraversalVertexProgram.HALTED_TRAVERSERS).orElse(new TraverserSet());
+
+Interrupting Traversals
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Traversals now better respect calls to `Thread.interrupt()`, which mean that a running `Traversal` can now be
+cancelled. There are some limitations that remain, but most OLTP-based traversals should cancel without
+issue. OLAP-based traversals for Spark will also cancel and clean up running jobs in Spark itself. Mileage may vary
+on other process implementations and it is possible that graph providers could potentially write custom step
+implementations that prevent interruption. If it is found that there are configurations or specific traversals that
+do not respect interruption, please mention them on the mailing list.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-946[TINKERPOP-946]
+
+Gremlin Console Flags
+^^^^^^^^^^^^^^^^^^^^^
+
+Gremlin Console had several methods for executing scripts from file at the start-up of `bin/gremlin.sh`. There were
+two options:
+
+[source,text]
+bin/gremlin.sh script.groovy    <1>
+bin/gremlin.sh -e script.groovy <2>
+
+<1> The `script.groovy` would be executed as a console initialization script setting the console up for use and leaving
+it open when the script completed successfully or closing it if the script failed.
+<2> The `script.groovy` would be executed by the `ScriptExecutor` which meant that commands for the Gremlin Console,
+such as `:remote` and `:>` would not be respected.
+
+Changes in this version of TinkerPop have added much more flexibility here and only a minor breaking change should be
+considered when using this version. First of all, recognize that hese two lines are currently equivalent:
+
+[source,text]
+bin/gremlin.sh script.groovy
+bin/gremlin.sh -i script.groovy
+
+but users should start to explicitly specify the `-i` flag as TinkerPop will eventually remove the old syntax. Despite
+the one used beware of the fact that neither will close the console on script failure anymore. In that sense, this
+behavior represents a breaking change to consider. To ensure the console closes on failure or success, a script will
+have to use the `-e` option.
+
+The console also has a number of new features in addition to `-e` and `-i`:
+
+* View the available flags for the console with `-h`.
+* Control console output with `-D`, `-Q` and -`V`
+* Get line numbers on script failures passed to `-i` and `-e`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1268[TINKERPOP-1268],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1155[TINKERPOP-1155], link:https://issues.apache.org/jira/browse/TINKERPOP-1156[TINKERPOP-1156],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1157[TINKERPOP-1157],
+link:http://tinkerpop.apache.org/docs/3.2.1/reference/#interactive-mode[Reference Documentation - Interactive Mode],
+link:http://tinkerpop.apache.org/docs/3.2.1/reference/#execution-mode[Reference Documentation - Execution Mode]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+VertexComputing API Change
+++++++++++++++++++++++++++
+
+The `VertexComputing` API is used by steps that wrap a `VertexProgram`. There is a method called
+`VertexComputing.generateProgram()` that has changed which now takes a second argument of `Memory`. To  upgrade, simply
+fix the method signature of your `VertexComputing` implementations. The `Memory` argument can be safely ignored to
+effect the exact same semantics as prior. However, now previous OLAP job `Memory` can be leveraged when constructing
+the next `VertexProgram` in an OLAP traversal chain.
+
+Interrupting Traversals
++++++++++++++++++++++++
+
+Several tests have been added to the TinkerPop test suite to validate that a `Traversal` can be cancelled with
+`Thread.interrupt()`. The test suite does not cover all possible traversal scenarios. When implementing custom steps,
+providers should take care to not ignore an `InterruptionException` that might be thrown in their code and to be sure
+to check `Thread.isInterrupted()` as needed to ensure that the step remains cancellation compliant.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-946[TINKERPOP-946]
+
+Performance Tests
++++++++++++++++++
+
+All "performance" tests have been deprecated. In the previous 3.2.0-incubating release, the `ProcessPerformanceSuite`
+and `TraversalPerformanceTest` were deprecated, but some other tests remained. It is the remaining tests that have
+been deprecated on this release:
+
+* `StructurePerformanceSuite
+** `GraphReadPerformanceTest`
+** `GraphWriterPerformanceTest`
+* `GroovyEnvironmentPerformanceSuite`
+** `SugarLoaderPerformanceTest`
+** `GremlinExecutorPerformanceTest`
+* Gremlin Server related performance tests
+* TinkerGraph related performance tests
+
+Providers should implement their own performance tests and not rely on these deprecated tests as they will be removed
+in a future release along with the "JUnit Benchmarks" dependency.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1294[TINKERPOP-1294]
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Transaction Tests
++++++++++++++++++
+
+Tests and assertions were added to the structure test suite to validate that transaction status was in the appropriate
+state following calls to close the transaction with `commit()` or `rollback()`. It is unlikely that this change would
+cause test breaks for providers, unless the transaction status was inherently disconnected from calls to close the
+transaction somehow.
+
+In addition, other tests were added to enforce the expected semantics for threaded transactions. Threaded transactions
+are expected to behave like manual transactions. They should be open automatically when they are created and once
+closed should no longer be used. This behavior is not new and is the typical expected method for working with these
+types of transactions. The test suite just requires that the provider implementation conform to these semantics.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-947[TINKERPOP-947],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1059[TINKERPOP-1059]
+
+GraphFilter and GraphFilterStrategy
++++++++++++++++++++++++++++++++++++
+
+`GraphFilter` has been significantly advanced where the determination of an edge direction/label legality is more stringent.
+Along with this, `GraphFilter.getLegallyPositiveEdgeLabels()` has been added as a helper method to make it easier for `GraphComputer`
+providers to know the space of labels being accessed by the traversal and thus, better enable provider-specific push-down predicates.
+
+Note that `GraphFilterStrategy` is now a default `TraversalStrategy` registered with `GraphComputer.` If `GraphFilter` is
+expensive for the underlying `GraphComputer` implementation, it can be deactivated as is done for `TinkerGraphComputer`.
+
+[source,java]
+----
+static {
+  TraversalStrategies.GlobalCache.registerStrategies(TinkerGraphComputer.class,
+    TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().removeStrategies(GraphFilterStrategy.class));
+}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1293[TINKERPOP-1293]
+
+Graph Language Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+VertexTest Signatures
++++++++++++++++++++++
+
+The method signatures of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` were changed
+to take arguments for the `Traversal` to be constructed by extending classes.
+
+TinkerPop 3.2.0
+---------------
+
+*Release Date: Release Date: April 8, 2016*
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#tinkerpop-320-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Hadoop FileSystem Variable
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `HadoopGremlinPlugin` defines two variables: `hdfs` and `fs`. The first is a reference to the HDFS `FileSystemStorage`
+and the latter is a reference to the the local `FileSystemStorage`. Prior to 3.2.x, `fs` was called `local`. However,
+there was a variable name conflict with `Scope.local`. As such `local` is now `fs`. This issue existed prior to 3.2.x,
+but was not realized until this release. Finally, this only effects Gremlin Console users.
+
+Hadoop Configurations
+^^^^^^^^^^^^^^^^^^^^^
+
+Note that `gremlin.hadoop.graphInputFormat`, `gremlin.hadoop.graphOutputFormat`, `gremlin.spark.graphInputRDD`, and
+`gremlin.spark.graphOuputRDD` have all been deprecated. Using them still works, but moving forward, users only need to
+leverage `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter`. An example properties file snippet is provided
+below.
+
+```
+gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.graphReader=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphWriter=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
+gremlin.hadoop.jarsInDistributedCache=true
+gremlin.hadoop.defaultGraphComputer=org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1082[TINKERPOP-1082],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1222[TINKERPOP-1222]
+
+TraversalSideEffects Update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There were changes to `TraversalSideEffect` both at the semantic level and at the API level. Users that have traversals
+of the form `sideEffect{...}` that leverage global side-effects should read the following carefully. If the user's traversals do
+not use lambda-based side-effect steps (e.g. `groupCount("m")`), then the changes below will not effect them. Moreover, if user's
+traversal only uses `sideEffect{...}` with closure (non-`TraversalSideEffect`) data references, then the changes below will not effect them.
+If the user's traversal uses sideEffects in OLTP only, the changes below will not effect them. Finally, providers should not be
+effected by the changes save any tests cases.
+
+TraversalSideEffects Get API Change
++++++++++++++++++++++++++++++++++++
+
+`TraversalSideEffects` can now logically operate within a distributed OLAP environment. In order to make this possible,
+it is necessary that each side-effect be registered with a reducing `BinaryOperator`. This binary operator will combine
+distributed updates into a single global side-effect at the master traversal. Many of the methods in `TraversalSideEffect`
+have been `Deprecated`, but they are backwards compatible save that `TraversalSideEffects.get()` no longer returns an `Optional`,
+but instead throws an `IllegalArgumentException`. While the `Optional` semantics could have remained, it was deemed best to
+directly return the side-effect value to reduce object creation costs and because all side-effects must be registered apriori,
+there is never a reason why an unknown side-effect key would be used. In short:
+
+[source,java]
+----
+// change
+traversal.getSideEffects().get("m").get()
+// to
+traversal.getSideEffects().get("m")
+----
+
+TraversalSideEffects Registration Requirement
++++++++++++++++++++++++++++++++++++++++++++++
+
+All `TraversalSideEffects` must be registered upfront. This is because, in OLAP, side-effects map to `Memory` compute keys
+and as such, must be declared prior to the execution of the `TraversalVertexProgram`. If a user's traversal creates a
+side-effect mid-traversal, it will fail. The traversal must use `GraphTraversalSource.withSideEffect()` to declare
+the side-effects it will use during its execution lifetime. If the user's traversals use standard side-effect Gremlin
+steps (e.g. `group("m")`), then no changes are required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192]
+
+TraversalSideEffects Add Requirement
+++++++++++++++++++++++++++++++++++++
+
+In a distributed environment, a side-effect can not be mutated and be expected to exist in the mutated form at the final,
+aggregated, master traversal. For instance, if the side-effect "myCount" references a `Long`, the `Long` can not be updated
+directly via `sideEffects.set("myCount", sideEffects.get("myCount") + 1)`. Instead, it must rely on the registered reducer
+to do the merging and thus, the `Step` must do `sideEffect.add("mySet",1)`, where the registered reducer is `Operator.sum`.
+Thus, the below will increment "a". If no operator was provided, then the operator is assumed `Operator.assign` and the
+final result of "a" would be 1. Note that `Traverser.sideEffects(key,value)` uses `TraversalSideEffect.add()`.
+
+[source,groovy]
+----
+gremlin> traversal = g.withSideEffect('a',0,sum).V().out().sideEffect{it.sideEffects('a',1)}
+==>v[3]
+==>v[2]
+==>v[4]
+==>v[5]
+==>v[3]
+==>v[3]
+gremlin> traversal.getSideEffects().get('a')
+==>6
+gremlin> traversal = g.withSideEffect('a',0).V().out().sideEffect{it.sideEffects('a',1)}
+==>v[3]
+==>v[2]
+==>v[4]
+==>v[5]
+==>v[3]
+==>v[3]
+gremlin> traversal.getSideEffects().get('a')
+==>1
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1192[TINKERPOP-1192],
+https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166]
+
+ProfileStep Update and GraphTraversal API Change
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `profile()`-step has been refactored into 2 steps -- `ProfileStep` and `ProfileSideEffectStep`. Users who previously
+used the `profile()` in conjunction with `cap(TraversalMetrics.METRICS_KEY)` can now simply omit the cap step. Users who
+retrieved `TraversalMetrics` from the side-effects after iteration can still do so, but will need to specify a side-effect
+key when using the `profile()`. For example, `profile("myMetrics")`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-958[TINKERPOP-958]
+
+BranchStep Bug Fix
+^^^^^^^^^^^^^^^^^^
+
+There was a bug in `BranchStep` that also rears itself in subclass steps such as `UnionStep` and `ChooseStep`.
+For traversals with branches that have barriers (e.g. `count()`, `max()`, `groupCount()`, etc.), the traversal needs to be updated.
+For instance, if a traversal is of the form  `g.V().union(out().count(),both().count())`, the result is now different
+(the bug fix yields a different output). In order to yield the same result, the traversal should be rewritten as
+`g.V().local(union(out().count(),both().count()))`. Note that if a branch does not have a barrier, then no changes are required.
+For instance, `g.V().union(out(),both())` does not need to be updated. Moreover, if the user's traversal already used
+the `local()`-form, then no change are required either.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1188[TINKERPOP-1188]
+
+MemoryComputeKey and VertexComputeKey
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Users that have custom `VertexProgram` implementations will need to change their implementations to support the new
+`VertexComputeKey` and `MemoryComputeKey` classes. In the `VertexPrograms` provided by TinkerPop, these changes were trivial,
+taking less than 5 minutes to make all the requisite updates.
+
+* `VertexProgram.getVertexComputeKeys()` returns a `Set<VertexComputeKey>`. No longer a `Set<String>`.
+Use `VertexComputeKey.of(String key,boolean transient)` to generate a `VertexComputeKey`.
+Transient keys were not supported in the past, so to make the implementation semantically equivalent,
+the boolean transient should be false.
+
+* `VertexProgram.getMemoryComputeKeys()` returns a `Set<MemoryComputeKey>`. No longer a `Set<String>`.
+Use `MemoryComputeKey.of(String key, BinaryOperator reducer, boolean broadcast, boolean transient)` to generate a `MemoryComputeKey`.
+Broadcasting and transients were not supported in the past so to make the implementation semantically equivalent,
+the boolean broadcast should be true and the boolean transient should be false.
+
+An example migration looks as follows. What might currently look like:
+
+```
+public Set<String> getMemoryComputeKeys() {
+   return new HashSet<>(Arrays.asList("a","b","c"))
+}
+```
+
+Should now look like:
+
+```
+public Set<MemoryComputeKey> getMemoryComputeKeys() {
+  return new HashSet<>(Arrays.asList(
+    MemoryComputeKey.of("a", Operator.and, true, false),
+    MemoryComputeKey.of("b", Operator.sum, true, false),
+    MemoryComputeKey.of("c", Operator.or, true, false)))
+}
+```
+
+A similar patterns should also be used for `VertexProgram.getVertexComputeKeys()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1162[TINKERPOP-1162]
+
+SparkGraphComputer and GiraphGraphComputer Persistence
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `MapReduce`-based steps in `TraversalVertexProgram` have been removed and replaced using a new `Memory`-reduction model.
+`MapReduce` jobs always created a persistence footprint, e.g. in HDFS. `Memory` data was never persisted to HDFS.
+As such, there will be no data on the disk that is accessible. For instance, there is no more `~reducing`, `~traversers`,
+and specially named side-effects such as `m` from a `groupCount('m')`. The data is still accessible via `ComputerResult.memory()`,
+it simply does not have a corresponding on-disk representation.
+
+RemoteGraph
+^^^^^^^^^^^
+
+`RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
+remote execution. It is an interesting alternative to the other methods for connecting to Gremlin Server in that all
+other methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
+to Gremlin Server (via driver or REST).
+
+[source,groovy]
+----
+gremlin> graph = RemoteGraph.open('conf/remote-graph.properties')
+==>remotegraph[DriverServerConnection-localhost/127.0.0.1:8182 [graph='graph]]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[remotegraph[DriverServerConnection-localhost/127.0.0.1:8182 [graph='graph]], standard]
+gremlin> g.V().valueMap(true)
+==>[name:[marko], label:person, id:1, age:[29]]
+==>[name:[vadas], label:person, id:2, age:[27]]
+==>[name:[lop], label:software, id:3, lang:[java]]
+==>[name:[josh], label:person, id:4, age:[32]]
+==>[name:[ripple], label:software, id:5, lang:[java]]
+==>[name:[peter], label:person, id:6, age:[35]]
+----
+
+Note that `g.V().valueMap(true)` is executing in Gremlin Server and not locally in the console.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-575[TINKERPOP-575],
+link:http://tinkerpop.apache.org/docs/3.2.0-incubating/reference/#connecting-via-remotegraph[Reference Documentation - Remote Graph]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+GraphStep Compilation Requirement
++++++++++++++++++++++++++++++++++
+
+OLTP graph providers that have a custom `GraphStep` implementation should ensure that `g.V().hasId(x)` and `g.V(x)` compile
+to the same representation. This ensures a consistent user experience around random access of elements based on ids
+(as opposed to potentially the former doing a linear scan). A static helper method called `GraphStep.processHasContainerIds()`
+has been added. `TinkerGraphStepStrategy` was updated as such:
+
+```
+((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
+```
+
+is now
+
+```
+((HasContainerHolder) currentStep).getHasContainers().forEach(hasContainer -> {
+  if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+    tinkerGraphStep.addHasContainer(hasContainer);
+});
+```
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1219[TINKERPOP-1219]
+
+Step API Update
++++++++++++++++
+
+The `Step` interface is fundamental to Gremlin. `Step.processNextStart()` and `Step.next()` both returned `Traverser<E>`.
+We had so many `Traverser.asAdmin()` and direct typecast calls throughout (especially in `TraversalVertexProgram`) that
+it was deemed prudent to have `Step.processNextStart()` and `Step.next()` return `Traverser.Admin<E>`. Moreover it makes
+sense as this is internal logic where `Admins` are always needed. Providers with their own step definitions will simply
+need to change the method signatures of `Step.processNextStart()` and `Step.next()`. No logic update is required -- save
+that `asAdmin()` can be safely removed if used. Also, `Step.addStart()` and `Step.addStarts()` take `Traverser.Admin<S>`
+and `Iterator<Traverser.Admin<S>>`, respectively.
+
+Traversal API Update
+++++++++++++++++++++
+
+The way in which `TraverserRequirements` are calculated has been changed (for the better). The ramification is that post
+compilation requirement additions no longer make sense and should not be allowed. To enforce this,
+`Traversal.addTraverserRequirement()` method has been removed from the interface. Moreover, providers/users should never be able
+to add requirements manually (this should all be inferred from the end compilation). However, if need be, there is always
+`RequirementStrategy` which will allow the provider to add a requirement at strategy application time
+(though again, there should not be a reason to do so).
+
+ComparatorHolder API Change
++++++++++++++++++++++++++++
+
+Providers that either have their own `ComparatorHolder` implementation or reason on `OrderXXXStep` will need to update their code.
+`ComparatorHolder` now returns `List<Pair<Traversal,Comparator>>`. This has greatly reduced the complexity of comparison-based
+steps like `OrderXXXStep`. However, its a breaking API change that is trivial to update to, just some awareness is required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1209[TINKERPOP-1209]
+
+GraphComputer Semantics and API
++++++++++++++++++++++++++++++++
+
+Providers that have a custom `GraphComputer` implementation will have a lot to handle. Note that if the graph system
+simply uses `SparkGraphComputer` or `GiraphGraphComputer` provided by TinkerPop, then no updates are required. This
+only effects providers that have their own custom `GraphComputer` implementations.
+
+`Memory` updates:
+
+* Any `BinaryOperator` can be used for reduction and is made explicit in the `MemoryComputeKey`.
+* `MemoryComputeKeys` can be marked transient and must be removed from the resultant `ComputerResult.memory()`.
+* `MemoryComputeKeys` can be specified to not broadcast and thus, must not be available to workers to read in `VertexProgram.execute()`.
+* The `Memory` API has been changed. No more `incr()`, `and()`, etc. Now its just `set()` (setup/terminate) and `add()` (execute).
+
+`VertexProgram` updates:
+
+* `VertexComputeKeys` can be marked transient and must be removed from the resultant `ComputerResult.graph()`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1166[TINKERPOP-1166],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164],
+link:https://issues.apache.org/jira/browse/TINKERPOP-951[TINKERPOP-951]
+
+Operational semantic test cases have been added to `GraphComputerTest` to ensure that all the above are implemented correctly.
+
+Barrier Step Updates
+++++++++++++++++++++
+
+The `Barrier` interface use to simply be a marker interface. Now it has methods and it is the primary means by which
+distributed steps across an OLAP job are aggregated and distributed. It is unlikely that `Barrier` was ever used
+directly by a provider's custom step. Instead, a provider most likely extended `SupplyingBarrierStep`, `CollectingBarrierStep`,
+and/or `ReducingBarrierStep`.
+
+Providers that have custom extensions to these steps or that use `Barrier` directly will need to adjust their implementation slightly to
+accommodate a new API that reflects the `Memory` updates above. This should be a simple change. Note that `FinalGet`
+no longer exists and such post-reduction processing is handled by the reducing step (via the new `Generating` interface).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
+
+Performance Tests
++++++++++++++++++
+
+The `ProcessPerformanceSuite` and `TraversalPerformanceTest` have been deprecated.  They are still available, but going forward,
+providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based performance test suite.
+
+Graph Processor Providers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+GraphFilter and GraphComputer
++++++++++++++++++++++++++++++
+
+The `GraphComputer` API has changed with the addition of `GraphComputer.vertices(Traversal)` and `GraphComputer.edges(Traversal)`.
+These methods construct a `GraphFilter` object which is also new to TinkerPop 3.2.0. `GraphFilter` is a "push-down predicate"
+used to selectively retrieve subgraphs of the underlying graph to be OLAP processed.
+
+* If the graph system provider relies on an existing `GraphComputer` implementations such as `SparkGraphComputer` and/or `GiraphGraphComputer`,
+then there is no immediate action required on their part to remain TinkerPop-compliant. However, they may wish to update
+their `InputFormat` or `InputRDD` implementation to be `GraphFilterAware` and handle the `GraphFilter` filtering at the disk/database
+level. It is advisable to do so in order to reduce OLAP load times and memory/GC usage.
+
+* If the graph system provider has their own `GraphComputer` implementation, then they should implement the two new methods
+and ensure that `GraphFilter` is processed correctly. There is a new test case called `GraphComputerTest.shouldSupportGraphFilter()`
+which ensures the semantics of `GraphFilter` are handled correctly. For a "quick and easy" way to move forward, look to
+`GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
+execution.
+
+NOTE: To quickly move forward, the `GraphComputer` implementation can simply set `GraphComputer.Features.supportsGraphFilter()`
+to `false` and ensure that `GraphComputer.vertices()` and `GraphComputer.edges()` throws `GraphComputer.Exceptions.graphFilterNotSupported()`.
+This is not recommended as its best to support `GraphFilter`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-962[TINKERPOP-962]
+
+Job Chaining and GraphComputer
+++++++++++++++++++++++++++++++
+
+TinkerPop 3.2.0 has integrated `VertexPrograms` into `GraphTraversal`. This means, that a single traversal can compile to multiple
+`GraphComputer` OLAP jobs. This requires that `ComputeResults` be chainable. There was never any explicit tests to verify if a
+provider's `GraphComputer` could be chained, but now there are. Given a reasonable implementation, it is likely that no changes
+are required of the provider. However, to ensure the implementation is "reasonable" `GraphComputerTests` have been added.
+
+* For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportJobChaining()`.
+This tests verifies that the `ComputerResult` output of one job can be fed into the input of a subsequent job. Only linear chains are tested/required
+currently. In the future, branching DAGs may be required.
+
+* For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportPreExistingComputeKeys()`.
+When chaining OLAP jobs together, if an OLAP job requires the compute keys of a previous OLAP job, then the existing compute keys must be accessible.
+A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop. `GiraphGraphComputer` did not need an update as
+this feature was already naturally supported.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-570[TINKERPOP-570]
+
+Graph Language Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+ScriptTraversal
++++++++++++++++
+
+Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called `ScriptTraversal`
+which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated to use this new class.
+The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
+`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network moving forward.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1154[TINKERPOP-1154]
+
+ByModulating and Custom Steps
++++++++++++++++++++++++++++++
+
+If the provider has custom steps that leverage `by()`-modulation, those will now need to implement `ByModulating`.
+Most of the methods in `ByModulating` are `default` and, for most situations, only `ByModulating.modulateBy(Traversal)`
+needs to be implemented. Note that this method's body will most like be identical the custom step's already existing
+`TraversalParent.addLocalChild()`. It is recommended that the custom step not use `TraversalParent.addLocalChild()`
+as this method may be deprecated in a future release. Instead, barring any complex usages, simply rename the
+`CustomStep.addLocalChild(Traversal)` to `CustomStep.modulateBy(Traversal)`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1153[TINKERPOP-1153]
+
+TraversalEngine Deprecation and GraphProvider
++++++++++++++++++++++++++++++++++++++++++++++
+
+The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards compatible.
+Unfortunately for graph system providers, a few tweaks to their implementation are in order.
+
+* If the graph system supports more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
+* For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer(Traversal)`.
+* For custom `Steps`, change `implements EngineDependent` to `implements GraphComputing`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-971[TINKERPOP-971]

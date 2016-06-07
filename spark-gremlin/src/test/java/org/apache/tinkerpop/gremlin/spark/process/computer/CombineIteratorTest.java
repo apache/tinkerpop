@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import scala.Tuple2;
@@ -148,9 +149,16 @@ public class CombineIteratorTest {
             emitter.emit(key, counter);
         }
 
+
+
         @Override
         public boolean doStage(final Stage stage) {
             return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<String, Long> emitter) {
+
         }
 
         @Override
@@ -178,6 +186,11 @@ public class CombineIteratorTest {
         @Override
         public boolean doStage(final Stage stage) {
             return true;
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Long> emitter) {
+
         }
 
         @Override

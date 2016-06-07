@@ -18,46 +18,42 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, MapReducer<E, Long, E, Long, Map<E, Long>> {
+public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements SideEffectCapable<Map<E, Long>, Map<E, Long>>, TraversalParent, ByModulating {
 
-    private Traversal.Admin<S, E> groupTraversal = null;
+    private Traversal.Admin<S, E> keyTraversal = null;
     private String sideEffectKey;
 
     public GroupCountSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
+        this.getTraversal().asAdmin().getSideEffects().registerIfAbsent(this.sideEffectKey, HashMapSupplier.instance(), GroupCountStep.GroupCountBiOperator.instance());
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final Map<Object, Long> groupCountMap = traverser.sideEffects(this.sideEffectKey);
-        MapHelper.incr(groupCountMap, TraversalUtil.applyNullable(traverser.asAdmin(), this.groupTraversal), traverser.bulk());
+        final Map<E, Long> map = new HashMap<>(1);
+        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
+        this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
 
     @Override
@@ -66,23 +62,18 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     }
 
     @Override
-    public MapReduce<E, Long, E, Long, Map<E, Long>> getMapReduce() {
-        return new GroupCountSideEffectMapReduce<>(this);
-    }
-
-    @Override
     public String toString() {
-        return StringFactory.stepString(this, this.sideEffectKey, this.groupTraversal);
+        return StringFactory.stepString(this, this.sideEffectKey, this.keyTraversal);
     }
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> groupTraversal) {
-        this.groupTraversal = this.integrateChild(groupTraversal);
+        this.keyTraversal = this.integrateChild(groupTraversal);
     }
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return null == this.groupTraversal ? Collections.emptyList() : Collections.singletonList(this.groupTraversal);
+        return null == this.keyTraversal ? Collections.emptyList() : Collections.singletonList(this.keyTraversal);
     }
 
     @Override
@@ -93,82 +84,26 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
     @Override
     public GroupCountSideEffectStep<S, E> clone() {
         final GroupCountSideEffectStep<S, E> clone = (GroupCountSideEffectStep<S, E>) super.clone();
-        if (null != this.groupTraversal)
-            clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
+        if (null != this.keyTraversal)
+            clone.keyTraversal = this.keyTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.keyTraversal);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.sideEffectKey.hashCode();
-        if (this.groupTraversal != null) result ^= this.groupTraversal.hashCode();
+        if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
         return result;
     }
 
-    ///////
-
-    public static final class GroupCountSideEffectMapReduce<E> extends StaticMapReduce<E, Long, E, Long, Map<E, Long>> {
-
-        public static final String GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.groupCountSideEffectStep.sideEffectKey";
-
-        private String sideEffectKey;
-        private Supplier<Map<E, Long>> mapSupplier;
-
-        private GroupCountSideEffectMapReduce() {
-
-        }
-
-        public GroupCountSideEffectMapReduce(final GroupCountSideEffectStep step) {
-            this.sideEffectKey = step.getSideEffectKey();
-            this.mapSupplier = step.getTraversal().asAdmin().getSideEffects().<Map<E, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
-        }
-
-        @Override
-        public void storeState(final Configuration configuration) {
-            super.storeState(configuration);
-            configuration.setProperty(GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY, this.sideEffectKey);
-        }
-
-        @Override
-        public void loadState(final Graph graph, final Configuration configuration) {
-            this.sideEffectKey = configuration.getString(GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
-            this.mapSupplier = TraversalVertexProgram.getTraversal(graph, configuration).getSideEffects().<Map<E, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
-        }
-
-        @Override
-        public boolean doStage(final Stage stage) {
-            return true;
-        }
-
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<E, Long> emitter) {
-            VertexTraversalSideEffects.of(vertex).<Map<E, Number>>get(this.sideEffectKey).ifPresent(map -> map.forEach((k, v) -> emitter.emit(k, v.longValue())));
-        }
-
-        @Override
-        public void reduce(final E key, final Iterator<Long> values, final ReduceEmitter<E, Long> emitter) {
-            long counter = 0;
-            while (values.hasNext()) {
-                counter = counter + values.next();
-            }
-            emitter.emit(key, counter);
-        }
-
-        @Override
-        public void combine(final E key, final Iterator<Long> values, final ReduceEmitter<E, Long> emitter) {
-            reduce(key, values, emitter);
-        }
-
-        @Override
-        public Map<E, Long> generateFinalResult(final Iterator<KeyValue<E, Long>> keyValues) {
-            final Map<E, Long> map = this.mapSupplier.get();
-            keyValues.forEachRemaining(keyValue -> map.put(keyValue.getKey(), keyValue.getValue()));
-            return map;
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return this.sideEffectKey;
-        }
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
+        this.keyTraversal = this.integrateChild(keyTraversal);
     }
 }

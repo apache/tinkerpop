@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -29,9 +32,17 @@ import java.util.function.Predicate;
  */
 public final class OrP<V> extends ConnectiveP<V> {
 
-    public OrP(final P<V>... predicates) {
+    public OrP(final List<P<V>> predicates) {
         super(predicates);
         this.biPredicate = new OrBiPredicate(this);
+    }
+
+    @Deprecated
+    /**
+     * @deprecated As of release 3.2.0-incubating, replaced by {@link OrP(List)}
+     */
+    public OrP(final P<V>... predicates) {
+        this(Arrays.asList(predicates));
     }
 
     @Override
@@ -45,7 +56,7 @@ public final class OrP<V> extends ConnectiveP<V> {
     @Override
     public P<V> negate() {
         super.negate();
-        return new AndP(this.predicates.toArray(new P[this.predicates.size()]));
+        return new AndP<>(this.predicates);
     }
 
     @Override

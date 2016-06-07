@@ -21,14 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
@@ -40,13 +36,13 @@ import static org.junit.Assert.*;
 @RunWith(GremlinProcessRunner.class)
 public abstract class FlatMapTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_flatMapXselectXaXX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_flatMapXselectXaXX();
 
     /** TINKERPOP-782 */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_flatMapXselectXaXX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_flatMapXselectXaXX();
+    public void g_V_asXaX_flatMapXselectXaXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_flatMapXselectXaXX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -58,7 +54,7 @@ public abstract class FlatMapTest extends AbstractGremlinProcessTest {
 
     public static class Traversals extends FlatMapTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_flatMapXselectXaXX() {
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_flatMapXselectXaXX() {
             return g.V().as("a").flatMap(select("a"));
         }
     }

@@ -34,15 +34,6 @@ import static org.junit.Assert.assertThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DriverGremlinPluginTest {
-    @Test
-    public void shouldPluginToAndDoImports() throws Exception {
-        final DriverGremlinPlugin plugin = new DriverGremlinPlugin();
-        final SpyPluginAcceptor spy = new SpyPluginAcceptor();
-        plugin.pluginTo(spy);
-
-        assertEquals(4, spy.getImports().size());
-        spy.getImports().forEach(importString -> assertThat(importString, containsString("org.apache.tinkerpop.gremlin.driver")));
-    }
 
     @Test
     public void shouldConstructEmptyRemoteAcceptorWhenNotInConsoleEnvironment() throws Exception {

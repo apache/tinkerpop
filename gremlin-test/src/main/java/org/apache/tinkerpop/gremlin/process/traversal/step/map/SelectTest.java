@@ -42,11 +42,14 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.structure.Column.keys;
-import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
-import static org.junit.Assert.*;
+import static org.apache.tinkerpop.gremlin.structure.Column.keys;
+import static org.apache.tinkerpop.gremlin.structure.Column.values;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -135,6 +138,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold();
 
     public abstract Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX();
 
     // Useful for permuting Pop use cases
     protected final static List<Pop> POPS = Arrays.asList(null, Pop.first, Pop.last, Pop.all);
@@ -625,6 +630,22 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX();
+        final Map<String, String> map = traversal.next();
+        assertTrue(traversal.hasNext());
+        if (map.get("b").equals("josh")) {
+            assertEquals("marko", map.get("a"));
+            assertEquals("vadas", traversal.next().get("b"));
+        } else {
+            assertEquals("marko", map.get("a"));
+            assertEquals("josh", traversal.next().get("b"));
+        }
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -819,6 +840,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
             return g.V().as("a", "b").out().as("c").path().select(keys);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXknowsX_asXbX_localXselectXa_bX_byXnameXX() {
+            return g.V().as("a").out("knows").as("b").local(__.<Vertex, String>select("a", "b").by("name"));
         }
     }
 }

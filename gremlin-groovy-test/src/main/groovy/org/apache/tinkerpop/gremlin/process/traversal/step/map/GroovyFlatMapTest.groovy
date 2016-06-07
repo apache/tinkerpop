@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
@@ -31,8 +29,8 @@ public abstract class GroovyFlatMapTest {
 
     public static class Traversals extends FlatMapTest {
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_flatMapXselectXaXX() {
-            TraversalScriptHelper.compute("g.V.as('a').flatMap(select('a'))", g);
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_flatMapXselectXaXX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').flatMap(select('a'))")
         }
     }
 }

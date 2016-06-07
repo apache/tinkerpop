@@ -42,8 +42,10 @@ import java.util.Optional;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.1, replaced by gremlin-benchmark.
  */
 @RunWith(Enclosed.class)
+@Deprecated
 public class GraphWritePerformanceTest {
 
     @AxisRange(min = 0, max = 1)

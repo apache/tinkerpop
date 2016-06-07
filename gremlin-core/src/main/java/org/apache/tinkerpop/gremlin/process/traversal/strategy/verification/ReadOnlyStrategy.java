@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Detects steps marked with {@link Mutating} and throws an {@link IllegalStateException} if one is found.
  *
@@ -48,6 +51,11 @@ public final class ReadOnlyStrategy extends AbstractTraversalStrategy<TraversalS
             if (step instanceof Mutating)
                 throw new VerificationException("The provided traversal has a mutating step and thus is not read only: " + step, traversal);
         }
+    }
+
+    @Override
+    public Set<Class<? extends VerificationStrategy>> applyPost() {
+        return Collections.singleton(ComputerVerificationStrategy.class);
     }
 
     public static ReadOnlyStrategy instance() {

@@ -56,8 +56,14 @@ public final class TraversalMapStep<S, E> extends MapStep<S, E> implements Trave
     @Override
     public TraversalMapStep<S, E> clone() {
         final TraversalMapStep<S, E> clone = (TraversalMapStep<S, E>) super.clone();
-        clone.mapTraversal = clone.integrateChild(this.mapTraversal.clone());
+        clone.mapTraversal = this.mapTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.mapTraversal);
     }
 
     @Override

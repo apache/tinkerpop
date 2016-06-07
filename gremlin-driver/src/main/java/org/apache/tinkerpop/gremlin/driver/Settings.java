@@ -19,16 +19,22 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Settings for the {@link Cluster} and its related components.
@@ -105,6 +111,107 @@ final class Settings {
 
         final Yaml yaml = new Yaml(constructor);
         return yaml.loadAs(stream, Settings.class);
+    }
+
+    /**
+     * Read configuration from a file into a new {@link Settings} object.
+     */
+    public static Settings from(final Configuration conf) {
+        final Settings settings = new Settings();
+
+        if (conf.containsKey("port"))
+            settings.port = conf.getInt("port");
+
+        if (conf.containsKey("nioPoolSize"))
+            settings.nioPoolSize = conf.getInt("nioPoolSize");
+
+        if (conf.containsKey("workerPoolSize"))
+            settings.workerPoolSize = conf.getInt("workerPoolSize");
+
+        if (conf.containsKey("username"))
+            settings.username = conf.getString("username");
+
+        if (conf.containsKey("password"))
+            settings.password = conf.getString("password");
+
+        if (conf.containsKey("jaasEntry"))
+            settings.jaasEntry = conf.getString("jaasEntry");
+
+        if (conf.containsKey("protocol"))
+            settings.protocol = conf.getString("protocol");
+
+        if (conf.containsKey("hosts"))
+            settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());
+
+        if (conf.containsKey("serializer.className")) {
+            final SerializerSettings serializerSettings = new SerializerSettings();
+            final Configuration serializerConf = conf.subset("serializer");
+
+            if (serializerConf.containsKey("className"))
+                serializerSettings.className = serializerConf.getString("className");
+
+            final Configuration serializerConfigConf = conf.subset("serializer.config");
+            if (IteratorUtils.count(serializerConfigConf.getKeys()) > 0) {
+                final Map<String,Object> m = new HashMap<>();
+                serializerConfigConf.getKeys().forEachRemaining(name -> {
+                    m.put(name, serializerConfigConf.getProperty(name));
+                });
+                serializerSettings.config = m;
+            }
+            settings.serializer = serializerSettings;
+        }
+
+        final Configuration connectionPoolConf = conf.subset("connectionPool");
+        if (IteratorUtils.count(connectionPoolConf.getKeys()) > 0) {
+            final ConnectionPoolSettings cpSettings = new ConnectionPoolSettings();
+
+            if (connectionPoolConf.containsKey("channelizer"))
+                cpSettings.channelizer = connectionPoolConf.getString("channelizer");
+
+            if (connectionPoolConf.containsKey("enableSsl"))
+                cpSettings.enableSsl = connectionPoolConf.getBoolean("enableSsl");
+
+            if (connectionPoolConf.containsKey("trustCertChainFile"))
+                cpSettings.trustCertChainFile = connectionPoolConf.getString("trustCertChainFile");
+
+            if (connectionPoolConf.containsKey("minSize"))
+                cpSettings.minSize = connectionPoolConf.getInt("minSize");
+
+            if (connectionPoolConf.containsKey("maxSize"))
+                cpSettings.maxSize = connectionPoolConf.getInt("maxSize");
+
+            if (connectionPoolConf.containsKey("minSimultaneousUsagePerConnection"))
+                cpSettings.minSimultaneousUsagePerConnection = connectionPoolConf.getInt("minSimultaneousUsagePerConnection");
+
+            if (connectionPoolConf.containsKey("maxSimultaneousUsagePerConnection"))
+                cpSettings.maxSimultaneousUsagePerConnection = connectionPoolConf.getInt("maxSimultaneousUsagePerConnection");
+
+            if (connectionPoolConf.containsKey("maxInProcessPerConnection"))
+                cpSettings.maxInProcessPerConnection = connectionPoolConf.getInt("maxInProcessPerConnection");
+
+            if (connectionPoolConf.containsKey("minInProcessPerConnection"))
+                cpSettings.minInProcessPerConnection = connectionPoolConf.getInt("minInProcessPerConnection");
+
+            if (connectionPoolConf.containsKey("maxWaitForConnection"))
+                cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
+
+            if (connectionPoolConf.containsKey("maxContentLength"))
+                cpSettings.maxContentLength = connectionPoolConf.getInt("maxContentLength");
+
+            if (connectionPoolConf.containsKey("reconnectInterval"))
+                cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
+
+            if (connectionPoolConf.containsKey("reconnectInitialDelay"))
+                cpSettings.reconnectInitialDelay = connectionPoolConf.getInt("reconnectInitialDelay");
+
+            if (connectionPoolConf.containsKey("resultIterationBatchSize"))
+                cpSettings.resultIterationBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
+
+
+            settings.connectionPool = cpSettings;
+        }
+
+        return settings;
     }
 
     static class ConnectionPoolSettings {

@@ -16,93 +16,103 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements MapReducer, EngineDependent, TraversalParent {
+public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent {
 
     private char state = 'k';
-
     private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, ?> valueTraversal = this.integrateChild(__.identity().asAdmin());   // used in OLAP
-    private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
-    private Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
-    private boolean byPass = false;
+    private Traversal.Admin<S, ?> preTraversal;
+    private Traversal.Admin<S, V> valueTraversal;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier((Supplier) new GroupStepHelper.GroupMapSupplier());
-        this.setBiFunction(new GroupBiFunction(this));
+        this.valueTraversal = this.integrateChild(__.fold().asAdmin());
+        this.preTraversal = this.integrateChild(generatePreTraversal(this.valueTraversal));
+        this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal));
+        this.setSeedSupplier(HashMapSupplier.instance());
     }
 
     @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        this.byPass = traversalEngine.isComputer();
-    }
-
-    @Override
-    public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(4);
-        if (null != this.keyTraversal)
-            children.add((Traversal.Admin) this.keyTraversal);
-        children.add(this.valueReduceTraversal);
-        children.add(this.valueTraversal);
-        children.add(this.reduceTraversal);
-        return children;
-    }
-
-    @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> kvTraversal) {
+    public void modulateBy(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueReduceTraversal = this.integrateChild(GroupStepHelper.convertValueTraversal(kvTraversal));
-            final List<Traversal.Admin<?, ?>> splitTraversal = GroupStepHelper.splitOnBarrierStep(this.valueReduceTraversal);
-            this.valueTraversal = this.integrateChild(splitTraversal.get(0));
-            this.reduceTraversal = this.integrateChild(splitTraversal.get(1));
+            this.valueTraversal = this.integrateChild(convertValueTraversal(kvTraversal));
+            this.preTraversal = this.integrateChild(generatePreTraversal(this.valueTraversal));
+            this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal));
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
         }
+    }
+
+    @Override
+    public Map<K, V> projectTraverser(final Traverser.Admin<S> traverser) {
+        final Map<K, V> map = new HashMap<>(1);
+        if (null == this.preTraversal) {
+            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverser);
+        } else {
+            final TraverserSet traverserSet = new TraverserSet<>();
+            this.preTraversal.reset();
+            this.preTraversal.addStart(traverser);
+            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
+        }
+        return map;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.keyTraversal, this.valueTraversal);
+    }
+
+    @Override
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(2);
+        if (null != this.keyTraversal)
+            children.add((Traversal.Admin) this.keyTraversal);
+        children.add(this.valueTraversal);
+        return children;
     }
 
     @Override
@@ -114,154 +124,250 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public GroupStep<S, K, V> clone() {
         final GroupStep<S, K, V> clone = (GroupStep<S, K, V>) super.clone();
         if (null != this.keyTraversal)
-            clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
-        clone.valueReduceTraversal = clone.integrateChild(this.valueReduceTraversal.clone());
-        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
-        clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
-        clone.setBiFunction(new GroupBiFunction<>((GroupStep) clone));
+            clone.keyTraversal = this.keyTraversal.clone();
+        clone.valueTraversal = this.valueTraversal.clone();
+        clone.preTraversal = this.integrateChild(GroupStep.generatePreTraversal(clone.valueTraversal));
         return clone;
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
+        integrateChild(this.valueTraversal);
+        integrateChild(this.preTraversal);
+    }
+
+    @Override
     public int hashCode() {
-        int result = this.valueReduceTraversal.hashCode();
+        int result = super.hashCode();
         if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
+        result ^= this.valueTraversal.hashCode();
         return result;
     }
 
     @Override
-    public MapReduce<K, Collection<?>, K, V, Map<K, V>> getMapReduce() {
-        return new GroupMapReduce<>(this);
+    public Map<K, V> generateFinalResult(final Map<K, V> object) {
+        return GroupStep.doFinalReduction((Map<K, Object>) object, this.valueTraversal);
     }
 
-    @Override
-    public Traverser<Map<K, V>> processNextStart() {
-        if (this.byPass) {
-            final Traverser.Admin<S> traverser = this.starts.next();
-            final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-            this.valueTraversal.addStart(traverser);
-            final BulkSet<?> value = this.valueTraversal.toBulkSet();
-            return traverser.asAdmin().split(new Object[]{key, value}, (Step) this);
+    ///////////////////////
+
+    public static final class GroupBiOperator<K, V> implements BinaryOperator<Map<K, V>>, Serializable {
+
+        // size limit before Barrier.processAllStarts() to lazy reduce
+        private static final int SIZE_LIMIT = 1000;
+
+        private Traversal.Admin<?, V> valueTraversal;
+        private Barrier barrierStep;
+
+        public GroupBiOperator(final Traversal.Admin<?, V> valueTraversal) {
+            // if there is a lambda that can not be serialized, then simply use TraverserSets
+            if (TraversalHelper.hasStepOfAssignableClassRecursively(LambdaHolder.class, valueTraversal)) {
+                this.valueTraversal = null;
+                this.barrierStep = null;
+            } else {
+                this.valueTraversal = valueTraversal;
+                this.barrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+            }
+        }
+
+        public GroupBiOperator() {
+            // no-arg constructor for serialization
+        }
+
+        @Override
+        public Map<K, V> apply(final Map<K, V> mapA, final Map<K, V> mapB) {
+            for (final K key : mapB.keySet()) {
+                Object objectA = mapA.get(key);
+                final Object objectB = mapB.get(key);
+                assert null != objectB;
+                if (null == objectA) {
+                    objectA = objectB;
+                } else {
+                    // TRAVERSER
+                    if (objectA instanceof Traverser.Admin) {
+                        if (objectB instanceof Traverser.Admin) {
+                            final TraverserSet set = new TraverserSet();
+                            set.add((Traverser.Admin) objectA);
+                            set.add((Traverser.Admin) objectB);
+                            objectA = set;
+                        } else if (objectB instanceof TraverserSet) {
+                            final TraverserSet set = (TraverserSet) objectB;
+                            set.add((Traverser.Admin) objectA);
+                            if (null != this.barrierStep && set.size() > SIZE_LIMIT) {
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                objectA = this.barrierStep.nextBarrier();
+                            } else
+                                objectA = objectB;
+                        } else if (objectB instanceof Pair) {
+                            final TraverserSet set = (TraverserSet) ((Pair) objectB).getValue0();
+                            set.add((Traverser.Admin) objectA);
+                            if (set.size() > SIZE_LIMIT) {    // barrier step can never be null -- no need to check
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                this.barrierStep.addBarrier(((Pair) objectB).getValue1());
+                                objectA = this.barrierStep.nextBarrier();
+                            } else
+                                objectA = Pair.with(set, ((Pair) objectB).getValue1());
+                        } else
+                            objectA = Pair.with(new TraverserSet((Traverser.Admin) objectA), objectB);
+                        // TRAVERSER SET
+                    } else if (objectA instanceof TraverserSet) {
+                        if (objectB instanceof Traverser.Admin) {
+                            final TraverserSet set = (TraverserSet) objectA;
+                            set.add((Traverser.Admin) objectB);
+                            if (null != this.barrierStep && set.size() > SIZE_LIMIT) {
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                objectA = this.barrierStep.nextBarrier();
+                            }
+                        } else if (objectB instanceof TraverserSet) {
+                            final TraverserSet set = (TraverserSet) objectA;
+                            set.addAll((TraverserSet) objectB);
+                            if (null != this.barrierStep && set.size() > SIZE_LIMIT) {
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                objectA = this.barrierStep.nextBarrier();
+                            }
+                        } else if (objectB instanceof Pair) {
+                            final TraverserSet set = (TraverserSet) objectA;
+                            set.addAll((TraverserSet) ((Pair) objectB).getValue0());
+                            if (set.size() > SIZE_LIMIT) {  // barrier step can never be null -- no need to check
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                this.barrierStep.addBarrier(((Pair) objectB).getValue1());
+                                objectA = this.barrierStep.nextBarrier();
+                            } else
+                                objectA = Pair.with(set, ((Pair) objectB).getValue1());
+                        } else
+                            objectA = Pair.with(objectA, objectB);
+                        // TRAVERSER SET + BARRIER
+                    } else if (objectA instanceof Pair) {
+                        if (objectB instanceof Traverser.Admin) {
+                            final TraverserSet set = ((TraverserSet) ((Pair) objectA).getValue0());
+                            set.add((Traverser.Admin) objectB);
+                            if (set.size() > SIZE_LIMIT) { // barrier step can never be null -- no need to check
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                this.barrierStep.addBarrier(((Pair) objectA).getValue1());
+                                objectA = this.barrierStep.nextBarrier();
+                            }
+                        } else if (objectB instanceof TraverserSet) {
+                            final TraverserSet set = (TraverserSet) ((Pair) objectA).getValue0();
+                            set.addAll((TraverserSet) objectB);
+                            if (set.size() > SIZE_LIMIT) {   // barrier step can never be null -- no need to check
+                                this.valueTraversal.reset();
+                                ((Step) this.barrierStep).addStarts(set.iterator());
+                                this.barrierStep.addBarrier(((Pair) objectA).getValue1());
+                                objectA = this.barrierStep.nextBarrier();
+                            }
+                        } else if (objectB instanceof Pair) {
+                            this.valueTraversal.reset();
+                            this.barrierStep.addBarrier(((Pair) objectA).getValue1());
+                            this.barrierStep.addBarrier(((Pair) objectB).getValue1());
+                            ((Step) this.barrierStep).addStarts(((TraverserSet) ((Pair) objectA).getValue0()).iterator());
+                            ((Step) this.barrierStep).addStarts(((TraverserSet) ((Pair) objectB).getValue0()).iterator());
+                            objectA = this.barrierStep.nextBarrier();
+                        } else {
+                            this.valueTraversal.reset();
+                            this.barrierStep.addBarrier(((Pair) objectA).getValue1());
+                            this.barrierStep.addBarrier(objectB);
+                            ((Step) this.barrierStep).addStarts(((TraverserSet) ((Pair) objectA).getValue0()).iterator());
+                            objectA = this.barrierStep.nextBarrier();
+                        }
+                        // BARRIER
+                    } else {
+                        if (objectB instanceof Traverser.Admin) {
+                            objectA = Pair.with(new TraverserSet<>((Traverser.Admin) objectB), objectA);
+                        } else if (objectB instanceof TraverserSet) {
+                            objectA = Pair.with(objectB, objectA);
+                        } else if (objectB instanceof Pair) {
+                            this.valueTraversal.reset();
+                            this.barrierStep.addBarrier(objectA);
+                            this.barrierStep.addBarrier(((Pair) objectB).getValue1());
+                            ((Step) this.barrierStep).addStarts(((TraverserSet) ((Pair) objectB).getValue0()).iterator());
+                            objectA = this.barrierStep.nextBarrier();
+                        } else {
+                            this.valueTraversal.reset();
+                            this.barrierStep.addBarrier(objectA);
+                            this.barrierStep.addBarrier(objectB);
+                            objectA = this.barrierStep.nextBarrier();
+                        }
+                    }
+                }
+                mapA.put(key, (V) objectA);
+            }
+            return mapA;
+        }
+
+        // necessary to control Java Serialization to ensure proper clearing of internal traverser data
+        private void writeObject(final ObjectOutputStream outputStream) throws IOException {
+            // necessary as a non-root child is being sent over the wire
+            if (null != this.valueTraversal) this.valueTraversal.setParent(EmptyStep.instance());
+            outputStream.writeObject(null == this.valueTraversal ? null : this.valueTraversal.clone()); // todo: reset() instead?
+        }
+
+        private void readObject(final ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+            this.valueTraversal = (Traversal.Admin<?, V>) inputStream.readObject();
+            this.barrierStep = null == this.valueTraversal ? null : TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, this.valueTraversal).orElse(null);
+        }
+    }
+
+
+    ///////////////////////
+
+    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueTraversal) {
+        if (valueTraversal instanceof ElementValueTraversal ||
+                valueTraversal instanceof TokenTraversal ||
+                valueTraversal instanceof IdentityTraversal ||
+                valueTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
+            return (Traversal.Admin<S, E>) __.map(valueTraversal).fold();
         } else {
-            return super.processNextStart();
+            return valueTraversal;
         }
     }
 
-    @Override
-    public String toString() {
-        return StringFactory.stepString(this, this.keyTraversal, this.valueReduceTraversal);
+    public static Traversal.Admin<?, ?> generatePreTraversal(final Traversal.Admin<?, ?> valueTraversal) {
+        if (!TraversalHelper.hasStepOfAssignableClass(Barrier.class, valueTraversal))
+            return valueTraversal;
+        final Traversal.Admin<?, ?> first = __.identity().asAdmin();
+        for (final Step step : valueTraversal.getSteps()) {
+            if (step instanceof Barrier)
+                break;
+            first.addStep(step.clone());
+        }
+        return first.getSteps().size() == 1 ? null : first;
     }
 
-    ///////////
-
-    private static class GroupBiFunction<S, K, V> implements BiFunction<Map<K, Traversal.Admin<S, V>>, Traverser.Admin<S>, Map<K, Traversal.Admin<S, V>>>, Serializable {
-
-        private final GroupStep<S, K, V> groupStep;
-        private Map<K, Integer> counters = new HashMap<>();
-
-        private GroupBiFunction(final GroupStep<S, K, V> groupStep) {
-            this.groupStep = groupStep;
-        }
-
-        @Override
-        public Map<K, Traversal.Admin<S, V>> apply(final Map<K, Traversal.Admin<S, V>> mutatingSeed, final Traverser.Admin<S> traverser) {
-            final K key = TraversalUtil.applyNullable(traverser, this.groupStep.keyTraversal);
-            Traversal.Admin<S, V> traversal = mutatingSeed.get(key);
-            if (null == traversal) {
-                traversal = this.groupStep.valueReduceTraversal.clone();
-                this.counters.put(key, 0);
-                mutatingSeed.put(key, traversal);
+    public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal) {
+        final Map<K, V> reducedMap = new HashMap<>(map.size());
+        final Barrier reducingBarrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).orElse(null);
+        IteratorUtils.removeOnNext(map.entrySet().iterator()).forEachRemaining(entry -> {
+            valueTraversal.reset();
+            if (null == reducingBarrierStep) {
+                reducedMap.put(entry.getKey(), entry.getValue() instanceof TraverserSet ?
+                        ((TraverserSet<V>) entry.getValue()).iterator().next().get() :
+                        (V) entry.getValue());
+            } else {
+                if (entry.getValue() instanceof Traverser.Admin)
+                    ((Step) reducingBarrierStep).addStart((Traverser.Admin) entry.getValue());
+                else if (entry.getValue() instanceof TraverserSet)
+                    ((Step) reducingBarrierStep).addStarts(((TraverserSet) entry.getValue()).iterator());
+                else if (entry.getValue() instanceof Pair) {
+                    ((Step) reducingBarrierStep).addStarts(((TraverserSet) (((Pair) entry.getValue()).getValue0())).iterator());
+                    reducingBarrierStep.addBarrier((((Pair) entry.getValue()).getValue1()));
+                } else
+                    reducingBarrierStep.addBarrier(entry.getValue());
+                reducedMap.put(entry.getKey(), valueTraversal.next());
             }
-
-            traversal.addStart(traverser);
-            final int count = this.counters.compute(key, (k, i) -> ++i);
-            if (count > 10000) {
-                this.counters.put(key, 0);
-                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, traversal).ifPresent(Barrier::processAllStarts);
-            }
-            return mutatingSeed;
-        }
-    }
-
-    ///////////
-
-    public static final class GroupMapReduce<S, K, V> implements MapReduce<K, Collection<?>, K, V, Map<K, V>> {
-
-        public static final String GROUP_BY_STEP_STEP_ID = "gremlin.groupStep.stepId";
-
-        private String groupStepId;
-        private Traversal.Admin<?, V> reduceTraversal;
-
-        private GroupMapReduce() {
-
-        }
-
-        public GroupMapReduce(final GroupStep<S, K, V> step) {
-            this.groupStepId = step.getId();
-            this.reduceTraversal = step.reduceTraversal.clone();
-        }
-
-        @Override
-        public void storeState(final Configuration configuration) {
-            MapReduce.super.storeState(configuration);
-            configuration.setProperty(GROUP_BY_STEP_STEP_ID, this.groupStepId);
-        }
-
-        @Override
-        public void loadState(final Graph graph, final Configuration configuration) {
-            this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
-            this.reduceTraversal = ((GroupStep) new TraversalMatrix<>(TraversalVertexProgram.getTraversal(graph, configuration)).getStepById(this.groupStepId)).reduceTraversal.clone();
-        }
-
-        @Override
-        public boolean doStage(final Stage stage) {
-            return !stage.equals(Stage.COMBINE);
-        }
-
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<K, Collection<?>> emitter) {
-            vertex.<TraverserSet<Object[]>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> {
-                final Object[] objects = traverser.get();
-                emitter.emit((K) objects[0], (Collection<?>) objects[1]);
-            }));
-        }
-
-        @Override
-        public void reduce(final K key, final Iterator<Collection<?>> values, final ReduceEmitter<K, V> emitter) {
-            Traversal.Admin<?, V> reduceTraversalClone = this.reduceTraversal.clone();
-            while (values.hasNext()) {
-                reduceTraversalClone.addStarts(reduceTraversalClone.getTraverserGenerator().generateIterator(values.next().iterator(), (Step) reduceTraversalClone.getStartStep(), 1l));
-                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, reduceTraversalClone).ifPresent(Barrier::processAllStarts);
-            }
-            emitter.emit(key, reduceTraversalClone.next());
-        }
-
-        @Override
-        public Map<K, V> generateFinalResult(final Iterator<KeyValue<K, V>> keyValues) {
-            final Map<K, V> map = new HashMap<>();
-            keyValues.forEachRemaining(keyValue -> map.put(keyValue.getKey(), keyValue.getValue()));
-            return map;
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return REDUCING;
-        }
-
-        @Override
-        public GroupMapReduce<S, K, V> clone() {
-            try {
-                final GroupMapReduce<S, K, V> clone = (GroupMapReduce<S, K, V>) super.clone();
-                clone.reduceTraversal = this.reduceTraversal.clone();
-                return clone;
-            } catch (final CloneNotSupportedException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return StringFactory.mapReduceString(this, this.getMemoryKey());
-        }
+        });
+        assert map.isEmpty();
+        map.clear();
+        map.putAll(reducedMap);
+        return (Map<K, V>) map;
     }
 }
+
+

@@ -93,7 +93,6 @@ public abstract class MessageScope {
     public final static class Local<M> extends MessageScope {
         public final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal;
         public final BiFunction<M, Edge, M> edgeFunction;
-        private final String toStringOfTraversal;
 
         private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
             this(incidentTraversal, (final M m, final Edge e) -> m); // the default is an identity function
@@ -101,7 +100,6 @@ public abstract class MessageScope {
 
         private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
             this.incidentTraversal = incidentTraversal;
-            this.toStringOfTraversal = this.incidentTraversal.get().toString();
             this.edgeFunction = edgeFunction;
         }
 
@@ -123,13 +121,13 @@ public abstract class MessageScope {
 
         @Override
         public int hashCode() {
-            return this.edgeFunction.hashCode() + this.incidentTraversal.get().toString().hashCode();
+            return this.edgeFunction.hashCode() ^ this.incidentTraversal.get().hashCode();
         }
 
         @Override
         public boolean equals(final Object other) {
             return other instanceof Local &&
-                    ((Local<?>) other).toStringOfTraversal.equals(this.toStringOfTraversal) &&
+                    ((Local<?>) other).incidentTraversal.get().equals(this.incidentTraversal.get()) &&
                     ((Local<?>) other).edgeFunction == this.edgeFunction;
         }
 

@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,12 +31,12 @@ public abstract class GroovySumTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_V_valuesXageX_sum() {
-            TraversalScriptHelper.compute("g.V.age.sum", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.age.sum")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_sumX() {
-            TraversalScriptHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().weight.sum)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('software').group().by('name').by(bothE().weight.sum)")
         }
     }
 }

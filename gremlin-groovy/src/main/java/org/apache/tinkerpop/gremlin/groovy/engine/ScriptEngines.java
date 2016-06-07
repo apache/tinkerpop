@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.slf4j.Logger;
@@ -382,8 +383,17 @@ public class ScriptEngines implements AutoCloseable {
 
                         final Class<?>[] argClasses = new Class<?>[args.length];
                         Stream.of(args).map(a -> a.getClass()).collect(Collectors.toList()).toArray(argClasses);
-                        final Constructor constructor = providerClass.getConstructor(argClasses);
-                        providers.add((CompilerCustomizerProvider) constructor.newInstance(args));
+
+                        final Optional<Constructor> constructor = Stream.of(providerClass.getConstructors())
+                                .filter(c -> c.getParameterCount() == argClasses.length &&
+                                             allMatch(c.getParameterTypes(), argClasses))
+                                .findFirst();
+
+                        if (constructor.isPresent()) providers.add((CompilerCustomizerProvider)
+                                constructor.get().newInstance(args));
+                        else
+                            throw new IllegalStateException(String.format("Could not configure %s with the supplied options %s",
+                                    ConfigurationCustomizerProvider.class.getName(), Arrays.asList(args)));
                     } else {
                         providers.add((CompilerCustomizerProvider) providerClass.newInstance());
                     }
@@ -397,6 +407,20 @@ public class ScriptEngines implements AutoCloseable {
         } else {
             return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }
+    }
+
+    /**
+     * Determine if the constructor argument types match the arg types that are going to be passed in to that
+     * constructor.
+     */
+    private static boolean allMatch(final Class<?>[] constructorArgTypes, final Class<?>[] argTypes) {
+        for (int ix = 0; ix < constructorArgTypes.length; ix++) {
+            if (!constructorArgTypes[ix].isAssignableFrom(argTypes[ix])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,17 +31,17 @@ public abstract class GroovyMaxTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_max() {
-            TraversalScriptHelper.compute("g.V.age.max", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.age.max")
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_max() {
-            TraversalScriptHelper.compute("g.V.repeat(__.both).times(5).age.max", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.both).times(5).age.max")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_maxX() {
-            TraversalScriptHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().weight.max)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().hasLabel('software').group().by('name').by(bothE().weight.max)")
         }
     }
 }

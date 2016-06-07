@@ -55,8 +55,8 @@ public abstract class DropTest extends AbstractGremlinTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_drop();
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
-        assertEquals(0, IteratorUtils.count(graph.vertices()));
-        assertEquals(0, IteratorUtils.count(graph.edges()));
+        assertEquals(0, IteratorUtils.count(g.V()));
+        assertEquals(0, IteratorUtils.count(g.E()));
     }
 
     @Test
@@ -66,8 +66,8 @@ public abstract class DropTest extends AbstractGremlinTest {
         final Traversal<Vertex, Edge> traversal = get_g_V_outE_drop();
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
-        assertEquals(0, IteratorUtils.count(graph.edges()));
+        assertEquals(6, IteratorUtils.count(g.V()));
+        assertEquals(0, IteratorUtils.count(g.E()));
     }
 
     @Test
@@ -77,9 +77,9 @@ public abstract class DropTest extends AbstractGremlinTest {
         final Traversal<Vertex, VertexProperty> traversal = get_g_V_properties_drop();
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
-        assertEquals(6, IteratorUtils.count(graph.vertices()));
-        assertEquals(6, IteratorUtils.count(graph.edges()));
-        graph.vertices().forEachRemaining(vertex -> assertEquals(0, IteratorUtils.count(vertex.properties())));
+        assertEquals(6, IteratorUtils.count(g.V()));
+        assertEquals(6, IteratorUtils.count(g.E()));
+        g.V().forEachRemaining(vertex -> assertEquals(0, IteratorUtils.count(vertex.properties())));
     }
 
 

@@ -53,9 +53,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class VertexTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name();
+    public abstract Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name(final Vertex v1, final Vertex v2, final Vertex v3);
 
-    public abstract Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name();
+    public abstract Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name(final Object v1Id, final Object v2Id, final Object v3Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V();
 
@@ -116,7 +116,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VXlistX1_2_3XX_name() {
-        final Traversal<Vertex, String> traversal = get_g_VXlistX1_2_3XX_name();
+        final Traversal<Vertex,String> traversal = get_g_VXlistX1_2_3XX_name(convertToVertexId(graph, "marko"), convertToVertexId(graph, "vadas"), convertToVertexId(graph, "lop"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "vadas", "lop"), traversal);
     }
@@ -124,7 +124,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VXlistXv1_v2_v3XX_name() {
-        final Traversal<Vertex, String> traversal = get_g_VXlistXv1_v2_v3XX_name();
+        final Traversal<Vertex,String> traversal = get_g_VXlistXv1_v2_v3XX_name(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas"), convertToVertex(graph, "lop"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "vadas", "lop"), traversal);
     }
@@ -561,13 +561,13 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     public static class Traversals extends VertexTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name() {
-            return g.V(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas"), convertToVertex(graph, "lop"))).values("name");
+        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name(final Vertex v1, final Vertex v2, final Vertex v3) {
+            return g.V(Arrays.asList(v1, v2, v3)).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name() {
-            return g.V(Arrays.asList(convertToVertexId(graph, "marko"), convertToVertexId(graph, "vadas"), convertToVertexId(graph, "lop"))).values("name");
+        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name(final Object v1Id, final Object v2Id, final Object v3Id) {
+            return g.V(Arrays.asList(v1Id, v2Id, v3Id)).values("name");
         }
 
         @Override

@@ -38,8 +38,8 @@ public class BulkDumperVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldDumpWholeGraph() throws Exception {
-        if (g.getGraphComputer().get().features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
-            final ComputerResult result = graph.compute(g.getGraphComputer().get().getClass()).program(BulkDumperVertexProgram.build().create(graph)).submit().get();
+        if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
+            final ComputerResult result = graphProvider.getGraphComputer(graph).program(BulkDumperVertexProgram.build().create(graph)).submit().get();
             result.graph().traversal().V().forEachRemaining(v -> {
                 assertEquals(2, v.keys().size());
                 assertTrue(v.keys().contains("name"));

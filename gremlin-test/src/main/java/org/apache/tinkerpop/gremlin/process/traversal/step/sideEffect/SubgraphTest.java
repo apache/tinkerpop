@@ -100,7 +100,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(subgraph);
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "josh", "peter"), traversal);
-        subgraph = traversal.asAdmin().getSideEffects().<Graph>get("sg").get();
+        subgraph = traversal.asAdmin().getSideEffects().<Graph>get("sg");
         assertVertexEdgeCounts(subgraph, 5, 4);
 
         graphProvider.clear(subgraph, config);

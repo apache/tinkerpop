@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,12 +32,12 @@ public abstract class GroovySimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out('created').in('created').simplePath", g, "v1Id", v1Id);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out('created').in('created').simplePath", "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
-            TraversalScriptHelper.compute("g.V.repeat(__.both.simplePath).times(3).path()", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.both.simplePath).times(3).path()");
         }
     }
 }

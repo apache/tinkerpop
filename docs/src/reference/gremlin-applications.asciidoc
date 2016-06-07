@@ -106,7 +106,7 @@ These plugins can only be deactivated.
 The Gremlin Console is loaded and ready for commands. Recall that the console hosts the Gremlin-Groovy language.
 Please review link:http://groovy.codehaus.org/[Groovy] for help on Groovy-related constructs. In short, Groovy is a
 superset of Java. What works in Java, works in Groovy. However, Groovy provides many shorthands to make it easier
-to interact with the Java API.  Moreoever, Gremlin provides many neat shorthands to make it easier to express paths
+to interact with the Java API.  Moreover, Gremlin provides many neat shorthands to make it easier to express paths
 through a property graph.
 
 [gremlin-groovy]
@@ -121,7 +121,7 @@ The "toy" graph provides a way to get started with Gremlin quickly.
 
 [gremlin-groovy]
 ----
-g = TinkerFactory.createModern().traversal(standard())
+g = TinkerFactory.createModern().traversal()
 g.V()
 g.V().values('name')
 g.V().has('name','marko').out('knows').values('name')
@@ -220,24 +220,22 @@ TIP: It is possible to manage plugin activation and deactivation by manually edi
 contains the class names of the "active" plugins.  It is also possible to clear dependencies added by `:install` by
 deleting them from the `ext` directory.
 
-Script Executor
-~~~~~~~~~~~~~~~
+[[execution-mode]]
+Execution Mode
+~~~~~~~~~~~~~~
 
-For automated tasks and batch executions of Gremlin, it can be useful to execute Gremlin scripts from the command
-line.  Consider the following file named `gremlin.groovy`:
+For automated tasks and batch executions of Gremlin, it can be useful to execute Gremlin scripts in "execution" mode
+from the command line.  Consider the following file named `gremlin.groovy`:
 
 [source,groovy]
 ----
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 graph = TinkerFactory.createModern()
 g = graph.traversal()
 g.V().each { println it }
 ----
 
-This script creates the toy graph and then iterates through all its vertices printing each to the system out.  Note
-that under this approach, "imports" need to be explicitly defined (except for "core" TinkerPop classes).  In addition,
-plugins and other dependencies should already be "installed" via console commands which cannot be used with this mode
-of execution.  To execute this script from the command line, `gremlin.sh` has the `-e` option used as follows:
+This script creates the toy graph and then iterates through all its vertices printing each to the system out.  To
+execute this script from the command line, `gremlin.sh` has the `-e` option used as follows:
 
 [source,bash]
 ----
@@ -257,7 +255,6 @@ to system out:
 
 [source,groovy]
 ----
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 graph = TinkerFactory.createModern()
 g = graph.traversal()
 g.V().has('name',args[0]).each { println it }
@@ -273,10 +270,49 @@ $ bin/gremlin.sh -e gremlin.groovy vadas
 v[2]
 ----
 
-NOTE: The `ScriptExecutor` is for Gremlin Groovy scripts only.  It is not possible to include Console plugin commands
-such as `:remote` or `:>` when using `-e` in these scripts. That does not mean that it is impossible to script such
-commands, it just means that they need to be scripted manually.  For example, instead of trying to use the `:remote`
-command, manually construct a <<connecting-via-java,Gremlin Driver>> `Client` and submit scripts from there.
+[[interactive-mode]]
+Interactive Mode
+~~~~~~~~~~~~~~~~
+
+The Gremlin Console can be started in an "interactive" mode. Interactive mode is like <<execution-mode, execution mode>>
+but the console will not exit at the completion of the script, even if the script completes unsuccessfully. In such a
+case, it will simply stop processing on the line that of the script that failed. In this way the state of the console
+is such that a user could examine the state of things up to the point of failure which might make the script easier to
+debug.
+
+In addition to debugging, interactive mode is a helpful way for users to initialize their console environment to
+avoid otherwise repetitive typing. For example, a user who spends a lot of time working with the TinkerPop "modern"
+graph might create a script called `init.groovy` like:
+
+[source,groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+----
+
+and then start Gremlin Console as follows:
+
+[source,text]
+----
+$ bin/gremlin.sh -i init.groovy
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin> g.V()
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+----
+
+Note that the user can now reference `g` (and `graph` for that matter) at startup without having to directly type that
+variable initialization code into the console.
 
 [[gremlin-server]]
 Gremlin Server
@@ -768,6 +804,87 @@ that iterates thousands of results will serialize each of those in memory into a
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.
 
+[[connecting-via-remotegraph]]
+Connecting via RemoteGraph
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>gremlin-driver</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+image:remote-graph.png[width=145,float=left] `RemoteGraph` is a lightweight `Graph` implementation that acts as a
+proxy for sending traversals to Gremlin Server for remote execution. It is not a "full" implementation like
+`TinkerGraph` or `Neo4jGraph`, in that most of its methods are not implemented. For example, calls to most methods
+like, `addVertex()` or `edges()` will result in an `UnsupportedOperationException`. The only method used on
+`RemoteGraph` is `traversal()`, which generates a `GraphTraversalSource` that includes a `RemoteStrategy`. The
+`RemoteStrategy` submits takes traversals constructed from it, serializes them and submits them to Gremlin Server
+and the results are returned as though working with the `Graph` instance in embedded mode.
+
+`RemoteGraph` is an interesting alternative to the other methods for connecting to Gremlin Server in that all other
+methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
+to Gremlin Server (via driver or REST). This approach is quite akin to SQL, where query strings are embedded into code
+and submitted to a database server. While there are patterns for taking this approach that can lead to maintainable
+application code, using `RemoteGraph` could be a better method as it brings some good benefits with it:
+
+* Get auto-complete when writing traversals in an IDE.
+* Get compile-time errors in traversal writing.
+* Get the feel of working with an embedded database.
+
+One way to create a `RemoteGraph` instance is by configuration file. Here is an example of what that file looks like:
+
+[source,properties]
+----
+gremlin.remoteGraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
+gremlin.remoteGraph.driver.clusterFile=conf/remote-objects.yaml
+gremlin.remoteGraph.driver.graphName=graph
+----
+
+The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
+`gremlin-core`. In this case, it points at the `gremlin-driver` implementation, called `DriverRemoteConnection`. The
+other setting, `gremlin.remoteGraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
+provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
+connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting Via Java">> section for more
+information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.graphName` setting tells the
+`DriverRemoteConnection` the name of the graph in Gremlin Server to connect to.
+
+Gremlin Server needs to be running for this example to work. Use the following configuration:
+
+[source,bourne]
+$ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
+
+`RemoteGraph` can be demonstrated in the Gremlin Console just like any other `Graph` instance:
+
+[gremlin-groovy]
+----
+graph = RemoteGraph.open('conf/remote-graph.properties')
+g = graph.traversal()
+g.V().valueMap(true)
+----
+
+If working with multiple `RemoteGraph` instances it is more efficient to construct your own `Cluster` object and
+re-use it.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open('conf/remote-objects.yaml')
+graph = RemoteGraph.open(DriverRemoteConnection.using(cluster, "graph"))
+g = graph.traversal()
+g.V().valueMap(true)
+graph.close()
+cluster.close()
+----
+
+If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
+the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
+
+WARNING: `RemoteGraph` does not support steps that use lambdas in the `Traversal`. Lambda expressions are not
+serializable and therefore can't be remotely executed.
+
 Configuring
 ~~~~~~~~~~~
 
@@ -844,7 +961,6 @@ The following table describes the various configuration options that Gremlin Ser
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. |_none_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
-|serializedResponseTimeout |The amount of time in milliseconds before a response serialization times out.  The notion of "response serialization" refers to the time it takes for Gremlin Server to iterate an entire result after the script is evaluated in the `ScriptEngine`. |30000
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
@@ -863,8 +979,8 @@ run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar 
 link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory
 before starting the server.
 
-Security
-^^^^^^^^
+Security and Execution
+^^^^^^^^^^^^^^^^^^^^^^
 
 image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the
 security of the graphs that it exposes.  It has built in SSL support and a pluggable authentication framework using
@@ -1035,6 +1151,7 @@ There are a number of pre-packaged `CustomizerProvider` implementations:
 |=========================================================
 |Customizer |Description
 |`CompileStaticCustomizerProvider` |Applies `CompileStatic` annotations to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found in the link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[Groovy Documentation].  It is possible to configure this `CustomizerProvider` by specifying a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
+|`ConfigurationCustomizerProvider` |Allows configuration of the the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`ThreadInterruptCustomizerProvider` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
 |`TimedInterruptCustomizerProvider` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
 |`TypeCheckedCustomizerProvider` |Similar to the above mentioned, `CompileStaticCustomizerProvider`, the `TypeCheckedCustomizerProvider` injects `TypeChecked` annotations to incoming scripts.  More information on the nature of this annotation can be found in the link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[Groovy Documentation].  It too takes a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions].
@@ -1246,6 +1363,9 @@ Regardless of the output, the metrics gathered are the same. Each metric is pref
 * `op.eval` - the number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
 (note that these time apply to both sessionless and in-session requests).
+* `op.traversal` - the number of `Traveral` executions, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median,
+mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation
+times.
 
 Best Practices
 ~~~~~~~~~~~~~~
@@ -1268,20 +1388,21 @@ generally means being measured in the low hundreds of milliseconds and "slow" me
 ** If the bulk of the scripts being processed are expected to be "fast", then a good starting point for this setting is `2*threadPoolWorker`.
 ** If the bulk of the scripts being processed are expected to be "slow", then a good starting point for this setting is `4*threadPoolWorker`.
 * Scripts that are "slow" can really hurt Gremlin Server if they are not properly accounted for.  `ScriptEngine`
-evaluations are blocking operations that aren't easily interrupted, so once a "slow" script is being evaluated in
+evaluations are blocking operations that aren't always easily interrupted, so once a "slow" script is being evaluated in
 the context of a `ScriptEngine` it must finish its work.  Lots of "slow" scripts will eventually consume the
 `gremlinPool` preventing other scripts from getting processed from the queue.
-** To limit the impact of this problem consider properly setting the `scriptEvaluationTimeout` and the `serializedResponseTimeout` to something "sane".
-** Test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate and iterate
-over results, then set these configurations accordingly.
-** Note that `scriptEvaluationTimeout` does not interrupt the evaluation on timeout.  It merely allows Gremlin Server
-to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` will still be consumed after
-the timeout.
-** The `serializedResponseTimeout` will kill the result iteration process and prevent additional processing.  In most
-situations, the iteration and serialization process is the more costly step in this process as an errant script that
-returns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the
-other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the
-contents of the script itself.
+** To limit the impact of this problem, consider properly setting the `scriptEvaluationTimeout` to something "sane".
+In other words, test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate
+and iterate over results, then set the timeout value accordingly.
+** Note that `scriptEvaluationTimeout` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
+Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` that did the evaluation
+may still be consumed after the timeout.
+* Graph element serialization for `Vertex` and `Edge` can be expensive, as their data structures are complex given the
+possible existence of multi-properties and meta-properties. When returning data from Gremlin Server only return the
+data that is required. For example, if only two properties of a `Vertex` are needed then simply return the two rather
+than returning the entire `Vertex` object itself. Even with an entire `Vertex`, it is typically much faster to issue
+the query as `g.V(1).valueMap(true)` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
+without all the associated structure which can slow the response.
 
 [[parameterized-scripts]]
 Parameterized Scripts
@@ -1510,18 +1631,18 @@ This plugin imports the appropriate classes for managing the credentials graph.
 Gephi Plugin
 ~~~~~~~~~~~~
 
-image:gephi-logo.png[width=200, float=left] link:http://gephi.github.io/[Gephi] is an interactive visualization,
-exploration, and analysis platform for graphs. The link:https://marketplace.gephi.org/plugin/graph-streaming/[Graph Streaming]
-plugin for Gephi provides an link:https://wiki.gephi.org/index.php/Graph_Streaming[API] that can be leveraged to
-stream graphs and visualize traversals interactively through the Gremlin Gephi Plugin.
+image:gephi-logo.png[width=200, float=left] link:http://gephi.org/[Gephi] is an interactive visualization,
+exploration, and analysis platform for graphs. The link:https://gephi.org/plugins/#/plugin/graphstreaming[Graph Streaming]
+plugin for Gephi provides an API that can be leveraged to stream graph data to a running Gephi application. The Gephi
+plugin for Gremlin Console utilizes this API to allow for graph and traversal visualization.
 
-The following instructions assume that Gephi has been download and installed.  It further assumes that the Graph
-Streaming plugin has been installed (`Tools > Plugins`). The following instructions explain how to visualize a `Graph`
-and `Traversal`.
+The Gephi plugin for Gremlin Console is compatible with Gephi 0.9.x. The following instructions assume that Gephi
+has been download and installed.  It further assumes that the Graph Streaming plugin has been installed
+(`Tools > Plugins`). The following instructions explain how to visualize a `Graph` and `Traversal`.
 
 In Gephi, create a new project with `File > New Project`.  In the lower left view, click the "Streaming" tab, open the
 Master drop down, and right click `Master Server > Start` which starts the Graph Streaming server in Gephi and by
-default accepts requests at `http://localhost:8080/workspace0`:
+default accepts requests at `http://localhost:8080/workspace1`:
 
 image::gephi-start-server.png[width=800]
 
@@ -1566,12 +1687,15 @@ that it requires use of the `visualTraversal` option on the `config` function of
 :remote config visualTraversal graph                   <1>
 traversal = vg.V(2).in().out('knows').
                     has('age',gt(30)).outE('created').
-                    has('weight',gt(0.5d)).inV();null
-:> traversal                                           <2>
+                    has('weight',gt(0.5d)).inV();[]    <2>
+:> traversal                                           <3>
 ----
 
-<1> Configure a "visual traversal" from your "graph" - this must be a `Graph` instance.
-<2> Submit the `Traversal` to visualize to Gephi.
+<1> Configure a "visual traversal" from your "graph" - this must be a `Graph` instance. This command will create a
+new `TraversalSource` called "vg" that must be used to visualize any spawned traversals in Gephi.
+<2> Define the traversal to be visualized. Note that ending the line with `;[]` simply prevents iteration of
+the traversal before it is submitted.
+<3> Submit the `Traversal` to visualize to Gephi.
 
 When the `:>` line is called, each step of the `Traversal` that produces or filters vertices generates events to
 Gephi. The events update the color and size of the vertices at that step with `startRGBColor` and `startSize`
@@ -1603,7 +1727,7 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Parameter |Description |Default
-|workspace |The name of the workspace that your Graph Streaming server is started for. |workspace0
+|workspace |The name of the workspace that your Graph Streaming server is started for. |workspace1
 |host |The host URL where the Graph Streaming server is configured for. |localhost
 |port |The port number of the URL that the Graph Streaming server is listening on. |8080
 |sizeDecrementRate |The rate at which the size of an element decreases on each step of the visualization. |0.33
@@ -1612,7 +1736,7 @@ Gephi plugin configuration parameters as accepted via the `:remote config` comma
 |startSize |The size an element should be when it is most recently visited. |20
 |colorToFade |A single char from the set `{r,g,b,R,G,B}` determining which color to fade for vertices visited in prior steps |g
 |colorFadeRate |A float value in the range `(0.0,1.0]` which is multiplied against the current `colorToFade` value for prior vertices; a `1.0` value effectively turns off the color fading of prior step visited vertices |0.7
-|visualTraversal |Creates a `TraversalSource` variable in the Console named `vg` which can be used for visualizing traversals. This configuration option takes two parameters.  The first is required and is the name of the `Graph` instance variable that will generate the `TraversalSource`.  The second parameter is the variable name that the `TraversalSource` should have when referenced in the Console.  If left unspecified, this value defaults to `vg`.
+|visualTraversal |Creates a `TraversalSource` variable in the Console named `vg` which can be used for visualizing traversals. This configuration option takes two parameters.  The first is required and is the name of the `Graph` instance variable that will generate the `TraversalSource`.  The second parameter is the variable name that the `TraversalSource` should have when referenced in the Console.  If left unspecified, this value defaults to `vg`. |vg
 |=========================================================
 
 [[server-plugin]]

@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,17 +31,17 @@ public abstract class GroovyBranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            TraversalScriptHelper.compute("g.V.branch(__.label.is('person').count).option(1L, __.age).option(0L, __.lang).option(0L,__.name)", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.branch(__.label.is('person').count).option(1L, __.age).option(0L, __.lang).option(0L,__.name)");
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            TraversalScriptHelper.compute("""
+            new ScriptTraversal<>(g, "gremlin-groovy", """
             g.V.branch{it.label == 'person' ? 'a' : 'b'}
                     .option('a', __.age)
                     .option('b', __.lang)
                     .option('b', __.name)
-            """, g)
+            """)
         }
     }
 }

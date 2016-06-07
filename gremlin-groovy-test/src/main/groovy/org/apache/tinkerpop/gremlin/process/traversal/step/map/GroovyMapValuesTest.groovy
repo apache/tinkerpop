@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,17 +32,17 @@ public abstract class GroovyMapValuesTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_outE_valuesXweightX_groupCount_mapValues() {
-            TraversalScriptHelper.compute("g.V.outE().weight.groupCount().mapValues()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.outE().weight.groupCount().mapValues()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_outE_valuesXweightX_groupCount_unfold_mapValues() {
-            TraversalScriptHelper.compute("g.V.outE().weight.groupCount().unfold().mapValues()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.outE().weight.groupCount().unfold().mapValues()")
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_outE_valuesXweightX_groupCount_mapValues_groupCount_mapValues() {
-            TraversalScriptHelper.compute("g.V.outE().weight.groupCount().mapValues().groupCount().mapValues()", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.outE().weight.groupCount().mapValues().groupCount().mapValues()")
         }
     }
 }

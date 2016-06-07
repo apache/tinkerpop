@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -36,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor {
+public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor, ByModulating {
 
     private final Pop pop;
     private final String selectKey;
@@ -68,6 +69,12 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.selectTraversal);
+    }
+
+    @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.selectKey.hashCode();
         if (null != this.selectTraversal)
@@ -83,7 +90,13 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> selectTraversal) {
+    public void removeLocalChild(final Traversal.Admin<?, ?> traversal) {
+        if (this.selectTraversal == traversal)
+            this.selectTraversal = null;
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
         this.selectTraversal = this.integrateChild(selectTraversal);
     }
 
@@ -97,6 +110,10 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public Set<String> getScopeKeys() {
         return Collections.singleton(this.selectKey);
+    }
+
+    public Pop getPop() {
+        return this.pop;
     }
 }
 

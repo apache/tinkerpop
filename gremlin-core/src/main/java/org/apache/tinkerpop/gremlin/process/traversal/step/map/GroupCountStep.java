@@ -16,56 +16,56 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements MapReducer, TraversalParent {
+public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> implements TraversalParent, ByModulating {
 
-    private Traversal.Admin<S, E> groupTraversal = null;
+    private Traversal.Admin<S, E> keyTraversal = null;
 
     public GroupCountStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(HashMapSupplier.instance());
-        this.setBiFunction(new GroupCountBiFunction(this));
+        this.setReducingBiOperator(GroupCountBiOperator.instance());
     }
 
+    @Override
+    public Map<E, Long> projectTraverser(final Traverser.Admin<S> traverser) {
+        final Map<E, Long> map = new HashMap<>(1);
+        map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), traverser.bulk());
+        return map;
+    }
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> groupTraversal) {
-        this.groupTraversal = this.integrateChild(groupTraversal);
+        this.keyTraversal = this.integrateChild(groupTraversal);
     }
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return null == this.groupTraversal ? Collections.emptyList() : Collections.singletonList(this.groupTraversal);
+        return null == this.keyTraversal ? Collections.emptyList() : Collections.singletonList(this.keyTraversal);
     }
 
     @Override
@@ -74,102 +74,51 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     }
 
     @Override
-    public MapReduce<E, Long, E, Long, Map<E, Long>> getMapReduce() {
-        return GroupCountMapReduce.instance();
+    public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
+        this.keyTraversal = this.integrateChild(keyTraversal);
     }
 
     @Override
     public GroupCountStep<S, E> clone() {
         final GroupCountStep<S, E> clone = (GroupCountStep<S, E>) super.clone();
-        if (null != this.groupTraversal)
-            clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
-        clone.setBiFunction(new GroupCountBiFunction<>(clone));
+        if (null != this.keyTraversal)
+            clone.keyTraversal = this.keyTraversal.clone();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        integrateChild(this.keyTraversal);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        for (final Traversal.Admin<S, E> traversal : this.getLocalChildren()) {
-            result ^= traversal.hashCode();
-        }
+        if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.groupTraversal);
+        return StringFactory.stepString(this, this.keyTraversal);
     }
 
-    ///////////
+    ///////////////////////////
 
-    private static class GroupCountBiFunction<S, E> implements BiFunction<Map<E, Long>, Traverser<S>, Map<E, Long>>, Serializable {
+    public static final class GroupCountBiOperator<E> implements BinaryOperator<Map<E, Long>>, Serializable {
 
-        private final GroupCountStep<S, E> groupCountStep;
-
-        private GroupCountBiFunction(final GroupCountStep<S, E> groupCountStep) {
-            this.groupCountStep = groupCountStep;
-
-        }
+        private static final GroupCountBiOperator INSTANCE = new GroupCountBiOperator();
 
         @Override
-        public Map<E, Long> apply(final Map<E, Long> mutatingSeed, final Traverser<S> traverser) {
-            MapHelper.incr(mutatingSeed, TraversalUtil.applyNullable(traverser.asAdmin(), this.groupCountStep.groupTraversal), traverser.bulk());
+        public Map<E, Long> apply(final Map<E, Long> mutatingSeed, final Map<E, Long> map) {
+            for (final Map.Entry<E, Long> entry : map.entrySet()) {
+                MapHelper.incr(mutatingSeed, entry.getKey(), entry.getValue());
+            }
             return mutatingSeed;
         }
-    }
 
-    ///////////
-
-    public static final class GroupCountMapReduce<E> extends StaticMapReduce<E, Long, E, Long, Map<E, Long>> {
-
-        private static final GroupCountMapReduce INSTANCE = new GroupCountMapReduce();
-
-        private GroupCountMapReduce() {
-
-        }
-
-        @Override
-        public boolean doStage(final Stage stage) {
-            return true;
-        }
-
-        @Override
-        public void map(final Vertex vertex, final MapEmitter<E, Long> emitter) {
-            final Map<E, Long> groupCount = new HashMap<>();
-            vertex.<TraverserSet<Map<E, Long>>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet ->
-                    traverserSet.forEach(traverser ->
-                            traverser.get().forEach((k, v) -> MapHelper.incr(groupCount, k, (v * traverser.bulk())))));
-            groupCount.forEach(emitter::emit);
-        }
-
-        @Override
-        public void reduce(final E key, final Iterator<Long> values, final ReduceEmitter<E, Long> emitter) {
-            long counter = 0;
-            while (values.hasNext()) {
-                counter = counter + values.next();
-            }
-            emitter.emit(key, counter);
-        }
-
-        @Override
-        public void combine(final E key, final Iterator<Long> values, final ReduceEmitter<E, Long> emitter) {
-            reduce(key, values, emitter);
-        }
-
-        @Override
-        public Map<E, Long> generateFinalResult(final Iterator<KeyValue<E, Long>> keyValues) {
-            final Map<E, Long> map = new HashMap<>();
-            keyValues.forEachRemaining(keyValue -> map.put(keyValue.getKey(), keyValue.getValue()));
-            return map;
-        }
-
-        @Override
-        public String getMemoryKey() {
-            return REDUCING;
-        }
-
-        public static final <E> GroupCountMapReduce<E> instance() {
+        public static final <E> GroupCountBiOperator<E> instance() {
             return INSTANCE;
         }
     }

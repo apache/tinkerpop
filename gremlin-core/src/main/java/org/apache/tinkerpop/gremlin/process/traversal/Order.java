@@ -48,10 +48,10 @@ public enum Order implements Comparator<Object> {
             return incr;
         }
     },
-    /*
+    /**
      * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
-       @Deprecated
-    */
+     */
+    @Deprecated
     keyIncr {
         @Override
         public int compare(final Object first, final Object second) {
@@ -63,10 +63,10 @@ public enum Order implements Comparator<Object> {
             return keyDecr;
         }
     },
-    /*
+    /**
      * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
-     *
-    @Deprecated */
+     */
+    @Deprecated
     valueIncr {
         @Override
         public int compare(final Object first, final Object second) {
@@ -78,10 +78,10 @@ public enum Order implements Comparator<Object> {
             return valueDecr;
         }
     },
-    /*
+    /**
      * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
-     *
-    @Deprecated */
+     */
+    @Deprecated
     keyDecr {
         @Override
         public int compare(final Object first, final Object second) {
@@ -93,10 +93,10 @@ public enum Order implements Comparator<Object> {
             return keyIncr;
         }
     },
-    /*
+    /**
      * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
-     *
-    @Deprecated */
+     */
+    @Deprecated
     valueDecr {
         @Override
         public int compare(final Object first, final Object second) {

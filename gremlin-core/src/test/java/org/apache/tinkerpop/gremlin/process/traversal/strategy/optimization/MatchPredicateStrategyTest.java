@@ -103,7 +103,7 @@ public class MatchPredicateStrategyTest {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(MatchPredicateStrategy.instance(), IdentityRemovalStrategy.instance());
             traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().setEngine(this.traversalEngine);
+            //traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
         }
 

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.function.Function;
@@ -28,7 +29,9 @@ import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.2.0, replaced by {@link org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal}.
  */
+@Deprecated
 public final class ConfigurationTraversal<S, E> implements Supplier<Traversal.Admin<S, E>> {
 
     private Function<Graph, Traversal.Admin<S, E>> traversalFunction;

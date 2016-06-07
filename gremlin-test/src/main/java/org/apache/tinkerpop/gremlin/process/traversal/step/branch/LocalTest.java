@@ -21,9 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -34,8 +35,16 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -63,6 +72,8 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id);
 
     public abstract Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name();
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX();
 
     @Test
     @LoadGraphWith(CREW)
@@ -197,6 +208,19 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
         assertEquals(5, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "name", "marko", "project", "lop",
+                "name", "josh", "project", "lop",
+                "name", "peter", "project", "lop",
+                "name", "josh", "project", "ripple"), traversal);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends LocalTest {
 
         @Override
@@ -249,6 +273,12 @@ public abstract class LocalTest extends AbstractGremlinProcessTest {
             return g.V().local(inE("knows").limit(2)).outV().values("name");
         }
 
-
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_localXmatchXproject__created_person__person_name_nameX_selectXname_projectX_by_byXnameX() {
+            return g.V().local(__.match(
+                    as("project").in("created").as("person"),
+                    as("person").values("name").as("name")))
+                    .<String>select("name", "project").by().by("name");
+        }
     }
 }

@@ -18,23 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -45,17 +36,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -216,10 +197,18 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         final MatchStep<S, E> clone = (MatchStep<S, E>) super.clone();
         clone.matchTraversals = new ArrayList<>();
         for (final Traversal.Admin<Object, Object> traversal : this.matchTraversals) {
-            clone.matchTraversals.add(clone.integrateChild(traversal.clone()));
+            clone.matchTraversals.add(traversal.clone());
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        for (final Traversal.Admin<Object, Object> traversal : this.matchTraversals) {
+            this.integrateChild(traversal);
+        }
     }
 
     public void setDedupLabels(final Set<String> labels) {
@@ -302,7 +291,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
-    protected Iterator<Traverser<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
+    protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
         while (true) {
             Traverser.Admin traverser = null;
             if (this.first) {
@@ -311,7 +300,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             } else {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     if (matchTraversal.hasNext()) {
-                        traverser = matchTraversal.getEndStep().next().asAdmin();
+                        traverser = matchTraversal.getEndStep().next();
                         break;
                     }
                 }
@@ -343,7 +332,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
-    protected Iterator<Traverser<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
+    protected Iterator<Traverser.Admin<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
         while (true) {
             if (this.first) {
                 this.first = false;
@@ -366,7 +355,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                     traverser.setStepId(matchTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
                     return IteratorUtils.of(traverser);
                 } else { // OR
-                    final List<Traverser<Map<String, E>>> traversers = new ArrayList<>(this.matchTraversals.size());
+                    final List<Traverser.Admin<Map<String, E>>> traversers = new ArrayList<>(this.matchTraversals.size());
                     for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                         final Traverser.Admin split = traverser.split();
                         split.getTags().add(matchTraversal.getStartStep().getId());
@@ -406,7 +395,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         @Override
-        protected Traverser<Object> processNextStart() throws NoSuchElementException {
+        protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
             traverser.addLabels(Collections.singleton(this.getId()));
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
@@ -455,7 +444,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         @Override
-        protected Traverser<Object> processNextStart() throws NoSuchElementException {
+        protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
             while (true) {
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label

@@ -19,14 +19,12 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
-import java.util.stream.Stream;
+import java.util.Random;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -34,15 +32,12 @@ import java.util.stream.Stream;
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class TinkerGraphComputerProvider extends TinkerGraphProvider {
 
-    @Override
-    public GraphTraversalSource traversal(final Graph graph) {
-        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class)).create(graph);
-    }
+    private static final Random RANDOM = new Random();
 
     @Override
-    public GraphTraversalSource traversal(final Graph graph, final TraversalStrategy... strategies) {
-        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(TinkerGraphComputer.class));
-        Stream.of(strategies).forEach(builder::with);
-        return builder.create(graph);
+    public GraphTraversalSource traversal(final Graph graph) {
+        return RANDOM.nextBoolean() ?
+                graph.traversal().withComputer() :
+                graph.traversal(GraphTraversalSource.computer());
     }
 }

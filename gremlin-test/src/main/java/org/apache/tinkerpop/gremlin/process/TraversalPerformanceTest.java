@@ -36,10 +36,13 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
+ *
+ * @deprecated  As of release 3.2.0, replaced by gremlin-benchmark.
  */
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "gremlin-traversal")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-traversal")
+@Deprecated
 public class TraversalPerformanceTest extends AbstractGremlinTest {
 
     public final static int DEFAULT_BENCHMARK_ROUNDS = 10;

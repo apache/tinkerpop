@@ -39,15 +39,18 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEngine().isComputer())
+        if (TraversalHelper.onGraphComputer(traversal))
             return;
 
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
-            final TinkerGraphStep<?,?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+            final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (currentStep instanceof HasContainerHolder) {
-                ((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
+                ((HasContainerHolder) currentStep).getHasContainers().forEach(hasContainer -> {
+                    if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+                        tinkerGraphStep.addHasContainer(hasContainer);
+                });
                 currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
                 traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();

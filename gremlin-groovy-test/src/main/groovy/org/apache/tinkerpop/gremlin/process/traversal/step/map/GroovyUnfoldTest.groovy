@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -32,17 +32,17 @@ public abstract class GroovyUnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
-            TraversalScriptHelper.compute("g.V.local(__.outE.fold).unfold", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.local(__.outE.fold).unfold")
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
-            TraversalScriptHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.valueMap.unfold.map { it.key }")
         }
 
         @Override
         Traversal<Vertex, String> get_g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold(Object v1Id, Object v6Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).repeat(__.both.simplePath).until(hasId(v6Id)).path.by('name').unfold", g, "v1Id", v1Id, "v6Id", v6Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).repeat(__.both.simplePath).until(hasId(v6Id)).path.by('name').unfold", "v1Id", v1Id, "v6Id", v6Id)
         }
     }
 }

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,22 +32,22 @@ public abstract class GroovyAggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
-            TraversalScriptHelper.compute("g.V.name.aggregate('x').cap('x')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.name.aggregate('x').cap('x')")
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
-            TraversalScriptHelper.compute("g.V.aggregate('x').by('name').cap('x')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.aggregate('x').by('name').cap('x')")
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
-            TraversalScriptHelper.compute("g.V.out.aggregate('a').path", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.aggregate('a').path")
         }
 
         @Override
         public Traversal<Vertex, Collection<Integer>> get_g_V_hasLabelXpersonX_aggregateXxX_byXageX_capXxX_asXyX_selectXyX() {
-            TraversalScriptHelper.compute("g.V.hasLabel('person').aggregate('x').by('age').cap('x').as('y').select('y')", g);
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').aggregate('x').by('age').cap('x').as('y').select('y')")
         }
     }
 }

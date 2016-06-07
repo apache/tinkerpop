@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,56 +31,71 @@ public abstract class GroovyGroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
-            TraversalScriptHelper.compute("g.V.out('created').groupCount.by('name')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').groupCount.by('name')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
-            TraversalScriptHelper.compute("g.V.out('created').groupCount('a').by('name').cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').groupCount('a').by('name').cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            TraversalScriptHelper.compute("g.V.out('created').name.groupCount", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').name.groupCount")
         }
 
         @Override
         public Traversal<Vertex, Map<Vertex, Long>> get_g_V_outXcreatedX_groupCountXxX_capXxX() {
-            TraversalScriptHelper.compute("g.V.out('created').groupCount('x').cap('x')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').groupCount('x').cap('x')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
-            TraversalScriptHelper.compute("g.V.out('created').name.groupCount('a').cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('created').name.groupCount('a').cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
-            TraversalScriptHelper.compute("g.V.has('no').groupCount", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('no').groupCount")
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX() {
-            TraversalScriptHelper.compute("g.V.has('no').groupCount('a').cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('no').groupCount('a').cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            TraversalScriptHelper.compute("g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')")
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
-            TraversalScriptHelper.compute("""
+            new ScriptTraversal<>(g, "gremlin-groovy", """
             g.V.union(
                     __.repeat(__.out).times(2).groupCount('m').by('lang'),
                     __.repeat(__.in).times(2).groupCount('m').by('name')).cap('m')
-            """, g)
+            """)
         }
 
         @Override
         public Traversal<Vertex, Map<Long, Long>> get_g_V_groupCount_byXbothE_countX() {
-            TraversalScriptHelper.compute("g.V.groupCount.by(bothE().count)", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.groupCount.by(bothE().count)")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.union(out('knows'), out('created').in('created')).groupCount.select(values).unfold.sum")
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.groupCount('a').out.cap('a').select(keys).unfold.both.groupCount('a').cap('a')")
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.groupCount('a').by(label).as('b').barrier.where(select('a').select('software').is(gt(2))).select('b').name")
         }
     }
 }

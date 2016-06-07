@@ -96,6 +96,12 @@ public final class TraversalUtil {
         }
     }
 
+    public static final <S, E> Iterator<E> applyAll(final S start, final Traversal.Admin<S, E> traversal) {
+        traversal.reset();
+        traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        return traversal; // flatMap
+    }
+
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal, final E end) {
         if (null == end) return TraversalUtil.test(start, traversal);
 

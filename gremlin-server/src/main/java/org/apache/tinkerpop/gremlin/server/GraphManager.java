@@ -144,7 +144,7 @@ public final class GraphManager {
             if (graphs.containsKey(r))
                 graphsToCloseTxOn.add(graphs.get(r));
             else
-                graphsToCloseTxOn.add(traversalSources.get(r).getGraph().get());
+                graphsToCloseTxOn.add(traversalSources.get(r).getGraph());
         });
 
         graphsToCloseTxOn.forEach(graph -> {
