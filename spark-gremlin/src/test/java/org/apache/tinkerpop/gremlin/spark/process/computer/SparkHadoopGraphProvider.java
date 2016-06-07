@@ -33,8 +33,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
@@ -58,10 +60,13 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
+        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT,
+                !test.equals(ProgramTest.Traversals.class) && !test.equals(GroovyProgramTest.class));  // this makes the test suite go really fast
 
         // toy graph inputRDD does not have corresponding outputRDD so where jobs chain, it fails (failing makes sense)
         if (null != loadGraphWith &&
+                !test.equals(ProgramTest.Traversals.class) &&
+                !test.equals(GroovyProgramTest.Traversals.class) &&
                 !test.equals(PageRankTest.Traversals.class) &&
                 !test.equals(GroovyPageRankTest.Traversals.class) &&
                 !test.equals(PeerPressureTest.Traversals.class) &&
