@@ -505,6 +505,11 @@ off for the test suite (the Maven SureFire Plugin is configured this way by defa
 include this setting, `<reuseForks>false</reuseForks>`, in the SureFire configuration if tests are failing in an
 unexplainable way.
 
+TIP: When running the `gremlin-test` suite against your implementation, you may need to set `build.dir` as an
+environment variable, depending on your project layout. Some tests require this to find a writable directory for
+creating temporary files. The value is typically set to the project build directory. For example using the Maven
+SureFire Plugin, this is done via the configuration argLine with `-Dbuild.dir=${project.build.directory}`.
+
 Accessibility via GremlinPlugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
