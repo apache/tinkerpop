@@ -107,14 +107,14 @@ public class IoTest {
         }
 
         @Test
-        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+	@FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLWithNoEdgeLabels() throws IOException {
             readGraphMLIntoGraph(graph, "tinkerpop-no-edge-labels.xml");
-            assertClassicGraph(graph, false, true);
+            assertNoEdgeGraph(graph, false, true);
         }
 
         @Test
@@ -732,14 +732,18 @@ public class IoTest {
     }
 
     public static void assertClassicGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
-        assertToyGraph(g1, assertDouble, lossyForId, false);
+        assertToyGraph(g1, assertDouble, lossyForId, false, true);
+    }
+
+    public static void assertNoEdgeGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
+        assertToyGraph(g1, assertDouble, lossyForId, false, false);
     }
 
     public static void assertModernGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
-        assertToyGraph(g1, assertDouble, lossyForId, true);
+        assertToyGraph(g1, assertDouble, lossyForId, true, true);
     }
 
-    private static void assertToyGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId, final boolean assertSpecificLabel) {
+    private static void assertToyGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId, final boolean assertSpecificLabel, final boolean assertEdgeLabel) {
         assertEquals(6, IteratorUtils.count(g1.vertices()));
         assertEquals(6, IteratorUtils.count(g1.edges()));
 
@@ -753,7 +757,12 @@ public class IoTest {
         assertEquals(3, v1Edges.size());
         v1Edges.forEach(e -> {
             if (e.inVertex().value("name").equals("vadas")) {
-                assertEquals("knows", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("knows", e.label());
+		}
+		else {
+		    assertEquals("edge", e.label());
+		}
                 if (assertDouble)
                     assertWeightLoosely(0.5d, e);
                 else
@@ -761,15 +770,27 @@ public class IoTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 7);
             } else if (e.inVertex().value("name").equals("josh")) {
-                assertEquals("knows", e.label());
-                if (assertDouble)
+                if (assertEdgeLabel) {
+                    assertEquals("knows", e.label());
+                }
+                else {
+                    assertEquals("edge", e.label());
+                }
+
+		if (assertDouble)
                     assertWeightLoosely(1.0, e);
                 else
                     assertWeightLoosely(1.0f, e);
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 8);
             } else if (e.inVertex().value("name").equals("lop")) {
-                assertEquals("created", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.4d, e);
                 else
@@ -791,7 +812,13 @@ public class IoTest {
         assertEquals(1, v2Edges.size());
         v2Edges.forEach(e -> {
             if (e.outVertex().value("name").equals("marko")) {
-                assertEquals("knows", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("knows", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.5d, e);
                 else
@@ -813,7 +840,13 @@ public class IoTest {
         assertEquals(3, v3Edges.size());
         v3Edges.forEach(e -> {
             if (e.outVertex().value("name").equals("peter")) {
-                assertEquals("created", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.2d, e);
                 else
@@ -821,7 +854,13 @@ public class IoTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 12);
             } else if (e.outVertex().value("name").equals("josh")) {
-                assertEquals("created", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.4d, e);
                 else
@@ -829,7 +868,13 @@ public class IoTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 11);
             } else if (e.outVertex().value("name").equals("marko")) {
-                assertEquals("created", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.4d, e);
                 else
@@ -851,7 +896,13 @@ public class IoTest {
         assertEquals(3, v4Edges.size());
         v4Edges.forEach(e -> {
             if (e.inVertex().value("name").equals("ripple")) {
-                assertEquals("created", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(1.0d, e);
                 else
@@ -859,7 +910,13 @@ public class IoTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 10);
             } else if (e.inVertex().value("name").equals("lop")) {
-                assertEquals("created", e.label());
+                if (assertEdgeLabel) {
+		    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.4d, e);
                 else
@@ -867,7 +924,13 @@ public class IoTest {
                 assertEquals(1, e.keys().size());
                 assertId(g1, lossyForId, e, 11);
             } else if (e.outVertex().value("name").equals("marko")) {
-                assertEquals("knows", e.label());
+                if (assertEdgeLabel) {
+		    assertEquals("knows", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(1.0d, e);
                 else
@@ -889,7 +952,13 @@ public class IoTest {
         assertEquals(1, v5Edges.size());
         v5Edges.forEach(e -> {
             if (e.outVertex().value("name").equals("josh")) {
-                assertEquals("created", e.label());
+                if (assertEdgeLabel) {
+		    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(1.0d, e);
                 else
@@ -911,7 +980,13 @@ public class IoTest {
         assertEquals(1, v6Edges.size());
         v6Edges.forEach(e -> {
             if (e.inVertex().value("name").equals("lop")) {
-                assertEquals("created", e.label());
+		if (assertEdgeLabel) {
+                    assertEquals("created", e.label());
+		}
+                else {
+                    assertEquals("edge", e.label());
+                }
+
                 if (assertDouble)
                     assertWeightLoosely(0.2d, e);
                 else
