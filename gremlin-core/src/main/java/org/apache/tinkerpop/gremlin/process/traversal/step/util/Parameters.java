@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
@@ -134,7 +136,7 @@ public final class Parameters implements Cloneable, Serializable {
      * Set parameters given key/value pairs.
      */
     public void set(final Object... keyValues) {
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
+        Parameters.legalPropertyKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
                 List<Object> values = this.parameters.get(keyValues[i]);
@@ -201,5 +203,14 @@ public final class Parameters implements Cloneable, Serializable {
 
     public String toString() {
         return this.parameters.toString();
+    }
+
+    private static void legalPropertyKeyValueArray(final Object... propertyKeyValues) throws IllegalArgumentException {
+        if (propertyKeyValues.length % 2 != 0)
+            throw Element.Exceptions.providedKeyValuesMustBeAMultipleOfTwo();
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            if (!(propertyKeyValues[i] instanceof String) && !(propertyKeyValues[i] instanceof T) && !(propertyKeyValues[i] instanceof Traversal))
+                throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
+        }
     }
 }
