@@ -23,7 +23,10 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -181,6 +184,10 @@ public interface Graph extends AutoCloseable, Host {
      */
     public default GraphTraversalSource traversal() {
         return new GraphTraversalSource(this);
+    }
+
+    public default GraphTraversalSource traversal(final Translator<GraphTraversal> translator) {
+        return new ScriptGraphTraversalSource(this, translator);
     }
 
     /**

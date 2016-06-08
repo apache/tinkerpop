@@ -1,20 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
  */
 
 package org.apache.tinkerpop.gremlin.process.variant.python;
@@ -27,17 +27,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.process.variant.VariantConverter;
-import org.apache.tinkerpop.gremlin.process.variant.VariantGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -61,30 +62,12 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonVariantConverter implements VariantConverter {
+public class PythonTranslator implements Translator<GraphTraversal> {
 
-    private static ScriptEngine JYTHON_ENGINE = ScriptEngineCache.get("jython");
-    private static boolean IMPORT_STATICS = new Random().nextBoolean();
-
-    static {
-        try {
-            final String rootPackageName = (new File("gremlin-variant").exists() ? "gremlin-variant/" : "") + "src/main/jython/";
-            final String gremlinPythonPackageName = rootPackageName + "/gremlin_python";
-            final String gremlinDriverPackageName = rootPackageName + "/gremlin_driver";
-            final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
-            GremlinPythonGenerator.create(gremlinPythonModuleName);
-            JYTHON_ENGINE.eval("import sys");
-            JYTHON_ENGINE.eval("sys.path.append('" + gremlinPythonPackageName + "')");
-            JYTHON_ENGINE.eval("sys.path.append('" + gremlinDriverPackageName + "')");
-            JYTHON_ENGINE.eval("from gremlin_python import *");
-            JYTHON_ENGINE.eval("from gremlin_python import __");
-            if (IMPORT_STATICS)
-                JYTHON_ENGINE.eval("for k in statics:\n  globals()[k] = statics[k]");
-        } catch (final ScriptException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
+    private static boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
+    private static ScriptEngine JYTHON_ENGINE;
+    private static boolean IMPORT_STATICS = false;
+    ////
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from", "global"));
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
@@ -92,20 +75,75 @@ public class PythonVariantConverter implements VariantConverter {
             .map(arg -> ((Enum) arg).name())
             .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
 
+    static {
+        if (isTesting) {
+            IMPORT_STATICS = new Random().nextBoolean();
+            try {
+                final String rootPackageName = (new File("gremlin-variant").exists() ? "gremlin-variant/" : "") + "src/main/jython/";
+                final String gremlinPythonPackageName = rootPackageName + "/gremlin_python";
+                final String gremlinDriverPackageName = rootPackageName + "/gremlin_driver";
+                final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
+                GremlinPythonGenerator.create(gremlinPythonModuleName);
+                JYTHON_ENGINE = ScriptEngineCache.get("jython");
+                JYTHON_ENGINE.eval("import sys");
+                JYTHON_ENGINE.eval("sys.path.append('" + gremlinPythonPackageName + "')");
+                JYTHON_ENGINE.eval("sys.path.append('" + gremlinDriverPackageName + "')");
+                JYTHON_ENGINE.eval("from gremlin_python import *");
+                JYTHON_ENGINE.eval("from gremlin_python import __");
+                if (IMPORT_STATICS)
+                    JYTHON_ENGINE.eval("for k in statics:\n  globals()[k] = statics[k]");
+            } catch (final ScriptException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
+    }
 
-    public String generateGremlinGroovy(final StringBuilder currentTraversal) throws ScriptException {
-        //if (IMPORT_STATICS) assert !currentTraversal.toString().contains("__");
-        if (currentTraversal.toString().contains("$"))
-            throw new VerificationException("Lambdas are currently not supported: " + currentTraversal.toString(), EmptyTraversal.instance());
+    private StringBuilder traversalScript;
+    private final String alias;
+    private final String scriptEngine;
 
-        final Bindings jythonBindings = new SimpleBindings();
-        jythonBindings.put("g", JYTHON_ENGINE.eval("PythonGraphTraversalSource(\"g\", None)"));
-        JYTHON_ENGINE.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
-        return JYTHON_ENGINE.eval(currentTraversal.toString()).toString();
+    public PythonTranslator(final String scriptEngine, final String alias) {
+        this.scriptEngine = scriptEngine;
+        this.alias = alias;
+        this.traversalScript = new StringBuilder(this.alias);
     }
 
     @Override
-    public void addStep(final StringBuilder currentTraversal, final String stepName, final Object... arguments) {
+    public String getAlias() {
+        return this.alias;
+    }
+
+    @Override
+    public String getScriptEngine() {
+        return this.scriptEngine;
+    }
+
+    @Override
+    public GraphTraversal __() {
+        return new ScriptGraphTraversal(EmptyGraph.instance(), new PythonTranslator(this.scriptEngine, "__"));
+    }
+
+    @Override
+    public String getTraversalScript() {
+        if (isTesting && !this.alias.equals("__")) {
+            try {
+                if (traversalScript.toString().contains("$"))
+                    throw new VerificationException("Lambdas are currently not supported: " + this.traversalScript.toString(), EmptyTraversal.instance());
+
+                final Bindings jythonBindings = new SimpleBindings();
+                jythonBindings.put(this.alias, JYTHON_ENGINE.eval("PythonGraphTraversalSource(\"" + this.alias + "\", None)"));
+                JYTHON_ENGINE.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
+                return JYTHON_ENGINE.eval(this.traversalScript.toString()).toString();
+            } catch (final ScriptException e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
+        } else {
+            return this.traversalScript.toString();
+        }
+    }
+
+    @Override
+    public void addStep(final String stepName, final Object... arguments) {
         // flatten the arguments into a single array
         final Object[] objects = Stream.of(arguments)
                 .flatMap(arg ->
@@ -114,27 +152,40 @@ public class PythonVariantConverter implements VariantConverter {
                                 IteratorUtils.of(arg)))
                 .toArray();
         if (objects.length == 0)
-            currentTraversal.append(".").append(convertStepName(stepName)).append("()");
+            this.traversalScript.append(".").append(convertStepName(stepName)).append("()");
         else if (stepName.equals("range") && 2 == objects.length)
-            currentTraversal.append("[").append(objects[0]).append(":").append(objects[1]).append("]");
+            this.traversalScript.append("[").append(objects[0]).append(":").append(objects[1]).append("]");
         else if (stepName.equals("limit") && 1 == objects.length)
-            currentTraversal.append("[0:").append(objects[0]).append("]");
-        else if (stepName.equals("values") && 1 == objects.length && !currentTraversal.toString().equals("__") && !STEP_NAMES.contains(objects[0].toString()))
-            currentTraversal.append(".").append(objects[0]);
+            this.traversalScript.append("[0:").append(objects[0]).append("]");
+        else if (stepName.equals("values") && 1 == objects.length && !traversalScript.toString().equals("__") && !STEP_NAMES.contains(objects[0].toString()))
+            this.traversalScript.append(".").append(objects[0]);
         else {
-            currentTraversal.append(".");
+            this.traversalScript.append(".");
             String temp = convertStepName(stepName) + "(";
             for (final Object object : objects) {
                 temp = temp + convertToString(object) + ",";
             }
-            currentTraversal.append(temp.substring(0, temp.length() - 1) + ")");
+            this.traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
         }
-        if (IMPORT_STATICS && currentTraversal.toString().startsWith("__.")
-                && !NO_STATIC.stream().filter(name -> currentTraversal.toString().contains(name)).findAny().isPresent())
-            currentTraversal.delete(0, 3);
-        if (!IMPORT_STATICS)
-            assert currentTraversal.toString().startsWith("g.") || currentTraversal.toString().startsWith("__.");
+        if (IMPORT_STATICS && this.traversalScript.toString().startsWith("__.")
+                && !NO_STATIC.stream().filter(name -> this.traversalScript.toString().contains(name)).findAny().isPresent())
+            traversalScript.delete(0, 3);
+        if (isTesting && !IMPORT_STATICS)
+            assert this.traversalScript.toString().startsWith(this.alias + ".");
     }
+
+    @Override
+    public PythonTranslator clone() {
+        try {
+            final PythonTranslator clone = (PythonTranslator) super.clone();
+            clone.traversalScript = new StringBuilder(this.traversalScript);
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    ///////
 
     private static String convertToString(final Object object) {
         if (object instanceof String)
@@ -171,8 +222,8 @@ public class PythonVariantConverter implements VariantConverter {
             return convertStatic("Scope.") + convertStepName(object.toString()); // to catch global
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof VariantGraphTraversal)
-            return ((VariantGraphTraversal) object).getVariantString().toString();
+        else if (object instanceof ScriptGraphTraversal)
+            return ((ScriptGraphTraversal) object).getTraversalScript().toString();
         else if (object instanceof Boolean)
             return object.equals(Boolean.TRUE) ? "True" : "False";
         else
@@ -203,4 +254,5 @@ public class PythonVariantConverter implements VariantConverter {
             current.append(convertStatic("P.")).append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
         return current;
     }
+
 }

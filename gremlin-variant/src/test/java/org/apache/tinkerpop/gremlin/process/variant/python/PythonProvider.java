@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.process.variant.python;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.variant.VariantGraphProvider;
-import org.apache.tinkerpop.gremlin.process.variant.VariantGraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -34,7 +34,7 @@ public class PythonProvider extends VariantGraphProvider {
             return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else
-            return new VariantGraphTraversalSource(new PythonVariantConverter(), graph, graph.traversal().getStrategies());
+            return new ScriptGraphTraversalSource(graph, graph.traversal().getStrategies(), new PythonTranslator("gremlin-groovy", "g"));
     }
 
 }

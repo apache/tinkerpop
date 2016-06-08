@@ -23,6 +23,7 @@ import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.groovy.process.traversal.dsl.graph.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram;
@@ -108,6 +109,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(VertexProgramStrategy.class.getPackage().getName() + DOT_STAR);   // computer decoration strategies
         imports.add(GraphFilterStrategy.class.getPackage().getName() + DOT_STAR);     // computer optimization strategies
         imports.add(Event.class.getPackage().getName() + DOT_STAR);                   // eventing
+        imports.add(GroovyTranslator.class.getPackage().getName() + DOT_STAR);        // groovy translator
 
         staticImports.add(P.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);

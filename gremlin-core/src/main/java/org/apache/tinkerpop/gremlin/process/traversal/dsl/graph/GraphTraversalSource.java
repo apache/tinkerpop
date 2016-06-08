@@ -51,8 +51,8 @@ import java.util.function.UnaryOperator;
  */
 public class GraphTraversalSource implements TraversalSource {
 
-    private final Graph graph;
-    private TraversalStrategies strategies;
+    protected final Graph graph;
+    protected TraversalStrategies strategies;
 
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
