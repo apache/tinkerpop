@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -79,7 +80,7 @@ public final class Parameters implements Cloneable, Serializable {
     /**
      * Gets the value of a key and if that key isn't present returns the default value from the {@link Supplier}.
      *
-     * @param key the key to retrieve
+     * @param key          the key to retrieve
      * @param defaultValue the default value generator
      */
     public <E> List<E> get(final Object key, final Supplier<E> defaultValue) {
@@ -118,10 +119,10 @@ public final class Parameters implements Cloneable, Serializable {
      *
      * @param exceptKeys keys to not include in the returned {@link Map}
      */
-    public Map<Object,List<Object>> getRaw(final Object... exceptKeys) {
+    public Map<Object, List<Object>> getRaw(final Object... exceptKeys) {
         if (parameters.isEmpty()) return Collections.emptyMap();
         final List<Object> exceptions = Arrays.asList(exceptKeys);
-        final Map<Object,List<Object>> raw = new HashMap<>();
+        final Map<Object, List<Object>> raw = new HashMap<>();
         for (Map.Entry<Object, List<Object>> entry : parameters.entrySet()) {
             if (!exceptions.contains(entry.getKey())) raw.put(entry.getKey(), entry.getValue());
         }
@@ -133,6 +134,7 @@ public final class Parameters implements Cloneable, Serializable {
      * Set parameters given key/value pairs.
      */
     public void set(final Object... keyValues) {
+        ElementHelper.legalPropertyKeyValueArray(keyValues);
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
                 List<Object> values = this.parameters.get(keyValues[i]);
