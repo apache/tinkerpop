@@ -513,7 +513,10 @@ To enable the remote to connect with a session the `connect` argument takes anot
 ----
 
 With the above command a session gets created with a random UUID for a session identifier. It is also possible to
-assign a custom session identifier by adding it as the last argument to `:remote` command above.
+assign a custom session identifier by adding it as the last argument to `:remote` command above. There is also the
+option to replace "session" with "session-managed" to create a session that will auto-manage transactions (i.e. each
+request will occur within the bounds of a transaction). In this way, the state of bound variables between requests are
+maintained, but the need to manually managed the transactional scope of the graph is no longer required.
 
 [[console-remote-console]]
 Remote Console

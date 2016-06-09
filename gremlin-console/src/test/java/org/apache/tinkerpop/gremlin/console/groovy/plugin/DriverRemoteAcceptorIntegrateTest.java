@@ -93,6 +93,14 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     }
 
     @Test
+    public void shouldConnectAndSubmitManagedSession() throws Exception {
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath(), "session-managed")).toString(), startsWith("Configured "));
+        assertEquals("1", ((Iterator) acceptor.submit(Collections.singletonList("x = 1"))).next());
+        assertEquals("0", ((Iterator) acceptor.submit(Collections.singletonList("x - 1"))).next());
+        assertEquals("0", ((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).iterator().next().getString());
+    }
+
+    @Test
     public void shouldConnectAndSubmitSimple() throws Exception {
         assertThat(acceptor.connect(Collections.singletonList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Configured "));
         assertEquals("2", ((Iterator) acceptor.submit(Collections.singletonList("1+1"))).next());
