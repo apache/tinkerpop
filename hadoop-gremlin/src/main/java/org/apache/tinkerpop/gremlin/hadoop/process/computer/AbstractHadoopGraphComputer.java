@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
@@ -41,14 +42,21 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractHadoopGraphComputer implements GraphComputer {
+
+    private final static Pattern PATH_PATTERN = Pattern.compile("([^:]|://)+");
 
     protected final Logger logger;
     protected final HadoopGraph hadoopGraph;
@@ -138,6 +146,44 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
         if (this.workers > this.features().getMaxWorkers())
             throw GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported(this.workers, this.features().getMaxWorkers());
     }
+
+    protected void loadJars(final Configuration hadoopConfiguration, final Object... params) {
+        if (hadoopConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
+            final String hadoopGremlinLibs = null == System.getProperty(Constants.HADOOP_GREMLIN_LIBS) ? System.getenv(Constants.HADOOP_GREMLIN_LIBS) : System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
+            if (null == hadoopGremlinLibs)
+                this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
+            else {
+                try {
+                    final Matcher matcher = PATH_PATTERN.matcher(hadoopGremlinLibs);
+                    while (matcher.find()) {
+                        final String path = matcher.group();
+                        FileSystem fs;
+                        try {
+                            final URI uri = new URI(path);
+                            fs = FileSystem.get(uri, hadoopConfiguration);
+                        } catch (URISyntaxException e) {
+                            fs = FileSystem.get(hadoopConfiguration);
+                        }
+                        final File file = AbstractHadoopGraphComputer.copyDirectoryIfNonExistent(fs, path);
+                        if (file.exists()) {
+                            for (final File f : file.listFiles()) {
+                                if (f.getName().endsWith(Constants.DOT_JAR)) {
+                                    loadJar(hadoopConfiguration, f, params);
+                                }
+                            }
+                        }
+                        else
+                            this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    protected abstract void loadJar(final Configuration hadoopConfiguration, final File file, final Object... params)
+            throws IOException;
 
     @Override
     public Features features() {

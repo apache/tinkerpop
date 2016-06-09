@@ -78,7 +78,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -209,7 +208,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
             try {
                 final JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-                this.loadJars(sparkContext, hadoopConfiguration); // add the project jars to the cluster
+                this.loadJars(hadoopConfiguration, sparkContext); // add the project jars to the cluster
                 Spark.create(sparkContext.sc()); // this is the context RDD holder that prevents GC
                 updateLocalConfiguration(sparkContext, sparkConfiguration);
                 // create a message-passing friendly rdd from the input rdd
@@ -384,27 +383,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     /////////////////
 
-    private void loadJars(final JavaSparkContext sparkContext, final Configuration hadoopConfiguration) {
-        if (hadoopConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
-            final String hadoopGremlinLocalLibs = null == System.getProperty(Constants.HADOOP_GREMLIN_LIBS) ? System.getenv(Constants.HADOOP_GREMLIN_LIBS) : System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
-            if (null == hadoopGremlinLocalLibs)
-                this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
-            else {
-                try {
-                    final String[] paths = hadoopGremlinLocalLibs.split(":");
-                    final FileSystem fs = FileSystem.get(hadoopConfiguration);
-                    for (final String path : paths) {
-                        final File file = AbstractHadoopGraphComputer.copyDirectoryIfNonExistent(fs, path);
-                        if (file.exists())
-                            Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
-                        else
-                            this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
-                    }
-                } catch (IOException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            }
-        }
+    @Override
+    protected void loadJar(final Configuration hadoopConfiguration, final File file, final Object... params) {
+        final JavaSparkContext sparkContext = (JavaSparkContext) params[0];
+        sparkContext.addJar(file.getAbsolutePath());
     }
 
     /**
