@@ -17,22 +17,24 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.groovy.process.traversal.dsl.graph;
+package org.apache.tinkerpop.gremlin.groovy;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,14 +62,8 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
 
     @Override
     public void addStep(final String stepName, final Object... arguments) {
-        // flatten the arguments into a single array
-        final Object[] objects = Stream.of(arguments)
-                .flatMap(arg ->
-                        IteratorUtils.stream(arg instanceof Object[] ?
-                                new ArrayIterator<>((Object[]) arg) :
-                                IteratorUtils.of(arg)))
-                .toArray();
-        if (objects.length == 0)
+        final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
+        if (objects.isEmpty())
             this.traversalScript.append(".").append(stepName).append("()");
         else {
             this.traversalScript.append(".");
@@ -86,7 +82,10 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
 
     @Override
     public String getTraversalScript() {
-        return this.traversalScript.toString();
+        final String traversal = this.traversalScript.toString();
+        if (traversal.contains("$"))
+            throw new VerificationException("Lambdas are currently not supported: " + traversal, EmptyTraversal.instance());
+        return traversal;
     }
 
     @Override
@@ -110,9 +109,9 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
         if (object instanceof String)
             return "\"" + object + "\"";
         else if (object instanceof List) {
-            final List list = new ArrayList<>(((List) object).size());
+            final List<String> list = new ArrayList<>(((List) object).size());
             for (final Object item : (List) object) {
-                list.add(item instanceof String ? "'" + item + "'" : convertToString(item)); // hack
+                list.add(convertToString(item));
             }
             return list.toString();
         } else if (object instanceof Long)
@@ -127,6 +126,10 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
             return ((Class) object).getCanonicalName();
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
+        else if (object instanceof SackFunctions.Barrier)
+            return "SackFunctions.Barrier." + object.toString();
+        else if (object instanceof VertexProperty.Cardinality)
+            return "VertexProperty.Cardinality." + object.toString();
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element)
@@ -143,7 +146,7 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
             for (int i = 0; i < list.size(); i++) {
                 convertPToString(list.get(i), current);
                 if (i < list.size() - 1)
-                    current.append(p instanceof OrP ? "._or(" : "._and(");
+                    current.append(p instanceof OrP ? ".or(" : ".and(");
             }
             current.append(")");
         } else

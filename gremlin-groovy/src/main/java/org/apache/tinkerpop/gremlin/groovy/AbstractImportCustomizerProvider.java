@@ -23,7 +23,6 @@ import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
-import org.apache.tinkerpop.gremlin.groovy.process.traversal.dsl.graph.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram;

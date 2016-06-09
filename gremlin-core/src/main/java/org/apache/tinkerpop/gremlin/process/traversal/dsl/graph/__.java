@@ -51,7 +51,7 @@ import java.util.function.Supplier;
  */
 public class __ {
 
-    private static Supplier<GraphTraversal> ANONYMOUS_GRAPH_TRAVERSAL = null;
+    private static ThreadLocal<Supplier<GraphTraversal>> ANONYMOUS_GRAPH_TRAVERSAL = null;
 
     protected __() {
     }
@@ -59,11 +59,20 @@ public class __ {
     //////////////////////////////////////////////////////////////////////
 
     public static void setAnonymousGraphTraversalSupplier(final Supplier<GraphTraversal> anonymousGraphTraversalSupplier) {
-        ANONYMOUS_GRAPH_TRAVERSAL = anonymousGraphTraversalSupplier;
+        if (null == ANONYMOUS_GRAPH_TRAVERSAL) {
+            if (null == anonymousGraphTraversalSupplier)
+                return;
+            else
+                ANONYMOUS_GRAPH_TRAVERSAL = ThreadLocal.withInitial(() -> DefaultGraphTraversal::new);
+        }
+        if (null == anonymousGraphTraversalSupplier)
+            ANONYMOUS_GRAPH_TRAVERSAL.remove();
+        else
+            ANONYMOUS_GRAPH_TRAVERSAL.set(anonymousGraphTraversalSupplier);
     }
 
     public static <A> GraphTraversal<A, A> start() {
-        return null == ANONYMOUS_GRAPH_TRAVERSAL ? new DefaultGraphTraversal<>() : ANONYMOUS_GRAPH_TRAVERSAL.get();
+        return null == ANONYMOUS_GRAPH_TRAVERSAL ? new DefaultGraphTraversal<>() : ANONYMOUS_GRAPH_TRAVERSAL.get().get();
     }
 
     public static <A> GraphTraversal<A, A> __(final A... starts) {
