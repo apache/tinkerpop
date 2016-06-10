@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -30,10 +31,18 @@ public interface Translator<V extends Traversal> extends Cloneable {
 
     public String getAlias();
 
-    public void addStep(final String stepName, final Object... arguments);
+    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments);
 
-    public default void addStrategy(final String strategyName, final Object... arguments) {
-        this.addStep(strategyName, arguments);
+    public default void addSource(final TraversalSource traversalSource, final String sourceName, final Object... arguments) {
+        addStep(EmptyTraversal.instance(), sourceName, arguments);
+    }
+
+    public default void addSource(final String sourceName, final Object... arguments) {
+
+    }
+
+    public default void addStep(final String sourceName, final Object... arguments) {
+
     }
 
     public V __();

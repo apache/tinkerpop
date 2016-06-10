@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -562,5 +564,31 @@ public final class TraversalHelper {
             traversal = traversal.getParent().asStep().getTraversal();
         }
         return false;
+    }
+
+    public static void addStepToCreationStrategies(final Traversal.Admin<?, ?> traversal, final Object... arguments) {
+        final List<TraversalStrategy.CreationStrategy> strategies = traversal.getStrategies().getStrategies(TraversalStrategy.CreationStrategy.class);
+        if (!strategies.isEmpty()) {
+            final String stepName = Thread.currentThread().getStackTrace()[2].getMethodName();
+            for (final TraversalStrategy.CreationStrategy creationStrategy : strategies) {
+                creationStrategy.addStep(traversal, stepName, arguments);
+            }
+        }
+    }
+
+    public static void addSourceToCreationStrategies(final TraversalSource traversalSource, final Object... arguments) {
+        final List<TraversalStrategy.CreationStrategy> strategies = traversalSource.getStrategies().getStrategies(TraversalStrategy.CreationStrategy.class);
+        if (!strategies.isEmpty()) {
+            final String sourceName = Thread.currentThread().getStackTrace()[2].getMethodName();
+            for (final TraversalStrategy.CreationStrategy creationStrategy : strategies) {
+                creationStrategy.addSource(traversalSource, sourceName, arguments);
+            }
+        }
+    }
+
+    public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
+        while (!traversal.getSteps().isEmpty()) {
+            traversal.removeStep(0);
+        }
     }
 }

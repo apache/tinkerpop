@@ -133,6 +133,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -192,10 +193,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link LambdaMapStep}.
      */
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), function);
         return this.asAdmin().addStep(new LambdaMapStep<>(this.asAdmin(), function));
     }
 
     public default <E2> GraphTraversal<S, E2> map(final Traversal<?, E2> mapTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), mapTraversal);
         return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), mapTraversal));
     }
 
@@ -208,6 +211,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link LambdaFlatMapStep}.
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Function<Traverser<E>, Iterator<E2>> function) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), function);
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
     }
 
@@ -220,6 +224,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link TraversalFlatMapStep}.
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), flatMapTraversal);
         return this.asAdmin().addStep(new TraversalFlatMapStep<>(this.asAdmin(), flatMapTraversal));
     }
 
@@ -229,6 +234,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link IdStep}.
      */
     public default GraphTraversal<S, Object> id() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new IdStep<>(this.asAdmin()));
     }
 
@@ -238,6 +244,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link LabelStep}.
      */
     public default GraphTraversal<S, String> label() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new LabelStep<>(this.asAdmin()));
     }
 
@@ -247,6 +254,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link IdentityStep}.
      */
     public default GraphTraversal<S, E> identity() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new IdentityStep<>(this.asAdmin()));
     }
 
@@ -256,10 +264,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link ConstantStep}.
      */
     public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), e);
         return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
     }
 
     public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), vertexIdsOrElements);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, vertexIdsOrElements));
     }
 
@@ -271,6 +281,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), direction, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, direction, edgeLabels));
     }
 
@@ -281,7 +292,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Vertex> out(final String... edgeLabels) {
-        return this.to(Direction.OUT, edgeLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.OUT, edgeLabels));
     }
 
     /**
@@ -291,7 +303,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Vertex> in(final String... edgeLabels) {
-        return this.to(Direction.IN, edgeLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.IN, edgeLabels));
     }
 
     /**
@@ -301,7 +314,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Vertex> both(final String... edgeLabels) {
-        return this.to(Direction.BOTH, edgeLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.BOTH, edgeLabels));
     }
 
     /**
@@ -312,6 +326,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), direction, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, direction, edgeLabels));
     }
 
@@ -322,7 +337,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Edge> outE(final String... edgeLabels) {
-        return this.toE(Direction.OUT, edgeLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.OUT, edgeLabels));
     }
 
     /**
@@ -332,7 +348,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Edge> inE(final String... edgeLabels) {
-        return this.toE(Direction.IN, edgeLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.IN, edgeLabels));
     }
 
     /**
@@ -342,7 +359,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link VertexStep}.
      */
     public default GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
-        return this.toE(Direction.BOTH, edgeLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.BOTH, edgeLabels));
     }
 
     /**
@@ -352,6 +370,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link EdgeVertexStep}.
      */
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), direction);
         return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), direction));
     }
 
@@ -361,7 +380,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link EdgeVertexStep}.
      */
     public default GraphTraversal<S, Vertex> inV() {
-        return this.toV(Direction.IN);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), Direction.IN));
     }
 
     /**
@@ -370,7 +390,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link EdgeVertexStep}.
      */
     public default GraphTraversal<S, Vertex> outV() {
-        return this.toV(Direction.OUT);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), Direction.OUT));
     }
 
     /**
@@ -379,7 +400,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link EdgeVertexStep}.
      */
     public default GraphTraversal<S, Vertex> bothV() {
-        return this.toV(Direction.BOTH);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), Direction.BOTH));
     }
 
     /**
@@ -388,6 +410,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link EdgeOtherVertexStep}.
      */
     public default GraphTraversal<S, Vertex> otherV() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new EdgeOtherVertexStep(this.asAdmin()));
     }
 
@@ -397,7 +420,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link OrderGlobalStep}.
      */
     public default GraphTraversal<S, E> order() {
-        return this.order(Scope.global);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new OrderGlobalStep<>(this.asAdmin()));
     }
 
     /**
@@ -407,6 +431,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link OrderGlobalStep} or {@link OrderLocalStep}.
      */
     public default GraphTraversal<S, E> order(final Scope scope) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new OrderGlobalStep<>(this.asAdmin()) : new OrderLocalStep<>(this.asAdmin()));
     }
 
@@ -419,6 +444,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertiesStep}.
      */
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), propertyKeys);
         return this.asAdmin().addStep(new PropertiesStep<>(this.asAdmin(), PropertyType.PROPERTY, propertyKeys));
     }
 
@@ -431,6 +457,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertiesStep}.
      */
     public default <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), propertyKeys);
         return this.asAdmin().addStep(new PropertiesStep<>(this.asAdmin(), PropertyType.VALUE, propertyKeys));
     }
 
@@ -443,6 +470,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyMapStep}.
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), false, PropertyType.PROPERTY, propertyKeys));
     }
 
@@ -455,6 +483,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyMapStep}.
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), false, PropertyType.VALUE, propertyKeys));
     }
 
@@ -468,11 +497,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyMapStep}.
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), includeTokens, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
     }
 
     public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
-        return this.map(new ColumnTraversal(column));
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), column);
+        return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), new ColumnTraversal(column)));
     }
 
     /**
@@ -497,6 +528,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyKeyStep}.
      */
     public default GraphTraversal<S, String> key() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new PropertyKeyStep(this.asAdmin()));
     }
 
@@ -506,6 +538,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PropertyValueStep}.
      */
     public default <E2> GraphTraversal<S, E2> value() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new PropertyValueStep<>(this.asAdmin()));
     }
 
@@ -515,6 +548,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link PathStep}.
      */
     public default GraphTraversal<S, Path> path() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
@@ -526,6 +560,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link MatchStep}.
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), matchTraversals);
         return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), ConnectiveStep.Connective.AND, matchTraversals));
     }
 
@@ -536,10 +571,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link SackStep}.
      */
     public default <E2> GraphTraversal<S, E2> sack() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Integer> loops() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin()));
     }
 
@@ -547,6 +584,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final String[] projectKeys = new String[otherProjectKeys.length + 1];
         projectKeys[0] = projectKey;
         System.arraycopy(otherProjectKeys, 0, projectKeys, 1, otherProjectKeys.length);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), projectKeys);
         return this.asAdmin().addStep(new ProjectStep<>(this.asAdmin(), projectKeys));
     }
 
@@ -565,6 +603,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         selectKeys[0] = selectKey1;
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
+        if (null == pop)
+            TraversalHelper.addStepToCreationStrategies(this.asAdmin(), selectKeys);
+        else
+            TraversalHelper.addStepToCreationStrategies(this.asAdmin(), pop, selectKeys);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectKeys));
     }
 
@@ -582,22 +624,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), pop, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectKey));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
-        return this.select(null, selectKey);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), selectKey);
+        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), null, selectKey));
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new UnfoldStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, List<E>> fold() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin()));
     }
 
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), seed, foldFunction);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction)); // TODO: User should provide supplier?
     }
 
@@ -607,10 +654,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link CountGlobalStep}.
      */
     public default GraphTraversal<S, Long> count() {
-        return this.count(Scope.global);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new CountGlobalStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Long> count(final Scope scope) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new CountGlobalStep<>(this.asAdmin()) : new CountLocalStep<>(this.asAdmin()));
     }
 
@@ -620,38 +669,47 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link SumGlobalStep}.
      */
     public default <E2 extends Number> GraphTraversal<S, E2> sum() {
-        return this.sum(Scope.global);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new SumGlobalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep<>(this.asAdmin()) : new SumLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
-        return this.max(Scope.global);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new MaxGlobalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
-        return this.min(Scope.global);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new MinGlobalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> mean() {
-        return this.mean(Scope.global);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new MeanGlobalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
     }
 
@@ -660,22 +718,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default <K, V> GraphTraversal<S, Map<K, V>> groupV3d0() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin()));
     }
 
     public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Tree> tree() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), vertexLabel);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabel));
     }
 
     public default GraphTraversal<S, Vertex> addV() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), null));
     }
 
@@ -685,28 +748,38 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     @Deprecated
     public default GraphTraversal<S, Vertex> addV(final Object... propertyKeyValues) {
         this.addV();
-        ((AddVertexStep) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
+        }
+        //((AddVertexStep) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
         return (GraphTraversal<S, Vertex>) this;
     }
 
     public default GraphTraversal<S, Edge> addE(final String edgeLabel) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), edgeLabel);
         return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabel));
     }
 
     public default GraphTraversal<S, E> to(final String toStepLabel) {
-        return this.to(__.select(toStepLabel));
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), toStepLabel);
+        ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(__.select(toStepLabel));
+        return this;
     }
 
     public default GraphTraversal<S, E> from(final String fromStepLabel) {
-        return this.from(__.select(fromStepLabel));
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), fromStepLabel);
+        ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(__.select(fromStepLabel));
+        return this;
     }
 
     public default GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), toVertex);
         ((AddEdgeStep) this.asAdmin().getEndStep()).addTo(toVertex);
         return this;
     }
 
     public default GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), fromVertex);
         ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(fromVertex);
         return this;
     }
@@ -723,7 +796,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 this.to(edgeLabelOrSecondVertexKey);
             else
                 this.from(edgeLabelOrSecondVertexKey);
-            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
+
+            for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+                this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
+            }
+            // ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
             return (GraphTraversal<S, Edge>) this;
         } else {
             // addInE("a", "co-developer", "b", "year", 2009)
@@ -732,7 +809,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 this.from(firstVertexKeyOrEdgeLabel).to((String) propertyKeyValues[0]);
             else
                 this.to(firstVertexKeyOrEdgeLabel).from((String) propertyKeyValues[0]);
-            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
+            final Object[] temp = Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length);
+            for (int i = 0; i < temp.length; i = i + 2) {
+                this.property(temp[i], temp[i + 1]);
+            }
+            // ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
             return (GraphTraversal<S, Edge>) this;
         }
     }
@@ -756,22 +837,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// FILTER STEPS /////////////////////
 
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), predicate);
         return this.asAdmin().addStep(new LambdaFilterStep<>(this.asAdmin(), predicate));
     }
 
     public default GraphTraversal<S, E> filter(final Traversal<?, ?> filterTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), filterTraversal);
         return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) filterTraversal));
     }
 
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), orTraversals);
         return this.asAdmin().addStep(new OrStep(this.asAdmin(), orTraversals));
     }
 
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), andTraversals);
         return this.asAdmin().addStep(new AndStep(this.asAdmin(), andTraversals));
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), injections);
         return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), injections));
     }
 
@@ -783,6 +869,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link DedupGlobalStep}.
      */
     public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope, dedupLabels);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin(), dedupLabels) : new DedupLocalStep(this.asAdmin()));
     }
 
@@ -793,29 +880,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link DedupGlobalStep}.
      */
     public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
-        return this.dedup(Scope.global, dedupLabels);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), dedupLabels);
+        return this.asAdmin().addStep(new DedupGlobalStep<>(this.asAdmin(), dedupLabels));
     }
 
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), startKey, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.ofNullable(startKey), predicate));
     }
 
     public default GraphTraversal<S, E> where(final P<String> predicate) {
-        return this.where(null, predicate);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), predicate);
+        return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.empty(), predicate));
     }
 
     public default GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), whereTraversal);
         return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
-                this.filter(whereTraversal) :
+                this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) whereTraversal)) :
                 this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), whereTraversal));
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), propertyKey, predicate);
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(propertyKey, predicate)));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
-        return this.has(accessor.getAccessor(), predicate);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), accessor, predicate);
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(accessor.getAccessor(), predicate)));
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
@@ -844,7 +937,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
-        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey)));
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), propertyKey, propertyTraversal);
+        return this.asAdmin().addStep(
+                new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
+                        new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey))));
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey) {
@@ -872,6 +968,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> is(final P<E> predicate) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), predicate);
         return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
     }
 
@@ -886,6 +983,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), notTraversal);
         return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E, ?>) notTraversal));
     }
 
@@ -896,40 +994,53 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link CoinStep}.
      */
     public default GraphTraversal<S, E> coin(final double probability) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), probability);
         return this.asAdmin().addStep(new CoinStep<>(this.asAdmin(), probability));
     }
 
     public default GraphTraversal<S, E> range(final long low, final long high) {
-        return this.<E>range(Scope.global, low, high);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), low, high);
+        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), low, high));
     }
 
     public default <E2> GraphTraversal<S, E2> range(final Scope scope, final long low, final long high) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope, low, high);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new RangeGlobalStep<>(this.asAdmin(), low, high)
                 : new RangeLocalStep<>(this.asAdmin(), low, high));
     }
 
     public default GraphTraversal<S, E> limit(final long limit) {
-        return this.<E>range(Scope.global, 0, limit);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), limit);
+        return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), 0, limit));
     }
 
     public default <E2> GraphTraversal<S, E2> limit(final Scope scope, final long limit) {
-        return this.range(scope, 0, limit);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope, limit);
+        return this.asAdmin().addStep(scope.equals(Scope.global)
+                ? new RangeGlobalStep<>(this.asAdmin(), 0, limit)
+                : new RangeLocalStep<>(this.asAdmin(), 0, limit));
     }
 
     public default GraphTraversal<S, E> tail() {
-        return this.tail(1);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), 1));
     }
 
     public default GraphTraversal<S, E> tail(final long limit) {
-        return this.tail(Scope.global, limit);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), limit);
+        return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), limit));
     }
 
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope) {
-        return this.<E2>tail(scope, 1);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global)
+                ? new TailGlobalStep<>(this.asAdmin(), 1)
+                : new TailLocalStep<>(this.asAdmin(), 1));
     }
 
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope, final long limit) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope, limit);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new TailGlobalStep<>(this.asAdmin(), limit)
                 : new TailLocalStep<>(this.asAdmin(), limit));
@@ -942,6 +1053,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link TimeLimitStep}
      */
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), timeLimit);
         return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
     }
 
@@ -951,6 +1063,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link SimplePathStep}.
      */
     public default GraphTraversal<S, E> simplePath() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new SimplePathStep<>(this.asAdmin()));
     }
 
@@ -960,46 +1073,56 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link CyclicPathStep}.
      */
     public default GraphTraversal<S, E> cyclicPath() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new CyclicPathStep<>(this.asAdmin()));
     }
 
     public default GraphTraversal<S, E> sample(final int amountToSample) {
-        return this.sample(Scope.global, amountToSample);
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), amountToSample);
+        return this.asAdmin().addStep(new SampleGlobalStep<>(this.asAdmin(), amountToSample));
     }
 
     public default GraphTraversal<S, E> sample(final Scope scope, final int amountToSample) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), scope, amountToSample);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new SampleGlobalStep<>(this.asAdmin(), amountToSample)
                 : new SampleLocalStep<>(this.asAdmin(), amountToSample));
     }
 
     public default GraphTraversal<S, E> drop() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     public default GraphTraversal<S, E> sideEffect(final Consumer<Traverser<E>> consumer) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), consumer);
         return this.asAdmin().addStep(new LambdaSideEffectStep<>(this.asAdmin(), consumer));
     }
 
     public default GraphTraversal<S, E> sideEffect(final Traversal<?, ?> sideEffectTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectTraversal);
         return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), (Traversal) sideEffectTraversal));
     }
 
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey, sideEffectKeys);
         return this.asAdmin().addStep(new SideEffectCapStep<>(this.asAdmin(), sideEffectKey, sideEffectKeys));
     }
 
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new SubgraphStep(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new AggregateStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -1007,18 +1130,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
      */
     public default GraphTraversal<S, E> groupV3d0(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new GroupSideEffectStepV3d0<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sackOperator);
         return this.asAdmin().addStep(new SackValueStep<>(this.asAdmin(), sackOperator));
     }
 
@@ -1031,11 +1158,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new StoreStep<>(this.asAdmin(), sideEffectKey));
     }
 
     public default GraphTraversal<S, E> profile(final String sideEffectKey) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), sideEffectKey);
         return this.asAdmin().addStep(new ProfileSideEffectStep<>(this.asAdmin(), sideEffectKey));
+    }
+
+    @Override
+    public default GraphTraversal<S, TraversalMetrics> profile() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return this.asAdmin()
+                .addStep(new ProfileSideEffectStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY))
+                .addStep(new SideEffectCapStep<Object, TraversalMetrics>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
     }
 
     /**
@@ -1056,6 +1193,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param keyValues   any meta properties to be assigned to this property
      */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
+        if (null == cardinality)
+            TraversalHelper.addStepToCreationStrategies(this.asAdmin(), key, value, keyValues);
+        else
+            TraversalHelper.addStepToCreationStrategies(this.asAdmin(), cardinality, key, value, keyValues);
         // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
         // the properties into that step to gain an optimization for those graphs that support such capabilities.
         if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep
@@ -1089,6 +1230,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// BRANCH STEPS /////////////////////
 
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), branchTraversal);
         final BranchStep<E, E2, M> branchStep = new BranchStep<>(this.asAdmin());
         branchStep.setBranchTraversal((Traversal.Admin<E, M>) branchTraversal);
         return this.asAdmin().addStep(branchStep);
@@ -1099,11 +1241,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> choiceTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), choiceTraversal);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) choiceTraversal));
     }
 
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), traversalPredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
@@ -1121,18 +1265,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), unionTraversals);
         return this.asAdmin().addStep(new UnionStep(this.asAdmin(), Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
     }
 
     public default <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), coalesceTraversals);
         return this.asAdmin().addStep(new CoalesceStep(this.asAdmin(), Arrays.copyOf(coalesceTraversals, coalesceTraversals.length, Traversal.Admin[].class)));
     }
 
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
 
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), emitTraversal);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) emitTraversal);
     }
 
@@ -1141,10 +1289,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> emit() {
-        return this.emit(TrueTraversal.instance());
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
+        return RepeatStep.addEmitToTraversal(this, TrueTraversal.instance());
     }
 
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), untilTraversal);
         return RepeatStep.addUntilToTraversal(this, (Traversal.Admin<E, ?>) untilTraversal);
     }
 
@@ -1153,14 +1303,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), maxLoops);
         if (this.asAdmin().getEndStep() instanceof TimesModulating) {
             ((TimesModulating) this.asAdmin().getEndStep()).modulateTimes(maxLoops);
             return this;
         } else
-            return this.until(new LoopTraversal<>(maxLoops));
+            return RepeatStep.addUntilToTraversal(this, new LoopTraversal<>(maxLoops));
     }
 
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), localTraversal);
         return this.asAdmin().addStep(new LocalStep<>(this.asAdmin(), localTraversal.asAdmin()));
     }
 
@@ -1171,10 +1323,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> pageRank(final double alpha) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), alpha);
         return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), alpha));
     }
 
     public default GraphTraversal<S, E> peerPressure() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         return this.asAdmin().addStep((Step<E, E>) new PeerPressureVertexProgramStep(this.asAdmin()));
     }
 
@@ -1185,6 +1339,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// UTILITY STEPS /////////////////////
 
     public default GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), stepLabel, stepLabels);
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
         final Step<?, E> endStep = this.asAdmin().getEndStep();
         endStep.addLabel(stepLabel);
@@ -1199,10 +1354,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> barrier(final int maxBarrierSize) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), maxBarrierSize);
         return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), maxBarrierSize));
     }
 
     public default GraphTraversal<S, E> barrier(final Consumer<TraverserSet<Object>> barrierConsumer) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), barrierConsumer);
         return this.asAdmin().addStep(new LambdaCollectingBarrierStep<>(this.asAdmin(), (Consumer) barrierConsumer, Integer.MAX_VALUE));
     }
 
@@ -1210,26 +1367,31 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     //// BY-MODULATORS
 
     public default GraphTraversal<S, E> by() {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin());
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy();
         return this;
     }
 
     public default GraphTraversal<S, E> by(final Traversal<?, ?> traversal) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), traversal);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin());
         return this;
     }
 
     public default GraphTraversal<S, E> by(final T token) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), token);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(token);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final String key) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), key);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key);
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> function) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), function);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function);
         return this;
     }
@@ -1237,21 +1399,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     //// COMPARATOR BY-MODULATORS
 
     public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> comparator) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), traversal, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin(), comparator);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(comparator);
         return this;
     }
 
     public default GraphTraversal<S, E> by(final Order order) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), order);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(order);
         return this;
     }
 
     public default <V> GraphTraversal<S, E> by(final String key, final Comparator<V> comparator) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), key, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key, comparator);
         return this;
     }
@@ -1267,6 +1433,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }*/
 
     public default <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), function, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function, comparator);
         return this;
     }
@@ -1274,11 +1441,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ////
 
     public default <M, E2> GraphTraversal<S, E> option(final M pickToken, final Traversal<E, E2> traversalOption) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), pickToken, traversalOption);
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addGlobalChildOption(pickToken, traversalOption.asAdmin());
         return this;
     }
 
     public default <E2> GraphTraversal<S, E> option(final Traversal<E, E2> traversalOption) {
+        TraversalHelper.addStepToCreationStrategies(this.asAdmin(), traversalOption);
         return this.option(TraversalOptionParent.Pick.any, traversalOption.asAdmin());
     }
 

@@ -21,8 +21,12 @@ package org.apache.tinkerpop.gremlin.groovy;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
@@ -31,7 +35,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +45,11 @@ import java.util.List;
 public class GroovyTranslator implements Translator<GraphTraversal> {
 
     private StringBuilder traversalScript;
-    private final String alias;
+    private String alias;
 
     public GroovyTranslator(final String alias) {
         this.alias = alias;
         this.traversalScript = new StringBuilder(this.alias);
-
     }
 
     @Override
@@ -61,7 +63,7 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
     }
 
     @Override
-    public void addStep(final String stepName, final Object... arguments) {
+    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
         final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
         if (objects.isEmpty())
             this.traversalScript.append(".").append(stepName).append("()");
@@ -75,9 +77,16 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
         }
     }
 
+    /*Override
+    public void addSource(final TraversalSource source, final String sourceName, final Object... arguments) {
+        source.getStrategies().toList().
+    }*/
+
     @Override
     public GraphTraversal __() {
-        return new ScriptGraphTraversal(EmptyGraph.instance(), new GroovyTranslator("__"));
+        final GraphTraversal traversal = new DefaultGraphTraversal();
+        traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(new TranslationStrategy(new GroovyTranslator("__"))));
+        return traversal;
     }
 
     @Override
@@ -134,9 +143,13 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof ScriptGraphTraversal)
-            return ((ScriptGraphTraversal) object).getTraversalScript();
-        else
+        else if (object instanceof Traversal) {
+            final TranslationStrategy strategy = (TranslationStrategy) ((Traversal.Admin) object).getStrategies().toList()
+                    .stream()
+                    .filter(s -> s instanceof TranslationStrategy)
+                    .findFirst().get();
+            return strategy.getTranslator().getTraversalScript();
+        } else
             return null == object ? "null" : object.toString();
     }
 

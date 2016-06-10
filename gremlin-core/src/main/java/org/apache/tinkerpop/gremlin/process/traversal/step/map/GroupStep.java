@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
@@ -65,7 +65,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.valueTraversal = this.integrateChild(__.fold().asAdmin());
+        this.valueTraversal = this.integrateChild(new DefaultGraphTraversal<>().fold().asAdmin());
         this.preTraversal = this.integrateChild(generatePreTraversal(this.valueTraversal));
         this.setReducingBiOperator(new GroupBiOperator<>(this.valueTraversal));
         this.setSeedSupplier(HashMapSupplier.instance());
@@ -323,7 +323,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 valueTraversal instanceof TokenTraversal ||
                 valueTraversal instanceof IdentityTraversal ||
                 valueTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
-            return (Traversal.Admin<S, E>) __.map(valueTraversal).fold();
+            return (Traversal.Admin<S, E>) new DefaultGraphTraversal<>().map(valueTraversal).fold();
         } else {
             return valueTraversal;
         }
@@ -332,7 +332,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public static Traversal.Admin<?, ?> generatePreTraversal(final Traversal.Admin<?, ?> valueTraversal) {
         if (!TraversalHelper.hasStepOfAssignableClass(Barrier.class, valueTraversal))
             return valueTraversal;
-        final Traversal.Admin<?, ?> first = __.identity().asAdmin();
+        final Traversal.Admin<?, ?> first = new DefaultGraphTraversal<>().identity().asAdmin();
         for (final Step step : valueTraversal.getSteps()) {
             if (step instanceof Barrier)
                 break;

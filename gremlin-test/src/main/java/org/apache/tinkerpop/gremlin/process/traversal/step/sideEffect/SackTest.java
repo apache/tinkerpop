@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class SackTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_withSackXhellowX_V_outE_sackXassignX_byXlabelX_inV_sack();
+    public abstract Traversal<Vertex, String> get_g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack();
 
     public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum();
 
@@ -70,8 +70,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_withSackXhellowX_V_outE_sackXassignX_byXlabelX_inV_sack() {
-        final Traversal<Vertex, String> traversal = get_g_withSackXhellowX_V_outE_sackXassignX_byXlabelX_inV_sack();
+    public void g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack() {
+        final Traversal<Vertex, String> traversal = get_g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack();
         checkResults(Arrays.asList("knows", "knows", "created", "created", "created", "created"), traversal);
     }
 
@@ -159,7 +159,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     public static class Traversals extends SackTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_withSackXhellowX_V_outE_sackXassignX_byXlabelX_inV_sack() {
+        public Traversal<Vertex, String> get_g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack() {
             return g.withSack("hello").V().outE().sack(Operator.assign).by(T.label).inV().sack();
         }
 

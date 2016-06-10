@@ -34,6 +34,6 @@ public class GroovyProvider extends VariantGraphProvider {
             return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else
-            return graph.traversal(GroovyTranslator.of("g"));
+            return graph.traversal().withTranslator(GroovyTranslator.of("g"));
     }
 }

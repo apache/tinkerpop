@@ -61,6 +61,7 @@ public class PythonProvider extends VariantGraphProvider {
         try {
             if (importStatics)
                 ScriptEngineCache.get("jython").eval("for k in statics:\n  globals()[k] = statics[k]");
+            // else globals()[k] = None
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -69,7 +70,7 @@ public class PythonProvider extends VariantGraphProvider {
             return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else
-            return graph.traversal(PythonTranslator.of("gremlin-groovy", "g", importStatics));
+            return graph.traversal().withTranslator(PythonTranslator.of("gremlin-groovy", "g", importStatics));
     }
 
 }
