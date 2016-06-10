@@ -1,0 +1,138 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[centrality]]
+Centrality
+----------
+
+There are many measures of link:https://en.wikipedia.org/wiki/Centrality[centrality] which are meant to help identify
+the most important vertices in a graph. As these measures are common in graph theory, this section attempts to
+demonstrate how some of these different indicators can be calculated using Gremlin.
+
+[[degree-centrality]]
+Degree Centrality
+~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Centrality#Degree_centrality[Degree centrality] is a measure of the number of
+edges associated to each vertex.
+
+[gremlin-groovy,modern]
+----
+g.V().bothE().group().by(otherV()).by(count())      <1>
+g.V().inE().group().by(inV()).by(count())           <2>
+g.V().outE().group().by(outV()).by(count())         <3>
+g.V().group().by().by(outE().count())               <4>
+----
+
+<1> Calculation of degree centrality which counts all incident edges on each vertex to include those that are both
+incoming and outgoing.
+<2> Calculation of in-degree centrality which only counts incoming edges to a vertex.
+<3> Calculation of out-degree centrality which only counts outgoing edges from a vertex.
+<4> Same calculation as the previous traversal, but includes all vertices, even those with a zero
+
+[[betweeness-centrality]]
+Betweeness Centrality
+~~~~~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Betweenness_centrality[Betweeness centrality] is a measure of the number of times
+a vertex is found between the <<shortest-path,shortest path>> of each vertex pair in a graph.  Consider the following
+graph for demonstration purposes:
+
+image:betweeness-example.png[width=600]
+
+[gremlin-groovy ]
+----
+a = graph.addVertex('name','a')
+b = graph.addVertex('name','b')
+c = graph.addVertex('name','c')
+d = graph.addVertex('name','d')
+e = graph.addVertex('name','e')
+a.addEdge('next',b)
+b.addEdge('next',c)
+c.addEdge('next',d)
+d.addEdge('next',e)
+g.withSack(0).V().repeat(both().simplePath()).emit().path().        <1>
+  group().by(project("a","b").by(limit(local, 1)).                  <2>
+                              by(tail(local, 1))).
+          by(order().by(count(local))).                             <3>
+          select(values).as("shortestPaths").                       <4>
+          V().as("v").map(select("shortestPaths").unfold().         <5>
+                          filter(unfold().where(eq("v"))).count()).
+              sack(sum).barrier(normSack).sack().as("betweeness").  <6>
+          select("v","betweeness")
+----
+
+<1> Defines a Gremlin link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of zero,
+which represents the initial betweeness score for each vertex, and traverses on both incoming and outgoing edges
+avoiding <<cycle-detection, cyclic paths>>.
+<2> Group each path by the first and last vertex.
+<3> Reduce the list of paths to the shortest path between the first and last vertex by ordering on their lengths.
+<4> Recall that at this point, there is a `Map` keyed by first and last vertex and with a value of just the shortest
+path. Extract the shortest path with `select(values)`, since that's the only portion required for the remainder of
+the traversal.
+<5> Begin a mid-traversal iteration of all vertices to essentially count the shortest paths that pass through each one.
+<6> Sum the counts for each vertex using `sack()`, normalize the value and label it as the "betweeness" to be the score.
+
+[[closeness-centrality]]
+Closeness Centrality
+~~~~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Centrality[Closeness centrality] is a measure of the distance of one vertex to all
+other reachable vertices in the graph.
+
+[gremlin-groovy,modern]
+----
+g.V().as("a").repeat(both().simplePath()).emit().as("b").
+  dedup().by(select("a","b")).
+  path().
+  group().by(limit(local, 1)).
+          by(count(local).map {1/it.get()}.sum())
+----
+
+The traversal starts by iterating over all vertices to find all paths that don't <<cycle-detection,cycle>>. It labels
+the start vertex as "a" and the ending vertex being emitted as "b". To perform this calculation, the measurement
+only requires the <<shortest-path,shortest path>> between each vertex pair, so the first occurrence of "a" and "b"
+as denoted in the `dedup().by(select("a","b"))` will be that shortest distance.
+
+To this point, the traversal has the unique list of shortest paths between each vertex pair and it is time to
+operate on that `path()`. To get the output displaying each start vertex with the centrality calculation, the `Path`
+objects can be grouped. In this case, `group()` takes two `by()` modulators. The first `by()` specifies the key for
+grouping and simply extracts the first vertex in the `Path` with `limit(local, 1)`. The second `by()` produces the
+value for the grouping and in this case:
+
+. `(count(local)` - counts the length of each path to produce the __distance__
+. `map {1/it.get()}` - uses a closure to divide the __distance__ by "1"
+. `sum()` - sums those values to produce the centrality score for that vertex
+
+[[eigenvector-centrality]]
+Eigenvector Centrality
+~~~~~~~~~~~~~~~~~~~~~~
+
+A calculation of link:https://en.wikipedia.org/wiki/Centrality#Eigenvector_centrality[eigenvector centrality] uses the
+relative importance of adjacent vertices to help determine their centrality. In other words, unlike
+<<degree-centrality, degree centrality>> the vertex with the greatest number of incident edges does not necessarily
+give it the highest rank.
+
+[gremlin-groovy,modern]
+----
+g.V().repeat(groupCount("m").out()).times(30).cap('m')
+----
+
+The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
+passes through using the vertex as the key. The `Map` of this group count is stored in a variable named "m". The
+`out()` traversal is repeated thirty times or until the paths are exhausted. Thirty iterations should provide enough
+time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m"
+and returns it from the traversal as the result.
