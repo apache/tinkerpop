@@ -78,7 +78,8 @@ public final class SparkExecutor {
             final JavaPairRDD<Object, VertexWritable> graphRDD,
             final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD,
             final SparkMemory memory,
-            final Configuration apacheConfiguration) {
+            final Configuration graphComputerConfiguration,    // has the Graph/GraphComputer.configuration() information
+            final Configuration vertexProgramConfiguration) { // has the VertexProgram.loadState() information
 
         boolean partitionedGraphRDD = graphRDD.partitioner().isPresent();
 
@@ -89,8 +90,8 @@ public final class SparkExecutor {
                 graphRDD.leftOuterJoin(viewIncomingRDD))                                                   // every other iteration may have views and messages
                 // for each partition of vertices emit a view and their outgoing messages
                 .mapPartitionsToPair(partitionIterator -> {
-                    KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
-                    final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program (a worker's task)
+                    KryoShimServiceLoader.applyConfiguration(graphComputerConfiguration);
+                    final VertexProgram<M> workerVertexProgram = VertexProgram.createVertexProgram(HadoopGraph.open(graphComputerConfiguration), vertexProgramConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program (a worker's task)
                     final String[] vertexComputeKeysArray = VertexProgramHelper.vertexComputeKeysAsArray(workerVertexProgram.getVertexComputeKeys()); // the compute keys as an array
                     final SparkMessenger<M> messenger = new SparkMessenger<>();
                     workerVertexProgram.workerIterationStart(memory.asImmutable()); // start the worker
@@ -132,10 +133,10 @@ public final class SparkExecutor {
         /////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////
         final PairFlatMapFunction<Tuple2<Object, ViewOutgoingPayload<M>>, Object, Payload> messageFunction =
-                tuple -> () -> IteratorUtils.<Tuple2<Object, Payload>>concat(
+                tuple -> () -> IteratorUtils.concat(
                         IteratorUtils.of(new Tuple2<>(tuple._1(), tuple._2().getView())),      // emit the view payload
                         IteratorUtils.map(tuple._2().getOutgoingMessages().iterator(), message -> new Tuple2<>(message._1(), new MessagePayload<>(message._2()))));
-        final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration).getMessageCombiner().orElse(null);
+        final MessageCombiner<M> messageCombiner = VertexProgram.<VertexProgram<M>>createVertexProgram(HadoopGraph.open(vertexProgramConfiguration), vertexProgramConfiguration).getMessageCombiner().orElse(null);
         final Function2<Payload, Payload, Payload> reducerFunction = (a, b) -> {      // reduce the view and outgoing messages into a single payload object representing the new view and incoming messages for a vertex
             if (a instanceof ViewIncomingPayload) {
                 ((ViewIncomingPayload<M>) a).mergePayload(b, messageCombiner);
@@ -170,7 +171,7 @@ public final class SparkExecutor {
             assert graphRDD.partitioner().get().equals(newViewIncomingRDD.partitioner().get());
         newViewIncomingRDD
                 .foreachPartition(partitionIterator -> {
-                    KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
+                    KryoShimServiceLoader.applyConfiguration(graphComputerConfiguration);
                 }); // need to complete a task so its BSP and the memory for this iteration is updated
         return newViewIncomingRDD;
     }
@@ -203,10 +204,10 @@ public final class SparkExecutor {
 
     public static <K, V> JavaPairRDD<K, V> executeMap(
             final JavaPairRDD<Object, VertexWritable> graphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce,
-            final Configuration apacheConfiguration) {
+            final Configuration graphComputerConfiguration) {
         JavaPairRDD<K, V> mapRDD = graphRDD.mapPartitionsToPair(partitionIterator -> {
-            KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
-            return () -> new MapIterator<>(MapReduce.<MapReduce<K, V, ?, ?, ?>>createMapReduce(HadoopGraph.open(apacheConfiguration), apacheConfiguration), partitionIterator);
+            KryoShimServiceLoader.applyConfiguration(graphComputerConfiguration);
+            return () -> new MapIterator<>(MapReduce.<MapReduce<K, V, ?, ?, ?>>createMapReduce(HadoopGraph.open(graphComputerConfiguration), graphComputerConfiguration), partitionIterator);
         });
         if (mapReduce.getMapKeySort().isPresent())
             mapRDD = mapRDD.sortByKey(mapReduce.getMapKeySort().get(), true, 1);
@@ -214,19 +215,19 @@ public final class SparkExecutor {
     }
 
     public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeCombine(final JavaPairRDD<K, V> mapRDD,
-                                                                    final Configuration apacheConfiguration) {
+                                                                    final Configuration graphComputerConfiguration) {
         return mapRDD.mapPartitionsToPair(partitionIterator -> {
-            KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
-            return () -> new CombineIterator<>(MapReduce.<MapReduce<K, V, OK, OV, ?>>createMapReduce(HadoopGraph.open(apacheConfiguration), apacheConfiguration), partitionIterator);
+            KryoShimServiceLoader.applyConfiguration(graphComputerConfiguration);
+            return () -> new CombineIterator<>(MapReduce.<MapReduce<K, V, OK, OV, ?>>createMapReduce(HadoopGraph.open(graphComputerConfiguration), graphComputerConfiguration), partitionIterator);
         });
     }
 
     public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(
             final JavaPairRDD<K, V> mapOrCombineRDD, final MapReduce<K, V, OK, OV, ?> mapReduce,
-            final Configuration apacheConfiguration) {
+            final Configuration graphComputerConfiguration) {
         JavaPairRDD<OK, OV> reduceRDD = mapOrCombineRDD.groupByKey().mapPartitionsToPair(partitionIterator -> {
-            KryoShimServiceLoader.applyConfiguration(apacheConfiguration);
-            return () -> new ReduceIterator<>(MapReduce.<MapReduce<K, V, OK, OV, ?>>createMapReduce(HadoopGraph.open(apacheConfiguration), apacheConfiguration), partitionIterator);
+            KryoShimServiceLoader.applyConfiguration(graphComputerConfiguration);
+            return () -> new ReduceIterator<>(MapReduce.<MapReduce<K, V, OK, OV, ?>>createMapReduce(HadoopGraph.open(graphComputerConfiguration), graphComputerConfiguration), partitionIterator);
         });
         if (mapReduce.getReduceKeySort().isPresent())
             reduceRDD = reduceRDD.sortByKey(mapReduce.getReduceKeySort().get(), true, 1);

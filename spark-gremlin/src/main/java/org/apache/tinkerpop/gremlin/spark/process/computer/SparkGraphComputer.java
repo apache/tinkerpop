@@ -135,19 +135,19 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         return computerService.submit(() -> {
             final long startTime = System.currentTimeMillis();
             // apache and hadoop configurations that are used throughout the graph computer computation
-            final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
-            if (!apacheConfiguration.containsKey(Constants.SPARK_SERIALIZER))
-                apacheConfiguration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
-            apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
-            final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
+            final org.apache.commons.configuration.Configuration graphComputerConfiguration = new HadoopConfiguration(this.sparkConfiguration);
+            if (!graphComputerConfiguration.containsKey(Constants.SPARK_SERIALIZER))
+                graphComputerConfiguration.setProperty(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
+            graphComputerConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
+            final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(graphComputerConfiguration);
             final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);
-            final Storage sparkContextStorage = SparkContextStorage.open(apacheConfiguration);
+            final Storage sparkContextStorage = SparkContextStorage.open(graphComputerConfiguration);
             final boolean inputFromHDFS = FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
             final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class));
             final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
             final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class));
-            final boolean skipPartitioner = apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false);
-            final boolean skipPersist = apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE, false);
+            final boolean skipPartitioner = graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_PARTITIONER, false);
+            final boolean skipPersist = graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE, false);
             String inputLocation = null;
             if (inputFromSpark)
                 inputLocation = Constants.getSearchGraphLocation(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION), sparkContextStorage).orElse(null);
@@ -158,7 +158,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
             if (null != inputLocation && inputFromHDFS) {
                 try {
-                    apacheConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
+                    graphComputerConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
                     hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, FileSystem.get(hadoopConfiguration).getFileStatus(new Path(inputLocation)).getPath().toString());
                 } catch (final IOException e) {
                     throw new IllegalStateException(e.getMessage(), e);
@@ -176,7 +176,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         OutputFormatRDD.class.newInstance();
                 // if the input class can filter on load, then set the filters
                 if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class))) {
-                    GraphFilterAware.storeGraphFilter(apacheConfiguration, hadoopConfiguration, this.graphFilter);
+                    GraphFilterAware.storeGraphFilter(graphComputerConfiguration, hadoopConfiguration, this.graphFilter);
                     filtered = false;
                 } else if (inputRDD instanceof GraphFilterAware) {
                     ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
@@ -214,7 +214,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 updateLocalConfiguration(sparkContext, sparkConfiguration);
                 // create a message-passing friendly rdd from the input rdd
                 boolean partitioned = false;
-                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(apacheConfiguration, sparkContext);
+                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(graphComputerConfiguration, sparkContext);
                 // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
                 if (filtered) {
                     this.logger.debug("Filtering the loaded graphRDD: " + this.graphFilter);
@@ -255,10 +255,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
                     /////////////////
                     // if there is a registered VertexProgramInterceptor, use it to bypass the GraphComputer semantics
-                    if (apacheConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
+                    if (graphComputerConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
                         try {
                             final SparkVertexProgramInterceptor<VertexProgram> interceptor =
-                                    (SparkVertexProgramInterceptor) Class.forName(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)).newInstance();
+                                    (SparkVertexProgramInterceptor) Class.forName(graphComputerConfiguration.getString(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)).newInstance();
                             computedGraphRDD = interceptor.apply(this.vertexProgram, loadedGraphRDD, memory);
                         } catch (final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                             throw new IllegalStateException(e.getMessage());
@@ -278,7 +278,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                                 throw new TraversalInterruptedException();
                             }
                             memory.setInExecute(true);
-                            viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, vertexProgramConfiguration);
+                            viewIncomingRDD = SparkExecutor.executeVertexProgramIteration(loadedGraphRDD, viewIncomingRDD, memory, graphComputerConfiguration, vertexProgramConfiguration);
                             memory.setInExecute(false);
                             if (this.vertexProgram.terminate(memory))
                                 break;
@@ -301,7 +301,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     // write the computed graph to the respective output (rdd or output format)
                     if (null != outputRDD && !this.persist.equals(Persist.NOTHING)) {
                         assert null != computedGraphRDD; // the logic holds that a computeGraphRDD must be created at this point
-                        outputRDD.writeGraphRDD(apacheConfiguration, computedGraphRDD);
+                        outputRDD.writeGraphRDD(graphComputerConfiguration, computedGraphRDD);
                     }
                 }
 
@@ -330,7 +330,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
                     for (final MapReduce mapReduce : this.mapReducers) {
                         // execute the map reduce job
-                        final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
+                        final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(graphComputerConfiguration);
                         mapReduce.storeState(newApacheConfiguration);
                         // map
                         final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceRDD, mapReduce, newApacheConfiguration);
@@ -340,7 +340,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         final JavaPairRDD reduceRDD = mapReduce.doStage(MapReduce.Stage.REDUCE) ? SparkExecutor.executeReduce(combineRDD, mapReduce, newApacheConfiguration) : combineRDD;
                         // write the map reduce output back to disk and computer result memory
                         if (null != outputRDD)
-                            mapReduce.addResultToMemory(finalMemory, outputRDD.writeMemoryRDD(apacheConfiguration, mapReduce.getMemoryKey(), reduceRDD));
+                            mapReduce.addResultToMemory(finalMemory, outputRDD.writeMemoryRDD(graphComputerConfiguration, mapReduce.getMemoryKey(), reduceRDD));
                     }
                     // if the mapReduceRDD is not simply the computed graph, unpersist the mapReduceRDD
                     if (computedGraphCreated && !outputToSpark) {
@@ -370,13 +370,13 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 // clear properties that should not be propagated in an OLAP chain
-                apacheConfiguration.clearProperty(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
-                apacheConfiguration.clearProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR);
-                apacheConfiguration.clearProperty(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE);
-                apacheConfiguration.clearProperty(Constants.GREMLIN_SPARK_SKIP_PARTITIONER);
-                return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), finalMemory.asImmutable());
+                graphComputerConfiguration.clearProperty(Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+                graphComputerConfiguration.clearProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR);
+                graphComputerConfiguration.clearProperty(Constants.GREMLIN_SPARK_SKIP_GRAPH_CACHE);
+                graphComputerConfiguration.clearProperty(Constants.GREMLIN_SPARK_SKIP_PARTITIONER);
+                return new DefaultComputerResult(InputOutputHelper.getOutputGraph(graphComputerConfiguration, this.resultGraph, this.persist), finalMemory.asImmutable());
             } finally {
-                if (!apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+                if (!graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     Spark.close();
             }
         });
