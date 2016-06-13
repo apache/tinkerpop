@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversalSource;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -38,6 +39,7 @@ public class ScriptGraphTraversalSourceTest {
     private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("clone", "iterate"));
 
     @Test
+    @Ignore
     public void scriptGraphTraversalSourceShouldHaveMethodsOfGraphTraversalSource() {
         for (Method methodA : GraphTraversalSource.class.getMethods()) {
             if ((GraphTraversal.class.isAssignableFrom(methodA.getReturnType()) || GraphTraversalSource.class.isAssignableFrom(methodA.getReturnType())) && !NO_GRAPH.contains(methodA.getName())) {

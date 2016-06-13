@@ -762,7 +762,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> to(final String toStepLabel) {
         TraversalHelper.addStepToCreationStrategies(this.asAdmin(), toStepLabel);
-        ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(__.select(toStepLabel));
+        ((AddEdgeStep) this.asAdmin().getEndStep()).addTo(__.select(toStepLabel));
         return this;
     }
 
@@ -800,7 +800,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
                 this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
             }
-            // ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
+            //((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
             return (GraphTraversal<S, Edge>) this;
         } else {
             // addInE("a", "co-developer", "b", "year", 2009)
@@ -813,7 +813,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             for (int i = 1; i < propertyKeyValues.length; i = i + 2) {
                 this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
             }
-            // ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
+            //((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
             return (GraphTraversal<S, Edge>) this;
         }
     }

@@ -59,7 +59,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             return;
         try {
             final String traversalScriptString = this.translator.getTraversalScript();
-            System.out.println(traversal.getStrategies().toList() + "!!!");
+            // System.out.println(traversal.getStrategies().toList() + "!!!");
             // System.out.println(traversalScriptString + "!!!");
             __.setAnonymousGraphTraversalSupplier(null);
             ScriptEngine engine = ScriptEngineCache.get(this.translator.getScriptEngine());

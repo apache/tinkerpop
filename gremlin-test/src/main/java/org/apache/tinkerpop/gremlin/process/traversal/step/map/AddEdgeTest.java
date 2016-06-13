@@ -121,7 +121,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(),0.00001d);
+            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(), 0.00001d);
             assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 
@@ -142,7 +142,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(),0.00001d);
+            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(), 0.00001d);
             assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 
@@ -203,7 +203,6 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @Deprecated
-    @Ignore
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X() {
         final Traversal<Vertex, Edge> traversal = get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X();

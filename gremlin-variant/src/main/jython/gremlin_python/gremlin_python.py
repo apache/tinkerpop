@@ -99,6 +99,8 @@ class PythonGraphTraversalSource(object):
     return PythonGraphTraversalSource(self.traversal_source_string + ".withSideEffect(" + Helper.stringify(*args) + ")", self.remote_connection)
   def withStrategies(self, *args):
     return PythonGraphTraversalSource(self.traversal_source_string + ".withStrategies(" + Helper.stringify(*args) + ")", self.remote_connection)
+  def withTranslator(self, *args):
+    return PythonGraphTraversalSource(self.traversal_source_string + ".withTranslator(" + Helper.stringify(*args) + ")", self.remote_connection)
   def withoutStrategies(self, *args):
     return PythonGraphTraversalSource(self.traversal_source_string + ".withoutStrategies(" + Helper.stringify(*args) + ")", self.remote_connection)
 

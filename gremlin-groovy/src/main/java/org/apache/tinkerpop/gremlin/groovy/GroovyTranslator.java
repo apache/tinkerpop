@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.groovy;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -149,6 +150,8 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
                     .filter(s -> s instanceof TranslationStrategy)
                     .findFirst().get();
             return strategy.getTranslator().getTraversalScript();
+        } else if (object instanceof Computer) { // todo: blow out
+            return "";
         } else
             return null == object ? "null" : object.toString();
     }

@@ -19,11 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.python;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
@@ -98,7 +101,9 @@ public class PythonTranslator implements Translator<GraphTraversal> {
 
     @Override
     public GraphTraversal __() {
-        return new ScriptGraphTraversal(EmptyGraph.instance(), new PythonTranslator(this.scriptEngine, "__", this.importStatics));
+        final GraphTraversal traversal = new DefaultGraphTraversal();
+        traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(new TranslationStrategy(new PythonTranslator(this.scriptEngine, "__", this.importStatics))));
+        return traversal;
     }
 
     @Override
@@ -186,9 +191,15 @@ public class PythonTranslator implements Translator<GraphTraversal> {
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof ScriptGraphTraversal)
-            return ((ScriptGraphTraversal) object).getTraversalScript().toString();
-        else if (object instanceof Boolean)
+        else if (object instanceof Traversal) {
+            final TranslationStrategy strategy = (TranslationStrategy) ((Traversal.Admin) object).getStrategies().toList()
+                    .stream()
+                    .filter(s -> s instanceof TranslationStrategy)
+                    .findFirst().get();
+            return strategy.getTranslator().getTraversalScript();
+        } else if (object instanceof Computer) {
+            return "";
+        } else if (object instanceof Boolean)
             return object.equals(Boolean.TRUE) ? "True" : "False";
         else
             return null == object ? "" : object.toString();
