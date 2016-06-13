@@ -31,12 +31,11 @@ edges associated to each vertex.
 
 [gremlin-groovy,modern]
 ----
-g.V().bothE().group().by(otherV()).by(count())        <1>
-g.V().inE().group().by(inV()).by(count())             <2>
-g.V().outE().group().by(outV()).by(count())           <3>
-g.V().group().by().by(outE().count())                 <4>
-g.V().project("v","degree").by().by(bothE().count())  <5>
-g.V().project("v","degree").by().by(bothE().count()). <6>
+g.V().group().by().by(bothE().count())                <1>
+g.V().group().by().by(inE().count())                  <2>
+g.V().group().by().by(outE().count())                 <3>
+g.V().project("v","degree").by().by(bothE().count())  <4>
+g.V().project("v","degree").by().by(bothE().count()). <5>
   order().by(select("degree"), decr).
   limit(4)
 ----
@@ -45,10 +44,9 @@ g.V().project("v","degree").by().by(bothE().count()). <6>
 incoming and outgoing.
 <2> Calculation of in-degree centrality which only counts incoming edges to a vertex.
 <3> Calculation of out-degree centrality which only counts outgoing edges from a vertex.
-<4> Same calculation as the previous traversal, but includes all vertices, even those with a zero
-<5> The previous examples all produce a single `Map` as their output. While that is a desireable output, producing a
+<4> The previous examples all produce a single `Map` as their output. While that is a desireable output, producing a
 stream of `Map` objects can allow some greater flexibility.
-<6> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
+<5> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
 OLAP traversals.
 
 [[betweeness-centrality]]
