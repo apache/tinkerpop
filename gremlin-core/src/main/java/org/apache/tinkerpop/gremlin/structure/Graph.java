@@ -186,10 +186,6 @@ public interface Graph extends AutoCloseable, Host {
         return new GraphTraversalSource(this);
     }
 
-    public default GraphTraversalSource traversal(final Translator<GraphTraversal> translator) {
-        return new ScriptGraphTraversalSource(this, translator);
-    }
-
     /**
      * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all
      * vertices.  Note that a vertex identifier does not need to correspond to the actual id used in the graph.  It

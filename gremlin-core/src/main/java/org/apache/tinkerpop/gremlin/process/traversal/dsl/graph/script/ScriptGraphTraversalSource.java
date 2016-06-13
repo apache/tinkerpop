@@ -76,19 +76,19 @@ public class ScriptGraphTraversalSource extends GraphTraversalSource {
 
     @Override
     public GraphTraversalSource withComputer(final Computer computer) {
-        this.translator.addStrategy("withComputer", computer);
+        this.translator.addSource("withComputer", computer);
         return this;
     }
 
     @Override
     public GraphTraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        this.translator.addStrategy("withComputer", graphComputerClass);
+        this.translator.addSource("withComputer", graphComputerClass);
         return this;
     }
 
     @Override
     public GraphTraversalSource withComputer() {
-        this.translator.addStrategy("withComputer");
+        this.translator.addSource("withComputer");
         return this;
     }
 
@@ -101,89 +101,89 @@ public class ScriptGraphTraversalSource extends GraphTraversalSource {
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
     public GraphTraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
-        this.translator.addStrategy("withoutStrategies", traversalStrategyClasses);
+        this.translator.addSource("withoutStrategies", traversalStrategyClasses);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
-        this.translator.addStrategy("withSideEffect", key, initialValue, reducer);
+        this.translator.addSource("withSideEffect", key, initialValue, reducer);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
-        this.translator.addStrategy("withSideEffect", key, initialValue, reducer);
+        this.translator.addSource("withSideEffect", key, initialValue, reducer);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final A initialValue) {
-        this.translator.addStrategy("withSideEffect", key, initialValue);
+        this.translator.addSource("withSideEffect", key, initialValue);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
-        this.translator.addStrategy("withSideEffect", key, initialValue);
+        this.translator.addSource("withSideEffect", key, initialValue);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        this.translator.addStrategy("withSack", initialValue, splitOperator, mergeOperator);
+        this.translator.addSource("withSack", initialValue, splitOperator, mergeOperator);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        this.translator.addStrategy("withSack", initialValue, splitOperator, mergeOperator);
+        this.translator.addSource("withSack", initialValue, splitOperator, mergeOperator);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue) {
-        this.translator.addStrategy("withSack", initialValue);
+        this.translator.addSource("withSack", initialValue);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue) {
-        this.translator.addStrategy("withSack", initialValue);
+        this.translator.addSource("withSack", initialValue);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        this.translator.addStrategy("withSack", initialValue, splitOperator);
+        this.translator.addSource("withSack", initialValue, splitOperator);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-        this.translator.addStrategy("withSack", initialValue, splitOperator);
+        this.translator.addSource("withSack", initialValue, splitOperator);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        this.translator.addStrategy("withSack", initialValue, mergeOperator);
+        this.translator.addSource("withSack", initialValue, mergeOperator);
         return this;
     }
 
     @Override
     public <A> GraphTraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        this.translator.addStrategy("withSack", initialValue, mergeOperator);
+        this.translator.addSource("withSack", initialValue, mergeOperator);
         return this;
     }
 
     public GraphTraversalSource withBulk(final boolean useBulk) {
-        this.translator.addStrategy("withBulk", useBulk);
+        this.translator.addSource("withBulk", useBulk);
         return this;
     }
 
     public GraphTraversalSource withPath() {
-        this.translator.addStrategy("withPath");
+        this.translator.addSource("withPath");
         return this;
     }
 

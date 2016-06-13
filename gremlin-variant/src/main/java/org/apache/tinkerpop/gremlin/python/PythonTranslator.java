@@ -67,7 +67,7 @@ public class PythonTranslator implements Translator<GraphTraversal> {
             .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
 
     private StringBuilder traversalScript;
-    private final String alias;
+    private String alias;
     private final String scriptEngine;
     private final boolean importStatics;
 
@@ -122,7 +122,7 @@ public class PythonTranslator implements Translator<GraphTraversal> {
     }
 
     @Override
-    public void addStep(final String stepName, final Object... arguments) {
+    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
         // flatten the arguments into a single array
         final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
         final int size = objects.size();

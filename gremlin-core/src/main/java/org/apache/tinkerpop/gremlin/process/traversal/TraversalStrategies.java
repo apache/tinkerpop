@@ -57,12 +57,23 @@ import java.util.stream.Collectors;
  */
 public interface TraversalStrategies extends Serializable, Cloneable {
 
-    static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.ProviderOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
+    static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.CreationStrategy.class, TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.ProviderOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
 
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
      */
     public List<TraversalStrategy<?>> toList();
+
+    /**
+     * Return all the {@link TraversalStrategy} instances associated with this {@link TraversalStrategies} and within a particular strategy class.
+     *
+     * @param traversalStrategyClass the strategy class to get the strategies for
+     * @param <T>                    the strategy class type
+     * @return a sorted list of strategies within the respective strategy class
+     */
+    public default <T extends TraversalStrategy> List<T> getStrategies(final Class<T> traversalStrategyClass) {
+        return (List<T>) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).collect(Collectors.toList());
+    }
 
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
