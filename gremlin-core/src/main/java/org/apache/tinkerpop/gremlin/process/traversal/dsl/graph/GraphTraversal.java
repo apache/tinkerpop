@@ -809,9 +809,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 this.from(firstVertexKeyOrEdgeLabel).to((String) propertyKeyValues[0]);
             else
                 this.to(firstVertexKeyOrEdgeLabel).from((String) propertyKeyValues[0]);
-            final Object[] temp = Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length);
-            for (int i = 0; i < temp.length; i = i + 2) {
-                this.property(temp[i], temp[i + 1]);
+
+            for (int i = 1; i < propertyKeyValues.length; i = i + 2) {
+                this.property(propertyKeyValues[i], propertyKeyValues[i + 1]);
             }
             // ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
             return (GraphTraversal<S, Edge>) this;

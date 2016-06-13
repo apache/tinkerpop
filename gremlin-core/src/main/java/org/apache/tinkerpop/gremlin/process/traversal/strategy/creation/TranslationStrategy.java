@@ -59,7 +59,8 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             return;
         try {
             final String traversalScriptString = this.translator.getTraversalScript();
-            System.out.println(traversalScriptString + "!!!");
+            System.out.println(traversal.getStrategies().toList() + "!!!");
+            // System.out.println(traversalScriptString + "!!!");
             __.setAnonymousGraphTraversalSupplier(null);
             ScriptEngine engine = ScriptEngineCache.get(this.translator.getScriptEngine());
             TraversalStrategies strategies = traversal.getStrategies().clone().removeStrategies(TranslationStrategy.class);
@@ -68,7 +69,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) engine.eval(traversalScriptString, bindings);
             assert !translatedTraversal.isLocked();
             assert !traversal.isLocked();
-            //traversal.setSideEffects(translatedTraversal.getSideEffects());
+            traversal.setSideEffects(translatedTraversal.getSideEffects());
             traversal.setStrategies(strategies);
             TraversalHelper.removeAllSteps(traversal);
             TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
