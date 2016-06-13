@@ -31,10 +31,14 @@ edges associated to each vertex.
 
 [gremlin-groovy,modern]
 ----
-g.V().bothE().group().by(otherV()).by(count())      <1>
-g.V().inE().group().by(inV()).by(count())           <2>
-g.V().outE().group().by(outV()).by(count())         <3>
-g.V().group().by().by(outE().count())               <4>
+g.V().bothE().group().by(otherV()).by(count())        <1>
+g.V().inE().group().by(inV()).by(count())             <2>
+g.V().outE().group().by(outV()).by(count())           <3>
+g.V().group().by().by(outE().count())                 <4>
+g.V().project("v","degree").by().by(bothE().count())  <5>
+g.V().project("v","degree").by().by(bothE().count()). <6>
+  order().by(select("degree"), decr).
+  limit(4)
 ----
 
 <1> Calculation of degree centrality which counts all incident edges on each vertex to include those that are both
@@ -42,6 +46,10 @@ incoming and outgoing.
 <2> Calculation of in-degree centrality which only counts incoming edges to a vertex.
 <3> Calculation of out-degree centrality which only counts outgoing edges from a vertex.
 <4> Same calculation as the previous traversal, but includes all vertices, even those with a zero
+<5> The previous examples all produce a single `Map` as their output. While that is a desireable output, producing a
+stream of `Map` objects can allow some greater flexibility.
+<6> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
+OLAP traversals.
 
 [[betweeness-centrality]]
 Betweeness Centrality
@@ -64,14 +72,15 @@ a.addEdge('next',b)
 b.addEdge('next',c)
 c.addEdge('next',d)
 d.addEdge('next',e)
-g.withSack(0).V().repeat(both().simplePath()).emit().path().        <1>
-  group().by(project("a","b").by(limit(local, 1)).                  <2>
+g.withSack(0).V().store("x").repeat(both().simplePath()).emit().path(). <1>
+  group().by(project("a","b").by(limit(local, 1)).                      <2>
                               by(tail(local, 1))).
-          by(order().by(count(local))).                             <3>
-          select(values).as("shortestPaths").                       <4>
-          V().as("v").map(select("shortestPaths").unfold().         <5>
-                          filter(unfold().where(eq("v"))).count()).
-              sack(sum).barrier(normSack).sack().as("betweeness").  <6>
+          by(order().by(count(local))).                                 <3>
+          select(values).as("shortestPaths").                           <4>
+          select("x").unfold().as("v").                                 <5>
+          select("shortestPaths").                                      <6>
+            map(unfold().filter(unfold().where(eq("v"))).count()).      <7>
+            sack(sum).sack().as("betweeness").        <8>
           select("v","betweeness")
 ----
 
@@ -83,8 +92,14 @@ avoiding <<cycle-detection, cyclic paths>>.
 <4> Recall that at this point, there is a `Map` keyed by first and last vertex and with a value of just the shortest
 path. Extract the shortest path with `select(values)`, since that's the only portion required for the remainder of
 the traversal.
-<5> Begin a mid-traversal iteration of all vertices to essentially count the shortest paths that pass through each one.
-<6> Sum the counts for each vertex using `sack()`, normalize the value and label it as the "betweeness" to be the score.
+<5> The "x" key contains the list of vertices stored from step 1 - unfold that list into "v" for later use. This step
+will unwrap the vertex that is stored in the `Traverser` as
+link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/step/util/BulkSet.html[BulkSet]
+so that it can be used directly in the `Traversal`.
+<6> Iterate the set of shortest paths. At this point, it is worth noting that the traversal is iterating each vertex
+in "v" and for each vertex in "v" it is iterating each `Path` in "shortestpaths".
+<7> For each path, transform it to a count of the number of times that "v" from step 5 is encountered.
+<8> Sum the counts for each vertex using `sack()`, normalize the value and label it as the "betweeness" to be the score.
 
 [[closeness-centrality]]
 Closeness Centrality
@@ -95,27 +110,28 @@ other reachable vertices in the graph.
 
 [gremlin-groovy,modern]
 ----
-g.V().as("a").repeat(both().simplePath()).emit().as("b").
-  dedup().by(select("a","b")).
-  path().
-  group().by(limit(local, 1)).
-          by(count(local).map {1/it.get()}.sum())
+g.withSack(1f).V().repeat(both().simplePath()).emit().path().                    <1>
+  group().by(project("a","b").by(limit(local, 1)).                               <2>
+                              by(tail(local, 1))).
+          by(order().by(count(local))).                                          <3>
+  select(values).unfold().                                                       <4>
+  project("v","length").
+    by(limit(local, 1)).                                                         <5>
+    by(count(local).sack(div).sack()).                                           <6>
+  group().by(select("v")).by(select("length").sum())                             <7>
 ----
 
-The traversal starts by iterating over all vertices to find all paths that don't <<cycle-detection,cycle>>. It labels
-the start vertex as "a" and the ending vertex being emitted as "b". To perform this calculation, the measurement
-only requires the <<shortest-path,shortest path>> between each vertex pair, so the first occurrence of "a" and "b"
-as denoted in the `dedup().by(select("a","b"))` will be that shortest distance.
-
-To this point, the traversal has the unique list of shortest paths between each vertex pair and it is time to
-operate on that `path()`. To get the output displaying each start vertex with the centrality calculation, the `Path`
-objects can be grouped. In this case, `group()` takes two `by()` modulators. The first `by()` specifies the key for
-grouping and simply extracts the first vertex in the `Path` with `limit(local, 1)`. The second `by()` produces the
-value for the grouping and in this case:
-
-. `(count(local)` - counts the length of each path to produce the __distance__
-. `map {1/it.get()}` - uses a closure to divide the __distance__ by "1"
-. `sum()` - sums those values to produce the centrality score for that vertex
+<1> Defines a Gremlin link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of one,
+and traverses on both incoming and outgoing edges avoiding <<cycle-detection, cyclic paths>>.
+<2> Group each path by the first and last vertex.
+<3> Reduce the list of paths to the shortest path between the first and last vertex by ordering on their lengths.
+<4> Recall that at this point, there is a `Map` keyed by first and last vertex and with a value of just the shortest
+path. Extract the shortest path with `select(values)`, since that's the only portion required for the remainder of
+the traversal.
+<5> The first `by()` modulator for `project()` extracts the first vertex in the path.
+<6> The second `by()` modulator for `project()` extracts the path length and divides that distance by the value of
+the `sack()` which was initialized to 1 at the start of the traversal.
+<7> Group the resulting `Map` objects on "v" and sum their lengths to get the centrality score for each.
 
 [[eigenvector-centrality]]
 Eigenvector Centrality
@@ -128,7 +144,7 @@ give it the highest rank.
 
 [gremlin-groovy,modern]
 ----
-g.V().repeat(groupCount("m").out()).times(30).cap('m')
+g.V().repeat(groupCount('m').out()).times(30).cap('m')
 ----
 
 The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
