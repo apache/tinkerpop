@@ -83,8 +83,6 @@ class PythonGraphTraversalSource(object):
     return PythonGraphTraversal(self.traversal_source_string + ".V(" + Helper.stringify(*args) + ")", self.remote_connection)
   def addV(self, *args):
     return PythonGraphTraversal(self.traversal_source_string + ".addV(" + Helper.stringify(*args) + ")", self.remote_connection)
-  def clone(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".clone(" + Helper.stringify(*args) + ")", self.remote_connection)
   def inject(self, *args):
     return PythonGraphTraversal(self.traversal_source_string + ".inject(" + Helper.stringify(*args) + ")", self.remote_connection)
   def withBulk(self, *args):

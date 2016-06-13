@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
@@ -58,6 +57,7 @@ public class GraphTraversalSource implements TraversalSource {
     protected TraversalStrategies strategies;
 
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
+        __.setAnonymousTraversalSupplier(null);
         this.graph = graph;
         this.strategies = traversalStrategies;
     }

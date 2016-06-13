@@ -58,7 +58,7 @@ public class __ {
 
     //////////////////////////////////////////////////////////////////////
 
-    public static void setAnonymousGraphTraversalSupplier(final Supplier<GraphTraversal> anonymousGraphTraversalSupplier) {
+    public static void setAnonymousTraversalSupplier(final Supplier<GraphTraversal> anonymousGraphTraversalSupplier) {
         if (null == ANONYMOUS_GRAPH_TRAVERSAL) {
             if (null == anonymousGraphTraversalSupplier)
                 return;

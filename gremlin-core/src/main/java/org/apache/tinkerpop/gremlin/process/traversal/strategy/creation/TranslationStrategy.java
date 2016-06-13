@@ -29,8 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -50,7 +48,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
     public TranslationStrategy(final Translator<?> translator) {
         this.translator = translator;
         if (!this.translator.getAlias().equals("__"))
-            __.setAnonymousGraphTraversalSupplier(() -> (GraphTraversal) translator.__());
+            __.setAnonymousTraversalSupplier(() -> (GraphTraversal) translator.__());
     }
 
     @Override
@@ -59,9 +57,6 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             return;
         try {
             final String traversalScriptString = this.translator.getTraversalScript();
-            // System.out.println(traversal.getStrategies().toList() + "!!!");
-            // System.out.println(traversalScriptString + "!!!");
-            __.setAnonymousGraphTraversalSupplier(null);
             ScriptEngine engine = ScriptEngineCache.get(this.translator.getScriptEngine());
             TraversalStrategies strategies = traversal.getStrategies().clone().removeStrategies(TranslationStrategy.class);
             final Bindings bindings = new SimpleBindings();

@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
@@ -57,10 +58,9 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
-            "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
-            "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            "shouldSupportJobChaining",
+            "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
+            "shouldSupportGraphFilter",
             InjectTest.Traversals.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             CoreTraversalTest.class.getCanonicalName(),

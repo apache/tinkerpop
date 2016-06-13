@@ -218,7 +218,7 @@ public class ScriptGraphTraversalSource extends GraphTraversalSource {
     }
 
     private GraphTraversal generateTraversal(final String stepName, final Object... arguments) {
-        __.setAnonymousGraphTraversalSupplier(this.translator::__);
+        __.setAnonymousTraversalSupplier(this.translator::__);
         final Translator clone = this.translator.clone();
         clone.addStep(stepName, arguments);
         final GraphTraversal traversal = new ScriptGraphTraversal(this.graph, clone);

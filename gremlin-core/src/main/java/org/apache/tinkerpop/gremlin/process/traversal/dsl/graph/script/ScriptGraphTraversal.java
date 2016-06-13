@@ -81,7 +81,7 @@ public class ScriptGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
         }
         try {
             final String traversalScriptString = this.getTraversalScript();
-            __.setAnonymousGraphTraversalSupplier(null);
+            __.setAnonymousTraversalSupplier(null);
             ScriptEngine engine = ScriptEngineCache.get(this.translator.getScriptEngine());
             final Bindings bindings = new SimpleBindings();
             bindings.put(this.translator.getAlias(), new GraphTraversalSource(this.getGraph().get(), this.getStrategies()));
