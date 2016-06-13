@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Allow DFS paths in `HADOOP_GREMLIN_LIBS`.
 * Added a safer serializer infrastructure for use with `SparkGraphComputer` that uses `KryoSerializer` and the new `GryoRegistrator`.
 * Added `HaltedTraverserStrategy` to allow users to get back different element detachments in OLAP.
 * Fixed a `NullPointerException` bug around nested `group()`-steps in OLAP.
