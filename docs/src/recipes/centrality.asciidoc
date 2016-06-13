@@ -138,15 +138,25 @@ Eigenvector Centrality
 A calculation of link:https://en.wikipedia.org/wiki/Centrality#Eigenvector_centrality[eigenvector centrality] uses the
 relative importance of adjacent vertices to help determine their centrality. In other words, unlike
 <<degree-centrality, degree centrality>> the vertex with the greatest number of incident edges does not necessarily
-give it the highest rank.
+give it the highest rank. Consider the following example using the Grateful Dead graph:
 
-[gremlin-groovy,modern]
+[gremlin-groovy]
 ----
-g.V().repeat(groupCount('m').out()).times(30).cap('m')
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g.V().repeat(groupCount('m').by('name').out()).times(5).cap('m').                <1>
+  order(local).by(values, decr).limit(local, 10).next()                          <2>
+g.V().repeat(groupCount('m').by('name').out().timeLimit(100)).times(5).cap('m'). <3>
+  order(local).by(values, decr).limit(local, 10).next()
 ----
 
-The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
+<1> The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
 passes through using the vertex as the key. The `Map` of this group count is stored in a variable named "m". The
-`out()` traversal is repeated thirty times or until the paths are exhausted. Thirty iterations should provide enough
-time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m"
-and returns it from the traversal as the result.
+`out()` traversal is repeated thirty times or until the paths are exhausted. Five iterations should provide enough
+time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m".
+<2> The entries in the `Map` are then iterated and sorted with the top ten most central vertices presented as output.
+<3> The previous examples can be expanded on a little bit by including a
+link:http://tinkerpop.apache.org/docs/current/reference/#timelimit-step[time limit]. The `timeLimit()` prevents the
+traversal from taking longer than one hundred milliseconds to execute (the previous example takes considerably longer
+than that). While the answer provided with the `timeLimit()` is not the absolute ranking, it does provide a relative
+ranking that closely matches the absolute one. The use of `timeLimit()` in certain algorithms (e.g. recommendations)
+can shorten the time required to get a reasonable and usable result.
