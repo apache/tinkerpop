@@ -44,9 +44,19 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -136,6 +146,8 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // distinct values with by()-modulation
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_both_b__b_both_cX_dedupXa_bX_byXlabelX();
 
+    public abstract Traversal<Vertex, Long> get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valueMap_matchXa_selectXnameX_bX() {
@@ -146,7 +158,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             counter++;
             final Map<String, Object> map = traversal.next();
             assertTrue(Map.class.isAssignableFrom(map.get("a").getClass()));
-            final String name = ((Map<String,List<String>>) map.get("a")).get("name").get(0);
+            final String name = ((Map<String, List<String>>) map.get("a")).get("name").get(0);
             assertEquals(name, ((List<String>) map.get("b")).get(0));
         }
         assertEquals(6, counter);
@@ -158,12 +170,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_out_bX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
-                        "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
-                        "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
-                        "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "vadas"),
-                        "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "ripple"),
-                        "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop"),
-                        "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop")),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "vadas"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "ripple"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop")),
                 traversal);
     }
 
@@ -268,10 +280,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_created_b__b_0created_aX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
-                        "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
-                        "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop"),
-                        "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop"),
-                        "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "ripple")),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "ripple")),
                 traversal);
 
     }
@@ -385,12 +397,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     private void assertCommon(Traversal<Vertex, Map<String, Vertex>> traversal) {
         checkResults(makeMapList(4,
-                    "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CREAM PUFF WAR"), "c", convertToVertex(graph, "CREAM PUFF WAR"), "d", convertToVertex(graph, "Garcia"),
-                    "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CREAM PUFF WAR"), "c", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "d", convertToVertex(graph, "Garcia"),
-                    "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph, "CREAM PUFF WAR"), "d", convertToVertex(graph, "Garcia"),
-                    "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "d", convertToVertex(graph, "Garcia"),
-                    "a", convertToVertex(graph, "Grateful_Dead"), "b", convertToVertex(graph, "CANT COME DOWN"), "c", convertToVertex(graph, "DOWN SO LONG"), "d", convertToVertex(graph, "Garcia"),
-                    "a", convertToVertex(graph, "Grateful_Dead"), "b", convertToVertex(graph, "THE ONLY TIME IS NOW"), "c", convertToVertex(graph, "DOWN SO LONG"), "d", convertToVertex(graph, "Garcia")), traversal);
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CREAM PUFF WAR"), "c", convertToVertex(graph, "CREAM PUFF WAR"), "d", convertToVertex(graph, "Garcia"),
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CREAM PUFF WAR"), "c", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "d", convertToVertex(graph, "Garcia"),
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph, "CREAM PUFF WAR"), "d", convertToVertex(graph, "Garcia"),
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph, "CRYPTICAL ENVELOPMENT"), "d", convertToVertex(graph, "Garcia"),
+                "a", convertToVertex(graph, "Grateful_Dead"), "b", convertToVertex(graph, "CANT COME DOWN"), "c", convertToVertex(graph, "DOWN SO LONG"), "d", convertToVertex(graph, "Garcia"),
+                "a", convertToVertex(graph, "Grateful_Dead"), "b", convertToVertex(graph, "THE ONLY TIME IS NOW"), "c", convertToVertex(graph, "DOWN SO LONG"), "d", convertToVertex(graph, "Garcia")), traversal);
     }
 
     @Test
@@ -498,6 +510,15 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
         assertEquals(3, counter);
         assertEquals(results.size(), counter);
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count();
+        printTraversalForm(traversal);
+        assertEquals(584, traversal.next().longValue());
+        assertFalse(traversal.hasNext());
     }
 
     public static class GreedyMatchTraversals extends Traversals {
@@ -755,6 +776,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().<Vertex>match(
                     as("a").both().as("b"),
                     as("b").both().as("c")).dedup("a", "b").by(T.label);
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count() {
+            return g.V().hasLabel("song").match(
+                    __.as("a").values("name").as("b"),
+                    __.as("a").values("performances").as("c")
+            ).select("b", "c").count();
         }
     }
 }

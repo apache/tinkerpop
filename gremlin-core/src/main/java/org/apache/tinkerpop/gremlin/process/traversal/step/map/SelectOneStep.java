@@ -64,7 +64,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     public SelectOneStep<S, E> clone() {
         final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
         if (null != this.selectTraversal)
-            clone.selectTraversal = clone.integrateChild(this.selectTraversal.clone());
+            clone.selectTraversal = this.selectTraversal.clone();
         return clone;
     }
 
