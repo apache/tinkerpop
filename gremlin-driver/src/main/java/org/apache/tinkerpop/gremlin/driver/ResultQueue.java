@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.javatuples.Pair;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -38,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 final class ResultQueue {
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
@@ -48,12 +47,6 @@ final class ResultQueue {
 
     private final Queue<Pair<CompletableFuture<List<Result>>,Integer>> waiting = new ConcurrentLinkedQueue<>();
 
-    /**
-     * Tracks the state of the "waiting" queue and whether or not results have been drained through it on
-     * read complete.  If they are then no additional "waiting" is required.
-     */
-    private final AtomicBoolean flushed = new AtomicBoolean(false);
-
     public ResultQueue(final LinkedBlockingQueue<Result> resultLinkedBlockingQueue, final CompletableFuture<Void> readComplete) {
         this.resultLinkedBlockingQueue = resultLinkedBlockingQueue;
         this.readComplete = readComplete;
@@ -61,30 +54,14 @@ final class ResultQueue {
 
     public void add(final Result result) {
         this.resultLinkedBlockingQueue.offer(result);
-
-        final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
-        if (nextWaiting != null && (resultLinkedBlockingQueue.size() >= nextWaiting.getValue1() || readComplete.isDone())) {
-            internalDrain(nextWaiting.getValue1(), nextWaiting.getValue0(), resultLinkedBlockingQueue);
-            waiting.remove(nextWaiting);
-        }
+        tryDrainNextWaiting(false);
     }
 
     public CompletableFuture<List<Result>> await(final int items) {
         final CompletableFuture<List<Result>> result = new CompletableFuture<>();
-        if (size() >= items || readComplete.isDone()) {
-            // items are present so just drain to requested size if possible then complete it
-            internalDrain(items, result, resultLinkedBlockingQueue);
-        } else {
-            // not enough items in the result queue so save this for callback later when the results actually arrive.
-            // only necessary to "wait" if we're not in the act of flushing already, in which case, no more waiting
-            // for additional results should be allowed.
-            if (flushed.get()) {
-                // just drain since we've flushed already
-                internalDrain(items, result, resultLinkedBlockingQueue);
-            } else {
-                waiting.add(Pair.with(result, items));
-            }
-        }
+        waiting.add(Pair.with(result, items));
+
+        tryDrainNextWaiting(false);
 
         return result;
     }
@@ -99,42 +76,53 @@ final class ResultQueue {
         return this.size() == 0;
     }
 
-    public void drainTo(final Collection<Result> collection) {
+    void drainTo(final Collection<Result> collection) {
         if (error.get() != null) throw new RuntimeException(error.get());
         resultLinkedBlockingQueue.drainTo(collection);
     }
 
     void markComplete() {
         this.readComplete.complete(null);
-        this.flushWaiting();
+        this.drainAllWaiting();
     }
 
     void markError(final Throwable throwable) {
         error.set(throwable);
         this.readComplete.completeExceptionally(throwable);
-        this.flushWaiting();
+        this.drainAllWaiting();
     }
 
-    private void flushWaiting() {
-        while (waiting.peek() != null) {
-            final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.poll();
-            internalDrain(nextWaiting.getValue1(), nextWaiting.getValue0(), resultLinkedBlockingQueue);
+    /**
+     * Completes the next waiting future if there is one.
+     */
+    private synchronized void tryDrainNextWaiting(final boolean force) {
+        // need to peek because the number of available items needs to be >= the expected size for that future. if not
+        // it needs to keep waiting
+        final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
+        if (force || (nextWaiting != null && (resultLinkedBlockingQueue.size() >= nextWaiting.getValue1() || readComplete.isDone()))) {
+            final int items = nextWaiting.getValue1();
+            final CompletableFuture<List<Result>> future = nextWaiting.getValue0();
+            final List<Result> results = new ArrayList<>(items);
+            resultLinkedBlockingQueue.drainTo(results, items);
+
+            // it's important to check for error here because a future may have already been queued in "waiting" prior
+            // to the first response back from the server. if that happens, any "waiting" futures should be completed
+            // exceptionally otherwise it will look like success.
+            if (null == error.get())
+                future.complete(results);
+            else
+                future.completeExceptionally(error.get());
+
+            waiting.remove(nextWaiting);
         }
-
-        flushed.set(true);
     }
 
-    private void internalDrain(final int items, final CompletableFuture<List<Result>> result,
-                                      final LinkedBlockingQueue<Result> resultLinkedBlockingQueue) {
-        final List<Result> results = new ArrayList<>(items);
-        resultLinkedBlockingQueue.drainTo(results, items);
-
-        // it's important to check for error here because a future may have already been queued in "waiting" prior
-        // to the first response back from the server. if that happens, any "waiting" futures should be completed
-        // exceptionally otherwise it will look like success.
-        if (null == error.get())
-            result.complete(results);
-        else
-            result.completeExceptionally(error.get());
+    /**
+     * Completes all remaining futures.
+     */
+    private void drainAllWaiting() {
+        while (!waiting.isEmpty()) {
+            tryDrainNextWaiting(true);
+        }
     }
 }

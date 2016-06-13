@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -73,6 +74,7 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
         final ReducingBarrierStep endStep = (ReducingBarrierStep) traversal.getEndStep(); // needed for the final traverser generation
         traversal.removeStep(0);                                    // remove GraphStep
         traversal.removeStep(traversal.getSteps().size() - 1);      // remove ReducingBarrierStep
+        traversal.setStrategies(traversal.clone().getStrategies().removeStrategies(ComputerVerificationStrategy.class)); // no longer a computer job, but parallel standard jobs
         traversal.applyStrategies();                                // compile
         boolean identityTraversal = traversal.getSteps().isEmpty(); // if the traversal is empty, just return the vertex (fast)
         ///////////////////////////////

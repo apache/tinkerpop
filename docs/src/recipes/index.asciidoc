@@ -44,6 +44,8 @@ include::if-then-based-grouping.asciidoc[]
 
 include::cycle-detection.asciidoc[]
 
+include::centrality.asciidoc[]
+
 Implementation Recipes
 ======================
 

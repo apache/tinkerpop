@@ -1,0 +1,152 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[centrality]]
+Centrality
+----------
+
+There are many measures of link:https://en.wikipedia.org/wiki/Centrality[centrality] which are meant to help identify
+the most important vertices in a graph. As these measures are common in graph theory, this section attempts to
+demonstrate how some of these different indicators can be calculated using Gremlin.
+
+[[degree-centrality]]
+Degree Centrality
+~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Centrality#Degree_centrality[Degree centrality] is a measure of the number of
+edges associated to each vertex.
+
+[gremlin-groovy,modern]
+----
+g.V().group().by().by(bothE().count())                <1>
+g.V().group().by().by(inE().count())                  <2>
+g.V().group().by().by(outE().count())                 <3>
+g.V().project("v","degree").by().by(bothE().count())  <4>
+g.V().project("v","degree").by().by(bothE().count()). <5>
+  order().by(select("degree"), decr).
+  limit(4)
+----
+
+<1> Calculation of degree centrality which counts all incident edges on each vertex to include those that are both
+incoming and outgoing.
+<2> Calculation of in-degree centrality which only counts incoming edges to a vertex.
+<3> Calculation of out-degree centrality which only counts outgoing edges from a vertex.
+<4> The previous examples all produce a single `Map` as their output. While that is a desireable output, producing a
+stream of `Map` objects can allow some greater flexibility.
+<5> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
+OLAP traversals.
+
+[[betweeness-centrality]]
+Betweeness Centrality
+~~~~~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Betweenness_centrality[Betweeness centrality] is a measure of the number of times
+a vertex is found between the <<shortest-path,shortest path>> of each vertex pair in a graph.  Consider the following
+graph for demonstration purposes:
+
+image:betweeness-example.png[width=600]
+
+[gremlin-groovy ]
+----
+a = graph.addVertex('name','a')
+b = graph.addVertex('name','b')
+c = graph.addVertex('name','c')
+d = graph.addVertex('name','d')
+e = graph.addVertex('name','e')
+a.addEdge('next',b)
+b.addEdge('next',c)
+c.addEdge('next',d)
+d.addEdge('next',e)
+g.withSack(0).V().store("x").repeat(both().simplePath()).emit().path(). <1>
+  group().by(project("a","b").by(limit(local, 1)).                      <2>
+                              by(tail(local, 1))).
+          by(order().by(count(local))).                                 <3>
+          select(values).as("shortestPaths").                           <4>
+          select("x").unfold().as("v").                                 <5>
+          select("shortestPaths").                                      <6>
+            map(unfold().filter(unfold().where(eq("v"))).count()).      <7>
+            sack(sum).sack().as("betweeness").        <8>
+          select("v","betweeness")
+----
+
+<1> Defines a Gremlin link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of zero,
+which represents the initial betweeness score for each vertex, and traverses on both incoming and outgoing edges
+avoiding <<cycle-detection, cyclic paths>>.
+<2> Group each path by the first and last vertex.
+<3> Reduce the list of paths to the shortest path between the first and last vertex by ordering on their lengths.
+<4> Recall that at this point, there is a `Map` keyed by first and last vertex and with a value of just the shortest
+path. Extract the shortest path with `select(values)`, since that's the only portion required for the remainder of
+the traversal.
+<5> The "x" key contains the list of vertices stored from step 1 - unfold that list into "v" for later use. This step
+will unwrap the vertex that is stored in the `Traverser` as
+link:http://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/step/util/BulkSet.html[BulkSet]
+so that it can be used directly in the `Traversal`.
+<6> Iterate the set of shortest paths. At this point, it is worth noting that the traversal is iterating each vertex
+in "v" and for each vertex in "v" it is iterating each `Path` in "shortestpaths".
+<7> For each path, transform it to a count of the number of times that "v" from step 5 is encountered.
+<8> Sum the counts for each vertex using `sack()`, normalize the value and label it as the "betweeness" to be the score.
+
+[[closeness-centrality]]
+Closeness Centrality
+~~~~~~~~~~~~~~~~~~~~
+
+link:https://en.wikipedia.org/wiki/Centrality[Closeness centrality] is a measure of the distance of one vertex to all
+other reachable vertices in the graph.
+
+[gremlin-groovy,modern]
+----
+g.withSack(1f).V().repeat(both().simplePath()).emit().path().                    <1>
+  group().by(project("a","b").by(limit(local, 1)).                               <2>
+                              by(tail(local, 1))).
+          by(order().by(count(local))).                                          <3>
+  select(values).unfold().                                                       <4>
+  project("v","length").
+    by(limit(local, 1)).                                                         <5>
+    by(count(local).sack(div).sack()).                                           <6>
+  group().by(select("v")).by(select("length").sum())                             <7>
+----
+
+<1> Defines a Gremlin link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sack-step[sack] with a value of one,
+and traverses on both incoming and outgoing edges avoiding <<cycle-detection, cyclic paths>>.
+<2> Group each path by the first and last vertex.
+<3> Reduce the list of paths to the shortest path between the first and last vertex by ordering on their lengths.
+<4> Recall that at this point, there is a `Map` keyed by first and last vertex and with a value of just the shortest
+path. Extract the shortest path with `select(values)`, since that's the only portion required for the remainder of
+the traversal.
+<5> The first `by()` modulator for `project()` extracts the first vertex in the path.
+<6> The second `by()` modulator for `project()` extracts the path length and divides that distance by the value of
+the `sack()` which was initialized to 1 at the start of the traversal.
+<7> Group the resulting `Map` objects on "v" and sum their lengths to get the centrality score for each.
+
+[[eigenvector-centrality]]
+Eigenvector Centrality
+~~~~~~~~~~~~~~~~~~~~~~
+
+A calculation of link:https://en.wikipedia.org/wiki/Centrality#Eigenvector_centrality[eigenvector centrality] uses the
+relative importance of adjacent vertices to help determine their centrality. In other words, unlike
+<<degree-centrality, degree centrality>> the vertex with the greatest number of incident edges does not necessarily
+give it the highest rank.
+
+[gremlin-groovy,modern]
+----
+g.V().repeat(groupCount('m').out()).times(30).cap('m')
+----
+
+The traversal iterates through each vertex in the graph and for each one repeatedly group counts each vertex that
+passes through using the vertex as the key. The `Map` of this group count is stored in a variable named "m". The
+`out()` traversal is repeated thirty times or until the paths are exhausted. Thirty iterations should provide enough
+time to converge on a solution. Calling `cap('m')` at the end simply extracts the `Map` side-effect stored in "m"
+and returns it from the traversal as the result.

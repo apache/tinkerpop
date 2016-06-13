@@ -72,6 +72,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private static final String TOKEN_TIMEOUT = "timeout";
     private static final String TOKEN_ALIAS = "alias";
     private static final String TOKEN_SESSION = "session";
+    private static final String TOKEN_SESSION_MANAGED = "session-managed";
     private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS);
 
     private final Groovysh shell;
@@ -86,11 +87,14 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
         try {
             this.currentCluster = Cluster.open(args.get(0));
-            final boolean useSession = args.size() >= 2 && args.get(1).equals(TOKEN_SESSION);
+            final boolean useSession = args.size() >= 2 && (args.get(1).equals(TOKEN_SESSION) || args.get(1).equals(TOKEN_SESSION_MANAGED));
             if (useSession) {
                 final String sessionName = args.size() == 3 ? args.get(2) : UUID.randomUUID().toString();
                 session = Optional.of(sessionName);
-                this.currentClient = this.currentCluster.connect(sessionName);
+
+                final boolean managed = args.get(1).equals(TOKEN_SESSION_MANAGED);
+
+                this.currentClient = this.currentCluster.connect(sessionName, managed);
             } else {
                 this.currentClient = this.currentCluster.connect();
             }

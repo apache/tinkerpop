@@ -21,506 +21,204 @@ Contributions via GitHub pull requests are gladly accepted from their original a
 material via pull request, email, or other means you agree to license the material under the project's open source
 license and warrant that you have the legal authority to do so.
 
-Getting Started
----------------
+Ways to Contribute
+------------------
 
-image:gremlin-apache.png[width=250,float=left] New contributors can start development with TinkerPop by first
-link:https://help.github.com/articles/fork-a-repo/[forking then cloning] the Apache TinkerPop
-link:https://github.com/apache/incubator-tinkerpop[GitHub repository]. Generally speaking it is best to tie any
-work done to an issue in link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA]. Either scan through JIRA for an
-existing open issue to work on or create a new one.
+image:gremlin-apache.png[width=250,float=left] While the concept of an open source contribution can refer to doing
+development work on the code base, there are many other ways outside of coding to contribute to Apache TinkerPop.
+Participating on the various mailing lists, offering ideas, reporting bugs, writing documentation are all welcome
+contributions to the project that help improve the The TinkerPop. This section of the document is designed to help
+provide some structure for potential contributors and to give them ideas for how they could get started becoming more
+involved in the TinkerPop community.
 
-After making changes, submit a link:https://help.github.com/articles/using-pull-requests/[pull request] through
-GitHub, where the name of the pull request is prefixed with the JIRA issue number.  In this way, the pull request
-and its comments get tied back to the JIRA issue it references, thus triggering automation that pushes GitHub comments
-into the JIRA ticket.
+NOTE: As a quick acknowledgement, this section was influenced by Apache Spark's well organized
+link:https://cwiki.apache.org/confluence/display/SPARK/Contributing+to+Spark["Contributing to Spark"] document.
 
-Before issuing your pull request, please be sure of the following:
+Mailing List Participation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-. `mvn clean install` works successfully.
-. If the change requires modification to the documentation, which can be found in `docs/src`, please be sure to try to
-generate the docs.  If the changes are minimal and do not include code examples, it might be sufficient to test
-generate the docs to validate formatting by just doing `bin/process-docs.sh --dryRun`.  If there are code examples,
-please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  If no code changes were made,
-one can also use the `--noClean` option. This will prevent the processor from cleaning up the local Grapes directory and
-the Hadoop Gremlin Libs directory in HDFS, resulting in a slightly faster execution time. The documentation is generated
-to `/target/docs/htmlsingle`. Once a full run of the documentation is executed, it is possible to run just one file by
-deleting the file to regenerated from `target/postprocess-asciidoc` then re-executing `bin/process-docs.sh`.
-. If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
-operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
-a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -pl gremlin-server`.
+TinkerPop has two mailing lists: link:https://groups.google.com/forum/#!forum/gremlin-users[gremlin-users] and
+pass:[<a href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">dev</a>]. Subscribing to and
+participating on one or both of these mailing lists is a great way to contribute to TinkerPop. Helping users with their
+problems by answering their questions on gremlin-users is a great help to the community and an easy way for
+the community to become familiar with the contributor.
 
-Once a pull request is submitted it must go through <<rtc,review>> and will be merged once three TinkerPop committers
-offer positive vote and achieve Apache consensus.
+The dev@tinkerpop.apache.org mailing list is where all design discussion, early feature announcements, release
+discussions and other similar communication takes place. Having insight into the project at this level, will yield a
+lot of information about the day-to-day course of TinkerPop and many of the other ways contributors can be involved
+require a subscription to this list.
+
+Testing Releases
+~~~~~~~~~~~~~~~~
+
+Proposed TinkerPop releases are not official until after they are evaluated by the community. The process of evaluation
+occurs on the dev@tinkerpop.apache.org mailing list where the community is invited to review release artifacts and
+vote if they should be released or not. Anyone is free to comment and provide a vote (+1/+0/-1) on a release. Note
+that votes of non-PMC members are considered non-binding, but are certainly considered in the review process.
+
+Reviewing Changes
+~~~~~~~~~~~~~~~~~
+
+Virtually all changes to TinkerPop's source code are performed via GitHub
+link:https://github.com/apache/incubator-tinkerpop/pulls[pull requests]. When a pull request is issue it undergoes a
+<<rtc,review process>> prior to be merged to a release branch. Anyone is free to comment and provide a vote (+1/+0/-1)
+on a pull request. Note that votes of non-commiters are considered non-binding, but are certainly considered in the
+review process.
+
+Writing Documentation
+~~~~~~~~~~~~~~~~~~~~~
+
+TinkerPop has a robust documentation system that is based on link:http://asciidoc.org/[asciidoc]. Proposing a
+documentation change is quite similar to providing a source code change, which is described below in more detail.
+Note that there is a difference between project documentation and the TinkerPop web site. Changes to
+project documentation can be performed via pull request, but only TinkerPop committers can make web site changes.
+Feel free to propose web site changes on the dev@tinkerpop.apache.org mailing list.
+
+Reporting Bugs
+~~~~~~~~~~~~~~
+
+Well formed bug reports (especially when accompanied by a pull request that fixes the problem) are welcome
+contributions that ultimately help improve the quality of TinkerPop. Of course, a bug report is only as good as its
+reproduction steps and the surrounding details of the issue. When a bug is encountered, it should be documented in
+link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA], where it will likely trigger some discussion and
+ultimately a resolution.
+
+TinkerPop Libraries
+~~~~~~~~~~~~~~~~~~~
+
+TinkerPop is more than just the core source code repository. It is a rich ecosystem of libraries developed by
+link:http://tinkerpop.apache.org/providers.html[providers], who look to use or extend upon the TinkerPop interfaces.
+TinkerPop is highly focused on its interfaces and a small set of reference implementations of those interfaces as part
+of its core code base. As such, large and independent new functionality is often rejected from inclusion in TinkerPop
+itself, however, it is very much encouraged that such a project stand on its own as separate repository. Projects like
+this that meet the TinkerPop link:http://tinkerpop.apache.org/policy.html[listing policy] can be added to the
+TinkerPop web site and promoted there. Please see the current listing of such libraries on the TinkerPop
+link:http://tinkerpop.apache.org/#graph-systems[home page] to get an idea as to what kinds of libraries are available
+from the community.
+
+Considering Code Changes
+------------------------
+
+Code changes can take a fair bit of effort from both the contributor doing the work, as well as the people who
+will be reviewing and testing that work. It is beneficial to all involved that some basic considerations be made by
+the contributor to ensure the best use is made of everyone's time.
 
 NOTE: For those who are trying to find a place to start to contribute, consider looking at unresolved issues that
 have the "trivial" priority as these issues are specifically set aside as
 link:https://issues.apache.org/jira/issues/?jql=project%20%3D%20TINKERPOP%20AND%20resolution%20%3D%20Unresolved%20AND%20priority%20%3D%20Trivial%20ORDER%20BY%20key%20DESC[low-hanging fruit]
 for newcomers.
 
-[[building-testing]]
-Building and Testing
---------------------
-
-TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
-
-* Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
-Maven project list argument, e.g.:
-+
-----
-export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.PathTest'
-mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
-----
-** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
-** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
-** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
-* Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
-** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
-* Check license headers are present: `mvn apache-rat:check`
-* Build AsciiDocs (Hadoop must be running and link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required): `bin/process-docs.sh`
-** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
-** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
-** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
-** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
-* Build JavaDocs: `mvn process-resources -Djavadoc`
-* Check for Apache License headers: `mvn apache-rat:check`
-* Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
-* Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
-* Integration Tests: `mvn verify -DskipIntegrationTests=false`
-** Execute with the `-DincludeNeo4j` option to include transactional tests.
-** Execute with the `-DuseEpoll` option to try to use Netty native transport (works on Linux, but will fallback to Java NIO on other OS).
-* Performance Tests: `mvn verify -DskipPerformanceTests=false`
-* Benchmarks: `mvn verify -DskipBenchmarks=false`
-
-[[docker-integration]]
-Docker Integration
-------------------
-
-TinkerPop provides a shell script, that can start several build tasks within a Docker container. The
-required Docker images will be built automatically if they don't exist yet. Thus the first invokation
-of the Docker script is expected to take some time.
-
-The script can be found under `PROJECT_HOME/docker/build.sh`. The following tasks are currently
-supported:
-
-* run standard test suite
-* run integration tests
-* build Java docs
-* build user docs
-
-A list of command line options is provided by `docker/build.sh --help`. The container will install,
-configure and start all required dependencies, such as Hadoop.
-
-If the container is used to generate the user docs, it will start a web server and show the URL that
-is used to host the HTML docs.
-
-After finishing all tasks, the script will immediately destroy the container.
-
-IDE Setup with Intellij
------------------------
-
-This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which
-contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure
-that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
-
-. Build `gremlin-shaded` from the command line with `mvn clean install`.
-. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
-. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to
-`View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
-. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use
-`File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
-
-Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
-
-Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.
-This will ensure that tests will properly execute within the IDE.
-
-If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then
-install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
-
-For Committers
---------------
-
-image::business-gremlin.png[width=400]
-
-The guidelines that follow apply to those with commit access to the main repository:
-
-Communication
-~~~~~~~~~~~~~
-
-TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
-link:http://mail-archives.apache.org/mod_mbox/incubator-tinkerpop-dev/[developer mailing list].  As a committer,
-it is a good idea to join both.
-
-It would also be helpful to join the public link:https://s.apache.org/tinkerpop[TinkerPop HipChat room] for developer
-discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest, but for
-regular contributors it may be best to request that an Apache HipChat account be created.
-
-Occasionally, online meetings via video conference are held.  These meetings are schedule via the dev mailing list
-about a week before they are to occur to find a day and time that is available for those interested in attending.
-On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link) to
-post to the TinkerPop room in HipChat.  At that point, all who are interested can attend.  Meeting minutes should be
-taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
-
-Release Notes
-~~~~~~~~~~~~~
-
-There is a two-pronged approach to maintaining the change log and preparing the release notes.
-
-1. For work that is documented in JIRA, run the release notes report to include all of
-the tickets targeted for a specific release.  This report can be included in the
-release announcement.
-
-2. The manual change log (`CHANGELOG.asciidoc`) can be used to highlight large
-changes, describe themes (e.g. "We focused on performance improvements") or to
-give voice to undocumented changes.
-
-Given the dependence on the JIRA report for generating additions to the `CHANGELOG.asciidoc`,
-which uses the title of the issue as the line presented in the release note report, titles should
-be edited prior to release to be useful in that context.  In other words, an issue title should
-be understandable as a change in the fewest words possible while still conveying the gist of the
-change.
-
-Changes that break the public APIs should be marked with a "breaking" label and should be
-distinguished from other changes in the release notes.
-
-Branches
-~~~~~~~~
-
-The "master" branch is used for the main line of development and release branches are constructed as needed
-for ongoing maintenance work. If new to the project or are returning to it after some time away, it may be good
-to send an email to the developer mailing list (or ask on HipChat) to find out what the current operating branches
-are.
-
-Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
-It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
-way to account for the branch lifecycle, i.e. "Who's branch is this, and can I delete it?"
-
-For branches that are NOT associated with JIRA issues, developers should utilize their Apache ID as
-a branch name prefix.  This provides a unique namespace, and also a way to account for the branch lifecycle.
-
-Developers should remove their own branches when they are no longer needed.
-
-Tags
-~~~~
-
-Tags are used for milestones, release candidates, and approved releases.  Please refrain from creating arbitrary
-tags, as they produce permanent clutter.
-
-Issue Tracker Conventions
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP[issue tracker].  JIRA is a
-very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across
-issues, the following conventions should be adhered to:
-
-* An issue's "status" should generally be in one of two states: `open` or `closed` (`reopened` is equivalent to `open`
-for our purposes).
-** An `open` issue is newly created, under consideration or otherwise in progress.
-** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
-** Issues in a `resolved` state should immediately be evaluated for movement to `closed` - issue become `resolved`
-by those who don't have the permissions to `close`.
-* An issue's "type" should be one of two options: `bug` or `improvement`.
-** A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a
-reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.
-** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
-* The "component" should be representative of the primary area of code that it applies to and all issues should have
-this property set.
-* Issues are not assigned "labels" with two exceptions:
-** The "breaking" label which marks an issue as one that is representative of a change in the API that might
-affect users or providers.  This label is important when organizing release notes.
-** The "deprecation" label which is assigned to an issue that is about removing a deprecated portion of the API.
-* The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed.
-* The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
-tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
-required improvements.
-
-Code Style
-~~~~~~~~~~
-
-Contributors should examine the current code base to determine what the code style patterns are and should match their
-style to what is already present. Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
-be adjusted accordingly to not auto-wildcard the imports.
-
-Build Server
-~~~~~~~~~~~~
-
-TinkerPop uses both link:https://travis-ci.com/[Travis] and link:https://www.appveyor.com/[AppVeyor] for
-link:https://en.wikipedia.org/wiki/Continuous_integration[CI] services. Travis validates builds on Ubuntu, while
-AppVeyor validates builds on Windows.  The build statuses can be found here:
-
-* link:https://travis-ci.org/apache/incubator-tinkerpop[Travis Build Status]
-* link:https://ci.appveyor.com/project/ApacheSoftwareFoundation/incubator-tinkerpop[AppVeyor Build Status]
-
-Note that the CI process does not run integration tests or include Neo4j-related tests as those tests would likely
-exceed the allowable times for builds on these servers.
-
-Deprecation
-~~~~~~~~~~~
-
-When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor
-deprecation.  Deprecation should come with sufficient documentation and notice especially when the change involves
-public APIs that might be utilized by users or implemented by providers:
-
-* Mark the code with the `@Deprecated` annotation.
-* Use javadoc to further document the change with the following content:
-** `@deprecated As of release x.y.z, replaced by {@link SomeOtherClass#someNewMethod()}` - if the method is not
-replaced then the comment can simply read "not replaced".  Additional comments that provide more context are
-encouraged.
-** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP-XXX">TINKERPOP-XXX</a>` - supply a link to the
-JIRA issue for reference.
-* Be sure that deprecated methods are still under test - consider using javadoc/comments in the tests themselves to
-call out this fact.
-* Create a new JIRA issue to track removal of the deprecation for future evaluation - this issue should have the
-"breaking" label as well as a "deprecation" label.
-* Update the "upgrade documentation" to reflect the API change and how the reader should resolve it.
-
-The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
-prudent to schedule them into a release.
-
-Developing Tests
-~~~~~~~~~~~~~~~~
-
-TinkerPop has a wide variety of test types that help validate its internal code as well as external provider code.
-There are "unit tests" and "integration tests". Unit tests execute on standard runs of `mvn clean install`.  These
-tests tend to run quickly and provide a reasonable level of coverage and confidence in the code base.  Integration
-tests are disabled by default and must be explicitly turned on with a special build property by adding
-`-DskipIntegrationTests=false` to the `mvn` execution.  Integration tests run slower and may require external
-components to be running when they are executed. They are "marked" as separate from unit tests by inclusion of the
-suffix "IntegrateTest".
-
-Here are some other points to consider when developing tests:
-
-* Avoid use of `println` in tests and prefer use of a SLF4j `Logger` instance so that outputs can be controlled in a
-standard way.
-* If it is necessary to create files on the filesystem, do not hardcode directories - instead, use the `TestHelper` to
-create directory structures.  `TestHelper` will properly create file system structure in the appropriate build
-directory thus allowing proper clean-up between test runs.
-* If writing tests in one of the test suites, like `gremlin-test`, it is important to remember that if a new `Graph`
-instance is constructed within the test manually, that it be closed on exit of that test.  Failing to do this cleanup
-can cause problems for some graph providers.
-* Tests that are designed to use a `GraphProvider` implementation in conjunction with `AbstractGremlinTest` _and_ are
-in the `/test` directory should not be named with `Test` as the suffix, as this will cause them to execute in some
-environments without a `GraphProvider` being initialized by a suite. These types of tests should be suffixed with
-`Check` instead. Please see link:https://github.com/apache/incubator-tinkerpop/blob/e32a4187e4f25e290aabe14007f9087c48a06521/neo4j-gremlin/src/test/java/org/apache/tinkerpop/gremlin/neo4j/structure/NativeNeo4jStructureCheck.java[NativeNeo4jStructureCheck]
-for an example.
-
-Gremlin Language Test Cases
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When writing a test case for a Gremlin step, be sure to use the following conventions.
-
-* The name of the traversal generator should start with `get`, use `X` for brackets, `_` for space, and the Gremlin-Groovy sugar syntax.
-** `get_g_V_hasLabelXpersonX_groupXaX_byXageX_byXsumX_name()`
-* When creating a test for a step that has both a barrier and sideEffect form (e.g. `group()`, `groupCount()`, etc.), test both representations.
-** `get_g_V_groupCount_byXnameX()`
-** `get_g_V_groupCountXaX_byXnameX_capXaX()`
-* The name of the actual test case should be the name of the traversal generator minus the `get_` prefix.
-* The Gremlin-Groovy version of the test should use the sugar syntax in order to test sugar (as Gremlin-Java8 tests test standard syntax).
-** `g.V.age.sum`
-* Avoid using lambdas in the test case unless that is explicitly what is being tested as OLAP systems will typically not be able to execute those tests.
-* `AbstractGremlinProcessTest` has various static methods to make writing a test case easy.
-** `checkResults(Arrays.asList("marko","josh"), traversal)`
-** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
-
-Developing Benchmarks
-~~~~~~~~~~~~~~~~~~~~~
-
-Benchmarks are a useful tool to track performance between TinkerPop versions and also as tools to aid development
-decision making. TinkerPop uses link:http://openjdk.java.net/projects/code-tools/jmh/[OpenJDK JMH] for benchmark development.
-The JMH framework provides tools for writing robust benchmarking code that avoid many of the pitfalls inherent in benchmarking
-JIT compiled code on the JVM.  Example JMH benchmarks can be found
-link:http://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/[here].
-
-TinkerPop benchmarks live in the `gremlin-benchmark` module and can either be run from within your IDE or as a standalone
-uber-jar.  The uber-jar is the JMH recommended approach and also makes it easy to distribute artifacts to various environments
-to gather benchmarking numbers.  Having said that, in most cases it should be sufficient to run it from within the IDE.
-
-Benchmarks will not run by default because they are time consuming.  To enable benchmarks during the test phase do
-`-DskipBenchmarks=false`.  To change the number of warmup iterations, measurement iterations, and forks you can do
-`mvn clean test -DskipBenchmarks=false -DdefaultForks=5 -DmeasureIterations=20 -DwarmupIterations=20`.  Benchmark results
-will be output by default to the `benchmarks` directory in JSON format.
-
-Benchmarks may also be run from the command line using the JMH runner.  Build the uber-jar and simply run
-`java -jar gremlin-benchmark-TP-VERSION.jar`.  To see a list of JMH runner options, add the `-h` flag.
-
-The JUnit/JMH integration was inspired by the Netty projects microbenchmarking suite.  Please refer to the Netty
-link:http://netty.io/wiki/microbenchmarks.html[docs] for more details.  Presently there are 3 abstract benchmark classes
-that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`, `AbstractGraphBenchmark`, and
-`AbstractGraphMutateBenchmark`.
-
-* `AbstractBenchmarkBase` - extend when your benchmark does not require a graph instance
-* `AbstractGraphBenchmark` - extend when you are benchmarking read operations against a graph
-* `AbstractGraphMutateBenchmark` - extend when you are benchmarking graph mutation operations eg. `g.addV()`, `graph.addVertex()`
-
-[[rtc]]
-Review then Commit
-~~~~~~~~~~~~~~~~~~
-
-Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-committ] (RTC)
-process before being merged into a release branch. All committers should follow the pattern below, where "you" refers to the
-committer wanting to put code into a release branch.
-
-* Make a JIRA ticket for the software problem you want to solve (i.e. a fix).
-* Fork the release branch that the fix will be put into.
-** The branch name should be the JIRA issue identifier (e.g. `TINKERPOP-XXX`).
-* Develop your fix in your branch.
-* When your fix is complete and ready to merge, issue a link:https://git-scm.com/docs/git-request-pull[pull request].
-** Be certain that the test suite is passing.
-** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
-* Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes].
-** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
-* Votes are issued by TinkerPop committers as comments to the pull request.
-* Once 3 +1 votes are received, you are responsible for merging to the release branch and handling any merge conflicts.
-** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
-* Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
-
-NOTE: These steps also generally apply to external pull requests from those who are not official Apache committers. In
-this case, the person responsible for the merge after voting is typically the first person available
-who is knowledgeable in the area that the pull request affects. Any additional coordination on merging can be handled
-via the pull request comment system.
-
-The following exceptions to the RTC (review-then-commit) model presented above are itemized below. It is up to the
-committer to self-regulate as the itemization below is not complete and only hints at the types of commits that do not
-require a review.
-
-* You are responsible for a release and need to manipulate files accordingly for the release.
-** `Gremlin.version()`, CHANGELOG dates, `pom.xml` version bumps, etc.
-* You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
-** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
-** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.
-
-When the committer chooses CTR, it is considered good form to include something in the commit message that explains
-that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as this change encompasses minor
-adjustments to text formatting."
-
-Pull Request Format
-^^^^^^^^^^^^^^^^^^^
-
-When you submit a pull request, be sure it uses the following style.
-
-* The title of the pull request is the JIRA ticket number + "colon" + the title of the JIRA ticket.
-* The first line of the pull request message should contain a link to the JIRA ticket.
-* Discuss what you did to solve the problem articulated in the JIRA ticket.
-* Discuss any "extra" work done that go beyond the assumed requirements of the JIRA ticket.
-* Be sure to explain what you did to prove that the issue is resolved.
-** Test cases written.
-** Integration tests run (if required for the work accomplished).
-** Documentation building (if required for the work accomplished).
-** Any manual testing (though this should be embodied in a test case).
-* Notes about what you will do when you merge to the respective release branch (e.g. update CHANGELOG).
-** These types of "on merge tweaks" are typically done to extremely dynamic files to combat and merge conflicts.
-* If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
-
-[[dependencies]]
-Dependencies
-~~~~~~~~~~~~
-
-There are many dependencies on other open source libraries in TinkerPop modules. When adding dependencies or
-altering the version of a dependency, developers must consider the implications that may apply to the TinkerPop
-LICENSE and NOTICE files. There are two implications to consider:
-
-. Does the dependency fit an Apache _approved_ license?
-. Given the addition or modification to a dependency, does it mean any change for TinkerPop LICENSE and NOTICE files?
-
-Understanding these implications is important for insuring that  TinkerPop stays compliant with the Apache 2 license
-that it releases under.
-
-Regarding the first item, refer to the Apache Legal for a list of link:http://www.apache.org/legal/resolved.html[approved licenses]
-that are compatible with the Apache 2 license.
-
-The second item requires a bit more effort to follow. The Apache website offers a
-link:http://www.apache.org/dev/licensing-howto.html[how-to guide] on the approach to maintaining appropriate LICENSE
-and NOTICE files, but this guide is designed to offer some more specific guidance as it pertains to TinkerPop
-and its distribution.
-
-To get started, TinkerPop has both "source" and "binary" LICENSE/NOTICE files:
-
-* Source LICENSE/NOTICE relate to files packaged with the released source code distribution:
-link:https://github.com/apache/incubator-tinkerpop/blob/master/LICENSE[LICENSE] / link:https://github.com/apache/incubator-tinkerpop/blob/master/NOTICE[NOTICE]
-* Binary LICENSE/NOTICE relate to files packaged with the released binary distributions:
-** Gremlin Console link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-console/src/main/LICENSE[LICENSE]
-/ link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-console/src/main/NOTICE[NOTICE]
-** Gremlin Server link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-server/src/main/LICENSE[LICENSE]
-/ link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-server/src/main/NOTICE[NOTICE]
-
-Source LICENSE and NOTICE
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-As dependencies are not typically added to the source distribution (i.e. the source zip distribution), there is
-typically no need to edit source LICENSE/NOTICE when editing a TinkerPop `pom.xml`. These files only need to be edited
-if the distribution has a file added to it.  Such a situation may arise from several scenarios, but it would most
-likely come from the addition of a source file from another library.
-
-* If the file being bundled is Apache licensed, then add an entry to NOTICE.
-* If the file being bundled is under a different approved license, then add an entry to LICENSE and include a copy of
-that LICENSE in the root `/licenses` directory of the code repository.
-
-Binary LICENSE and NOTICE
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `pom.xml` files. After altering the
-`pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of both binary
-distributions, either:
-
-* target/apache-gremlin-console-x.y.z-distribution.zip
-* target/apache-gremlin-server-x.y.z-distribution.zip
-
-Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
-license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
-added to the `<project>/static/licenses` directory of the code repository.
-
-To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it (typically
-found in `/META-INF` directory of the jar).
-
-* If the bundled file does not have a NOTICE, then no changes to TinkerPop's NOTICE are required.
-* If the NOTICE of the file being bundled is NOT Apache licensed, then there is no change to TinkerPop's NOTICE.
-* If the NOTICE of the file being bundled is Apache licensed, then include the copyright notification in TinkerPop's
-NOTICE.
-* If the NOTICE of the file being bundled is Apache licensed AND is an Apache Software Foundation project, then
-ONLY include the portion of that NOTICE in TinkerPop's NOTICE that is unrelated to the Apache boilerplate NOTICE.
-If there is no such portion that is different than the boilerplate then this NOTICE can be excluded (i.e. don't
-alter TinkerPop's NOTICE at all).
-
-Please refer to the link:http://www.apache.org/dev/licensing-howto.html#mod-notice[Modifications to Notice] section
-of the Apache "Licensing How-to" for more information.
-
-[[documentation]]
-Documentation
-~~~~~~~~~~~~~
-
-The documentation for TinkerPop is stored in the git repository in `docs/src/` and are then split into several
-subdirectories, each representing a "book" (or its own publishable body of work). If a new AsciiDoc file is added to
-a book, then it should also be included in the `index.asciidoc` file for that book, otherwise the preprocessor will
-ignore it. Likewise, if a whole new book (subdirectory) is added, it must include an `index.asciidoc` file to be
-recognized by the AsciiDoc preprocessor.
-
-Adding a book also requires a change to the root `pom.xml` file. Find the "asciidoc" Maven profile and add a new
-`<execution>` to the `asciidoctor-maven-plugin` configuration. For each book in `docs/src/`, there should be a
-related `<execution>` that generates the HTML from the AsciiDoc. Follows the patterns already established by
-the existing `<execution>` entries, paying special attention to the pathing of the '<sourceDirectory>',
-`<outputDirectory>` and `<imagesdir>`.  Note that the `<outputDirectory>` represents where the book will exist when
-uploaded to the server and should preserve the directory structure in git as referenced in `<sourceDirectory>`.
-
-Please see the <<building-testing,Building and Testing>> section for more information on how to generate the
-documentation.
-
-[[logging]]
-Logging
-~~~~~~~
-
-TinkerPop uses SLF4j for logging and typically leans back on Log4j as the implementation. Configuring log outputs
-for debugging purposes within tests can be altered by editing the `log4j-test.properties` file in each module's test
-resources.  That file gets copied to the `target/test-classes` on build and surefire and failsafe plugins in maven
-are then configured to point at that area of the file system for those configuration files. The properties files
-can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
-best for everyone's general purposes, so if changes are made please revert them prior to commit.
-
-For Providers
--------------
-
-Graph Providers are those who develop third-party systems and libraries on top of the various TinkerPop APIs and
-protocols. They manage their projects independently of TinkerPop in separate repositories. Additional details for
-providers can be found in the link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation].
+Before proceeding, contributors should evaluate if the proposed change is likely to be relevant, new and actionable:
+
+* Is it clear that code must change? Proposing a JIRA issue and pull request is appropriate only when a clear problem
+or change has been identified. When in doubt, email dev@tinkerpop.apache.org first about the possible change.
+* Search the the mailing list archives for related discussions. Often, the problem has been discussed before, with
+a resolution that doesn't require a code change, or recording what kinds of changes will not be accepted as a
+resolution.
+* Search link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] for existing issues.
+* Is the scope of the change matched to the contributor's level of experience? Anyone is qualified to suggest a typo
+fix, but refactoring a core feature in serialization or OLAP requires much more understanding of TinkerPop. Some
+changes require building up experience first.
+
+Before considering how to contribute code, it is useful to understand how code is reviewed, and why changes may be
+rejected. Simply put, changes that have many or large positives, and few negative effects or risks, are much more
+likely to be merged, and merged quickly. Risky and less valuable changes are very unlikely to be merged, and may be
+rejected outright rather than receive iterations of review.
+
+*Positives*
+
+* Change has already been discussed and is known to committers
+* Fixes the root cause of a bug in existing functionality
+* Adds functionality or fixes a problem needed by a large number of users
+* Simple, targeted
+* Easily tested; has tests
+* Reduces complexity and lines of code
+
+*Negatives, Risks*
+
+* Band-aids a symptom of a bug only
+* Introduces complex new functionality, especially an API that needs to be supported
+* Adds complexity that only helps a niche use case
+* Adds user-space functionality that does not need to be maintained in TinkerPop, but could be hosted externally and
+promoted in link:http://tinkerpop.apache.org/#graph-systems[provider listings]
+* Changes a public API or semantics thus introducing a breaking change
+* Adds large dependencies
+* Changes versions of existing dependencies
+* Adds a large amount of code
+* Makes lots of modifications in one "big bang" change
+
+Contributing Code Changes
+-------------------------
+
+Generally, TinkerPop uses link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] to track logical issues,
+including bugs and improvements, and uses GitHub pull requests to manage the review and merge of specific code
+changes. That is, JIRA issues are used to describe what should be fixed or changed, and high-level approaches, and pull
+requests describe how to implement that change in the project's source code.
+
+As a first step to making a contribution, consider *JIRA*:
+
+. Find the existing JIRA ticket that the change pertains to.
+.. Do not create a new ticket if creating a change to address an existing issue in JIRA; add to the existing
+discussion and work instead.
+.. Look for existing pull requests that are linked from the ticket, to understand if someone is already working on
+the JIRA.
+. If the change is new, then it usually needs a new ticket. However, trivial changes, where the change is virtually
+the same as the how it should change do not require a JIRA (e.g. "Fix typos in Foo javadoc").
+. If required, create a new ticket:
+.. Provide a descriptive Title and a detailed Description. For bug reports, this should ideally include a short
+reproduction of the problem.
+.. Set required fields - these are detailed later in this document in the <<_issue_tracker_conventions, Issue Tracker
+Conventions>> section.
+. If the change is a large change, consider inviting discussion on the issue at dev@tinkerpop.apache.org first
+before proceeding to implement the change.
+
+Next, *make changes* and prepare a *pull request*:
+
+. link:https://help.github.com/articles/fork-a-repo/[Fork and then clone] the Apache TinkerPop
+link:https://github.com/apache/incubator-tinkerpop[GitHub repository] if not already done.
+. Make changes in the fork
+.. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
+to easily track what that branch is for.
+.. Consider which branch to create the branch from in the first place. In other words, is the change to be targetted
+at a specific TinkerPop version (e.g. a patch to an older version)? When in doubt, please ask on
+dev@tinkerpop.apache.org.
+. Bulid the project and run tests.
+.. A simple build can be accomplished with maven: `mvn clean install`.
+.. Often, a "simple build" isn't sufficient and integration tests are required:
+`mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`. Note that Hadoop must be running for the integration
+tests to execute.
+.. Docker can help simplify building and testing: `docker/build.sh -t -i -n`
+.. Please see the <<building-test,Building and Testing>> section for more building and testing options.
+. Consider whether documentation or tests need to be added or updated as part of the change, and add them as needed.
+.. Nearly all changes should include a modification to the `CHANGELOG.asciidoc` file - one more entries to
+help summarize the change.
+.. Some changes will require updates to the "upgrade documentation" - usually reserved for major new features and
+breaking changes.
+.. Docker can help simplify documentation generation: `docker/build.sh -d`
+.. Please see the <<building-test,Building and Testing>> section for more documentation generation options.
+. Open the link:https://help.github.com/articles/using-pull-requests/[pull request] against the appropriate branch
+on the Apache TinkerPop repository.
+.. Target the pull request at the appropriate branch in TinkerPop's repository
+.. Prefix the name of the pull request with the JIRA issue number (include a brief description after that).
+.. Include a link to the ticket in JIRA in the pull request description.
+.. Include a rough synopsis of how the changes were tested. This might be as simple as "Ran mvn clean install to
+success and performed manual testing in the Gremlin Console".
+.. Include other descriptive elements about the change if they are not already included in the JIRA ticket.
+.. Automated builds will occur with Travis and AppVeyor. Please be sure that the pull request passes those builds and
+correct them if there are problems.
+
+Once the pull request has been placed it will go into *review*:
+
+. Other reviewers, including committers, may comment on the changes and suggest modifications. Changes can be added by
+simply pushing more commits to the same branch.
+. Lively, polite, rapid technical debate is encouraged from everyone in the community. The outcome may be a rejection
+of the entire change.
+. Reviewers can indicate that a change looks suitable for merging with by providing a "+1". Please see the
+<<rtc, Review then Commit>> process for more details.
+. Sometimes, other changes will be merged which conflict with your pull request's changes. The PR can't be merged
+until the conflict is resolved. This can be resolved with "git fetch origin" followed by "git merge origin/master"
+and resolving the conflicts by hand, then pushing the result to your branch. Or more nicely, consider rebasing changes
+and force pushing the branch.
+. Try to be responsive to the discussion rather than let days pass between replies
+
+On successful review, the *pull request will be merged* to the main repository and the JIRA issue will be closed.

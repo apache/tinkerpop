@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added a safer serializer infrastructure for use with `SparkGraphComputer` that uses `KryoSerializer` and the new `GryoRegistrator`.
 * Added `HaltedTraverserStrategy` to allow users to get back different element detachments in OLAP.
 * Fixed a `NullPointerException` bug around nested `group()`-steps in OLAP.
 * Fixed a severe bug around halted traversers in a multi-job OLAP traversal chain.
@@ -249,10 +250,13 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Avoid hamcrest conflict by using mockito-core instead of mockito-all dependency in `gremlin-test`.
+* Fixed bug in `IoGraphTest` causing IllegalArgumentException: URI is not hierarchical error for external graph implementations.
 * Fixed a bug where timeout functions provided to the `GremlinExecutor` were not executing in the same thread as the script evaluation.
 * Optimized a few special cases in `RangeByIsCountStrategy`.
 * Named the thread pool used by Gremlin Server sessions: "gremlin-server-session-$n".
 * Fixed a bug in `BulkSet.equals()` which made itself apparent when using `store()` and `aggregate()` with labeled `cap()`.
+* Fixed a bug where `Result.one()` could potentially block indefinitely under certain circumstances.
 * Ensured that all asserts of vertex and edge counts were being applied properly in the test suite.
 * Fixed bug in `gremlin-driver` where certain channel-level errors would not allow the driver to reconnect.
 * `SubgraphStep` now consults the parent graph features to determine cardinality of a property.

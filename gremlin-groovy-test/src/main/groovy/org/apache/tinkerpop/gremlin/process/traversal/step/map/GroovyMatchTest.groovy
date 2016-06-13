@@ -338,5 +338,15 @@ public abstract class GroovyMatchTest {
                     __.as('b').both.as('c')).dedup('a','b').by(label)
             """)
         }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+             g.V.hasLabel('song').match(
+                    __.as('a').values('name').as('b'),
+                    __.as('a').values('performances').as('c')
+            ).select('b', 'c').count();
+            """)
+        }
     }
 }
