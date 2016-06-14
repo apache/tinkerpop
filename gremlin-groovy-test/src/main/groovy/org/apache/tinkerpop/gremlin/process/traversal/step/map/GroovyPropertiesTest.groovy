@@ -47,7 +47,7 @@ public abstract class GroovyPropertiesTest {
 
         @Override
         public Traversal<Vertex, VertexProperty<String>> get_g_V_hasXageX_propertiesXnameX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('age').properties('name')", g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.has('age').properties('name')")
         }
     }
 
