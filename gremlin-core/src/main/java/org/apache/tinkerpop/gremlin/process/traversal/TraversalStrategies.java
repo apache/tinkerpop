@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,6 +74,10 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      */
     public default <T extends TraversalStrategy> List<T> getStrategies(final Class<T> traversalStrategyClass) {
         return (List<T>) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).collect(Collectors.toList());
+    }
+
+    public default <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
+        return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
     }
 
     /**

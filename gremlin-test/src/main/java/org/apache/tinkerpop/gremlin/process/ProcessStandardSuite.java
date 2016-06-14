@@ -80,6 +80,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
@@ -106,7 +107,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
-            BranchTest.Traversals.class,
+            /*BranchTest.Traversals.class,
             ChooseTest.Traversals.class,
             OptionalTest.Traversals.class,
             LocalTest.Traversals.class,
@@ -174,7 +175,10 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // compliance
             CoreTraversalTest.class,
-            TraversalInterruptionTest.class,
+            TraversalInterruptionTest.class,*/
+
+            // creations
+            TranslationStrategyProcessTest.class,
 
             // decorations
             ElementIdStrategyProcessTest.class,
