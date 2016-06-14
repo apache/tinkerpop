@@ -60,17 +60,16 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
             "testProfileStrategyCallbackSideEffect",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
             "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
+            "g_VX1X_out_injectXv2X_name",
             "shouldSupportGraphFilter",
-            InjectTest.Traversals.class.getCanonicalName(),
+            "shouldNeverPropagateANoBulkTraverser",
+            "shouldNeverPropagateANullValuedTraverser",
+            "shouldTraversalResetProperly",
+            "shouldHidePartitionKeyForValues",
             ProgramTest.Traversals.class.getCanonicalName(),
-            CoreTraversalTest.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
-            ElementIdStrategyProcessTest.class.getCanonicalName(),
-            EventStrategyProcessTest.class.getCanonicalName(),
-            ReadOnlyStrategyProcessTest.class.getCanonicalName(),
-            PartitionStrategyProcessTest.class.getCanonicalName(),
-            SubgraphStrategyProcessTest.class.getCanonicalName()));
+            ElementIdStrategyProcessTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
@@ -101,15 +100,7 @@ public abstract class VariantGraphProvider extends AbstractGraphProvider {
 
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
-        if (graph != null)
-            graph.close();
-
-        // in the even the graph is persisted we need to clean up
-        final String graphLocation = configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        if (graphLocation != null) {
-            final File f = new File(graphLocation);
-            f.delete();
-        }
+        if (graph != null) graph.close();
     }
 
     @Override

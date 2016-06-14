@@ -42,7 +42,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * An anonymous {@link GraphTraversal}.
@@ -51,28 +50,26 @@ import java.util.function.Supplier;
  */
 public class __ {
 
-    private static ThreadLocal<Supplier<GraphTraversal>> ANONYMOUS_GRAPH_TRAVERSAL = null;
+    private static ThreadLocal<Function<GraphTraversal.Admin, GraphTraversal.Admin>> ANONYMOUS_TRAVERSAL_FUNCTION = null;
 
     protected __() {
     }
 
     //////////////////////////////////////////////////////////////////////
 
-    public static void setAnonymousTraversalSupplier(final Supplier<GraphTraversal> anonymousGraphTraversalSupplier) {
-        if (null == ANONYMOUS_GRAPH_TRAVERSAL) {
-            if (null == anonymousGraphTraversalSupplier)
-                return;
-            else
-                ANONYMOUS_GRAPH_TRAVERSAL = ThreadLocal.withInitial(() -> DefaultGraphTraversal::new);
+    public static void setAnonymousTraversalFunction(final Function<GraphTraversal.Admin, GraphTraversal.Admin> anonymousTraversalFunction) {
+        if (null == anonymousTraversalFunction) {
+            if (null != ANONYMOUS_TRAVERSAL_FUNCTION)
+                ANONYMOUS_TRAVERSAL_FUNCTION.remove();
+        } else {
+            if (null == ANONYMOUS_TRAVERSAL_FUNCTION)
+                ANONYMOUS_TRAVERSAL_FUNCTION = ThreadLocal.withInitial(Function::identity);
+            ANONYMOUS_TRAVERSAL_FUNCTION.set(anonymousTraversalFunction);
         }
-        if (null == anonymousGraphTraversalSupplier)
-            ANONYMOUS_GRAPH_TRAVERSAL.remove();
-        else
-            ANONYMOUS_GRAPH_TRAVERSAL.set(anonymousGraphTraversalSupplier);
     }
 
     public static <A> GraphTraversal<A, A> start() {
-        return null == ANONYMOUS_GRAPH_TRAVERSAL ? new DefaultGraphTraversal<>() : ANONYMOUS_GRAPH_TRAVERSAL.get().get();
+        return null == ANONYMOUS_TRAVERSAL_FUNCTION ? new DefaultGraphTraversal<>() : ANONYMOUS_TRAVERSAL_FUNCTION.get().apply(new DefaultGraphTraversal<>());
     }
 
     public static <A> GraphTraversal<A, A> __(final A... starts) {

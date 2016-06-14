@@ -37,18 +37,22 @@ import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.SimpleBindings;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStrategy.CreationStrategy> implements TraversalStrategy.CreationStrategy {
 
-    private Translator<?> translator;
+    private final Translator translator;
+    private final Class anonymousTraversalClass;
 
-    public TranslationStrategy(final Translator<?> translator) {
+    public TranslationStrategy(final Translator translator, final Class anonymousTraversalClass) {
         this.translator = translator;
-        if (!this.translator.getAlias().equals("__"))
-            __.setAnonymousTraversalSupplier(() -> (GraphTraversal) translator.__());
+        this.anonymousTraversalClass = anonymousTraversalClass;
+        this.createAnonymousTraversalFunction();
     }
 
     @Override
@@ -59,6 +63,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             final String traversalScriptString = this.translator.getTraversalScript();
             ScriptEngine engine = ScriptEngineCache.get(this.translator.getScriptEngine());
             TraversalStrategies strategies = traversal.getStrategies().clone().removeStrategies(TranslationStrategy.class);
+            this.destroyAnonymousTraversalFunction();
             final Bindings bindings = new SimpleBindings();
             bindings.put(this.translator.getAlias(), new GraphTraversalSource(traversal.getGraph().orElse(EmptyGraph.instance()), strategies));
             Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) engine.eval(traversalScriptString, bindings);
@@ -74,18 +79,53 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
     }
 
     @Override
+    public void addSpawnStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+        final TranslationStrategy clone = new TranslationStrategy(this.translator.clone(), this.anonymousTraversalClass);
+        traversal.setStrategies(traversal.getStrategies().clone().addStrategies(clone));
+        clone.createAnonymousTraversalFunction();
+        clone.translator.addSpawnStep(traversal, stepName, arguments);
+    }
+
+    @Override
     public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
         this.translator.addStep(traversal, stepName, arguments);
     }
 
     @Override
     public void addSource(final TraversalSource traversalSource, final String sourceName, final Object... arguments) {
-        final TranslationStrategy clone = new TranslationStrategy(this.translator.clone());
+        final TranslationStrategy clone = new TranslationStrategy(this.translator.clone(), this.anonymousTraversalClass);
         traversalSource.getStrategies().addStrategies(clone);
+        clone.createAnonymousTraversalFunction();
         clone.translator.addSource(traversalSource, sourceName, arguments);
     }
 
     public Translator getTranslator() {
         return this.translator;
+    }
+
+    private void createAnonymousTraversalFunction() {
+        final Function<? extends Traversal.Admin, ? extends Traversal.Admin> function = traversal -> {
+            try {
+                traversal.setStrategies(traversal.getStrategies().clone().addStrategies(
+                        new TranslationStrategy(this.translator.getAnonymousTraversalTranslator(),
+                                this.anonymousTraversalClass)));
+                return traversal;
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        };
+        try {
+            this.anonymousTraversalClass.getMethod(TraversalSource.SET_ANONYMOUS_TRAVERSAL_FUNCTION, Function.class).invoke(null, function);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    private void destroyAnonymousTraversalFunction() {
+        try {
+            this.anonymousTraversalClass.getMethod(TraversalSource.SET_ANONYMOUS_TRAVERSAL_FUNCTION, Function.class).invoke(null, (Function) null);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 }

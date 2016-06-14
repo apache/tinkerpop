@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Translator<V extends Traversal> extends Cloneable {
+public interface Translator extends Cloneable {
 
     public String getScriptEngine();
 
@@ -33,9 +33,21 @@ public interface Translator<V extends Traversal> extends Cloneable {
 
     public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments);
 
+    public default void addSpawnStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+        addStep(traversal, stepName, arguments);
+    }
+
     public default void addSource(final TraversalSource traversalSource, final String sourceName, final Object... arguments) {
         addStep(EmptyTraversal.instance(), sourceName, arguments);
     }
+
+    public Translator getAnonymousTraversalTranslator();
+
+    public String getTraversalScript();
+
+    public Translator clone();
+
+    /// TODO: Below should be removed when ScriptXXXTraversal model is removed
 
     public default void addSource(final String sourceName, final Object... arguments) {
 
@@ -44,10 +56,4 @@ public interface Translator<V extends Traversal> extends Cloneable {
     public default void addStep(final String sourceName, final Object... arguments) {
 
     }
-
-    public V __();
-
-    public String getTraversalScript();
-
-    public Translator<V> clone();
 }

@@ -23,9 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.script.ScriptGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -36,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -58,7 +55,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonTranslator implements Translator<GraphTraversal> {
+public final class PythonTranslator implements Translator {
 
     private static boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
     ////
@@ -74,7 +71,7 @@ public class PythonTranslator implements Translator<GraphTraversal> {
     private final String scriptEngine;
     private final boolean importStatics;
 
-    public PythonTranslator(final String scriptEngine, final String alias, final boolean importStatics) {
+    private PythonTranslator(final String scriptEngine, final String alias, final boolean importStatics) {
         this.scriptEngine = scriptEngine;
         this.alias = alias;
         this.traversalScript = new StringBuilder(this.alias);
@@ -100,10 +97,8 @@ public class PythonTranslator implements Translator<GraphTraversal> {
     }
 
     @Override
-    public GraphTraversal __() {
-        final GraphTraversal traversal = new DefaultGraphTraversal();
-        traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(new TranslationStrategy(new PythonTranslator(this.scriptEngine, "__", this.importStatics))));
-        return traversal;
+    public Translator getAnonymousTraversalTranslator() {
+        return new PythonTranslator(this.scriptEngine, "__", this.importStatics);
     }
 
     @Override

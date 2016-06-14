@@ -42,14 +42,14 @@ import java.util.function.UnaryOperator;
  */
 public class ScriptGraphTraversalSource extends GraphTraversalSource {
 
-    private final Translator<GraphTraversal> translator;
+    private final Translator translator;
 
-    public ScriptGraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies, final Translator<GraphTraversal> translator) {
+    public ScriptGraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies, final Translator translator) {
         super(graph, traversalStrategies);
         this.translator = translator;
     }
 
-    public ScriptGraphTraversalSource(final Graph graph, final Translator<GraphTraversal> translator) {
+    public ScriptGraphTraversalSource(final Graph graph, final Translator translator) {
         super(graph);
         this.translator = translator;
     }
@@ -218,7 +218,7 @@ public class ScriptGraphTraversalSource extends GraphTraversalSource {
     }
 
     private GraphTraversal generateTraversal(final String stepName, final Object... arguments) {
-        __.setAnonymousTraversalSupplier(this.translator::__);
+        //this.translator.createAnonymousTraversalSupplier();
         final Translator clone = this.translator.clone();
         clone.addStep(stepName, arguments);
         final GraphTraversal traversal = new ScriptGraphTraversal(this.graph, clone);

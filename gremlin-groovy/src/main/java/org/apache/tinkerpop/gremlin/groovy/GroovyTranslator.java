@@ -23,10 +23,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -43,14 +39,18 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroovyTranslator implements Translator<GraphTraversal> {
+public final class GroovyTranslator implements Translator {
 
     private StringBuilder traversalScript;
-    private String alias;
+    private final String alias;
 
-    public GroovyTranslator(final String alias) {
+    private GroovyTranslator(final String alias) {
         this.alias = alias;
         this.traversalScript = new StringBuilder(this.alias);
+    }
+
+    public static final GroovyTranslator of(final String alias) {
+        return new GroovyTranslator(alias);
     }
 
     @Override
@@ -78,16 +78,9 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
         }
     }
 
-    /*Override
-    public void addSource(final TraversalSource source, final String sourceName, final Object... arguments) {
-        source.getStrategies().toList().
-    }*/
-
     @Override
-    public GraphTraversal __() {
-        final GraphTraversal traversal = new DefaultGraphTraversal();
-        traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(new TranslationStrategy(new GroovyTranslator("__"))));
-        return traversal;
+    public Translator getAnonymousTraversalTranslator() {
+        return new GroovyTranslator("__");
     }
 
     @Override
@@ -107,10 +100,6 @@ public class GroovyTranslator implements Translator<GraphTraversal> {
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    public static final GroovyTranslator of(final String alias) {
-        return new GroovyTranslator(alias);
     }
 
     ///////

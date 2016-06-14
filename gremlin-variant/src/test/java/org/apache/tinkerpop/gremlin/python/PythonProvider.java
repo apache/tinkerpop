@@ -19,9 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.python;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.VariantGraphProvider;
-import org.apache.tinkerpop.gremlin.python.GremlinPythonGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
