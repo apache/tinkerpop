@@ -27,6 +27,7 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Avoid hamcrest conflict by using mockito-core instead of mockito-all dependency in `gremlin-test`.
+* Defaulted to `Edge.DEFAULT` if no edge label was supplied in GraphML.
 * Fixed bug in `IoGraphTest` causing IllegalArgumentException: URI is not hierarchical error for external graph implementations.
 * Fixed a bug where timeout functions provided to the `GremlinExecutor` were not executing in the same thread as the script evaluation.
 * Optimized a few special cases in `RangeByIsCountStrategy`.
@@ -1247,7 +1248,6 @@ TinkerPop 3.0.0.M2 (Release Date: September 23, 2014)
 * Moved `GiraphGraph.getOutputGraph()` to `GiraphHelper`.
 * Changed `GIRAPH_GREMLIN_HOME` to `GIRAPH_GREMLIN_LIB` to reference directory where jars are to be loaded.
 * Updated README with release instructions.
-* if there is no edge label in the GraphML file, then use Edge.DEFAULT
 
 TinkerPop 3.0.0.M1 (Release Date: August 12, 2014)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
