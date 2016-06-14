@@ -112,6 +112,17 @@ public class IoTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphMLWithNoEdgeLabels() throws IOException {
+            readGraphMLIntoGraph(graph, "tinkerpop-no-edge-labels.xml");
+            assertNoEdgeGraph(graph, false, true);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
         public void shouldReadGraphMLUnorderedElements() throws IOException {
             readGraphMLIntoGraph(graph, "tinkerpop-classic-unordered.xml");
             assertClassicGraph(graph, false, true);
@@ -722,6 +733,35 @@ public class IoTest {
 
     public static void assertClassicGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
         assertToyGraph(g1, assertDouble, lossyForId, false);
+    }
+
+    public static void assertNoEdgeGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
+        assertEquals(2, IteratorUtils.count(g1.vertices()));
+        assertEquals(1, IteratorUtils.count(g1.edges()));
+
+        final Vertex v1 = g1.traversal().V().has("name", "marko").next();
+        assertEquals(29, v1.<Integer>value("age").intValue());
+        assertEquals(2, v1.keys().size());
+        assertEquals(Vertex.DEFAULT_LABEL, v1.label());
+        assertId(g1, lossyForId, v1, 1);
+
+        final List<Edge> v1Edges = IteratorUtils.list(v1.edges(Direction.BOTH));
+        assertEquals(1, v1Edges.size());
+        v1Edges.forEach(e -> {
+        	System.out.println("SERGE: e.inVertex().value(\"name\") : " + e.inVertex().value("name").equals("vadas"));
+
+            if (e.inVertex().value("name").equals("vadas")) {
+                assertEquals(Edge.DEFAULT_LABEL, e.label());
+                if (assertDouble)
+                    assertWeightLoosely(0.5d, e);
+                else
+                    assertWeightLoosely(0.5f, e);
+                assertEquals(1, e.keys().size());
+                assertId(g1, lossyForId, e, 7);
+            } else {
+                fail("Edge not expected");
+            }
+        });
     }
 
     public static void assertModernGraph(final Graph g1, final boolean assertDouble, final boolean lossyForId) {
