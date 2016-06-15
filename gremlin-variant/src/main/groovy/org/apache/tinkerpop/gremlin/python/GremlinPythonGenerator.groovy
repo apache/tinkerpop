@@ -72,7 +72,6 @@ under the License.
         methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
 
         pythonClass.append("from collections import OrderedDict\n")
-        pythonClass.append("import inspect\n\n")
         pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
 globalTranslator = None
