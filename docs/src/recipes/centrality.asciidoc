@@ -49,6 +49,12 @@ stream of `Map` objects can allow some greater flexibility.
 <5> For example, use of a stream enables use of an ordered limit that can be executed in a distributed fashion in
 OLAP traversals.
 
+NOTE: The link:http://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[group] step takes up to two separate
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[by] modulators. The first `by()` tells `group()`
+what the key in the resulting `Map` will be (i.e. the value to group on). In the above examples, the `by()` is empty
+and as a result, the grouping will be on the incoming `Vertex` object itself. The second `by()` is the value to be
+stored in the `Map` for each key.
+
 [[betweeness-centrality]]
 Betweeness Centrality
 ~~~~~~~~~~~~~~~~~~~~~
