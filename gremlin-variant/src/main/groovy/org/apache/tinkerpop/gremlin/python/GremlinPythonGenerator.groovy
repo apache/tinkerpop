@@ -119,14 +119,16 @@ class B(object):
                 if (Traversal.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    self.translator.addStep(self, "${method}", *args)
-    return PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal.translator.addStep(traversal, "${method}", *args)
+    return traversal
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    self.translator.addSource(self, "${method}", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "${method}", *args)
+    return source
 """)
                 }
             }
@@ -157,13 +159,15 @@ class B(object):
     return self.values(key)
   def __iter__(self):
         return self
+  def __next__(self):
+     return self.next()
   def toList(self):
     return list(iter(self))
   def next(self):
      if self.results is None:
-        self.results = self.remote_connection.submit(self.translator.traversal_script, self.bindings)
+        self.results = self.remote_connection.submit(self.translator.script_engine, self.translator.traversal_script, self.bindings)
      if self.last_traverser is None:
-         self.last_traverser = self.results.next()
+         self.last_traverser = next(self.results)
      object = self.last_traverser.object
      self.last_traverser.bulk = self.last_traverser.bulk - 1
      if self.last_traverser.bulk <= 0:

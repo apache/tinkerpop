@@ -16,8 +16,14 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from translator import Translator
+
+import sys
+
 from gremlin_python import P
+from translator import Translator
+
+if sys.version_info.major > 2:
+    long = int
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -30,8 +36,11 @@ class GroovyTranslator(Translator):
         Translator.__init__(self, alias, script_engine)
 
     def addStep(self, traversal, step_name, *args):
-        self.traversal_script = self.traversal_script + "." + GroovyTranslator.mapMethod(
+        newTraversal = GroovyTranslator(self.alias, self.script_engine)
+        newTraversal.traversal_script = self.traversal_script
+        newTraversal.traversal_script = newTraversal.traversal_script + "." + GroovyTranslator.mapMethod(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
+        traversal.translator = newTraversal
 
     def addSource(self, traversal_source, source_name, *args):
         newTranslator = GroovyTranslator(self.alias, self.script_engine)

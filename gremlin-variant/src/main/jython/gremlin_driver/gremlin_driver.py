@@ -30,11 +30,10 @@ class Traverser(object):
 
 
 class RemoteConnection(object):
-    def __init__(self, url, script_engine):
+    def __init__(self, url):
         self.url = url
-        self.script_engine = script_engine
 
     @abstractmethod
-    def submit(self, script, bindings):
+    def submit(self, script_engine, script, bindings):
         print "sending " + script + " to GremlinServer..."
         return iter([])

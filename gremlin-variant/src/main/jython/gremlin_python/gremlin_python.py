@@ -47,41 +47,53 @@ class PythonGraphTraversalSource(object):
     else:
       return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
   def E(self, *args):
-    self.translator.addStep(self, "E", *args)
-    return PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal.translator.addStep(traversal, "E", *args)
+    return traversal
   def V(self, *args):
-    self.translator.addStep(self, "V", *args)
-    return PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal.translator.addStep(traversal, "V", *args)
+    return traversal
   def addV(self, *args):
-    self.translator.addStep(self, "addV", *args)
-    return PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal.translator.addStep(traversal, "addV", *args)
+    return traversal
   def inject(self, *args):
-    self.translator.addStep(self, "inject", *args)
-    return PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
+    traversal.translator.addStep(traversal, "inject", *args)
+    return traversal
   def withBulk(self, *args):
-    self.translator.addSource(self, "withBulk", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withBulk", *args)
+    return source
   def withComputer(self, *args):
-    self.translator.addSource(self, "withComputer", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withComputer", *args)
+    return source
   def withPath(self, *args):
-    self.translator.addSource(self, "withPath", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withPath", *args)
+    return source
   def withSack(self, *args):
-    self.translator.addSource(self, "withSack", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withSack", *args)
+    return source
   def withSideEffect(self, *args):
-    self.translator.addSource(self, "withSideEffect", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withSideEffect", *args)
+    return source
   def withStrategies(self, *args):
-    self.translator.addSource(self, "withStrategies", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withStrategies", *args)
+    return source
   def withTranslator(self, *args):
-    self.translator.addSource(self, "withTranslator", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withTranslator", *args)
+    return source
   def withoutStrategies(self, *args):
-    self.translator.addSource(self, "withoutStrategies", *args)
-    return PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
+    source.translator.addSource(source, "withoutStrategies", *args)
+    return source
 
 
 class PythonGraphTraversal(object):
@@ -104,13 +116,15 @@ class PythonGraphTraversal(object):
     return self.values(key)
   def __iter__(self):
         return self
+  def __next__(self):
+     return self.next()
   def toList(self):
     return list(iter(self))
   def next(self):
      if self.results is None:
-        self.results = self.remote_connection.submit(self.translator.traversal_script, self.bindings)
+        self.results = self.remote_connection.submit(self.translator.script_engine, self.translator.traversal_script, self.bindings)
      if self.last_traverser is None:
-         self.last_traverser = self.results.next()
+         self.last_traverser = next(self.results)
      object = self.last_traverser.object
      self.last_traverser.bulk = self.last_traverser.bulk - 1
      if self.last_traverser.bulk <= 0:
