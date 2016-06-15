@@ -65,7 +65,7 @@ class GroovyTranslator(Translator):
 
     @staticmethod
     def stringOrObject(arg):
-        if (type(arg) is str and
+        if (isinstance(arg, str) and
                 not (arg.startswith("SackFunctions.Barrier.")) and
                 not (arg.startswith("VertexProperty.Cardinality.")) and
                 not (arg.startswith("Column.")) and
@@ -79,19 +79,21 @@ class GroovyTranslator(Translator):
                 not (arg.startswith("T.")) and
                 not (len(arg) == 0)):
             return "\"" + arg + "\""
-        elif type(arg) is P:
+        elif isinstance(arg, P):
             if arg.other is None:
                 return "P." + GroovyTranslator.mapMethod(arg.operator) + "(" + GroovyTranslator.stringOrObject(
                     arg.value) + ")"
             else:
                 return GroovyTranslator.stringOrObject(arg.other) + "." + GroovyTranslator.mapMethod(
                     arg.operator) + "(" + GroovyTranslator.stringOrObject(arg.value) + ")"
-        elif type(arg) is bool:
+        elif isinstance(arg, bool):
             return str(arg).lower()
-        elif type(arg) is long:
+        elif isinstance(arg, long):
             return str(arg) + "L"
-        elif type(arg) is float:
+        elif isinstance(arg, float):
             return str(arg) + "f"
+        elif isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0], str):  # bindings
+            return arg.keys()[0]
         else:
             return str(arg)
 

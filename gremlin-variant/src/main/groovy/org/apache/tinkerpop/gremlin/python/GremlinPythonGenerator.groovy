@@ -76,16 +76,6 @@ under the License.
         pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
 globalTranslator = None
-
-class B(object):
-  def __init__(self, symbol, value="~empty"):
-    self.symbol = symbol
-    if value == "~empty":
-      self.value = inspect.currentframe().f_back.f_locals[symbol]
-    else:
-      self.value = value
-  def __repr__(self):
-    return self.symbol
 """).append("\n\n");
 
 //////////////////////////
@@ -99,10 +89,7 @@ class B(object):
     globalTranslator = translator
     self.remote_connection = remote_connection
   def __repr__(self):
-    if self.remote_connection is None:
-      return "graphtraversalsource[no connection, " + self.translator.traversal_script + "]"
-    else:
-      return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
+    return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
 """)
         GraphTraversalSource.getMethods()
                 .findAll { !it.name.equals("clone") }
@@ -149,9 +136,9 @@ class B(object):
   def __repr__(self):
     return self.translator.traversal_script
   def __getitem__(self,index):
-    if type(index) is int:
+    if isinstance(index,int):
       return self.range(index,index+1)
-    elif type(index) is slice:
+    elif isinstance(index,slice):
       return self.range(index.start,index.stop)
     else:
       raise TypeError("Index must be int or slice")
@@ -188,8 +175,8 @@ class B(object):
                         """  def ${method}(self, *args):
     self.translator.addStep(self, "${method}", *args)
     for arg in args:
-      if type(arg) is B:
-        self.bindings[arg.symbol] = arg.value
+      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
+        self.bindings.update(arg)
     return self
 """)
             }
