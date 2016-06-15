@@ -17,8 +17,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 from collections import OrderedDict
-import inspect
-
 statics = OrderedDict()
 
 

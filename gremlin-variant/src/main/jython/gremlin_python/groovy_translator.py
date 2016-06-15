@@ -79,6 +79,12 @@ class GroovyTranslator(Translator):
                 not (arg.startswith("T.")) and
                 not (len(arg) == 0)):
             return "\"" + arg + "\""
+        elif callable(arg):  # closures
+            lambdaString = arg().strip()
+            if lambdaString.startswith("{"):
+                return lambdaString
+            else:
+                return "{" + lambdaString + "}"
         elif isinstance(arg, P):
             if arg.other is None:
                 return "P." + GroovyTranslator.mapMethod(arg.operator) + "(" + GroovyTranslator.stringOrObject(

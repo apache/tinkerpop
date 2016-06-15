@@ -49,13 +49,4 @@ public interface Translator extends Cloneable {
 
     public Translator clone();
 
-    /// TODO: Below should be removed when ScriptXXXTraversal model is removed
-
-    public default void addSource(final String sourceName, final Object... arguments) {
-
-    }
-
-    public default void addStep(final String sourceName, final Object... arguments) {
-
-    }
 }
