@@ -107,7 +107,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
-            /*BranchTest.Traversals.class,
+            BranchTest.Traversals.class,
             ChooseTest.Traversals.class,
             OptionalTest.Traversals.class,
             LocalTest.Traversals.class,
@@ -175,7 +175,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // compliance
             CoreTraversalTest.class,
-            TraversalInterruptionTest.class,*/
+            TraversalInterruptionTest.class,
 
             // creations
             TranslationStrategyProcessTest.class,
