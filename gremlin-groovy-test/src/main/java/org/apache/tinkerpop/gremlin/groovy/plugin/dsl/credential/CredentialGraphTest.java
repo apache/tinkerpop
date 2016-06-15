@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
@@ -37,6 +40,7 @@ import static org.junit.Assert.assertNull;
 public class CredentialGraphTest extends AbstractGremlinTest {
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldCreateUser() {
         final Vertex v = credentials(graph).createUser("stephen", "secret");
         assertEquals("stephen", v.value("username"));
@@ -46,6 +50,8 @@ public class CredentialGraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     public void shouldRemoveUser() {
         MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("stephen", "secret");
@@ -56,6 +62,7 @@ public class CredentialGraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotRemoveUser() {
         MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("stephen", "secret");
@@ -66,6 +73,7 @@ public class CredentialGraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldFindUser() {
         MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("marko", "secret");
@@ -77,6 +85,7 @@ public class CredentialGraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldNotFindUser() {
         MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("marko", "secret");
@@ -88,6 +97,7 @@ public class CredentialGraphTest extends AbstractGremlinTest {
     }
 
     @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldCountUsers() {
         MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("marko", "secret");
@@ -99,6 +109,7 @@ public class CredentialGraphTest extends AbstractGremlinTest {
     }
 
     @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldThrowIfFindingMultipleUsers() {
         MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("stephen", "secret");
