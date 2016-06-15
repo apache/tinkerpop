@@ -131,7 +131,7 @@ public final class GryoWriter implements GraphWriter {
     public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
         final Output output = new Output(outputStream);
         writeHeader(output);
-        kryo.writeObject(output, DetachedFactory.detach(p));
+        kryo.writeObject(output, DetachedFactory.detach(p, true));
         output.flush();
     }
 
