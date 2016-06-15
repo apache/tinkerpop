@@ -99,7 +99,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public GraphTraversalSource withTranslator(final Translator translator) {
-        return this.withStrategies(new TranslationStrategy(translator, __.class));
+        return this.withStrategies(new TranslationStrategy(translator, this.clone(), __.class));
     }
 
     @Override

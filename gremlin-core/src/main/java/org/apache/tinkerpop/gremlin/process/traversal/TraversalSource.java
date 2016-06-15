@@ -121,7 +121,7 @@ public interface TraversalSource extends Cloneable {
     }
 
     public default TraversalSource withTranslator(final Translator translator) {
-        return this.withStrategies(new TranslationStrategy(translator, null));
+        return this.withStrategies(new TranslationStrategy(translator, this.clone(), null));
     }
 
     /**
