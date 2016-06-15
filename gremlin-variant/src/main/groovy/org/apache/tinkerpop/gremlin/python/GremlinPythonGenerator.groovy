@@ -71,16 +71,12 @@ under the License.
         final Map<String, String> invertedMethodMap = [:].withDefault { it };
         methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
 
-        final List<String> NO_QUOTE = [VertexProperty.Cardinality, Column, Direction, Operator, Order, P, Pop, Scope, SackFunctions.Barrier, T,
-                                       ReadOnlyStrategy, Computer]
-                .collect { it.getSimpleName() }.unique().sort { a, b -> a <=> b };
-        final Map<String, String> enumMap = [Cardinality: "VertexProperty.Cardinality", Barrier: "SackFunctions.Barrier"]
-                .withDefault { it }
-
         pythonClass.append("from collections import OrderedDict\n")
         pythonClass.append("import inspect\n\n")
         pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
+globalTranslator = None
+
 class B(object):
   def __init__(self, symbol, value="~empty"):
     self.symbol = symbol
@@ -90,31 +86,6 @@ class B(object):
       self.value = value
   def __repr__(self):
     return self.symbol
-
-class Helper(object):
-  @staticmethod
-  def stringOrObject(arg):
-    if (type(arg) is str and
-""")
-        NO_QUOTE.forEach { pythonClass.append("      not(arg.startswith(\"${enumMap[it]}.\")) and\n") }
-        pythonClass.append("      not(len(arg)==0)):\n")
-        pythonClass.append("""         return "\\"" + arg + "\\""
-    elif type(arg) is bool:
-      return str(arg).lower()
-    elif type(arg) is long:
-      return str(arg) + "L"
-    elif type(arg) is float:
-      return str(arg) + "f"
-    else:
-      return str(arg)
-  @staticmethod
-  def stringify(*args):
-    if len(args) == 0:
-      return ""
-    elif len(args) == 1:
-      return Helper.stringOrObject(args[0])
-    else:
-      return ", ".join(Helper.stringOrObject(i) for i in args)
 """).append("\n\n");
 
 //////////////////////////
@@ -122,16 +93,19 @@ class Helper(object):
 //////////////////////////
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
-  def __init__(self, traversal_source_string, remote_connection=None):
-    self.traversal_source_string = traversal_source_string
+  def __init__(self, translator, remote_connection=None):
+    global globalTranslator
+    self.translator = translator
+    globalTranslator = translator
     self.remote_connection = remote_connection
   def __repr__(self):
     if self.remote_connection is None:
-      return "graphtraversalsource[no connection, " + self.traversal_source_string + "]"
+      return "graphtraversalsource[no connection, " + self.translator.traversal_script + "]"
     else:
-      return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.traversal_source_string + "]"
+      return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
 """)
         GraphTraversalSource.getMethods()
+                .findAll { !it.name.equals("clone") }
                 .collect { it.name }
                 .unique()
                 .sort { a, b -> a <=> b }
@@ -145,12 +119,14 @@ class Helper(object):
                 if (Traversal.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    return PythonGraphTraversal(self.traversal_source_string + ".${method}(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addStep(self, "${method}", *args)
+    return PythonGraphTraversal(self.translator, self.remote_connection)
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".${method}(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "${method}", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
 """)
                 }
             }
@@ -162,14 +138,14 @@ class Helper(object):
 ////////////////////
         pythonClass.append(
                 """class PythonGraphTraversal(object):
-  def __init__(self, traversal_string, remote_connection=None):
-    self.traversal_string = traversal_string
+  def __init__(self, translator, remote_connection=None):
+    self.translator = translator
     self.remote_connection = remote_connection
     self.results = None
     self.last_traverser = None
     self.bindings = {}
   def __repr__(self):
-    return self.traversal_string
+    return self.translator.traversal_script
   def __getitem__(self,index):
     if type(index) is int:
       return self.range(index,index+1)
@@ -185,7 +161,7 @@ class Helper(object):
     return list(iter(self))
   def next(self):
      if self.results is None:
-        self.results = self.remote_connection.submit(self.traversal_string, self.bindings)
+        self.results = self.remote_connection.submit(self.translator.traversal_script, self.bindings)
      if self.last_traverser is None:
          self.last_traverser = self.results.next()
      object = self.last_traverser.object
@@ -195,6 +171,7 @@ class Helper(object):
      return object
 """)
         GraphTraversal.getMethods()
+                .findAll { !it.name.equals("clone") }
                 .collect { methodMap[it.name] }
                 .unique()
                 .sort { a, b -> a <=> b }
@@ -205,7 +182,7 @@ class Helper(object):
             if (null != returnType && Traversal.isAssignableFrom(returnType)) {
                 pythonClass.append(
                         """  def ${method}(self, *args):
-    self.traversal_string = self.traversal_string + ".${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "${method}", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
@@ -228,14 +205,14 @@ class Helper(object):
             pythonClass.append(
                     """  @staticmethod
   def ${method}(*args):
-    return PythonGraphTraversal("__").${method}(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).${method}(*args)
 """)
         };
         pythonClass.append("\n\n")
 
         __.class.getMethods()
                 .findAll { Traversal.class.isAssignableFrom(it.getReturnType()) }
-                .findAll { !it.name.equals("__") }
+                .findAll { !it.name.equals("__") && !it.name.equals("clone") }
                 .collect { methodMap[it.name] }
                 .unique()
                 .sort { a, b -> a <=> b }
@@ -296,14 +273,14 @@ class Helper(object):
         //////////////
 
         pythonClass.append("""class P(object):
-   def __init__(self, pString):
-      self.pString = pString
-   def __repr__(self):
-      return self.pString
+   def __init__(self, operator, value, other=None):
+      self.operator = operator
+      self.value = value
+      self.other = other
 """)
         P.getMethods()
                 .findAll { P.class.isAssignableFrom(it.returnType) }
-                .findAll { !it.name.equals("or") && !it.name.equals("and") }
+                .findAll { !it.name.equals("or") && !it.name.equals("and") && !it.name.equals("clone") }
                 .collect { methodMap[it.name] }
                 .unique()
                 .sort { a, b -> a <=> b }
@@ -311,16 +288,17 @@ class Helper(object):
             pythonClass.append(
                     """   @staticmethod
    def ${method}(*args):
-      return P("P.${invertedMethodMap[method]}(" + Helper.stringify(*args) + ")")
+      return P("${invertedMethodMap[method]}", *args)
 """)
         };
         pythonClass.append("""   def _and(self, arg):
-      return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
+      return P("_and", arg, self)
    def _or(self, arg):
-      return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
+      return P("_or", arg, self)
 """)
         pythonClass.append("\n")
         P.class.getMethods()
+                .findAll { !it.name.equals("clone") }
                 .findAll { P.class.isAssignableFrom(it.getReturnType()) }
                 .collect { methodMap[it.name] }
                 .unique()

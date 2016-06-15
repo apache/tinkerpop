@@ -22,6 +22,8 @@ import inspect
 statics = OrderedDict()
 
 
+globalTranslator = None
+
 class B(object):
   def __init__(self, symbol, value="~empty"):
     self.symbol = symbol
@@ -32,86 +34,65 @@ class B(object):
   def __repr__(self):
     return self.symbol
 
-class Helper(object):
-  @staticmethod
-  def stringOrObject(arg):
-    if (type(arg) is str and
-      not(arg.startswith("SackFunctions.Barrier.")) and
-      not(arg.startswith("VertexProperty.Cardinality.")) and
-      not(arg.startswith("Column.")) and
-      not(arg.startswith("Computer.")) and
-      not(arg.startswith("Direction.")) and
-      not(arg.startswith("Operator.")) and
-      not(arg.startswith("Order.")) and
-      not(arg.startswith("P.")) and
-      not(arg.startswith("Pop.")) and
-      not(arg.startswith("ReadOnlyStrategy.")) and
-      not(arg.startswith("Scope.")) and
-      not(arg.startswith("T.")) and
-      not(len(arg)==0)):
-         return "\"" + arg + "\""
-    elif type(arg) is bool:
-      return str(arg).lower()
-    elif type(arg) is long:
-      return str(arg) + "L"
-    elif type(arg) is float:
-      return str(arg) + "f"
-    else:
-      return str(arg)
-  @staticmethod
-  def stringify(*args):
-    if len(args) == 0:
-      return ""
-    elif len(args) == 1:
-      return Helper.stringOrObject(args[0])
-    else:
-      return ", ".join(Helper.stringOrObject(i) for i in args)
-
 
 class PythonGraphTraversalSource(object):
-  def __init__(self, traversal_source_string, remote_connection=None):
-    self.traversal_source_string = traversal_source_string
+  def __init__(self, translator, remote_connection=None):
+    global globalTranslator
+    self.translator = translator
+    globalTranslator = translator
     self.remote_connection = remote_connection
   def __repr__(self):
     if self.remote_connection is None:
-      return "graphtraversalsource[no connection, " + self.traversal_source_string + "]"
+      return "graphtraversalsource[no connection, " + self.translator.traversal_script + "]"
     else:
-      return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.traversal_source_string + "]"
+      return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
   def E(self, *args):
-    return PythonGraphTraversal(self.traversal_source_string + ".E(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addStep(self, "E", *args)
+    return PythonGraphTraversal(self.translator, self.remote_connection)
   def V(self, *args):
-    return PythonGraphTraversal(self.traversal_source_string + ".V(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addStep(self, "V", *args)
+    return PythonGraphTraversal(self.translator, self.remote_connection)
   def addV(self, *args):
-    return PythonGraphTraversal(self.traversal_source_string + ".addV(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addStep(self, "addV", *args)
+    return PythonGraphTraversal(self.translator, self.remote_connection)
   def inject(self, *args):
-    return PythonGraphTraversal(self.traversal_source_string + ".inject(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addStep(self, "inject", *args)
+    return PythonGraphTraversal(self.translator, self.remote_connection)
   def withBulk(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withBulk(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withBulk", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withComputer(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withComputer(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withComputer", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withPath(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withPath(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withPath", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withSack(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withSack(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withSack", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withSideEffect(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withSideEffect(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withSideEffect", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withStrategies(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withStrategies(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withStrategies", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withTranslator(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withTranslator(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withTranslator", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
   def withoutStrategies(self, *args):
-    return PythonGraphTraversalSource(self.traversal_source_string + ".withoutStrategies(" + Helper.stringify(*args) + ")", self.remote_connection)
+    self.translator.addSource(self, "withoutStrategies", *args)
+    return PythonGraphTraversalSource(self.translator, self.remote_connection)
 
 
 class PythonGraphTraversal(object):
-  def __init__(self, traversal_string, remote_connection=None):
-    self.traversal_string = traversal_string
+  def __init__(self, translator, remote_connection=None):
+    self.translator = translator
     self.remote_connection = remote_connection
     self.results = None
     self.last_traverser = None
     self.bindings = {}
   def __repr__(self):
-    return self.traversal_string
+    return self.translator.traversal_script
   def __getitem__(self,index):
     if type(index) is int:
       return self.range(index,index+1)
@@ -127,7 +108,7 @@ class PythonGraphTraversal(object):
     return list(iter(self))
   def next(self):
      if self.results is None:
-        self.results = self.remote_connection.submit(self.traversal_string, self.bindings)
+        self.results = self.remote_connection.submit(self.translator.traversal_script, self.bindings)
      if self.last_traverser is None:
          self.last_traverser = self.results.next()
      object = self.last_traverser.object
@@ -136,601 +117,601 @@ class PythonGraphTraversal(object):
          self.last_traverser = None
      return object
   def V(self, *args):
-    self.traversal_string = self.traversal_string + ".V(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "V", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _and(self, *args):
-    self.traversal_string = self.traversal_string + ".and(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_and", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _as(self, *args):
-    self.traversal_string = self.traversal_string + ".as(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_as", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _from(self, *args):
-    self.traversal_string = self.traversal_string + ".from(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_from", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _in(self, *args):
-    self.traversal_string = self.traversal_string + ".in(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_in", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _is(self, *args):
-    self.traversal_string = self.traversal_string + ".is(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_is", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _not(self, *args):
-    self.traversal_string = self.traversal_string + ".not(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_not", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def _or(self, *args):
-    self.traversal_string = self.traversal_string + ".or(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "_or", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def addE(self, *args):
-    self.traversal_string = self.traversal_string + ".addE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "addE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def addInE(self, *args):
-    self.traversal_string = self.traversal_string + ".addInE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "addInE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def addOutE(self, *args):
-    self.traversal_string = self.traversal_string + ".addOutE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "addOutE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def addV(self, *args):
-    self.traversal_string = self.traversal_string + ".addV(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "addV", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def aggregate(self, *args):
-    self.traversal_string = self.traversal_string + ".aggregate(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "aggregate", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def asAdmin(self, *args):
-    self.traversal_string = self.traversal_string + ".asAdmin(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "asAdmin", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def barrier(self, *args):
-    self.traversal_string = self.traversal_string + ".barrier(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "barrier", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def both(self, *args):
-    self.traversal_string = self.traversal_string + ".both(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "both", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def bothE(self, *args):
-    self.traversal_string = self.traversal_string + ".bothE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "bothE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def bothV(self, *args):
-    self.traversal_string = self.traversal_string + ".bothV(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "bothV", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def branch(self, *args):
-    self.traversal_string = self.traversal_string + ".branch(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "branch", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def by(self, *args):
-    self.traversal_string = self.traversal_string + ".by(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "by", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def cap(self, *args):
-    self.traversal_string = self.traversal_string + ".cap(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "cap", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def choose(self, *args):
-    self.traversal_string = self.traversal_string + ".choose(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "choose", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def coalesce(self, *args):
-    self.traversal_string = self.traversal_string + ".coalesce(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "coalesce", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def coin(self, *args):
-    self.traversal_string = self.traversal_string + ".coin(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "coin", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def constant(self, *args):
-    self.traversal_string = self.traversal_string + ".constant(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "constant", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def count(self, *args):
-    self.traversal_string = self.traversal_string + ".count(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "count", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def cyclicPath(self, *args):
-    self.traversal_string = self.traversal_string + ".cyclicPath(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "cyclicPath", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def dedup(self, *args):
-    self.traversal_string = self.traversal_string + ".dedup(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "dedup", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def drop(self, *args):
-    self.traversal_string = self.traversal_string + ".drop(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "drop", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def emit(self, *args):
-    self.traversal_string = self.traversal_string + ".emit(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "emit", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def filter(self, *args):
-    self.traversal_string = self.traversal_string + ".filter(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "filter", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def flatMap(self, *args):
-    self.traversal_string = self.traversal_string + ".flatMap(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "flatMap", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def fold(self, *args):
-    self.traversal_string = self.traversal_string + ".fold(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "fold", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def group(self, *args):
-    self.traversal_string = self.traversal_string + ".group(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "group", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def groupCount(self, *args):
-    self.traversal_string = self.traversal_string + ".groupCount(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "groupCount", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def groupV3d0(self, *args):
-    self.traversal_string = self.traversal_string + ".groupV3d0(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "groupV3d0", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def has(self, *args):
-    self.traversal_string = self.traversal_string + ".has(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "has", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def hasId(self, *args):
-    self.traversal_string = self.traversal_string + ".hasId(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "hasId", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def hasKey(self, *args):
-    self.traversal_string = self.traversal_string + ".hasKey(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "hasKey", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def hasLabel(self, *args):
-    self.traversal_string = self.traversal_string + ".hasLabel(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "hasLabel", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def hasNot(self, *args):
-    self.traversal_string = self.traversal_string + ".hasNot(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "hasNot", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def hasValue(self, *args):
-    self.traversal_string = self.traversal_string + ".hasValue(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "hasValue", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def id(self, *args):
-    self.traversal_string = self.traversal_string + ".id(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "id", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def identity(self, *args):
-    self.traversal_string = self.traversal_string + ".identity(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "identity", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def inE(self, *args):
-    self.traversal_string = self.traversal_string + ".inE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "inE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def inV(self, *args):
-    self.traversal_string = self.traversal_string + ".inV(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "inV", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def inject(self, *args):
-    self.traversal_string = self.traversal_string + ".inject(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "inject", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def iterate(self, *args):
-    self.traversal_string = self.traversal_string + ".iterate(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "iterate", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def key(self, *args):
-    self.traversal_string = self.traversal_string + ".key(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "key", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def label(self, *args):
-    self.traversal_string = self.traversal_string + ".label(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "label", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def limit(self, *args):
-    self.traversal_string = self.traversal_string + ".limit(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "limit", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def local(self, *args):
-    self.traversal_string = self.traversal_string + ".local(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "local", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def loops(self, *args):
-    self.traversal_string = self.traversal_string + ".loops(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "loops", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def map(self, *args):
-    self.traversal_string = self.traversal_string + ".map(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "map", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def mapKeys(self, *args):
-    self.traversal_string = self.traversal_string + ".mapKeys(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "mapKeys", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def mapValues(self, *args):
-    self.traversal_string = self.traversal_string + ".mapValues(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "mapValues", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def match(self, *args):
-    self.traversal_string = self.traversal_string + ".match(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "match", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def max(self, *args):
-    self.traversal_string = self.traversal_string + ".max(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "max", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def mean(self, *args):
-    self.traversal_string = self.traversal_string + ".mean(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "mean", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def min(self, *args):
-    self.traversal_string = self.traversal_string + ".min(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "min", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def option(self, *args):
-    self.traversal_string = self.traversal_string + ".option(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "option", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def optional(self, *args):
-    self.traversal_string = self.traversal_string + ".optional(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "optional", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def order(self, *args):
-    self.traversal_string = self.traversal_string + ".order(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "order", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def otherV(self, *args):
-    self.traversal_string = self.traversal_string + ".otherV(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "otherV", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def out(self, *args):
-    self.traversal_string = self.traversal_string + ".out(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "out", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def outE(self, *args):
-    self.traversal_string = self.traversal_string + ".outE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "outE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def outV(self, *args):
-    self.traversal_string = self.traversal_string + ".outV(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "outV", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def pageRank(self, *args):
-    self.traversal_string = self.traversal_string + ".pageRank(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "pageRank", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def path(self, *args):
-    self.traversal_string = self.traversal_string + ".path(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "path", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def peerPressure(self, *args):
-    self.traversal_string = self.traversal_string + ".peerPressure(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "peerPressure", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def profile(self, *args):
-    self.traversal_string = self.traversal_string + ".profile(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "profile", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def program(self, *args):
-    self.traversal_string = self.traversal_string + ".program(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "program", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def project(self, *args):
-    self.traversal_string = self.traversal_string + ".project(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "project", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def properties(self, *args):
-    self.traversal_string = self.traversal_string + ".properties(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "properties", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def property(self, *args):
-    self.traversal_string = self.traversal_string + ".property(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "property", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def propertyMap(self, *args):
-    self.traversal_string = self.traversal_string + ".propertyMap(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "propertyMap", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def range(self, *args):
-    self.traversal_string = self.traversal_string + ".range(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "range", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def repeat(self, *args):
-    self.traversal_string = self.traversal_string + ".repeat(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "repeat", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def sack(self, *args):
-    self.traversal_string = self.traversal_string + ".sack(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "sack", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def sample(self, *args):
-    self.traversal_string = self.traversal_string + ".sample(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "sample", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def select(self, *args):
-    self.traversal_string = self.traversal_string + ".select(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "select", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def sideEffect(self, *args):
-    self.traversal_string = self.traversal_string + ".sideEffect(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "sideEffect", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def simplePath(self, *args):
-    self.traversal_string = self.traversal_string + ".simplePath(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "simplePath", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def store(self, *args):
-    self.traversal_string = self.traversal_string + ".store(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "store", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def subgraph(self, *args):
-    self.traversal_string = self.traversal_string + ".subgraph(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "subgraph", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def sum(self, *args):
-    self.traversal_string = self.traversal_string + ".sum(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "sum", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def tail(self, *args):
-    self.traversal_string = self.traversal_string + ".tail(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "tail", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def timeLimit(self, *args):
-    self.traversal_string = self.traversal_string + ".timeLimit(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "timeLimit", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def times(self, *args):
-    self.traversal_string = self.traversal_string + ".times(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "times", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def to(self, *args):
-    self.traversal_string = self.traversal_string + ".to(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "to", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def toE(self, *args):
-    self.traversal_string = self.traversal_string + ".toE(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "toE", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def toV(self, *args):
-    self.traversal_string = self.traversal_string + ".toV(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "toV", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def tree(self, *args):
-    self.traversal_string = self.traversal_string + ".tree(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "tree", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def unfold(self, *args):
-    self.traversal_string = self.traversal_string + ".unfold(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "unfold", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def union(self, *args):
-    self.traversal_string = self.traversal_string + ".union(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "union", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def until(self, *args):
-    self.traversal_string = self.traversal_string + ".until(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "until", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def value(self, *args):
-    self.traversal_string = self.traversal_string + ".value(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "value", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def valueMap(self, *args):
-    self.traversal_string = self.traversal_string + ".valueMap(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "valueMap", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def values(self, *args):
-    self.traversal_string = self.traversal_string + ".values(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "values", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
     return self
   def where(self, *args):
-    self.traversal_string = self.traversal_string + ".where(" + Helper.stringify(*args) + ")"
+    self.translator.addStep(self, "where", *args)
     for arg in args:
       if type(arg) is B:
         self.bindings[arg.symbol] = arg.value
@@ -740,283 +721,283 @@ class PythonGraphTraversal(object):
 class __(object):
   @staticmethod
   def V(*args):
-    return PythonGraphTraversal("__").V(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).V(*args)
   @staticmethod
   def __(*args):
-    return PythonGraphTraversal("__").__(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).__(*args)
   @staticmethod
   def _and(*args):
-    return PythonGraphTraversal("__")._and(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._and(*args)
   @staticmethod
   def _as(*args):
-    return PythonGraphTraversal("__")._as(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._as(*args)
   @staticmethod
   def _in(*args):
-    return PythonGraphTraversal("__")._in(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._in(*args)
   @staticmethod
   def _is(*args):
-    return PythonGraphTraversal("__")._is(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._is(*args)
   @staticmethod
   def _not(*args):
-    return PythonGraphTraversal("__")._not(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._not(*args)
   @staticmethod
   def _or(*args):
-    return PythonGraphTraversal("__")._or(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._or(*args)
   @staticmethod
   def addE(*args):
-    return PythonGraphTraversal("__").addE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addE(*args)
   @staticmethod
   def addInE(*args):
-    return PythonGraphTraversal("__").addInE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addInE(*args)
   @staticmethod
   def addOutE(*args):
-    return PythonGraphTraversal("__").addOutE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addOutE(*args)
   @staticmethod
   def addV(*args):
-    return PythonGraphTraversal("__").addV(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addV(*args)
   @staticmethod
   def aggregate(*args):
-    return PythonGraphTraversal("__").aggregate(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).aggregate(*args)
   @staticmethod
   def barrier(*args):
-    return PythonGraphTraversal("__").barrier(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).barrier(*args)
   @staticmethod
   def both(*args):
-    return PythonGraphTraversal("__").both(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).both(*args)
   @staticmethod
   def bothE(*args):
-    return PythonGraphTraversal("__").bothE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).bothE(*args)
   @staticmethod
   def bothV(*args):
-    return PythonGraphTraversal("__").bothV(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).bothV(*args)
   @staticmethod
   def branch(*args):
-    return PythonGraphTraversal("__").branch(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).branch(*args)
   @staticmethod
   def cap(*args):
-    return PythonGraphTraversal("__").cap(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).cap(*args)
   @staticmethod
   def choose(*args):
-    return PythonGraphTraversal("__").choose(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).choose(*args)
   @staticmethod
   def coalesce(*args):
-    return PythonGraphTraversal("__").coalesce(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).coalesce(*args)
   @staticmethod
   def coin(*args):
-    return PythonGraphTraversal("__").coin(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).coin(*args)
   @staticmethod
   def constant(*args):
-    return PythonGraphTraversal("__").constant(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).constant(*args)
   @staticmethod
   def count(*args):
-    return PythonGraphTraversal("__").count(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).count(*args)
   @staticmethod
   def cyclicPath(*args):
-    return PythonGraphTraversal("__").cyclicPath(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).cyclicPath(*args)
   @staticmethod
   def dedup(*args):
-    return PythonGraphTraversal("__").dedup(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).dedup(*args)
   @staticmethod
   def drop(*args):
-    return PythonGraphTraversal("__").drop(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).drop(*args)
   @staticmethod
   def emit(*args):
-    return PythonGraphTraversal("__").emit(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).emit(*args)
   @staticmethod
   def filter(*args):
-    return PythonGraphTraversal("__").filter(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).filter(*args)
   @staticmethod
   def flatMap(*args):
-    return PythonGraphTraversal("__").flatMap(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).flatMap(*args)
   @staticmethod
   def fold(*args):
-    return PythonGraphTraversal("__").fold(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).fold(*args)
   @staticmethod
   def group(*args):
-    return PythonGraphTraversal("__").group(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).group(*args)
   @staticmethod
   def groupCount(*args):
-    return PythonGraphTraversal("__").groupCount(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).groupCount(*args)
   @staticmethod
   def groupV3d0(*args):
-    return PythonGraphTraversal("__").groupV3d0(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).groupV3d0(*args)
   @staticmethod
   def has(*args):
-    return PythonGraphTraversal("__").has(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).has(*args)
   @staticmethod
   def hasId(*args):
-    return PythonGraphTraversal("__").hasId(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasId(*args)
   @staticmethod
   def hasKey(*args):
-    return PythonGraphTraversal("__").hasKey(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasKey(*args)
   @staticmethod
   def hasLabel(*args):
-    return PythonGraphTraversal("__").hasLabel(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasLabel(*args)
   @staticmethod
   def hasNot(*args):
-    return PythonGraphTraversal("__").hasNot(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasNot(*args)
   @staticmethod
   def hasValue(*args):
-    return PythonGraphTraversal("__").hasValue(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasValue(*args)
   @staticmethod
   def id(*args):
-    return PythonGraphTraversal("__").id(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).id(*args)
   @staticmethod
   def identity(*args):
-    return PythonGraphTraversal("__").identity(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).identity(*args)
   @staticmethod
   def inE(*args):
-    return PythonGraphTraversal("__").inE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).inE(*args)
   @staticmethod
   def inV(*args):
-    return PythonGraphTraversal("__").inV(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).inV(*args)
   @staticmethod
   def inject(*args):
-    return PythonGraphTraversal("__").inject(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).inject(*args)
   @staticmethod
   def key(*args):
-    return PythonGraphTraversal("__").key(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).key(*args)
   @staticmethod
   def label(*args):
-    return PythonGraphTraversal("__").label(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).label(*args)
   @staticmethod
   def limit(*args):
-    return PythonGraphTraversal("__").limit(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).limit(*args)
   @staticmethod
   def local(*args):
-    return PythonGraphTraversal("__").local(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).local(*args)
   @staticmethod
   def loops(*args):
-    return PythonGraphTraversal("__").loops(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).loops(*args)
   @staticmethod
   def map(*args):
-    return PythonGraphTraversal("__").map(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).map(*args)
   @staticmethod
   def mapKeys(*args):
-    return PythonGraphTraversal("__").mapKeys(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).mapKeys(*args)
   @staticmethod
   def mapValues(*args):
-    return PythonGraphTraversal("__").mapValues(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).mapValues(*args)
   @staticmethod
   def match(*args):
-    return PythonGraphTraversal("__").match(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).match(*args)
   @staticmethod
   def max(*args):
-    return PythonGraphTraversal("__").max(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).max(*args)
   @staticmethod
   def mean(*args):
-    return PythonGraphTraversal("__").mean(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).mean(*args)
   @staticmethod
   def min(*args):
-    return PythonGraphTraversal("__").min(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).min(*args)
   @staticmethod
   def optional(*args):
-    return PythonGraphTraversal("__").optional(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).optional(*args)
   @staticmethod
   def order(*args):
-    return PythonGraphTraversal("__").order(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).order(*args)
   @staticmethod
   def otherV(*args):
-    return PythonGraphTraversal("__").otherV(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).otherV(*args)
   @staticmethod
   def out(*args):
-    return PythonGraphTraversal("__").out(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).out(*args)
   @staticmethod
   def outE(*args):
-    return PythonGraphTraversal("__").outE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).outE(*args)
   @staticmethod
   def outV(*args):
-    return PythonGraphTraversal("__").outV(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).outV(*args)
   @staticmethod
   def path(*args):
-    return PythonGraphTraversal("__").path(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).path(*args)
   @staticmethod
   def project(*args):
-    return PythonGraphTraversal("__").project(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).project(*args)
   @staticmethod
   def properties(*args):
-    return PythonGraphTraversal("__").properties(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).properties(*args)
   @staticmethod
   def property(*args):
-    return PythonGraphTraversal("__").property(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).property(*args)
   @staticmethod
   def propertyMap(*args):
-    return PythonGraphTraversal("__").propertyMap(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).propertyMap(*args)
   @staticmethod
   def range(*args):
-    return PythonGraphTraversal("__").range(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).range(*args)
   @staticmethod
   def repeat(*args):
-    return PythonGraphTraversal("__").repeat(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).repeat(*args)
   @staticmethod
   def sack(*args):
-    return PythonGraphTraversal("__").sack(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sack(*args)
   @staticmethod
   def sample(*args):
-    return PythonGraphTraversal("__").sample(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sample(*args)
   @staticmethod
   def select(*args):
-    return PythonGraphTraversal("__").select(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).select(*args)
   @staticmethod
   def sideEffect(*args):
-    return PythonGraphTraversal("__").sideEffect(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sideEffect(*args)
   @staticmethod
   def simplePath(*args):
-    return PythonGraphTraversal("__").simplePath(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).simplePath(*args)
   @staticmethod
   def start(*args):
-    return PythonGraphTraversal("__").start(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).start(*args)
   @staticmethod
   def store(*args):
-    return PythonGraphTraversal("__").store(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).store(*args)
   @staticmethod
   def subgraph(*args):
-    return PythonGraphTraversal("__").subgraph(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).subgraph(*args)
   @staticmethod
   def sum(*args):
-    return PythonGraphTraversal("__").sum(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sum(*args)
   @staticmethod
   def tail(*args):
-    return PythonGraphTraversal("__").tail(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).tail(*args)
   @staticmethod
   def timeLimit(*args):
-    return PythonGraphTraversal("__").timeLimit(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).timeLimit(*args)
   @staticmethod
   def times(*args):
-    return PythonGraphTraversal("__").times(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).times(*args)
   @staticmethod
   def to(*args):
-    return PythonGraphTraversal("__").to(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).to(*args)
   @staticmethod
   def toE(*args):
-    return PythonGraphTraversal("__").toE(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).toE(*args)
   @staticmethod
   def toV(*args):
-    return PythonGraphTraversal("__").toV(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).toV(*args)
   @staticmethod
   def tree(*args):
-    return PythonGraphTraversal("__").tree(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).tree(*args)
   @staticmethod
   def unfold(*args):
-    return PythonGraphTraversal("__").unfold(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).unfold(*args)
   @staticmethod
   def union(*args):
-    return PythonGraphTraversal("__").union(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).union(*args)
   @staticmethod
   def until(*args):
-    return PythonGraphTraversal("__").until(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).until(*args)
   @staticmethod
   def value(*args):
-    return PythonGraphTraversal("__").value(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).value(*args)
   @staticmethod
   def valueMap(*args):
-    return PythonGraphTraversal("__").valueMap(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).valueMap(*args)
   @staticmethod
   def values(*args):
-    return PythonGraphTraversal("__").values(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).values(*args)
   @staticmethod
   def where(*args):
-    return PythonGraphTraversal("__").where(*args)
+    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).where(*args)
 
 
 def V(*args):
@@ -1453,59 +1434,56 @@ statics['valueDecr'] = Order.valueDecr
 statics['shuffle'] = Order.shuffle
 
 class P(object):
-   def __init__(self, pString):
-      self.pString = pString
-   def __repr__(self):
-      return self.pString
+   def __init__(self, operator, value, other=None):
+      self.operator = operator
+      self.value = value
+      self.other = other
    @staticmethod
    def _not(*args):
-      return P("P.not(" + Helper.stringify(*args) + ")")
+      return P("not", *args)
    @staticmethod
    def between(*args):
-      return P("P.between(" + Helper.stringify(*args) + ")")
-   @staticmethod
-   def clone(*args):
-      return P("P.clone(" + Helper.stringify(*args) + ")")
+      return P("between", *args)
    @staticmethod
    def eq(*args):
-      return P("P.eq(" + Helper.stringify(*args) + ")")
+      return P("eq", *args)
    @staticmethod
    def gt(*args):
-      return P("P.gt(" + Helper.stringify(*args) + ")")
+      return P("gt", *args)
    @staticmethod
    def gte(*args):
-      return P("P.gte(" + Helper.stringify(*args) + ")")
+      return P("gte", *args)
    @staticmethod
    def inside(*args):
-      return P("P.inside(" + Helper.stringify(*args) + ")")
+      return P("inside", *args)
    @staticmethod
    def lt(*args):
-      return P("P.lt(" + Helper.stringify(*args) + ")")
+      return P("lt", *args)
    @staticmethod
    def lte(*args):
-      return P("P.lte(" + Helper.stringify(*args) + ")")
+      return P("lte", *args)
    @staticmethod
    def negate(*args):
-      return P("P.negate(" + Helper.stringify(*args) + ")")
+      return P("negate", *args)
    @staticmethod
    def neq(*args):
-      return P("P.neq(" + Helper.stringify(*args) + ")")
+      return P("neq", *args)
    @staticmethod
    def outside(*args):
-      return P("P.outside(" + Helper.stringify(*args) + ")")
+      return P("outside", *args)
    @staticmethod
    def test(*args):
-      return P("P.test(" + Helper.stringify(*args) + ")")
+      return P("test", *args)
    @staticmethod
    def within(*args):
-      return P("P.within(" + Helper.stringify(*args) + ")")
+      return P("within", *args)
    @staticmethod
    def without(*args):
-      return P("P.without(" + Helper.stringify(*args) + ")")
+      return P("without", *args)
    def _and(self, arg):
-      return P(self.pString + ".and(" + Helper.stringify(arg) + ")")
+      return P("_and", arg, self)
    def _or(self, arg):
-      return P(self.pString + ".or(" + Helper.stringify(arg) + ")")
+      return P("_or", arg, self)
 
 def _and(*args):
       return P._and(*args)
@@ -1523,10 +1501,6 @@ def between(*args):
       return P.between(*args)
 
 statics['between'] = between
-def clone(*args):
-      return P.clone(*args)
-
-statics['clone'] = clone
 def eq(*args):
       return P.eq(*args)
 

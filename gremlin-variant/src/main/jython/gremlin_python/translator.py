@@ -16,21 +16,25 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from gremlin_python import PythonGraphTraversal
-from gremlin_python import PythonGraphTraversalSource
-from gremlin_python import __
-from gremlin_python import statics
-from gremlin_python import B
-from gremlin_python import T
-from gremlin_python import Order
-from gremlin_python import Cardinality
-from gremlin_python import Column
-from gremlin_python import Direction
-from gremlin_python import Operator
-from gremlin_python import P
-from gremlin_python import Pop
-from gremlin_python import Scope
-from gremlin_python import Barrier
-from groovy_translator import GroovyTranslator
+from abc import abstractmethod
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+
+
+class Translator(object):
+    def __init__(self, alias, script_engine):
+        self.alias = alias
+        self.script_engine = script_engine
+        self.traversal_script = alias
+
+    @abstractmethod
+    def addStep(self, traversal, step_name, *args):
+        return
+
+    @abstractmethod
+    def addSource(self, traversal_source, source_name, *args):
+        return
+
+    @abstractmethod
+    def getAnonymousTraversalTranslator(self):
+        return Translator(self.alias, self.script_engine)

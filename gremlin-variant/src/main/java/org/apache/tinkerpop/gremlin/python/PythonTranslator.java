@@ -111,7 +111,7 @@ public final class PythonTranslator implements Translator {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
                 final Bindings jythonBindings = new SimpleBindings();
-                jythonBindings.put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(\"" + this.alias + "\", None)"));
+                jythonBindings.put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.alias + "\"))"));
                 jythonEngine.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
                 return jythonEngine.eval(traversal).toString();
             } catch (final ScriptException e) {

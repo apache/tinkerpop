@@ -49,6 +49,7 @@ public class PythonProvider extends VariantGraphProvider {
             jythonEngine.eval("sys.path.append('" + gremlinDriverPackageName + "')");
             jythonEngine.eval("from gremlin_python import *");
             jythonEngine.eval("from gremlin_python import __");
+            jythonEngine.eval("from groovy_translator import GroovyTranslator");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
