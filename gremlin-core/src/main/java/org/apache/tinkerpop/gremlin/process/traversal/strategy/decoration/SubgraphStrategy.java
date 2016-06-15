@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsVertex).collect(Collectors.toList()));
 
-            vertexStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, vertexCriterion.asAdmin().clone()), s, traversal));
+            applyCriterion(vertexStepsToInsertFilterAfter, traversal, vertexCriterion.asAdmin());
         }
 
         if (edgeCriterion != null) {
@@ -95,7 +96,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsEdge).collect(Collectors.toList()));
             edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsEdge).collect(Collectors.toList()));
 
-            edgeStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, edgeCriterion.asAdmin().clone()), s, traversal));
+            applyCriterion(edgeStepsToInsertFilterAfter, traversal, edgeCriterion.asAdmin());
         }
 
         // explode g.V().out() to g.V().outE().inV() only if there is an edge predicate otherwise
@@ -103,19 +104,19 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             if (null == edgeCriterion)
                 TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, vertexCriterion.asAdmin().clone()), s, traversal);
             else {
-                final VertexStep replacementVertexStep = new VertexStep(traversal, Edge.class, s.getDirection(), s.getEdgeLabels());
-                Step intermediateFilterStep = null;
-                if (s.getDirection() == Direction.BOTH)
-                    intermediateFilterStep = new EdgeOtherVertexStep(traversal);
-                else
-                    intermediateFilterStep = new EdgeVertexStep(traversal, s.getDirection().opposite());
+                final VertexStep someEStep = new VertexStep(traversal, Edge.class, s.getDirection(), s.getEdgeLabels());
+                final Step someVStep = (s.getDirection() == Direction.BOTH) ?
+                        new EdgeOtherVertexStep(traversal) : new EdgeVertexStep(traversal, s.getDirection().opposite());
 
-                TraversalHelper.replaceStep(s, replacementVertexStep, traversal);
-                TraversalHelper.insertAfterStep(intermediateFilterStep, replacementVertexStep, traversal);
-                TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, edgeCriterion.asAdmin().clone()), replacementVertexStep, traversal);
+                // if s was labelled then propagate those labels to the new step that will return the vertex
+                transferLabels(s, someVStep);
+
+                TraversalHelper.replaceStep(s, someEStep, traversal);
+                TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);
+                TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, edgeCriterion.asAdmin().clone()), someEStep, traversal);
 
                 if (vertexCriterion != null)
-                    TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, vertexCriterion.asAdmin().clone()), intermediateFilterStep, traversal);
+                    TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, vertexCriterion.asAdmin().clone()), someVStep, traversal);
             }
         });
     }
@@ -130,6 +131,21 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     public static Builder build() {
         return new Builder();
+    }
+
+    private void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
+                                final Traversal.Admin<? extends Element, ?> criterion) {
+        stepsToApplyCriterionAfter.forEach(s -> {
+            // re-assign the step label to the criterion because the label should apply seamlessly after the filter
+            final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
+            transferLabels(s, filter);
+            TraversalHelper.insertAfterStep(filter, s, traversal);
+        });
+    }
+
+    private static void transferLabels(final Step from, final Step to) {
+        from.getLabels().forEach(label -> to.addLabel((String) label));
+        to.getLabels().forEach(label -> from.removeLabel((String) label));
     }
 
     public final static class Builder {
