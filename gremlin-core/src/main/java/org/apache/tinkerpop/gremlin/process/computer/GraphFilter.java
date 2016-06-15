@@ -83,6 +83,17 @@ public final class GraphFilter implements Cloneable, Serializable {
     private Map<Direction, Map<String, Legal>> edgeLegality = new HashMap<>();
     private boolean allowNoEdges = false;
 
+    public GraphFilter() {
+        // no args constructor
+    }
+
+    public GraphFilter(final Computer computer) {
+        if (null != computer.getVertices())
+            this.setVertexFilter(computer.getVertices());
+        if (null != computer.getEdges())
+            this.setEdgeFilter(computer.getEdges());
+    }
+
     /**
      * Set the filter for selecting vertices from the source graph.
      * The vertex filter can only access the vertex, its properties, and its properties properties.

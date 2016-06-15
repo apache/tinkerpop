@@ -85,10 +85,26 @@ public class TraversalExplanation implements Serializable {
      */
     @Override
     public String toString() {
+        final int maxLineLength = 75;
         final String originalTraversal = "Original Traversal";
         final String finalTraversal = "Final Traversal";
-        final int maxStrategyColumnLength = this.strategyTraversals.stream().map(Pair::getValue0).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).orElse(15);
-        final int maxTraversalColumnLength = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream()).map(Pair::getValue1).map(Object::toString).map(String::length).max(Comparator.<Integer>naturalOrder()).get();
+        final int maxStrategyColumnLength = this.strategyTraversals.stream()
+                .map(Pair::getValue0)
+                .map(Object::toString)
+                .map(String::length)
+                .max(Comparator.naturalOrder())
+                .orElse(15);
+        final int newLineIndent = maxStrategyColumnLength + 10;
+        int maxTraversalColumnLength = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream())
+                .map(Pair::getValue1)
+                .map(Object::toString)
+                .map(s -> wordWrap(s, maxLineLength, newLineIndent))
+                .flatMap(s -> Stream.of(s.split("\n")))
+                .map(String::trim)
+                .map(s -> s.trim().startsWith("[") ? s : "   " + s) // 3 indent on new lines
+                .map(String::length)
+                .max(Comparator.naturalOrder())
+                .get();
 
         final StringBuilder builder = new StringBuilder("Traversal Explanation\n");
         for (int i = 0; i < (maxStrategyColumnLength + 7 + maxTraversalColumnLength); i++) {
@@ -99,7 +115,7 @@ public class TraversalExplanation implements Serializable {
         for (int i = 0; i < maxStrategyColumnLength - originalTraversal.length() + 7; i++) {
             builder.append(" ");
         }
-        builder.append(this.traversal.toString());
+        builder.append(wordWrap(this.traversal.toString(), maxLineLength, newLineIndent));
         builder.append("\n\n");
         for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pairs : this.strategyTraversals) {
             builder.append(pairs.getValue0());
@@ -111,15 +127,45 @@ public class TraversalExplanation implements Serializable {
             for (int i = 0; i < 3; i++) {
                 builder.append(" ");
             }
-            builder.append(pairs.getValue1().toString()).append("\n");
+            builder.append(wordWrap(pairs.getValue1().toString(), maxLineLength, newLineIndent)).append("\n");
         }
         builder.append("\n");
         builder.append(finalTraversal);
         for (int i = 0; i < maxStrategyColumnLength - finalTraversal.length() + 7; i++) {
             builder.append(" ");
         }
-        builder.append(this.strategyTraversals.size() > 0 ? this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1() : this.traversal);
+        builder.append(wordWrap((this.strategyTraversals.size() > 0 ?
+                this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1().toString() :
+                this.traversal.toString()), maxLineLength, newLineIndent));
         return builder.toString();
+    }
+
+    private String wordWrap(final String longString, final int maxLengthPerLine, final int newLineIndent) {
+        if (longString.length() <= maxLengthPerLine)
+            return longString;
+
+        StringBuilder builder = new StringBuilder();
+        int counter = 0;
+        for (final String shortString : longString.split(", ")) {
+            if (0 == counter)
+                builder.append(shortString).append(", ");
+            else if (counter < maxLengthPerLine)
+                builder.append(shortString).append(", ");
+            else {
+                builder.deleteCharAt(builder.length() - 1); // remove the " "
+                builder.append("\n");
+                for (int i = 0; i < newLineIndent; i++) {
+                    builder.append(" ");
+                }
+                builder.append(shortString).append(", ");
+                counter = 0;
+            }
+            counter = counter + shortString.length();
+        }
+
+        return builder
+                .delete(builder.length() - 2, builder.length()) // remove the final ", "
+                .toString();
     }
 
 }

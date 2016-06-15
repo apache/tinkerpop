@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.lambda.HaltedTraversersCountTraversal;
@@ -81,7 +82,7 @@ public final class PeerPressureVertexProgramStep extends VertexProgramStep imple
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.edgeTraversal.get(), this.clusterProperty, this.times);
+        return StringFactory.stepString(this, this.edgeTraversal.get(), this.clusterProperty, this.times, new GraphFilter(this.computer));
     }
 
     @Override

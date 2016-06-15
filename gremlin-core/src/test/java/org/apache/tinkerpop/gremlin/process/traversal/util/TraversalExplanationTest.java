@@ -22,11 +22,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
+import java.util.stream.Stream;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -40,6 +44,40 @@ public class TraversalExplanationTest {
         assertTrue(toString.contains("Traversal Explanation"));
         assertTrue(toString.contains("Original Traversal"));
         assertTrue(toString.contains("Final Traversal"));
+    }
+
+    @Test
+    public void shouldWordWrapCorrectly() {
+        GraphTraversal<?, ?> traversal = __.V().out().out();
+        String toString = traversal.explain().toString();
+        assertFalse(toString.contains("VertexStep(OUT,vertex),\n"));
+        //System.out.println(toString);
+        ///
+        traversal = __.V().out().out().out().out();
+        toString = traversal.explain().toString();
+        assertTrue(toString.contains("VertexStep(OUT,vertex),\n"));
+        //System.out.println(toString);
+        ///
+        for (int i = 0; i < 30; i++) {
+            traversal = __.V();
+            for (int j = 0; j < i; j++) {
+                traversal.out();
+            }
+            traversal.asAdmin().setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
+            toString = traversal.explain().toString();
+            if (i < 4)
+                assertFalse(toString.contains("VertexStep(OUT,vertex),\n"));
+            else {
+                assertFalse(Stream.of(toString.split("\n"))
+                        .filter(s -> s.startsWith(" "))
+                        .map(String::trim)
+                        .filter(s -> Character.isLowerCase(s.charAt(0)))
+                        .findAny()
+                        .isPresent()); // all indented word wraps should start with steps
+                assertTrue(toString.contains("VertexStep(OUT,vertex),\n"));
+            }
+            //System.out.println(toString);
+        }
     }
 
     @Test
@@ -64,8 +102,10 @@ public class TraversalExplanationTest {
         ///
         traversal = __.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone());
+        // System.out.println(traversal.explain());
         found = 0;
-        for (final String line : traversal.explain().toString().split("\n")) {
+        for (final String line : traversal.explain().toString().split("]\n")) { // need to split cause of word wrap
+            //System.out.println(line + "\n\n");
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(IN,vertex)"))
                 found++;
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(OUT,vertex)"))
