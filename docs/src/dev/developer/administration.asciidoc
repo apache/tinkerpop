@@ -53,9 +53,10 @@ reply to the private@tinkerpop.apache.org address only.
 B. If you are accepting, the next step is to register an iCLA with the Apache Software Foundation:
     1. Details of the iCLA and the forms are found through this link: http://www.apache.org/licenses/#clas.
 
-    2. The form (text or PDF version) provides instructions for its completion and return to the Secretary of the ASF.
+    2. The form (text or PDF version) provides instructions for its completion and return to the Secretary of the ASF
+       at secretary@apache.org.
 
-    3. When you transmit the completed iCLA, request to notify the Apache TinkerPop and choose a unique Apache id.
+    3. When you transmit the completed iCLA, request to notify Apache TinkerPop and choose a unique Apache id.
        Look to see if your preferred id is already taken at http://people.apache.org/committer-index.html   This will
        allow the Secretary to notify the PMC when your iCLA has been recorded.
 
