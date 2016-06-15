@@ -61,13 +61,14 @@ import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.NotSerializableException;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -133,8 +134,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
-                final FileSystem fs = FileSystem.get(this.giraphConfiguration);
-                this.loadJars(fs);
+                this.loadJars(giraphConfiguration);
                 ToolRunner.run(this, new String[]{});
             } catch (final Exception e) {
                 //e.printStackTrace();
@@ -247,36 +247,25 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         return this.giraphConfiguration;
     }
 
-    private void loadJars(final FileSystem fs) {
-        final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
-        if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
-            final String hadoopGremlinLibsLocal = null == System.getProperty(Constants.HADOOP_GREMLIN_LIBS) ? System.getenv(Constants.HADOOP_GREMLIN_LIBS) : System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
-            if (null == hadoopGremlinLibsLocal)
-                this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
-            else {
-                final String[] paths = hadoopGremlinLibsLocal.split(":");
-                for (final String path : paths) {
-                    final File file = AbstractHadoopGraphComputer.copyDirectoryIfNonExistent(fs, path);
-                    if (file.exists()) {
-                        Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
-                            try {
-                                final Path jarFile = new Path(fs.getHomeDirectory() + "/" + hadoopGremlinLibsRemote + "/" + f.getName());
-                                if (!fs.exists(jarFile))
-                                    fs.copyFromLocalFile(new Path(f.getPath()), jarFile);
-                                try {
-                                    DistributedCache.addArchiveToClassPath(jarFile, this.giraphConfiguration, fs);
-                                } catch (final Exception e) {
-                                    throw new RuntimeException(e.getMessage(), e);
-                                }
-                            } catch (final Exception e) {
-                                throw new IllegalStateException(e.getMessage(), e);
-                            }
-                        });
-                    } else {
-                        this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
-                    }
-                }
+    @Override
+    protected void loadJar(final org.apache.hadoop.conf.Configuration hadoopConfiguration, final File file, final Object... params)
+            throws IOException {
+        final FileSystem defaultFileSystem = FileSystem.get(hadoopConfiguration);
+        try {
+            final Path jarFile = new Path(defaultFileSystem.getHomeDirectory() + "/hadoop-gremlin-" + Gremlin.version() + "-libs/" + file.getName());
+            if (!defaultFileSystem.exists(jarFile)) {
+                final Path sourcePath = new Path(file.getPath());
+                final URI sourceUri = sourcePath.toUri();
+                final FileSystem fs = FileSystem.get(sourceUri, hadoopConfiguration);
+                fs.copyFromLocalFile(sourcePath, jarFile);
             }
+            try {
+                DistributedCache.addArchiveToClassPath(jarFile, this.giraphConfiguration, defaultFileSystem);
+            } catch (final Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 

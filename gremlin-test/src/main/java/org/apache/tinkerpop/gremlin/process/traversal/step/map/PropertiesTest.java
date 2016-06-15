@@ -21,18 +21,21 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,6 +48,8 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value();
 
     public abstract Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId);
+
+    public abstract Traversal<Vertex, VertexProperty<String>> get_g_V_hasXageX_propertiesXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -65,7 +70,7 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_properties_hasXid_nameIdX_value() {
-        final Traversal<Vertex,Object> traversal = get_g_V_hasXageX_properties_hasXid_nameIdX_value(convertToVertexPropertyId("marko", "name").next());
+        final Traversal<Vertex, Object> traversal = get_g_V_hasXageX_properties_hasXid_nameIdX_value(convertToVertexPropertyId("marko", "name").next());
         printTraversalForm(traversal);
         checkResults(Collections.singletonList("marko"), traversal);
     }
@@ -73,9 +78,42 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_properties_hasXid_nameIdAsStringX_value() {
-        final Traversal<Vertex,Object> traversal = get_g_V_hasXageX_properties_hasXid_nameIdX_value(convertToVertexPropertyId("marko", "name").next().toString());
+        final Traversal<Vertex, Object> traversal = get_g_V_hasXageX_properties_hasXid_nameIdX_value(convertToVertexPropertyId("marko", "name").next().toString());
         printTraversalForm(traversal);
         checkResults(Collections.singletonList("marko"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXageX_propertiesXnameX() {
+        final Traversal<Vertex, VertexProperty<String>> traversal = get_g_V_hasXageX_propertiesXnameX();
+        printTraversalForm(traversal);
+        final Set<String> keys = new HashSet<>();
+        final Set<String> values = new HashSet<>();
+        final Set<Object> ids = new HashSet<>();
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final VertexProperty<String> vertexProperty = traversal.next();
+            keys.add(vertexProperty.key());
+            values.add(vertexProperty.value());
+            ids.add(vertexProperty.id());
+            assertEquals("name", vertexProperty.key());
+            assertEquals(convertToVertex(graph, vertexProperty.value()).values("name").next(), vertexProperty.value());
+            assertEquals(convertToVertex(graph, vertexProperty.value()).properties("name").next().id(), vertexProperty.id());
+            //assertEquals(convertToVertex(graph, vertexProperty.value()), vertexProperty.element());
+            //assertEquals(convertToVertexId(graph, vertexProperty.value()), vertexProperty.element().id());
+        }
+        assertEquals(4, counter);
+        assertEquals(1, keys.size());
+        assertTrue(keys.contains("name"));
+        assertEquals(4, values.size());
+        assertTrue(values.contains("marko"));
+        assertTrue(values.contains("vadas"));
+        assertTrue(values.contains("josh"));
+        assertTrue(values.contains("peter"));
+        assertEquals(4, ids.size());
+
     }
 
     public static class Traversals extends PropertiesTest {
@@ -92,6 +130,11 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId) {
             return g.V().has("age").properties().has(T.id, nameId).value();
+        }
+
+        @Override
+        public Traversal<Vertex, VertexProperty<String>> get_g_V_hasXageX_propertiesXnameX() {
+            return (Traversal<Vertex, VertexProperty<String>>) g.V().has("age").<String>properties("name");
         }
     }
 }
