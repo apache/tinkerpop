@@ -48,19 +48,19 @@ class PythonGraphTraversalSource(object):
       return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
   def E(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addStep(traversal, "E", *args)
+    traversal.translator.addSpawnStep(traversal, "E", *args)
     return traversal
   def V(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addStep(traversal, "V", *args)
+    traversal.translator.addSpawnStep(traversal, "V", *args)
     return traversal
   def addV(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addStep(traversal, "addV", *args)
+    traversal.translator.addSpawnStep(traversal, "addV", *args)
     return traversal
   def inject(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addStep(traversal, "inject", *args)
+    traversal.translator.addSpawnStep(traversal, "inject", *args)
     return traversal
   def withBulk(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)

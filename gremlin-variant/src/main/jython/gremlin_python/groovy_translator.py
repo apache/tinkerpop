@@ -36,11 +36,15 @@ class GroovyTranslator(Translator):
         Translator.__init__(self, alias, script_engine)
 
     def addStep(self, traversal, step_name, *args):
-        newTraversal = GroovyTranslator(self.alias, self.script_engine)
-        newTraversal.traversal_script = self.traversal_script
-        newTraversal.traversal_script = newTraversal.traversal_script + "." + GroovyTranslator.mapMethod(
+        self.traversal_script = self.traversal_script + "." + GroovyTranslator.mapMethod(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
-        traversal.translator = newTraversal
+
+    def addSpawnStep(self, traversal, step_name, *args):
+        newTranslator = GroovyTranslator(self.alias, self.script_engine)
+        newTranslator.traversal_script = self.traversal_script
+        newTranslator.traversal_script = newTranslator.traversal_script + "." + GroovyTranslator.mapMethod(
+            step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
+        traversal.translator = newTranslator
 
     def addSource(self, traversal_source, source_name, *args):
         newTranslator = GroovyTranslator(self.alias, self.script_engine)

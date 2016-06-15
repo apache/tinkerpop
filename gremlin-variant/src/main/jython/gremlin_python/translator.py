@@ -32,6 +32,10 @@ class Translator(object):
         return
 
     @abstractmethod
+    def addSpawnStep(self, traversal, step_name, *args):
+        return
+
+    @abstractmethod
     def addSource(self, traversal_source, source_name, *args):
         return
 

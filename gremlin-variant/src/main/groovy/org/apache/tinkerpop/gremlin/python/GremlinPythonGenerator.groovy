@@ -120,7 +120,7 @@ class B(object):
                     pythonClass.append(
                             """  def ${method}(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addStep(traversal, "${method}", *args)
+    traversal.translator.addSpawnStep(traversal, "${method}", *args)
     return traversal
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
