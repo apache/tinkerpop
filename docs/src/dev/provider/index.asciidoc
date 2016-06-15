@@ -290,6 +290,73 @@ for (final MapReduce mapReduce : mapReducers) {
 <2> If there is no reduce stage, the the map-stage results are inserted into Memory as specified by the application
 developer's `MapReduce.addResultToMemory()` implementation.
 
+Hadoop-Gremlin Usage
+^^^^^^^^^^^^^^^^^^^^
+
+Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-party graph system provider wishes to
+leverage Hadoop-Gremlin (and its respective `GraphComputer` engines), then they need to provide, at minimum, a
+Hadoop2 `InputFormat<NullWritable,VertexWritable>` for their graph system. If the provider wishes to persist computed
+results back to their graph system (and not just to HDFS via a `FileOutputFormat`), then a graph system specific
+`OutputFormat<NullWritable,VertexWritable>` must be developed as well.
+
+Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There is no "data" in the `HadoopGraph` as
+the `InputFormat` specifies where and how to get the graph data at OLAP (and OLTP) runtime. Thus, `HadoopGraph` is a
+small object with little overhead. Graph system providers should realize `HadoopGraph` as the gateway to the OLAP
+features offered by Hadoop-Gremlin. For example, a graph system specific `Graph.compute(Class<? extends GraphComputer>
+graphComputerClass)`-method may look as follows:
+
+[source,java]
+----
+public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
+  try {
+    if (AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
+      return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+    else
+      throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+  } catch (final Exception e) {
+    throw new IllegalArgumentException(e.getMessage(),e);
+  }
+}
+----
+
+Note that the configurations for Hadoop are assumed to be in the `Graph.configuration()` object. If this is not the
+case, then the `Configuration` provided to `HadoopGraph.open()` should be dynamically created within the
+`compute()`-method. It is in the provided configuration that `HadoopGraph` gets the various properties which
+determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphReader` and
+`gremlin.hadoop.graphWriter`.
+
+GraphFilterAware Interface
+++++++++++++++++++++++++++
+
+<<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
+example below constructs a `GraphFilter` that will only pull the the "knows"-graph amongst people into the `GraphComputer`
+for processing.
+
+[source,java]
+----
+graph.compute().vertices(hasLabel("person")).edges(bothE("knows"))
+----
+
+If the provider has a custom `InputRDD`, they can implement `GraphFilterAware` and that graph filter will be provided to their
+`InputRDD` at load time. For providers that use an `InputFormat`, state but the graph filter can be accessed from the configuration
+as such:
+
+[source,java]
+----
+if (configuration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_FILTER))
+  this.graphFilter = VertexProgramHelper.deserialize(configuration, Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+----
+
+PersistResultGraphAware Interface
++++++++++++++++++++++++++++++++++
+
+A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which
+determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided
+by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>,
+and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph
+data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support
+`ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
+
 [[io-implementations]]
 IO Implementations
 ^^^^^^^^^^^^^^^^^^
