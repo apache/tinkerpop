@@ -669,11 +669,10 @@ g.V().group().by(label).by(count()) <3>
 <2> For each vertex in the group, get their name.
 <3> For each grouping, what is its size?
 
-The three projection parameters available to `group()` via `by()` are:
+The two projection parameters available to `group()` via `by()` are:
 
 . Key-projection: What feature of the object to group on (a function that yields the map key)?
 . Value-projection: What feature of the group to store in the key-list?
-. Reduce-projection: What feature of the key-list to ultimately return?
 
 [[groupcount-step]]
 GroupCount Step
