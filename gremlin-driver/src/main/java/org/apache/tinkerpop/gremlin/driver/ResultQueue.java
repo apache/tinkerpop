@@ -99,7 +99,7 @@ final class ResultQueue {
         // need to peek because the number of available items needs to be >= the expected size for that future. if not
         // it needs to keep waiting
         final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
-        if (force || (nextWaiting != null && (resultLinkedBlockingQueue.size() >= nextWaiting.getValue1() || readComplete.isDone()))) {
+        if (nextWaiting != null && (force || (resultLinkedBlockingQueue.size() >= nextWaiting.getValue1() || readComplete.isDone()))) {
             final int items = nextWaiting.getValue1();
             final CompletableFuture<List<Result>> future = nextWaiting.getValue0();
             final List<Result> results = new ArrayList<>(items);
