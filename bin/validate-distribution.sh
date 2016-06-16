@@ -114,8 +114,17 @@ echo "OK"
 
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
+LOG_DIR="${DIR_NAME}/target/validate-distribution"
+LOG_FILE="mvn-clean-install.log"
 echo -n "* building project ... "
-mvn clean install 2>&1 > /dev/null || { echo "failed"; exit 1; }
+mkdir -p ${LOG_DIR}
+mvn clean install 2>&1 > "${LOG_DIR}/${LOG_FILE}" || {
+  echo "failed"
+  echo
+  tail -n100 target/validate-distribution/mvn-clean-install.log
+  echo -e "\n\e[1mThe full log file can be inspected under ${LOG_DIR}/${LOG_FILE}.\e[0m\n"
+  exit 1
+}
 echo "OK"
 exit 0
 fi
