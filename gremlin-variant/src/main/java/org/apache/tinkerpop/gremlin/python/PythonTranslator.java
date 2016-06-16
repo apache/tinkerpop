@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.python;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
@@ -34,15 +35,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,10 +50,8 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PythonTranslator implements Translator {
+public class PythonTranslator implements Translator {
 
-    private static boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
-    ////
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from", "global"));
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
@@ -66,24 +59,22 @@ public final class PythonTranslator implements Translator {
             .map(arg -> ((Enum) arg).name())
             .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
 
-    private StringBuilder traversalScript;
-    private String alias;
-    private final String scriptEngine;
-    private final boolean importStatics;
+    protected StringBuilder traversalScript;
+    protected String alias;
+    protected final boolean importStatics;
 
-    private PythonTranslator(final String scriptEngine, final String alias, final boolean importStatics) {
-        this.scriptEngine = scriptEngine;
+    PythonTranslator(final String alias, final boolean importStatics) {
         this.alias = alias;
         this.traversalScript = new StringBuilder(this.alias);
         this.importStatics = importStatics;
     }
 
-    public static PythonTranslator of(final String scriptEngine, final String alias) {
-        return new PythonTranslator(scriptEngine, alias, false);
+    public static PythonTranslator of(final String alias) {
+        return new PythonTranslator(alias, false);
     }
 
-    public static PythonTranslator of(final String scriptEngine, final String alias, final boolean importStatics) {
-        return new PythonTranslator(scriptEngine, alias, importStatics);
+    public static PythonTranslator of(final String alias, final boolean importStatics) {
+        return new PythonTranslator(alias, importStatics);
     }
 
     @Override
@@ -93,12 +84,12 @@ public final class PythonTranslator implements Translator {
 
     @Override
     public String getScriptEngine() {
-        return this.scriptEngine;
+        return "jython";
     }
 
     @Override
     public Translator getAnonymousTraversalTranslator() {
-        return new PythonTranslator(this.scriptEngine, "__", this.importStatics);
+        return new PythonTranslator("__", this.importStatics);
     }
 
     @Override
@@ -106,19 +97,7 @@ public final class PythonTranslator implements Translator {
         final String traversal = this.traversalScript.toString();
         if (traversal.contains("$"))
             throw new VerificationException("Lambdas are currently not supported: " + traversal, EmptyTraversal.instance());
-
-        if (isTesting && !this.alias.equals("__")) {
-            try {
-                final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-                final Bindings jythonBindings = new SimpleBindings();
-                jythonBindings.put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.alias + "\"))"));
-                jythonEngine.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
-                return jythonEngine.eval(traversal).toString();
-            } catch (final ScriptException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        } else
-            return traversal;
+        return traversal;
     }
 
     @Override
@@ -148,8 +127,6 @@ public final class PythonTranslator implements Translator {
                 && !NO_STATIC.stream().filter(name -> this.traversalScript.substring(3).startsWith(convertStepName(name))).findAny().isPresent()) {
             this.traversalScript.delete(0, 3);
         }
-        if (isTesting && !this.importStatics)
-            assert this.traversalScript.toString().startsWith(this.alias + ".");
     }
 
     @Override
@@ -180,6 +157,8 @@ public final class PythonTranslator implements Translator {
             return ((Class) object).getCanonicalName();
         else if (object instanceof VertexProperty.Cardinality)
             return "Cardinality." + object.toString();
+        else if (object instanceof SackFunctions.Barrier)
+            return "Barrier." + object.toString();
         else if (object instanceof Enum)
             return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + convertStepName(object.toString());
         else if (object instanceof P)

@@ -34,7 +34,7 @@ import java.util.Random;
  */
 public class PythonProvider extends VariantGraphProvider {
 
-    private static final Random RANDOM = new Random();
+    private static final boolean IMPORT_STATICS = new Random().nextBoolean();
 
     static {
         try {
@@ -63,21 +63,20 @@ public class PythonProvider extends VariantGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        final boolean importStatics = RANDOM.nextBoolean();
-        try {
-            if (importStatics)
-                ScriptEngineCache.get("jython").eval("for k in statics:\n  globals()[k] = statics[k]");
-            else
-                ScriptEngineCache.get("jython").eval("for k in statics:\n  if k in globals():\n    del globals()[k]");
-        } catch (final ScriptException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-        //
         if ((Boolean) graph.configuration().getProperty("skipTest"))
             return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
-        else
-            return graph.traversal().withTranslator(PythonTranslator.of("gremlin-groovy", "g", importStatics));
+        else {
+            try {
+                if (IMPORT_STATICS)
+                    ScriptEngineCache.get("jython").eval("for k in statics:\n  globals()[k] = statics[k]");
+                else
+                    ScriptEngineCache.get("jython").eval("for k in statics:\n  if k in globals():\n    del globals()[k]");
+            } catch (final ScriptException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+            return graph.traversal().withTranslator(PythonBypassTranslator.of("g", IMPORT_STATICS)); // the bypass translator will ensure that gremlin-groovy is ultimately used
+        }
     }
 
 }
