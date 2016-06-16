@@ -22,7 +22,6 @@ statics = OrderedDict()
 
 
 globalTranslator = None
-builtInRange = range
 
 
 class PythonGraphTraversalSource(object):

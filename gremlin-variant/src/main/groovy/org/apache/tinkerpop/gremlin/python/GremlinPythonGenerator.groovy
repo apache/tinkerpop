@@ -77,7 +77,6 @@ under the License.
         pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
 globalTranslator = None
-builtInRange = range
 """).append("\n\n");
 
 //////////////////////////
