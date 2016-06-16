@@ -47,7 +47,12 @@ public class PythonProvider extends VariantGraphProvider {
             jythonEngine.eval("import sys");
             jythonEngine.eval("sys.path.append('" + gremlinPythonPackageName + "')");
             jythonEngine.eval("sys.path.append('" + gremlinDriverPackageName + "')");
-            jythonEngine.eval("sys.path.append('/Library/Python/2.7/site-packages')"); // TODO: require PYTHONPATH
+            final String pythonPath = null == System.getenv("JYTHONPATH") ? System.getenv("PYTHONPATH") : System.getenv("JYTHONPATH");
+            if (null != pythonPath) {
+                for (final String path : pythonPath.split(":")) {
+                    jythonEngine.eval("sys.path.append('" + path + "')");
+                }
+            }
             jythonEngine.eval("from gremlin_python import *");
             jythonEngine.eval("from gremlin_python import __");
             jythonEngine.eval("from groovy_translator import GroovyTranslator");
@@ -62,7 +67,8 @@ public class PythonProvider extends VariantGraphProvider {
         try {
             if (importStatics)
                 ScriptEngineCache.get("jython").eval("for k in statics:\n  globals()[k] = statics[k]");
-            // else globals()[k] = None
+            else
+                ScriptEngineCache.get("jython").eval("for k in statics:\n  if k in globals():\n    del globals()[k]");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
