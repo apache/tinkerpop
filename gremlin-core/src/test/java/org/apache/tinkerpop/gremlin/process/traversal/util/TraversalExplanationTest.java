@@ -49,12 +49,12 @@ public class TraversalExplanationTest {
     @Test
     public void shouldWordWrapCorrectly() {
         GraphTraversal<?, ?> traversal = __.V().out().out();
-        String toString = traversal.explain().toString();
+        String toString = traversal.explain().prettyPrint();
         assertFalse(toString.contains("VertexStep(OUT,vertex),\n"));
         //System.out.println(toString);
         ///
         traversal = __.V().out().out().out().out();
-        toString = traversal.explain().toString();
+        toString = traversal.explain().prettyPrint();
         assertTrue(toString.contains("VertexStep(OUT,vertex),\n"));
         //System.out.println(toString);
         ///
@@ -64,8 +64,8 @@ public class TraversalExplanationTest {
                 traversal.out();
             }
             traversal.asAdmin().setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
-            toString = traversal.explain().toString();
-            if (i < 4)
+            toString = traversal.explain().prettyPrint();
+            if (i < 3)
                 assertFalse(toString.contains("VertexStep(OUT,vertex),\n"));
             else {
                 assertFalse(Stream.of(toString.split("\n"))
@@ -116,6 +116,19 @@ public class TraversalExplanationTest {
                 found++;
         }
         assertEquals(4, found);
-        // System.out.println(traversal.explain());
+        //
+        found = 0;
+        for (final String line : traversal.explain().prettyPrint().split("]\n")) { // need to split cause of word wrap
+            //System.out.println(line + "\n\n");
+            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(IN,vertex)"))
+                found++;
+            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(OUT,vertex)"))
+                found++;
+            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(BOTH,edge)"))
+                found++;
+            if (line.contains("RangeByIsCountStrategy") && line.contains("RangeGlobalStep(0,3)"))
+                found++;
+        }
+        assertEquals(4, found);
     }
 }

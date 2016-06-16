@@ -78,14 +78,21 @@ public class TraversalExplanation implements Serializable {
         return this.traversal;
     }
 
+    @Override
+    public String toString() {
+        return this.prettyPrint(Integer.MAX_VALUE);
+    }
+
+    public String prettyPrint() {
+        return this.prettyPrint(100);
+    }
+
     /**
      * A pretty-print representation of the traversal explanation.
      *
      * @return a {@link String} representation of the traversal explanation
      */
-    @Override
-    public String toString() {
-        final int maxLineLength = 75;
+    public String prettyPrint(final int maxLineLength) {
         final String originalTraversal = "Original Traversal";
         final String finalTraversal = "Final Traversal";
         final int maxStrategyColumnLength = this.strategyTraversals.stream()
@@ -95,10 +102,13 @@ public class TraversalExplanation implements Serializable {
                 .max(Comparator.naturalOrder())
                 .orElse(15);
         final int newLineIndent = maxStrategyColumnLength + 10;
-        int maxTraversalColumnLength = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream())
+        final int maxTraversalColumn = maxLineLength - newLineIndent;
+        if (maxTraversalColumn < 1)
+            throw new IllegalArgumentException("The maximum line length is too small to present the " + TraversalExplanation.class.getSimpleName() + ": " + maxLineLength);
+        int largestTraversalColumn = Stream.concat(Stream.of(Pair.with(null, this.traversal)), this.strategyTraversals.stream())
                 .map(Pair::getValue1)
                 .map(Object::toString)
-                .map(s -> wordWrap(s, maxLineLength, newLineIndent))
+                .map(s -> wordWrap(s, maxTraversalColumn, newLineIndent))
                 .flatMap(s -> Stream.of(s.split("\n")))
                 .map(String::trim)
                 .map(s -> s.trim().startsWith("[") ? s : "   " + s) // 3 indent on new lines
@@ -107,7 +117,7 @@ public class TraversalExplanation implements Serializable {
                 .get();
 
         final StringBuilder builder = new StringBuilder("Traversal Explanation\n");
-        for (int i = 0; i < (maxStrategyColumnLength + 7 + maxTraversalColumnLength); i++) {
+        for (int i = 0; i < (maxStrategyColumnLength + 7 + largestTraversalColumn); i++) {
             builder.append("=");
         }
         builder.append("\n");
@@ -115,7 +125,7 @@ public class TraversalExplanation implements Serializable {
         for (int i = 0; i < maxStrategyColumnLength - originalTraversal.length() + 7; i++) {
             builder.append(" ");
         }
-        builder.append(wordWrap(this.traversal.toString(), maxLineLength, newLineIndent));
+        builder.append(wordWrap(this.traversal.toString(), maxTraversalColumn, newLineIndent));
         builder.append("\n\n");
         for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pairs : this.strategyTraversals) {
             builder.append(pairs.getValue0());
@@ -127,7 +137,7 @@ public class TraversalExplanation implements Serializable {
             for (int i = 0; i < 3; i++) {
                 builder.append(" ");
             }
-            builder.append(wordWrap(pairs.getValue1().toString(), maxLineLength, newLineIndent)).append("\n");
+            builder.append(wordWrap(pairs.getValue1().toString(), maxTraversalColumn, newLineIndent)).append("\n");
         }
         builder.append("\n");
         builder.append(finalTraversal);
@@ -136,7 +146,7 @@ public class TraversalExplanation implements Serializable {
         }
         builder.append(wordWrap((this.strategyTraversals.size() > 0 ?
                 this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1().toString() :
-                this.traversal.toString()), maxLineLength, newLineIndent));
+                this.traversal.toString()), maxTraversalColumn, newLineIndent));
         return builder.toString();
     }
 
