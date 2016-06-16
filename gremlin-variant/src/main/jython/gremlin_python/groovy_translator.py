@@ -104,8 +104,8 @@ class GroovyTranslator(Translator):
                 return lambdaString
             else:
                 return "{" + lambdaString + "}"
-        elif isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0], str):  # bindings
-            return arg.keys()[0]
+        elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):  # bindings
+            return arg[0]
         elif isinstance(arg, RawExpression):
             return "".join(GroovyTranslator.stringOrObject(i) for i in arg.parts)
         elif isinstance(arg, Raw):

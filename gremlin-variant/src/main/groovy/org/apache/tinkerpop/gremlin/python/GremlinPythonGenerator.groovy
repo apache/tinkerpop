@@ -177,8 +177,8 @@ builtInRange = range
                         """  def ${method}(self, *args):
     self.translator.addStep(self, "${method}", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
       elif isinstance(arg, RawExpression):
         self.bindings.update(arg.bindings)
     return self
@@ -239,9 +239,9 @@ builtInRange = range
       self.parts = [self._process_arg(arg) for arg in args]
 
    def _process_arg(self, arg):
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-         self.bindings.update(arg)
-         return Raw(next(iter(arg.keys())))
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+         self.bindings[arg[0]] = arg[1]
+         return Raw(arg[0])
       else:
          return Raw(arg)
 """)
