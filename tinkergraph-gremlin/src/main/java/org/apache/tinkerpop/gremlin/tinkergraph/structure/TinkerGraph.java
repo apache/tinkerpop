@@ -326,30 +326,15 @@ public final class TinkerGraph implements Graph {
             return elements.values().iterator();
         } else {
             final List<Object> idList = Arrays.asList(ids);
-            // base the conversion function on the first item in the id list as the expectation is that these
-            // id values will be a uniform list
-            if (clazz.isAssignableFrom(ids[0].getClass())) {
-                // got a bunch of Elements - have to look each up because it might be an Attachable instance or
-                // other implementation. the assumption is that id conversion is not required for detached
-                // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
-                // vertex to be findable in OrientDB
-                return IteratorUtils.filter(IteratorUtils.map(idList, id -> {
-                    // based on the first item assume all vertices in the argument list
-                    if (!clazz.isAssignableFrom(id.getClass()))
-                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+            validateHomogenousIds(idList);
 
-                    return elements.get(clazz.cast(id).id());
-                }).iterator(), Objects::nonNull);
-            } else {
-                final Class<?> firstClass = ids[0].getClass();
-                return IteratorUtils.filter(IteratorUtils.map(idList, id -> {
-                    // all items in the list should be of the same class - don't get fancy on a Graph
-                    if (!id.getClass().equals(firstClass))
-                        throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-
-                    return elements.get(idManager.convert(id));
-                }).iterator(), Objects::nonNull);
-            }
+            // if the type is of Element - have to look each up because it might be an Attachable instance or
+            // other implementation. the assumption is that id conversion is not required for detached
+            // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
+            // vertex to be findable in OrientDB
+            return clazz.isAssignableFrom(ids[0].getClass()) ?
+               IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(clazz.cast(id).id())).iterator(), Objects::nonNull)
+                : IteratorUtils.filter(IteratorUtils.map(idList, id -> elements.get(idManager.convert(id))).iterator(), Objects::nonNull);
         }
     }
 
@@ -363,6 +348,14 @@ public final class TinkerGraph implements Graph {
     @Override
     public Features features() {
         return features;
+    }
+
+    private void validateHomogenousIds(final List<Object> ids) {
+        final Class firstClass = ids.get(0).getClass();
+        for (Object id : ids) {
+            if (!id.getClass().equals(firstClass))
+                throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+        }
     }
 
     public class TinkerGraphFeatures implements Features {
