@@ -47,4 +47,7 @@ setup(
     url='http://tinkerpop.apache.org',
     description='Gremlin Language Variant for Apache TinkerPop - Gremlin',
     long_description=open("README").read(),
+    install_requires=[
+        'aenum'
+    ]
 )
