@@ -118,8 +118,10 @@ from gremlin_python import P
 
 These can be used analagously to how they are used in Gremlin-Java.
 
-[source,python]
+[gremlin-python,modern]
+----
 g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr)
+----
 
 Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be removed.
 
@@ -130,13 +132,17 @@ for k in statics:
 
 With statics, loaded its possible to represent the above traversal as below.
 
-[source,python]
+[gremlin-python,modern]
+----
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',decr)
+----
 
 Moreover, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
 
-[source,python]
-g.V().repeat(out()).times(2).name.toList()
+[gremlin-python,modern]
+----
+g.V().repeat(out()).times(2).name.fold()
+----
 
 Gremlin-Python Sugar
 ~~~~~~~~~~~~~~~~~~~~
@@ -144,7 +150,10 @@ Gremlin-Python Sugar
 Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
 makes traversals a bit more succinct.
 
-[source,python]
+[gremlin-python,modern]
+----
 g.V().both()[1:3]
 g.V().both()[1]
 g.V().both().name
+----
+

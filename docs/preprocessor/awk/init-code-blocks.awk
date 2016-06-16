@@ -49,10 +49,72 @@ BEGIN {
   print "f = new File('/tmp/tinkergraph.kryo')"
   print "if (f.exists()) f.deleteDir()"
   print ":set max-iteration 100"
+  if (lang == "python") {
+    print "import org.apache.tinkerpop.gremlin.python.PythonTranslator"
+    print "import javax.script.ScriptEngineManager"
+    print "import javax.script.SimpleBindings"
+    print "def downloadFile(String url, final String localPath) {"
+    print "  def f = new File(localPath)"
+    print "  while (!f.exists() && url) {"
+    print "    url.toURL().openConnection().with { def conn ->"
+    print "      conn.instanceFollowRedirects = false"
+    print "      url = conn.getHeaderField('Location')"
+    print "      if (!url) {"
+    print "        f.withOutputStream { def output ->"
+    print "          conn.inputStream.with { def input ->"
+    print "            output << input"
+    print "            input.close()"
+    print "          }"
+    print "        }"
+    print "      }"
+    print "    }"
+    print "  }"
+    print "  return f"
+    print "}"
+    pythonVersion = "2.7.0"
+    print "pathToLocalJar = System.getProperty('java.io.tmpdir') + File.separator + 'jython-standalone-" pythonVersion ".jar'"
+    print "jarDownloadUrl = 'http://search.maven.org/remotecontent?filepath=org/python/jython-standalone/" pythonVersion "/jython-standalone-" pythonVersion ".jar'"
+    print "loader = new URLClassLoader(downloadFile(jarDownloadUrl, pathToLocalJar).toURI().toURL())"
+    print "jython = new ScriptEngineManager(loader).getEngineByName('jython')"
+    print "jython.eval('import sys')"
+    print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_python\")')"
+    print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_driver\")')"
+    print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_rest_driver\")')"
+    print "jython.eval('from gremlin_python import *')"
+    #print "jython.eval('from gremlin_rest_driver import RESTRemoteConnection')"
+    print "jython.eval('from groovy_translator import GroovyTranslator')"
+    print "jython.eval('for k in statics:\\n  globals()[k] = statics[k]')"
+    print "jythonBindings = new SimpleBindings()"
+    print "jythonBindings.put('g', jython.eval('PythonGraphTraversalSource(GroovyTranslator(\"g\"))'))"
+    print "jython.getContext().setBindings(jythonBindings, javax.script.ScriptContext.GLOBAL_SCOPE)"
+    print "sharedData = new Binding()"
+    print "sharedData.setProperty('g', g)"
+    print "sharedData.setProperty('__', __)"
+    print "sharedData.setProperty('T', T)"
+    print "sharedData.setProperty('Order', Order)"
+    print "sharedData.setProperty('Column', Column)"
+    print "sharedData.setProperty('Direction', Direction)"
+    print "sharedData.setProperty('Operator', Operator)"
+    print "sharedData.setProperty('P', P)"
+    print "sharedData.setProperty('Pop', Pop)"
+    print "sharedData.setProperty('Scope', Scope)"
+    print "shell = new GroovyShell(sharedData)"
+  }
   print "'-IGNORE'"
 }
 
-!/^pb\([0-9]*\); '\[gremlin-/ { print }
+!/^pb\([0-9]*\); '\[gremlin-/ {
+  if (delimiter == 2 && !($0 ~ /^pb\([0-9]*\); '----'/)) {
+    switch (lang) {
+      case "python":
+        print "shell.evaluate jython.eval(\"\"\"" $0 "\"\"\").toString()"
+        break
+      default:
+        print
+        break
+    }
+  } else print
+}
 
 /^pb\([0-9]*\); '----'/ {
   if (delimiter == 1) delimiter = 2
