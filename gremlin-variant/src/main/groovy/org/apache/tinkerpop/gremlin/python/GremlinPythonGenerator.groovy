@@ -179,6 +179,8 @@ builtInRange = range
     for arg in args:
       if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
         self.bindings.update(arg)
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
 """)
             }
@@ -230,6 +232,31 @@ builtInRange = range
             pythonClass.append("\n");
         }
         //////////////
+
+        pythonClass.append("""class RawExpression(object):
+   def __init__(self, *args):
+      self.bindings = dict()
+      self.parts = [self._process_arg(arg) for arg in args]
+
+   def _process_arg(self, arg):
+      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
+         self.bindings.update(arg)
+         return Raw(next(iter(arg.keys())))
+      else:
+         return Raw(arg)
+""")
+
+        pythonClass.append("\n")
+        pythonClass.append("""class Raw(object):
+   def __init__(self, value):
+      self.value = value
+
+   def __str__(self):
+      return str(self.value)
+""")
+
+        pythonClass.append("\n")
+
         pythonClass.append("""class P(object):
    def __init__(self, operator, value, other=None):
       self.operator = operator
