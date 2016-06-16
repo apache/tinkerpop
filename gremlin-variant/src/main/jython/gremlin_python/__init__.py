@@ -20,7 +20,6 @@ from gremlin_python import PythonGraphTraversal
 from gremlin_python import PythonGraphTraversalSource
 from gremlin_python import __
 from gremlin_python import statics
-from gremlin_python import B
 from gremlin_python import T
 from gremlin_python import Order
 from gremlin_python import Cardinality

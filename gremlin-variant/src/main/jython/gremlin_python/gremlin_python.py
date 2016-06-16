@@ -17,10 +17,12 @@ specific language governing permissions and limitations
 under the License.
 '''
 from collections import OrderedDict
+from aenum import Enum
 statics = OrderedDict()
 
 
 globalTranslator = None
+builtInRange = range
 
 
 class PythonGraphTraversalSource(object):
@@ -1369,39 +1371,28 @@ def where(*args):
 statics['where'] = where
 
 
-class Cardinality(object):
-   single = "VertexProperty.Cardinality.single"
-   list = "VertexProperty.Cardinality.list"
-   set = "VertexProperty.Cardinality.set"
+class Cardinality(Enum):
+   single, list, set = builtInRange(3)
 
-class Column(object):
-   keys = "Column.keys"
-   values = "Column.values"
+statics['single'] = Cardinality.single
+statics['list'] = Cardinality.list
+statics['set'] = Cardinality.set
+
+class Column(Enum):
+   keys, values = builtInRange(2)
 
 statics['keys'] = Column.keys
 statics['values'] = Column.values
 
-class Direction(object):
-   OUT = "Direction.OUT"
-   IN = "Direction.IN"
-   BOTH = "Direction.BOTH"
+class Direction(Enum):
+   OUT, IN, BOTH = builtInRange(3)
 
 statics['OUT'] = Direction.OUT
 statics['IN'] = Direction.IN
 statics['BOTH'] = Direction.BOTH
 
-class Operator(object):
-   sum = "Operator.sum"
-   minus = "Operator.minus"
-   mult = "Operator.mult"
-   div = "Operator.div"
-   min = "Operator.min"
-   max = "Operator.max"
-   assign = "Operator.assign"
-   _and = "Operator.and"
-   _or = "Operator.or"
-   addAll = "Operator.addAll"
-   sumLong = "Operator.sumLong"
+class Operator(Enum):
+   sum, minus, mult, div, min, max, assign, _and, _or, addAll, sumLong = builtInRange(11)
 
 statics['sum'] = Operator.sum
 statics['minus'] = Operator.minus
@@ -1415,14 +1406,8 @@ statics['_or'] = Operator._or
 statics['addAll'] = Operator.addAll
 statics['sumLong'] = Operator.sumLong
 
-class Order(object):
-   incr = "Order.incr"
-   decr = "Order.decr"
-   keyIncr = "Order.keyIncr"
-   valueIncr = "Order.valueIncr"
-   keyDecr = "Order.keyDecr"
-   valueDecr = "Order.valueDecr"
-   shuffle = "Order.shuffle"
+class Order(Enum):
+   incr, decr, keyIncr, valueIncr, keyDecr, valueDecr, shuffle = builtInRange(7)
 
 statics['incr'] = Order.incr
 statics['decr'] = Order.decr
@@ -1431,6 +1416,32 @@ statics['valueIncr'] = Order.valueIncr
 statics['keyDecr'] = Order.keyDecr
 statics['valueDecr'] = Order.valueDecr
 statics['shuffle'] = Order.shuffle
+
+class Pop(Enum):
+   first, last, all = builtInRange(3)
+
+statics['first'] = Pop.first
+statics['last'] = Pop.last
+statics['all'] = Pop.all
+
+class Barrier(Enum):
+   normSack = builtInRange(1)
+
+statics['normSack'] = Barrier.normSack
+
+class Scope(Enum):
+   _global, local = builtInRange(2)
+
+statics['_global'] = Scope._global
+statics['local'] = Scope.local
+
+class T(Enum):
+   label, id, key, value = builtInRange(4)
+
+statics['label'] = T.label
+statics['id'] = T.id
+statics['key'] = T.key
+statics['value'] = T.value
 
 class P(object):
    def __init__(self, operator, value, other=None):
@@ -1548,37 +1559,5 @@ def without(*args):
       return P.without(*args)
 
 statics['without'] = without
-
-class Pop(object):
-   first = "Pop.first"
-   last = "Pop.last"
-   all = "Pop.all"
-
-statics['first'] =  Pop.first
-statics['last'] =  Pop.last
-statics['all'] =  Pop.all
-
-class Barrier(object):
-   normSack = "SackFunctions.Barrier.normSack"
-
-statics['normSack'] = Barrier.normSack
-
-class Scope(object):
-   _global = "Scope.global"
-   local = "Scope.local"
-
-statics['_global'] = Scope._global
-statics['local'] = Scope.local
-
-class T(object):
-   label = "T.label"
-   id = "T.id"
-   key = "T.key"
-   value = "T.value"
-
-statics['label'] = T.label
-statics['id'] = T.id
-statics['key'] = T.key
-statics['value'] = T.value
 
 statics = OrderedDict(reversed(list(statics.items())))

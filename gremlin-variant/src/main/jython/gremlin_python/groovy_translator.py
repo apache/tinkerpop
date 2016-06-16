@@ -18,6 +18,7 @@ under the License.
 '''
 
 import sys
+from aenum import Enum
 
 from gremlin_python import P
 from translator import Translator
@@ -29,6 +30,8 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 methodMap = {"_global": "global", "_as": "as", "_in": "in", "_and": "and", "_or": "or", "_is": "is", "_not": "not",
              "_from": "from"}
+
+enumMap = {"Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
 
 
 class GroovyTranslator(Translator):
@@ -56,6 +59,8 @@ class GroovyTranslator(Translator):
     def getAnonymousTraversalTranslator(self):
         return GroovyTranslator("__", self.script_engine)
 
+    ### HELPER METHODS ###
+
     @staticmethod
     def mapMethod(method):
         if (method in methodMap):
@@ -64,27 +69,26 @@ class GroovyTranslator(Translator):
             return method
 
     @staticmethod
+    def mapEnum(enum):
+        if (enum in enumMap):
+            return enumMap[enum]
+        else:
+            return enum
+
+    @staticmethod
     def stringOrObject(arg):
         if (isinstance(arg, str) and
-                not (arg.startswith("SackFunctions.Barrier.")) and
-                not (arg.startswith("VertexProperty.Cardinality.")) and
-                not (arg.startswith("Column.")) and
                 not (arg.startswith("Computer.")) and
-                not (arg.startswith("Direction.")) and
-                not (arg.startswith("Operator.")) and
-                not (arg.startswith("Order.")) and
-                not (arg.startswith("Pop.")) and
-                not (arg.startswith("ReadOnlyStrategy.")) and
-                not (arg.startswith("Scope.")) and
-                not (arg.startswith("T.")) and
-                not (len(arg) == 0)):
+                not (arg.startswith("ReadOnlyStrategy."))):
             return "\"" + arg + "\""
-        elif callable(arg):  # closures
-            lambdaString = arg().strip()
-            if lambdaString.startswith("{"):
-                return lambdaString
-            else:
-                return "{" + lambdaString + "}"
+        elif isinstance(arg, bool):
+            return str(arg).lower()
+        elif isinstance(arg, long):
+            return str(arg) + "L"
+        elif isinstance(arg, float):
+            return str(arg) + "f"
+        elif isinstance(arg, Enum):  # Column, Order, Direction, Scope, T, etc.
+            return GroovyTranslator.mapEnum(type(arg).__name__) + "." + GroovyTranslator.mapMethod(str(arg.name))
         elif isinstance(arg, P):
             if arg.other is None:
                 return "P." + GroovyTranslator.mapMethod(arg.operator) + "(" + GroovyTranslator.stringOrObject(
@@ -92,12 +96,12 @@ class GroovyTranslator(Translator):
             else:
                 return GroovyTranslator.stringOrObject(arg.other) + "." + GroovyTranslator.mapMethod(
                     arg.operator) + "(" + GroovyTranslator.stringOrObject(arg.value) + ")"
-        elif isinstance(arg, bool):
-            return str(arg).lower()
-        elif isinstance(arg, long):
-            return str(arg) + "L"
-        elif isinstance(arg, float):
-            return str(arg) + "f"
+        elif callable(arg):  # closures
+            lambdaString = arg().strip()
+            if lambdaString.startswith("{"):
+                return lambdaString
+            else:
+                return "{" + lambdaString + "}"
         elif isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0], str):  # bindings
             return arg.keys()[0]
         else:

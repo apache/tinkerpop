@@ -70,11 +70,14 @@ under the License.
                 .withDefault { it }
         final Map<String, String> invertedMethodMap = [:].withDefault { it };
         methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
+        final List<Class<? extends Enum>> enumList = [VertexProperty.Cardinality, Column, Direction, Operator, Order, Pop, SackFunctions.Barrier, Scope, T]
 
         pythonClass.append("from collections import OrderedDict\n")
+        pythonClass.append("from aenum import Enum\n")
         pythonClass.append("statics = OrderedDict()\n\n")
         pythonClass.append("""
 globalTranslator = None
+builtInRange = range
 """).append("\n\n");
 
 //////////////////////////
@@ -215,53 +218,18 @@ globalTranslator = None
 ///////////
 // Enums //
 ///////////
-        pythonClass.append("class Cardinality(object):\n");
-        VertexProperty.Cardinality.values().each { value ->
-            pythonClass.append("   ${value} = \"VertexProperty.Cardinality.${value}\"\n");
+        for (final Class<? extends Enum> enumClass : enumList) {
+            pythonClass.append("class ${enumClass.getSimpleName()}(Enum):\n  ");
+            enumClass.getEnumConstants().each { value ->
+                pythonClass.append(" ${methodMap[value.name()]},");
+            }
+            pythonClass.deleteCharAt(pythonClass.length() - 1).append(" = builtInRange(${enumClass.getEnumConstants().length})\n\n")
+            enumClass.getEnumConstants().each { value ->
+                pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
+            }
+            pythonClass.append("\n");
         }
-        pythonClass.append("\n");
         //////////////
-        pythonClass.append("class Column(object):\n");
-        Column.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        Column.values().each { value ->
-            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
-        }
-        pythonClass.append("\n");
-        //////////////
-        pythonClass.append("class Direction(object):\n");
-        Direction.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        Direction.values().each { value ->
-            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
-        }
-        pythonClass.append("\n");
-        //////////////
-        pythonClass.append("class Operator(object):\n");
-        Operator.values().each { value ->
-            pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        Operator.values().each { value ->
-            pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
-        }
-        pythonClass.append("\n");
-        //////////////
-        pythonClass.append("class Order(object):\n");
-        Order.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        Order.values().each { value ->
-            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
-        }
-        pythonClass.append("\n");
-        //////////////
-
         pythonClass.append("""class P(object):
    def __init__(self, operator, value, other=None):
       self.operator = operator
@@ -299,41 +267,6 @@ globalTranslator = None
         }
         pythonClass.append("\n")
         //////////////
-        pythonClass.append("class Pop(object):\n");
-        Pop.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        Pop.values().each { value ->
-            pythonClass.append("statics['${value}'] =  ${value.getDeclaringClass().getSimpleName()}.${value.name()}\n");
-        }
-        pythonClass.append("\n");
-        //////////////
-        pythonClass.append("""class Barrier(object):
-   normSack = "SackFunctions.Barrier.normSack"
-""");
-        pythonClass.append("\n")
-        pythonClass.append("statics['normSack'] = Barrier.normSack\n\n")
-        //////////////
-        pythonClass.append("class Scope(object):\n");
-        Scope.values().each { value ->
-            pythonClass.append("   ${methodMap[value.name()]} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        Scope.values().each { value ->
-            pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
-        }
-        pythonClass.append("\n");
-        //////////////
-        pythonClass.append("class T(object):\n");
-        T.values().each { value ->
-            pythonClass.append("   ${value} = \"${value.getDeclaringClass().getSimpleName()}.${value}\"\n");
-        }
-        pythonClass.append("\n");
-        T.values().each { value ->
-            pythonClass.append("statics['${value}'] = ${value.getDeclaringClass().getSimpleName()}.${value}\n");
-        }
-        pythonClass.append("\n");
 
         pythonClass.append("statics = OrderedDict(reversed(list(statics.items())))\n")
 
