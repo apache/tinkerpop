@@ -1371,28 +1371,24 @@ def where(*args):
 statics['where'] = where
 
 
-class Cardinality(Enum):
-   single, list, set = builtInRange(3)
+Cardinality = Enum('Cardinality', 'single list set')
 
 statics['single'] = Cardinality.single
 statics['list'] = Cardinality.list
 statics['set'] = Cardinality.set
 
-class Column(Enum):
-   keys, values = builtInRange(2)
+Column = Enum('Column', 'keys values')
 
 statics['keys'] = Column.keys
 statics['values'] = Column.values
 
-class Direction(Enum):
-   OUT, IN, BOTH = builtInRange(3)
+Direction = Enum('Direction', 'OUT IN BOTH')
 
 statics['OUT'] = Direction.OUT
 statics['IN'] = Direction.IN
 statics['BOTH'] = Direction.BOTH
 
-class Operator(Enum):
-   sum, minus, mult, div, min, max, assign, _and, _or, addAll, sumLong = builtInRange(11)
+Operator = Enum('Operator', 'sum minus mult div min max assign _and _or addAll sumLong')
 
 statics['sum'] = Operator.sum
 statics['minus'] = Operator.minus
@@ -1406,8 +1402,7 @@ statics['_or'] = Operator._or
 statics['addAll'] = Operator.addAll
 statics['sumLong'] = Operator.sumLong
 
-class Order(Enum):
-   incr, decr, keyIncr, valueIncr, keyDecr, valueDecr, shuffle = builtInRange(7)
+Order = Enum('Order', 'incr decr keyIncr valueIncr keyDecr valueDecr shuffle')
 
 statics['incr'] = Order.incr
 statics['decr'] = Order.decr
@@ -1417,26 +1412,22 @@ statics['keyDecr'] = Order.keyDecr
 statics['valueDecr'] = Order.valueDecr
 statics['shuffle'] = Order.shuffle
 
-class Pop(Enum):
-   first, last, all = builtInRange(3)
+Pop = Enum('Pop', 'first last all')
 
 statics['first'] = Pop.first
 statics['last'] = Pop.last
 statics['all'] = Pop.all
 
-class Barrier(Enum):
-   normSack = builtInRange(1)
+Barrier = Enum('Barrier', 'normSack')
 
 statics['normSack'] = Barrier.normSack
 
-class Scope(Enum):
-   _global, local = builtInRange(2)
+Scope = Enum('Scope', '_global local')
 
 statics['_global'] = Scope._global
 statics['local'] = Scope.local
 
-class T(Enum):
-   label, id, key, value = builtInRange(4)
+T = Enum('T', 'label id key value')
 
 statics['label'] = T.label
 statics['id'] = T.id

@@ -219,11 +219,11 @@ builtInRange = range
 // Enums //
 ///////////
         for (final Class<? extends Enum> enumClass : enumList) {
-            pythonClass.append("class ${enumClass.getSimpleName()}(Enum):\n  ");
+            pythonClass.append("${enumClass.getSimpleName()} = Enum('${enumClass.getSimpleName()}', '");
             enumClass.getEnumConstants().each { value ->
-                pythonClass.append(" ${methodMap[value.name()]},");
+                pythonClass.append("${methodMap[value.name()]} ");
             }
-            pythonClass.deleteCharAt(pythonClass.length() - 1).append(" = builtInRange(${enumClass.getEnumConstants().length})\n\n")
+            pythonClass.deleteCharAt(pythonClass.length() - 1).append("')\n\n")
             enumClass.getEnumConstants().each { value ->
                 pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
             }
