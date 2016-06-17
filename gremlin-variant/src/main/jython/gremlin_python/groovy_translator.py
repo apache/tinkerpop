@@ -80,8 +80,7 @@ class GroovyTranslator(Translator):
     @staticmethod
     def stringOrObject(arg):
         if (isinstance(arg, str) and
-                not (arg.startswith("Computer.")) and
-                not (arg.startswith("ReadOnlyStrategy."))):
+                not (arg.startswith("Computer."))):
             return "\"" + arg + "\""
         elif isinstance(arg, bool):
             return str(arg).lower()

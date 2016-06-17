@@ -39,7 +39,7 @@ BEGIN {
       case "python":
         gsub(/^gremlin>/, ">>>")
         gsub(/^==>/, "")
-        print gensub(/shell.evaluate jython.eval\("""(.*)"""\).toString\(\)/, "\\1", 1)
+        print gensub(/groovy.eval jython.eval\("""(.*)"""\).toString\(\)/, "\\1", 1)
         break
       default:
         print

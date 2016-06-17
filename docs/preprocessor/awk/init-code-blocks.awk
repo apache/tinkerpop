@@ -88,18 +88,11 @@ BEGIN {
     print "jythonBindings = new SimpleBindings()"
     print "jythonBindings.put('g', jython.eval('PythonGraphTraversalSource(GroovyTranslator(\"g\"))'))"
     print "jython.getContext().setBindings(jythonBindings, javax.script.ScriptContext.GLOBAL_SCOPE)"
-    print "sharedData = new Binding()"
-    print "sharedData.setProperty('g', g)"
-    print "sharedData.setProperty('__', __)"
-    print "sharedData.setProperty('T', T)"
-    print "sharedData.setProperty('Order', Order)"
-    print "sharedData.setProperty('Column', Column)"
-    print "sharedData.setProperty('Direction', Direction)"
-    print "sharedData.setProperty('Operator', Operator)"
-    print "sharedData.setProperty('P', P)"
-    print "sharedData.setProperty('Pop', Pop)"
-    print "sharedData.setProperty('Scope', Scope)"
-    print "shell = new GroovyShell(sharedData)"
+    print "groovyBindings = new SimpleBindings()"
+    print "groovyBindings.put('g', g)"
+    print "groovyBindings.put('TinkerGraphComputer', TinkerGraphComputer)"
+    print "groovy = new org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine()"
+    print "groovy.getContext().setBindings(groovyBindings, javax.script.ScriptContext.GLOBAL_SCOPE)"
   }
   print "'-IGNORE'"
 }
@@ -108,7 +101,7 @@ BEGIN {
   if (delimiter == 2 && !($0 ~ /^pb\([0-9]*\); '----'/)) {
     switch (lang) {
       case "python":
-        print "shell.evaluate jython.eval(\"\"\"" $0 "\"\"\").toString()"
+        print "groovy.eval jython.eval(\"\"\"" $0 "\"\"\").toString()"
         break
       default:
         print

@@ -204,7 +204,7 @@ ultimately concatenated together by the `Translator`. Like lambdas, `RawExpressi
 translator and now the host language and thus, a `RawExpression` used for Gremlin-Groovy execution may not work
 for Gremlin-Jython.
 
-The following example uses `RawExpression` to call the `Geoshape.point` static constructor method on the `Geoshape`
+The following example uses `RawExpression` to call the `Geoshape.point()` static constructor method on the `Geoshape`
 class provided by Aurelius' link:http://titan.thinkaurelius.com/[Titan] graph database.
 
 [source,python]
@@ -215,7 +215,7 @@ g.V().has('location', RawExpression('Geoshape.point(', ('x', 45), ', ', ('y', -4
 Note that both `x` and `y` are `RemoteConnection` bindings with values 45 and -45 respectively.
 
 To help readability, especially if an expression will be used more than once, it is recommended that a helper class be
-created. Again, note that this helper class is tied to GroovyTranslator as its `point()` `RawExpression` return is
+created. Again, note that this helper class is tied to `GroovyTranslator` as its `point()` `RawExpression` return is
 tied to the the underlying execution language.
 
 [source,python]
@@ -238,5 +238,14 @@ Or, without using bindings:
 [source,python]
 ----
 g.V().has('location', Geoshape.point(45,-45))
+----
+
+Finally, `RawExpressions` are useful when adding or removing a `TraversalStrategy` from the `GraphTraversalSource` as
+they typically have Java-based APIs. Again, respective Python classes that yield `RawExpressions` can be used to make
+their use more readable.
+
+[gremlin-python,modern]
+----
+g.withComputer(RawExpression('compute(TinkerGraphComputer)')).V().pageRank().by('rank').valueMap('name','rank')
 ----
 
