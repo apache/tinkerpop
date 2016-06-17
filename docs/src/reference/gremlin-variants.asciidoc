@@ -157,6 +157,24 @@ That is, without the `__.`-prefix.
 g.V().repeat(out()).times(2).name.fold()
 ----
 
+RemoteConnection Bindings
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a traversal script is sent to `RemoteConnection` (e.g. GremlinServer), it will be compiled and executed by the respective
+`ScriptEngine` accordingly. If the same traversal is sent again, it can simply be executed as the compiled version will typically
+be cached. Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
+from `g.V(4).out('created').name'` as they are different scripts. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
+`{x : 4}` is the same. If a traversal is going to be run over and over again, but with different parameters, then bindings should be used.
+This can significantly speed up execution as compilation need only occur once. In Gremlin-Python, bindings are 2-tuples and used as follows.
+
+[gremlin-python,modern]
+----
+g.V(('id',1)).out('created').name
+g.V(('id',4)).out('created').name
+----
+
+In the two examples above, the remote compiler is only used once.
+
 Gremlin-Python Sugar
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -192,8 +210,8 @@ below.
 >>> getsource(lambda traverser: len(traverser.get().values('name')))
 "lambda traverser: len(traverser.get().values('name'))\n"
 
-The important point is that the "lambda solution" is not universal and each `Translator` will specify have lambdas should be
-written in the lost language in order to be used effectively in the translated/execution language.
+IMPORTANT: The "lambda solution" is not universal in that each `Translator` will specify how lambdas should be
+used in the host language in order to be applied in the translated/execution language.
 
 RawExpressions in Gremlin-Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

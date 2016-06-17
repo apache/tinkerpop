@@ -109,6 +109,11 @@ globalTranslator = None
                             """  def ${method}(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
     traversal.translator.addSpawnStep(traversal, "${method}", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return traversal
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
@@ -116,6 +121,11 @@ globalTranslator = None
                             """  def ${method}(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "${method}", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
 """)
                 }

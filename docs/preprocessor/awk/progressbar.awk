@@ -24,13 +24,13 @@ BEGIN {
 }
 
 /^pb\([0-9]*\); / {
-  max = gensub(/^pb\(([0-9]*)\); .*/, "\\1", "", $0)
+  max = gensub(/^pb\(([0-9]*)\); .*/, "\\1", "g", $0)
 }
 { content = content "\n" $0 }
 
 END {
   while ((getline line < tpl) > 0) {
-    print gensub(/TOTAL_LINES/, max, "", line)
+    print gensub(/TOTAL_LINES/, max, "g", line)
   }
   print content
 }

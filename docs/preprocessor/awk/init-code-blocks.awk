@@ -29,7 +29,7 @@ BEGIN {
 /^pb\([0-9]*\); '\[gremlin-/ {
   delimiter = 1
   split($0, a, "-")
-  b = gensub(/]'/, "", "", a[2])
+  b = gensub(/]'/, "", "g", a[2])
   split(b, c, ",")
   split(a[1], d, ";")
   lang = c[1]
@@ -101,7 +101,7 @@ BEGIN {
   if (delimiter == 2 && !($0 ~ /^pb\([0-9]*\); '----'/)) {
     switch (lang) {
       case "python":
-        print "groovy.eval jython.eval(\"\"\"" $0 "\"\"\").toString()"
+        print "groovy.eval jython.eval(\"\"\"" gensub("\\('id',([0-9]+)\\)", "\\1", "g") "\"\"\").toString()"
         break
       default:
         print
