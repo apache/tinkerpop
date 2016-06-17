@@ -79,8 +79,7 @@ class GroovyTranslator(Translator):
 
     @staticmethod
     def stringOrObject(arg):
-        if (isinstance(arg, str) and
-                not (arg.startswith("Computer."))):
+        if isinstance(arg, str):
             return "\"" + arg + "\""
         elif isinstance(arg, bool):
             return str(arg).lower()
