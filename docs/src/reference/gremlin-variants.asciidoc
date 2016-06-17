@@ -70,7 +70,7 @@ The `gremlin_rest_driver` is provided with Apache TinkerPop and it serves as a s
 via HTTP POST (using link:http://docs.python-requests.org/[requests]) and in return, is provided <<graphson-reader-writer,GraphSON>>-encoded results.
 `RESTRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_driver`.
 
-NOTE: For developers wishing to provide another driver implementation (e.g. one using the more efficient
+NOTE: For developers wishing to provide another *driver implementation* (e.g. one using the more efficient
 link:https://en.wikipedia.org/wiki/WebSocket[WebSockets] protocol), be sure to extend `RemoteConnection` in `gremlin_driver` so it
 can then be used by `PythonGraphTraversal`.
 
@@ -97,26 +97,38 @@ $ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 Within the CPython console, it is possible to evaluate the following.
 
 [source,python]
-conn = RESTRemoteConnection('http://localhost:8182','gremlin-groovy')
-g = PythonGraphTraversalSource("g",conn)
+conn = RESTRemoteConnection('http://localhost:8182')
+g = PythonGraphTraversalSource(GroovyTranslator('g'), conn)
 g.V().repeat(__.out()).times(2).name.toList()
 
 CAUTION: Python has `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` as reserved words. Gremlin-Python simply
 prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
 
-Static Tokens and Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~
+`GroovyTranslator` extends `Translator` and serves as a simple machine that translates Gremlin-Python to Gremlin-Groovy for ultimate
+evaluation on `GremlinGroovyScriptEngine` on GremlinServer. It is possible to write other translators to be used with other
+`ScriptEngines` on GremlinServer (or any other `RemoteConnection`-based endpoint).
 
-Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python.
+NOTE: For developers wishing to provide their own *translator implementation* (e.g. one using Jython), be sure to extend
+`Translator` in `gremlin_python` so it can be used by `PythonGraphTraversal`.
+
+Static Enums and Methods
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gremlin has various tokens (e.g. `T`, `P`, `Order`, `Operator`, etc.) that are represented in Gremlin-Python as Python `Enums`.
 
 [source,python]
 from gremlin_python import T
 from gremlin_python import Order
+from gremlin_python import Cardinality
 from gremlin_python import Column
+from gremlin_python import Direction
 from gremlin_python import Operator
 from gremlin_python import P
+from gremlin_python import Pop
+from gremlin_python import Scope
+from gremlin_python import Barrier
 
-These can be used analagously to how they are used in Gremlin-Java.
+These can be used analogously to how they are used in Gremlin-Java.
 
 [gremlin-python,modern]
 ----
@@ -130,14 +142,15 @@ from gremlin_python import statics
 for k in statics:
   globals()[k] = statics[k]
 
-With statics, loaded its possible to represent the above traversal as below.
+With statics loaded its possible to represent the above traversal as below.
 
 [gremlin-python,modern]
 ----
 g.V().hasLabel('person').has('age',gt(30)).order().by('age',decr)
 ----
 
-Moreover, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
+Finally, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
+That is, without the `__.`-prefix.
 
 [gremlin-python,modern]
 ----
@@ -148,7 +161,7 @@ Gremlin-Python Sugar
 ~~~~~~~~~~~~~~~~~~~~
 
 Python supports meta-programming and operator overloading. There are three uses of these techniques in Gremlin-Python that
-makes traversals a bit more succinct.
+makes traversals a bit more concise.
 
 [gremlin-python,modern]
 ----
@@ -157,37 +170,73 @@ g.V().both()[1]
 g.V().both().name
 ----
 
-Inserting arbitrary expressions with Gremlin-Python
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The Lambda Solution
+~~~~~~~~~~~~~~~~~~~
 
-To make use of APIs provided by your graph system vendor that aren't part of
-the gremlin traversal API, you can use `RawExpression`. `RawExpression` allows
-you to construct arbitrary expressions that collect bindings. When you pass
-strings and bindings to the `RawExpression` constructor, the arguments will
-be concatenated in the script that is sent to gremlin-server.
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is extremely difficult at best.
+As a simple solution, it is up to the `Translator` (not Gremlin-Python) to decide how
+link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambdas] should be treated. For `GroovyTranslator`,
+a Python lambda should be a zero-arg callable that returns a string representation of a Groovy closure.
 
-The following example uses `RawExpression` to call the `Geoshape.point` static
-constructor method on the `Geoshape` class provided by TitanDB.
+[gremlin-python,modern]
+----
+g.V().out().map(lambda: "it.get().value('name').length()").sum()
+----
+
+Note that with a `JythonTranslator` (currently not available through Apache TinkerPop), it is possible to introspect on
+the source code of a Python lambda and use that during translation. An example of how that would be achieved is provided
+below.
 
 [source,python]
+>>> from dill.source import getsource
+>>> getsource(lambda traverser: len(traverser.get().values('name')))
+"lambda traverser: len(traverser.get().values('name'))\n"
+
+The important point is that the "lambda solution" is not universal and each `Translator` will specify have lambdas should be
+written in the lost language in order to be used effectively in the translated/execution language.
+
+RawExpressions in Gremlin-Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A `RawExpression` allows users to leverage APIs offered by the graph system provider and host languages that are
+not part of the standard Gremlin language. The `RawExpression` constructor takes string and 2-tuple bindings that are
+ultimately concatenated together by the `Translator`. Like lambdas, `RawExpressions` are tied to the underlying
+translator and now the host language and thus, a `RawExpression` used for Gremlin-Groovy execution may not work
+for Gremlin-Jython.
+
+The following example uses `RawExpression` to call the `Geoshape.point` static constructor method on the `Geoshape`
+class provided by Aurelius' link:http://titan.thinkaurelius.com/[Titan] graph database.
+
+[source,python]
+----
 g.V().has('location', RawExpression('Geoshape.point(', ('x', 45), ', ', ('y', -45), ')'))
-# sends the following script to gremlin-server:
-# g.V().has("location", Geoshape.point(x, y))
-#
-# with the following bindings: {'x': 45, 'y': -45}
+----
 
-To help readability, especially if you will be using the expression more than
-once, it is recommended to use this in conjunction with a helper class as in
-the following example:
+Note that both `x` and `y` are `RemoteConnection` bindings with values 45 and -45 respectively.
+
+To help readability, especially if an expression will be used more than once, it is recommended that a helper class be
+created. Again, note that this helper class is tied to GroovyTranslator as its `point()` `RawExpression` return is
+tied to the the underlying execution language.
 
 [source,python]
+----
 class Geoshape(object):
     @staticmethod
     def point(latitude, longitude):
         return RawExpression('Geoshape.point(', latitude, ', ', longitude, ')')
+----
 
-The previous traversal can now be written much more simply:
+The previous traversal can now be written simply as below.
 
 [source,python]
+----
 g.V().has('location', Geoshape.point(('x', 45), ('y', -45)))
+----
+
+Or, without using bindings:
+
+[source,python]
+----
+g.V().has('location', Geoshape.point(45,-45))
+----
 
