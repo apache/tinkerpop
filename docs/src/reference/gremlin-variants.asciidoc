@@ -157,3 +157,37 @@ g.V().both()[1]
 g.V().both().name
 ----
 
+Inserting arbitrary expressions with Gremlin-Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To make use of APIs provided by your graph system vendor that aren't part of
+the gremlin traversal API, you can use `RawExpression`. `RawExpression` allows
+you to construct arbitrary expressions that collect bindings. When you pass
+strings and bindings to the `RawExpression` constructor, the arguments will
+be concatenated in the script that is sent to gremlin-server.
+
+The following example uses `RawExpression` to call the `Geoshape.point` static
+constructor method on the `Geoshape` class provided by TitanDB.
+
+[source,python]
+g.V().has('location', RawExpression('Geoshape.point(', ('x', 45), ', ', ('y', -45), ')'))
+# sends the following script to gremlin-server:
+# g.V().has("location", Geoshape.point(x, y))
+#
+# with the following bindings: {'x': 45, 'y': -45}
+
+To help readability, especially if you will be using the expression more than
+once, it is recommended to use this in conjunction with a helper class as in
+the following example:
+
+[source,python]
+class Geoshape(object):
+    @staticmethod
+    def point(latitude, longitude):
+        return RawExpression('Geoshape.point(', latitude, ', ', longitude, ')')
+
+The previous traversal can now be written much more simply:
+
+[source,python]
+g.V().has('location', Geoshape.point(('x', 45), ('y', -45)))
+

@@ -176,8 +176,10 @@ globalTranslator = None
                         """  def ${method}(self, *args):
     self.translator.addStep(self, "${method}", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
 """)
             }
@@ -229,6 +231,31 @@ globalTranslator = None
             pythonClass.append("\n");
         }
         //////////////
+
+        pythonClass.append("""class RawExpression(object):
+   def __init__(self, *args):
+      self.bindings = dict()
+      self.parts = [self._process_arg(arg) for arg in args]
+
+   def _process_arg(self, arg):
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+         self.bindings[arg[0]] = arg[1]
+         return Raw(arg[0])
+      else:
+         return Raw(arg)
+""")
+
+        pythonClass.append("\n")
+        pythonClass.append("""class Raw(object):
+   def __init__(self, value):
+      self.value = value
+
+   def __str__(self):
+      return str(self.value)
+""")
+
+        pythonClass.append("\n")
+
         pythonClass.append("""class P(object):
    def __init__(self, operator, value, other=None):
       self.operator = operator

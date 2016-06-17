@@ -119,602 +119,802 @@ class PythonGraphTraversal(object):
   def V(self, *args):
     self.translator.addStep(self, "V", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _and(self, *args):
     self.translator.addStep(self, "_and", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _as(self, *args):
     self.translator.addStep(self, "_as", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _from(self, *args):
     self.translator.addStep(self, "_from", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _in(self, *args):
     self.translator.addStep(self, "_in", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _is(self, *args):
     self.translator.addStep(self, "_is", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _not(self, *args):
     self.translator.addStep(self, "_not", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def _or(self, *args):
     self.translator.addStep(self, "_or", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def addE(self, *args):
     self.translator.addStep(self, "addE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def addInE(self, *args):
     self.translator.addStep(self, "addInE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def addOutE(self, *args):
     self.translator.addStep(self, "addOutE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def addV(self, *args):
     self.translator.addStep(self, "addV", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def aggregate(self, *args):
     self.translator.addStep(self, "aggregate", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def asAdmin(self, *args):
     self.translator.addStep(self, "asAdmin", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def barrier(self, *args):
     self.translator.addStep(self, "barrier", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def both(self, *args):
     self.translator.addStep(self, "both", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def bothE(self, *args):
     self.translator.addStep(self, "bothE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def bothV(self, *args):
     self.translator.addStep(self, "bothV", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def branch(self, *args):
     self.translator.addStep(self, "branch", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def by(self, *args):
     self.translator.addStep(self, "by", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def cap(self, *args):
     self.translator.addStep(self, "cap", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def choose(self, *args):
     self.translator.addStep(self, "choose", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def coalesce(self, *args):
     self.translator.addStep(self, "coalesce", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def coin(self, *args):
     self.translator.addStep(self, "coin", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def constant(self, *args):
     self.translator.addStep(self, "constant", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def count(self, *args):
     self.translator.addStep(self, "count", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def cyclicPath(self, *args):
     self.translator.addStep(self, "cyclicPath", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def dedup(self, *args):
     self.translator.addStep(self, "dedup", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def drop(self, *args):
     self.translator.addStep(self, "drop", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def emit(self, *args):
     self.translator.addStep(self, "emit", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def filter(self, *args):
     self.translator.addStep(self, "filter", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def flatMap(self, *args):
     self.translator.addStep(self, "flatMap", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def fold(self, *args):
     self.translator.addStep(self, "fold", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def group(self, *args):
     self.translator.addStep(self, "group", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def groupCount(self, *args):
     self.translator.addStep(self, "groupCount", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def groupV3d0(self, *args):
     self.translator.addStep(self, "groupV3d0", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def has(self, *args):
     self.translator.addStep(self, "has", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def hasId(self, *args):
     self.translator.addStep(self, "hasId", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def hasKey(self, *args):
     self.translator.addStep(self, "hasKey", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def hasLabel(self, *args):
     self.translator.addStep(self, "hasLabel", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def hasNot(self, *args):
     self.translator.addStep(self, "hasNot", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def hasValue(self, *args):
     self.translator.addStep(self, "hasValue", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def id(self, *args):
     self.translator.addStep(self, "id", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def identity(self, *args):
     self.translator.addStep(self, "identity", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def inE(self, *args):
     self.translator.addStep(self, "inE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def inV(self, *args):
     self.translator.addStep(self, "inV", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def inject(self, *args):
     self.translator.addStep(self, "inject", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def iterate(self, *args):
     self.translator.addStep(self, "iterate", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def key(self, *args):
     self.translator.addStep(self, "key", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def label(self, *args):
     self.translator.addStep(self, "label", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def limit(self, *args):
     self.translator.addStep(self, "limit", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def local(self, *args):
     self.translator.addStep(self, "local", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def loops(self, *args):
     self.translator.addStep(self, "loops", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def map(self, *args):
     self.translator.addStep(self, "map", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def mapKeys(self, *args):
     self.translator.addStep(self, "mapKeys", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def mapValues(self, *args):
     self.translator.addStep(self, "mapValues", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def match(self, *args):
     self.translator.addStep(self, "match", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def max(self, *args):
     self.translator.addStep(self, "max", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def mean(self, *args):
     self.translator.addStep(self, "mean", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def min(self, *args):
     self.translator.addStep(self, "min", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def option(self, *args):
     self.translator.addStep(self, "option", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def optional(self, *args):
     self.translator.addStep(self, "optional", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def order(self, *args):
     self.translator.addStep(self, "order", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def otherV(self, *args):
     self.translator.addStep(self, "otherV", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def out(self, *args):
     self.translator.addStep(self, "out", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def outE(self, *args):
     self.translator.addStep(self, "outE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def outV(self, *args):
     self.translator.addStep(self, "outV", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def pageRank(self, *args):
     self.translator.addStep(self, "pageRank", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def path(self, *args):
     self.translator.addStep(self, "path", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def peerPressure(self, *args):
     self.translator.addStep(self, "peerPressure", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def profile(self, *args):
     self.translator.addStep(self, "profile", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def program(self, *args):
     self.translator.addStep(self, "program", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def project(self, *args):
     self.translator.addStep(self, "project", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def properties(self, *args):
     self.translator.addStep(self, "properties", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def property(self, *args):
     self.translator.addStep(self, "property", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def propertyMap(self, *args):
     self.translator.addStep(self, "propertyMap", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def range(self, *args):
     self.translator.addStep(self, "range", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def repeat(self, *args):
     self.translator.addStep(self, "repeat", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def sack(self, *args):
     self.translator.addStep(self, "sack", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def sample(self, *args):
     self.translator.addStep(self, "sample", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def select(self, *args):
     self.translator.addStep(self, "select", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def sideEffect(self, *args):
     self.translator.addStep(self, "sideEffect", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def simplePath(self, *args):
     self.translator.addStep(self, "simplePath", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def store(self, *args):
     self.translator.addStep(self, "store", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def subgraph(self, *args):
     self.translator.addStep(self, "subgraph", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def sum(self, *args):
     self.translator.addStep(self, "sum", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def tail(self, *args):
     self.translator.addStep(self, "tail", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def timeLimit(self, *args):
     self.translator.addStep(self, "timeLimit", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def times(self, *args):
     self.translator.addStep(self, "times", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def to(self, *args):
     self.translator.addStep(self, "to", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def toE(self, *args):
     self.translator.addStep(self, "toE", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def toV(self, *args):
     self.translator.addStep(self, "toV", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def tree(self, *args):
     self.translator.addStep(self, "tree", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def unfold(self, *args):
     self.translator.addStep(self, "unfold", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def union(self, *args):
     self.translator.addStep(self, "union", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def until(self, *args):
     self.translator.addStep(self, "until", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def value(self, *args):
     self.translator.addStep(self, "value", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def valueMap(self, *args):
     self.translator.addStep(self, "valueMap", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def values(self, *args):
     self.translator.addStep(self, "values", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
   def where(self, *args):
     self.translator.addStep(self, "where", *args)
     for arg in args:
-      if isinstance(arg, dict) and 1 == len(arg) and isinstance(arg.keys()[0],str):
-        self.bindings.update(arg)
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return self
 
 
@@ -1432,6 +1632,25 @@ statics['label'] = T.label
 statics['id'] = T.id
 statics['key'] = T.key
 statics['value'] = T.value
+
+class RawExpression(object):
+   def __init__(self, *args):
+      self.bindings = dict()
+      self.parts = [self._process_arg(arg) for arg in args]
+
+   def _process_arg(self, arg):
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+         self.bindings[arg[0]] = arg[1]
+         return Raw(arg[0])
+      else:
+         return Raw(arg)
+
+class Raw(object):
+   def __init__(self, value):
+      self.value = value
+
+   def __str__(self):
+      return str(self.value)
 
 class P(object):
    def __init__(self, operator, value, other=None):
