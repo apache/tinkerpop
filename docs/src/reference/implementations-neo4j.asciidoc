@@ -54,9 +54,6 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
-NOTE: Neo4j link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] is currently not supported by
-Neo4j-Gremlin.
-
 TIP: To host Neo4j in <<gremlin-server,Gremlin Server>>, the dependencies must first be "installed" or otherwise
 copied to the Gremlin Server path. The automated method for doing this would be to execute
 `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
@@ -263,7 +260,7 @@ gremlin.neo4j.conf.relationship_auto_indexing=true
 High Availability Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TinkerPop supports running Neo4j with its fault tolerant master-slave replication configuration, referred to as its
+image:neo4j-ha.png[width=400,float=right] TinkerPop supports running Neo4j with its fault tolerant master-slave replication configuration, referred to as its
 link:http://neo4j.com/docs/operations-manual/current/#_neo4j_cluster_install[High Availability (HA) cluster]. From the
 TinkerPop perspective, configuring for HA is not that different than configuring for embedded mode as shown above. The
 main difference is the usage of HA configuration options that enable the cluster. Once connected to a cluster, usage
