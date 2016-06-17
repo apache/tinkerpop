@@ -35,50 +35,110 @@ class PythonGraphTraversalSource(object):
   def E(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
     traversal.translator.addSpawnStep(traversal, "E", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return traversal
   def V(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
     traversal.translator.addSpawnStep(traversal, "V", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return traversal
   def addV(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
     traversal.translator.addSpawnStep(traversal, "addV", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return traversal
   def inject(self, *args):
     traversal = PythonGraphTraversal(self.translator, self.remote_connection)
     traversal.translator.addSpawnStep(traversal, "inject", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return traversal
   def withBulk(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withBulk", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withComputer(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withComputer", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withPath(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withPath", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withSack(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withSack", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withSideEffect(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withSideEffect", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withStrategies(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withStrategies", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withTranslator(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withTranslator", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
   def withoutStrategies(self, *args):
     source = PythonGraphTraversalSource(self.translator, self.remote_connection)
     source.translator.addSource(source, "withoutStrategies", *args)
+    for arg in args:
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+        self.bindings[arg[0]] = arg[1]
+      elif isinstance(arg, RawExpression):
+        self.bindings.update(arg.bindings)
     return source
 
 
