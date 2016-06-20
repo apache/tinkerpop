@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.python;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
@@ -55,7 +56,7 @@ class PythonBypassTranslator extends PythonTranslator {
     }
 
     @Override
-    public String getScriptEngine() {
+    public String getExecutionLanguage() {
         return "gremlin-groovy";
     }
 
@@ -74,5 +75,10 @@ class PythonBypassTranslator extends PythonTranslator {
             }
         } else
             return traversal;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.translatorString(this);
     }
 }

@@ -61,6 +61,7 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
             GremlinGroovyScriptEngineTinkerPopSandboxTest.class,
             GremlinGroovyScriptEngineFileSandboxTest.class,
             GremlinExecutorOverGraphTest.class,
+            GroovyTranslatorTest.class,
             SugarLoaderTest.class,
     };
 

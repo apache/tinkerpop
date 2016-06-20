@@ -37,28 +37,7 @@ public class PythonProvider extends VariantGraphProvider {
     private static final boolean IMPORT_STATICS = new Random().nextBoolean();
 
     static {
-        try {
-            final String rootPackageName = (new File("gremlin-variant").exists() ? "gremlin-variant/" : "") + "src/main/jython/";
-            final String gremlinPythonPackageName = rootPackageName + "/gremlin_python";
-            final String gremlinDriverPackageName = rootPackageName + "/gremlin_driver";
-            final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
-            GremlinPythonGenerator.create(gremlinPythonModuleName);
-            final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-            jythonEngine.eval("import sys");
-            jythonEngine.eval("sys.path.append('" + gremlinPythonPackageName + "')");
-            jythonEngine.eval("sys.path.append('" + gremlinDriverPackageName + "')");
-            final String pythonPath = null == System.getenv("JYTHONPATH") ? System.getenv("PYTHONPATH") : System.getenv("JYTHONPATH");
-            if (null != pythonPath) {
-                for (final String path : pythonPath.split(":")) {
-                    jythonEngine.eval("sys.path.append('" + path + "')");
-                }
-            }
-            jythonEngine.eval("from gremlin_python import *");
-            jythonEngine.eval("from gremlin_python import __");
-            jythonEngine.eval("from groovy_translator import GroovyTranslator");
-        } catch (final ScriptException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+       JythonScriptEngineSetup.setup();
     }
 
     @Override

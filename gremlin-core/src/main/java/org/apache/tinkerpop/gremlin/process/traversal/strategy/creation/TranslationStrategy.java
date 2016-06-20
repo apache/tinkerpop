@@ -64,7 +64,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             return;
         try {
             final String traversalScriptString = this.translator.getTraversalScript();
-            ScriptEngine engine = ScriptEngineCache.get(this.translator.getScriptEngine());
+            ScriptEngine engine = ScriptEngineCache.get(this.translator.getExecutionLanguage());
             this.destroyAnonymousTraversalFunction();
             final Bindings bindings = new SimpleBindings();
             bindings.put(this.translator.getAlias(), this.traversalSource);

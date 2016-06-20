@@ -32,9 +32,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,8 +56,18 @@ public final class GroovyTranslator implements Translator {
     }
 
     @Override
-    public String getScriptEngine() {
+    public String getHostLanguage() {
+        return "gremlin-java";
+    }
+
+    @Override
+    public String getExecutionLanguage() {
         return "gremlin-groovy";
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.translatorString(this);
     }
 
     @Override
@@ -133,14 +145,20 @@ public final class GroovyTranslator implements Translator {
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Traversal) {
+        else if (object instanceof Computer) { // TODO: blow out
+            return "";
+        } else if (object instanceof Function) {
+            try {
+                return "{" + ((Function) object).apply(null).toString() + "}";
+            } catch (final Exception e) {
+                return object.toString(); // TODO: hack for testing
+            }
+        } else if (object instanceof Traversal) {
             final TranslationStrategy strategy = (TranslationStrategy) ((Traversal.Admin) object).getStrategies().toList()
                     .stream()
                     .filter(s -> s instanceof TranslationStrategy)
                     .findFirst().get();
             return strategy.getTranslator().getTraversalScript();
-        } else if (object instanceof Computer) { // todo: blow out
-            return "";
         } else
             return null == object ? "null" : object.toString();
     }

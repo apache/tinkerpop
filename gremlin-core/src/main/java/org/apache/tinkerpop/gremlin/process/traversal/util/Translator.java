@@ -21,15 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Translator extends Cloneable {
-
-    public String getScriptEngine();
 
     public String getAlias();
 
@@ -49,4 +45,7 @@ public interface Translator extends Cloneable {
 
     public Translator clone();
 
+    public String getHostLanguage();
+
+    public String getExecutionLanguage();
 }

@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -44,6 +45,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,7 +85,12 @@ public class PythonTranslator implements Translator {
     }
 
     @Override
-    public String getScriptEngine() {
+    public String getHostLanguage() {
+        return "gremlin-java";
+    }
+
+    @Override
+    public String getExecutionLanguage() {
         return "jython";
     }
 
@@ -140,6 +147,11 @@ public class PythonTranslator implements Translator {
         }
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.translatorString(this);
+    }
+
     ///////
 
     private String convertToString(final Object object) {
@@ -153,6 +165,8 @@ public class PythonTranslator implements Translator {
             return list.toString();
         } else if (object instanceof Long)
             return object + "L";
+        else if (object instanceof Boolean)
+            return object.equals(Boolean.TRUE) ? "True" : "False";
         else if (object instanceof Class)
             return ((Class) object).getCanonicalName();
         else if (object instanceof VertexProperty.Cardinality)
@@ -173,9 +187,13 @@ public class PythonTranslator implements Translator {
             return strategy.getTranslator().getTraversalScript();
         } else if (object instanceof Computer) {
             return "";
-        } else if (object instanceof Boolean)
-            return object.equals(Boolean.TRUE) ? "True" : "False";
-        else
+        } else if (object instanceof Function) {
+            try {
+                return "lambda: \"" + ((Function) object).apply(null).toString() + "\"";
+            } catch (final Exception e) {
+                return object.toString(); // TODO: hack for testing
+            }
+        } else
             return null == object ? "" : object.toString();
     }
 
