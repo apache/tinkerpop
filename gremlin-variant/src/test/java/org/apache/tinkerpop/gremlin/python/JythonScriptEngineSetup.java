@@ -38,12 +38,14 @@ public class JythonScriptEngineSetup {
             final String rootPackageName = (new File("gremlin-variant").exists() ? "gremlin-variant/" : "") + "src/main/jython/";
             final String gremlinPythonPackageName = rootPackageName + "/gremlin_python";
             final String gremlinDriverPackageName = rootPackageName + "/gremlin_driver";
+            final String gremlinRESTDriverPackageName = rootPackageName + "/gremlin_rest_driver";
             final String gremlinPythonModuleName = gremlinPythonPackageName + "/gremlin_python.py";
             GremlinPythonGenerator.create(gremlinPythonModuleName);
             final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
             jythonEngine.eval("import sys");
             jythonEngine.eval("sys.path.append('" + gremlinPythonPackageName + "')");
             jythonEngine.eval("sys.path.append('" + gremlinDriverPackageName + "')");
+            jythonEngine.eval("sys.path.append('" + gremlinRESTDriverPackageName + "')");
             final String pythonPath = null == System.getenv("JYTHONPATH") ? System.getenv("PYTHONPATH") : System.getenv("JYTHONPATH");
             if (null != pythonPath) {
                 for (final String path : pythonPath.split(":")) {
@@ -53,6 +55,7 @@ public class JythonScriptEngineSetup {
             jythonEngine.eval("from gremlin_python import *");
             jythonEngine.eval("from gremlin_python import __");
             jythonEngine.eval("from groovy_translator import GroovyTranslator");
+            jythonEngine.eval("from gremlin_rest_driver import RESTRemoteConnection");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
