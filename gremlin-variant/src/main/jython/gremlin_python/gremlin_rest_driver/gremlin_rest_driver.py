@@ -16,24 +16,26 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from abc import abstractmethod
+import json
+import requests
+from .gremlin_driver import RemoteConnection
+from .gremlin_driver import Traverser
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
-class Traverser(object):
-    def __init__(self, object, bulk):
-        self.object = object
-        self.bulk = bulk
-    def __repr__(self):
-        return str(self.object)
-
-
-class RemoteConnection(object):
+class RESTRemoteConnection(RemoteConnection):
     def __init__(self, url):
-        self.url = url
+        RemoteConnection.__init__(self, url)
 
-    @abstractmethod
+    def __repr__(self):
+        return "RESTRemoteConnection[" + self.url + "]"
+
     def submit(self, script_engine, script, bindings):
-        print "sending " + script + " to GremlinServer..."
-        return iter([])
+        response = requests.post(self.url, data=json.dumps({"gremlin": script, "language": script_engine, "bindings": bindings}))
+        if response.status_code != requests.codes.ok:
+            raise BaseException(response.text)
+        results = []
+        for x in response.json()['result']['data']:
+            results.append(Traverser(x, 1))
+        return iter(results)

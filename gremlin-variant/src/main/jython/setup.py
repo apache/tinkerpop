@@ -40,9 +40,10 @@ if not os.path.exists(os.path.join(root, 'PKG-INFO')):
 exec(open(version_file).read())
 
 setup(
-    name='gremlinpython',
+    name='gremlin_python',
     version=version,
-    packages=['gremlin_driver','gremlin_python', 'gremlin_rest_driver'],
+    packages=['gremlin_python', 'gremlin_python.gremlin_driver',
+              'gremlin_python.gremlin_rest_driver'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',
     description='Gremlin Language Variant for Apache TinkerPop - Gremlin',
