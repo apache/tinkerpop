@@ -150,13 +150,9 @@ public final class GroovyTranslator implements Translator {
         } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
-        } else if (object instanceof Traversal) {
-            final TranslationStrategy strategy = (TranslationStrategy) ((Traversal.Admin) object).getStrategies().toList()
-                    .stream()
-                    .filter(s -> s instanceof TranslationStrategy)
-                    .findFirst().get();
-            return strategy.getTranslator().getTraversalScript();
-        } else
+        } else if (object instanceof Traversal)
+            return ((Traversal) object).asAdmin().getStrategies().getStrategy(TranslationStrategy.class).get().getTranslator().getTraversalScript();
+        else
             return null == object ? "null" : object.toString();
     }
 

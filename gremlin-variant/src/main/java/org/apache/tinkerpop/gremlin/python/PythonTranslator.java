@@ -179,17 +179,13 @@ public class PythonTranslator implements Translator {
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Traversal) {
-            final TranslationStrategy strategy = (TranslationStrategy) ((Traversal.Admin) object).getStrategies().toList()
-                    .stream()
-                    .filter(s -> s instanceof TranslationStrategy)
-                    .findFirst().get();
-            return strategy.getTranslator().getTraversalScript();
-        } else if (object instanceof Computer) {
+        else if (object instanceof Traversal)
+            return ((Traversal) object).asAdmin().getStrategies().getStrategy(TranslationStrategy.class).get().getTranslator().getTraversalScript();
+        else if (object instanceof Computer) {
             return "";
         } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript();
-            return lambdaString.startsWith("lambda") ? "\"" + lambdaString + "\"" : "lambda: \"" + lambdaString + "\"";
+            return lambdaString.startsWith("lambda") ? lambdaString : "lambda: \"" + lambdaString + "\"";
         } else
             return null == object ? "" : object.toString();
     }

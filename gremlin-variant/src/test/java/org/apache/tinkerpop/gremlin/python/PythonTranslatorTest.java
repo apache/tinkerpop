@@ -49,12 +49,12 @@ public class PythonTranslatorTest {
         final GraphTraversalSource g = TinkerFactory.createModern().traversal().withTranslator(PythonBypassTranslator.of("g",true));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
-                .filter(Lambda.predicate("it.get().label().equals('person')"))
+                .filter(Lambda.predicate("lambda: \"it.get().label().equals('person')\""))
                 .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("it.get().vertices(Direction.OUT)"))
                 .map(Lambda.<Traverser<Vertex>, Integer>function("it.get().value('name').length()"))
                 .sideEffect(Lambda.consumer("x -> x.sideEffects('lengthSum', x.<Integer>sideEffects('lengthSum') + x.get())"))
                 .order().by(Lambda.comparator("a,b -> a <=> b"))
-                .sack(Lambda.biFunction("a,b -> a + b"))
+                .sack(Lambda.biFunction("lambda : \"a,b -> a + b\""))
                 .asAdmin();
         final List<Integer> sacks = new ArrayList<>();
         final List<Integer> lengths = new ArrayList<>();

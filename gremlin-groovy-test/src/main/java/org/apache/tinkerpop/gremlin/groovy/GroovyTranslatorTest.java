@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -47,8 +46,8 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("it.get().label().equals('person')"))
-                .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("it.get().vertices(Direction.OUT)"))
-                .map(Lambda.<Traverser<Vertex>, Integer>function("it.get().value('name').length()"))
+                .flatMap(Lambda.function("it.get().vertices(Direction.OUT)"))
+                .map(Lambda.<Traverser<Object>, Integer>function("it.get().value('name').length()"))
                 .sideEffect(Lambda.consumer("{ x -> x.sideEffects(\"lengthSum\", x.<Integer>sideEffects('lengthSum') + x.get()) }"))
                 .order().by(Lambda.comparator("a,b -> a <=> b"))
                 .sack(Lambda.biFunction("{ a,b -> a + b }"))
