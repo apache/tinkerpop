@@ -39,6 +39,10 @@ class PythonBypassTranslator extends PythonTranslator {
         super(alias, importStatics);
     }
 
+    public static PythonBypassTranslator of(final String alias) {
+        return new PythonBypassTranslator(alias, false);
+    }
+
     public static PythonBypassTranslator of(final String alias, final boolean importStatics) {
         return new PythonBypassTranslator(alias, importStatics);
     }

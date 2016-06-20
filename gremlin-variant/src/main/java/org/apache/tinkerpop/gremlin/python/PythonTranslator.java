@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -45,7 +46,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -187,12 +187,9 @@ public class PythonTranslator implements Translator {
             return strategy.getTranslator().getTraversalScript();
         } else if (object instanceof Computer) {
             return "";
-        } else if (object instanceof Function) {
-            try {
-                return "lambda: \"" + ((Function) object).apply(null).toString() + "\"";
-            } catch (final Exception e) {
-                return object.toString(); // TODO: hack for testing
-            }
+        } else if (object instanceof Lambda) {
+            final String lambdaString = ((Lambda) object).getLambdaScript();
+            return lambdaString.startsWith("lambda") ? "\"" + lambdaString + "\"" : "lambda: \"" + lambdaString + "\"";
         } else
             return null == object ? "" : object.toString();
     }

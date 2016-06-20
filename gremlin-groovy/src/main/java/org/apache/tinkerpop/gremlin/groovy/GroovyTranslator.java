@@ -33,10 +33,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -147,12 +147,9 @@ public final class GroovyTranslator implements Translator {
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Computer) { // TODO: blow out
             return "";
-        } else if (object instanceof Function) {
-            try {
-                return "{" + ((Function) object).apply(null).toString() + "}";
-            } catch (final Exception e) {
-                return object.toString(); // TODO: hack for testing
-            }
+        } else if (object instanceof Lambda) {
+            final String lambdaString = ((Lambda) object).getLambdaScript();
+            return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Traversal) {
             final TranslationStrategy strategy = (TranslationStrategy) ((Traversal.Admin) object).getStrategies().toList()
                     .stream()
