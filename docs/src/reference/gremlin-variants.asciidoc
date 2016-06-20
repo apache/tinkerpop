@@ -37,6 +37,9 @@ with Apache TinkerPop. For information on how to build a Gremlin language varian
 please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
 tutorial.
 
+NOTE: The language that Gremlin is embedded in is called the *host language* and the language that a translator translates
+to for evaluation is called the *execution language*.
+
 [[gremlin-python]]
 Gremlin-Python
 --------------
