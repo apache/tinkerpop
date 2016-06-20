@@ -32,11 +32,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -300,6 +305,23 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         } catch (Exception ex) {
             assertTrue(ex instanceof NoSuchElementException);
         }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void shouldFilterVertexCriterionAndKeepLabels() throws Exception {
+        // this will exclude "peter"
+        final Traversal<Vertex, ?> vertexCriterion = __.has("name", P.within("ripple", "josh", "marko"));
+
+        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
+        final GraphTraversalSource sg = create(strategy);
+
+        assertEquals(9, g.V().as("a").out().in().as("b").dedup("a", "b").count().next().intValue());
+        assertEquals(2, sg.V().as("a").out().in().as("b").dedup("a", "b").count().next().intValue());
+
+        final List<Object> list = sg.V().as("a").out().in().as("b").dedup("a", "b").values("name").toList();
+        assertThat(list, hasItems("marko", "josh"));
     }
 
     @Test(expected = NoSuchElementException.class)

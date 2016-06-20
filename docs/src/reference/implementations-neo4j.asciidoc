@@ -54,9 +54,6 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
-NOTE: Neo4j link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] is currently not supported by
-Neo4j-Gremlin.
-
 TIP: To host Neo4j in <<gremlin-server,Gremlin Server>>, the dependencies must first be "installed" or otherwise
 copied to the Gremlin Server path. The automated method for doing this would be to execute
 `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
@@ -259,3 +256,77 @@ gremlin.neo4j.directory=/tmp/neo4j
 gremlin.neo4j.conf.node_auto_indexing=true
 gremlin.neo4j.conf.relationship_auto_indexing=true
 ----
+
+High Availability Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+image:neo4j-ha.png[width=400,float=right] TinkerPop supports running Neo4j with its fault tolerant master-slave replication configuration, referred to as its
+link:http://neo4j.com/docs/operations-manual/current/#_neo4j_cluster_install[High Availability (HA) cluster]. From the
+TinkerPop perspective, configuring for HA is not that different than configuring for embedded mode as shown above. The
+main difference is the usage of HA configuration options that enable the cluster. Once connected to a cluster, usage
+from the TinkerPop perspective is largely the same.
+
+In configuring for HA the most important thing to realize is that all Neo4j HA settings are simply passed through the
+TinkerPop configuration settings given to the `GraphFactory.open()` or `Neo4j.open()` methods. For example, to
+provide the all-important `ha.server_id` configuration option through TinkerPop, simply prefix that key with the
+TinkerPop Neo4j key of `gremlin.neo4j.conf`.
+
+The following properties demonstrates one of the three configuration files required to setup a simple three node HA
+cluster on the same machine instance:
+
+[source,properties]
+----
+gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+gremlin.neo4j.directory=/tmp/neo4j.server1
+gremlin.neo4j.conf.ha.server_id=1
+gremlin.neo4j.conf.ha.initial_hosts=localhost:5001\,localhost:5002\,localhost:5003
+gremlin.neo4j.conf.ha.cluster_server=localhost:5001
+gremlin.neo4j.conf.ha.server=localhost:6001
+----
+
+Assuming the intent is to configure this cluster completely within TinkerPop (perhaps within three separate Gremlin
+Server instances), the other two configuration files will be quite similar. The second will be:
+
+[source,properties]
+----
+gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+gremlin.neo4j.directory=/tmp/neo4j.server2
+gremlin.neo4j.conf.ha.server_id=2
+gremlin.neo4j.conf.ha.initial_hosts=localhost:5001\,localhost:5002\,localhost:5003
+gremlin.neo4j.conf.ha.cluster_server=localhost:5002
+gremlin.neo4j.conf.ha.server=localhost:6002
+----
+
+and the third will be:
+
+[source,properties]
+----
+gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+gremlin.neo4j.directory=/tmp/neo4j.server3
+gremlin.neo4j.conf.ha.server_id=3
+gremlin.neo4j.conf.ha.initial_hosts=localhost:5001\,localhost:5002\,localhost:5003
+gremlin.neo4j.conf.ha.cluster_server=localhost:5003
+gremlin.neo4j.conf.ha.server=localhost:6003
+----
+
+IMPORTANT: The backslashes in the values provided to `gremlin.neo4j.conf.ha.initial_hosts` prevent that configuration
+setting as being interpreted as a `List`.
+
+Create three separate Gremlin Server configuration files and point each at one of these Neo4j files. Since these Gremlin
+Server instances will be running on the same machine, ensure that each Gremlin Server instance has a unique `port`
+setting in that Gremlin Server configuration file. Start each Gremlin Server instance to bring the HA cluster online.
+
+NOTE: `Neo4jGraph` instances will block until all nodes join the cluster.
+
+Neither Gremlin Server nor Neo4j will share transactions across the cluster. Be sure to either use Gremlin Server
+managed transactions or, if using a session without that option, ensure that all requests are being routed to the
+same server.
+
+This example discussed use of Gremlin Server to demonstrate the HA configuration, but it is also easy to setup with
+three Gremlin Console instances. Simply start three Gremlin Console instances and use `GraphFactory` to read those
+configuration files to form the cluster. Furthermore, keep in mind that it is possible to have a Gremlin Console join
+a cluster handled by two Gremlin Servers or Neo4j Enterprise. The only limits as to how the configuration can be
+utilized are prescribed by Neo4j itself. Please refer to their
+link:http://neo4j.com/docs/operations-manual/current/#ha-setup-tutorial[documentation] for more information on how
+this feature works.
+
