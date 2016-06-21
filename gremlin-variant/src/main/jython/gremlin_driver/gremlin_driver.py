@@ -34,6 +34,6 @@ class RemoteConnection(object):
         self.url = url
 
     @abstractmethod
-    def submit(self, script_engine, script, bindings):
+    def submit(self, target_language, script, bindings):
         print "sending " + script + " to GremlinServer..."
         return iter([])

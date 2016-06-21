@@ -37,29 +37,29 @@ enumMap = {"Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunction
 
 
 class GroovyTranslator(Translator):
-    def __init__(self, alias, script_engine="gremlin-groovy"):
-        Translator.__init__(self, alias, script_engine)
+    def __init__(self, alias, source_language="python", target_language="gremlin-groovy"):
+        Translator.__init__(self, alias, source_language, target_language)
 
     def addStep(self, traversal, step_name, *args):
         self.traversal_script = self.traversal_script + "." + GroovyTranslator.mapMethod(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
 
     def addSpawnStep(self, traversal, step_name, *args):
-        newTranslator = GroovyTranslator(self.alias, self.script_engine)
+        newTranslator = GroovyTranslator(self.alias, self.source_language)
         newTranslator.traversal_script = self.traversal_script
         newTranslator.traversal_script = newTranslator.traversal_script + "." + GroovyTranslator.mapMethod(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
         traversal.translator = newTranslator
 
     def addSource(self, traversal_source, source_name, *args):
-        newTranslator = GroovyTranslator(self.alias, self.script_engine)
+        newTranslator = GroovyTranslator(self.alias, self.source_language)
         newTranslator.traversal_script = self.traversal_script
         newTranslator.traversal_script = newTranslator.traversal_script + "." + GroovyTranslator.mapMethod(
             source_name) + "(" + GroovyTranslator.stringify(*args) + ")"
         traversal_source.translator = newTranslator
 
     def getAnonymousTraversalTranslator(self):
-        return GroovyTranslator("__", self.script_engine)
+        return GroovyTranslator("__", self.source_language)
 
     ### HELPER METHODS ###
 

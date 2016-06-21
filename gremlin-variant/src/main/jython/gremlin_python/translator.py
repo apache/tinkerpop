@@ -22,9 +22,10 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class Translator(object):
-    def __init__(self, alias, script_engine):
+    def __init__(self, alias, source_language, target_language):
         self.alias = alias
-        self.script_engine = script_engine
+        self.source_language = source_language
+        self.target_language = target_language
         self.traversal_script = alias
 
     @abstractmethod
@@ -41,4 +42,4 @@ class Translator(object):
 
     @abstractmethod
     def getAnonymousTraversalTranslator(self):
-        return Translator(self.alias, self.script_engine)
+        return Translator(self.alias, self.source_language, self.target_language)

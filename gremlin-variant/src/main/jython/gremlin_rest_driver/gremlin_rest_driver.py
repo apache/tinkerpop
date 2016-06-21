@@ -31,8 +31,8 @@ class RESTRemoteConnection(RemoteConnection):
     def __repr__(self):
         return "RESTRemoteConnection[" + self.url + "]"
 
-    def submit(self, script_engine, script, bindings):
-        response = requests.post(self.url, data=json.dumps({"gremlin": script, "language": script_engine, "bindings": bindings}))
+    def submit(self, target_language, script, bindings):
+        response = requests.post(self.url, data=json.dumps({"gremlin": script, "language": target_language, "bindings": bindings}))
         if response.status_code != requests.codes.ok:
             raise BaseException(response.text)
         results = []

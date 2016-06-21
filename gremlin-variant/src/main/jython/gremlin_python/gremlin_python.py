@@ -168,7 +168,7 @@ class PythonGraphTraversal(object):
     return list(iter(self))
   def next(self):
      if self.results is None:
-        self.results = self.remote_connection.submit(self.translator.script_engine, self.translator.traversal_script, self.bindings)
+        self.results = self.remote_connection.submit(self.translator.target_language, self.translator.traversal_script, self.bindings)
      if self.last_traverser is None:
          self.last_traverser = next(self.results)
      object = self.last_traverser.object

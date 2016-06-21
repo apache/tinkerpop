@@ -45,7 +45,7 @@ public interface Translator extends Cloneable {
 
     public Translator clone();
 
-    public String getHostLanguage();
+    public String getSourceLanguage();
 
-    public String getExecutionLanguage();
+    public String getTargetLanguage();
 }

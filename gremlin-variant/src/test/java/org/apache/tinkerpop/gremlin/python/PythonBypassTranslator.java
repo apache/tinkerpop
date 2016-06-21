@@ -60,7 +60,7 @@ class PythonBypassTranslator extends PythonTranslator {
     }
 
     @Override
-    public String getExecutionLanguage() {
+    public String getTargetLanguage() {
         return "gremlin-groovy";
     }
 

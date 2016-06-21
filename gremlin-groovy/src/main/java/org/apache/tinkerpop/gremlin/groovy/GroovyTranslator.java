@@ -56,12 +56,12 @@ public final class GroovyTranslator implements Translator {
     }
 
     @Override
-    public String getHostLanguage() {
+    public String getSourceLanguage() {
         return "gremlin-java";
     }
 
     @Override
-    public String getExecutionLanguage() {
+    public String getTargetLanguage() {
         return "gremlin-groovy";
     }
 
