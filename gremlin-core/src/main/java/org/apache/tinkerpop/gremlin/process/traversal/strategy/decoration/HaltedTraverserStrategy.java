@@ -32,11 +32,13 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private final Class haltedTraverserFactory;
+    private final boolean useReference;
 
     private HaltedTraverserStrategy(final Class haltedTraverserFactory) {
-        if (haltedTraverserFactory.equals(DetachedFactory.class) || haltedTraverserFactory.equals(ReferenceFactory.class))
+        if (haltedTraverserFactory.equals(DetachedFactory.class) || haltedTraverserFactory.equals(ReferenceFactory.class)) {
             this.haltedTraverserFactory = haltedTraverserFactory;
-        else
+            this.useReference = ReferenceFactory.class.equals(this.haltedTraverserFactory);
+        } else
             throw new IllegalArgumentException("The provided traverser detachment factory is unknown: " + haltedTraverserFactory);
     }
 
@@ -49,7 +51,7 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
     }
 
     public <R> Traverser.Admin<R> halt(final Traverser.Admin<R> traverser) {
-        if (ReferenceFactory.class.equals(this.haltedTraverserFactory))
+        if (this.useReference)
             traverser.set(ReferenceFactory.detach(traverser.get()));
         else
             traverser.set(DetachedFactory.detach(traverser.get(), true));
