@@ -46,6 +46,10 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest$Traversals",
+        method = "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
+        reason = "RemoteGraph can not handle a sideEffect that is spawned by a traversal")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "shouldNeverPropagateANoBulkTraverser",
         reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
@@ -53,6 +57,10 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "shouldNeverPropagateANullValuedTraverser",
         reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest",
+        method = "*",
+        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest",
         method = "*",
@@ -65,18 +73,6 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest",
         method = "*",
         reason = "RemoteGraph does not support PartitionStrategy at this time")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest",
-        method = "g_V_peerPressure",
-        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest",
-        method = "g_V_pageRank",
-        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest",
-        method = "g_V_programXpageRankX",
-        reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",
         method = "*",

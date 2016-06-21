@@ -22,6 +22,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
@@ -160,7 +161,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
-            if (attachElements) {
+            if (attachElements && !t.asAdmin().getStrategies().toList().stream().filter(s -> s instanceof VertexProgramStrategy).findAny().isPresent()) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
                 return new AttachingTraverserIterator<>(client.submit(t).iterator(), graph);
