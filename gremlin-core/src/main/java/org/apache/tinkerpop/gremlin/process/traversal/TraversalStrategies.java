@@ -76,6 +76,13 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         return (List<T>) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).collect(Collectors.toList());
     }
 
+    /**
+     * Return the {@link TraversalStrategy} instance associated with the provided class.
+     *
+     * @param traversalStrategyClass the class of the strategy to get
+     * @param <T>                    the strategy class type
+     * @return an optional containing the strategy instance or not
+     */
     public default <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
         return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
     }

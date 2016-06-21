@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -81,6 +80,16 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         return Collections.unmodifiableList(this.traversalStrategies);
     }
 
+    @Override
+    public <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
+        for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
+            if (traversalStrategyClass.isAssignableFrom(traversalStrategy.getClass()))
+                return (Optional) Optional.of(traversalStrategy);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public <T extends TraversalStrategy> List<T> getStrategies(final Class<T> traversalStrategyClass) {
         if (null == this.strategyMap) {
             this.strategyMap = new HashMap<>();
