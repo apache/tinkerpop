@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -45,7 +46,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -127,7 +127,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
 
-        final Traversal.Admin<?,?> traversal;
+        final Traversal.Admin<?, ?> traversal;
         try {
             traversal = (Traversal.Admin) Serializer.deserializeObject(serializedTraversal);
         } catch (Exception ex) {
@@ -158,7 +158,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     try {
                         // compile the traversal - without it getEndStep() has nothing in it
                         traversal.applyStrategies();
-                        handleIterator(context, new DetachingIterator<>(traversal.getEndStep()));
+                        handleIterator(context, new DetachingIterator<>(traversal));
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
@@ -200,19 +200,24 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     static class DetachingIterator<E> implements Iterator<Traverser.Admin<E>> {
 
         private Iterator<Traverser.Admin<E>> inner;
+        private HaltedTraverserStrategy haltedTraverserStrategy;
 
-        public DetachingIterator(final Iterator<Traverser.Admin<E>> toDetach) {
-            inner = toDetach;
+        public DetachingIterator(final Traversal.Admin<?, E> traversal) {
+            this.inner = traversal.getEndStep();
+            this.haltedTraverserStrategy = (HaltedTraverserStrategy) traversal.getStrategies().toList().stream().filter(s -> s instanceof HaltedTraverserStrategy).findAny().orElse(
+                    Boolean.valueOf(System.getProperty("is.testing", "false")) ?
+                            HaltedTraverserStrategy.detached() :
+                            HaltedTraverserStrategy.reference());
         }
 
         @Override
         public boolean hasNext() {
-            return inner.hasNext();
+            return this.inner.hasNext();
         }
 
         @Override
         public Traverser.Admin<E> next() {
-            return inner.next().detach();
+            return this.haltedTraverserStrategy.halt(this.inner.next());
         }
     }
 }
