@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TraversalExplanation.prettyPrint()` exists which provides word wrapping and GremlinConsole is smart to use console width to control `toString()`.
 * `TraversalOpProcessor` (`RemoteConnection`) uses `HaltedTraverserStrategy` metadata to determine detachment procedure prior to returning results.
 * Allow DFS paths in `HADOOP_GREMLIN_LIBS`.
 * Added a safer serializer infrastructure for use with `SparkGraphComputer` that uses `KryoSerializer` and the new `GryoRegistrator`.
