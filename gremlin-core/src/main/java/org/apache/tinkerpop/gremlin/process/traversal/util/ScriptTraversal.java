@@ -19,13 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.util.List;
 
 /**
  * ScriptTraversal encapsulates a {@link ScriptEngine} and a script which is compiled into a {@link Traversal} at {@link Admin#applyStrategies()}.
@@ -35,6 +39,7 @@ import javax.script.ScriptException;
  */
 public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
 
+    private final String alias;
     private final TraversalSourceFactory factory;
     private final String script;
     private final String scriptEngine;
@@ -42,6 +47,7 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
 
     public ScriptTraversal(final TraversalSource traversalSource, final String scriptEngine, final String script, final Object... bindings) {
         super();
+        this.alias = "g";
         this.graph = traversalSource.getGraph();
         this.factory = new TraversalSourceFactory<>(traversalSource);
         this.scriptEngine = scriptEngine;
@@ -51,13 +57,30 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
     }
 
+    public ScriptTraversal(final TranslationStrategy translationStrategy, final Object... bindings) {
+        super();
+        final Translator translator = translationStrategy.getTranslator();
+        final TraversalSource traversalSource = translationStrategy.getTraversalSource().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
+        //
+        this.alias = translator.getAlias();
+        this.graph = traversalSource.getGraph();
+        this.factory = new TraversalSourceFactory<>(traversalSource);
+        this.scriptEngine = translator.getTargetLanguage();
+        this.script = translator.getTraversalScript();
+        this.bindings = bindings;
+        if (this.bindings.length % 2 != 0)
+            throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
+    }
+
     @Override
     public void applyStrategies() throws IllegalStateException {
         try {
+            assert 0 == this.getSteps().size();
             final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngine);
             final Bindings engineBindings = engine.createBindings();
-            engineBindings.put("g", this.factory.createTraversalSource(this.graph));
-            engineBindings.put("graph", this.graph);
+            final List<TraversalStrategy<?>> strategyList = this.getStrategies().toList();
+            engineBindings.put(this.alias, this.factory.createTraversalSource(this.graph).withStrategies(strategyList.toArray(new TraversalStrategy[strategyList.size()])));
+            engineBindings.put("graph", this.graph); // TODO: we don't need this as the traversalSource.getGraph() exists, but its now here and people might be using it (remove in 3.3.0)
             for (int i = 0; i < this.bindings.length; i = i + 2) {
                 engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
             }

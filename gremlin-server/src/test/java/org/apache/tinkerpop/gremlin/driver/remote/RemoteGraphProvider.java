@@ -45,7 +45,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     }};
 
     private static GremlinServer server;
-    private final Map<String,RemoteGraph> remoteCache = new HashMap<>();
+    private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
     private final Cluster cluster = Cluster.open();
     private final Client client = cluster.connect();
 
@@ -82,9 +82,9 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         // doesn't bother to clear grateful because i don't believe that ever gets mutated - read-only
         client.submit("classic.clear();modern.clear();crew.clear();graph.clear();" +
-                    "TinkerFactory.generateClassic(classic);" +
-                    "TinkerFactory.generateModern(modern);" +
-                    "TinkerFactory.generateTheCrew(crew);null").all().get();
+                "TinkerFactory.generateClassic(classic);" +
+                "TinkerFactory.generateModern(modern);" +
+                "TinkerFactory.generateTheCrew(crew);null").all().get();
     }
 
     @Override

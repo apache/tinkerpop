@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
@@ -28,9 +29,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
@@ -84,11 +86,24 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         if (null == remoteGraph.getConnection())
             throw new IllegalStateException("RemoteStrategy expects the RemoteGraph instance to have a RemoteConnection");
 
-        final Traversal.Admin<?, ?> remoteTraversal = new DefaultTraversal<>();
-        TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) remoteTraversal);
+        final Traversal.Admin<?, ?> remoteTraversal;
+        if (traversal.getStrategies().getStrategy(TranslationStrategy.class).isPresent()) {
+            // if there is a translator, send the translation over the wire (TODO: don't use ScriptTraversal -- RemoteConnection.submit(alias, scriptEngine, script, bindings)
+            remoteTraversal = new ScriptTraversal<>(traversal.getStrategies().getStrategy(TranslationStrategy.class).get());
+            TraversalHelper.removeAllSteps(traversal);
+        } else {
+            // if there is no translator, send the current traversal over the wire
+            remoteTraversal = new DefaultTraversal<>();
+            TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) remoteTraversal);
+        }
+        // remove remote and translation strategies to avoid infinite loops
+        remoteTraversal.setStrategies(traversal.getStrategies().clone().removeStrategies(RemoteStrategy.class, TranslationStrategy.class));
+        remoteTraversal.setSideEffects(traversal.getSideEffects());
+        // remote step wraps the traversal and emits the results from the remote connection
         final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteTraversal, remoteGraph.getConnection());
         traversal.addStep(remoteStep);
 
+        // validations
         assert traversal.getStartStep().equals(remoteStep);
         assert traversal.getSteps().size() == 1;
         assert traversal.getEndStep() == remoteStep;

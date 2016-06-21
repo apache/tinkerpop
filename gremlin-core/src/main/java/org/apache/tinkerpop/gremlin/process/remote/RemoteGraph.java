@@ -75,7 +75,7 @@ import java.util.Iterator;
         reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest",
-        method = "g_V_programXpageRankX",
+        method = "*",
         reason = "RemoteGraph retrieves detached vertices that can't be attached to a remote OLAP graph")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",

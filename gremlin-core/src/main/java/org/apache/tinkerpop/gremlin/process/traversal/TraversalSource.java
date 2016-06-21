@@ -120,6 +120,12 @@ public interface TraversalSource extends Cloneable {
         return clone;
     }
 
+    /**
+     * Add a {@link Translator} to translate any traversal from this traversal source language into some target language.
+     *
+     * @param translator the translator that will do the source to targer language translation
+     * @return a new traversal source with updated strategies
+     */
     public default TraversalSource withTranslator(final Translator translator) {
         return this.withStrategies(new TranslationStrategy(translator, this.clone(), null));
     }

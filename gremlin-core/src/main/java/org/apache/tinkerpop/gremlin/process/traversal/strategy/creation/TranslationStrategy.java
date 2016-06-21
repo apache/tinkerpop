@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.creation;
 
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -31,7 +32,6 @@ import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import javax.script.SimpleBindings;
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Function;
 
@@ -57,12 +57,18 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
         try {
-            final String traversalScriptString = this.translator.getTraversalScript();
-            ScriptEngine engine = ScriptEngineCache.get(this.translator.getTargetLanguage());
+            // reset __ back to default
             this.destroyAnonymousTraversalFunction();
-            final Bindings bindings = new SimpleBindings();
+
+            // if the graph is RemoteGraph, RemoteStrategy will send the traversal
+            if (traversal.getGraph().isPresent() && traversal.getGraph().get() instanceof RemoteGraph)
+                return;
+
+            // translate the traversal and add its steps to this traversal
+            final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
+            final Bindings bindings = scriptEngine.createBindings();
             bindings.put(this.translator.getAlias(), this.traversalSource);
-            Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) engine.eval(traversalScriptString, bindings);
+            final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.getTraversalScript(), bindings);
             assert !translatedTraversal.isLocked();
             assert !traversal.isLocked();
             traversal.setSideEffects(translatedTraversal.getSideEffects());
@@ -97,6 +103,10 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
 
     public Translator getTranslator() {
         return this.translator;
+    }
+
+    public TraversalSource getTraversalSource() {
+        return this.traversalSource;
     }
 
     private void createAnonymousTraversalFunction() {
