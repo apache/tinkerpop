@@ -406,6 +406,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_both_hasLabelXpersonX_order_byXage_decrX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_hasLabelXpersonX_order_byXage_decrX_name();
+        traversal.asAdmin().applyStrategies();
         if (!TraversalHelper.getFirstStepOfAssignableClass(OrderGlobalStep.class, traversal.asAdmin()).isPresent())
             return; // total hack to avoid providers that don't compile to OrderGlobalStep
         TraversalHelper.getFirstStepOfAssignableClass(OrderGlobalStep.class, traversal.asAdmin()).get().setLimit(1);
