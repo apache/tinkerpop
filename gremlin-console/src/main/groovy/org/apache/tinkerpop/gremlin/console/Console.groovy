@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.console
 
 import jline.TerminalFactory
+import jline.console.history.FileHistory
 import org.apache.commons.cli.Option
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
@@ -29,7 +30,6 @@ import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
-import jline.console.history.FileHistory
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
@@ -252,8 +252,8 @@ class Console {
                             return null
                         }
                     } else if (result instanceof TraversalExplanation) {
-                        final int width = TerminalFactory.get().getWidth() - 25
-                        io.out.println(buildResultPrompt() + result.prettyPrint(width < 10 ? 100 : width))
+                        final int width = TerminalFactory.get().getWidth();
+                        io.out.println(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))
                         return null
                     } else {
                         io.out.println(buildResultPrompt() + ((null == result) ? NULL : result.toString()))

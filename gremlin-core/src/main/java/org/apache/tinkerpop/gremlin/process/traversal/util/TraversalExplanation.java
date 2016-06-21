@@ -156,26 +156,23 @@ public class TraversalExplanation implements Serializable {
 
         StringBuilder builder = new StringBuilder();
         int counter = 0;
-        for (final String shortString : longString.split(", ")) {
-            if (0 == counter)
-                builder.append(shortString).append(", ");
-            else if (counter < maxLengthPerLine)
-                builder.append(shortString).append(", ");
-            else {
-                builder.deleteCharAt(builder.length() - 1); // remove the " "
+        for (int i = 0; i < longString.length(); i++) {
+            if (0 == counter) {
+                builder.append(longString.charAt(i));
+            } else if (counter < maxLengthPerLine) {
+                builder.append(longString.charAt(i));
+            } else {
                 builder.append("\n");
-                for (int i = 0; i < newLineIndent; i++) {
+                for (int j = 0; j < newLineIndent; j++) {
                     builder.append(" ");
                 }
-                builder.append(shortString).append(", ");
+                builder.append(longString.charAt(i));
                 counter = 0;
             }
-            counter = counter + shortString.length();
+            counter++;
         }
 
-        return builder
-                .delete(builder.length() - 2, builder.length()) // remove the final ", "
-                .toString();
+        return builder.toString();
     }
 
 }

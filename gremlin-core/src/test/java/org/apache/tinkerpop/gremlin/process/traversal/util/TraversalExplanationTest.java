@@ -55,7 +55,7 @@ public class TraversalExplanationTest {
         ///
         traversal = __.V().out().out().out().out();
         toString = traversal.explain().prettyPrint();
-        assertTrue(toString.contains("VertexStep(OUT,vertex),\n"));
+        assertTrue(toString.contains("VertexStep(OUT,vertex),"));
         //System.out.println(toString);
         ///
         for (int i = 0; i < 30; i++) {
@@ -68,15 +68,20 @@ public class TraversalExplanationTest {
             if (i < 3)
                 assertFalse(toString.contains("VertexStep(OUT,vertex),\n"));
             else {
-                assertFalse(Stream.of(toString.split("\n"))
+                assertTrue(Stream.of(toString.split("\n"))
                         .filter(s -> s.startsWith(" "))
                         .map(String::trim)
                         .filter(s -> Character.isLowerCase(s.charAt(0)))
                         .findAny()
                         .isPresent()); // all indented word wraps should start with steps
-                assertTrue(toString.contains("VertexStep(OUT,vertex),\n"));
+                assertTrue(toString.contains("vertex"));
             }
-            //System.out.println(toString);
+            for (int j = 80; j < 200; j++) {
+                for (final String line : traversal.explain().prettyPrint(j).split("\n")) {
+                    assertTrue(line.length() <= j);
+                }
+            }
+            // System.out.println(toString);
         }
     }
 
@@ -118,8 +123,7 @@ public class TraversalExplanationTest {
         assertEquals(4, found);
         //
         found = 0;
-        for (final String line : traversal.explain().prettyPrint().split("]\n")) { // need to split cause of word wrap
-            //System.out.println(line + "\n\n");
+        for (final String line : traversal.explain().prettyPrint(158).split("]\n")) { // need to split cause of word wrap
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(IN,vertex)"))
                 found++;
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(OUT,vertex)"))
