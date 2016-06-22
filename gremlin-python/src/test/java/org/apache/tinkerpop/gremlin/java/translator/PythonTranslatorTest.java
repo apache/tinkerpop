@@ -17,19 +17,19 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.java.translator;
 
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.java.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngineSetup;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -38,20 +38,23 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroovyTranslatorTest extends AbstractGremlinTest {
+public class PythonTranslatorTest {
+
+    static {
+        GremlinJythonScriptEngineSetup.setup();
+    }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportStringSupplierLambdas() throws Exception {
-        final GraphTraversalSource g = graph.traversal().withTranslator(GroovyTranslator.of("g"));
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal().withTranslator(PythonBypassTranslator.of("g", true));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
-                .filter(Lambda.predicate("it.get().label().equals('person')"))
-                .flatMap(Lambda.function("it.get().vertices(Direction.OUT)"))
-                .map(Lambda.<Traverser<Object>, Integer>function("it.get().value('name').length()"))
-                .sideEffect(Lambda.consumer("{ x -> x.sideEffects(\"lengthSum\", x.<Integer>sideEffects('lengthSum') + x.get()) }"))
+                .filter(Lambda.predicate("lambda: \"it.get().label().equals('person')\""))
+                .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("it.get().vertices(Direction.OUT)"))
+                .map(Lambda.<Traverser<Vertex>, Integer>function("it.get().value('name').length()"))
+                .sideEffect(Lambda.consumer("x -> x.sideEffects('lengthSum', x.<Integer>sideEffects('lengthSum') + x.get())"))
                 .order().by(Lambda.comparator("a,b -> a <=> b"))
-                .sack(Lambda.biFunction("{ a,b -> a + b }"))
+                .sack(Lambda.biFunction("lambda : \"a,b -> a + b\""))
                 .asAdmin();
         final List<Integer> sacks = new ArrayList<>();
         final List<Integer> lengths = new ArrayList<>();
@@ -83,6 +86,8 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[h:gremlin-java->gremlin-groovy]", GroovyTranslator.of("h").toString());
+        assertEquals("translator[h:gremlin-java->gremlin-jython]", PythonTranslator.of("h").toString());
+        assertEquals("translator[h:gremlin-java->gremlin-groovy]", PythonBypassTranslator.of("h").toString());
     }
+
 }
