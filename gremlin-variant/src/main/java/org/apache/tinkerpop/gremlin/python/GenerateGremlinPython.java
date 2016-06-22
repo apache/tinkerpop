@@ -19,28 +19,15 @@
 
 package org.apache.tinkerpop.gremlin.python;
 
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- */
-public class JythonScriptEngineSetup {
-
-    private JythonScriptEngineSetup() {
-    }
-
-    public static void setup() {
-        try {
-            final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-            jythonEngine.eval("from gremlin_python.gremlin_python import *");
-            jythonEngine.eval("from gremlin_python.gremlin_python import __");
-            jythonEngine.eval("from gremlin_python.groovy_translator import GroovyTranslator");
-            jythonEngine.eval("from gremlin_rest_driver import RESTRemoteConnection");
-        } catch (final ScriptException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+public class GenerateGremlinPython {
+    public static void main(String[] args) {
+        String dest;
+        if (args.length > 0) {
+            dest = args[0];
+        } else {
+            System.out.println("Usage: java GenerateGremlinPython <path/to/dest>");
+            return;
         }
+        GremlinPythonGenerator.create(dest);
     }
 }
