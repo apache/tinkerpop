@@ -38,7 +38,7 @@ import java.util.Arrays;
  */
 public class GremlinJythonScriptEngine implements ScriptEngine {
 
-    final PyScriptEngine pyScriptEngine;
+    private final PyScriptEngine pyScriptEngine;
 
     public GremlinJythonScriptEngine() {
         this.pyScriptEngine = (PyScriptEngine) new PyScriptEngineFactory().getScriptEngine();
