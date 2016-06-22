@@ -40,6 +40,8 @@ tutorial.
 NOTE: The host language is called the *source language* and the translator will translate Gremlin traversals into a
 *target language* for execution.
 
+image::gremlin-variants-architecture.png[width=500,float=left]
+
 [[gremlin-python]]
 Gremlin-Python
 --------------
