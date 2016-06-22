@@ -100,6 +100,39 @@
         </testResources>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <id>generatePython</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.apache.tinkerpop.gremlin.python.GenerateGremlinPython</mainClass>
+                            <arguments>
+                                <argument>${basedir}/src/main/jython/gremlin_python/gremlin_python.py</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>buildPython</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>python</executable>
+                            <async>true</async>
+                            <workingDirectory>${basedir}/src/main/jython</workingDirectory>
+                            <commandlineArgs>setup.py build --build-lib ${project.build.testOutputDirectory}/Lib</commandlineArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
                 <version>1.2</version>
@@ -132,7 +165,30 @@
                             <goal>jython</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>pythonDependencies</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>jython</goal>
+                        </goals>
+                        <configuration>
+                             <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                            <libraries>
+                                <param>aenum</param>
+                                <param>requests</param>
+                            </libraries>
+                        </configuration>
+                    </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <python.home>${project.build.testOutputDirectory}</python.home>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
