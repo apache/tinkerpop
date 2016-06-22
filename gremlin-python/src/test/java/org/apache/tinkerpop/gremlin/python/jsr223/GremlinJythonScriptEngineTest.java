@@ -38,7 +38,6 @@ public class GremlinJythonScriptEngineTest {
         final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
         assertNotNull(engine);
         assertTrue(engine instanceof GremlinJythonScriptEngine);
-        assertTrue(engine.eval("Graph") instanceof Class);
         assertEquals(3, engine.eval("1+2"));
     }
 
