@@ -33,11 +33,15 @@ version_file = os.path.join(root, '.', '__version__.py')
 if not os.path.exists(os.path.join(root, 'PKG-INFO')):
     timestamp = int(os.getenv('TIMESTAMP', time.time() * 1000)) / 1000
     fd = codecs.open(version_file, 'w', 'utf-8')
+    fd.write("'''")
+    fd.write(__doc__)
+    fd.write("'''\n")
     fd.write('version   = %r\n' % os.getenv('VERSION', '?').replace('-SNAPSHOT', '.dev-%d' % timestamp))
     fd.write('timestamp = %d\n' % timestamp)
     fd.close()
 # Load version
-exec(open(version_file).read())
+import __version__
+version = __version__.version
 
 setup(
     name='gremlinpython',
