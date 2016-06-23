@@ -17,18 +17,21 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.java.translator.groovy;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = TinkerGraphPythonTranslatorProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphPythonTranslatorProcessStandardTest {
+@GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
+public class PythonGroovyTranslatorComputerProvider extends PythonGroovyTranslatorProvider {
 
+    @Override
+    public GraphTraversalSource traversal(final Graph graph) {
+        return super.traversal(graph).withComputer();
+    }
 }

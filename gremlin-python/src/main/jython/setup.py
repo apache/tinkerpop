@@ -16,10 +16,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+import codecs
 import os
 import time
-import codecs
-
 from setuptools import setup
 
 # Folder containing the setup.py
@@ -41,12 +40,13 @@ if not os.path.exists(os.path.join(root, 'PKG-INFO')):
     fd.close()
 # Load version
 import __version__
+
 version = __version__.version
 
 setup(
     name='gremlinpython',
     version=version,
-    packages=['gremlin_driver','gremlin_python', 'gremlin_rest_driver'],
+    packages=['gremlin_driver', 'gremlin_python', 'gremlin_rest_driver'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',
     description='Gremlin Language Variant for Apache TinkerPop - Gremlin',

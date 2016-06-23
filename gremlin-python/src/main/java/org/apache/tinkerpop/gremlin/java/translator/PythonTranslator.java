@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
+import org.apache.tinkerpop.gremlin.python.util.SymbolHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -55,7 +56,6 @@ import java.util.stream.Stream;
 public class PythonTranslator implements Translator {
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
-    private static final Set<String> PREFIX_NAMES = new HashSet<>(Arrays.asList("as", "in", "and", "or", "is", "not", "from", "global"));
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
             .flatMap(arg -> IteratorUtils.stream(new ArrayIterator<>(arg)))
             .map(arg -> ((Enum) arg).name())
@@ -65,7 +65,7 @@ public class PythonTranslator implements Translator {
     protected String alias;
     protected final boolean importStatics;
 
-    PythonTranslator(final String alias, final boolean importStatics) {
+    protected PythonTranslator(final String alias, final boolean importStatics) {
         this.alias = alias;
         this.traversalScript = new StringBuilder(this.alias);
         this.importStatics = importStatics;
@@ -91,7 +91,7 @@ public class PythonTranslator implements Translator {
 
     @Override
     public String getTargetLanguage() {
-        return "gremlin-jython";
+        return "jython";
     }
 
     @Override
@@ -113,7 +113,7 @@ public class PythonTranslator implements Translator {
         final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
         final int size = objects.size();
         if (0 == size)
-            this.traversalScript.append(".").append(convertStepName(stepName)).append("()");
+            this.traversalScript.append(".").append(SymbolHelper.toPython(stepName)).append("()");
         else if (stepName.equals("range") && 2 == size)
             this.traversalScript.append("[").append(objects.get(0)).append(":").append(objects.get(1)).append("]");
         else if (stepName.equals("limit") && 1 == size)
@@ -122,7 +122,7 @@ public class PythonTranslator implements Translator {
             this.traversalScript.append(".").append(objects.get(0));
         else {
             this.traversalScript.append(".");
-            String temp = convertStepName(stepName) + "(";
+            String temp = SymbolHelper.toPython(stepName) + "(";
             for (final Object object : objects) {
                 temp = temp + convertToString(object) + ",";
             }
@@ -131,7 +131,7 @@ public class PythonTranslator implements Translator {
 
         // clip off __.
         if (this.importStatics && this.traversalScript.substring(0, 3).startsWith("__.")
-                && !NO_STATIC.stream().filter(name -> this.traversalScript.substring(3).startsWith(convertStepName(name))).findAny().isPresent()) {
+                && !NO_STATIC.stream().filter(name -> this.traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
             this.traversalScript.delete(0, 3);
         }
     }
@@ -174,7 +174,7 @@ public class PythonTranslator implements Translator {
         else if (object instanceof SackFunctions.Barrier)
             return "Barrier." + object.toString();
         else if (object instanceof Enum)
-            return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + convertStepName(object.toString());
+            return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element)
@@ -192,13 +192,6 @@ public class PythonTranslator implements Translator {
 
     private String convertStatic(final String name) {
         return this.importStatics ? "" : name;
-    }
-
-    private String convertStepName(final String stepName) {
-        if (PREFIX_NAMES.contains(stepName))
-            return "_" + stepName;
-        else
-            return stepName;
     }
 
     private StringBuilder convertPToString(final P p, final StringBuilder current) {

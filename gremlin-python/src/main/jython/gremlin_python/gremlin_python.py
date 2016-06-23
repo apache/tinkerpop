@@ -1642,15 +1642,30 @@ def where(*args):
 statics['where'] = where
 
 
-Barrier = Enum('Barrier', 'normSack')
-
-statics['normSack'] = Barrier.normSack
-
 Pop = Enum('Pop', 'first last all')
 
 statics['first'] = Pop.first
 statics['last'] = Pop.last
 statics['all'] = Pop.all
+
+Scope = Enum('Scope', '_global local')
+
+statics['_global'] = Scope._global
+statics['local'] = Scope.local
+
+Order = Enum('Order', 'incr decr keyIncr valueIncr keyDecr valueDecr shuffle')
+
+statics['incr'] = Order.incr
+statics['decr'] = Order.decr
+statics['keyIncr'] = Order.keyIncr
+statics['valueIncr'] = Order.valueIncr
+statics['keyDecr'] = Order.keyDecr
+statics['valueDecr'] = Order.valueDecr
+statics['shuffle'] = Order.shuffle
+
+Barrier = Enum('Barrier', 'normSack')
+
+statics['normSack'] = Barrier.normSack
 
 Operator = Enum('Operator', 'sum minus mult div min max assign _and _or addAll sumLong')
 
@@ -1666,18 +1681,6 @@ statics['_or'] = Operator._or
 statics['addAll'] = Operator.addAll
 statics['sumLong'] = Operator.sumLong
 
-Cardinality = Enum('Cardinality', 'single list set')
-
-statics['single'] = Cardinality.single
-statics['list'] = Cardinality.list
-statics['set'] = Cardinality.set
-
-Direction = Enum('Direction', 'OUT IN BOTH')
-
-statics['OUT'] = Direction.OUT
-statics['IN'] = Direction.IN
-statics['BOTH'] = Direction.BOTH
-
 T = Enum('T', 'label id key value')
 
 statics['label'] = T.label
@@ -1685,25 +1688,22 @@ statics['id'] = T.id
 statics['key'] = T.key
 statics['value'] = T.value
 
-Order = Enum('Order', 'incr decr keyIncr valueIncr keyDecr valueDecr shuffle')
+Cardinality = Enum('Cardinality', 'single list set')
 
-statics['incr'] = Order.incr
-statics['decr'] = Order.decr
-statics['keyIncr'] = Order.keyIncr
-statics['valueIncr'] = Order.valueIncr
-statics['keyDecr'] = Order.keyDecr
-statics['valueDecr'] = Order.valueDecr
-statics['shuffle'] = Order.shuffle
-
-Scope = Enum('Scope', '_global local')
-
-statics['_global'] = Scope._global
-statics['local'] = Scope.local
+statics['single'] = Cardinality.single
+statics['list'] = Cardinality.list
+statics['set'] = Cardinality.set
 
 Column = Enum('Column', 'keys values')
 
 statics['keys'] = Column.keys
 statics['values'] = Column.values
+
+Direction = Enum('Direction', 'OUT IN BOTH')
+
+statics['OUT'] = Direction.OUT
+statics['IN'] = Direction.IN
+statics['BOTH'] = Direction.BOTH
 
 class RawExpression(object):
    def __init__(self, *args):

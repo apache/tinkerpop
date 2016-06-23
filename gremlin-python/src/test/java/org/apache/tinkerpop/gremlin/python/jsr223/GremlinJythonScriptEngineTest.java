@@ -19,8 +19,11 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
@@ -57,8 +60,15 @@ public class GremlinJythonScriptEngineTest {
         assertTrue(engine.eval("T") instanceof Class);
         assertTrue(engine.eval("label") instanceof T);
         assertTrue(engine.eval("T.label") instanceof T);
+        assertEquals(SackFunctions.Barrier.class, engine.eval("Barrier"));
+        assertEquals(SackFunctions.Barrier.normSack, engine.eval("Barrier.normSack"));
+        assertEquals(Column.class, engine.eval("Column"));
+        assertEquals(Column.values, engine.eval("Column.valueOf(\'values\')"));
+        assertEquals(VertexProperty.Cardinality.class, engine.eval("Cardinality"));
+        assertEquals(VertexProperty.Cardinality.single, engine.eval("Cardinality.valueOf(\'single\')"));
         assertTrue(engine.eval("out()") instanceof GraphTraversal);
         assertTrue(engine.eval("__.out()") instanceof GraphTraversal);
+        // assertTrue(engine.eval("__.property(Cardinality.single, 'name','marko')") instanceof GraphTraversal);
     }
 
 

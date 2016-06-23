@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Function;
@@ -67,6 +68,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             // translate the traversal and add its steps to this traversal
             final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
             final Bindings bindings = scriptEngine.createBindings();
+            scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
             bindings.put(this.translator.getAlias(), this.traversalSource);
             final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.getTraversalScript(), bindings);
             assert !translatedTraversal.isLocked();

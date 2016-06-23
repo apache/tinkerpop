@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.driver;
 
-import org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngineSetup;
+import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
@@ -40,12 +40,12 @@ import static org.junit.Assert.assertTrue;
  */
 public class RESTRemoteConnectionTest {
 
-    private final ScriptEngine jython = ScriptEngineCache.get("gremlin-jython");
+    private final ScriptEngine jython = ScriptEngineCache.get("jython");
 
     @Before
     public void setup() {
         try {
-            GremlinJythonScriptEngineSetup.setup();
+            JythonScriptEngineSetup.setup();
             final Bindings jythonBindings = new SimpleBindings();
             jythonBindings.put("g", jython.eval("PythonGraphTraversalSource(GroovyTranslator('g'), RESTRemoteConnection('http://localhost:8182'))"));
             jython.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);

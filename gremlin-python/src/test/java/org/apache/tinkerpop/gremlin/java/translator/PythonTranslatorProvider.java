@@ -24,10 +24,11 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngineSetup;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
@@ -37,42 +38,46 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
-import javax.script.ScriptException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphPythonTranslatorProvider extends AbstractGraphProvider {
+public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
 
-    private static final boolean IMPORT_STATICS = new Random().nextBoolean();
+    protected static final boolean IMPORT_STATICS = false;//new Random().nextBoolean();
 
     static {
-        GremlinJythonScriptEngineSetup.setup();
+        JythonScriptEngineSetup.setup();
     }
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
+            "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
+            "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
             "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
             "g_VX1X_out_injectXv2X_name",
+            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX",
+            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X",
             "shouldSupportGraphFilter",
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
             "shouldTraversalResetProperly",
             "shouldHidePartitionKeyForValues",
+            "shouldAddStartsProperly",
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
-            ElementIdStrategyProcessTest.class.getCanonicalName()));
+            ElementIdStrategyProcessTest.class.getCanonicalName(),
+            EventStrategyProcessTest.class.getCanonicalName(),
+            PartitionStrategyProcessTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
@@ -128,23 +133,4 @@ public class TinkerGraphPythonTranslatorProvider extends AbstractGraphProvider {
         else
             throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerGraph.IdManager.class.getName(), loadGraphWith.name()));
     }
-
-    @Override
-    public GraphTraversalSource traversal(final Graph graph) {
-        if ((Boolean) graph.configuration().getProperty("skipTest"))
-            return graph.traversal();
-            //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
-        else {
-            try {
-                if (IMPORT_STATICS)
-                    ScriptEngineCache.get("gremlin-jython").eval("for k in statics:\n  globals()[k] = statics[k]");
-                else
-                    ScriptEngineCache.get("gremlin-jython").eval("for k in statics:\n  if k in globals():\n    del globals()[k]");
-            } catch (final ScriptException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            return graph.traversal().withTranslator(PythonBypassTranslator.of("g", IMPORT_STATICS)); // the bypass translator will ensure that gremlin-groovy is ultimately used
-        }
-    }
-
 }

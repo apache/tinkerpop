@@ -31,5 +31,6 @@ from gremlin_python import T
 from gremlin_python import __
 from gremlin_python import statics
 from groovy_translator import GroovyTranslator
+from jython_translator import JythonTranslator
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

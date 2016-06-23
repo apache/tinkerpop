@@ -17,15 +17,18 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.java.translator.jython;
 
+import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngineSetup;
+import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,23 +41,24 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonTranslatorTest {
+public class PythonJythonTranslatorTest {
 
     static {
-        GremlinJythonScriptEngineSetup.setup();
+        JythonScriptEngineSetup.setup();
     }
 
     @Test
+    @Ignore("Jython lambdas do not compile to Java8 functions")
     public void shouldSupportStringSupplierLambdas() throws Exception {
-        final GraphTraversalSource g = TinkerFactory.createModern().traversal().withTranslator(PythonBypassTranslator.of("g", true));
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal().withTranslator(PythonJythonTranslator.of("g", true));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
-                .filter(Lambda.predicate("lambda: \"it.get().label().equals('person')\""))
-                .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("it.get().vertices(Direction.OUT)"))
-                .map(Lambda.<Traverser<Vertex>, Integer>function("it.get().value('name').length()"))
-                .sideEffect(Lambda.consumer("x -> x.sideEffects('lengthSum', x.<Integer>sideEffects('lengthSum') + x.get())"))
-                .order().by(Lambda.comparator("a,b -> a <=> b"))
-                .sack(Lambda.biFunction("lambda : \"a,b -> a + b\""))
+                .filter(Lambda.predicate("lambda : \"lambda x: x.get().label().equals('person')\""))
+                .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("lambda: 'lambda x: x.get().vertices(Direction.OUT)'"))
+                .map(Lambda.<Traverser<Vertex>, Integer>function("lambda: \"lambda x: x.get().value('name').length()\""))
+                .sideEffect(Lambda.consumer("lambda: \"lambda x : x.sideEffects('lengthSum', x.sideEffects('lengthSum') + x.get())\""))
+                .order().by(Lambda.comparator("lambda: 'lambda a,b : a.compareTo(b)'"))
+                .sack(Lambda.biFunction("lambda: 'lambda a,b : a + b'"))
                 .asAdmin();
         final List<Integer> sacks = new ArrayList<>();
         final List<Integer> lengths = new ArrayList<>();
@@ -86,8 +90,8 @@ public class PythonTranslatorTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[h:gremlin-java->gremlin-jython]", PythonTranslator.of("h").toString());
-        assertEquals("translator[h:gremlin-java->gremlin-groovy]", PythonBypassTranslator.of("h").toString());
+        Assert.assertEquals("translator[h:gremlin-java->jython]", PythonTranslator.of("h").toString());
+        assertEquals("translator[h:gremlin-java->gremlin-jython]", PythonJythonTranslator.of("h").toString());
     }
 
 }

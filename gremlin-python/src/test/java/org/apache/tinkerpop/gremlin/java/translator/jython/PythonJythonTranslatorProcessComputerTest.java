@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.java.translator.jython;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = TinkerGraphPythonTranslatorComputerProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphPythonTranslatorProcessComputerTest {
+@GraphProviderClass(provider = PythonJythonTranslatorComputerProvider.class, graph = TinkerGraph.class)
+public class PythonJythonTranslatorProcessComputerTest {
 
 }

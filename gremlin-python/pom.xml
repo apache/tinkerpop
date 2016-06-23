@@ -115,7 +115,8 @@
                             <executable>python</executable>
                             <async>true</async>
                             <workingDirectory>${basedir}/src/main/jython</workingDirectory>
-                            <commandlineArgs>setup.py build --build-lib ${project.build.testOutputDirectory}/Lib</commandlineArgs>
+                            <commandlineArgs>setup.py build --build-lib ${project.build.testOutputDirectory}/Lib
+                            </commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
@@ -261,7 +262,8 @@
                                         <copy todir="${project.build.directory}/py">
                                             <fileset dir="src/main/jython"/>
                                         </copy>
-                                        <exec dir="${project.build.directory}/py" executable="virtualenv" failonerror="true">
+                                        <exec dir="${project.build.directory}/py" executable="virtualenv"
+                                              failonerror="true">
                                             <arg line="env"/>
                                         </exec>
                                     </tasks>
@@ -280,11 +282,13 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <tasks>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/python" failonerror="true">
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/python"
+                                              failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
                                             <arg line="setup.py sdist"/>
                                         </exec>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/python" failonerror="true">
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/python"
+                                              failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
                                             <arg line="setup.py bdist_wheel"/>
                                         </exec>
@@ -301,10 +305,12 @@
                                 <phase>deploy</phase>
                                 <configuration>
                                     <tasks>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/pip" failonerror="true">
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/pip"
+                                              failonerror="true">
                                             <arg line="install twine"/>
                                         </exec>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/twine" failonerror="true">
+                                        <exec dir="${project.build.directory}/py" executable="env/bin/twine"
+                                              failonerror="true">
                                             <arg line="upload dist/* -r pypitest"/>
                                         </exec>
                                     </tasks>

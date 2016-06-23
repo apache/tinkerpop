@@ -17,8 +17,9 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.java.translator.groovy;
 
+import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -33,18 +34,18 @@ import javax.script.SimpleBindings;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class PythonBypassTranslator extends PythonTranslator {
+public class PythonGroovyTranslator extends PythonTranslator {
 
-    private PythonBypassTranslator(final String alias, final boolean importStatics) {
+    private PythonGroovyTranslator(final String alias, final boolean importStatics) {
         super(alias, importStatics);
     }
 
-    public static PythonBypassTranslator of(final String alias) {
-        return new PythonBypassTranslator(alias, false);
+    public static PythonGroovyTranslator of(final String alias) {
+        return new PythonGroovyTranslator(alias, false);
     }
 
-    public static PythonBypassTranslator of(final String alias, final boolean importStatics) {
-        return new PythonBypassTranslator(alias, importStatics);
+    public static PythonGroovyTranslator of(final String alias, final boolean importStatics) {
+        return new PythonGroovyTranslator(alias, importStatics);
     }
 
     @Override
@@ -56,7 +57,7 @@ class PythonBypassTranslator extends PythonTranslator {
 
     @Override
     public Translator getAnonymousTraversalTranslator() {
-        return new PythonBypassTranslator("__", this.importStatics);
+        return new PythonGroovyTranslator("__", this.importStatics);
     }
 
     @Override
@@ -69,7 +70,7 @@ class PythonBypassTranslator extends PythonTranslator {
         final String traversal = super.getTraversalScript();
         if (!this.alias.equals("__")) {
             try {
-                final ScriptEngine jythonEngine = ScriptEngineCache.get("gremlin-jython");
+                final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
                 final Bindings jythonBindings = new SimpleBindings();
                 jythonBindings.put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.alias + "\"))"));
                 jythonEngine.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);

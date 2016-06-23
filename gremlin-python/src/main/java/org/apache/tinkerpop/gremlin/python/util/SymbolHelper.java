@@ -51,8 +51,8 @@ public final class SymbolHelper {
         return TO_PYTHON_MAP.getOrDefault(symbol, symbol);
     }
 
-    public static String toJava(final String pythonSymbol) {
-        return FROM_PYTHON_MAP.getOrDefault(pythonSymbol, pythonSymbol);
+    public static String toJava(final String symbol) {
+        return FROM_PYTHON_MAP.getOrDefault(symbol, symbol);
     }
 
 }
