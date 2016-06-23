@@ -177,7 +177,7 @@ globalTranslator = None
                 .sort { a, b -> a <=> b }
                 .each { method ->
             final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {
-                it.name.equals(SymbolHelper.fromPython(method))
+                it.name.equals(SymbolHelper.toJava(method))
             }.collect { it.returnType }[0]
             if (null != returnType && Traversal.isAssignableFrom(returnType)) {
                 pythonClass.append(
@@ -283,7 +283,7 @@ globalTranslator = None
             pythonClass.append(
                     """   @staticmethod
    def ${method}(*args):
-      return P("${SymbolHelper.fromPython(method)}", *args)
+      return P("${SymbolHelper.toJava(method)}", *args)
 """)
         };
         pythonClass.append("""   def _and(self, arg):

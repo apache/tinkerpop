@@ -23,6 +23,7 @@ from aenum import Enum
 from gremlin_python import P
 from gremlin_python import Raw
 from gremlin_python import RawExpression
+from translator import SymbolHelper
 from translator import Translator
 
 if sys.version_info.major > 2:
@@ -30,52 +31,31 @@ if sys.version_info.major > 2:
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-symbolMap = {"_global": "global", "_as": "as", "_in": "in", "_and": "and", "_or": "or", "_is": "is", "_not": "not",
-             "_from": "from"}
-
-enumMap = {"Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
-
 
 class GroovyTranslator(Translator):
     def __init__(self, alias, source_language="python", target_language="gremlin-groovy"):
         Translator.__init__(self, alias, source_language, target_language)
 
     def addStep(self, traversal, step_name, *args):
-        self.traversal_script = self.traversal_script + "." + GroovyTranslator.mapMethod(
+        self.traversal_script = self.traversal_script + "." + SymbolHelper.toJava(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
 
     def addSpawnStep(self, traversal, step_name, *args):
         newTranslator = GroovyTranslator(self.alias, self.source_language)
         newTranslator.traversal_script = self.traversal_script
-        newTranslator.traversal_script = newTranslator.traversal_script + "." + GroovyTranslator.mapMethod(
+        newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
         traversal.translator = newTranslator
 
     def addSource(self, traversal_source, source_name, *args):
         newTranslator = GroovyTranslator(self.alias, self.source_language)
         newTranslator.traversal_script = self.traversal_script
-        newTranslator.traversal_script = newTranslator.traversal_script + "." + GroovyTranslator.mapMethod(
+        newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
             source_name) + "(" + GroovyTranslator.stringify(*args) + ")"
         traversal_source.translator = newTranslator
 
     def getAnonymousTraversalTranslator(self):
         return GroovyTranslator("__", self.source_language)
-
-    ### HELPER METHODS ###
-
-    @staticmethod
-    def mapMethod(method):
-        if (method in symbolMap):
-            return symbolMap[method]
-        else:
-            return method
-
-    @staticmethod
-    def mapEnum(enum):
-        if (enum in enumMap):
-            return enumMap[enum]
-        else:
-            return enum
 
     @staticmethod
     def stringOrObject(arg):
@@ -88,13 +68,13 @@ class GroovyTranslator(Translator):
         elif isinstance(arg, float):
             return str(arg) + "f"
         elif isinstance(arg, Enum):  # Column, Order, Direction, Scope, T, etc.
-            return GroovyTranslator.mapEnum(type(arg).__name__) + "." + GroovyTranslator.mapMethod(str(arg.name))
+            return SymbolHelper.toJava(type(arg).__name__) + "." + SymbolHelper.toJava(str(arg.name))
         elif isinstance(arg, P):
             if arg.other is None:
-                return "P." + GroovyTranslator.mapMethod(arg.operator) + "(" + GroovyTranslator.stringOrObject(
+                return "P." + SymbolHelper.toJava(arg.operator) + "(" + GroovyTranslator.stringOrObject(
                     arg.value) + ")"
             else:
-                return GroovyTranslator.stringOrObject(arg.other) + "." + GroovyTranslator.mapMethod(
+                return GroovyTranslator.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
                     arg.operator) + "(" + GroovyTranslator.stringOrObject(arg.value) + ")"
         elif callable(arg):  # closures
             lambdaString = arg().strip()

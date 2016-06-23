@@ -20,6 +20,10 @@ from abc import abstractmethod
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
+                   "_or": "or", "_is": "is", "_not": "not", "_from": "from",
+                   "Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
+
 
 class Translator(object):
     def __init__(self, alias, source_language, target_language):
@@ -47,3 +51,19 @@ class Translator(object):
     @abstractmethod
     def __repr__(self):
         return "translator[" + self.source_language + "->" + self.target_language + "]"
+
+
+class SymbolHelper(object):
+    @staticmethod
+    def toJava(symbol):
+        if (symbol in TO_JAVA_MAP):
+            return TO_JAVA_MAP[symbol]
+        else:
+            return symbol
+
+    @staticmethod
+    def mapEnum(enum):
+        if (enum in enumMap):
+            return enumMap[enum]
+        else:
+            return enum
