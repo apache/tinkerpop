@@ -19,21 +19,16 @@
 
 package org.apache.tinkerpop.gremlin.python
 
-import org.apache.tinkerpop.gremlin.process.traversal.Operator
-import org.apache.tinkerpop.gremlin.process.traversal.Order
 import org.apache.tinkerpop.gremlin.process.traversal.P
-import org.apache.tinkerpop.gremlin.process.traversal.Pop
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions
-import org.apache.tinkerpop.gremlin.process.traversal.Scope
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.structure.Column
-import org.apache.tinkerpop.gremlin.structure.Direction
-import org.apache.tinkerpop.gremlin.structure.T
-import org.apache.tinkerpop.gremlin.structure.VertexProperty
+import org.apache.tinkerpop.gremlin.python.util.SymbolHelper
+import org.apache.tinkerpop.gremlin.util.CoreImports
+
+import java.lang.reflect.Modifier
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -63,13 +58,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-
-        final Map<String, String> methodMap = [global: "_global", as: "_as", in: "_in", and: "_and", or: "_or", is: "_is", not: "_not", from: "_from"]
-                .withDefault { it }
-        final Map<String, String> invertedMethodMap = [:].withDefault { it };
-        methodMap.entrySet().forEach { invertedMethodMap.put(it.value, it.key) }
-        final List<Class<? extends Enum>> enumList = [VertexProperty.Cardinality, Column, Direction, Operator, Order, Pop, SackFunctions.Barrier, Scope, T]
-
         pythonClass.append("from collections import OrderedDict\n")
         pythonClass.append("from aenum import Enum\n")
         pythonClass.append("statics = OrderedDict()\n\n")
@@ -159,6 +147,18 @@ globalTranslator = None
      return self.next()
   def toList(self):
     return list(iter(self))
+  def toSet(self):
+    return set(iter(self))
+  def next(self,amount):
+    count = 0
+    tempList = []
+    while count < amount:
+      count = count + 1
+      temp = next(self,None)
+      if None == temp:
+        break
+      tempList.append(temp)
+    return tempList
   def next(self):
      if self.results is None:
         self.results = self.remote_connection.submit(self.translator.target_language, self.translator.traversal_script, self.bindings)
@@ -172,12 +172,12 @@ globalTranslator = None
 """)
         GraphTraversal.getMethods()
                 .findAll { !it.name.equals("clone") }
-                .collect { methodMap[it.name] }
+                .collect { SymbolHelper.toPython(it.name) }
                 .unique()
                 .sort { a, b -> a <=> b }
                 .each { method ->
             final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {
-                it.name.equals(invertedMethodMap[method])
+                it.name.equals(SymbolHelper.fromPython(method))
             }.collect { it.returnType }[0]
             if (null != returnType && Traversal.isAssignableFrom(returnType)) {
                 pythonClass.append(
@@ -200,7 +200,7 @@ globalTranslator = None
         pythonClass.append("class __(object):\n");
         __.getMethods()
                 .findAll { Traversal.isAssignableFrom(it.returnType) }
-                .collect { methodMap[it.name] }
+                .collect { SymbolHelper.toPython(it.name) }
                 .unique()
                 .sort { a, b -> a <=> b }
                 .each { method ->
@@ -214,8 +214,9 @@ globalTranslator = None
 
         __.class.getMethods()
                 .findAll { Traversal.class.isAssignableFrom(it.getReturnType()) }
-                .findAll { !it.name.equals("__") && !it.name.equals("clone") }
-                .collect { methodMap[it.name] }
+                .findAll { Modifier.isStatic(it.getModifiers()) }
+                .findAll { !it.name.equals("__") }
+                .collect { SymbolHelper.toPython(it.name) }
                 .unique()
                 .sort { a, b -> a <=> b }
                 .forEach {
@@ -227,14 +228,16 @@ globalTranslator = None
 ///////////
 // Enums //
 ///////////
-        for (final Class<? extends Enum> enumClass : enumList) {
+        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports().findAll {
+            Enum.class.isAssignableFrom(it)
+        }.collect()) {
             pythonClass.append("${enumClass.getSimpleName()} = Enum('${enumClass.getSimpleName()}', '");
             enumClass.getEnumConstants().each { value ->
-                pythonClass.append("${methodMap[value.name()]} ");
+                pythonClass.append("${SymbolHelper.toPython(value.name())} ");
             }
             pythonClass.deleteCharAt(pythonClass.length() - 1).append("')\n\n")
             enumClass.getEnumConstants().each { value ->
-                pythonClass.append("statics['${methodMap[value.name()]}'] = ${value.getDeclaringClass().getSimpleName()}.${methodMap[value.name()]}\n");
+                pythonClass.append("statics['${SymbolHelper.toPython(value.name())}'] = ${value.getDeclaringClass().getSimpleName()}.${SymbolHelper.toPython(value.name())}\n");
             }
             pythonClass.append("\n");
         }
@@ -270,17 +273,17 @@ globalTranslator = None
       self.value = value
       self.other = other
 """)
-        P.getMethods()
+        P.class.getMethods()
+                .findAll { Modifier.isStatic(it.getModifiers()) }
                 .findAll { P.class.isAssignableFrom(it.returnType) }
-                .findAll { !it.name.equals("or") && !it.name.equals("and") && !it.name.equals("clone") }
-                .collect { methodMap[it.name] }
+                .collect { SymbolHelper.toPython(it.name) }
                 .unique()
                 .sort { a, b -> a <=> b }
                 .each { method ->
             pythonClass.append(
                     """   @staticmethod
    def ${method}(*args):
-      return P("${invertedMethodMap[method]}", *args)
+      return P("${SymbolHelper.fromPython(method)}", *args)
 """)
         };
         pythonClass.append("""   def _and(self, arg):
@@ -290,9 +293,10 @@ globalTranslator = None
 """)
         pythonClass.append("\n")
         P.class.getMethods()
+                .findAll { Modifier.isStatic(it.getModifiers()) }
                 .findAll { !it.name.equals("clone") }
                 .findAll { P.class.isAssignableFrom(it.getReturnType()) }
-                .collect { methodMap[it.name] }
+                .collect { SymbolHelper.toPython(it.name) }
                 .unique()
                 .sort { a, b -> a <=> b }
                 .forEach {

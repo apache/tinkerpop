@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.python.util.SymbolHelper;
+import org.apache.tinkerpop.gremlin.util.CoreImports;
 import org.python.jsr223.PyScriptEngine;
 import org.python.jsr223.PyScriptEngineFactory;
 
@@ -31,7 +31,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import java.io.Reader;
-import java.util.Arrays;
+import java.lang.reflect.Method;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,16 +43,32 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
     public GremlinJythonScriptEngine() {
         this.pyScriptEngine = (PyScriptEngine) new PyScriptEngineFactory().getScriptEngine();
         try {
-            // Groovy's AbstractImportCustomizer should pull from a common source
-            for (final Class x : Arrays.asList(Graph.class, GraphTraversal.class, GraphTraversalSource.class)) {
-                this.pyScriptEngine.eval("from " + x.getPackage().getName() + " import " + x.getSimpleName());
+            // CoreImports
+            for (final Class x : CoreImports.getClassImports()) {
+                if (null == x.getDeclaringClass())
+                    this.pyScriptEngine.eval("from " + x.getPackage().getName() + " import " + x.getSimpleName());
+                else
+                    this.pyScriptEngine.eval("from " + x.getPackage().getName() + "." + x.getDeclaringClass().getSimpleName() + " import " + x.getSimpleName());
             }
+            for (final Method x : CoreImports.getMethodImports()) {
+                this.pyScriptEngine.eval(SymbolHelper.toPython(x.getName()) + " = " + x.getDeclaringClass().getSimpleName() + "." + x.getName());
+                // this.pyScriptEngine.eval("def " + SymbolHelper.toPython(x.getName()) + "(*args):\n  return " + x.getDeclaringClass().getSimpleName() + "." + SymbolHelper.toPython(x.getName()) + "(*args)");
+            }
+            for (final Enum x : CoreImports.getEnumImports()) {
+                this.pyScriptEngine.eval(SymbolHelper.toPython(x.name()) + " = " + x.getDeclaringClass().getSimpleName() + "." + x.name());
+            }
+
+            // add sugar methods
+            this.pyScriptEngine.eval("def getitem_bypass(self, index):\n" +
+                    "  if isinstance(index,int):\n    return self.range(index,index+1)\n" +
+                    "  elif isinstance(index,slice):\n    return self.range(index.start,index.stop)\n" +
+                    "  else:\n    return TypeError('Index must be int or slice')");
+            this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getitem__ = getitem_bypass");
+            this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getattr__ = lambda self, key: self.values(key)");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-
     }
-
 
     @Override
     public Object eval(String script, ScriptContext context) throws ScriptException {

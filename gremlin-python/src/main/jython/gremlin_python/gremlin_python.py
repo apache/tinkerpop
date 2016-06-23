@@ -166,6 +166,18 @@ class PythonGraphTraversal(object):
      return self.next()
   def toList(self):
     return list(iter(self))
+  def toSet(self):
+    return set(iter(self))
+  def next(self,amount):
+    count = 0
+    tempList = []
+    while count < amount:
+      count = count + 1
+      temp = next(self,None)
+      if None == temp:
+        break
+      tempList.append(temp)
+    return tempList
   def next(self):
      if self.results is None:
         self.results = self.remote_connection.submit(self.translator.target_language, self.translator.traversal_script, self.bindings)
@@ -1630,16 +1642,29 @@ def where(*args):
 statics['where'] = where
 
 
+Pop = Enum('Pop', 'first last all')
+
+statics['first'] = Pop.first
+statics['last'] = Pop.last
+statics['all'] = Pop.all
+
 Cardinality = Enum('Cardinality', 'single list set')
 
 statics['single'] = Cardinality.single
 statics['list'] = Cardinality.list
 statics['set'] = Cardinality.set
 
-Column = Enum('Column', 'keys values')
+T = Enum('T', 'label id key value')
 
-statics['keys'] = Column.keys
-statics['values'] = Column.values
+statics['label'] = T.label
+statics['id'] = T.id
+statics['key'] = T.key
+statics['value'] = T.value
+
+Scope = Enum('Scope', '_global local')
+
+statics['_global'] = Scope._global
+statics['local'] = Scope.local
 
 Direction = Enum('Direction', 'OUT IN BOTH')
 
@@ -1671,27 +1696,14 @@ statics['keyDecr'] = Order.keyDecr
 statics['valueDecr'] = Order.valueDecr
 statics['shuffle'] = Order.shuffle
 
-Pop = Enum('Pop', 'first last all')
-
-statics['first'] = Pop.first
-statics['last'] = Pop.last
-statics['all'] = Pop.all
-
 Barrier = Enum('Barrier', 'normSack')
 
 statics['normSack'] = Barrier.normSack
 
-Scope = Enum('Scope', '_global local')
+Column = Enum('Column', 'keys values')
 
-statics['_global'] = Scope._global
-statics['local'] = Scope.local
-
-T = Enum('T', 'label id key value')
-
-statics['label'] = T.label
-statics['id'] = T.id
-statics['key'] = T.key
-statics['value'] = T.value
+statics['keys'] = Column.keys
+statics['values'] = Column.values
 
 class RawExpression(object):
    def __init__(self, *args):
@@ -1742,9 +1754,6 @@ class P(object):
    def lte(*args):
       return P("lte", *args)
    @staticmethod
-   def negate(*args):
-      return P("negate", *args)
-   @staticmethod
    def neq(*args):
       return P("neq", *args)
    @staticmethod
@@ -1764,18 +1773,10 @@ class P(object):
    def _or(self, arg):
       return P("_or", arg, self)
 
-def _and(*args):
-      return P._and(*args)
-
-statics['_and'] = _and
 def _not(*args):
       return P._not(*args)
 
 statics['_not'] = _not
-def _or(*args):
-      return P._or(*args)
-
-statics['_or'] = _or
 def between(*args):
       return P.between(*args)
 
@@ -1804,10 +1805,6 @@ def lte(*args):
       return P.lte(*args)
 
 statics['lte'] = lte
-def negate(*args):
-      return P.negate(*args)
-
-statics['negate'] = negate
 def neq(*args):
       return P.neq(*args)
 

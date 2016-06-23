@@ -30,7 +30,7 @@ if sys.version_info.major > 2:
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-methodMap = {"_global": "global", "_as": "as", "_in": "in", "_and": "and", "_or": "or", "_is": "is", "_not": "not",
+symbolMap = {"_global": "global", "_as": "as", "_in": "in", "_and": "and", "_or": "or", "_is": "is", "_not": "not",
              "_from": "from"}
 
 enumMap = {"Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
@@ -65,8 +65,8 @@ class GroovyTranslator(Translator):
 
     @staticmethod
     def mapMethod(method):
-        if (method in methodMap):
-            return methodMap[method]
+        if (method in symbolMap):
+            return symbolMap[method]
         else:
             return method
 
