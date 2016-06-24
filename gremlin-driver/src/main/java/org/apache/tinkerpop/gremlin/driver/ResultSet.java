@@ -127,7 +127,9 @@ public final class ResultSet implements Iterable<Result> {
 
             @Override
             public boolean hasNext() {
-                nextOne = one();
+                if (null == nextOne) {
+                    nextOne = one();
+                }
                 return nextOne != null;
             }
 
