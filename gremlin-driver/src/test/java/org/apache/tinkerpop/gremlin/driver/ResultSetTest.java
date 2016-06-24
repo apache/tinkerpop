@@ -174,4 +174,23 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
         assertEquals(100, counter.get());
     }
+    
+    @Test
+    public void shouldCallHasNextWithoutSideEffect() throws Exception {
+        final Iterator itty = resultSet.iterator();
+        final AtomicInteger counter = new AtomicInteger(0);
+
+        addToQueue(100, 1, true, true);
+
+        for (int i = 0; i < 101; i++) {
+        	assertThat(itty.hasNext(), is(true));
+        }
+        
+        while (itty.hasNext()) {
+            itty.next();
+            counter.incrementAndGet();
+        }
+
+        assertEquals(100, counter.get());
+    }
 }
