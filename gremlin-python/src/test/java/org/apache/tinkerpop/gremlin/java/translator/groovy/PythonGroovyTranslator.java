@@ -25,11 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
-import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -71,9 +69,8 @@ public class PythonGroovyTranslator extends PythonTranslator {
         if (!this.alias.equals("__")) {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-                final Bindings jythonBindings = new SimpleBindings();
-                jythonBindings.put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.alias + "\"))"));
-                jythonEngine.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
+                jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
+                        .put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.alias + "\"))"));
                 return jythonEngine.eval(traversal).toString();
             } catch (final ScriptException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);

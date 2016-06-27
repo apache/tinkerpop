@@ -26,10 +26,8 @@ import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.SimpleBindings;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -46,9 +44,8 @@ public class RESTRemoteConnectionTest {
     public void setup() {
         try {
             JythonScriptEngineSetup.setup();
-            final Bindings jythonBindings = new SimpleBindings();
-            jythonBindings.put("g", jython.eval("PythonGraphTraversalSource(GroovyTranslator('g'), RESTRemoteConnection('http://localhost:8182'))"));
-            jython.getContext().setBindings(jythonBindings, ScriptContext.GLOBAL_SCOPE);
+            jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
+                    .put("g", jython.eval("PythonGraphTraversalSource(GroovyTranslator('g'), RESTRemoteConnection('http://localhost:8182'))"));
             final GremlinServer server = new GremlinServer(Settings.read(RESTRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml")));
             server.start().join();
         } catch (Exception ex) {

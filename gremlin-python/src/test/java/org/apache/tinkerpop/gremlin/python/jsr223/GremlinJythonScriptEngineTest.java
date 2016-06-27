@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
 import javax.script.Bindings;
@@ -75,9 +76,7 @@ public class GremlinJythonScriptEngineTest {
     @Test
     public void shouldSupportJavaBasedGraphTraversal() throws Exception {
         final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
-        final Bindings bindings = engine.createBindings();
-        bindings.put("graph", TinkerFactory.createModern());
-        engine.setBindings(bindings, ScriptContext.GLOBAL_SCOPE);
+        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("graph", TinkerFactory.createModern());
         engine.eval("g = graph.traversal()");
         assertEquals(new HashSet<>(Arrays.asList("ripple", "lop")), engine.eval("g.V().repeat(out()).times(2).values('name').toSet()"));
         assertEquals(new HashSet<>(Arrays.asList("ripple", "lop")), engine.eval("g.V().repeat(__.out()).times(2).values('name').toSet()"));
@@ -90,9 +89,7 @@ public class GremlinJythonScriptEngineTest {
     @Test
     public void shouldSupportSugarMethods() throws Exception {
         final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
-        final Bindings bindings = engine.createBindings();
-        bindings.put("graph", TinkerFactory.createModern());
-        engine.setBindings(bindings, ScriptContext.GLOBAL_SCOPE);
+        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("graph", TinkerFactory.createModern());
         engine.eval("g = graph.traversal()");
         assertEquals(new HashSet<>(Arrays.asList("ripple", "lop")), engine.eval("g.V().repeat(__.out()).times(2)[0:2].name.toSet()"));
         assertEquals(new HashSet<>(Arrays.asList("ripple", "lop")), engine.eval("g.V().repeat(__.out()).times(2).name[0:3].toSet()"));
