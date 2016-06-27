@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 from aenum import Enum
-from statics import add_static
+import statics
 
 class PythonTraversal(object):
     def __init__(self, translator, remote_connection=None):
@@ -77,66 +77,66 @@ class PythonTraversal(object):
 
 Barrier = Enum('Barrier', 'normSack')
 
-add_static('normSack', Barrier.normSack)
+statics.add_static('normSack', Barrier.normSack)
 
 Cardinality = Enum('Cardinality', 'list set single')
 
-add_static('single', Cardinality.single)
-add_static('list', Cardinality.list)
-add_static('set', Cardinality.set)
+statics.add_static('single', Cardinality.single)
+statics.add_static('list', Cardinality.list)
+statics.add_static('set', Cardinality.set)
 
 Column = Enum('Column', 'keys values')
 
-add_static('keys', Column.keys)
-add_static('values', Column.values)
+statics.add_static('keys', Column.keys)
+statics.add_static('values', Column.values)
 
 Direction = Enum('Direction', 'BOTH IN OUT')
 
-add_static('OUT', Direction.OUT)
-add_static('IN', Direction.IN)
-add_static('BOTH', Direction.BOTH)
+statics.add_static('OUT', Direction.OUT)
+statics.add_static('IN', Direction.IN)
+statics.add_static('BOTH', Direction.BOTH)
 
 Operator = Enum('Operator', 'addAll _and assign div max min minus mult _or sum sumLong')
 
-add_static('sum', Operator.sum)
-add_static('minus', Operator.minus)
-add_static('mult', Operator.mult)
-add_static('div', Operator.div)
-add_static('min', Operator.min)
-add_static('max', Operator.max)
-add_static('assign', Operator.assign)
-add_static('_and', Operator._and)
-add_static('_or', Operator._or)
-add_static('addAll', Operator.addAll)
-add_static('sumLong', Operator.sumLong)
+statics.add_static('sum', Operator.sum)
+statics.add_static('minus', Operator.minus)
+statics.add_static('mult', Operator.mult)
+statics.add_static('div', Operator.div)
+statics.add_static('min', Operator.min)
+statics.add_static('max', Operator.max)
+statics.add_static('assign', Operator.assign)
+statics.add_static('_and', Operator._and)
+statics.add_static('_or', Operator._or)
+statics.add_static('addAll', Operator.addAll)
+statics.add_static('sumLong', Operator.sumLong)
 
 Order = Enum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr')
 
-add_static('incr', Order.incr)
-add_static('decr', Order.decr)
-add_static('keyIncr', Order.keyIncr)
-add_static('valueIncr', Order.valueIncr)
-add_static('keyDecr', Order.keyDecr)
-add_static('valueDecr', Order.valueDecr)
-add_static('shuffle', Order.shuffle)
+statics.add_static('incr', Order.incr)
+statics.add_static('decr', Order.decr)
+statics.add_static('keyIncr', Order.keyIncr)
+statics.add_static('valueIncr', Order.valueIncr)
+statics.add_static('keyDecr', Order.keyDecr)
+statics.add_static('valueDecr', Order.valueDecr)
+statics.add_static('shuffle', Order.shuffle)
 
 Pop = Enum('Pop', 'all first last')
 
-add_static('first', Pop.first)
-add_static('last', Pop.last)
-add_static('all', Pop.all)
+statics.add_static('first', Pop.first)
+statics.add_static('last', Pop.last)
+statics.add_static('all', Pop.all)
 
 Scope = Enum('Scope', '_global local')
 
-add_static('_global', Scope._global)
-add_static('local', Scope.local)
+statics.add_static('_global', Scope._global)
+statics.add_static('local', Scope.local)
 
 T = Enum('T', 'id key label value')
 
-add_static('label', T.label)
-add_static('id', T.id)
-add_static('key', T.key)
-add_static('value', T.value)
+statics.add_static('label', T.label)
+statics.add_static('id', T.id)
+statics.add_static('key', T.key)
+statics.add_static('value', T.value)
 
 class P(object):
    def __init__(self, operator, value, other=None):
@@ -190,55 +190,55 @@ class P(object):
 def _not(*args):
       return P._not(*args)
 
-add_static('_not',_not)
+statics.add_static('_not',_not)
 def between(*args):
       return P.between(*args)
 
-add_static('between',between)
+statics.add_static('between',between)
 def eq(*args):
       return P.eq(*args)
 
-add_static('eq',eq)
+statics.add_static('eq',eq)
 def gt(*args):
       return P.gt(*args)
 
-add_static('gt',gt)
+statics.add_static('gt',gt)
 def gte(*args):
       return P.gte(*args)
 
-add_static('gte',gte)
+statics.add_static('gte',gte)
 def inside(*args):
       return P.inside(*args)
 
-add_static('inside',inside)
+statics.add_static('inside',inside)
 def lt(*args):
       return P.lt(*args)
 
-add_static('lt',lt)
+statics.add_static('lt',lt)
 def lte(*args):
       return P.lte(*args)
 
-add_static('lte',lte)
+statics.add_static('lte',lte)
 def neq(*args):
       return P.neq(*args)
 
-add_static('neq',neq)
+statics.add_static('neq',neq)
 def outside(*args):
       return P.outside(*args)
 
-add_static('outside',outside)
+statics.add_static('outside',outside)
 def test(*args):
       return P.test(*args)
 
-add_static('test',test)
+statics.add_static('test',test)
 def within(*args):
       return P.within(*args)
 
-add_static('within',within)
+statics.add_static('within',within)
 def without(*args):
       return P.without(*args)
 
-add_static('without',without)
+statics.add_static('without',without)
 
 class RawExpression(object):
    def __init__(self, *args):

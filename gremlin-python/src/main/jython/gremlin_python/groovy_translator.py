@@ -23,7 +23,6 @@ from aenum import Enum
 from translator import SymbolHelper
 from translator import Translator
 from traversal import P
-from traversal import Raw
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -86,8 +85,6 @@ class GroovyTranslator(Translator):
             return arg[0]
         elif isinstance(arg, RawExpression):
             return "".join(GroovyTranslator.stringOrObject(i) for i in arg.parts)
-        elif isinstance(arg, Raw):
-            return str(arg)
         else:
             return str(arg)
 

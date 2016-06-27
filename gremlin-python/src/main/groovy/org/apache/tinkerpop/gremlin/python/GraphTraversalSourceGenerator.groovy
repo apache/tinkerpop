@@ -58,7 +58,7 @@ under the License.
 """)
         pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import PythonTraversal\n")
-        pythonClass.append("from statics import add_static\n")
+        pythonClass.append("import statics\n")
         pythonClass.append("globalTranslator = None\n\n")
 
 //////////////////////////
@@ -174,7 +174,7 @@ under the License.
                 .sort { a, b -> a <=> b }
                 .forEach {
             pythonClass.append("def ${it}(*args):\n").append("      return __.${it}(*args)\n\n")
-            pythonClass.append("add_static('${it}', ${it})\n")
+            pythonClass.append("statics.add_static('${it}', ${it})\n")
         }
         pythonClass.append("\n\n")
 

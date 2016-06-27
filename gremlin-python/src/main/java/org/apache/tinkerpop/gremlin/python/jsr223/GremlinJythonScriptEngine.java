@@ -66,6 +66,7 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
             this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getattr__ = lambda self, key: self.values(key)");
 
             this.pyScriptEngine.eval("\n" +
+                    "from java.lang import Long\n" +
                     "import org.apache.tinkerpop.gremlin.util.function.Lambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import AbstractLambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import ZeroArgLambda\n" +

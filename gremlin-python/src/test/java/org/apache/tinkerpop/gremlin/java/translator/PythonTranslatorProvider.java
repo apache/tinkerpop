@@ -63,14 +63,11 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
-            "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
-            "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
             "g_VX1X_out_injectXv2X_name",
-            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX",
-            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X",
-            "shouldSupportGraphFilter",
+            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX", // jython gets confused about the method to call in Java :|
+            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X", // jython gets confused about the method to call in Java :|
+            "shouldSupportGraphFilter", // need to get Computer implemented as a class in Gremlin-Python
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
             "shouldTraversalResetProperly",
@@ -145,10 +142,9 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             try {
-                if (IMPORT_STATICS)
-                    ScriptEngineCache.get("jython").eval("load_statics(globals())");
-                else
-                    ScriptEngineCache.get("jython").eval("unload_statics(globals())");
+                ScriptEngineCache.get("jython").eval(IMPORT_STATICS ?
+                        "statics.load_statics(globals())" :
+                        "statics.unload_statics(globals())");
             } catch (final ScriptException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

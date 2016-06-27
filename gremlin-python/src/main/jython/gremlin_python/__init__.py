@@ -16,7 +16,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-import statics
 from graph_traversal import PythonGraphTraversal
 from graph_traversal import PythonGraphTraversalSource
 from graph_traversal import __

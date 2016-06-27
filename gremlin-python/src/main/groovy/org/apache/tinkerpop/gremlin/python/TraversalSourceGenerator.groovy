@@ -54,7 +54,7 @@ under the License.
 '''
 """)
         pythonClass.append("from aenum import Enum\n")
-        pythonClass.append("from statics import add_static\n")
+        pythonClass.append("import statics\n")
 
         pythonClass.append("""
 class PythonTraversal(object):
@@ -128,7 +128,7 @@ class PythonTraversal(object):
                     .each { value -> pythonClass.append("${SymbolHelper.toPython(value.name())} "); }
             pythonClass.deleteCharAt(pythonClass.length() - 1).append("')\n\n")
             enumClass.getEnumConstants().each { value ->
-                pythonClass.append("add_static('${SymbolHelper.toPython(value.name())}', ${value.getDeclaringClass().getSimpleName()}.${SymbolHelper.toPython(value.name())})\n");
+                pythonClass.append("statics.add_static('${SymbolHelper.toPython(value.name())}', ${value.getDeclaringClass().getSimpleName()}.${SymbolHelper.toPython(value.name())})\n");
             }
             pythonClass.append("\n");
         }
@@ -168,7 +168,7 @@ class PythonTraversal(object):
                 .sort { a, b -> a <=> b }
                 .forEach {
             pythonClass.append("def ${it}(*args):\n").append("      return P.${it}(*args)\n\n")
-            pythonClass.append("add_static('${it}',${it})\n")
+            pythonClass.append("statics.add_static('${it}',${it})\n")
         }
         pythonClass.append("\n")
         //////////////

@@ -27,7 +27,6 @@ from traversal import Barrier
 from traversal import Cardinality
 from traversal import Column
 from traversal import P
-from traversal import Raw
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -66,7 +65,7 @@ class JythonTranslator(Translator):
         if isinstance(arg, str):
             return "\"" + arg + "\""
         elif isinstance(arg, long):
-            return str(arg) + "L"
+            return str(arg) + "L" if arg > 9223372036854775807L else "Long(" + str(arg) + ")"
         elif isinstance(arg, Barrier):
             return "Barrier" + "." + SymbolHelper.toJava(str(arg.name))
         elif isinstance(arg, Column):
@@ -97,8 +96,6 @@ class JythonTranslator(Translator):
             return arg[0]
         elif isinstance(arg, RawExpression):
             return "".join(JythonTranslator.stringOrObject(i) for i in arg.parts)
-        elif isinstance(arg, Raw):
-            return str(arg)
         else:
             return str(arg)
 
