@@ -1,0 +1,1 @@
+{'g':graph.traversal()}

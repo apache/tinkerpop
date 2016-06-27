@@ -52,7 +52,6 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
             }
             for (final Method x : CoreImports.getMethodImports()) {
                 this.pyScriptEngine.eval(SymbolHelper.toPython(x.getName()) + " = " + x.getDeclaringClass().getSimpleName() + "." + x.getName());
-                // this.pyScriptEngine.eval("def " + SymbolHelper.toPython(x.getName()) + "(*args):\n  return " + x.getDeclaringClass().getSimpleName() + "." + SymbolHelper.toPython(x.getName()) + "(*args)");
             }
             for (final Enum x : CoreImports.getEnumImports()) {
                 this.pyScriptEngine.eval(SymbolHelper.toPython(x.name()) + " = " + x.getDeclaringClass().getSimpleName() + "." + x.name());

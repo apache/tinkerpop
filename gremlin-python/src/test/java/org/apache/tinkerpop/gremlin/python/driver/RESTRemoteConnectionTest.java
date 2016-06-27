@@ -47,6 +47,8 @@ public class RESTRemoteConnectionTest {
             JythonScriptEngineSetup.setup();
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
                     .put("g", jython.eval("PythonGraphTraversalSource(GroovyTranslator('g'), RESTRemoteConnection('http://localhost:8182'))"));
+            jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
+                    .put("h", jython.eval("PythonGraphTraversalSource(JythonTranslator('g'), RESTRemoteConnection('http://localhost:8182'))"));
             final GremlinServer server = new GremlinServer(Settings.read(RESTRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml")));
             server.start().join();
         } catch (final Exception ex) {
@@ -56,13 +58,20 @@ public class RESTRemoteConnectionTest {
 
     @Test
     public void testPythonGraphTraversalNext() throws Exception {
-        final String result = (String) jython.eval("g.V().repeat(__.out()).times(2).name.next()");
+        String result = (String) jython.eval("g.V().repeat(__.out()).times(2).name.next()");
+        assertTrue(result.equals("lop") || result.equals("ripple"));
+        result = (String) jython.eval("h.V().repeat(__.out()).times(2).name.next()");
         assertTrue(result.equals("lop") || result.equals("ripple"));
     }
 
     @Test
     public void testPythonGraphTraversalToList() throws Exception {
-        final List<String> results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.toList()");
+        List<String> results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.toList()");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+        //
+        results = (List) jython.eval("h.V().repeat(__.out()).times(2).name.toList()");
         assertEquals(2, results.size());
         assertTrue(results.contains("lop"));
         assertTrue(results.contains("ripple"));
@@ -70,7 +79,12 @@ public class RESTRemoteConnectionTest {
 
     @Test
     public void testPythonGraphTraversalToSet() throws Exception {
-        final Set<String> results = (Set) jython.eval("g.V().repeat(__.both()).times(4).hasLabel('software').name.toSet()");
+        Set<String> results = (Set) jython.eval("g.V().repeat(__.both()).times(4).hasLabel('software').name.toSet()");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+        //
+        results = (Set) jython.eval("h.V().repeat(__.both()).times(4).hasLabel('software').name.toSet()");
         assertEquals(2, results.size());
         assertTrue(results.contains("lop"));
         assertTrue(results.contains("ripple"));
@@ -84,6 +98,18 @@ public class RESTRemoteConnectionTest {
         assertTrue(results.contains("ripple"));
         //
         results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.next(4)");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+
+        ///
+
+        results = (List) jython.eval("h.V().repeat(__.out()).times(2).name.next(2)");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+        //
+        results = (List) jython.eval("h.V().repeat(__.out()).times(2).name.next(4)");
         assertEquals(2, results.size());
         assertTrue(results.contains("lop"));
         assertTrue(results.contains("ripple"));

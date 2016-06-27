@@ -428,7 +428,7 @@ public class ScriptEngines implements AutoCloseable {
      */
     private static Bindings mergeBindings(final Bindings bindings, final ScriptEngine engine) {
         // plugins place "globals" here - see ScriptEnginePluginAcceptor
-        final Bindings global = engine.getBindings(ScriptContext.GLOBAL_SCOPE);
+        final Bindings global = engine.getBindings(ScriptContext.ENGINE_SCOPE);
         if (null == global) return bindings;
 
         // merge the globals with the incoming bindings where local bindings "win"
