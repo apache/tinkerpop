@@ -123,7 +123,7 @@ public class ScriptEngines implements AutoCloseable {
      * Compiles a script without executing it.
      *
      * @throws UnsupportedOperationException if the {@link ScriptEngine} implementation does not implement
-     * the {@link javax.script.Compilable} interface.
+     *                                       the {@link javax.script.Compilable} interface.
      */
     public CompiledScript compile(final String script, final String language) throws ScriptException {
         if (!scriptEngines.containsKey(language))
@@ -142,7 +142,7 @@ public class ScriptEngines implements AutoCloseable {
      * Compiles a script without executing it.
      *
      * @throws UnsupportedOperationException if the {@link ScriptEngine} implementation does not implement
-     * the {@link javax.script.Compilable} interface.
+     *                                       the {@link javax.script.Compilable} interface.
      */
     public CompiledScript compile(final Reader script, final String language) throws ScriptException {
         if (!scriptEngines.containsKey(language))
@@ -350,7 +350,7 @@ public class ScriptEngines implements AutoCloseable {
      * thread until that process completes.
      */
     private void awaitControlOp() {
-        if(controlWaiters.size() > 0 || controlOperationExecuting.get()) {
+        if (controlWaiters.size() > 0 || controlOperationExecuting.get()) {
             evalWaiters.add(Thread.currentThread());
             LockSupport.park(this);
         }
@@ -371,9 +371,9 @@ public class ScriptEngines implements AutoCloseable {
             // CompilerCustomizerProvider.  the value is a list of arguments to pass to an available constructor.
             // the arguments must match in terms of type, so given that configuration typically comes from yaml
             // or properties file, it is best to stick to primitive values when possible here for simplicity.
-            final Map<String,Object> compilerCustomizerProviders = (Map<String,Object>) config.getOrDefault(
+            final Map<String, Object> compilerCustomizerProviders = (Map<String, Object>) config.getOrDefault(
                     "compilerCustomizerProviders", Collections.emptyMap());
-            compilerCustomizerProviders.forEach((k,v) -> {
+            compilerCustomizerProviders.forEach((k, v) -> {
                 try {
                     final Class providerClass = Class.forName(k);
                     if (v != null && v instanceof List && ((List) v).size() > 0) {
@@ -386,7 +386,7 @@ public class ScriptEngines implements AutoCloseable {
 
                         final Optional<Constructor> constructor = Stream.of(providerClass.getConstructors())
                                 .filter(c -> c.getParameterCount() == argClasses.length &&
-                                             allMatch(c.getParameterTypes(), argClasses))
+                                        allMatch(c.getParameterTypes(), argClasses))
                                 .findFirst();
 
                         if (constructor.isPresent()) providers.add((CompilerCustomizerProvider)
@@ -397,7 +397,7 @@ public class ScriptEngines implements AutoCloseable {
                     } else {
                         providers.add((CompilerCustomizerProvider) providerClass.newInstance());
                     }
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     logger.warn(String.format("Could not instantiate CompilerCustomizerProvider implementation [%s].  It will not be applied.", k), ex);
                 }
             });
@@ -428,7 +428,7 @@ public class ScriptEngines implements AutoCloseable {
      */
     private static Bindings mergeBindings(final Bindings bindings, final ScriptEngine engine) {
         // plugins place "globals" here - see ScriptEnginePluginAcceptor
-        final Bindings global = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        final Bindings global = engine.getBindings(ScriptContext.GLOBAL_SCOPE);
         if (null == global) return bindings;
 
         // merge the globals with the incoming bindings where local bindings "win"

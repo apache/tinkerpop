@@ -135,12 +135,14 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
 
     @Override
     public Object eval(String script, Bindings n) throws ScriptException {
-        return this.pyScriptEngine.eval(script, n);
+        this.pyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).putAll(n); // TODO: groovy and jython act different
+        return this.pyScriptEngine.eval(script);
     }
 
     @Override
     public Object eval(Reader reader, Bindings n) throws ScriptException {
-        return this.pyScriptEngine.eval(reader, n);
+        this.pyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).putAll(n); // TODO: groovy and jython act different
+        return this.pyScriptEngine.eval(reader);
     }
 
     @Override
