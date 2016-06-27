@@ -20,16 +20,16 @@
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.tinkerpop.gremlin.util.Gremlin;
+import org.python.jsr223.PyScriptEngineFactory;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinJythonScriptEngineFactory implements ScriptEngineFactory {
+public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory {
 
     private static final String ENGINE_NAME = "gremlin-jython";
     private static final String LANGUAGE_NAME = "gremlin-jython";
@@ -62,11 +62,6 @@ public class GremlinJythonScriptEngineFactory implements ScriptEngineFactory {
     }
 
     @Override
-    public String getMethodCallSyntax(final String obj, final String m, final String... args) {
-        return null;
-    }
-
-    @Override
     public List<String> getMimeTypes() {
         return Arrays.asList(PLAIN);
     }
@@ -74,11 +69,6 @@ public class GremlinJythonScriptEngineFactory implements ScriptEngineFactory {
     @Override
     public List<String> getNames() {
         return Arrays.asList(LANGUAGE_NAME);
-    }
-
-    @Override
-    public String getOutputStatement(final String toDisplay) {
-        return "println " + toDisplay;
     }
 
     @Override
@@ -94,18 +84,7 @@ public class GremlinJythonScriptEngineFactory implements ScriptEngineFactory {
         } else if (key.equals(ScriptEngine.LANGUAGE_VERSION)) {
             return this.getLanguageVersion();
         } else
-            return null;
-    }
-
-    @Override
-    public String getProgram(final String... statements) {
-        String program = "";
-
-        for (String statement : statements) {
-            program = program + statement + "\n";
-        }
-
-        return program;
+            return super.getParameter(key);
     }
 
     @Override

@@ -67,7 +67,7 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
 
             this.pyScriptEngine.eval("\n" +
                     "from java.lang import Long\n" +
-                    "import org.apache.tinkerpop.gremlin.util.function.Lambda\n" +
+                    "import org.apache.tinkerpop.gremlin.util.function.Lambda\n" + // todo: remove or remove imported subclass names? (choose)
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import AbstractLambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import ZeroArgLambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import OneArgLambda\n" +

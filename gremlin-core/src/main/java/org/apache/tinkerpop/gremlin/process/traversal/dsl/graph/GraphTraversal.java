@@ -1224,7 +1224,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param keyValues any meta properties to be assigned to this property
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
-        return this.property(null, key, value, keyValues);
+        return key instanceof VertexProperty.Cardinality ?
+                this.property((VertexProperty.Cardinality) key, value, keyValues[0],
+                        keyValues.length > 1 ?
+                                Arrays.copyOfRange(keyValues, 1, keyValues.length) :
+                                new Object[]{}) :
+                this.property(null, key, value, keyValues);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

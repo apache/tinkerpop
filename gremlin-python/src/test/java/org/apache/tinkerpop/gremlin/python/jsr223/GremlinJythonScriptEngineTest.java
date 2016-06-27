@@ -25,10 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
-import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -69,7 +67,8 @@ public class GremlinJythonScriptEngineTest {
         assertEquals(VertexProperty.Cardinality.single, engine.eval("Cardinality.valueOf(\'single\')"));
         assertTrue(engine.eval("out()") instanceof GraphTraversal);
         assertTrue(engine.eval("__.out()") instanceof GraphTraversal);
-        // assertTrue(engine.eval("__.property(Cardinality.single, 'name','marko')") instanceof GraphTraversal);
+        assertTrue(engine.eval("__.property(VertexProperty.Cardinality.single, 'name','marko')") instanceof GraphTraversal);
+        assertTrue(engine.eval("__.property(Cardinality.single, 'name','marko')") instanceof GraphTraversal);
     }
 
 

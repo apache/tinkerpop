@@ -65,8 +65,6 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
             "testProfileStrategyCallbackSideEffect",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
             "g_VX1X_out_injectXv2X_name",
-            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX", // jython gets confused about the method to call in Java :|
-            "g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X", // jython gets confused about the method to call in Java :|
             "shouldSupportGraphFilter", // need to get Computer implemented as a class in Gremlin-Python
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
