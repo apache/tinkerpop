@@ -23,12 +23,13 @@ import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,24 +39,32 @@ import static org.junit.Assert.assertTrue;
  */
 public class RESTRemoteConnectionTest {
 
-    private final ScriptEngine jython = ScriptEngineCache.get("jython");
+    private static final ScriptEngine jython = ScriptEngineCache.get("jython");
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         try {
             JythonScriptEngineSetup.setup();
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
                     .put("g", jython.eval("PythonGraphTraversalSource(GroovyTranslator('g'), RESTRemoteConnection('http://localhost:8182'))"));
             final GremlinServer server = new GremlinServer(Settings.read(RESTRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml")));
             server.start().join();
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
         }
     }
 
     @Test
-    public void testRESTRemoteConnection() throws Exception {
+    public void testPythonGraphTraversalToList() throws Exception {
         final List<String> results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.toList()");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+    }
+
+    @Test
+    public void testPythonGraphTraversalToSet() throws Exception {
+        final Set<String> results = (Set) jython.eval("g.V().repeat(__.both()).times(4).hasLabel('software').name.toSet()");
         assertEquals(2, results.size());
         assertTrue(results.contains("lop"));
         assertTrue(results.contains("ripple"));

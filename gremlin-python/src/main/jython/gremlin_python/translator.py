@@ -21,8 +21,8 @@ from abc import abstractmethod
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
-                   "_or": "or", "_is": "is", "_not": "not", "_from": "from",
-                   "Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
+               "_or": "or", "_is": "is", "_not": "not", "_from": "from",
+               "Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
 
 
 class Translator(object):
@@ -31,6 +31,7 @@ class Translator(object):
         self.source_language = source_language
         self.target_language = target_language
         self.traversal_script = alias
+        self.statics = {}
 
     @abstractmethod
     def addStep(self, traversal, step_name, *args):

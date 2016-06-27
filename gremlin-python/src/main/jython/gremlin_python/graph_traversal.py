@@ -16,13 +16,11 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from collections import OrderedDict
 from aenum import Enum
-statics = OrderedDict()
-
-
+from traversal import RawExpression
+from traversal import PythonTraversal
+from statics import add_static
 globalTranslator = None
-
 
 class PythonGraphTraversalSource(object):
   def __init__(self, translator, remote_connection=None):
@@ -142,52 +140,9 @@ class PythonGraphTraversalSource(object):
     return source
 
 
-class PythonGraphTraversal(object):
+class PythonGraphTraversal(PythonTraversal):
   def __init__(self, translator, remote_connection=None):
-    self.translator = translator
-    self.remote_connection = remote_connection
-    self.results = None
-    self.last_traverser = None
-    self.bindings = {}
-  def __repr__(self):
-    return self.translator.traversal_script
-  def __getitem__(self,index):
-    if isinstance(index,int):
-      return self.range(index,index+1)
-    elif isinstance(index,slice):
-      return self.range(index.start,index.stop)
-    else:
-      raise TypeError("Index must be int or slice")
-  def __getattr__(self,key):
-    return self.values(key)
-  def __iter__(self):
-        return self
-  def __next__(self):
-     return self.next()
-  def toList(self):
-    return list(iter(self))
-  def toSet(self):
-    return set(iter(self))
-  def next(self,amount):
-    count = 0
-    tempList = []
-    while count < amount:
-      count = count + 1
-      temp = next(self,None)
-      if None == temp:
-        break
-      tempList.append(temp)
-    return tempList
-  def next(self):
-     if self.results is None:
-        self.results = self.remote_connection.submit(self.translator.target_language, self.translator.traversal_script, self.bindings)
-     if self.last_traverser is None:
-         self.last_traverser = next(self.results)
-     object = self.last_traverser.object
-     self.last_traverser.bulk = self.last_traverser.bulk - 1
-     if self.last_traverser.bulk <= 0:
-         self.last_traverser = None
-     return object
+    PythonTraversal.__init__(self, translator, remote_connection)
   def V(self, *args):
     self.translator.addStep(self, "V", *args)
     for arg in args:
@@ -1275,555 +1230,370 @@ class __(object):
 def V(*args):
       return __.V(*args)
 
-statics['V'] = V
+add_static('V', V)
 def _and(*args):
       return __._and(*args)
 
-statics['_and'] = _and
+add_static('_and', _and)
 def _as(*args):
       return __._as(*args)
 
-statics['_as'] = _as
+add_static('_as', _as)
 def _in(*args):
       return __._in(*args)
 
-statics['_in'] = _in
+add_static('_in', _in)
 def _is(*args):
       return __._is(*args)
 
-statics['_is'] = _is
+add_static('_is', _is)
 def _not(*args):
       return __._not(*args)
 
-statics['_not'] = _not
+add_static('_not', _not)
 def _or(*args):
       return __._or(*args)
 
-statics['_or'] = _or
+add_static('_or', _or)
 def addE(*args):
       return __.addE(*args)
 
-statics['addE'] = addE
+add_static('addE', addE)
 def addInE(*args):
       return __.addInE(*args)
 
-statics['addInE'] = addInE
+add_static('addInE', addInE)
 def addOutE(*args):
       return __.addOutE(*args)
 
-statics['addOutE'] = addOutE
+add_static('addOutE', addOutE)
 def addV(*args):
       return __.addV(*args)
 
-statics['addV'] = addV
+add_static('addV', addV)
 def aggregate(*args):
       return __.aggregate(*args)
 
-statics['aggregate'] = aggregate
+add_static('aggregate', aggregate)
 def barrier(*args):
       return __.barrier(*args)
 
-statics['barrier'] = barrier
+add_static('barrier', barrier)
 def both(*args):
       return __.both(*args)
 
-statics['both'] = both
+add_static('both', both)
 def bothE(*args):
       return __.bothE(*args)
 
-statics['bothE'] = bothE
+add_static('bothE', bothE)
 def bothV(*args):
       return __.bothV(*args)
 
-statics['bothV'] = bothV
+add_static('bothV', bothV)
 def branch(*args):
       return __.branch(*args)
 
-statics['branch'] = branch
+add_static('branch', branch)
 def cap(*args):
       return __.cap(*args)
 
-statics['cap'] = cap
+add_static('cap', cap)
 def choose(*args):
       return __.choose(*args)
 
-statics['choose'] = choose
+add_static('choose', choose)
 def coalesce(*args):
       return __.coalesce(*args)
 
-statics['coalesce'] = coalesce
+add_static('coalesce', coalesce)
 def coin(*args):
       return __.coin(*args)
 
-statics['coin'] = coin
+add_static('coin', coin)
 def constant(*args):
       return __.constant(*args)
 
-statics['constant'] = constant
+add_static('constant', constant)
 def count(*args):
       return __.count(*args)
 
-statics['count'] = count
+add_static('count', count)
 def cyclicPath(*args):
       return __.cyclicPath(*args)
 
-statics['cyclicPath'] = cyclicPath
+add_static('cyclicPath', cyclicPath)
 def dedup(*args):
       return __.dedup(*args)
 
-statics['dedup'] = dedup
+add_static('dedup', dedup)
 def drop(*args):
       return __.drop(*args)
 
-statics['drop'] = drop
+add_static('drop', drop)
 def emit(*args):
       return __.emit(*args)
 
-statics['emit'] = emit
+add_static('emit', emit)
 def filter(*args):
       return __.filter(*args)
 
-statics['filter'] = filter
+add_static('filter', filter)
 def flatMap(*args):
       return __.flatMap(*args)
 
-statics['flatMap'] = flatMap
+add_static('flatMap', flatMap)
 def fold(*args):
       return __.fold(*args)
 
-statics['fold'] = fold
+add_static('fold', fold)
 def group(*args):
       return __.group(*args)
 
-statics['group'] = group
+add_static('group', group)
 def groupCount(*args):
       return __.groupCount(*args)
 
-statics['groupCount'] = groupCount
+add_static('groupCount', groupCount)
 def groupV3d0(*args):
       return __.groupV3d0(*args)
 
-statics['groupV3d0'] = groupV3d0
+add_static('groupV3d0', groupV3d0)
 def has(*args):
       return __.has(*args)
 
-statics['has'] = has
+add_static('has', has)
 def hasId(*args):
       return __.hasId(*args)
 
-statics['hasId'] = hasId
+add_static('hasId', hasId)
 def hasKey(*args):
       return __.hasKey(*args)
 
-statics['hasKey'] = hasKey
+add_static('hasKey', hasKey)
 def hasLabel(*args):
       return __.hasLabel(*args)
 
-statics['hasLabel'] = hasLabel
+add_static('hasLabel', hasLabel)
 def hasNot(*args):
       return __.hasNot(*args)
 
-statics['hasNot'] = hasNot
+add_static('hasNot', hasNot)
 def hasValue(*args):
       return __.hasValue(*args)
 
-statics['hasValue'] = hasValue
+add_static('hasValue', hasValue)
 def id(*args):
       return __.id(*args)
 
-statics['id'] = id
+add_static('id', id)
 def identity(*args):
       return __.identity(*args)
 
-statics['identity'] = identity
+add_static('identity', identity)
 def inE(*args):
       return __.inE(*args)
 
-statics['inE'] = inE
+add_static('inE', inE)
 def inV(*args):
       return __.inV(*args)
 
-statics['inV'] = inV
+add_static('inV', inV)
 def inject(*args):
       return __.inject(*args)
 
-statics['inject'] = inject
+add_static('inject', inject)
 def key(*args):
       return __.key(*args)
 
-statics['key'] = key
+add_static('key', key)
 def label(*args):
       return __.label(*args)
 
-statics['label'] = label
+add_static('label', label)
 def limit(*args):
       return __.limit(*args)
 
-statics['limit'] = limit
+add_static('limit', limit)
 def local(*args):
       return __.local(*args)
 
-statics['local'] = local
+add_static('local', local)
 def loops(*args):
       return __.loops(*args)
 
-statics['loops'] = loops
+add_static('loops', loops)
 def map(*args):
       return __.map(*args)
 
-statics['map'] = map
+add_static('map', map)
 def mapKeys(*args):
       return __.mapKeys(*args)
 
-statics['mapKeys'] = mapKeys
+add_static('mapKeys', mapKeys)
 def mapValues(*args):
       return __.mapValues(*args)
 
-statics['mapValues'] = mapValues
+add_static('mapValues', mapValues)
 def match(*args):
       return __.match(*args)
 
-statics['match'] = match
+add_static('match', match)
 def max(*args):
       return __.max(*args)
 
-statics['max'] = max
+add_static('max', max)
 def mean(*args):
       return __.mean(*args)
 
-statics['mean'] = mean
+add_static('mean', mean)
 def min(*args):
       return __.min(*args)
 
-statics['min'] = min
+add_static('min', min)
 def optional(*args):
       return __.optional(*args)
 
-statics['optional'] = optional
+add_static('optional', optional)
 def order(*args):
       return __.order(*args)
 
-statics['order'] = order
+add_static('order', order)
 def otherV(*args):
       return __.otherV(*args)
 
-statics['otherV'] = otherV
+add_static('otherV', otherV)
 def out(*args):
       return __.out(*args)
 
-statics['out'] = out
+add_static('out', out)
 def outE(*args):
       return __.outE(*args)
 
-statics['outE'] = outE
+add_static('outE', outE)
 def outV(*args):
       return __.outV(*args)
 
-statics['outV'] = outV
+add_static('outV', outV)
 def path(*args):
       return __.path(*args)
 
-statics['path'] = path
+add_static('path', path)
 def project(*args):
       return __.project(*args)
 
-statics['project'] = project
+add_static('project', project)
 def properties(*args):
       return __.properties(*args)
 
-statics['properties'] = properties
+add_static('properties', properties)
 def property(*args):
       return __.property(*args)
 
-statics['property'] = property
+add_static('property', property)
 def propertyMap(*args):
       return __.propertyMap(*args)
 
-statics['propertyMap'] = propertyMap
+add_static('propertyMap', propertyMap)
 def range(*args):
       return __.range(*args)
 
-statics['range'] = range
+add_static('range', range)
 def repeat(*args):
       return __.repeat(*args)
 
-statics['repeat'] = repeat
+add_static('repeat', repeat)
 def sack(*args):
       return __.sack(*args)
 
-statics['sack'] = sack
+add_static('sack', sack)
 def sample(*args):
       return __.sample(*args)
 
-statics['sample'] = sample
+add_static('sample', sample)
 def select(*args):
       return __.select(*args)
 
-statics['select'] = select
+add_static('select', select)
 def sideEffect(*args):
       return __.sideEffect(*args)
 
-statics['sideEffect'] = sideEffect
+add_static('sideEffect', sideEffect)
 def simplePath(*args):
       return __.simplePath(*args)
 
-statics['simplePath'] = simplePath
+add_static('simplePath', simplePath)
 def start(*args):
       return __.start(*args)
 
-statics['start'] = start
+add_static('start', start)
 def store(*args):
       return __.store(*args)
 
-statics['store'] = store
+add_static('store', store)
 def subgraph(*args):
       return __.subgraph(*args)
 
-statics['subgraph'] = subgraph
+add_static('subgraph', subgraph)
 def sum(*args):
       return __.sum(*args)
 
-statics['sum'] = sum
+add_static('sum', sum)
 def tail(*args):
       return __.tail(*args)
 
-statics['tail'] = tail
+add_static('tail', tail)
 def timeLimit(*args):
       return __.timeLimit(*args)
 
-statics['timeLimit'] = timeLimit
+add_static('timeLimit', timeLimit)
 def times(*args):
       return __.times(*args)
 
-statics['times'] = times
+add_static('times', times)
 def to(*args):
       return __.to(*args)
 
-statics['to'] = to
+add_static('to', to)
 def toE(*args):
       return __.toE(*args)
 
-statics['toE'] = toE
+add_static('toE', toE)
 def toV(*args):
       return __.toV(*args)
 
-statics['toV'] = toV
+add_static('toV', toV)
 def tree(*args):
       return __.tree(*args)
 
-statics['tree'] = tree
+add_static('tree', tree)
 def unfold(*args):
       return __.unfold(*args)
 
-statics['unfold'] = unfold
+add_static('unfold', unfold)
 def union(*args):
       return __.union(*args)
 
-statics['union'] = union
+add_static('union', union)
 def until(*args):
       return __.until(*args)
 
-statics['until'] = until
+add_static('until', until)
 def value(*args):
       return __.value(*args)
 
-statics['value'] = value
+add_static('value', value)
 def valueMap(*args):
       return __.valueMap(*args)
 
-statics['valueMap'] = valueMap
+add_static('valueMap', valueMap)
 def values(*args):
       return __.values(*args)
 
-statics['values'] = values
+add_static('values', values)
 def where(*args):
       return __.where(*args)
 
-statics['where'] = where
+add_static('where', where)
 
 
-Barrier = Enum('Barrier', 'normSack')
-
-statics['normSack'] = Barrier.normSack
-
-Cardinality = Enum('Cardinality', 'list set single')
-
-statics['single'] = Cardinality.single
-statics['list'] = Cardinality.list
-statics['set'] = Cardinality.set
-
-Column = Enum('Column', 'keys values')
-
-statics['keys'] = Column.keys
-statics['values'] = Column.values
-
-Direction = Enum('Direction', 'BOTH IN OUT')
-
-statics['OUT'] = Direction.OUT
-statics['IN'] = Direction.IN
-statics['BOTH'] = Direction.BOTH
-
-Operator = Enum('Operator', 'addAll _and assign div max min minus mult _or sum sumLong')
-
-statics['sum'] = Operator.sum
-statics['minus'] = Operator.minus
-statics['mult'] = Operator.mult
-statics['div'] = Operator.div
-statics['min'] = Operator.min
-statics['max'] = Operator.max
-statics['assign'] = Operator.assign
-statics['_and'] = Operator._and
-statics['_or'] = Operator._or
-statics['addAll'] = Operator.addAll
-statics['sumLong'] = Operator.sumLong
-
-Order = Enum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr')
-
-statics['incr'] = Order.incr
-statics['decr'] = Order.decr
-statics['keyIncr'] = Order.keyIncr
-statics['valueIncr'] = Order.valueIncr
-statics['keyDecr'] = Order.keyDecr
-statics['valueDecr'] = Order.valueDecr
-statics['shuffle'] = Order.shuffle
-
-Pop = Enum('Pop', 'all first last')
-
-statics['first'] = Pop.first
-statics['last'] = Pop.last
-statics['all'] = Pop.all
-
-Scope = Enum('Scope', '_global local')
-
-statics['_global'] = Scope._global
-statics['local'] = Scope.local
-
-T = Enum('T', 'id key label value')
-
-statics['label'] = T.label
-statics['id'] = T.id
-statics['key'] = T.key
-statics['value'] = T.value
-
-class P(object):
-   def __init__(self, operator, value, other=None):
-      self.operator = operator
-      self.value = value
-      self.other = other
-   @staticmethod
-   def _not(*args):
-      return P("not", *args)
-   @staticmethod
-   def between(*args):
-      return P("between", *args)
-   @staticmethod
-   def eq(*args):
-      return P("eq", *args)
-   @staticmethod
-   def gt(*args):
-      return P("gt", *args)
-   @staticmethod
-   def gte(*args):
-      return P("gte", *args)
-   @staticmethod
-   def inside(*args):
-      return P("inside", *args)
-   @staticmethod
-   def lt(*args):
-      return P("lt", *args)
-   @staticmethod
-   def lte(*args):
-      return P("lte", *args)
-   @staticmethod
-   def neq(*args):
-      return P("neq", *args)
-   @staticmethod
-   def outside(*args):
-      return P("outside", *args)
-   @staticmethod
-   def test(*args):
-      return P("test", *args)
-   @staticmethod
-   def within(*args):
-      return P("within", *args)
-   @staticmethod
-   def without(*args):
-      return P("without", *args)
-   def _and(self, arg):
-      return P("_and", arg, self)
-   def _or(self, arg):
-      return P("_or", arg, self)
-
-def _not(*args):
-      return P._not(*args)
-
-statics['_not'] = _not
-def between(*args):
-      return P.between(*args)
-
-statics['between'] = between
-def eq(*args):
-      return P.eq(*args)
-
-statics['eq'] = eq
-def gt(*args):
-      return P.gt(*args)
-
-statics['gt'] = gt
-def gte(*args):
-      return P.gte(*args)
-
-statics['gte'] = gte
-def inside(*args):
-      return P.inside(*args)
-
-statics['inside'] = inside
-def lt(*args):
-      return P.lt(*args)
-
-statics['lt'] = lt
-def lte(*args):
-      return P.lte(*args)
-
-statics['lte'] = lte
-def neq(*args):
-      return P.neq(*args)
-
-statics['neq'] = neq
-def outside(*args):
-      return P.outside(*args)
-
-statics['outside'] = outside
-def test(*args):
-      return P.test(*args)
-
-statics['test'] = test
-def within(*args):
-      return P.within(*args)
-
-statics['within'] = within
-def without(*args):
-      return P.without(*args)
-
-statics['without'] = without
-
-class RawExpression(object):
-   def __init__(self, *args):
-      self.bindings = dict()
-      self.parts = [self._process_arg(arg) for arg in args]
-
-   def _process_arg(self, arg):
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-         self.bindings[arg[0]] = arg[1]
-         return Raw(arg[0])
-      else:
-         return Raw(arg)
-
-class Raw(object):
-   def __init__(self, value):
-      self.value = value
-
-   def __str__(self):
-      return str(self.value)
-
-statics = OrderedDict(reversed(list(statics.items())))

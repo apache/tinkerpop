@@ -20,14 +20,13 @@
 package org.apache.tinkerpop.gremlin.python;
 
 public class GenerateGremlinPython {
+
+    private GenerateGremlinPython() {
+        // just need the main method
+    }
+
     public static void main(String[] args) {
-        String dest;
-        if (args.length > 0) {
-            dest = args[0];
-        } else {
-            System.out.println("Usage: java GenerateGremlinPython <path/to/dest>");
-            return;
-        }
-        GremlinPythonSourceGenerator.create(dest);
+        TraversalSourceGenerator.create(args[0]);
+        GraphTraversalSourceGenerator.create(args[1]);
     }
 }

@@ -22,9 +22,6 @@ package org.apache.tinkerpop.gremlin.java.translator.jython;
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslatorProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
-
-import javax.script.ScriptException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,20 +30,10 @@ public class PythonJythonTranslatorProvider extends PythonTranslatorProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        if ((Boolean) graph.configuration().getProperty("skipTest"))
-            return graph.traversal();
-            //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
-        else {
-            try {
-                if (IMPORT_STATICS)
-                    ScriptEngineCache.get("jython").eval("for k in statics:\n  globals()[k] = statics[k]");
-                else
-                    ScriptEngineCache.get("jython").eval("for k in statics:\n  if k in globals():\n    del globals()[k]");
-            } catch (final ScriptException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            return graph.traversal().withTranslator(PythonJythonTranslator.of("g", IMPORT_STATICS)); // the bypass translator will ensure that gremlin-groovy is ultimately used
-        }
+        final GraphTraversalSource g = super.traversal(graph);
+        return null == g ?
+                graph.traversal() :
+                g.withTranslator(PythonJythonTranslator.of("g", IMPORT_STATICS)); // the bypass translator will ensure that gremlin-groovy is ultimately used
     }
 
 }

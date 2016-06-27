@@ -16,22 +16,30 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-import statics
-from graph_traversal import PythonGraphTraversal
-from graph_traversal import PythonGraphTraversalSource
-from graph_traversal import __
-from groovy_translator import GroovyTranslator
-from jython_translator import JythonTranslator
-from traversal import Barrier
-from traversal import Cardinality
-from traversal import Column
-from traversal import Direction
-from traversal import Operator
-from traversal import Order
-from traversal import P
-from traversal import Pop
-from traversal import PythonTraversal
-from traversal import Scope
-from traversal import T
+from aenum import Enum
 
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+staticMethods = {}
+staticEnums = {}
+
+
+def add_static(key, value):
+    if isinstance(value, Enum):
+        staticEnums[key] = value
+    else:
+        staticMethods[key] = value
+
+
+def load_statics(global_dict):
+    for key in staticMethods:
+        global_dict[key] = staticMethods[key]
+    for key in staticEnums:
+        global_dict[key] = staticEnums[key]
+
+
+def unload_statics(global_dict):
+    for key in staticMethods:
+        if key in global_dict:
+            del global_dict[key]
+    for key in staticEnums:
+        if key in global_dict:
+            del global_dict[key]

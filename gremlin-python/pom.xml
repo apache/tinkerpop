@@ -101,7 +101,8 @@
                         <configuration>
                             <mainClass>org.apache.tinkerpop.gremlin.python.GenerateGremlinPython</mainClass>
                             <arguments>
-                                <argument>${basedir}/src/main/jython/gremlin_python/gremlin_python.py</argument>
+                                <argument>${basedir}/src/main/jython/gremlin_python/traversal.py</argument>
+                                <argument>${basedir}/src/main/jython/gremlin_python/graph_traversal.py</argument>
                             </arguments>
                         </configuration>
                     </execution>

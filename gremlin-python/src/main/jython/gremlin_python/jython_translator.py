@@ -21,14 +21,14 @@ import inspect
 import sys
 from aenum import Enum
 
-from gremlin_python import Barrier
-from gremlin_python import Cardinality
-from gremlin_python import Column
-from gremlin_python import P
-from gremlin_python import Raw
-from gremlin_python import RawExpression
 from translator import SymbolHelper
 from translator import Translator
+from traversal import Barrier
+from traversal import Cardinality
+from traversal import Column
+from traversal import P
+from traversal import Raw
+from traversal import RawExpression
 
 if sys.version_info.major > 2:
     long = int

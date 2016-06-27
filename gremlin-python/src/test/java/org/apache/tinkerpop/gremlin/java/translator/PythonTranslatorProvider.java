@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
@@ -38,7 +39,9 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
+import javax.script.ScriptException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -134,4 +137,23 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
         else
             throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerGraph.IdManager.class.getName(), loadGraphWith.name()));
     }
+
+    @Override
+    public GraphTraversalSource traversal(final Graph graph) {
+        if ((Boolean) graph.configuration().getProperty("skipTest"))
+            return null;
+            //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
+        else {
+            try {
+                if (IMPORT_STATICS)
+                    ScriptEngineCache.get("jython").eval("load_statics(globals())");
+                else
+                    ScriptEngineCache.get("jython").eval("unload_statics(globals())");
+            } catch (final ScriptException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+            return graph.traversal();
+        }
+    }
+
 }

@@ -20,11 +20,11 @@ under the License.
 import sys
 from aenum import Enum
 
-from gremlin_python import P
-from gremlin_python import Raw
-from gremlin_python import RawExpression
 from translator import SymbolHelper
 from translator import Translator
+from traversal import P
+from traversal import Raw
+from traversal import RawExpression
 
 if sys.version_info.major > 2:
     long = int

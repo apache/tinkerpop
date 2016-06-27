@@ -19,23 +19,21 @@
 
 package org.apache.tinkerpop.gremlin.python
 
-import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.python.util.SymbolHelper
-import org.apache.tinkerpop.gremlin.util.CoreImports
 
 import java.lang.reflect.Modifier
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GremlinPythonSourceGenerator {
+class GraphTraversalSourceGenerator {
 
-    public static void create(final String gremlinPythonFile) {
+    public static void create(final String graphTraversalSourceFile) {
 
         final StringBuilder pythonClass = new StringBuilder()
 
@@ -58,12 +56,11 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-        pythonClass.append("from collections import OrderedDict\n")
         pythonClass.append("from aenum import Enum\n")
-        pythonClass.append("statics = OrderedDict()\n\n")
-        pythonClass.append("""
-globalTranslator = None
-""").append("\n\n");
+        pythonClass.append("from traversal import RawExpression\n")
+        pythonClass.append("from traversal import PythonTraversal\n")
+        pythonClass.append("from statics import add_static\n")
+        pythonClass.append("globalTranslator = None\n\n")
 
 //////////////////////////
 // GraphTraversalSource //
@@ -123,52 +120,9 @@ globalTranslator = None
 // GraphTraversal //
 ////////////////////
         pythonClass.append(
-                """class PythonGraphTraversal(object):
+                """class PythonGraphTraversal(PythonTraversal):
   def __init__(self, translator, remote_connection=None):
-    self.translator = translator
-    self.remote_connection = remote_connection
-    self.results = None
-    self.last_traverser = None
-    self.bindings = {}
-  def __repr__(self):
-    return self.translator.traversal_script
-  def __getitem__(self,index):
-    if isinstance(index,int):
-      return self.range(index,index+1)
-    elif isinstance(index,slice):
-      return self.range(index.start,index.stop)
-    else:
-      raise TypeError("Index must be int or slice")
-  def __getattr__(self,key):
-    return self.values(key)
-  def __iter__(self):
-        return self
-  def __next__(self):
-     return self.next()
-  def toList(self):
-    return list(iter(self))
-  def toSet(self):
-    return set(iter(self))
-  def next(self,amount):
-    count = 0
-    tempList = []
-    while count < amount:
-      count = count + 1
-      temp = next(self,None)
-      if None == temp:
-        break
-      tempList.append(temp)
-    return tempList
-  def next(self):
-     if self.results is None:
-        self.results = self.remote_connection.submit(self.translator.target_language, self.translator.traversal_script, self.bindings)
-     if self.last_traverser is None:
-         self.last_traverser = next(self.results)
-     object = self.last_traverser.object
-     self.last_traverser.bulk = self.last_traverser.bulk - 1
-     if self.last_traverser.bulk <= 0:
-         self.last_traverser = None
-     return object
+    PythonTraversal.__init__(self, translator, remote_connection)
 """)
         GraphTraversal.getMethods()
                 .findAll { !it.name.equals("clone") }
@@ -221,94 +175,12 @@ globalTranslator = None
                 .sort { a, b -> a <=> b }
                 .forEach {
             pythonClass.append("def ${it}(*args):\n").append("      return __.${it}(*args)\n\n")
-            pythonClass.append("statics['${it}'] = ${it}\n")
+            pythonClass.append("add_static('${it}', ${it})\n")
         }
         pythonClass.append("\n\n")
 
-///////////
-// Enums //
-///////////
-        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports()
-                .findAll { Enum.class.isAssignableFrom(it) }
-                .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() }
-                .collect()) {
-            pythonClass.append("${enumClass.getSimpleName()} = Enum('${enumClass.getSimpleName()}', '");
-            enumClass.getEnumConstants()
-                    .sort { a, b -> a.name() <=> b.name() }
-                    .each { value -> pythonClass.append("${SymbolHelper.toPython(value.name())} "); }
-            pythonClass.deleteCharAt(pythonClass.length() - 1).append("')\n\n")
-            enumClass.getEnumConstants().each { value ->
-                pythonClass.append("statics['${SymbolHelper.toPython(value.name())}'] = ${value.getDeclaringClass().getSimpleName()}.${SymbolHelper.toPython(value.name())}\n");
-            }
-            pythonClass.append("\n");
-        }
-        //////////////
-
-        pythonClass.append("""class P(object):
-   def __init__(self, operator, value, other=None):
-      self.operator = operator
-      self.value = value
-      self.other = other
-""")
-        P.class.getMethods()
-                .findAll { Modifier.isStatic(it.getModifiers()) }
-                .findAll { P.class.isAssignableFrom(it.returnType) }
-                .collect { SymbolHelper.toPython(it.name) }
-                .unique()
-                .sort { a, b -> a <=> b }
-                .each { method ->
-            pythonClass.append(
-                    """   @staticmethod
-   def ${method}(*args):
-      return P("${SymbolHelper.toJava(method)}", *args)
-""")
-        };
-        pythonClass.append("""   def _and(self, arg):
-      return P("_and", arg, self)
-   def _or(self, arg):
-      return P("_or", arg, self)
-""")
-        pythonClass.append("\n")
-        P.class.getMethods()
-                .findAll { Modifier.isStatic(it.getModifiers()) }
-                .findAll { !it.name.equals("clone") }
-                .findAll { P.class.isAssignableFrom(it.getReturnType()) }
-                .collect { SymbolHelper.toPython(it.name) }
-                .unique()
-                .sort { a, b -> a <=> b }
-                .forEach {
-            pythonClass.append("def ${it}(*args):\n").append("      return P.${it}(*args)\n\n")
-            pythonClass.append("statics['${it}'] = ${it}\n")
-        }
-        pythonClass.append("\n")
-        //////////////
-
-        pythonClass.append("""class RawExpression(object):
-   def __init__(self, *args):
-      self.bindings = dict()
-      self.parts = [self._process_arg(arg) for arg in args]
-
-   def _process_arg(self, arg):
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-         self.bindings[arg[0]] = arg[1]
-         return Raw(arg[0])
-      else:
-         return Raw(arg)
-
-class Raw(object):
-   def __init__(self, value):
-      self.value = value
-
-   def __str__(self):
-      return str(self.value)
-
-""")
-        //////////////
-
-        pythonClass.append("statics = OrderedDict(reversed(list(statics.items())))\n")
-
 // save to a python file
-        final File file = new File(gremlinPythonFile);
+        final File file = new File(graphTraversalSourceFile);
         file.delete()
         pythonClass.eachLine { file.append(it + "\n") }
     }
