@@ -41,21 +41,21 @@ class GroovyTranslator(Translator):
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
 
     def addSpawnStep(self, traversal, step_name, *args):
-        newTranslator = GroovyTranslator(self.alias, self.source_language)
+        newTranslator = GroovyTranslator(self.alias, self.source_language, self.target_language)
         newTranslator.traversal_script = self.traversal_script
         newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
             step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
         traversal.translator = newTranslator
 
     def addSource(self, traversal_source, source_name, *args):
-        newTranslator = GroovyTranslator(self.alias, self.source_language)
+        newTranslator = GroovyTranslator(self.alias, self.source_language, self.target_language)
         newTranslator.traversal_script = self.traversal_script
         newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
             source_name) + "(" + GroovyTranslator.stringify(*args) + ")"
         traversal_source.translator = newTranslator
 
     def getAnonymousTraversalTranslator(self):
-        return GroovyTranslator("__", self.source_language)
+        return GroovyTranslator("__", self.source_language, self.target_language)
 
     @staticmethod
     def stringOrObject(arg):

@@ -31,7 +31,6 @@ class Translator(object):
         self.source_language = source_language
         self.target_language = target_language
         self.traversal_script = alias
-        self.statics = {}
 
     @abstractmethod
     def addStep(self, traversal, step_name, *args):

@@ -56,7 +56,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-        pythonClass.append("from aenum import Enum\n")
         pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import PythonTraversal\n")
         pythonClass.append("from statics import add_static\n")

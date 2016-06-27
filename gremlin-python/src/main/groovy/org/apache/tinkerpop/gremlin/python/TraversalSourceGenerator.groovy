@@ -83,26 +83,6 @@ class PythonTraversal(object):
         return self
 
     def __next__(self):
-        return self.next()
-
-    def toList(self):
-        return list(iter(self))
-
-    def toSet(self):
-        return set(iter(self))
-
-    def next(self, amount):
-        count = 0
-        tempList = []
-        while count < amount:
-            count = count + 1
-            temp = next(self, None)
-            if None == temp:
-                break
-            tempList.append(temp)
-        return tempList
-
-    def next(self):
         if self.results is None:
             self.results = self.remote_connection.submit(self.translator.target_language,
                                                          self.translator.traversal_script, self.bindings)
@@ -113,6 +93,25 @@ class PythonTraversal(object):
         if self.last_traverser.bulk <= 0:
             self.last_traverser = None
         return object
+
+    def toList(self):
+        return list(iter(self))
+
+    def toSet(self):
+        return set(iter(self))
+
+    def next(self, amount=None):
+        if amount is None:
+            return self.__next__()
+        else:
+            count = 0
+            tempList = []
+            while count < amount:
+                count = count + 1
+                try: temp = self.__next__()
+                except StopIteration: return tempList
+                tempList.append(temp)
+            return tempList
 
 """)
 

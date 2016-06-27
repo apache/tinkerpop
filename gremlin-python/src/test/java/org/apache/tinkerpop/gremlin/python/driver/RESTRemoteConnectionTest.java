@@ -55,6 +55,12 @@ public class RESTRemoteConnectionTest {
     }
 
     @Test
+    public void testPythonGraphTraversalNext() throws Exception {
+        final String result = (String) jython.eval("g.V().repeat(__.out()).times(2).name.next()");
+        assertTrue(result.equals("lop") || result.equals("ripple"));
+    }
+
+    @Test
     public void testPythonGraphTraversalToList() throws Exception {
         final List<String> results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.toList()");
         assertEquals(2, results.size());
@@ -65,6 +71,19 @@ public class RESTRemoteConnectionTest {
     @Test
     public void testPythonGraphTraversalToSet() throws Exception {
         final Set<String> results = (Set) jython.eval("g.V().repeat(__.both()).times(4).hasLabel('software').name.toSet()");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+    }
+
+    @Test
+    public void testPythonGraphTraversalNextAmount() throws Exception {
+        List<String> results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.next(2)");
+        assertEquals(2, results.size());
+        assertTrue(results.contains("lop"));
+        assertTrue(results.contains("ripple"));
+        //
+        results = (List) jython.eval("g.V().repeat(__.out()).times(2).name.next(4)");
         assertEquals(2, results.size());
         assertTrue(results.contains("lop"));
         assertTrue(results.contains("ripple"));

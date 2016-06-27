@@ -45,21 +45,21 @@ class JythonTranslator(Translator):
             step_name) + "(" + JythonTranslator.stringify(*args) + ")"
 
     def addSpawnStep(self, traversal, step_name, *args):
-        newTranslator = JythonTranslator(self.alias, self.source_language)
+        newTranslator = JythonTranslator(self.alias, self.source_language, self.target_language)
         newTranslator.traversal_script = self.traversal_script
         newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
             step_name) + "(" + JythonTranslator.stringify(*args) + ")"
         traversal.translator = newTranslator
 
     def addSource(self, traversal_source, source_name, *args):
-        newTranslator = JythonTranslator(self.alias, self.source_language)
+        newTranslator = JythonTranslator(self.alias, self.source_language, self.target_language)
         newTranslator.traversal_script = self.traversal_script
         newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
             source_name) + "(" + JythonTranslator.stringify(*args) + ")"
         traversal_source.translator = newTranslator
 
     def getAnonymousTraversalTranslator(self):
-        return JythonTranslator("__", self.source_language)
+        return JythonTranslator("__", self.source_language, self.target_language)
 
     @staticmethod
     def stringOrObject(arg):
