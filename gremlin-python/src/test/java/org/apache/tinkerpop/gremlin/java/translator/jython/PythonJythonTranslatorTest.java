@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -48,16 +47,15 @@ public class PythonJythonTranslatorTest {
     }
 
     @Test
-    @Ignore("Jython lambdas do not compile to Java8 functions")
     public void shouldSupportStringSupplierLambdas() throws Exception {
         final GraphTraversalSource g = TinkerFactory.createModern().traversal().withTranslator(PythonJythonTranslator.of("g", true));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
-                .filter(Lambda.predicate("lambda : \"lambda x: x.get().label().equals('person')\""))
-                .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("lambda: 'lambda x: x.get().vertices(Direction.OUT)'"))
-                .map(Lambda.<Traverser<Vertex>, Integer>function("lambda: \"lambda x: x.get().value('name').length()\""))
+                .filter(Lambda.predicate("lambda : \"lambda x: x.get().label() == 'person'\""))
+                .flatMap(Lambda.<Traverser<Vertex>, Iterator<Vertex>>function("lambda: 'lambda x: x.get().vertices(OUT)'"))
+                .map(Lambda.<Traverser<Vertex>, Integer>function("lambda: \"lambda x: len(x.get().value('name'))\""))
                 .sideEffect(Lambda.consumer("lambda: \"lambda x : x.sideEffects('lengthSum', x.sideEffects('lengthSum') + x.get())\""))
-                .order().by(Lambda.comparator("lambda: 'lambda a,b : a.compareTo(b)'"))
+                .order().by(Lambda.comparator("lambda: 'lambda a,b : 1 if a > b else 0 if a == b else -1'"))
                 .sack(Lambda.biFunction("lambda: 'lambda a,b : a + b'"))
                 .asAdmin();
         final List<Integer> sacks = new ArrayList<>();

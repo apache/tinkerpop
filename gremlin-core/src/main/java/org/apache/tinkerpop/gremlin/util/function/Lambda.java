@@ -47,8 +47,22 @@ public interface Lambda extends Serializable {
         }
     }
 
-    public static class SimpleLambda<A, B> extends AbstractLambda implements Function<A, B>, Predicate<A>, Supplier<A>, Consumer<A>, Comparator<A> {
-        public SimpleLambda(final String lambdaSource) {
+    public static class ZeroArgLambda<A> extends AbstractLambda implements Supplier<A> {
+
+        public ZeroArgLambda(final String lambdaSource) {
+            super(lambdaSource);
+        }
+
+        @Override
+        public A get() {
+            return null;
+        }
+
+    }
+
+    public static class OneArgLambda<A, B> extends AbstractLambda implements Function<A, B>, Predicate<A>, Consumer<A> {
+
+        public OneArgLambda(final String lambdaSource) {
             super(lambdaSource);
         }
 
@@ -63,24 +77,14 @@ public interface Lambda extends Serializable {
         }
 
         @Override
-        public A get() {
-            return null;
-        }
-
-        @Override
         public void accept(final A a) {
 
         }
-
-        @Override
-        public int compare(final A first, final A second) {
-            return 0;
-        }
     }
 
-    public static class ComplexLambda<A, B, C> extends AbstractLambda implements BiFunction<A, B, C> {
+    public static class TwoArgLambda<A, B, C> extends AbstractLambda implements BiFunction<A, B, C>, Comparator<A> {
 
-        public ComplexLambda(final String lambdaSource) {
+        public TwoArgLambda(final String lambdaSource) {
             super(lambdaSource);
         }
 
@@ -88,33 +92,39 @@ public interface Lambda extends Serializable {
         public C apply(final A a, final B b) {
             return null;
         }
+
+
+        @Override
+        public int compare(final A first, final A second) {
+            return 0;
+        }
     }
 
 
     ////
 
     public static <A, B> Function<A, B> function(final String lambdaSource) {
-        return new SimpleLambda<>(lambdaSource);
+        return new OneArgLambda<>(lambdaSource);
     }
 
     public static <A> Predicate<A> predicate(final String lambdaSource) {
-        return new SimpleLambda<>(lambdaSource);
+        return new OneArgLambda<>(lambdaSource);
     }
 
     public static <A> Consumer<A> consumer(final String lambdaSource) {
-        return new SimpleLambda<>(lambdaSource);
+        return new OneArgLambda<>(lambdaSource);
     }
 
     public static <A> Supplier<A> supplier(final String lambdaSource) {
-        return new SimpleLambda<>(lambdaSource);
+        return new ZeroArgLambda<>(lambdaSource);
     }
 
     public static <A> Comparator<A> comparator(final String lambdaSource) {
-        return new SimpleLambda<>(lambdaSource);
+        return new TwoArgLambda<>(lambdaSource);
     }
 
     public static <A, B, C> BiFunction<A, B, C> biFunction(final String lambdaSource) {
-        return new ComplexLambda<>(lambdaSource);
+        return new TwoArgLambda<>(lambdaSource);
     }
 
 }

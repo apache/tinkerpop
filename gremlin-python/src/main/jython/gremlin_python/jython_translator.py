@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 
+import inspect
 import sys
 from aenum import Enum
 
@@ -81,12 +82,17 @@ class JythonTranslator(Translator):
             else:
                 return JythonTranslator.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
                     arg.operator) + "(" + JythonTranslator.stringOrObject(arg.value) + ")"
-        elif callable(arg):  # lambdas
-            lambdaString = arg().strip()
-            if lambdaString.startswith("lambda"):
-                return lambdaString
+        elif callable(arg):  # lambda that produces a string that is a lambda
+            argLambdaString = arg().strip()
+            argLength = len(inspect.getargspec(eval(argLambdaString)).args)
+            if argLength == 0:
+                return "JythonZeroArgLambda(" + argLambdaString + ")"
+            elif argLength == 1:
+                return "JythonOneArgLambda(" + argLambdaString + ")"
+            elif argLength == 2:
+                return "JythonTwoArgLambda(" + argLambdaString + ")"
             else:
-                return "lambda: " + lambdaString
+                raise
         elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):  # bindings
             return arg[0]
         elif isinstance(arg, RawExpression):

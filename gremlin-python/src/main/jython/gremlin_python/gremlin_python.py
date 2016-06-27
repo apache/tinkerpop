@@ -1642,46 +1642,28 @@ def where(*args):
 statics['where'] = where
 
 
-Column = Enum('Column', 'keys values')
-
-statics['keys'] = Column.keys
-statics['values'] = Column.values
-
-Scope = Enum('Scope', '_global local')
-
-statics['_global'] = Scope._global
-statics['local'] = Scope.local
-
-T = Enum('T', 'label id key value')
-
-statics['label'] = T.label
-statics['id'] = T.id
-statics['key'] = T.key
-statics['value'] = T.value
-
-Direction = Enum('Direction', 'OUT IN BOTH')
-
-statics['OUT'] = Direction.OUT
-statics['IN'] = Direction.IN
-statics['BOTH'] = Direction.BOTH
-
 Barrier = Enum('Barrier', 'normSack')
 
 statics['normSack'] = Barrier.normSack
 
-Pop = Enum('Pop', 'first last all')
-
-statics['first'] = Pop.first
-statics['last'] = Pop.last
-statics['all'] = Pop.all
-
-Cardinality = Enum('Cardinality', 'single list set')
+Cardinality = Enum('Cardinality', 'list set single')
 
 statics['single'] = Cardinality.single
 statics['list'] = Cardinality.list
 statics['set'] = Cardinality.set
 
-Operator = Enum('Operator', 'sum minus mult div min max assign _and _or addAll sumLong')
+Column = Enum('Column', 'keys values')
+
+statics['keys'] = Column.keys
+statics['values'] = Column.values
+
+Direction = Enum('Direction', 'BOTH IN OUT')
+
+statics['OUT'] = Direction.OUT
+statics['IN'] = Direction.IN
+statics['BOTH'] = Direction.BOTH
+
+Operator = Enum('Operator', 'addAll _and assign div max min minus mult _or sum sumLong')
 
 statics['sum'] = Operator.sum
 statics['minus'] = Operator.minus
@@ -1695,7 +1677,7 @@ statics['_or'] = Operator._or
 statics['addAll'] = Operator.addAll
 statics['sumLong'] = Operator.sumLong
 
-Order = Enum('Order', 'incr decr keyIncr valueIncr keyDecr valueDecr shuffle')
+Order = Enum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr')
 
 statics['incr'] = Order.incr
 statics['decr'] = Order.decr
@@ -1705,24 +1687,23 @@ statics['keyDecr'] = Order.keyDecr
 statics['valueDecr'] = Order.valueDecr
 statics['shuffle'] = Order.shuffle
 
-class RawExpression(object):
-   def __init__(self, *args):
-      self.bindings = dict()
-      self.parts = [self._process_arg(arg) for arg in args]
+Pop = Enum('Pop', 'all first last')
 
-   def _process_arg(self, arg):
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-         self.bindings[arg[0]] = arg[1]
-         return Raw(arg[0])
-      else:
-         return Raw(arg)
+statics['first'] = Pop.first
+statics['last'] = Pop.last
+statics['all'] = Pop.all
 
-class Raw(object):
-   def __init__(self, value):
-      self.value = value
+Scope = Enum('Scope', '_global local')
 
-   def __str__(self):
-      return str(self.value)
+statics['_global'] = Scope._global
+statics['local'] = Scope.local
+
+T = Enum('T', 'id key label value')
+
+statics['label'] = T.label
+statics['id'] = T.id
+statics['key'] = T.key
+statics['value'] = T.value
 
 class P(object):
    def __init__(self, operator, value, other=None):
@@ -1825,5 +1806,24 @@ def without(*args):
       return P.without(*args)
 
 statics['without'] = without
+
+class RawExpression(object):
+   def __init__(self, *args):
+      self.bindings = dict()
+      self.parts = [self._process_arg(arg) for arg in args]
+
+   def _process_arg(self, arg):
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+         self.bindings[arg[0]] = arg[1]
+         return Raw(arg[0])
+      else:
+         return Raw(arg)
+
+class Raw(object):
+   def __init__(self, value):
+      self.value = value
+
+   def __str__(self):
+      return str(self.value)
 
 statics = OrderedDict(reversed(list(statics.items())))

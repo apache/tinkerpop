@@ -228,13 +228,14 @@ globalTranslator = None
 ///////////
 // Enums //
 ///////////
-        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports().findAll {
-            Enum.class.isAssignableFrom(it)
-        }.collect()) {
+        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports()
+                .findAll { Enum.class.isAssignableFrom(it) }
+                .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() }
+                .collect()) {
             pythonClass.append("${enumClass.getSimpleName()} = Enum('${enumClass.getSimpleName()}', '");
-            enumClass.getEnumConstants().each { value ->
-                pythonClass.append("${SymbolHelper.toPython(value.name())} ");
-            }
+            enumClass.getEnumConstants()
+                    .sort { a, b -> a.name() <=> b.name() }
+                    .each { value -> pythonClass.append("${SymbolHelper.toPython(value.name())} "); }
             pythonClass.deleteCharAt(pythonClass.length() - 1).append("')\n\n")
             enumClass.getEnumConstants().each { value ->
                 pythonClass.append("statics['${SymbolHelper.toPython(value.name())}'] = ${value.getDeclaringClass().getSimpleName()}.${SymbolHelper.toPython(value.name())}\n");
@@ -242,30 +243,6 @@ globalTranslator = None
             pythonClass.append("\n");
         }
         //////////////
-
-        pythonClass.append("""class RawExpression(object):
-   def __init__(self, *args):
-      self.bindings = dict()
-      self.parts = [self._process_arg(arg) for arg in args]
-
-   def _process_arg(self, arg):
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-         self.bindings[arg[0]] = arg[1]
-         return Raw(arg[0])
-      else:
-         return Raw(arg)
-""")
-
-        pythonClass.append("\n")
-        pythonClass.append("""class Raw(object):
-   def __init__(self, value):
-      self.value = value
-
-   def __str__(self):
-      return str(self.value)
-""")
-
-        pythonClass.append("\n")
 
         pythonClass.append("""class P(object):
    def __init__(self, operator, value, other=None):
@@ -304,6 +281,28 @@ globalTranslator = None
             pythonClass.append("statics['${it}'] = ${it}\n")
         }
         pythonClass.append("\n")
+        //////////////
+
+        pythonClass.append("""class RawExpression(object):
+   def __init__(self, *args):
+      self.bindings = dict()
+      self.parts = [self._process_arg(arg) for arg in args]
+
+   def _process_arg(self, arg):
+      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+         self.bindings[arg[0]] = arg[1]
+         return Raw(arg[0])
+      else:
+         return Raw(arg)
+
+class Raw(object):
+   def __init__(self, value):
+      self.value = value
+
+   def __str__(self):
+      return str(self.value)
+
+""")
         //////////////
 
         pythonClass.append("statics = OrderedDict(reversed(list(statics.items())))\n")

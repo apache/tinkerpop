@@ -65,6 +65,50 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
                     "  else:\n    return TypeError('Index must be int or slice')");
             this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getitem__ = getitem_bypass");
             this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getattr__ = lambda self, key: self.values(key)");
+
+            this.pyScriptEngine.eval("\n" +
+                    "import org.apache.tinkerpop.gremlin.util.function.Lambda\n" +
+                    "from org.apache.tinkerpop.gremlin.util.function.Lambda import AbstractLambda\n" +
+                    "from org.apache.tinkerpop.gremlin.util.function.Lambda import ZeroArgLambda\n" +
+                    "from org.apache.tinkerpop.gremlin.util.function.Lambda import OneArgLambda\n" +
+                    "from org.apache.tinkerpop.gremlin.util.function.Lambda import TwoArgLambda\n\n" +
+
+                    "class JythonZeroArgLambda(ZeroArgLambda):\n" +
+                    "  def __init__(self,func):\n" +
+                    "    AbstractLambda.__init__(self, 'nothing')\n" +
+                    "    self.func = func\n" +
+                    "  def __repr__(self):\n" +
+                    "    return 'JythonZeroArgLambda'\n" +
+                    "  def get(self):\n" +
+                    "    return self.func()\n\n" +
+
+                    "class JythonOneArgLambda(OneArgLambda):\n" +
+                    "  def __init__(self,func):\n" +
+                    "    AbstractLambda.__init__(self, 'nothing')\n" +
+                    "    self.func = func\n" +
+                    "  def __repr__(self):\n" +
+                    "    return 'JythonOneArgLambda'\n" +
+                    "  def test(self,a):\n" +
+                    "    return self.func(a)\n" +
+                    "  def apply(self,a):\n" +
+                    "    return self.func(a)\n" +
+                    "  def accept(self,a):\n" +
+                    "    self.func(a)\n" +
+                    "  def compare(self,a,b):\n" +
+                    "    return self.func(a,b)\n\n" +
+
+                    "class JythonTwoArgLambda(TwoArgLambda):\n" +
+                    "  def __init__(self,func):\n" +
+                    "    AbstractLambda.__init__(self, 'nothing')\n" +
+                    "    self.func = func\n" +
+                    "  def __repr__(self):\n" +
+                    "    return 'JythonTwoArgLambda'\n" +
+                    "  def apply(self,a,b):\n" +
+                    "    return self.func(a,b)\n" +
+                    "  def compare(self,a,b):\n" +
+                    "    return self.func(a,b)\n"
+            );
+
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
