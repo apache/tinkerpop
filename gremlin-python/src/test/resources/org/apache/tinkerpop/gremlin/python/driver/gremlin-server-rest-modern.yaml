@@ -32,7 +32,6 @@ scriptEngines: {
     scripts: [../gremlin-server/scripts/generate-modern.groovy]
   },
   gremlin-jython:{
-    scripts: [../gremlin-server/scripts/generate-modern.py]
   }
 }
 serializers:
