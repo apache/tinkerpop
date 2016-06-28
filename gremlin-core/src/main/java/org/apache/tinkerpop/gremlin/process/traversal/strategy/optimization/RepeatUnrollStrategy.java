@@ -41,8 +41,7 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfAssignableClass(RepeatStep.class, traversal) ||
-                TraversalHelper.onGraphComputer(traversal))
+        if (TraversalHelper.onGraphComputer(traversal))
             return;
 
         for (int i = 0; i < traversal.getSteps().size(); i++) {
@@ -56,18 +55,15 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                     final int loops = (int) ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops();
                     for (int j = 0; j < loops; j++) {
                         TraversalHelper.insertTraversal(insertIndex, repeatTraversal.clone(), traversal);
-                        insertIndex = insertIndex + repeatLength + 1;
-                        traversal.addStep(insertIndex, new NoOpBarrierStep<>(traversal));
+                        insertIndex = insertIndex + repeatLength;
+                        if (j != (loops - 1) || !(traversal.getSteps().get(insertIndex).getNextStep() instanceof Barrier)) // only add a final NoOpBarrier is subsequent step is not a barrier
+                            traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal));
                     }
-
-                    final NoOpBarrierStep<?> lastStep = (NoOpBarrierStep) traversal.getSteps().get(insertIndex);
-                    Step<?, ?> labelStep = lastStep;
-                    if (lastStep.getNextStep() instanceof Barrier) {
-                        labelStep = traversal.getSteps().get(insertIndex - 1);
-                        traversal.removeStep(insertIndex); // remove last NoOpBarrierStep
+                    // label last step if repeat() was labeled
+                    if (!repeatStep.getLabels().isEmpty()) {
+                        final Step<?, ?> lastStep = traversal.getSteps().get(insertIndex);
+                        repeatStep.getLabels().forEach(lastStep::addLabel);
                     }
-                    if (!repeatStep.getLabels().isEmpty())
-                        repeatStep.getLabels().forEach(labelStep::addLabel);
 
                     traversal.removeStep(i); // remove the RepeatStep
                 }
