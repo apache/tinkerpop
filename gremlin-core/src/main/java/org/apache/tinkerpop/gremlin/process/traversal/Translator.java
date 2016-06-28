@@ -17,10 +17,9 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.util;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.java.translator.jython;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
