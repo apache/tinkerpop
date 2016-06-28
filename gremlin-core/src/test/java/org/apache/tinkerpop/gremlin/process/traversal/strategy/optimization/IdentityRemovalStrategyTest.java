@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -36,69 +37,71 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(Parameterized.class)
+@RunWith(Enclosed.class)
 public class IdentityRemovalStrategyTest {
 
-    private static boolean executedshouldBeFaster = false;
+    @RunWith(Parameterized.class)
+    public static class ParameterizedTests {
 
-    @Parameterized.Parameter(value = 0)
-    public Traversal original;
+        @Parameterized.Parameter(value = 0)
+        public Traversal original;
 
-    @Parameterized.Parameter(value = 1)
-    public Traversal optimized;
+        @Parameterized.Parameter(value = 1)
+        public Traversal optimized;
 
 
-    private void applyIdentityRemovalStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(IdentityRemovalStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
+        private void applyIdentityRemovalStrategy(final Traversal traversal) {
+            final TraversalStrategies strategies = new DefaultTraversalStrategies();
+            strategies.addStrategies(IdentityRemovalStrategy.instance());
+            traversal.asAdmin().setStrategies(strategies);
+            traversal.asAdmin().applyStrategies();
 
-    }
-
-    @Test
-    public void doTest() {
-        applyIdentityRemovalStrategy(original);
-        assertEquals(optimized, original);
-    }
-
-    @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object[]> generateTestParameters() {
-
-        return Arrays.asList(new Traversal[][]{
-                {__.identity(), __.identity()},
-                {__.identity().out(), __.out()},
-                {__.identity().out().identity(), __.out()},
-                {__.identity().as("a").out().identity(), __.identity().as("a").out()},
-                {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
-                {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
-                {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
-        });
-    }
-
-    @Test
-    public void shouldBeFaster() {
-        if (executedshouldBeFaster)
-            return;
-        else
-            executedshouldBeFaster = true;
-        final int startSize = 1000;
-        final int clockRuns = 1000;
-        final Integer[] starts = new Integer[startSize];
-        for (int i = 0; i < startSize; i++) {
-            starts[i] = i;
         }
 
-        final Runnable original = () -> __.inject(starts).identity().identity().identity().identity().iterate();
+        @Test
+        public void doTest() {
+            applyIdentityRemovalStrategy(original);
+            assertEquals(optimized, original);
+        }
 
-        final Runnable optimized = () -> {
-            final Traversal<Integer, Integer> traversal = __.inject(starts).identity().identity().identity().identity();
-            traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(IdentityRemovalStrategy.instance()));
-            traversal.iterate();
-        };
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
 
-        //System.out.println(TimeUtil.clock(clockRuns, original) + "---" + TimeUtil.clock(clockRuns,optimized));
-        assertTrue(TimeUtil.clock(clockRuns, original) > TimeUtil.clock(clockRuns, optimized));
-        assertTrue(TimeUtil.clock(clockRuns, optimized) < TimeUtil.clock(clockRuns, original));
+            return Arrays.asList(new Traversal[][]{
+                    {__.identity(), __.identity()},
+                    {__.identity().out(), __.out()},
+                    {__.identity().out().identity(), __.out()},
+                    {__.identity().as("a").out().identity(), __.identity().as("a").out()},
+                    {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
+                    {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
+                    {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
+            });
+        }
+
+    }
+
+    public static class NonParameterizedTests {
+        @Test
+        public void shouldBeFaster() {
+
+            final int startSize = 1000;
+            final int clockRuns = 1000;
+            final Integer[] starts = new Integer[startSize];
+            for (int i = 0; i < startSize; i++) {
+                starts[i] = i;
+            }
+
+            final Runnable original = () -> __.inject(starts).identity().identity().identity().identity().iterate();
+
+            final Runnable optimized = () -> {
+                final Traversal<Integer, Integer> traversal = __.inject(starts).identity().identity().identity().identity();
+                traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(IdentityRemovalStrategy.instance()));
+                traversal.iterate();
+            };
+
+            //System.out.println(TimeUtil.clock(clockRuns, original) + "---" + TimeUtil.clock(clockRuns,optimized));
+            assertTrue(TimeUtil.clock(clockRuns, original) > TimeUtil.clock(clockRuns, optimized));
+            assertTrue(TimeUtil.clock(clockRuns, optimized) < TimeUtil.clock(clockRuns, original));
+        }
     }
 }
