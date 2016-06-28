@@ -115,54 +115,54 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
     }
 
     @Override
-    public Object eval(String script, ScriptContext context) throws ScriptException {
+    public Object eval(final String script, final ScriptContext context) throws ScriptException {
         return this.pyScriptEngine.eval(script, context);
     }
 
     @Override
-    public Object eval(Reader reader, ScriptContext context) throws ScriptException {
+    public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
         return this.pyScriptEngine.eval(reader, context);
     }
 
     @Override
-    public Object eval(String script) throws ScriptException {
+    public Object eval(final String script) throws ScriptException {
         return this.pyScriptEngine.eval(script);
     }
 
     @Override
-    public Object eval(Reader reader) throws ScriptException {
+    public Object eval(final Reader reader) throws ScriptException {
         return this.pyScriptEngine.eval(reader);
     }
 
     @Override
-    public Object eval(String script, Bindings n) throws ScriptException {
+    public Object eval(final String script, final Bindings n) throws ScriptException {
         this.pyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).putAll(n); // TODO: groovy and jython act different
         return this.pyScriptEngine.eval(script);
     }
 
     @Override
-    public Object eval(Reader reader, Bindings n) throws ScriptException {
+    public Object eval(final Reader reader, final Bindings n) throws ScriptException {
         this.pyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).putAll(n); // TODO: groovy and jython act different
         return this.pyScriptEngine.eval(reader);
     }
 
     @Override
-    public void put(String key, Object value) {
+    public void put(final String key, final Object value) {
         this.pyScriptEngine.put(key, value);
     }
 
     @Override
-    public Object get(String key) {
+    public Object get(final String key) {
         return this.pyScriptEngine.get(key);
     }
 
     @Override
-    public Bindings getBindings(int scope) {
+    public Bindings getBindings(final int scope) {
         return this.pyScriptEngine.getBindings(scope);
     }
 
     @Override
-    public void setBindings(Bindings bindings, int scope) {
+    public void setBindings(final Bindings bindings, final int scope) {
         this.pyScriptEngine.setBindings(bindings, scope);
     }
 
@@ -177,7 +177,7 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
     }
 
     @Override
-    public void setContext(ScriptContext context) {
+    public void setContext(final ScriptContext context) {
         this.pyScriptEngine.setContext(context);
     }
 
