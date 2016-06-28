@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -50,18 +51,24 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                 if (null == repeatStep.getEmitTraversal() && repeatStep.getUntilTraversal() instanceof LoopTraversal) {
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
                     final int repeatLength = repeatTraversal.getSteps().size() - 1;
-                    repeatTraversal.removeStep(repeatLength);
+                    repeatTraversal.removeStep(repeatLength); // removes the RepeatEndStep
                     int insertIndex = i;
                     final int loops = (int) ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops();
                     for (int j = 0; j < loops; j++) {
-                        TraversalHelper.insertTraversal(insertIndex, repeatTraversal.clone(), traversal); // removes the RepeatEndStep
+                        TraversalHelper.insertTraversal(insertIndex, repeatTraversal.clone(), traversal);
                         insertIndex = insertIndex + repeatLength + 1;
                         traversal.addStep(insertIndex, new NoOpBarrierStep<>(traversal));
                     }
-                    if (!repeatStep.getLabels().isEmpty()) {
-                        final Step<?, ?> lastStep = (Step) traversal.getSteps().get(insertIndex);
-                        repeatStep.getLabels().forEach(lastStep::addLabel);
+
+                    final NoOpBarrierStep<?> lastStep = (NoOpBarrierStep) traversal.getSteps().get(insertIndex);
+                    Step<?, ?> labelStep = lastStep;
+                    if (lastStep.getNextStep() instanceof Barrier) {
+                        labelStep = traversal.getSteps().get(insertIndex - 1);
+                        traversal.removeStep(insertIndex); // remove last NoOpBarrierStep
                     }
+                    if (!repeatStep.getLabels().isEmpty())
+                        repeatStep.getLabels().forEach(labelStep::addLabel);
+
                     traversal.removeStep(i); // remove the RepeatStep
                 }
             }

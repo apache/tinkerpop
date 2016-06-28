@@ -90,6 +90,7 @@ public class RepeatUnrollStrategyTest {
                 {__.repeat(__.out()).until(predicate), __.repeat(__.out()).until(predicate)},
                 {__.repeat(__.out()).until(predicate).repeat(__.out()).times(2), __.repeat(__.out()).until(predicate).out().barrier().out().barrier()},
                 {__.repeat(__.union(__.both(), __.identity())).times(2).out(), __.union(__.both(), __.identity()).barrier().union(__.both(), __.identity()).barrier().out()},
+                {__.in().repeat(__.out("knows")).times(3).as("a").count().is(0), __.in().out("knows").barrier().out("knows").barrier().out("knows").as("a").count().is(0)},
         });
     }
 
