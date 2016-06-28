@@ -52,7 +52,17 @@ still possible to get a timeout on a request if the server timeout limits are re
 refers to how long the console will wait for a response from the server before giving up. By default, the timeout is
 set to `none`.
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-1267[TINKERPOP-1267]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1267[TINKERPOP-1267]
+
+Gremlin Server Workers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Past configuration recommendations for the `threadPoolWorker` setting on Gremlin Server stated this value could be
+safely set to `1` at the low end. A size of `1` is still valid for most cases, however, if Gremlin Server is being used
+with sessions that accept parallel requests, then this value should be no less than `2` or else certain scripts (i.e.
+those that block for an extended period of time) may cause Gremlin Server to lock up the session.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1350[TINKERPOP-1350]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,7 +103,7 @@ is an optional argument and does not represent a breaking change, but it does ma
 complete. While the default authentication implementations packaged with Gremlin Server don't utilize this argument
 other implementations might, so the drivers should be able to pass it as per the SASL specification.
 
-See: https://issues.apache.org/jira/browse/[TINKERPOP-1263]
+See: link:https://issues.apache.org/jira/browse/[TINKERPOP-1263]
 
 TinkerPop 3.1.2
 ---------------
