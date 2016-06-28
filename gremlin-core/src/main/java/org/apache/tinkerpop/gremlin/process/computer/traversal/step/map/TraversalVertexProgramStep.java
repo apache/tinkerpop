@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -54,7 +55,7 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.computerTraversal.get());
+        return StringFactory.stepString(this, this.computerTraversal.get(), new GraphFilter(this.computer));
     }
 
     @Override

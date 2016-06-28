@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import jline.TerminalFactory
+import jline.console.history.FileHistory
 import org.apache.commons.cli.Option
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
@@ -28,7 +30,7 @@ import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
-import jline.console.history.FileHistory
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
 import org.codehaus.groovy.tools.shell.AnsiDetector
@@ -113,8 +115,8 @@ class Console {
 
         groovy = new GremlinGroovysh(mediator)
 
-        def commandsToRemove = groovy.getRegistry().commands().findAll{it instanceof SetCommand}
-        commandsToRemove.each {groovy.getRegistry().remove(it)}
+        def commandsToRemove = groovy.getRegistry().commands().findAll { it instanceof SetCommand }
+        commandsToRemove.each { groovy.getRegistry().remove(it) }
         groovy.register(new GremlinSetCommand(groovy))
         groovy.register(new UninstallCommand(groovy, mediator))
         groovy.register(new InstallCommand(groovy, mediator))
@@ -209,7 +211,7 @@ class Console {
                     io.out.println(buildResultPrompt() + ((null == object) ? NULL : object.toString()))
                     counter++;
                 }
-                if(this.tempIterator.hasNext())
+                if (this.tempIterator.hasNext())
                     io.out.println(ELLIPSIS);
                 this.tempIterator = Collections.emptyIterator();
                 return null
@@ -249,6 +251,10 @@ class Console {
                             this.tempIterator = Collections.emptyIterator();
                             return null
                         }
+                    } else if (result instanceof TraversalExplanation) {
+                        final int width = TerminalFactory.get().getWidth();
+                        io.out.println(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))
+                        return null
                     } else {
                         io.out.println(buildResultPrompt() + ((null == result) ? NULL : result.toString()))
                         return null
