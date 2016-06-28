@@ -71,6 +71,13 @@ fi
 trap cleanup INT
 
 function cleanup {
+  if [ -f "${output}" ]; then
+    if [ `wc -l /tmp/foo | awk '{print $1}'` -gt 0 ]; then
+      echo -e "\n\e[1mLast 10 lines of ${output}:\e[0m\n"
+      tail -n10 ${output}
+      echo
+    fi
+  fi
   rm -rf ${output} ${CONSOLE_HOME}/.ext
   exit 255
 }
