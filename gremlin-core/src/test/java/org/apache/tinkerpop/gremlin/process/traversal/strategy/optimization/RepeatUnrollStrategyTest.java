@@ -101,56 +101,43 @@ public class RepeatUnrollStrategyTest {
     public static class NonParameterizedTests {
 
         @Test
-        public void shouldBeFasterWithUniqueStream() {
+        public void shouldBeFaster() {
             final int startSize = 1000;
             final int clockRuns = 1000;
-            final Integer[] starts = new Integer[startSize];
-            for (int i = 0; i < startSize; i++) {
-                starts[i] = i; // 1000 unique objects
+            for (int i = 100; i <= startSize; i = i + 200) {
+                final Integer[] starts = new Integer[startSize];
+                for (int j = 0; j < startSize; j++) {
+                    starts[j] = j % i;
+                }
+                assertEquals(i, new HashSet<>(Arrays.asList(starts)).size());
+                ///
+                for (int j = 2; j < 6; j++) {
+                    final int times = j;
+                    final Supplier<Long> original = () -> __.inject(starts).repeat(__.identity()).times(times).<Long>sum().next();
+
+                    final TraversalStrategies strategies = new DefaultTraversalStrategies();
+                    strategies.addStrategies(RepeatUnrollStrategy.instance());
+                    final Supplier<Long> optimized = () -> {
+                        final Traversal<Integer, Long> traversal = __.inject(starts).repeat(__.identity()).times(times).sum();
+                        traversal.asAdmin().setStrategies(strategies);
+                        return traversal.next();
+                    };
+
+                    final Pair<Double, Long> originalResult;
+                    final Pair<Double, Long> optimizedResult;
+                    if (RANDOM.nextBoolean()) {
+                        originalResult = TimeUtil.clockWithResult(clockRuns, original);
+                        optimizedResult = TimeUtil.clockWithResult(clockRuns, optimized);
+                    } else {
+                        optimizedResult = TimeUtil.clockWithResult(clockRuns, optimized);
+                        originalResult = TimeUtil.clockWithResult(clockRuns, original);
+                    }
+
+                    // System.out.println(originalResult + "---" + optimizedResult);
+                    assertEquals(originalResult.getValue1(), optimizedResult.getValue1());
+                    assertTrue(originalResult.getValue0() > optimizedResult.getValue0());
+                }
             }
-            assertEquals(startSize, new HashSet<>(Arrays.asList(starts)).size());
-            clockTraversals(starts, clockRuns);
-        }
-
-        @Test
-        public void shouldBeFasterWithDuplicateStream() {
-            final int startSize = 1000;
-            final int clockRuns = 1000;
-            final int uniques = 100;
-            final Integer[] starts = new Integer[startSize];
-            for (int i = 0; i < startSize; i++) {
-                starts[i] = i % uniques; // 100 unique objects
-            }
-            assertEquals(uniques, new HashSet<>(Arrays.asList(starts)).size());
-            clockTraversals(starts, clockRuns);
-        }
-
-        private void clockTraversals(final Integer[] starts, final int clockRuns) {
-            final int times = RANDOM.nextInt(4) + 2;
-            assertTrue(times > 1 && times < 6);
-            final Supplier<Long> original = () -> __.inject(starts).repeat(__.identity()).times(times).<Long>sum().next();
-
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(RepeatUnrollStrategy.instance());
-            final Supplier<Long> optimized = () -> {
-                final Traversal<Integer, Long> traversal = __.inject(starts).repeat(__.identity()).times(times).sum();
-                traversal.asAdmin().setStrategies(strategies);
-                return traversal.next();
-            };
-
-            final Pair<Double, Long> originalResult;
-            final Pair<Double, Long> optimizedResult;
-            if (RANDOM.nextBoolean()) {
-                originalResult = TimeUtil.clockWithResult(clockRuns, original);
-                optimizedResult = TimeUtil.clockWithResult(clockRuns, optimized);
-            } else {
-                optimizedResult = TimeUtil.clockWithResult(clockRuns, optimized);
-                originalResult = TimeUtil.clockWithResult(clockRuns, original);
-            }
-
-            // System.out.println(originalResult + "---" + optimizedResult);
-            assertEquals(originalResult.getValue1(), optimizedResult.getValue1());
-            assertTrue(originalResult.getValue0() > optimizedResult.getValue0());
         }
     }
 }
