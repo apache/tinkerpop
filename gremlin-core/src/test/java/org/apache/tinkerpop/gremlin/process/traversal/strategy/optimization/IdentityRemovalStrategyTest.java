@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,12 +30,16 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
 public class IdentityRemovalStrategyTest {
+
+    private static boolean executedshouldBeFaster = false;
 
     @Parameterized.Parameter(value = 0)
     public Traversal original;
@@ -43,7 +48,7 @@ public class IdentityRemovalStrategyTest {
     public Traversal optimized;
 
 
-    void applyIdentityRemovalStrategy(final Traversal traversal) {
+    private void applyIdentityRemovalStrategy(final Traversal traversal) {
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(IdentityRemovalStrategy.instance());
         traversal.asAdmin().setStrategies(strategies);
@@ -69,5 +74,31 @@ public class IdentityRemovalStrategyTest {
                 {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
                 {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
         });
+    }
+
+    @Test
+    public void shouldBeFaster() {
+        if (executedshouldBeFaster)
+            return;
+        else
+            executedshouldBeFaster = true;
+        final int startSize = 1000;
+        final int clockRuns = 1000;
+        final Integer[] starts = new Integer[startSize];
+        for (int i = 0; i < startSize; i++) {
+            starts[i] = i;
+        }
+
+        final Runnable original = () -> __.inject(starts).identity().identity().identity().identity().iterate();
+
+        final Runnable optimized = () -> {
+            final Traversal<Integer, Integer> traversal = __.inject(starts).identity().identity().identity().identity();
+            traversal.asAdmin().setStrategies(traversal.asAdmin().getStrategies().clone().addStrategies(IdentityRemovalStrategy.instance()));
+            traversal.iterate();
+        };
+
+        //System.out.println(TimeUtil.clock(clockRuns, original) + "---" + TimeUtil.clock(clockRuns,optimized));
+        assertTrue(TimeUtil.clock(clockRuns, original) > TimeUtil.clock(clockRuns, optimized));
+        assertTrue(TimeUtil.clock(clockRuns, optimized) < TimeUtil.clock(clockRuns, original));
     }
 }
