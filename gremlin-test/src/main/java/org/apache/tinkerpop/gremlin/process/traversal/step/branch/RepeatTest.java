@@ -64,7 +64,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path();
 
-    public abstract Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id);
 
     // SIDE-EFFECTS
 
@@ -187,8 +187,8 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_emitXhasXlabel_personXX_repeatXoutX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(convertToVertexId("marko"));
+    public void g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "josh", "vadas"), traversal);
     }
@@ -272,7 +272,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
             return g.V(v1Id).emit(has(T.label, "person")).repeat(out()).values("name");
         }
 
