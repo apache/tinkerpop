@@ -21,25 +21,24 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyPerformanceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.TimeUtil;
-import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.Iterator;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,8 +46,6 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Enclosed.class)
 public class RepeatUnrollStrategyTest {
-
-    private static final Random RANDOM = new Random();
 
     @RunWith(Parameterized.class)
     public static class ParameterizedTests {
@@ -98,46 +95,47 @@ public class RepeatUnrollStrategyTest {
         }
     }
 
-    public static class NonParameterizedTests {
+    public static class PerformanceTest extends TraversalStrategyPerformanceTest {
 
-        @Test
-        public void shouldBeFaster() {
-            final int startSize = 1000;
-            final int clockRuns = 1000;
-            for (int i = 100; i <= startSize; i = i + 200) {
-                final Integer[] starts = new Integer[startSize];
-                for (int j = 0; j < startSize; j++) {
-                    starts[j] = j % i;
+        @Override
+        protected double getAssertionPercentile() {
+            return 95.0;
+        }
+
+        @Override
+        protected Class<? extends TraversalStrategy> getStrategyUnderTest() {
+            return RepeatUnrollStrategy.class;
+        }
+
+        @Override
+        protected Iterator<GraphTraversal> getTraversalIterator() {
+
+            return new Iterator<GraphTraversal>() {
+
+                final int minLoops = 2;
+                final int maxLoops = 5;
+                final int minModulo = 100;
+                final int maxModulo = 1000;
+
+                private int numberOfLoops = minLoops;
+                private int modulo = minModulo;
+
+                @Override
+                public boolean hasNext() {
+                    return modulo <= maxModulo;
                 }
-                assertEquals(i, new HashSet<>(Arrays.asList(starts)).size());
-                ///
-                for (int j = 2; j < 6; j++) {
-                    final int times = j;
-                    final Supplier<Long> original = () -> __.inject(starts).repeat(__.identity()).times(times).<Long>sum().next();
 
-                    final TraversalStrategies strategies = new DefaultTraversalStrategies();
-                    strategies.addStrategies(RepeatUnrollStrategy.instance());
-                    final Supplier<Long> optimized = () -> {
-                        final Traversal<Integer, Long> traversal = __.inject(starts).repeat(__.identity()).times(times).sum();
-                        traversal.asAdmin().setStrategies(strategies);
-                        return traversal.next();
-                    };
-
-                    final Pair<Double, Long> originalResult;
-                    final Pair<Double, Long> optimizedResult;
-                    if (RANDOM.nextBoolean()) {
-                        originalResult = TimeUtil.clockWithResult(clockRuns, original);
-                        optimizedResult = TimeUtil.clockWithResult(clockRuns, optimized);
-                    } else {
-                        optimizedResult = TimeUtil.clockWithResult(clockRuns, optimized);
-                        originalResult = TimeUtil.clockWithResult(clockRuns, original);
+                @Override
+                public GraphTraversal next() {
+                    final Integer[] starts = IntStream.range(0, 1000).map(i -> i % modulo).boxed().toArray(Integer[]::new);
+                    final GraphTraversal traversal = __.inject(starts).repeat(__.identity()).times(numberOfLoops).sum();
+                    if (++numberOfLoops > maxLoops) {
+                        numberOfLoops = minLoops;
+                        modulo += 200;
                     }
-
-                    // System.out.println(originalResult + "---" + optimizedResult);
-                    assertEquals(originalResult.getValue1(), optimizedResult.getValue1());
-                    assertTrue(originalResult.getValue0() > optimizedResult.getValue0());
+                    return traversal;
                 }
-            }
+            };
         }
     }
 }

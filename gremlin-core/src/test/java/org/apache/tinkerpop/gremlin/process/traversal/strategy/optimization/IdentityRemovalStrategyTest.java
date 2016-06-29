@@ -20,20 +20,21 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyPerformanceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Iterator;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -82,52 +83,39 @@ public class IdentityRemovalStrategyTest {
 
     }
 
-    public static class NonParameterizedTests {
+    public static class PerformanceTest extends TraversalStrategyPerformanceTest {
 
-        private static final Random RANDOM = new Random();
+        @Override
+        protected Class<? extends TraversalStrategy> getStrategyUnderTest() {
+            return IdentityRemovalStrategy.class;
+        }
 
-        @Test
-        public void shouldBeFaster() {
+        @Override
+        protected Iterator<GraphTraversal> getTraversalIterator() {
 
-            final int startSize = 1000;
-            final int clockRuns = 2000;
-            final int maxIdentities = 10;
-            final int minIdentities = 3;
-            final Integer[] starts = new Integer[startSize];
-            for (int i = 0; i < startSize; i++) {
-                starts[i] = i;
-            }
+            return new Iterator<GraphTraversal>() {
 
-            for (int i = minIdentities; i < maxIdentities; i++) {
-                final int numberOfIdentities = i;
-                final Runnable original = () -> {
-                    final GraphTraversal<Integer, Integer> traversal = __.inject(starts);
-                    for (int j = 0; j < numberOfIdentities; j++) {
-                        traversal.identity();
-                    }
-                    traversal.iterate();
-                };
+                final int minIdentities = 3;
+                final int maxIdentities = 10;
+                final Integer[] starts = IntStream.range(0, 1000).boxed().toArray(Integer[]::new);
 
-                final TraversalStrategies strategies = new DefaultTraversalStrategies();
-                strategies.addStrategies(IdentityRemovalStrategy.instance());
-                final Runnable optimized = () -> {
-                    final GraphTraversal<Integer, Integer> traversal = __.inject(starts);
-                    for (int j = 0; j < numberOfIdentities; j++) {
-                        traversal.identity();
-                    }
-                    traversal.asAdmin().setStrategies(strategies);
-                    traversal.iterate();
-                };
+                private int numberOfIdentities = minIdentities;
 
-                //System.out.println(TimeUtil.clock(clockRuns, original) + "---" + TimeUtil.clock(clockRuns, optimized));
-                if (RANDOM.nextBoolean()) {
-                    assertTrue(TimeUtil.clock(clockRuns, original) > TimeUtil.clock(clockRuns, optimized));
-                    assertTrue(TimeUtil.clock(clockRuns, optimized) < TimeUtil.clock(clockRuns, original));
-                } else {
-                    assertTrue(TimeUtil.clock(clockRuns, optimized) < TimeUtil.clock(clockRuns, original));
-                    assertTrue(TimeUtil.clock(clockRuns, original) > TimeUtil.clock(clockRuns, optimized));
+                @Override
+                public boolean hasNext() {
+                    return numberOfIdentities <= maxIdentities;
                 }
-            }
+
+                @Override
+                public GraphTraversal next() {
+                    final GraphTraversal traversal = __.inject(starts);
+                    for (int j = 0; j < numberOfIdentities; j++) {
+                        traversal.identity();
+                    }
+                    numberOfIdentities++;
+                    return traversal;
+                }
+            };
         }
     }
 }
