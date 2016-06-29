@@ -148,15 +148,7 @@ final class ConnectionPool {
             final int borrowed = leastUsedConn.borrowed.get();
             final int availableInProcess = leastUsedConn.availableInProcess();
 
-            // if the number borrowed starts to exceed what's available for this connection, then we need
-            // to wait for a connection to become available. this is an interesting comparison for "busy-ness"
-            // because it compares the number of times the connection was borrowed to what's in-process.  the
-            // in-process number refers to the number of outstanding requests less the maxInProcessForConnection
-            // setting.  this scenario can only really happen if
-            // maxInProcessForConnection=maxSimultaneousUsagePerConnection or if there is some sort of batch type
-            // operation where more than one message is sent on a single borrowed connection before it is returned
-            // to the pool.
-            if (borrowed >= leastUsedConn.availableInProcess()) {
+            if (borrowed >= maxSimultaneousUsagePerConnection && leastUsedConn.availableInProcess() == 0) {
                 logger.debug("Least used connection selected from pool for {} but borrowed [{}] >= availableInProcess [{}] - wait",
                         host, borrowed, availableInProcess);
                 return waitForConnection(timeout, unit);
