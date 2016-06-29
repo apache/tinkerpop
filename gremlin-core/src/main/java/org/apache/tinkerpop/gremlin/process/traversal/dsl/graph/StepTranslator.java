@@ -19,18 +19,36 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
@@ -45,6 +63,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicate
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
@@ -58,6 +77,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
@@ -68,6 +88,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
@@ -91,6 +112,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -99,16 +121,23 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSide
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -120,6 +149,11 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class StepTranslator implements Translator {
+
+    private static <V> V[] orEmpty(final Object... object) {
+        return 0 == object.length ? (V[]) new Object[]{} : (V[]) object;
+    }
+
     @Override
     public String getAlias() {
         return null;
@@ -162,25 +196,25 @@ public final class StepTranslator implements Translator {
                     traversal.addStep(new VertexStep<>(traversal, Vertex.class, (Direction) arguments[0], (String[]) arguments[1]));
                 return;
             case Symbols.out:
-                traversal.addStep(new VertexStep<>(traversal, Vertex.class, Direction.OUT, (String[]) arguments[0]));
+                traversal.addStep(new VertexStep<>(traversal, Vertex.class, Direction.OUT, (String[]) arguments));
                 return;
             case Symbols.in:
-                traversal.addStep(new VertexStep<>(traversal, Vertex.class, Direction.IN, (String[]) arguments[0]));
+                traversal.addStep(new VertexStep<>(traversal, Vertex.class, Direction.IN, (String[]) arguments));
                 return;
             case Symbols.both:
-                traversal.addStep(new VertexStep<>(traversal, Vertex.class, Direction.BOTH, (String[]) arguments[0]));
+                traversal.addStep(new VertexStep<>(traversal, Vertex.class, Direction.BOTH, (String[]) arguments));
                 return;
             case Symbols.toE:
                 traversal.addStep(new VertexStep<>(traversal, Edge.class, (Direction) arguments[0], (String[]) arguments[1]));
                 return;
             case Symbols.outE:
-                traversal.addStep(new VertexStep<>(traversal, Edge.class, Direction.OUT, (String[]) arguments[0]));
+                traversal.addStep(new VertexStep<>(traversal, Edge.class, Direction.OUT, (String[]) arguments));
                 return;
             case Symbols.inE:
-                traversal.addStep(new VertexStep<>(traversal, Edge.class, Direction.IN, (String[]) arguments[0]));
+                traversal.addStep(new VertexStep<>(traversal, Edge.class, Direction.IN, (String[]) arguments));
                 return;
             case Symbols.bothE:
-                traversal.addStep(new VertexStep<>(traversal, Edge.class, Direction.BOTH, (String[]) arguments[0]));
+                traversal.addStep(new VertexStep<>(traversal, Edge.class, Direction.BOTH, (String[]) arguments));
                 return;
             case Symbols.toV:
                 traversal.addStep(new EdgeVertexStep(traversal, (Direction) arguments[0]));
@@ -209,19 +243,19 @@ public final class StepTranslator implements Translator {
                 traversal.addStep(new PropertiesStep<>(traversal, PropertyType.VALUE, (String[]) arguments));
                 return;
             case Symbols.propertyMap:
-                traversal.addStep(arguments[0] instanceof Boolean ?
+                traversal.addStep(0 != arguments.length && arguments[0] instanceof Boolean ?
                         new PropertyMapStep<>(traversal, (boolean) arguments[0], PropertyType.PROPERTY, (String[]) arguments[1]) :
-                        new PropertyMapStep<>(traversal, false, PropertyType.PROPERTY, (String[]) arguments[0]));
+                        new PropertyMapStep<>(traversal, false, PropertyType.PROPERTY, (String[]) arguments));
                 return;
             case Symbols.valueMap:
-                traversal.addStep(arguments[0] instanceof Boolean ?
+                traversal.addStep(0 != arguments.length && arguments[0] instanceof Boolean ?
                         new PropertyMapStep<>(traversal, (boolean) arguments[0], PropertyType.VALUE, (String[]) arguments[1]) :
-                        new PropertyMapStep<>(traversal, false, PropertyType.VALUE, (String[]) arguments[0]));
+                        new PropertyMapStep<>(traversal, false, PropertyType.VALUE, (String[]) arguments));
                 return;
             case Symbols.select:
                 if (arguments[0] instanceof Column)
                     traversal.addStep(new TraversalMapStep<>(traversal, new ColumnTraversal((Column) arguments[0])));
-                else if (arguments[0] instanceof Pop)
+                else if (arguments[0] instanceof Pop) {
                     if (arguments[1] instanceof String)
                         traversal.addStep(new SelectOneStep<>(traversal, (Pop) arguments[0], (String) arguments[1]));
                     else {
@@ -231,8 +265,8 @@ public final class StepTranslator implements Translator {
                         System.arraycopy(arguments[3], 0, selectKeys, 2, ((String[]) arguments[3]).length);
                         traversal.addStep(new SelectStep<>(traversal, (Pop) arguments[0], selectKeys));
                     }
-                else {
-                    if (arguments[0] instanceof String)
+                } else {
+                    if (1 == arguments.length && arguments[0] instanceof String)
                         traversal.addStep(new SelectOneStep<>(traversal, null, (String) arguments[0]));
                     else {
                         final String[] selectKeys = new String[((String[]) arguments[2]).length + 2];
@@ -253,7 +287,7 @@ public final class StepTranslator implements Translator {
                 traversal.addStep(new PathStep<>(traversal));
                 return;
             case Symbols.match:
-                traversal.addStep(new MatchStep<>(traversal, ConnectiveStep.Connective.AND, (Traversal[]) arguments[0]));
+                traversal.addStep(new MatchStep<>(traversal, ConnectiveStep.Connective.AND, (Traversal[]) arguments));
                 return;
             case Symbols.sack:
                 if (0 == arguments.length)
@@ -280,7 +314,9 @@ public final class StepTranslator implements Translator {
             case Symbols.fold:
                 traversal.addStep(0 == arguments.length ?
                         new FoldStep<>(traversal) :
-                        new FoldStep<>(traversal, (Supplier) arguments[0], (BiFunction) arguments[1]));
+                        new FoldStep<>(traversal, arguments[0] instanceof Supplier ?
+                                (Supplier) arguments[0] :
+                                new ConstantSupplier(arguments[0]), (BiFunction) arguments[1]));
                 return;
             case Symbols.count:
                 traversal.addStep(0 == arguments.length || Scope.global == arguments[0] ?
@@ -320,7 +356,7 @@ public final class StepTranslator implements Translator {
             case Symbols.groupCount:
                 traversal.addStep(0 == arguments.length ?
                         new GroupCountStep<>(traversal) :
-                        new GroupSideEffectStep<>(traversal, (String) arguments[0]));
+                        new GroupCountSideEffectStep<>(traversal, (String) arguments[0]));
                 return;
             case Symbols.tree:
                 traversal.addStep(0 == arguments.length ?
@@ -361,21 +397,75 @@ public final class StepTranslator implements Translator {
                 traversal.addStep(new InjectStep<>(traversal, arguments));
                 return;
             case Symbols.dedup:
-                traversal.addStep(arguments[0] instanceof String[] ?
-                        new DedupGlobalStep<>(traversal, (String[]) arguments[0]) :
-                        arguments[0] == Scope.global ?
-                                new DedupGlobalStep<>(traversal, (String[]) arguments[1]) :
-                                new DedupLocalStep<>(traversal));
+                if (0 == arguments.length)
+                    traversal.addStep(new DedupGlobalStep<>(traversal));
+                else {
+                    traversal.addStep(arguments instanceof String[] ?
+                            new DedupGlobalStep<>(traversal, (String[]) arguments) :
+                            arguments[0] == Scope.global ?
+                                    new DedupGlobalStep<>(traversal, (String[]) arguments[1]) :
+                                    new DedupLocalStep<>(traversal));
+                }
                 return;
             case Symbols.where:
-                traversal.addStep(arguments[0] instanceof Traversal ?
-                        new WhereTraversalStep<>(traversal, (Traversal) arguments[0]) :
+                traversal.addStep(arguments[0] instanceof Traversal.Admin ?
+                        TraversalHelper.getVariableLocations((Traversal.Admin) arguments[0]).isEmpty() ?
+                                new TraversalFilterStep<>(traversal, (Traversal.Admin) arguments[0]) :
+                                new WhereTraversalStep<>(traversal, (Traversal.Admin) arguments[0]) :
                         arguments[0] instanceof String ?
                                 new WherePredicateStep<>(traversal, Optional.of((String) arguments[0]), (P) arguments[1]) :
                                 new WherePredicateStep<>(traversal, Optional.empty(), (P) arguments[0]));
                 return;
+            case Symbols.has:
+                if (1 == arguments.length) {
+                    traversal.addStep(new TraversalFilterStep<>(traversal, __.values((String) arguments[0])));
+                } else if (2 == arguments.length) {
+                    final String propertyKey = arguments[0] instanceof T ? ((T) arguments[0]).getAccessor() : (String) arguments[0];
+                    if (arguments[1] instanceof Traversal.Admin) {
+                        traversal.addStep(
+                                new TraversalFilterStep<>(traversal, ((Traversal.Admin) arguments[1]).addStep(0,
+                                        new PropertiesStep((Traversal.Admin) arguments[1], PropertyType.VALUE, propertyKey))));
+                    } else {
+                        final P predicate = arguments[1] instanceof P ? (P) arguments[1] : P.eq(arguments[1]);
+                        traversal.addStep(new HasStep<>(traversal, HasContainer.makeHasContainers(propertyKey, predicate)));
+                    }
+                } else if (3 == arguments.length) {
+                    traversal.addStep(new HasStep<>(traversal, HasContainer.makeHasContainers(T.label.getAccessor(), P.eq(arguments[0]))));
+                    traversal.addStep(new HasStep<>(traversal, HasContainer.makeHasContainers(arguments[1] instanceof T ?
+                                    ((T) arguments[1]).getAccessor() :
+                                    (String) arguments[1],
+                            arguments[2] instanceof P ?
+                                    (P) arguments[2] :
+                                    P.eq(arguments[2]))));
+                }
+                return;
+            case Symbols.hasNot:
+                traversal.addStep(new NotStep<>(traversal, __.values((String) arguments[0])));
+                return;
+            case Symbols.hasLabel:
+                traversal.addStep(new HasStep<>(traversal, 0 == arguments.length ?
+                        HasContainer.makeHasContainers(T.label.getAccessor(), P.eq(arguments[0])) :
+                        HasContainer.makeHasContainers(T.label.getAccessor(), P.within(arguments))));
+                return;
+            case Symbols.hasId:
+                traversal.addStep(new HasStep<>(traversal, 0 == arguments.length ?
+                        HasContainer.makeHasContainers(T.id.getAccessor(), P.eq(arguments[0])) :
+                        HasContainer.makeHasContainers(T.id.getAccessor(), P.within(arguments))));
+                return;
+            case Symbols.hasKey:
+                traversal.addStep(new HasStep<>(traversal, 0 == arguments.length ?
+                        HasContainer.makeHasContainers(T.key.getAccessor(), P.eq(arguments[0])) :
+                        HasContainer.makeHasContainers(T.key.getAccessor(), P.within(arguments))));
+                return;
+            case Symbols.hasValue:
+                traversal.addStep(new HasStep<>(traversal, 0 == arguments.length ?
+                        HasContainer.makeHasContainers(T.value.getAccessor(), P.eq(arguments[0])) :
+                        HasContainer.makeHasContainers(T.value.getAccessor(), P.within(arguments))));
+                return;
             case Symbols.is:
-                traversal.addStep(new IsStep<>(traversal, arguments[0] instanceof P ? (P) arguments[0] : P.eq(arguments[0])));
+                traversal.addStep(new IsStep<>(traversal, arguments[0] instanceof P ?
+                        (P) arguments[0] :
+                        P.eq(arguments[0])));
                 return;
             case Symbols.not:
                 traversal.addStep(new NotStep<>(traversal, (Traversal) arguments[0]));
@@ -390,16 +480,16 @@ public final class StepTranslator implements Translator {
                 return;
             case Symbols.limit:
                 if (1 == arguments.length)
-                    traversal.addStep(new RangeGlobalStep<>(traversal, 0, (int) arguments[0]));
+                    traversal.addStep(new RangeGlobalStep<>(traversal, 0, (long) arguments[0]));
                 else
                     traversal.addStep(Scope.global == arguments[0] ?
-                            new RangeGlobalStep<>(traversal, 0, (int) arguments[1]) :
-                            new RangeLocalStep<>(traversal, 0, (int) arguments[1]));
+                            new RangeGlobalStep<>(traversal, 0, (long) arguments[1]) :
+                            new RangeLocalStep<>(traversal, 0, (long) arguments[1]));
                 return;
             case Symbols.tail:
                 if (0 == arguments.length)
                     traversal.addStep(new TailGlobalStep<>(traversal, 1L));
-                if (arguments[0] instanceof Long)
+                else if (arguments[0] instanceof Long)
                     traversal.addStep(new TailGlobalStep<>(traversal, (long) arguments[0]));
                 else if (1 == arguments.length)
                     traversal.addStep(Scope.global == arguments[0] ?
@@ -439,7 +529,9 @@ public final class StepTranslator implements Translator {
                         new LambdaSideEffectStep<>(traversal, (Consumer) arguments[0]));
                 return;
             case Symbols.cap:
-                traversal.addStep(new SideEffectCapStep<>(traversal, (String) arguments[0], (String[]) arguments[1]));
+                traversal.addStep(1 == arguments.length ?
+                        new SideEffectCapStep<>(traversal, (String) arguments[0]) :
+                        new SideEffectCapStep<>(traversal, (String) arguments[0], (String[]) arguments[1]));
                 return;
             case Symbols.aggregate:
                 traversal.addStep(new AggregateStep<>(traversal, (String) arguments[0]));
@@ -449,12 +541,129 @@ public final class StepTranslator implements Translator {
                 return;
             case Symbols.subgraph:
                 traversal.addStep(new SubgraphStep(traversal, (String) arguments[0]));
+                return;
             case Symbols.profile:
                 traversal.addStep(new ProfileSideEffectStep<>(traversal, 0 == arguments.length ?
                         ProfileSideEffectStep.DEFAULT_METRICS_KEY :
                         (String) arguments[0]));
                 if (0 == arguments.length)
                     traversal.addStep(new SideEffectCapStep<>(traversal, ProfileSideEffectStep.DEFAULT_METRICS_KEY));
+                return;
+            case Symbols.branch:
+                final BranchStep branchStep = new BranchStep<>(traversal);
+                branchStep.setBranchTraversal(arguments[0] instanceof Traversal.Admin ?
+                        (Traversal.Admin) arguments[0] :
+                        __.map((Function) arguments[0]).asAdmin());
+                traversal.addStep(branchStep);
+                return;
+            case Symbols.choose:
+                if (1 == arguments.length)
+                    traversal.addStep(new ChooseStep<>(traversal, arguments[0] instanceof Traversal.Admin ?
+                            (Traversal.Admin) arguments[0] :
+                            __.map(new FunctionTraverser<>((Function) arguments[0])).asAdmin()));
+                else
+                    traversal.addStep(new ChooseStep<>(traversal,
+                            arguments[0] instanceof Traversal.Admin ?
+                                    (Traversal.Admin) arguments[0] :
+                                    __.filter(new PredicateTraverser<>((Predicate) arguments[0])).asAdmin(),
+                            (Traversal.Admin) arguments[1], (Traversal.Admin) arguments[2]));
+                return;
+            case Symbols.optional:
+                traversal.addStep(new ChooseStep<>(traversal, (Traversal.Admin) arguments[0], ((Traversal.Admin) arguments[0]).clone(), __.identity().asAdmin()));
+                return;
+            case Symbols.union:
+                traversal.addStep(new UnionStep<>(traversal, Arrays.copyOf(arguments, arguments.length, Traversal.Admin[].class)));
+                return;
+            case Symbols.coalesce:
+                traversal.addStep(new CoalesceStep<>(traversal, Arrays.copyOf(arguments, arguments.length, Traversal.Admin[].class)));
+                return;
+            case Symbols.repeat:
+                RepeatStep.addRepeatToTraversal(traversal, (Traversal.Admin) arguments[0]);
+                return;
+            case Symbols.emit:
+                if (0 == arguments.length)
+                    RepeatStep.addEmitToTraversal(traversal, TrueTraversal.instance());
+                else if (arguments[0] instanceof Traversal.Admin)
+                    RepeatStep.addEmitToTraversal(traversal, (Traversal.Admin) arguments[0]);
+                else
+                    RepeatStep.addEmitToTraversal(traversal, __.filter((Predicate) arguments[0]).asAdmin());
+                return;
+            case Symbols.until:
+                if (arguments[0] instanceof Traversal.Admin)
+                    RepeatStep.addUntilToTraversal(traversal, (Traversal.Admin) arguments[0]);
+                else
+                    RepeatStep.addUntilToTraversal(traversal, __.filter((Predicate) arguments[0]).asAdmin());
+                return;
+            case Symbols.times:
+                if (traversal.getEndStep() instanceof TimesModulating)
+                    ((TimesModulating) traversal.getEndStep()).modulateTimes((int) arguments[0]);
+                else
+                    RepeatStep.addUntilToTraversal(traversal, new LoopTraversal<>((int) arguments[0]));
+                return;
+            case Symbols.barrier:
+                traversal.addStep(0 == arguments.length ?
+                        new NoOpBarrierStep<>(traversal) :
+                        arguments[0] instanceof Consumer ?
+                                new LambdaCollectingBarrierStep<>(traversal, (Consumer) arguments[0], Integer.MAX_VALUE) :
+                                new NoOpBarrierStep<>(traversal, (int) arguments[0]));
+                return;
+            case Symbols.local:
+                traversal.addStep(new LocalStep<>(traversal, (Traversal.Admin) arguments[0]));
+                return;
+            case Symbols.pageRank:
+                traversal.addStep(new PageRankVertexProgramStep(traversal, 0 == arguments.length ? 0.85d : (double) arguments[0]));
+                return;
+            case Symbols.peerPressure:
+                traversal.addStep(new PeerPressureVertexProgramStep(traversal));
+                return;
+            case Symbols.program:
+                traversal.addStep(new ProgramVertexProgramStep(traversal, (VertexProgram) arguments[0]));
+                return;
+            case Symbols.by:
+                if (0 == arguments.length)
+                    ((ByModulating) traversal.getEndStep()).modulateBy();
+                else if (1 == arguments.length) {
+                    if (arguments[0] instanceof String)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((String) arguments[0]);
+                    else if (arguments[0] instanceof T)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((T) arguments[0]);
+                    else if (arguments[0] instanceof Traversal.Admin)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((Traversal.Admin) arguments[0]);
+                    else if (arguments[0] instanceof Function)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((Function) arguments[0]);
+                    else if (arguments[0] instanceof Order)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((Order) arguments[0]);
+                    else if (arguments[0] instanceof Comparator)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((Comparator) arguments[0]);
+                } else {
+                    if (arguments[0] instanceof String)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((String) arguments[0], (Comparator) arguments[1]);
+                    else if (arguments[0] instanceof T)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((T) arguments[0], (Comparator) arguments[1]);
+                    else if (arguments[0] instanceof Traversal.Admin)
+                        ((ByModulating) traversal.getEndStep()).modulateBy((Traversal.Admin) arguments[0], (Comparator) arguments[1]);
+                    else
+
+                        ((ByModulating) traversal.getEndStep()).modulateBy((Function) arguments[0], (Comparator) arguments[1]);
+                }
+                return;
+            case Symbols.as:
+                if (traversal.getSteps().isEmpty())
+                    traversal.addStep(new StartStep<>(traversal));
+                traversal.getEndStep().addLabel((String) arguments[0]);
+                if (arguments.length > 1) {
+                    final String[] otherLabels = (String[]) arguments[1];
+                    for (int i = 0; i < otherLabels.length; i++) {
+                        traversal.getEndStep().addLabel(otherLabels[i]);
+                    }
+                }
+                return;
+            case Symbols.option:
+                if (1 == arguments.length)
+                    ((TraversalOptionParent) traversal.getEndStep()).addGlobalChildOption(TraversalOptionParent.Pick.any, (Traversal.Admin) arguments[0]);
+                else
+                    ((TraversalOptionParent) traversal.getEndStep()).addGlobalChildOption(arguments[0], (Traversal.Admin) arguments[1]);
+                return;
             default:
                 throw new IllegalArgumentException("The provided step name is not supported by " + StepTranslator.class.getSimpleName() + ": " + stepName);
         }

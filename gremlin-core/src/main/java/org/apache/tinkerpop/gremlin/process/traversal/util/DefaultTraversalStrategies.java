@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -36,6 +37,7 @@ import java.util.Optional;
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
     protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
+    protected Translator translator;
     protected transient Map<Class<? extends TraversalStrategy>, List<TraversalStrategy<?>>> strategyMap = null;
 
     @Override
@@ -73,6 +75,16 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
             this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         }
         return this;
+    }
+
+    @Override
+    public void setTranslator(final Translator translator) {
+        this.translator = translator;
+    }
+
+    @Override
+    public Translator getTranslator() {
+        return this.translator;
     }
 
     @Override

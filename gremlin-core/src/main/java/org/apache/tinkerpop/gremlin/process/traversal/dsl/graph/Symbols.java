@@ -87,6 +87,11 @@ public final class Symbols {
     public static final String dedup = "dedup";
     public static final String where = "where";
     public static final String has = "has";
+    public static final String hasNot = "hasNot";
+    public static final String hasLabel = "hasLabel";
+    public static final String hasId = "hasId";
+    public static final String hasKey = "hasKey";
+    public static final String hasValue = "hasValue";
     public static final String is = "is";
     public static final String not = "not";
     public static final String range = "range";
@@ -106,6 +111,24 @@ public final class Symbols {
     public static final String store = "store";
     public static final String aggregate = "aggregate";
     public static final String subgraph = "subgraph";
-
     public static final String profile = "profile";
+    public static final String barrier = "barrier";
+    public static final String local = "local";
+    public static final String emit = "emit";
+    public static final String repeat = "repeat";
+    public static final String until = "until";
+    public static final String branch = "branch";
+    public static final String union = "union";
+    public static final String coalesce = "coalesce";
+    public static final String choose = "choose";
+    public static final String optional = "optional";
+
+    public static final String pageRank = "pageRank";
+    public static final String peerPressure = "peerPressure";
+    public static final String program = "program";
+
+    public static final String by = "by";
+    public static final String times = "times";
+    public static final String as = "as";
+    public static final String option = "option";
 }
