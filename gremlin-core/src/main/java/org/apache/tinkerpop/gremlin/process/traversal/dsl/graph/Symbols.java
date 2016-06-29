@@ -70,4 +70,25 @@ public final class Symbols {
     public static final String fold = "fold";
     public static final String count = "count";
     public static final String sum = "sum";
+    public static final String max = "max";
+    public static final String min = "min";
+    public static final String mean = "mean";
+    public static final String group = "group";
+    @Deprecated
+    public static final String groupV3d0 = "groupV3d0";
+    public static final String groupCount = "groupCount";
+    public static final String tree = "tree";
+    public static final String addV = "addV";
+    public static final String addE = "addE";
+    public static final String from = "from";
+    public static final String filter = "filter";
+    public static final String or = "or";
+    public static final String and = "and";
+    public static final String inject = "inject";
+    public static final String dedup = "dedup";
+    public static final String where = "where";
+    public static final String has = "has";
+    public static final String is = "is";
+    public static final String not = "not";
+    public static final String coin = "coin";
 }
