@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.java.translator.groovy;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
@@ -47,10 +47,11 @@ public class PythonGroovyTranslator extends PythonTranslator {
     }
 
     @Override
-    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
-        super.addStep(traversal, stepName, arguments);
+    public Traversal.Admin<?, ?> addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+        final Traversal.Admin<?, ?> temp = super.addStep(traversal, stepName, arguments);
         if (!this.importStatics)
             assert this.traversalScript.toString().startsWith(this.alias + ".");
+        return temp;
     }
 
     @Override

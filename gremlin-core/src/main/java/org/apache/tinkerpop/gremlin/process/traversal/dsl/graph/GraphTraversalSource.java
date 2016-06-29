@@ -56,7 +56,6 @@ public class GraphTraversalSource implements TraversalSource {
         this.graph = graph;
         this.strategies = traversalStrategies;
         this.strategies.setTranslator(new StepTranslator());
-        __.setAnonymousTraversalFunction(null); // TODO: work to remove
     }
 
     public GraphTraversalSource(final Graph graph) {
