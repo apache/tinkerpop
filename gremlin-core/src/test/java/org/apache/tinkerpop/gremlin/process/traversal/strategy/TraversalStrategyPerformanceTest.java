@@ -114,7 +114,7 @@ public abstract class TraversalStrategyPerformanceTest {
             assertEquals(originalResult, optimizedResult);
         }
 
-        if (getAssertionPercentile() < 100)
+        if (getAssertionPercentile() < 100 && numTraversals > 0)
             assertTrue(((faster * 100.0) / numTraversals) >= getAssertionPercentile());
     }
 }
