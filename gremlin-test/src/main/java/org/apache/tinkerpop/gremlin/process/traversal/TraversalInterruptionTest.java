@@ -76,10 +76,9 @@ public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
         final CountDownLatch startedIterating = new CountDownLatch(1);
         final Thread t = new Thread(() -> {
             try {
-                final AtomicBoolean first = new AtomicBoolean(true);
                 final Traversal traversal = traversalAfterPause.apply(traversalBeforePause.apply(g).sideEffect(traverser -> {
                     // let the first iteration flow through
-                    if (!first.compareAndSet(true, false)) {
+                    if (startedIterating.getCount() == 0) {
                         // ensure that the whole traversal doesn't iterate out before we get a chance to interrupt
                         // the next iteration should stop so we can force the interrupt to be handled by VertexStep
                         try {
