@@ -21,12 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.TraversalSourceSymbols;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.List;
@@ -115,7 +113,7 @@ public interface TraversalSource extends Cloneable {
             traversalStrategies[i + 1] = graphComputerStrategies.get(i);
         }
         final TraversalSource clone = this.withStrategies(traversalStrategies);
-        TraversalHelper.addSourceToCreationStrategies(clone, computer);
+        this.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withComputer, computer);
         return clone;
     }
 
@@ -161,8 +159,7 @@ public interface TraversalSource extends Cloneable {
      */
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
-        TraversalHelper.addSourceToCreationStrategies(clone, key, initialValue, reducer);
-        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, reducer);
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -177,8 +174,7 @@ public interface TraversalSource extends Cloneable {
      */
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
-        TraversalHelper.addSourceToCreationStrategies(clone, key, initialValue, reducer);
-        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, reducer);
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -192,8 +188,7 @@ public interface TraversalSource extends Cloneable {
      */
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
         final TraversalSource clone = this.clone();
-        TraversalHelper.addSourceToCreationStrategies(clone, key, initialValue);
-        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, null);
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSideEffect, key, initialValue);
         return clone;
     }
 
@@ -207,8 +202,7 @@ public interface TraversalSource extends Cloneable {
      */
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue) {
         final TraversalSource clone = this.clone();
-        TraversalHelper.addSourceToCreationStrategies(clone, key, initialValue);
-        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, null);
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSideEffect, key, initialValue);
         return clone;
     }
 
@@ -222,8 +216,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue, splitOperator, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue, splitOperator, mergeOperator);
         return clone;
     }
 
@@ -237,8 +231,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue, splitOperator, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue, splitOperator, mergeOperator);
         return clone;
     }
 
@@ -250,8 +244,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue);
         return clone;
     }
 
@@ -263,8 +257,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(initialValue).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue);
         return clone;
     }
 
@@ -277,8 +271,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue, splitOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue, splitOperator);
         return clone;
     }
 
@@ -291,8 +285,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue, splitOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue, splitOperator);
         return clone;
     }
 
@@ -305,8 +299,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(initialValue).mergeOperator(mergeOperator).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue, mergeOperator);
         return clone;
     }
 
@@ -319,8 +313,8 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        final TraversalSource clone = this.withStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
-        TraversalHelper.addSourceToCreationStrategies(clone, initialValue, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().getTranslator().addSource(clone, TraversalSourceSymbols.withSack, initialValue, mergeOperator);
         return clone;
     }
 

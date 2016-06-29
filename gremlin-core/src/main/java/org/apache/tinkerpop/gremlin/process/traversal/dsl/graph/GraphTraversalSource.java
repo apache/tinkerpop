@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -32,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -61,6 +61,7 @@ public class GraphTraversalSource implements TraversalSource {
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
         this.strategies = traversalStrategies;
+        this.strategies.setTranslator(new StepTranslator());
         __.setAnonymousTraversalFunction(null); // TODO: work to remove
     }
 
@@ -240,14 +241,14 @@ public class GraphTraversalSource implements TraversalSource {
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
-        TraversalHelper.addSpawnStepToCreationStrategies(traversal, vertexIds);
-        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
+        this.strategies.getTranslator().addSpawnStep(traversal, Symbols.V, vertexIds);
+        return traversal;
     }
 
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
         final GraphTraversal.Admin<Edge, Edge> traversal = this.generateTraversal();
-        TraversalHelper.addSpawnStepToCreationStrategies(traversal, edgesIds);
-        return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
+        this.strategies.getTranslator().addSpawnStep(traversal, Symbols.E, edgesIds);
+        return traversal;
     }
 
 

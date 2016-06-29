@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.TraversalSourceSymbols;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
@@ -127,6 +129,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -140,23 +144,68 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class StepTranslator implements Translator {
 
-    private static <V> V[] orEmpty(final Object... object) {
-        return 0 == object.length ? (V[]) new Object[]{} : (V[]) object;
-    }
-
     @Override
     public String getAlias() {
         return null;
+    }
+
+    @Override
+    public void addSource(final TraversalSource traversalSource, final String sourceName, final Object... arguments) {
+        switch (sourceName) {
+            case TraversalSourceSymbols.withSideEffect:
+                SideEffectStrategy.addSideEffect(traversalSource.getStrategies(), (String) arguments[0],
+                        arguments[1] instanceof Supplier ? (Supplier) arguments[1] : new ConstantSupplier<>(arguments[1]), 2 == arguments.length ? null : (BinaryOperator) arguments[2]);
+                return;
+            case TraversalSourceSymbols.withSack:
+                if (1 == arguments.length) {
+                    traversalSource.getStrategies().addStrategies(SackStrategy.build().initialValue(arguments[0] instanceof Supplier ?
+                            (Supplier) arguments[0] :
+                            new ConstantSupplier<>(arguments[0])).create());
+                } else if (2 == arguments.length) {
+                    if (arguments[1] instanceof UnaryOperator)
+                        traversalSource.getStrategies().addStrategies(SackStrategy.build().initialValue(arguments[0] instanceof Supplier ?
+                                (Supplier) arguments[0] :
+                                new ConstantSupplier<>(arguments[0])).splitOperator((UnaryOperator) arguments[1]).create());
+                    else
+                        traversalSource.getStrategies().addStrategies((SackStrategy.build().initialValue(arguments[0] instanceof Supplier ?
+                                (Supplier) arguments[0] :
+                                new ConstantSupplier<>(arguments[0])).mergeOperator((BinaryOperator) arguments[1]).create()));
+                } else {
+                    traversalSource.getStrategies().addStrategies(SackStrategy.build().initialValue(arguments[0] instanceof Supplier ?
+                            (Supplier) arguments[0] :
+                            new ConstantSupplier<>(arguments[0])).splitOperator((UnaryOperator) arguments[1]).mergeOperator((BinaryOperator) arguments[2]).create());
+                }
+                return;
+            default:
+                throw new IllegalArgumentException("The provided step name is not supported by " + StepTranslator.class.getSimpleName() + ": " + sourceName);
+        }
+
+    }
+
+    @Override
+    public void addSpawnStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+        switch (stepName) {
+            case Symbols.V:
+                traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, arguments));
+                return;
+            case Symbols.E:
+                traversal.addStep(new GraphStep<>(traversal, Edge.class, true, arguments));
+                return;
+            default:
+                throw new IllegalArgumentException("The provided step name is not supported by " + StepTranslator.class.getSimpleName() + ": " + stepName);
+        }
     }
 
     @Override

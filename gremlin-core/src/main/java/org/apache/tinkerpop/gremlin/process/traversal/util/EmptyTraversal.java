@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
+public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final TraversalSideEffects SIDE_EFFECTS = EmptyTraversalSideEffects.instance();

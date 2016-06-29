@@ -35,6 +35,7 @@ public final class Symbols {
     public static final String identity = "identity";
     public static final String constant = "constant";
     public static final String V = "V";
+    public static final String E = "E";
     public static final String to = "to";
     public static final String out = "out";
     public static final String in = "in";

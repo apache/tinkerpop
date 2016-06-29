@@ -37,7 +37,7 @@ import java.util.Optional;
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
     protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
-    protected Translator translator;
+    protected Translator translator = EmptyTranslator.instance();
     protected transient Map<Class<? extends TraversalStrategy>, List<TraversalStrategy<?>>> strategyMap = null;
 
     @Override
@@ -131,6 +131,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
             clone.traversalStrategies = new ArrayList<>(this.traversalStrategies.size());
             clone.traversalStrategies.addAll(this.traversalStrategies);
             clone.strategyMap = null;
+            clone.translator = this.translator.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
