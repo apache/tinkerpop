@@ -60,7 +60,6 @@ public final class Symbols {
     public static final String mapKeys = "mapKeys";
     public static final String key = "key";
     public static final String value = "value";
-    public static final String from = "from";
     public static final String path = "path";
     public static final String match = "match";
     public static final String sack = "sack";
@@ -90,5 +89,23 @@ public final class Symbols {
     public static final String has = "has";
     public static final String is = "is";
     public static final String not = "not";
+    public static final String range = "range";
+    public static final String limit = "limit";
+    public static final String tail = "tail";
     public static final String coin = "coin";
+
+    public static final String timeLimit = "timeLimit";
+    public static final String simplePath = "simplePath";
+    public static final String cyclicPath = "cyclicPath";
+    public static final String sample = "sample";
+
+    public static final String drop = "drop";
+
+    public static final String sideEffect = "sideEffect";
+    public static final String cap = "cap";
+    public static final String store = "store";
+    public static final String aggregate = "aggregate";
+    public static final String subgraph = "subgraph";
+
+    public static final String profile = "profile";
 }

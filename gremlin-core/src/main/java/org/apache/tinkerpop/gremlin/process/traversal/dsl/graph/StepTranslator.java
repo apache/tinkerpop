@@ -28,11 +28,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -69,19 +76,33 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -90,6 +111,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -234,7 +256,14 @@ public final class StepTranslator implements Translator {
                 traversal.addStep(new MatchStep<>(traversal, ConnectiveStep.Connective.AND, (Traversal[]) arguments[0]));
                 return;
             case Symbols.sack:
-                traversal.addStep(new SackStep<>(traversal));
+                if (0 == arguments.length)
+                    traversal.addStep(new SackStep<>(traversal));
+                else {
+                    final SackValueStep<?, ?, ?> sackValueStep = new SackValueStep<>(traversal, (BiFunction) arguments[0]);
+                    if (2 == arguments.length)
+                        sackValueStep.modulateBy((String) arguments[1]);
+                    traversal.addStep(sackValueStep);
+                }
                 return;
             case Symbols.loops:
                 traversal.addStep(new LoopsStep<>(traversal));
@@ -279,16 +308,24 @@ public final class StepTranslator implements Translator {
                         new MeanLocalStep<>(traversal));
                 return;
             case Symbols.group:
-                traversal.addStep(new GroupStep<>(traversal));
+                traversal.addStep(0 == arguments.length ?
+                        new GroupStep<>(traversal) :
+                        new GroupSideEffectStep<>(traversal, (String) arguments[0]));
                 return;
             case Symbols.groupV3d0:
-                traversal.addStep(new GroupStepV3d0<>(traversal));
+                traversal.addStep(0 == arguments.length ?
+                        new GroupStepV3d0<>(traversal) :
+                        new GroupSideEffectStepV3d0<>(traversal, (String) arguments[0]));
                 return;
             case Symbols.groupCount:
-                traversal.addStep(new GroupCountStep<>(traversal));
+                traversal.addStep(0 == arguments.length ?
+                        new GroupCountStep<>(traversal) :
+                        new GroupSideEffectStep<>(traversal, (String) arguments[0]));
                 return;
             case Symbols.tree:
-                traversal.addStep(new TreeStep<>(traversal));
+                traversal.addStep(0 == arguments.length ?
+                        new TreeStep<>(traversal) :
+                        new TreeSideEffectStep<>(traversal, (String) arguments[0]));
                 return;
             case Symbols.addV:
                 traversal.addStep(1 == arguments.length ?
@@ -343,12 +380,83 @@ public final class StepTranslator implements Translator {
             case Symbols.not:
                 traversal.addStep(new NotStep<>(traversal, (Traversal) arguments[0]));
                 return;
-            case Symbols.coin:
-                traversal.addStep(new CoinStep<>(traversal, (Double) arguments[0]));
+            case Symbols.range:
+                if (2 == arguments.length)
+                    traversal.addStep(new RangeGlobalStep<>(traversal, (long) arguments[0], (long) arguments[1]));
+                else
+                    traversal.addStep(Scope.global == arguments[0] ?
+                            new RangeGlobalStep<>(traversal, (long) arguments[1], (long) arguments[2]) :
+                            new RangeLocalStep<>(traversal, (long) arguments[1], (long) arguments[2]));
                 return;
+            case Symbols.limit:
+                if (1 == arguments.length)
+                    traversal.addStep(new RangeGlobalStep<>(traversal, 0, (int) arguments[0]));
+                else
+                    traversal.addStep(Scope.global == arguments[0] ?
+                            new RangeGlobalStep<>(traversal, 0, (int) arguments[1]) :
+                            new RangeLocalStep<>(traversal, 0, (int) arguments[1]));
+                return;
+            case Symbols.tail:
+                if (0 == arguments.length)
+                    traversal.addStep(new TailGlobalStep<>(traversal, 1L));
+                if (arguments[0] instanceof Long)
+                    traversal.addStep(new TailGlobalStep<>(traversal, (long) arguments[0]));
+                else if (1 == arguments.length)
+                    traversal.addStep(Scope.global == arguments[0] ?
+                            new TailGlobalStep<>(traversal, 1L) :
+                            new TailLocalStep<>(traversal, 1L));
+                else
+                    traversal.addStep(Scope.global == arguments[0] ?
+                            new TailGlobalStep<>(traversal, (long) arguments[1]) :
+                            new TailLocalStep<>(traversal, (long) arguments[1]));
+                return;
+            case Symbols.coin:
+                traversal.addStep(new CoinStep<>(traversal, (double) arguments[0]));
+                return;
+            case Symbols.timeLimit:
+                traversal.addStep(new TimeLimitStep<>(traversal, (long) arguments[0]));
+                return;
+            case Symbols.simplePath:
+                traversal.addStep(new SimplePathStep<>(traversal));
+                return;
+            case Symbols.cyclicPath:
+                traversal.addStep(new CyclicPathStep<>(traversal));
+                return;
+            case Symbols.sample:
+                if (1 == arguments.length)
+                    traversal.addStep(new SampleGlobalStep<>(traversal, (int) arguments[0]));
+                else
+                    traversal.addStep(Scope.global == arguments[0] ?
+                            new SampleGlobalStep<>(traversal, (int) arguments[1]) :
+                            new SampleLocalStep<>(traversal, (int) arguments[1]));
+                return;
+            case Symbols.drop:
+                traversal.addStep(new DropStep<>(traversal));
+                return;
+            case Symbols.sideEffect:
+                traversal.addStep(arguments[0] instanceof Traversal ?
+                        new TraversalSideEffectStep<>(traversal, (Traversal) arguments[0]) :
+                        new LambdaSideEffectStep<>(traversal, (Consumer) arguments[0]));
+                return;
+            case Symbols.cap:
+                traversal.addStep(new SideEffectCapStep<>(traversal, (String) arguments[0], (String[]) arguments[1]));
+                return;
+            case Symbols.aggregate:
+                traversal.addStep(new AggregateStep<>(traversal, (String) arguments[0]));
+                return;
+            case Symbols.store:
+                traversal.addStep(new StoreStep<>(traversal, (String) arguments[0]));
+                return;
+            case Symbols.subgraph:
+                traversal.addStep(new SubgraphStep(traversal, (String) arguments[0]));
+            case Symbols.profile:
+                traversal.addStep(new ProfileSideEffectStep<>(traversal, 0 == arguments.length ?
+                        ProfileSideEffectStep.DEFAULT_METRICS_KEY :
+                        (String) arguments[0]));
+                if (0 == arguments.length)
+                    traversal.addStep(new SideEffectCapStep<>(traversal, ProfileSideEffectStep.DEFAULT_METRICS_KEY));
             default:
                 throw new IllegalArgumentException("The provided step name is not supported by " + StepTranslator.class.getSimpleName() + ": " + stepName);
-
         }
     }
 
