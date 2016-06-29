@@ -132,4 +132,7 @@ public final class Symbols {
     public static final String times = "times";
     public static final String as = "as";
     public static final String option = "option";
+
+    public static final String withPath = "withPath";
+    public static final String withBulk = "withBulk";
 }

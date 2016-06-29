@@ -23,10 +23,11 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.StepTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
@@ -41,13 +42,11 @@ import java.util.function.Function;
  */
 public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStrategy.CreationStrategy> implements TraversalStrategy.CreationStrategy {
 
-    private final Translator translator;
     private final TraversalSource traversalSource;
     private final Class anonymousTraversalClass;
 
 
-    public TranslationStrategy(final Translator translator, final TraversalSource traversalSource, final Class anonymousTraversalClass) {
-        this.translator = translator;
+    public TranslationStrategy(final TraversalSource traversalSource, final Class anonymousTraversalClass) {
         this.traversalSource = traversalSource;
         this.anonymousTraversalClass = anonymousTraversalClass;
         this.createAnonymousTraversalFunction();
@@ -66,11 +65,13 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
                 return;
 
             // translate the traversal and add its steps to this traversal
-            final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
+            final ScriptEngine scriptEngine = ScriptEngineCache.get(traversal.getStrategies().getTranslator().getTargetLanguage());
             final Bindings bindings = scriptEngine.createBindings();
             scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
-            bindings.put(this.translator.getAlias(), this.traversalSource);
-            final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.getTraversalScript(), bindings);
+            final TraversalSource clone = this.traversalSource.clone();
+            clone.getStrategies().setTranslator(new StepTranslator());
+            bindings.put(traversal.getStrategies().getTranslator().getAlias(), clone);
+            final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(traversal.getStrategies().getTranslator().getTraversalScript(), bindings);
             assert !translatedTraversal.isLocked();
             assert !traversal.isLocked();
             traversal.setSideEffects(translatedTraversal.getSideEffects());
@@ -82,31 +83,6 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         }
     }
 
-    @Override
-    public void addSpawnStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
-        final TranslationStrategy clone = new TranslationStrategy(this.translator.clone(), this.traversalSource, this.anonymousTraversalClass);
-        traversal.setStrategies(traversal.getStrategies().clone().addStrategies(clone));
-        clone.createAnonymousTraversalFunction();
-        clone.translator.addSpawnStep(traversal, stepName, arguments);
-    }
-
-    @Override
-    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
-        this.translator.addStep(traversal, stepName, arguments);
-    }
-
-    @Override
-    public void addSource(final TraversalSource traversalSource, final String sourceName, final Object... arguments) {
-        final TranslationStrategy clone = new TranslationStrategy(this.translator.clone(), this.traversalSource, this.anonymousTraversalClass);
-        traversalSource.getStrategies().addStrategies(clone);
-        clone.createAnonymousTraversalFunction();
-        clone.translator.addSource(traversalSource, sourceName, arguments);
-    }
-
-    public Translator getTranslator() {
-        return this.translator;
-    }
-
     public TraversalSource getTraversalSource() {
         return this.traversalSource;
     }
@@ -115,10 +91,9 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         if (null != this.anonymousTraversalClass) {
             final Function<? extends Traversal.Admin, ? extends Traversal.Admin> function = traversal -> {
                 try {
-                    traversal.setStrategies(traversal.getStrategies().clone().addStrategies(
-                            new TranslationStrategy(this.translator.getAnonymousTraversalTranslator(),
-                                    this.traversalSource,
-                                    this.anonymousTraversalClass)));
+                    TraversalStrategies clone = traversal.getStrategies().clone();
+                    clone.setTranslator(this.traversalSource.getStrategies().getTranslator().getAnonymousTraversalTranslator());
+                    traversal.setStrategies(clone);
                     return traversal;
                 } catch (final Exception e) {
                     throw new IllegalStateException(e.getMessage(), e);

@@ -107,12 +107,6 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
             else
                 return 0;
         }
-
-        public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments);
-
-        public void addSpawnStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments);
-
-        public void addSource(final TraversalSource traversalSource, final String withName, final Object... arguments);
     }
 
     /**

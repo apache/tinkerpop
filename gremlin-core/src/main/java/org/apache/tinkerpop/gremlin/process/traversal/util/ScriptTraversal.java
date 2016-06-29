@@ -60,7 +60,7 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
 
     public ScriptTraversal(final TranslationStrategy translationStrategy, final Object... bindings) {
         super();
-        final Translator translator = translationStrategy.getTranslator();
+        final Translator translator = translationStrategy.getTraversalSource().getStrategies().getTranslator();
         final TraversalSource traversalSource = translationStrategy.getTraversalSource().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
         //
         this.alias = translator.getAlias();

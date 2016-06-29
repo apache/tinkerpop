@@ -1097,10 +1097,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param keyValues   any meta properties to be assigned to this property
      */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
-        if (null == cardinality)
-            TraversalHelper.addStepToCreationStrategies(this.asAdmin(), key, value, keyValues);
-        else
-            TraversalHelper.addStepToCreationStrategies(this.asAdmin(), cardinality, key, value, keyValues);
+        //if (null == cardinality)
+         //   TraversalHelper.addStepToCreationStrategies(this.asAdmin(), key, value, keyValues);
+        //else
+        //    TraversalHelper.addStepToCreationStrategies(this.asAdmin(), cardinality, key, value, keyValues);
         // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
         // the properties into that step to gain an optimization for those graphs that support such capabilities.
         if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep

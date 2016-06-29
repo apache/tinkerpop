@@ -26,9 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -38,7 +36,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
     protected Translator translator = EmptyTranslator.instance();
-    protected transient Map<Class<? extends TraversalStrategy>, List<TraversalStrategy<?>>> strategyMap = null;
 
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
@@ -54,7 +51,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
         }
         this.traversalStrategies.removeAll(toRemove);
         Collections.addAll(this.traversalStrategies, strategies);
-        this.strategyMap = null;
         this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
     }
@@ -70,10 +66,8 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
                 removed = true;
             }
         }
-        if (removed) {
-            this.strategyMap = null;
+        if (removed)
             this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
-        }
         return this;
     }
 
@@ -102,22 +96,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public <T extends TraversalStrategy> List<T> getStrategies(final Class<T> traversalStrategyClass) {
-        if (null == this.strategyMap) {
-            this.strategyMap = new HashMap<>();
-            for (final TraversalStrategy strategy : this.traversalStrategies) {
-                this.strategyMap.compute((Class) strategy.getClass().getInterfaces()[0], (key, value) -> {
-                    assert TraversalStrategy.class.isAssignableFrom(key);
-                    if (null == value) value = new ArrayList<>();
-                    value.add(strategy);
-                    return value;
-                });
-            }
-        }
-        return (List<T>) this.strategyMap.getOrDefault(traversalStrategyClass, Collections.emptyList());
-    }
-
-    @Override
     public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
         for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
             traversalStrategy.apply(traversal);
@@ -130,7 +108,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
             final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
             clone.traversalStrategies = new ArrayList<>(this.traversalStrategies.size());
             clone.traversalStrategies.addAll(this.traversalStrategies);
-            clone.strategyMap = null;
             clone.translator = this.translator.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {

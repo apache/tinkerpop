@@ -21,11 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EmptyTranslator implements Translator {
+public final class EmptyTranslator implements Translator<Traversal.Admin<?, ?>, TraversalSource> {
 
     private static final EmptyTranslator INSTANCE = new EmptyTranslator();
 
@@ -39,8 +40,18 @@ public final class EmptyTranslator implements Translator {
     }
 
     @Override
-    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+    public Traversal.Admin<?, ?> addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+        return traversal;
+    }
 
+    @Override
+    public Traversal.Admin<?, ?> addSpawnStep(TraversalSource traversalSource, String stepName, Object... arguments) {
+        return EmptyTraversal.instance();
+    }
+
+    @Override
+    public TraversalSource addSource(TraversalSource traversalSource, String sourceName, Object... arguments) {
+        return traversalSource;
     }
 
     @Override

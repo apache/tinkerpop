@@ -22,13 +22,14 @@ package org.apache.tinkerpop.gremlin.java.translator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -41,7 +42,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroovyTranslator implements Translator {
+public final class GroovyTranslator implements Translator<Traversal.Admin<?, ?>, TraversalSource> {
 
     private StringBuilder traversalScript;
     private final String alias;
@@ -75,19 +76,40 @@ public final class GroovyTranslator implements Translator {
         return this.alias;
     }
 
-    @Override
-    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+    private void updateTraversalScript(final String methodName, Object... arguments) {
         final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
         if (objects.isEmpty())
-            this.traversalScript.append(".").append(stepName).append("()");
+            this.traversalScript.append(".").append(methodName).append("()");
         else {
             this.traversalScript.append(".");
-            String temp = stepName + "(";
+            String temp = methodName + "(";
             for (final Object object : objects) {
                 temp = temp + convertToString(object) + ",";
             }
             this.traversalScript.append(temp.substring(0, temp.length() - 1) + ")");
         }
+    }
+
+    @Override
+    public Traversal.Admin<?, ?> addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
+        this.updateTraversalScript(stepName, arguments);
+        return traversal;
+    }
+
+    @Override
+    public Traversal.Admin<?, ?> addSpawnStep(final TraversalSource traversalSource, String stepName, Object... arguments) {
+        final TraversalSource clone = traversalSource.clone();
+        ((GroovyTranslator)clone.getStrategies().getTranslator()).updateTraversalScript(stepName, arguments);
+        final Traversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>(clone.getGraph());
+        traversal.setStrategies(clone.getStrategies());
+        return traversal;
+    }
+
+    @Override
+    public TraversalSource addSource(final TraversalSource traversalSource, String sourceName, Object... arguments) {
+        final TraversalSource clone = traversalSource.clone();
+        ((GroovyTranslator)clone.getStrategies().getTranslator()).updateTraversalScript(sourceName, arguments);
+        return clone;
     }
 
     @Override
@@ -151,7 +173,7 @@ public final class GroovyTranslator implements Translator {
             final String lambdaString = ((Lambda) object).getLambdaScript();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Traversal)
-            return ((Traversal) object).asAdmin().getStrategies().getStrategy(TranslationStrategy.class).get().getTranslator().getTraversalScript();
+            return ((Traversal) object).asAdmin().getStrategies().getTranslator().getTraversalScript();
         else
             return null == object ? "null" : object.toString();
     }

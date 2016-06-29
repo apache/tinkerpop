@@ -19,24 +19,18 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Translator extends Cloneable {
+public interface Translator<T extends Traversal.Admin<?, ?>, S extends TraversalSource> extends Cloneable {
 
     public String getAlias();
 
-    public void addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments);
+    public T addStep(final T traversal, final String stepName, final Object... arguments);
 
-    public default void addSpawnStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
-        addStep(traversal, stepName, arguments);
-    }
+    public T addSpawnStep(final S traversalSource, final String stepName, final Object... arguments);
 
-    public default void addSource(final TraversalSource traversalSource, final String sourceName, final Object... arguments) {
-        addStep(EmptyTraversal.instance(), sourceName, arguments);
-    }
+    public S addSource(final S traversalSource, final String sourceName, final Object... arguments);
 
     public Translator getAnonymousTraversalTranslator();
 
