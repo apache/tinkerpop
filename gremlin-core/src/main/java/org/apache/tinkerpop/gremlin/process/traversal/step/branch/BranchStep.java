@@ -165,15 +165,19 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 final List<Traversal.Admin<S, E>> clonedTraversals = clone.traversalOptions.compute(entry.getKey(), (k, v) ->
                         (v == null) ? new ArrayList<>(traversals.size()) : v);
                 for (final Traversal.Admin<S, E> traversal : traversals) {
-                    final Traversal.Admin<S, E> clonedTraversal = traversal.clone();
-                    clonedTraversals.add(clonedTraversal);
-                    clone.integrateChild(clonedTraversal);
+                    clonedTraversals.add(traversal.clone());
                 }
             }
         }
         clone.branchTraversal = this.branchTraversal.clone();
-        clone.integrateChild(clone.branchTraversal);
         return clone;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.integrateChild(this.branchTraversal);
+        this.traversalOptions.values().stream().flatMap(List::stream).forEach(this::integrateChild);
     }
 
     @Override
