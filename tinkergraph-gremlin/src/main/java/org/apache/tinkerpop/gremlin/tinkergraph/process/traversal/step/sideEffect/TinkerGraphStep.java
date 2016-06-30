@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,17 +80,17 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         else
             return null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :
-                    TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
-                            .filter(vertex -> HasContainer.testAll(vertex, this.hasContainers))
-                            .collect(Collectors.<Vertex>toList()).iterator();
+                    IteratorUtils.filter(TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).iterator(),
+                            vertex -> HasContainer.testAll(vertex, this.hasContainers));
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
         final Set<String> indexedKeys = ((TinkerGraph) this.getTraversal().getGraph().get()).getIndexedKeys(indexedClass);
-        return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.getKey()) && c.getPredicate().getBiPredicate() == Compare.eq)
-                .findAny()
-                .orElseGet(() -> null);
+
+        final Iterator<HasContainer> itty = IteratorUtils.filter(hasContainers.iterator(),
+                c -> c.getPredicate().getBiPredicate() == Compare.eq && indexedKeys.contains(c.getKey()));
+        return itty.hasNext() ? itty.next() : null;
+
     }
 
     @Override

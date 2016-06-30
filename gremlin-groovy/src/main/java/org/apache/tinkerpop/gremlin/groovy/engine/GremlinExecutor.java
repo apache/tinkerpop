@@ -310,7 +310,7 @@ public class GremlinExecutor implements AutoCloseable {
             evaluationFuture.handleAsync((v, t) -> {
                 logger.debug("Killing scheduled timeout on script evaluation as the eval completed (possibly with exception).");
                 return sf.cancel(true);
-            });
+            }, scheduledExecutorService);
         }
 
         return evaluationFuture;
