@@ -180,8 +180,10 @@ final class ConnectionPool {
 
             // destroy a connection that exceeds the minimum pool size - it does not have the right to live if it
             // isn't busy. replace a connection that has a low available in process count which likely means that
-            // it's backing up with requests that might never have returned. if neither of these scenarios are met
-            // then let the world know the connection is available.
+            // it's backing up with requests that might never have returned. consider the maxPoolSize in this condition
+            // because if it is equal to 1 (which it is for a session) then there is no need to replace the connection
+            // as it will be responsible for every single request. if neither of these scenarios are met then let the
+            // world know the connection is available.
             final int poolSize = connections.size();
             final int availableInProcess = connection.availableInProcess();
             if (poolSize > minPoolSize && borrowed <= minSimultaneousUsagePerConnection) {
@@ -189,7 +191,7 @@ final class ConnectionPool {
                     logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousUsagePerConnection {} so destroy {}",
                             host, poolSize, minPoolSize, borrowed, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
-            } else if (availableInProcess < minInProcess) {
+            } else if (availableInProcess < minInProcess && maxPoolSize > 1) {
                 if (logger.isDebugEnabled())
                     logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
                 replaceConnection(connection);
@@ -243,7 +245,6 @@ final class ConnectionPool {
     void replaceConnection(final Connection connection) {
         logger.debug("Replace {}", connection);
 
-        open.decrementAndGet();
         considerNewConnection();
         definitelyDestroyConnection(connection);
     }
