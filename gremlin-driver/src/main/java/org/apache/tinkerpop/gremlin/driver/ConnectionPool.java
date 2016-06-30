@@ -120,8 +120,12 @@ final class ConnectionPool {
         if (connections.isEmpty()) {
             logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
             for (int i = 0; i < minPoolSize; i++) {
-                scheduledForCreation.incrementAndGet();
-                newConnection();
+                // If many connections are borrowed at the same time there needs to be a check to make sure no
+                // additional ones get scheduled for creation
+                if (scheduledForCreation.get() < minPoolSize) {
+                    scheduledForCreation.incrementAndGet();
+                    newConnection();
+                }
             }
 
             return waitForConnection(timeout, unit);
