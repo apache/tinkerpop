@@ -26,6 +26,10 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `RepeatUnrollStrategy` to linearize a `repeat()`-traversal if loop amount is known at compile time.
+* Fixed a bug in `BranchStep` around child integration during `clone()`.
+* Fixed a bug in `AbstractStep` around label set cloning.
+* Added `TraversalStrategyPerformanceTest` for verifying the performance gains of optimization-based traversal strategies.
 * `TraversalExplanation.prettyPrint()` exists which provides word wrapping and GremlinConsole is smart to use console width to control `toString()`.
 * `TraversalOpProcessor` (`RemoteConnection`) uses `HaltedTraverserStrategy` metadata to determine detachment procedure prior to returning results.
 * Allow DFS paths in `HADOOP_GREMLIN_LIBS`.
