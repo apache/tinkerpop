@@ -351,9 +351,14 @@ public final class TinkerGraph implements Graph {
     }
 
     private void validateHomogenousIds(final List<Object> ids) {
-        final Class firstClass = ids.get(0).getClass();
-        for (Object id : ids) {
-            if (!id.getClass().equals(firstClass))
+        final Iterator<Object> iterator = ids.iterator();
+        Object id = iterator.next();
+        if (id == null)
+            throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+        final Class firstClass = id.getClass();
+        while (iterator.hasNext()) {
+            id = iterator.next();
+            if (id == null || !id.getClass().equals(firstClass))
                 throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
         }
     }
