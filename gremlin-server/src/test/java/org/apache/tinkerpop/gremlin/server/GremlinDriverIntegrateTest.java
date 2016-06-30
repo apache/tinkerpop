@@ -969,7 +969,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = Cluster.build().workerPoolSize(2)
+                .maxInProcessPerConnection(64)
+                .minInProcessPerConnection(32)
+                .maxConnectionPoolSize(16)
+                .minConnectionPoolSize(8).create();
         final Client client = cluster.connect();
 
         final Map<Integer, Integer> results = new ConcurrentHashMap<>();
@@ -991,8 +995,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         threads.forEach(FunctionUtils.wrapConsumer(Thread::join));
 
         for (int ix = 0; ix < results.size(); ix++) {
+            assertThat(results.containsKey(ix), is(true));
             assertEquals(1000 + ix, results.get(ix).intValue());
         }
+
+        cluster.close();
     }
 
     @Test
