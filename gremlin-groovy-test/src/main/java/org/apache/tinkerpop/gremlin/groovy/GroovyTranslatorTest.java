@@ -83,6 +83,6 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[h:gremlin-java->gremlin-groovy]", GroovyTranslator.of("h").toString());
+        assertEquals("translator[gremlin-java->gremlin-groovy]", GroovyTranslator.of("h").toString());
     }
 }

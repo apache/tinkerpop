@@ -74,9 +74,7 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
-            ElementIdStrategyProcessTest.class.getCanonicalName(),
-            EventStrategyProcessTest.class.getCanonicalName(),
-            PartitionStrategyProcessTest.class.getCanonicalName()));
+            ElementIdStrategyProcessTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);

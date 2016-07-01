@@ -22,23 +22,33 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Translator<T extends Traversal.Admin<?, ?>, S extends TraversalSource> extends Cloneable {
+public interface Translator<V> {
 
+    /**
+     * Get the {@link TraversalSource} alias rooting this translator.
+     *
+     * @return the string alias (typically "g").
+     */
     public String getAlias();
 
-    public T addStep(final T traversal, final String stepName, final Object... arguments);
-
-    public T addSpawnStep(final S traversalSource, final String stepName, final Object... arguments);
-
-    public S addSource(final S traversalSource, final String sourceName, final Object... arguments);
-
-    public Translator getAnonymousTraversalTranslator();
-
-    public String getTraversalScript();
-
-    public Translator clone();
+    /**
+     * Translate {@link ByteCode} into a new representation.
+     * Typically, for language translations, the translation is to a string represenging the traversal in the respective scripting language.
+     *
+     * @param byteCode the byte code representing traversal source and traversal manipulations.
+     * @return the translated object
+     */
+    public V translate(final ByteCode byteCode);
 
     public String getSourceLanguage();
 
+    /**
+     * Get the language that the translator is converting the traversal byte code to.
+     *
+     * @return the language of the translation
+     */
     public String getTargetLanguage();
+
+    // TODO: getTranslationClass() -- e.g. for GroovyTranslator, its String.
+    // TODO: Do we need getSourceLanguage()? The source language is always ByteCode now!
 }

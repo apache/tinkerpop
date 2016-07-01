@@ -239,6 +239,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public interface Admin<S, E> extends Traversal<S, E> {
 
         /**
+         * Get the {@link ByteCode} associated with the construction of this traversal.
+         *
+         * @return the byte code representation of the traversal
+         */
+        public ByteCode getByteCode();
+
+        /**
          * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal.
          * Users should typically not need to call this method. For dynamic inject of data, they should use {@link org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep}.
          *

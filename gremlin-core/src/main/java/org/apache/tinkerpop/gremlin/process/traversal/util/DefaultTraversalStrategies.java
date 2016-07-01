@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.StepTranslator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import java.util.Optional;
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
     protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
-    protected Translator translator = EmptyTranslator.instance();
 
     @Override
     @SuppressWarnings({"unchecked", "varargs"})
@@ -72,16 +72,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public void setTranslator(final Translator translator) {
-        this.translator = translator;
-    }
-
-    @Override
-    public Translator getTranslator() {
-        return this.translator;
-    }
-
-    @Override
     public List<TraversalStrategy<?>> toList() {
         return Collections.unmodifiableList(this.traversalStrategies);
     }
@@ -108,7 +98,6 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
             final DefaultTraversalStrategies clone = (DefaultTraversalStrategies) super.clone();
             clone.traversalStrategies = new ArrayList<>(this.traversalStrategies.size());
             clone.traversalStrategies.addAll(this.traversalStrategies);
-            clone.translator = this.translator.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);

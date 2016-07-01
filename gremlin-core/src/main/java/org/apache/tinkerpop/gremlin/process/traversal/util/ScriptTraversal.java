@@ -58,16 +58,16 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
     }
 
-    public ScriptTraversal(final TranslationStrategy translationStrategy, final Object... bindings) {
+    public ScriptTraversal(final Traversal traversal, TranslationStrategy translationStrategy, final Object... bindings) {
         super();
-        final Translator translator = translationStrategy.getTraversalSource().getStrategies().getTranslator();
-        final TraversalSource traversalSource = translationStrategy.getTraversalSource().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
+        final Translator translator = translationStrategy.getTranslator();
+        final TraversalSource traversalSource = translationStrategy.getTraversalSource().clone().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
         //
         this.alias = translator.getAlias();
         this.graph = traversalSource.getGraph();
         this.factory = new TraversalSourceFactory<>(traversalSource);
         this.scriptEngine = translator.getTargetLanguage();
-        this.script = translator.getTraversalScript();
+        this.script = translator.translate(traversal.asAdmin().getByteCode()).toString();
         this.bindings = bindings;
         if (this.bindings.length % 2 != 0)
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");

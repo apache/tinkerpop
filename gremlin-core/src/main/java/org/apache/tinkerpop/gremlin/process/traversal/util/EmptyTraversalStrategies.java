@@ -44,16 +44,6 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public Translator getTranslator() {
-        return null;
-    }
-
-    @Override
-    public void setTranslator(Translator translator) {
-
-    }
-
-    @Override
     public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
 
     }

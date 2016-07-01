@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
@@ -59,16 +61,30 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected transient TraverserGenerator generator;
     protected Set<TraverserRequirement> requirements;
     protected boolean locked = false;
+    protected final ByteCode byteCode; // TODO: perhaps make transient until 3.3.0?
 
-    public DefaultTraversal() {
-        this.graph = null;
-        // necessary for anonymous traversals without a graph start (rethink how this works in the future)
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class));
+
+    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final ByteCode byteCode) {
+        this.graph = graph;
+        this.strategies = traversalStrategies;
+        this.byteCode = byteCode;
     }
 
     public DefaultTraversal(final Graph graph) {
-        this.graph = graph;
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass()));
+        this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()), new ByteCode());
+    }
+
+    public DefaultTraversal(final TraversalSource traversalSource) {
+        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getByteCode());
+    }
+
+    public DefaultTraversal() {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new ByteCode());
+    }
+
+    @Override
+    public ByteCode getByteCode() {
+        return this.byteCode;
     }
 
     @Override

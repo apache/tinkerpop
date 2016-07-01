@@ -89,7 +89,7 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         final Traversal.Admin<?, ?> remoteTraversal;
         if (traversal.getStrategies().getStrategy(TranslationStrategy.class).isPresent()) {
             // if there is a translator, send the translation over the wire (TODO: don't use ScriptTraversal -- RemoteConnection.submit(alias, scriptEngine, script, bindings)
-            remoteTraversal = new ScriptTraversal<>(traversal.getStrategies().getStrategy(TranslationStrategy.class).get());
+            remoteTraversal = new ScriptTraversal<>(traversal, traversal.getStrategies().getStrategy(TranslationStrategy.class).get());
             TraversalHelper.removeAllSteps(traversal);
         } else {
             // if there is no translator, send the current traversal over the wire

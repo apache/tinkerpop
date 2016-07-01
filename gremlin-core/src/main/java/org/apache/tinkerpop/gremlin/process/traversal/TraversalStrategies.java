@@ -77,10 +77,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
     }
 
-    public Translator getTranslator();
-
-    public void setTranslator(final Translator translator);
-
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
      * This method must ensure that the strategies are sorted prior to application.

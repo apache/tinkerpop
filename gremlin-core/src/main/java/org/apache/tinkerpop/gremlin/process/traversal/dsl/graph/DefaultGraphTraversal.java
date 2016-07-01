@@ -28,12 +28,14 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     public DefaultGraphTraversal() {
         super();
-        this.strategies.setTranslator(new StepTranslator());
+    }
+
+    public DefaultGraphTraversal(final GraphTraversalSource graphTraversalSource) {
+        super(graphTraversalSource);
     }
 
     public DefaultGraphTraversal(final Graph graph) {
         super(graph);
-        this.strategies.setTranslator(new StepTranslator());
     }
 
     @Override

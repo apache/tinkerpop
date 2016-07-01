@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -181,6 +182,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(MODERN)
     public void shouldNotAlterTraversalAfterTraversalBecomesLocked() {
         final GraphTraversal<Vertex, Vertex> traversal = this.g.V();

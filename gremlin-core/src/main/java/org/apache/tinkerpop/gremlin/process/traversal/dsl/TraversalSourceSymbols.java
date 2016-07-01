@@ -28,9 +28,5 @@ public final class TraversalSourceSymbols {
         // all static methods
     }
 
-    public static final String withSack = "withSack";
-    public static final String withStrategies = "withStrategies";
-    public static final String withoutStrategies = "withoutStrategies";
-    public static final String withComputer = "withComputer";
-    public static final String withSideEffect = "withSideEffect";
+
 }

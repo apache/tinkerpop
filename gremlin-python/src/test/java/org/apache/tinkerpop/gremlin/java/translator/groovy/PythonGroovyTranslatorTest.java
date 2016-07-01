@@ -89,8 +89,8 @@ public class PythonGroovyTranslatorTest {
 
     @Test
     public void shouldHaveValidToString() {
-        Assert.assertEquals("translator[h:gremlin-java->jython]", PythonTranslator.of("h").toString());
-        assertEquals("translator[h:gremlin-java->gremlin-groovy]", PythonGroovyTranslator.of("h").toString());
+        Assert.assertEquals("translator[gremlin-java->jython]", PythonTranslator.of("h").toString());
+        assertEquals("translator[gremlin-java->gremlin-groovy]", PythonGroovyTranslator.of("h").toString());
     }
 
 }

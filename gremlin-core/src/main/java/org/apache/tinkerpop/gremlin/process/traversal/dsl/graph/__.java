@@ -50,26 +50,11 @@ import java.util.function.Predicate;
  */
 public class __ {
 
-    private static ThreadLocal<Function<GraphTraversal.Admin, GraphTraversal.Admin>> ANONYMOUS_TRAVERSAL_FUNCTION = null;
-
     protected __() {
     }
 
-    //////////////////////////////////////////////////////////////////////
-
-    public static void setAnonymousTraversalFunction(final Function<GraphTraversal.Admin, GraphTraversal.Admin> anonymousTraversalFunction) {
-        if (null == anonymousTraversalFunction) {
-            if (null != ANONYMOUS_TRAVERSAL_FUNCTION)
-                ANONYMOUS_TRAVERSAL_FUNCTION.remove();
-        } else {
-            if (null == ANONYMOUS_TRAVERSAL_FUNCTION)
-                ANONYMOUS_TRAVERSAL_FUNCTION = ThreadLocal.withInitial(Function::identity);
-            ANONYMOUS_TRAVERSAL_FUNCTION.set(anonymousTraversalFunction);
-        }
-    }
-
     public static <A> GraphTraversal<A, A> start() {
-        return null == ANONYMOUS_TRAVERSAL_FUNCTION ? new DefaultGraphTraversal<>() : ANONYMOUS_TRAVERSAL_FUNCTION.get().apply(new DefaultGraphTraversal<>());
+        return new DefaultGraphTraversal<>();
     }
 
     public static <A> GraphTraversal<A, A> __(final A... starts) {

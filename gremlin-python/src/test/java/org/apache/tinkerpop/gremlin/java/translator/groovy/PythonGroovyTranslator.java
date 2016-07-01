@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.java.translator.groovy;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -46,18 +47,13 @@ public class PythonGroovyTranslator extends PythonTranslator {
         return new PythonGroovyTranslator(alias, importStatics);
     }
 
-    @Override
+    /*@Override
     public Traversal.Admin<?, ?> addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
         final Traversal.Admin<?, ?> temp = super.addStep(traversal, stepName, arguments);
         if (!this.importStatics)
             assert this.traversalScript.toString().startsWith(this.alias + ".");
         return temp;
-    }
-
-    @Override
-    public Translator getAnonymousTraversalTranslator() {
-        return new PythonGroovyTranslator("__", this.importStatics);
-    }
+    }*/
 
     @Override
     public String getTargetLanguage() {
@@ -65,8 +61,8 @@ public class PythonGroovyTranslator extends PythonTranslator {
     }
 
     @Override
-    public String getTraversalScript() {
-        final String traversal = super.getTraversalScript();
+    public String translate(final ByteCode byteCode) {
+        final String traversal = super.translate(byteCode);
         if (!this.alias.equals("__")) {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
