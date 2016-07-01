@@ -232,10 +232,6 @@ final class ConnectionPool {
         return closeFuture.compareAndSet(null, future) ? future : closeFuture.get();
     }
 
-    public int opened() {
-        return open.get();
-    }
-
     private CompletableFuture[] killAvailableConnections() {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
         for (Connection connection : connections) {
@@ -321,15 +317,18 @@ final class ConnectionPool {
     }
 
     private void definitelyDestroyConnection(final Connection connection) {
-        bin.add(connection);
-        connections.remove(connection);
-        open.decrementAndGet();
+        // only add to the bin for future removal if its not already there.
+        if (!bin.contains(connection)) {
+            bin.add(connection);
+            connections.remove(connection);
+            open.decrementAndGet();
+        }
 
-        if (connection.borrowed.get() == 0 && bin.remove(connection))
+        // only close the connection for good once it is done being borrowed
+        if (connection.borrowed.get() == 0 && bin.remove(connection)) {
             connection.closeAsync();
-
-        if (logger.isDebugEnabled())
             logger.debug("{} destroyed", connection.getConnectionInfo());
+        }
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
