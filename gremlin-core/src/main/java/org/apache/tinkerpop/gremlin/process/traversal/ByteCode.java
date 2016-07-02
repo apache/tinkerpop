@@ -19,8 +19,11 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +57,33 @@ public final class ByteCode implements Cloneable, Serializable {
         return Collections.unmodifiableList(this.stepInstructions);
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder("[");
+        for (final Instruction instruction : this.sourceInstructions) {
+            builder.append(instruction).append(",\n");
+        }
+        for (final Instruction instruction : this.stepInstructions) {
+            builder.append(instruction).append(",\n");
+        }
+        if (builder.length() > 2)
+            builder.delete(builder.length() - 2,builder.length());
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return object instanceof ByteCode &&
+                this.sourceInstructions.equals(((ByteCode) object).sourceInstructions) &&
+                this.stepInstructions.equals(((ByteCode) object).sourceInstructions);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.sourceInstructions.hashCode() + this.stepInstructions.hashCode();
+    }
+
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public ByteCode clone() {
         try {
@@ -82,6 +112,43 @@ public final class ByteCode implements Cloneable, Serializable {
 
         public Object[] getArguments() {
             return this.arguments;
+        }
+
+        @Override
+        public String toString() {
+            return "[\"" + this.operator + "\"," + stringifyArguments() + "]";
+        }
+
+        @Override
+        public boolean equals(final Object object) {
+            return object instanceof Instruction &&
+                    this.operator.equals(((Instruction) object).operator) &&
+                    Arrays.equals(this.arguments, ((Instruction) object).arguments);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.operator.hashCode() + Arrays.hashCode(this.arguments);
+        }
+
+        private String stringifyArguments() {
+            final List<Object> objects = TranslatorHelper.flattenArguments(this.arguments);
+            final StringBuilder builder = new StringBuilder("[");
+            for (final Object object : objects) {
+                if (object instanceof Traversal)
+                    builder.append(((Traversal) object).asAdmin().getByteCode());
+                else if (object instanceof String)
+                    builder.append("\"").append(object).append("\"");
+                else
+                    builder.append(object);
+                builder.append(",");
+            }
+            if (!objects.isEmpty())
+                builder.deleteCharAt(builder.length() - 1);
+            builder.append("]");
+
+            return builder.toString();
+
         }
 
     }
