@@ -22,6 +22,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.spark.serializer.KryoRegistrator;
+import org.apache.spark.util.collection.CompactBuffer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
@@ -215,6 +216,10 @@ public class GryoRegistrator implements KryoRegistrator {
         } catch (final ClassNotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+        //
+        m.put(CompactBuffer[].class, null);
+        m.put(void.class, null);
+        m.put(Void.class, null);
         return m;
     }
 
