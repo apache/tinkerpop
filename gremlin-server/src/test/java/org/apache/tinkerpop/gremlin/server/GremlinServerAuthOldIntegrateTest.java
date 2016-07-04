@@ -132,7 +132,9 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(GSSException.class, root.getClass());
-            assertThat(root.getMessage(), startsWith("Invalid name provided"));
+
+            // removed this assert as the text of the message changes based on kerberos config - stupid kerberos
+            // assertThat(root.getMessage(), startsWith("Invalid name provided"));
         } finally {
             cluster.close();
         }
