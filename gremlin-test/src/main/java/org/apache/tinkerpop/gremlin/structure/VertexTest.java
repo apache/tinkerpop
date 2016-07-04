@@ -287,6 +287,16 @@ public class VertexTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        public void shouldHaveStandardStringRepresentationWithProperties() {
+            final Vertex v = graph.addVertex("name", "marko", "age", 34);
+            assertEquals(StringFactory.vertexString(v), v.toString());
+        }
+
+        @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         public void shouldUseDefaultLabelIfNotSpecified() {
             final Vertex v = graph.addVertex("name", "marko");
