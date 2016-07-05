@@ -179,7 +179,7 @@ public final class StringFactory {
     }
 
     public static String translatorString(final Translator translator) {
-        return "translator[" + translator.getSourceLanguage() + "->" + translator.getTargetLanguage() + "]";
+        return "translator[" + translator.getTraversalSource() + ":" + translator.getTargetLanguage() + "]";
     }
 
     public static String vertexProgramString(final VertexProgram vertexProgram, final String internalString) {

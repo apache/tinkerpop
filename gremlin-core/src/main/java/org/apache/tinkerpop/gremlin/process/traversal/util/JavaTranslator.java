@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -32,33 +32,40 @@ import java.util.Arrays;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReflectionTranslator implements Translator<Traversal.Admin<?, ?>> {
+public final class JavaTranslator implements Translator<TraversalSource, Class, Traversal.Admin<?, ?>> {
 
-    private final TraversalSource source;
+    private final TraversalSource traversalSource;
+    private final Class anonymousTraversal;
 
-    public ReflectionTranslator(final TraversalSource source) {
-        this.source = source;
+    public JavaTranslator(final TraversalSource traversalSource, final Class anonymousSource) {
+        this.traversalSource = traversalSource;
+        this.anonymousTraversal = anonymousSource;
     }
 
     @Override
-    public String getAlias() {
-        return null;
+    public TraversalSource getTraversalSource() {
+        return this.traversalSource;
+    }
+
+    @Override
+    public Class getAnonymousTraversal() {
+        return this.anonymousTraversal;
     }
 
     @Override
     public Traversal.Admin<?, ?> translate(final ByteCode byteCode) {
-        TraversalSource tempSource = this.source;
-        Traversal.Admin<?, ?> traversal = null == this.source ? __.start().asAdmin() : null;
-        boolean fromSource = null == traversal;
+        TraversalSource tempSource = this.traversalSource;
+        Traversal.Admin<?, ?> traversal = null;
         if (null != tempSource) {
             for (final ByteCode.Instruction instruction : byteCode.getSourceInstructions()) {
                 tempSource = (TraversalSource) invokeMethod(tempSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
             }
         }
+        boolean firstInstruction = true;
         for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
-            if (fromSource) {
+            if (firstInstruction) {
                 traversal = (Traversal.Admin) invokeMethod(tempSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
-                fromSource = false;
+                firstInstruction = false;
             } else
                 invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
         }
@@ -66,18 +73,30 @@ public final class ReflectionTranslator implements Translator<Traversal.Admin<?,
     }
 
     @Override
-    public String getSourceLanguage() {
-        return null;
-    }
-
-    @Override
     public String getTargetLanguage() {
         return "gremlin-java";
     }
 
+    @Override
+    public String toString() {
+        return StringFactory.translatorString(this);
+    }
+
     ////
 
-    private static Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
+    private Traversal.Admin<?, ?> translateFromAnonymous(final ByteCode byteCode) {
+        try {
+            Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
+            for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
+                invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
+            }
+            return traversal;
+        } catch (final Throwable e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
+
+    private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
         try {
             for (final Method method : delegate.getClass().getMethods()) {
                 if (method.getName().equals(methodName)) {
@@ -95,7 +114,7 @@ public final class ReflectionTranslator implements Translator<Traversal.Admin<?,
                                             parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
                                             parameters[i].getType().isAssignableFrom(Traversal.Admin.class) && arguments[i] instanceof ByteCode)) {
                                         newArguments[i] = arguments[i] instanceof ByteCode ?
-                                                new ReflectionTranslator(null).translate((ByteCode) arguments[i]) :
+                                                this.translateFromAnonymous((ByteCode) arguments[i]) :
                                                 arguments[i];
                                     } else {
                                         found = false;

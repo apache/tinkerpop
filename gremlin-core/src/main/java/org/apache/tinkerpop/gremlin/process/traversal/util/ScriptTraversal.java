@@ -63,7 +63,7 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
         final Translator translator = translationStrategy.getTranslator();
         final TraversalSource traversalSource = translationStrategy.getTraversalSource().clone().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
         //
-        this.alias = translator.getAlias();
+        this.alias = translator.getTraversalSource().toString();
         this.graph = traversalSource.getGraph();
         this.factory = new TraversalSourceFactory<>(traversalSource);
         this.scriptEngine = translator.getTargetLanguage();

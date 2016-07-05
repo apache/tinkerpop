@@ -40,21 +40,49 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroovyTranslator implements Translator<String> {
+public final class GroovyTranslator implements Translator<String, String, String> {
 
-    private final String alias;
+    private final String traversalSource;
+    private final String anonymousTraversal;
 
-    private GroovyTranslator(final String alias) {
-        this.alias = alias;
+    private GroovyTranslator(final String traversalSource, final String anonymousTraversal) {
+        this.traversalSource = traversalSource;
+        this.anonymousTraversal = anonymousTraversal;
     }
 
-    public static final GroovyTranslator of(final String alias) {
-        return new GroovyTranslator(alias);
+    public static final GroovyTranslator of(final String traversalSource, final String anonymousTraversal) {
+        return new GroovyTranslator(traversalSource, anonymousTraversal);
     }
 
     @Override
     public String translate(final ByteCode byteCode) {
-        final StringBuilder traversalScript = new StringBuilder(this.alias);
+        return this.translateFromStart(this.traversalSource, byteCode);
+    }
+
+    @Override
+    public String getTargetLanguage() {
+        return "gremlin-groovy";
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.translatorString(this);
+    }
+
+    @Override
+    public String getTraversalSource() {
+        return this.traversalSource;
+    }
+
+    @Override
+    public String getAnonymousTraversal() {
+        return this.anonymousTraversal;
+    }
+
+    ///////
+
+    private String translateFromStart(final String start, final ByteCode byteCode) {
+        final StringBuilder traversalScript = new StringBuilder(start);
         for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
@@ -76,29 +104,7 @@ public final class GroovyTranslator implements Translator<String> {
         return script;
     }
 
-    @Override
-    public String getSourceLanguage() {
-        return "gremlin-java";
-    }
-
-    @Override
-    public String getTargetLanguage() {
-        return "gremlin-groovy";
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.translatorString(this);
-    }
-
-    @Override
-    public String getAlias() {
-        return this.alias;
-    }
-
-    ///////
-
-    private static String convertToString(final Object object) {
+    private String convertToString(final Object object) {
         if (object instanceof String)
             return "\"" + object + "\"";
         else if (object instanceof List) {
@@ -133,12 +139,12 @@ public final class GroovyTranslator implements Translator<String> {
             final String lambdaString = ((Lambda) object).getLambdaScript();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof ByteCode)
-            return new GroovyTranslator("__").translate((ByteCode) object).toString(); // TODO: make a static GroovyTranslator(__) object
+            return this.translateFromStart(this.anonymousTraversal, (ByteCode) object);
         else
             return null == object ? "null" : object.toString();
     }
 
-    private static StringBuilder convertPToString(final P p, final StringBuilder current) {
+    private StringBuilder convertPToString(final P p, final StringBuilder current) {
         if (p instanceof ConnectiveP) {
             final List<P<?>> list = ((ConnectiveP) p).getPredicates();
             for (int i = 0; i < list.size(); i++) {

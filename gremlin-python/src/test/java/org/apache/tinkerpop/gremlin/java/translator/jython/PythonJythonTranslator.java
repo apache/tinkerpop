@@ -33,16 +33,16 @@ import javax.script.ScriptException;
  */
 public class PythonJythonTranslator extends PythonTranslator {
 
-    private PythonJythonTranslator(final String alias, final boolean importStatics) {
-        super(alias, importStatics);
+    private PythonJythonTranslator(final String traversalSource, final boolean importStatics) {
+        super(traversalSource, "__", importStatics);
     }
 
-    public static PythonJythonTranslator of(final String alias) {
-        return new PythonJythonTranslator(alias, false);
+    public static PythonJythonTranslator of(final String traversalSource) {
+        return new PythonJythonTranslator(traversalSource, false);
     }
 
-    public static PythonJythonTranslator of(final String alias, final boolean importStatics) {
-        return new PythonJythonTranslator(alias, importStatics);
+    public static PythonJythonTranslator of(final String traversalSource, final boolean importStatics) {
+        return new PythonJythonTranslator(traversalSource, importStatics);
     }
 
     /*@Override
@@ -62,11 +62,11 @@ public class PythonJythonTranslator extends PythonTranslator {
     @Override
     public String translate(final ByteCode byteCode) {
         final String traversal = super.translate(byteCode);
-        if (!this.alias.equals("__")) {
+        if (null != this.traversalSource) {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
                 jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-                        .put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(JythonTranslator(\"" + this.alias + "\"))"));
+                        .put(this.traversalSource, jythonEngine.eval("PythonGraphTraversalSource(JythonTranslator(\"" + this.traversalSource + "\"))"));
                 return jythonEngine.eval(traversal).toString();
             } catch (final ScriptException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);

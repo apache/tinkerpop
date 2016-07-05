@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.java.translator.groovy;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
@@ -35,16 +33,16 @@ import javax.script.ScriptException;
  */
 public class PythonGroovyTranslator extends PythonTranslator {
 
-    private PythonGroovyTranslator(final String alias, final boolean importStatics) {
-        super(alias, importStatics);
+    private PythonGroovyTranslator(final String traversalSource, final boolean importStatics) {
+        super(traversalSource, "__", importStatics);
     }
 
-    public static PythonGroovyTranslator of(final String alias) {
-        return new PythonGroovyTranslator(alias, false);
+    public static PythonGroovyTranslator of(final String traversalSource) {
+        return new PythonGroovyTranslator(traversalSource, false);
     }
 
-    public static PythonGroovyTranslator of(final String alias, final boolean importStatics) {
-        return new PythonGroovyTranslator(alias, importStatics);
+    public static PythonGroovyTranslator of(final String traversalSource, final boolean importStatics) {
+        return new PythonGroovyTranslator(traversalSource, importStatics);
     }
 
     /*@Override
@@ -63,11 +61,11 @@ public class PythonGroovyTranslator extends PythonTranslator {
     @Override
     public String translate(final ByteCode byteCode) {
         final String traversal = super.translate(byteCode);
-        if (!this.alias.equals("__")) {
+        if (null != this.traversalSource) {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
                 jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-                        .put(this.alias, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.alias + "\"))"));
+                        .put(this.traversalSource, jythonEngine.eval("PythonGraphTraversalSource(GroovyTranslator(\"" + this.traversalSource + "\"))"));
                 return jythonEngine.eval(traversal).toString();
             } catch (final ScriptException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);

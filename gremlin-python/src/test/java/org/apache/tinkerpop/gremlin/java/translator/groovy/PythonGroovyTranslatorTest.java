@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.java.translator.groovy;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
-import org.apache.tinkerpop.gremlin.java.translator.groovy.PythonGroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -89,8 +88,8 @@ public class PythonGroovyTranslatorTest {
 
     @Test
     public void shouldHaveValidToString() {
-        Assert.assertEquals("translator[gremlin-java->jython]", PythonTranslator.of("h").toString());
-        assertEquals("translator[gremlin-java->gremlin-groovy]", PythonGroovyTranslator.of("h").toString());
+        Assert.assertEquals("translator[h:jython]", PythonTranslator.of("h", "__").toString());
+        assertEquals("translator[h:gremlin-groovy]", PythonGroovyTranslator.of("h").toString());
     }
 
 }

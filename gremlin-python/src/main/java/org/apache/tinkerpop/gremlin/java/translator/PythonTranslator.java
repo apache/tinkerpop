@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Veri
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.python.util.SymbolHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -53,7 +52,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonTranslator implements Translator<String> {
+public class PythonTranslator implements Translator<String, String, String> {
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
@@ -61,67 +60,37 @@ public class PythonTranslator implements Translator<String> {
             .map(arg -> ((Enum) arg).name())
             .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
 
-    protected String alias;
+    protected String traversalSource;
+    protected String anonymousTraversal;
     protected final boolean importStatics;
 
-    protected PythonTranslator(final String alias, final boolean importStatics) {
-        this.alias = alias;
+    protected PythonTranslator(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
+        this.traversalSource = traversalSource;
+        this.anonymousTraversal = anonymousTraversal;
         this.importStatics = importStatics;
     }
 
-    public static PythonTranslator of(final String alias) {
-        return new PythonTranslator(alias, false);
+    public static PythonTranslator of(final String traversalSource, final String anonymousTraversal) {
+        return new PythonTranslator(traversalSource, anonymousTraversal, false);
     }
 
-    public static PythonTranslator of(final String alias, final boolean importStatics) {
-        return new PythonTranslator(alias, importStatics);
+    public static PythonTranslator of(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
+        return new PythonTranslator(traversalSource, anonymousTraversal, importStatics);
     }
 
     @Override
-    public String getAlias() {
-        return this.alias;
+    public String getTraversalSource() {
+        return this.traversalSource;
+    }
+
+    @Override
+    public String getAnonymousTraversal() {
+        return this.anonymousTraversal;
     }
 
     @Override
     public String translate(final ByteCode byteCode) {
-        final StringBuilder traversalScript = new StringBuilder(this.alias);
-        for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
-            final String methodName = instruction.getOperator();
-            final Object[] arguments = instruction.getArguments();
-            final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
-            final int size = objects.size();
-            if (0 == size)
-                traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
-            else if (methodName.equals("range") && 2 == size)
-                traversalScript.append("[").append(objects.get(0)).append(":").append(objects.get(1)).append("]");
-            else if (methodName.equals("limit") && 1 == size)
-                traversalScript.append("[0:").append(objects.get(0)).append("]");
-            else if (methodName.equals("values") && 1 == size && traversalScript.length() > 3 && !STEP_NAMES.contains(objects.get(0).toString()))
-                traversalScript.append(".").append(objects.get(0));
-            else {
-                traversalScript.append(".");
-                String temp = SymbolHelper.toPython(methodName) + "(";
-                for (final Object object : objects) {
-                    temp = temp + convertToString(object) + ",";
-                }
-                traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
-            }
-
-            // clip off __.
-            if (this.importStatics && traversalScript.substring(0, 3).startsWith("__.")
-                    && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
-                traversalScript.delete(0, 3);
-            }
-        }
-        final String script = traversalScript.toString();
-        if (script.contains("$"))
-            throw new VerificationException("Lambdas are currently not supported: " + script, EmptyTraversal.instance());
-        return script;
-    }
-
-    @Override
-    public String getSourceLanguage() {
-        return "gremlin-java";
+        return this.translateFromStart(this.traversalSource, byteCode);
     }
 
     @Override
@@ -135,6 +104,40 @@ public class PythonTranslator implements Translator<String> {
     }
 
     ///////
+
+    private String translateFromStart(final String start, final ByteCode byteCode) {
+        final StringBuilder traversalScript = new StringBuilder(start);
+        for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
+            final String methodName = instruction.getOperator();
+            final Object[] arguments = instruction.getArguments();
+            if (0 == arguments.length)
+                traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
+            else if (methodName.equals("range") && 2 == arguments.length)
+                traversalScript.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
+            else if (methodName.equals("limit") && 1 == arguments.length)
+                traversalScript.append("[0:").append(arguments[0]).append("]");
+            else if (methodName.equals("values") && 1 == arguments.length && traversalScript.length() > 3 && !STEP_NAMES.contains(arguments[0].toString()))
+                traversalScript.append(".").append(arguments[0]);
+            else {
+                traversalScript.append(".");
+                String temp = SymbolHelper.toPython(methodName) + "(";
+                for (final Object object : arguments) {
+                    temp = temp + convertToString(object) + ",";
+                }
+                traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
+            }
+
+            // clip off __.
+            if (this.importStatics && traversalScript.substring(0, 3).startsWith(this.anonymousTraversal + ".")
+                    && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
+                traversalScript.delete(0, 3);
+            }
+        }
+        final String script = traversalScript.toString();
+        if (script.contains("$"))
+            throw new VerificationException("Lambdas are currently not supported: " + script, EmptyTraversal.instance());
+        return script;
+    }
 
     private String convertToString(final Object object) {
         if (object instanceof String)
@@ -162,7 +165,7 @@ public class PythonTranslator implements Translator<String> {
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof ByteCode)
-            return new PythonTranslator("__", this.importStatics).translate(((ByteCode) object));
+            return this.translateFromStart(this.anonymousTraversal, (ByteCode) object);
         else if (object instanceof Computer) {
             return "";
         } else if (object instanceof Lambda) {

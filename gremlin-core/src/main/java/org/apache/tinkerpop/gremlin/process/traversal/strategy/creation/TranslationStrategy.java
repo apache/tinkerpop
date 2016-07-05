@@ -60,7 +60,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
             final Bindings bindings = scriptEngine.createBindings();
             scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
-            bindings.put(this.translator.getAlias(), this.traversalSource);
+            bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
             final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.translate(traversal.getByteCode()).toString(), bindings);
             assert !translatedTraversal.isLocked();
             assert !traversal.isLocked();

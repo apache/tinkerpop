@@ -43,7 +43,7 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportStringSupplierLambdas() throws Exception {
-        final GraphTraversalSource g = graph.traversal().withTranslator(GroovyTranslator.of("g"));
+        final GraphTraversalSource g = graph.traversal().withTranslator(GroovyTranslator.of("g", "__"));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("it.get().label().equals('person')"))
@@ -83,6 +83,6 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[gremlin-java->gremlin-groovy]", GroovyTranslator.of("h").toString());
+        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h","__").toString());
     }
 }
