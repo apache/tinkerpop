@@ -603,7 +603,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         selectKeys[0] = selectKey1;
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
-        this.asAdmin().getByteCode().addStep(Symbols.select, pop, selectKey1, selectKey2, otherSelectKeys, selectKeys);
+        this.asAdmin().getByteCode().addStep(Symbols.select, pop, selectKey1, selectKey2, otherSelectKeys);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectKeys));
     }
 
@@ -621,7 +621,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         selectKeys[0] = selectKey1;
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
-        this.asAdmin().getByteCode().addStep(Symbols.select, selectKey1, selectKey2, otherSelectKeys, selectKeys);
+        this.asAdmin().getByteCode().addStep(Symbols.select, selectKey1, selectKey2, otherSelectKeys);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), null, selectKeys));
     }
 
