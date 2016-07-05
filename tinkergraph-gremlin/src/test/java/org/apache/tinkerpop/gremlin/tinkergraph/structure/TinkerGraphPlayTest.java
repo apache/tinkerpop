@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReflectionTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -63,8 +65,14 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer();//GraphTraversalSource.computer());
-        System.out.println(g.V().as("a").out().repeat(both("created")).times(10).as("b").values("name").dedup().select("a", "b").by("name").asAdmin().getByteCode());
+        GraphTraversalSource g = graph.traversal();//GraphTraversalSource.computer());
+        System.out.println(g.V().as("a").repeat(out("created", "knows")).times(2).as("b").dedup().select("a", "b").toList());
+        final ByteCode byteCode = g.withComputer().V().as("a").repeat(out("created", "knows")).times(2).as("b").dedup().select("a", "b").asAdmin().getByteCode();
+        ReflectionTranslator translator = new ReflectionTranslator(g);
+        Traversal.Admin<?, ?> traversal = translator.translate(byteCode);
+        System.out.println(traversal);
+        System.out.println(traversal.toList());
+        System.out.println(traversal);
     }
 
     @Test

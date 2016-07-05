@@ -42,11 +42,11 @@ public final class ByteCode implements Cloneable, Serializable {
     private List<Instruction> stepInstructions = new ArrayList<>();
 
     public void addSource(final String sourceName, final Object... arguments) {
-        this.sourceInstructions.add(new Instruction(sourceName, arguments));
+        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments).toArray()));
     }
 
     public void addStep(final String stepName, final Object... arguments) {
-        this.stepInstructions.add(new Instruction(stepName, arguments));
+        this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments).toArray()));
     }
 
     public List<Instruction> getSourceInstructions() {
@@ -151,5 +151,26 @@ public final class ByteCode implements Cloneable, Serializable {
 
         }
 
+    }
+
+    /////
+
+    private static List<Object> flattenArguments(final Object... arguments) {
+        if (arguments.length == 0)
+            return Collections.emptyList();
+        final List<Object> flatArguments = new ArrayList<>();
+        for (final Object object : arguments) {
+            if (object instanceof Object[]) {
+                Collections.addAll(flatArguments, (Object[]) object);
+            } else
+                flatArguments.add(convertArgument(object));
+        }
+        return flatArguments;
+    }
+
+    private static Object convertArgument(final Object argument) {
+       if(argument instanceof Traversal.Admin)
+           return ((Traversal.Admin) argument).getByteCode();
+        return argument;
     }
 }

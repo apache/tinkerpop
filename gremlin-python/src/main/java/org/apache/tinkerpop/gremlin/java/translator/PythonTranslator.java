@@ -161,8 +161,8 @@ public class PythonTranslator implements Translator<String> {
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Traversal)
-            return new PythonTranslator("__", this.importStatics).translate(((Traversal.Admin) object).getByteCode());
+        else if (object instanceof ByteCode)
+            return new PythonTranslator("__", this.importStatics).translate(((ByteCode) object));
         else if (object instanceof Computer) {
             return "";
         } else if (object instanceof Lambda) {

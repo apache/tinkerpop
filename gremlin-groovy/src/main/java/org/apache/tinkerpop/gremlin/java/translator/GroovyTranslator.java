@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
@@ -133,8 +132,8 @@ public final class GroovyTranslator implements Translator<String> {
         } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
-        } else if (object instanceof Traversal)
-            return new GroovyTranslator("__").translate(((Traversal.Admin) object).getByteCode()).toString(); // TODO: make a static GroovyTranslator(__) object
+        } else if (object instanceof ByteCode)
+            return new GroovyTranslator("__").translate((ByteCode) object).toString(); // TODO: make a static GroovyTranslator(__) object
         else
             return null == object ? "null" : object.toString();
     }
