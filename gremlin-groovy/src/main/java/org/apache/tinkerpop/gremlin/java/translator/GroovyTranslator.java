@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.java.translator;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
@@ -55,8 +55,8 @@ public final class GroovyTranslator implements Translator<String, String, String
     }
 
     @Override
-    public String translate(final ByteCode byteCode) {
-        return this.translateFromStart(this.traversalSource, byteCode);
+    public String translate(final Bytecode bytecode) {
+        return this.translateFromStart(this.traversalSource, bytecode);
     }
 
     @Override
@@ -81,9 +81,9 @@ public final class GroovyTranslator implements Translator<String, String, String
 
     ///////
 
-    private String translateFromStart(final String start, final ByteCode byteCode) {
+    private String translateFromStart(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
-        for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
             final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
@@ -138,8 +138,8 @@ public final class GroovyTranslator implements Translator<String, String, String
         } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
-        } else if (object instanceof ByteCode)
-            return this.translateFromStart(this.anonymousTraversal, (ByteCode) object);
+        } else if (object instanceof Bytecode)
+            return this.translateFromStart(this.anonymousTraversal, (Bytecode) object);
         else
             return null == object ? "null" : object.toString();
     }

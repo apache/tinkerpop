@@ -16,22 +16,22 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from bytecode import Bytecode
-from graph_traversal import PythonGraphTraversal
-from graph_traversal import PythonGraphTraversalSource
-from graph_traversal import __
-from groovy_translator import GroovyTranslator
-from jython_translator import JythonTranslator
-from traversal import Barrier
-from traversal import Cardinality
-from traversal import Column
-from traversal import Direction
-from traversal import Operator
-from traversal import Order
-from traversal import P
-from traversal import Pop
-from traversal import PythonTraversal
-from traversal import Scope
-from traversal import T
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+
+
+class Bytecode(object):
+    def __init__(self, bytecode=None):
+        self.source_instructions = []
+        self.step_instructions = []
+        if bytecode is not None:
+            self.source_instructions = list(bytecode.source_instructions)
+            self.step_instructions = list(bytecode.step_instructions)
+
+    def add_source(self, source_name, *args):
+        self.source_instructions.append((source_name, args))
+        return
+
+    def add_step(self, step_name, *args):
+        self.step_instructions.append((step_name, args))
+        return

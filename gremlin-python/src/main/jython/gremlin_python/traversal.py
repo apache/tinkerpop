@@ -20,15 +20,16 @@ from aenum import Enum
 import statics
 
 class PythonTraversal(object):
-    def __init__(self, translator, remote_connection=None):
+    def __init__(self, translator, bytecode, remote_connection=None):
         self.translator = translator
+        self.bytecode = bytecode
         self.remote_connection = remote_connection
         self.results = None
         self.last_traverser = None
         self.bindings = {}
 
     def __repr__(self):
-        return self.translator.traversal_script
+        return self.translator.translate(self.bytecode)
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -46,8 +47,7 @@ class PythonTraversal(object):
 
     def __next__(self):
         if self.results is None:
-            self.results = self.remote_connection.submit(self.translator.target_language,
-                                                         self.translator.traversal_script, self.bindings)
+            self.results = self.remote_connection.submit(self.translator.target_language, self.translator.translate(self.bytecode), self.bindings)
         if self.last_traverser is None:
             self.last_traverser = next(self.results)
         object = self.last_traverser.object

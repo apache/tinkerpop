@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.java.translator.jython;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
@@ -60,8 +60,8 @@ public class PythonJythonTranslator extends PythonTranslator {
     }
 
     @Override
-    public String translate(final ByteCode byteCode) {
-        final String traversal = super.translate(byteCode);
+    public String translate(final Bytecode bytecode) {
+        final String traversal = super.translate(bytecode);
         if (null != this.traversalSource) {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");

@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.java.translator;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -89,8 +89,8 @@ public class PythonTranslator implements Translator<String, String, String> {
     }
 
     @Override
-    public String translate(final ByteCode byteCode) {
-        return this.translateFromStart(this.traversalSource, byteCode);
+    public String translate(final Bytecode bytecode) {
+        return this.translateFromStart(this.traversalSource, bytecode);
     }
 
     @Override
@@ -105,9 +105,9 @@ public class PythonTranslator implements Translator<String, String, String> {
 
     ///////
 
-    private String translateFromStart(final String start, final ByteCode byteCode) {
+    private String translateFromStart(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
-        for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
             if (0 == arguments.length)
@@ -164,8 +164,8 @@ public class PythonTranslator implements Translator<String, String, String> {
             return convertPToString((P) object, new StringBuilder()).toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof ByteCode)
-            return this.translateFromStart(this.anonymousTraversal, (ByteCode) object);
+        else if (object instanceof Bytecode)
+            return this.translateFromStart(this.anonymousTraversal, (Bytecode) object);
         else if (object instanceof Computer) {
             return "";
         } else if (object instanceof Lambda) {

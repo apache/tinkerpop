@@ -58,21 +58,20 @@ under the License.
 """)
         pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import PythonTraversal\n")
-        pythonClass.append("import statics\n")
-        pythonClass.append("globalTranslator = None\n\n")
+        pythonClass.append("from bytecode import Bytecode\n")
+        pythonClass.append("import statics\n\n")
 
 //////////////////////////
 // GraphTraversalSource //
 //////////////////////////
         pythonClass.append(
                 """class PythonGraphTraversalSource(object):
-  def __init__(self, translator, remote_connection=None):
-    global globalTranslator
+  def __init__(self, translator, bytecode=Bytecode(), remote_connection=None):
     self.translator = translator
-    globalTranslator = translator
+    self.bytecode = bytecode
     self.remote_connection = remote_connection
   def __repr__(self):
-    return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
+    return "graphtraversalsource[" + str(self.remote_connection) + "]"
 """)
         GraphTraversalSource.getMethods()
                 .findAll { !it.name.equals("clone") }
@@ -89,8 +88,8 @@ under the License.
                 if (Traversal.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addSpawnStep(traversal, "${method}", *args)
+    traversal = PythonGraphTraversal(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    traversal.bytecode.add_step("${method}", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -101,8 +100,8 @@ under the License.
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "${method}", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("${method}", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -120,8 +119,8 @@ under the License.
 ////////////////////
         pythonClass.append(
                 """class PythonGraphTraversal(PythonTraversal):
-  def __init__(self, translator, remote_connection=None):
-    PythonTraversal.__init__(self, translator, remote_connection)
+  def __init__(self, translator, bytecode, remote_connection=None):
+    PythonTraversal.__init__(self, translator, bytecode, remote_connection)
 """)
         GraphTraversal.getMethods()
                 .findAll { !it.name.equals("clone") }
@@ -135,7 +134,7 @@ under the License.
             if (null != returnType && Traversal.isAssignableFrom(returnType)) {
                 pythonClass.append(
                         """  def ${method}(self, *args):
-    self.translator.addStep(self, "${method}", *args)
+    self.bytecode.add_step("${method}", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -160,7 +159,7 @@ under the License.
             pythonClass.append(
                     """  @staticmethod
   def ${method}(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).${method}(*args)
+    return PythonGraphTraversal(None,Bytecode()).${method}(*args)
 """)
         };
         pythonClass.append("\n\n")

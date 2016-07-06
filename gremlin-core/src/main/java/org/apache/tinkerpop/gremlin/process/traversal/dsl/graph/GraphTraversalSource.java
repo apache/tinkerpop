@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -58,7 +57,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     protected final Graph graph;
     protected TraversalStrategies strategies;
-    protected ByteCode byteCode = new ByteCode();
+    protected Bytecode bytecode = new Bytecode();
 
     ////////////////
 
@@ -95,8 +94,8 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
-    public ByteCode getByteCode() {
-        return this.byteCode;
+    public Bytecode getBytecode() {
+        return this.bytecode;
     }
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
@@ -104,7 +103,7 @@ public class GraphTraversalSource implements TraversalSource {
         try {
             final GraphTraversalSource clone = (GraphTraversalSource) super.clone();
             clone.strategies = this.strategies.clone();
-            clone.byteCode = this.byteCode.clone();
+            clone.bytecode = this.bytecode.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -209,14 +208,14 @@ public class GraphTraversalSource implements TraversalSource {
             return this;
         final GraphTraversalSource clone = this.clone();
         RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.ONE_BULK);
-        clone.byteCode.addSource(Symbols.withBulk, useBulk);
+        clone.bytecode.addSource(Symbols.withBulk, useBulk);
         return clone;
     }
 
     public GraphTraversalSource withPath() {
         final GraphTraversalSource clone = this.clone();
         RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.PATH);
-        clone.byteCode.addSource(Symbols.withPath);
+        clone.bytecode.addSource(Symbols.withPath);
         return clone;
     }
 
@@ -246,35 +245,35 @@ public class GraphTraversalSource implements TraversalSource {
 
     public GraphTraversal<Vertex, Vertex> addV(final String label) {
         final GraphTraversalSource clone = this.clone();
-        clone.byteCode.addStep(GraphTraversal.Symbols.addV, label);
+        clone.bytecode.addStep(GraphTraversal.Symbols.addV, label);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, label));
     }
 
     public GraphTraversal<Vertex, Vertex> addV() {
         final GraphTraversalSource clone = this.clone();
-        clone.byteCode.addStep(GraphTraversal.Symbols.addV);
+        clone.bytecode.addStep(GraphTraversal.Symbols.addV);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, null));
     }
 
     public <S> GraphTraversal<S, S> inject(S... starts) {
         final GraphTraversalSource clone = this.clone();
-        clone.byteCode.addStep(GraphTraversal.Symbols.inject, starts);
+        clone.bytecode.addStep(GraphTraversal.Symbols.inject, starts);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new InjectStep<S>(traversal, starts));
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversalSource clone = this.clone();
-        clone.byteCode.addStep(GraphTraversal.Symbols.V, vertexIds);
+        clone.bytecode.addStep(GraphTraversal.Symbols.V, vertexIds);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
     }
 
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
         final GraphTraversalSource clone = this.clone();
-        clone.byteCode.addStep(GraphTraversal.Symbols.E, edgesIds);
+        clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
     }

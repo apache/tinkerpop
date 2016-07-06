@@ -65,11 +65,11 @@ public interface TraversalSource extends Cloneable {
     public Graph getGraph();
 
     /**
-     * Get the {@link ByteCode} associated with the current state of this traversal source.
+     * Get the {@link Bytecode} associated with the current state of this traversal source.
      *
      * @return the traversal source byte code
      */
-    public ByteCode getByteCode();
+    public Bytecode getBytecode();
 
     /////////////////////////////
 
@@ -98,7 +98,7 @@ public interface TraversalSource extends Cloneable {
     public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         return clone;
     }
 
@@ -112,7 +112,7 @@ public interface TraversalSource extends Cloneable {
     public default TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().removeStrategies(traversalStrategyClasses);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
         return clone;
     }
 
@@ -125,7 +125,7 @@ public interface TraversalSource extends Cloneable {
     public default TraversalSource withTranslator(final Translator translator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(new TranslationStrategy(clone, translator));
-        clone.getByteCode().addSource(Symbols.withTranslator, translator);
+        clone.getBytecode().addSource(Symbols.withTranslator, translator);
         return clone;
     }
 
@@ -152,7 +152,7 @@ public interface TraversalSource extends Cloneable {
         ///
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withComputer, computer);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, computer);
         return clone;
     }
 
@@ -173,7 +173,7 @@ public interface TraversalSource extends Cloneable {
         ///
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withComputer, graphComputerClass);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, graphComputerClass);
         return clone;
     }
 
@@ -200,7 +200,7 @@ public interface TraversalSource extends Cloneable {
         ///
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withComputer);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer);
         return clone;
     }
 
@@ -216,7 +216,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, reducer);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -232,7 +232,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, reducer);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -247,7 +247,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, null);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
         return clone;
     }
 
@@ -262,7 +262,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, null);
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
         return clone;
     }
 
@@ -278,7 +278,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
         return clone;
     }
 
@@ -294,7 +294,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
         return clone;
     }
 
@@ -308,7 +308,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final A initialValue) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue);
         return clone;
     }
 
@@ -322,7 +322,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue);
         return clone;
     }
 
@@ -337,7 +337,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
         return clone;
     }
 
@@ -352,7 +352,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
         return clone;
     }
 
@@ -367,7 +367,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).mergeOperator(mergeOperator).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
         return clone;
     }
 
@@ -382,14 +382,14 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
-        clone.getByteCode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
         return clone;
     }
 
     /**
-     * The clone-method should be used to create immutable traversal sources with each call to a configuration method.
-     * The clone-method should clone the internal {@link TraversalStrategies}, mutate the cloned strategies accordingly,
-     * and then return the cloned traversal source.
+     * The clone-method should be used to create immutable traversal sources with each call to a configuration "withXXX"-method.
+     * The clone-method should clone the {@link Bytecode}, {@link TraversalStrategies}, mutate the cloned strategies accordingly,
+     * and then return the cloned traversal source leaving the original unaltered.
      *
      * @return the cloned traversal source
      */

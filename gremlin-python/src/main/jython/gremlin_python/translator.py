@@ -26,31 +26,18 @@ TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
 
 
 class Translator(object):
-    def __init__(self, alias, source_language, target_language):
-        self.alias = alias
-        self.source_language = source_language
+    def __init__(self, traversal_source, anonymous_traversal, target_language):
+        self.traversal_source = traversal_source
+        self.anonymous_traversal = anonymous_traversal
         self.target_language = target_language
-        self.traversal_script = alias
 
     @abstractmethod
-    def addStep(self, traversal, step_name, *args):
+    def translate(self, bytecode):
         return
-
-    @abstractmethod
-    def addSpawnStep(self, traversal, step_name, *args):
-        return
-
-    @abstractmethod
-    def addSource(self, traversal_source, source_name, *args):
-        return
-
-    @abstractmethod
-    def getAnonymousTraversalTranslator(self):
-        return Translator("__", self.source_language, self.target_language)
 
     @abstractmethod
     def __repr__(self):
-        return "translator[" + self.source_language + "->" + self.target_language + "]"
+        return "translator[" + self.traversal_source + ":" + self.target_language + "]"
 
 
 class SymbolHelper(object):

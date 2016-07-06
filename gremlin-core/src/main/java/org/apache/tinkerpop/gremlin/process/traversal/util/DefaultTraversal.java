@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -61,30 +61,29 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected transient TraverserGenerator generator;
     protected Set<TraverserRequirement> requirements;
     protected boolean locked = false;
-    protected final ByteCode byteCode; // TODO: perhaps make transient until 3.3.0?
+    protected final Bytecode bytecode; // TODO: perhaps make transient until 3.3.0?
 
 
-    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final ByteCode byteCode) {
+    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
         this.graph = graph;
         this.strategies = traversalStrategies;
-        this.byteCode = byteCode;
+        this.bytecode = bytecode;
     }
 
     public DefaultTraversal(final Graph graph) {
-        this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()), new ByteCode());
+        this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()), new Bytecode());
     }
 
     public DefaultTraversal(final TraversalSource traversalSource) {
-        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getByteCode());
+        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getBytecode());
     }
 
     public DefaultTraversal() {
-        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new ByteCode());
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new Bytecode());
     }
 
-    @Override
-    public ByteCode getByteCode() {
-        return this.byteCode;
+    public Bytecode getBytecode() {
+        return this.bytecode;
     }
 
     @Override

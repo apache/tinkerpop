@@ -67,7 +67,7 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
         this.graph = traversalSource.getGraph();
         this.factory = new TraversalSourceFactory<>(traversalSource);
         this.scriptEngine = translator.getTargetLanguage();
-        this.script = translator.translate(traversal.asAdmin().getByteCode()).toString();
+        this.script = translator.translate(traversal.asAdmin().getBytecode()).toString();
         this.bindings = bindings;
         if (this.bindings.length % 2 != 0)
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");

@@ -65,10 +65,10 @@ public final class StepTranslator {
 
 
     private void processStepInstructions(final GraphTraversal.Admin<?, ?> traversal) {
-        final List<ByteCode.Instruction> instructions = traversal.getByteCode().getStepInstructions();
+        final List<Bytecode.Instruction> instructions = traversal.getBytecode().getStepInstructions();
         for (int i = 0; i < instructions.size(); i++) {
 
-            final ByteCode.Instruction instruction = instructions.get(i);
+            final Bytecode.Instruction instruction = instructions.get(i);
             final Object[] arguments = instruction.getArguments();
             translateAnonymous(arguments);
 

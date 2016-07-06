@@ -23,6 +23,7 @@ from aenum import Enum
 from translator import SymbolHelper
 from translator import Translator
 from traversal import P
+from traversal import PythonTraversal
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -32,29 +33,18 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class GroovyTranslator(Translator):
-    def __init__(self, alias, source_language="python", target_language="gremlin-groovy"):
-        Translator.__init__(self, alias, source_language, target_language)
+    def __init__(self, traversal_source, anonymous_traversal="__", target_language="gremlin-groovy"):
+        Translator.__init__(self, traversal_source, anonymous_traversal, target_language)
 
-    def addStep(self, traversal, step_name, *args):
-        self.traversal_script = self.traversal_script + "." + SymbolHelper.toJava(
-            step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
-
-    def addSpawnStep(self, traversal, step_name, *args):
-        newTranslator = GroovyTranslator(self.alias, self.source_language, self.target_language)
-        newTranslator.traversal_script = self.traversal_script
-        newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
-            step_name) + "(" + GroovyTranslator.stringify(*args) + ")"
-        traversal.translator = newTranslator
-
-    def addSource(self, traversal_source, source_name, *args):
-        newTranslator = GroovyTranslator(self.alias, self.source_language, self.target_language)
-        newTranslator.traversal_script = self.traversal_script
-        newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
-            source_name) + "(" + GroovyTranslator.stringify(*args) + ")"
-        traversal_source.translator = newTranslator
-
-    def getAnonymousTraversalTranslator(self):
-        return GroovyTranslator("__", self.source_language, self.target_language)
+    def translate(self, bytecode):
+        traversal_script = self.anonymous_traversal if self.traversal_source is None else self.traversal_source
+        for instruction in bytecode.source_instructions:
+            traversal_script = traversal_script + "." + SymbolHelper.toJava(
+                instruction[0]) + "(" + GroovyTranslator.stringify(*instruction[1]) + ")"
+        for instruction in bytecode.step_instructions:
+            traversal_script = traversal_script + "." + SymbolHelper.toJava(
+                instruction[0]) + "(" + GroovyTranslator.stringify(*instruction[1]) + ")"
+        return traversal_script
 
     @staticmethod
     def stringOrObject(arg):
@@ -75,6 +65,8 @@ class GroovyTranslator(Translator):
             else:
                 return GroovyTranslator.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
                     arg.operator) + "(" + GroovyTranslator.stringOrObject(arg.value) + ")"
+        elif isinstance(arg, PythonTraversal):
+            return GroovyTranslator(None, "__").translate(arg.bytecode)
         elif callable(arg):  # closures
             lambdaString = arg().strip()
             if lambdaString.startswith("{"):

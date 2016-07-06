@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.ByteCode;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -59,16 +59,16 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
     }
 
     @Override
-    public Traversal.Admin<?, ?> translate(final ByteCode byteCode) {
+    public Traversal.Admin<?, ?> translate(final Bytecode bytecode) {
         TraversalSource tempSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
         if (null != tempSource) {
-            for (final ByteCode.Instruction instruction : byteCode.getSourceInstructions()) {
+            for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
                 tempSource = (TraversalSource) invokeMethod(tempSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
             }
         }
         boolean firstInstruction = true;
-        for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             if (firstInstruction) {
                 traversal = (Traversal.Admin) invokeMethod(tempSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
                 firstInstruction = false;
@@ -90,10 +90,10 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
 
     ////
 
-    private Traversal.Admin<?, ?> translateFromAnonymous(final ByteCode byteCode) {
+    private Traversal.Admin<?, ?> translateFromAnonymous(final Bytecode bytecode) {
         try {
             final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
-            for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
+            for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
                 invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
             }
             return traversal;
@@ -130,9 +130,9 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
                             } else {
                                 if (arguments.length > 0 && (parameters[i].getType().isPrimitive() ||
                                         parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
-                                        parameters[i].getType().isAssignableFrom(Traversal.Admin.class) && arguments[i] instanceof ByteCode)) {
-                                    newArguments[i] = arguments[i] instanceof ByteCode ?
-                                            this.translateFromAnonymous((ByteCode) arguments[i]) :
+                                        parameters[i].getType().isAssignableFrom(Traversal.Admin.class) && arguments[i] instanceof Bytecode)) {
+                                    newArguments[i] = arguments[i] instanceof Bytecode ?
+                                            this.translateFromAnonymous((Bytecode) arguments[i]) :
                                             arguments[i];
                                 } else {
                                     found = false;

@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ByteCode implements Cloneable, Serializable {
+public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
@@ -74,9 +74,9 @@ public final class ByteCode implements Cloneable, Serializable {
 
     @Override
     public boolean equals(final Object object) {
-        return object instanceof ByteCode &&
-                this.sourceInstructions.equals(((ByteCode) object).sourceInstructions) &&
-                this.stepInstructions.equals(((ByteCode) object).sourceInstructions);
+        return object instanceof Bytecode &&
+                this.sourceInstructions.equals(((Bytecode) object).sourceInstructions) &&
+                this.stepInstructions.equals(((Bytecode) object).sourceInstructions);
     }
 
     @Override
@@ -85,9 +85,9 @@ public final class ByteCode implements Cloneable, Serializable {
     }
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
-    public ByteCode clone() {
+    public Bytecode clone() {
         try {
-            final ByteCode clone = (ByteCode) super.clone();
+            final Bytecode clone = (Bytecode) super.clone();
             clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
             clone.stepInstructions = new ArrayList<>(this.stepInstructions);
             return clone;
@@ -136,7 +136,7 @@ public final class ByteCode implements Cloneable, Serializable {
             final StringBuilder builder = new StringBuilder("[");
             for (final Object object : objects) {
                 if (object instanceof Traversal)
-                    builder.append(((Traversal) object).asAdmin().getByteCode());
+                    builder.append(((Traversal) object).asAdmin().getBytecode());
                 else if (object instanceof String)
                     builder.append("\"").append(object).append("\"");
                 else
@@ -170,7 +170,7 @@ public final class ByteCode implements Cloneable, Serializable {
 
     private static Object convertArgument(final Object argument) {
        if(argument instanceof Traversal.Admin)
-           return ((Traversal.Admin) argument).getByteCode();
+           return ((Traversal.Admin) argument).getBytecode();
         return argument;
     }
 }

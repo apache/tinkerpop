@@ -43,13 +43,13 @@ public interface Translator<S, A, T> {
     public A getAnonymousTraversal();
 
     /**
-     * Translate {@link ByteCode} into a new representation.
+     * Translate {@link Bytecode} into a new representation.
      * Typically, for language translations, the translation is to a string represenging the traversal in the respective scripting language.
      *
-     * @param byteCode the byte code representing traversal source and traversal manipulations.
+     * @param bytecode the byte code representing traversal source and traversal manipulations.
      * @return the translated object
      */
-    public T translate(final ByteCode byteCode);
+    public T translate(final Bytecode bytecode);
 
     /**
      * Get the language that the translator is converting the traversal byte code to.

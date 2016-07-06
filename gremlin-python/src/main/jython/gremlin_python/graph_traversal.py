@@ -18,20 +18,19 @@ under the License.
 '''
 from traversal import RawExpression
 from traversal import PythonTraversal
+from bytecode import Bytecode
 import statics
-globalTranslator = None
 
 class PythonGraphTraversalSource(object):
-  def __init__(self, translator, remote_connection=None):
-    global globalTranslator
+  def __init__(self, translator, bytecode=Bytecode(), remote_connection=None):
     self.translator = translator
-    globalTranslator = translator
+    self.bytecode = bytecode
     self.remote_connection = remote_connection
   def __repr__(self):
-    return "graphtraversalsource[" + str(self.remote_connection) + ", " + self.translator.traversal_script + "]"
+    return "graphtraversalsource[" + str(self.remote_connection) + "]"
   def E(self, *args):
-    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addSpawnStep(traversal, "E", *args)
+    traversal = PythonGraphTraversal(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    traversal.bytecode.add_step("E", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -39,8 +38,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return traversal
   def V(self, *args):
-    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addSpawnStep(traversal, "V", *args)
+    traversal = PythonGraphTraversal(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    traversal.bytecode.add_step("V", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -48,8 +47,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return traversal
   def addV(self, *args):
-    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addSpawnStep(traversal, "addV", *args)
+    traversal = PythonGraphTraversal(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    traversal.bytecode.add_step("addV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -57,8 +56,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return traversal
   def inject(self, *args):
-    traversal = PythonGraphTraversal(self.translator, self.remote_connection)
-    traversal.translator.addSpawnStep(traversal, "inject", *args)
+    traversal = PythonGraphTraversal(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    traversal.bytecode.add_step("inject", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -66,8 +65,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return traversal
   def withBulk(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withBulk", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withBulk", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -75,8 +74,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withComputer(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withComputer", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withComputer", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -84,8 +83,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withPath(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withPath", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withPath", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -93,8 +92,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withSack(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withSack", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withSack", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -102,8 +101,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withSideEffect(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withSideEffect", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withSideEffect", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -111,8 +110,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withStrategies(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withStrategies", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withStrategies", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -120,8 +119,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withTranslator(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withTranslator", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withTranslator", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -129,8 +128,8 @@ class PythonGraphTraversalSource(object):
         self.bindings.update(arg.bindings)
     return source
   def withoutStrategies(self, *args):
-    source = PythonGraphTraversalSource(self.translator, self.remote_connection)
-    source.translator.addSource(source, "withoutStrategies", *args)
+    source = PythonGraphTraversalSource(self.translator, Bytecode(self.bytecode), self.remote_connection)
+    source.bytecode.add_source("withoutStrategies", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -140,10 +139,10 @@ class PythonGraphTraversalSource(object):
 
 
 class PythonGraphTraversal(PythonTraversal):
-  def __init__(self, translator, remote_connection=None):
-    PythonTraversal.__init__(self, translator, remote_connection)
+  def __init__(self, translator, bytecode, remote_connection=None):
+    PythonTraversal.__init__(self, translator, bytecode, remote_connection)
   def V(self, *args):
-    self.translator.addStep(self, "V", *args)
+    self.bytecode.add_step("V", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -151,7 +150,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _and(self, *args):
-    self.translator.addStep(self, "_and", *args)
+    self.bytecode.add_step("_and", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -159,7 +158,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _as(self, *args):
-    self.translator.addStep(self, "_as", *args)
+    self.bytecode.add_step("_as", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -167,7 +166,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _from(self, *args):
-    self.translator.addStep(self, "_from", *args)
+    self.bytecode.add_step("_from", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -175,7 +174,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _in(self, *args):
-    self.translator.addStep(self, "_in", *args)
+    self.bytecode.add_step("_in", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -183,7 +182,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _is(self, *args):
-    self.translator.addStep(self, "_is", *args)
+    self.bytecode.add_step("_is", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -191,7 +190,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _not(self, *args):
-    self.translator.addStep(self, "_not", *args)
+    self.bytecode.add_step("_not", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -199,7 +198,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def _or(self, *args):
-    self.translator.addStep(self, "_or", *args)
+    self.bytecode.add_step("_or", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -207,7 +206,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def addE(self, *args):
-    self.translator.addStep(self, "addE", *args)
+    self.bytecode.add_step("addE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -215,7 +214,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def addInE(self, *args):
-    self.translator.addStep(self, "addInE", *args)
+    self.bytecode.add_step("addInE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -223,7 +222,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def addOutE(self, *args):
-    self.translator.addStep(self, "addOutE", *args)
+    self.bytecode.add_step("addOutE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -231,7 +230,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def addV(self, *args):
-    self.translator.addStep(self, "addV", *args)
+    self.bytecode.add_step("addV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -239,7 +238,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def aggregate(self, *args):
-    self.translator.addStep(self, "aggregate", *args)
+    self.bytecode.add_step("aggregate", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -247,7 +246,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def asAdmin(self, *args):
-    self.translator.addStep(self, "asAdmin", *args)
+    self.bytecode.add_step("asAdmin", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -255,7 +254,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def barrier(self, *args):
-    self.translator.addStep(self, "barrier", *args)
+    self.bytecode.add_step("barrier", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -263,7 +262,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def both(self, *args):
-    self.translator.addStep(self, "both", *args)
+    self.bytecode.add_step("both", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -271,7 +270,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def bothE(self, *args):
-    self.translator.addStep(self, "bothE", *args)
+    self.bytecode.add_step("bothE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -279,7 +278,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def bothV(self, *args):
-    self.translator.addStep(self, "bothV", *args)
+    self.bytecode.add_step("bothV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -287,7 +286,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def branch(self, *args):
-    self.translator.addStep(self, "branch", *args)
+    self.bytecode.add_step("branch", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -295,7 +294,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def by(self, *args):
-    self.translator.addStep(self, "by", *args)
+    self.bytecode.add_step("by", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -303,7 +302,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def cap(self, *args):
-    self.translator.addStep(self, "cap", *args)
+    self.bytecode.add_step("cap", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -311,7 +310,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def choose(self, *args):
-    self.translator.addStep(self, "choose", *args)
+    self.bytecode.add_step("choose", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -319,7 +318,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def coalesce(self, *args):
-    self.translator.addStep(self, "coalesce", *args)
+    self.bytecode.add_step("coalesce", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -327,7 +326,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def coin(self, *args):
-    self.translator.addStep(self, "coin", *args)
+    self.bytecode.add_step("coin", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -335,7 +334,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def constant(self, *args):
-    self.translator.addStep(self, "constant", *args)
+    self.bytecode.add_step("constant", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -343,7 +342,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def count(self, *args):
-    self.translator.addStep(self, "count", *args)
+    self.bytecode.add_step("count", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -351,7 +350,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def cyclicPath(self, *args):
-    self.translator.addStep(self, "cyclicPath", *args)
+    self.bytecode.add_step("cyclicPath", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -359,7 +358,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def dedup(self, *args):
-    self.translator.addStep(self, "dedup", *args)
+    self.bytecode.add_step("dedup", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -367,7 +366,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def drop(self, *args):
-    self.translator.addStep(self, "drop", *args)
+    self.bytecode.add_step("drop", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -375,7 +374,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def emit(self, *args):
-    self.translator.addStep(self, "emit", *args)
+    self.bytecode.add_step("emit", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -383,7 +382,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def filter(self, *args):
-    self.translator.addStep(self, "filter", *args)
+    self.bytecode.add_step("filter", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -391,7 +390,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def flatMap(self, *args):
-    self.translator.addStep(self, "flatMap", *args)
+    self.bytecode.add_step("flatMap", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -399,7 +398,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def fold(self, *args):
-    self.translator.addStep(self, "fold", *args)
+    self.bytecode.add_step("fold", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -407,7 +406,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def group(self, *args):
-    self.translator.addStep(self, "group", *args)
+    self.bytecode.add_step("group", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -415,7 +414,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def groupCount(self, *args):
-    self.translator.addStep(self, "groupCount", *args)
+    self.bytecode.add_step("groupCount", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -423,7 +422,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def groupV3d0(self, *args):
-    self.translator.addStep(self, "groupV3d0", *args)
+    self.bytecode.add_step("groupV3d0", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -431,7 +430,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def has(self, *args):
-    self.translator.addStep(self, "has", *args)
+    self.bytecode.add_step("has", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -439,7 +438,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def hasId(self, *args):
-    self.translator.addStep(self, "hasId", *args)
+    self.bytecode.add_step("hasId", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -447,7 +446,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def hasKey(self, *args):
-    self.translator.addStep(self, "hasKey", *args)
+    self.bytecode.add_step("hasKey", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -455,7 +454,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def hasLabel(self, *args):
-    self.translator.addStep(self, "hasLabel", *args)
+    self.bytecode.add_step("hasLabel", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -463,7 +462,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def hasNot(self, *args):
-    self.translator.addStep(self, "hasNot", *args)
+    self.bytecode.add_step("hasNot", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -471,7 +470,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def hasValue(self, *args):
-    self.translator.addStep(self, "hasValue", *args)
+    self.bytecode.add_step("hasValue", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -479,7 +478,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def id(self, *args):
-    self.translator.addStep(self, "id", *args)
+    self.bytecode.add_step("id", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -487,7 +486,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def identity(self, *args):
-    self.translator.addStep(self, "identity", *args)
+    self.bytecode.add_step("identity", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -495,7 +494,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def inE(self, *args):
-    self.translator.addStep(self, "inE", *args)
+    self.bytecode.add_step("inE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -503,7 +502,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def inV(self, *args):
-    self.translator.addStep(self, "inV", *args)
+    self.bytecode.add_step("inV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -511,7 +510,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def inject(self, *args):
-    self.translator.addStep(self, "inject", *args)
+    self.bytecode.add_step("inject", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -519,7 +518,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def iterate(self, *args):
-    self.translator.addStep(self, "iterate", *args)
+    self.bytecode.add_step("iterate", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -527,7 +526,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def key(self, *args):
-    self.translator.addStep(self, "key", *args)
+    self.bytecode.add_step("key", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -535,7 +534,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def label(self, *args):
-    self.translator.addStep(self, "label", *args)
+    self.bytecode.add_step("label", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -543,7 +542,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def limit(self, *args):
-    self.translator.addStep(self, "limit", *args)
+    self.bytecode.add_step("limit", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -551,7 +550,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def local(self, *args):
-    self.translator.addStep(self, "local", *args)
+    self.bytecode.add_step("local", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -559,7 +558,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def loops(self, *args):
-    self.translator.addStep(self, "loops", *args)
+    self.bytecode.add_step("loops", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -567,7 +566,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def map(self, *args):
-    self.translator.addStep(self, "map", *args)
+    self.bytecode.add_step("map", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -575,7 +574,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def mapKeys(self, *args):
-    self.translator.addStep(self, "mapKeys", *args)
+    self.bytecode.add_step("mapKeys", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -583,7 +582,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def mapValues(self, *args):
-    self.translator.addStep(self, "mapValues", *args)
+    self.bytecode.add_step("mapValues", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -591,7 +590,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def match(self, *args):
-    self.translator.addStep(self, "match", *args)
+    self.bytecode.add_step("match", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -599,7 +598,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def max(self, *args):
-    self.translator.addStep(self, "max", *args)
+    self.bytecode.add_step("max", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -607,7 +606,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def mean(self, *args):
-    self.translator.addStep(self, "mean", *args)
+    self.bytecode.add_step("mean", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -615,7 +614,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def min(self, *args):
-    self.translator.addStep(self, "min", *args)
+    self.bytecode.add_step("min", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -623,7 +622,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def option(self, *args):
-    self.translator.addStep(self, "option", *args)
+    self.bytecode.add_step("option", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -631,7 +630,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def optional(self, *args):
-    self.translator.addStep(self, "optional", *args)
+    self.bytecode.add_step("optional", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -639,7 +638,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def order(self, *args):
-    self.translator.addStep(self, "order", *args)
+    self.bytecode.add_step("order", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -647,7 +646,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def otherV(self, *args):
-    self.translator.addStep(self, "otherV", *args)
+    self.bytecode.add_step("otherV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -655,7 +654,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def out(self, *args):
-    self.translator.addStep(self, "out", *args)
+    self.bytecode.add_step("out", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -663,7 +662,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def outE(self, *args):
-    self.translator.addStep(self, "outE", *args)
+    self.bytecode.add_step("outE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -671,7 +670,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def outV(self, *args):
-    self.translator.addStep(self, "outV", *args)
+    self.bytecode.add_step("outV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -679,7 +678,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def pageRank(self, *args):
-    self.translator.addStep(self, "pageRank", *args)
+    self.bytecode.add_step("pageRank", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -687,7 +686,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def path(self, *args):
-    self.translator.addStep(self, "path", *args)
+    self.bytecode.add_step("path", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -695,7 +694,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def peerPressure(self, *args):
-    self.translator.addStep(self, "peerPressure", *args)
+    self.bytecode.add_step("peerPressure", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -703,7 +702,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def profile(self, *args):
-    self.translator.addStep(self, "profile", *args)
+    self.bytecode.add_step("profile", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -711,7 +710,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def program(self, *args):
-    self.translator.addStep(self, "program", *args)
+    self.bytecode.add_step("program", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -719,7 +718,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def project(self, *args):
-    self.translator.addStep(self, "project", *args)
+    self.bytecode.add_step("project", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -727,7 +726,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def properties(self, *args):
-    self.translator.addStep(self, "properties", *args)
+    self.bytecode.add_step("properties", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -735,7 +734,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def property(self, *args):
-    self.translator.addStep(self, "property", *args)
+    self.bytecode.add_step("property", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -743,7 +742,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def propertyMap(self, *args):
-    self.translator.addStep(self, "propertyMap", *args)
+    self.bytecode.add_step("propertyMap", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -751,7 +750,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def range(self, *args):
-    self.translator.addStep(self, "range", *args)
+    self.bytecode.add_step("range", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -759,7 +758,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def repeat(self, *args):
-    self.translator.addStep(self, "repeat", *args)
+    self.bytecode.add_step("repeat", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -767,7 +766,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def sack(self, *args):
-    self.translator.addStep(self, "sack", *args)
+    self.bytecode.add_step("sack", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -775,7 +774,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def sample(self, *args):
-    self.translator.addStep(self, "sample", *args)
+    self.bytecode.add_step("sample", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -783,7 +782,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def select(self, *args):
-    self.translator.addStep(self, "select", *args)
+    self.bytecode.add_step("select", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -791,7 +790,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def sideEffect(self, *args):
-    self.translator.addStep(self, "sideEffect", *args)
+    self.bytecode.add_step("sideEffect", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -799,7 +798,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def simplePath(self, *args):
-    self.translator.addStep(self, "simplePath", *args)
+    self.bytecode.add_step("simplePath", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -807,7 +806,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def store(self, *args):
-    self.translator.addStep(self, "store", *args)
+    self.bytecode.add_step("store", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -815,7 +814,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def subgraph(self, *args):
-    self.translator.addStep(self, "subgraph", *args)
+    self.bytecode.add_step("subgraph", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -823,7 +822,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def sum(self, *args):
-    self.translator.addStep(self, "sum", *args)
+    self.bytecode.add_step("sum", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -831,7 +830,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def tail(self, *args):
-    self.translator.addStep(self, "tail", *args)
+    self.bytecode.add_step("tail", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -839,7 +838,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def timeLimit(self, *args):
-    self.translator.addStep(self, "timeLimit", *args)
+    self.bytecode.add_step("timeLimit", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -847,7 +846,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def times(self, *args):
-    self.translator.addStep(self, "times", *args)
+    self.bytecode.add_step("times", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -855,7 +854,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def to(self, *args):
-    self.translator.addStep(self, "to", *args)
+    self.bytecode.add_step("to", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -863,7 +862,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def toE(self, *args):
-    self.translator.addStep(self, "toE", *args)
+    self.bytecode.add_step("toE", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -871,7 +870,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def toV(self, *args):
-    self.translator.addStep(self, "toV", *args)
+    self.bytecode.add_step("toV", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -879,7 +878,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def tree(self, *args):
-    self.translator.addStep(self, "tree", *args)
+    self.bytecode.add_step("tree", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -887,7 +886,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def unfold(self, *args):
-    self.translator.addStep(self, "unfold", *args)
+    self.bytecode.add_step("unfold", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -895,7 +894,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def union(self, *args):
-    self.translator.addStep(self, "union", *args)
+    self.bytecode.add_step("union", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -903,7 +902,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def until(self, *args):
-    self.translator.addStep(self, "until", *args)
+    self.bytecode.add_step("until", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -911,7 +910,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def value(self, *args):
-    self.translator.addStep(self, "value", *args)
+    self.bytecode.add_step("value", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -919,7 +918,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def valueMap(self, *args):
-    self.translator.addStep(self, "valueMap", *args)
+    self.bytecode.add_step("valueMap", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -927,7 +926,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def values(self, *args):
-    self.translator.addStep(self, "values", *args)
+    self.bytecode.add_step("values", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -935,7 +934,7 @@ class PythonGraphTraversal(PythonTraversal):
         self.bindings.update(arg.bindings)
     return self
   def where(self, *args):
-    self.translator.addStep(self, "where", *args)
+    self.bytecode.add_step("where", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
@@ -947,283 +946,283 @@ class PythonGraphTraversal(PythonTraversal):
 class __(object):
   @staticmethod
   def V(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).V(*args)
+    return PythonGraphTraversal(None,Bytecode()).V(*args)
   @staticmethod
   def __(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).__(*args)
+    return PythonGraphTraversal(None,Bytecode()).__(*args)
   @staticmethod
   def _and(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._and(*args)
+    return PythonGraphTraversal(None,Bytecode())._and(*args)
   @staticmethod
   def _as(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._as(*args)
+    return PythonGraphTraversal(None,Bytecode())._as(*args)
   @staticmethod
   def _in(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._in(*args)
+    return PythonGraphTraversal(None,Bytecode())._in(*args)
   @staticmethod
   def _is(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._is(*args)
+    return PythonGraphTraversal(None,Bytecode())._is(*args)
   @staticmethod
   def _not(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._not(*args)
+    return PythonGraphTraversal(None,Bytecode())._not(*args)
   @staticmethod
   def _or(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator())._or(*args)
+    return PythonGraphTraversal(None,Bytecode())._or(*args)
   @staticmethod
   def addE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addE(*args)
+    return PythonGraphTraversal(None,Bytecode()).addE(*args)
   @staticmethod
   def addInE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addInE(*args)
+    return PythonGraphTraversal(None,Bytecode()).addInE(*args)
   @staticmethod
   def addOutE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addOutE(*args)
+    return PythonGraphTraversal(None,Bytecode()).addOutE(*args)
   @staticmethod
   def addV(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).addV(*args)
+    return PythonGraphTraversal(None,Bytecode()).addV(*args)
   @staticmethod
   def aggregate(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).aggregate(*args)
+    return PythonGraphTraversal(None,Bytecode()).aggregate(*args)
   @staticmethod
   def barrier(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).barrier(*args)
+    return PythonGraphTraversal(None,Bytecode()).barrier(*args)
   @staticmethod
   def both(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).both(*args)
+    return PythonGraphTraversal(None,Bytecode()).both(*args)
   @staticmethod
   def bothE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).bothE(*args)
+    return PythonGraphTraversal(None,Bytecode()).bothE(*args)
   @staticmethod
   def bothV(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).bothV(*args)
+    return PythonGraphTraversal(None,Bytecode()).bothV(*args)
   @staticmethod
   def branch(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).branch(*args)
+    return PythonGraphTraversal(None,Bytecode()).branch(*args)
   @staticmethod
   def cap(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).cap(*args)
+    return PythonGraphTraversal(None,Bytecode()).cap(*args)
   @staticmethod
   def choose(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).choose(*args)
+    return PythonGraphTraversal(None,Bytecode()).choose(*args)
   @staticmethod
   def coalesce(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).coalesce(*args)
+    return PythonGraphTraversal(None,Bytecode()).coalesce(*args)
   @staticmethod
   def coin(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).coin(*args)
+    return PythonGraphTraversal(None,Bytecode()).coin(*args)
   @staticmethod
   def constant(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).constant(*args)
+    return PythonGraphTraversal(None,Bytecode()).constant(*args)
   @staticmethod
   def count(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).count(*args)
+    return PythonGraphTraversal(None,Bytecode()).count(*args)
   @staticmethod
   def cyclicPath(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).cyclicPath(*args)
+    return PythonGraphTraversal(None,Bytecode()).cyclicPath(*args)
   @staticmethod
   def dedup(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).dedup(*args)
+    return PythonGraphTraversal(None,Bytecode()).dedup(*args)
   @staticmethod
   def drop(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).drop(*args)
+    return PythonGraphTraversal(None,Bytecode()).drop(*args)
   @staticmethod
   def emit(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).emit(*args)
+    return PythonGraphTraversal(None,Bytecode()).emit(*args)
   @staticmethod
   def filter(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).filter(*args)
+    return PythonGraphTraversal(None,Bytecode()).filter(*args)
   @staticmethod
   def flatMap(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).flatMap(*args)
+    return PythonGraphTraversal(None,Bytecode()).flatMap(*args)
   @staticmethod
   def fold(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).fold(*args)
+    return PythonGraphTraversal(None,Bytecode()).fold(*args)
   @staticmethod
   def group(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).group(*args)
+    return PythonGraphTraversal(None,Bytecode()).group(*args)
   @staticmethod
   def groupCount(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).groupCount(*args)
+    return PythonGraphTraversal(None,Bytecode()).groupCount(*args)
   @staticmethod
   def groupV3d0(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).groupV3d0(*args)
+    return PythonGraphTraversal(None,Bytecode()).groupV3d0(*args)
   @staticmethod
   def has(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).has(*args)
+    return PythonGraphTraversal(None,Bytecode()).has(*args)
   @staticmethod
   def hasId(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasId(*args)
+    return PythonGraphTraversal(None,Bytecode()).hasId(*args)
   @staticmethod
   def hasKey(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasKey(*args)
+    return PythonGraphTraversal(None,Bytecode()).hasKey(*args)
   @staticmethod
   def hasLabel(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasLabel(*args)
+    return PythonGraphTraversal(None,Bytecode()).hasLabel(*args)
   @staticmethod
   def hasNot(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasNot(*args)
+    return PythonGraphTraversal(None,Bytecode()).hasNot(*args)
   @staticmethod
   def hasValue(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).hasValue(*args)
+    return PythonGraphTraversal(None,Bytecode()).hasValue(*args)
   @staticmethod
   def id(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).id(*args)
+    return PythonGraphTraversal(None,Bytecode()).id(*args)
   @staticmethod
   def identity(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).identity(*args)
+    return PythonGraphTraversal(None,Bytecode()).identity(*args)
   @staticmethod
   def inE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).inE(*args)
+    return PythonGraphTraversal(None,Bytecode()).inE(*args)
   @staticmethod
   def inV(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).inV(*args)
+    return PythonGraphTraversal(None,Bytecode()).inV(*args)
   @staticmethod
   def inject(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).inject(*args)
+    return PythonGraphTraversal(None,Bytecode()).inject(*args)
   @staticmethod
   def key(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).key(*args)
+    return PythonGraphTraversal(None,Bytecode()).key(*args)
   @staticmethod
   def label(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).label(*args)
+    return PythonGraphTraversal(None,Bytecode()).label(*args)
   @staticmethod
   def limit(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).limit(*args)
+    return PythonGraphTraversal(None,Bytecode()).limit(*args)
   @staticmethod
   def local(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).local(*args)
+    return PythonGraphTraversal(None,Bytecode()).local(*args)
   @staticmethod
   def loops(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).loops(*args)
+    return PythonGraphTraversal(None,Bytecode()).loops(*args)
   @staticmethod
   def map(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).map(*args)
+    return PythonGraphTraversal(None,Bytecode()).map(*args)
   @staticmethod
   def mapKeys(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).mapKeys(*args)
+    return PythonGraphTraversal(None,Bytecode()).mapKeys(*args)
   @staticmethod
   def mapValues(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).mapValues(*args)
+    return PythonGraphTraversal(None,Bytecode()).mapValues(*args)
   @staticmethod
   def match(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).match(*args)
+    return PythonGraphTraversal(None,Bytecode()).match(*args)
   @staticmethod
   def max(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).max(*args)
+    return PythonGraphTraversal(None,Bytecode()).max(*args)
   @staticmethod
   def mean(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).mean(*args)
+    return PythonGraphTraversal(None,Bytecode()).mean(*args)
   @staticmethod
   def min(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).min(*args)
+    return PythonGraphTraversal(None,Bytecode()).min(*args)
   @staticmethod
   def optional(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).optional(*args)
+    return PythonGraphTraversal(None,Bytecode()).optional(*args)
   @staticmethod
   def order(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).order(*args)
+    return PythonGraphTraversal(None,Bytecode()).order(*args)
   @staticmethod
   def otherV(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).otherV(*args)
+    return PythonGraphTraversal(None,Bytecode()).otherV(*args)
   @staticmethod
   def out(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).out(*args)
+    return PythonGraphTraversal(None,Bytecode()).out(*args)
   @staticmethod
   def outE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).outE(*args)
+    return PythonGraphTraversal(None,Bytecode()).outE(*args)
   @staticmethod
   def outV(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).outV(*args)
+    return PythonGraphTraversal(None,Bytecode()).outV(*args)
   @staticmethod
   def path(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).path(*args)
+    return PythonGraphTraversal(None,Bytecode()).path(*args)
   @staticmethod
   def project(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).project(*args)
+    return PythonGraphTraversal(None,Bytecode()).project(*args)
   @staticmethod
   def properties(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).properties(*args)
+    return PythonGraphTraversal(None,Bytecode()).properties(*args)
   @staticmethod
   def property(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).property(*args)
+    return PythonGraphTraversal(None,Bytecode()).property(*args)
   @staticmethod
   def propertyMap(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).propertyMap(*args)
+    return PythonGraphTraversal(None,Bytecode()).propertyMap(*args)
   @staticmethod
   def range(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).range(*args)
+    return PythonGraphTraversal(None,Bytecode()).range(*args)
   @staticmethod
   def repeat(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).repeat(*args)
+    return PythonGraphTraversal(None,Bytecode()).repeat(*args)
   @staticmethod
   def sack(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sack(*args)
+    return PythonGraphTraversal(None,Bytecode()).sack(*args)
   @staticmethod
   def sample(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sample(*args)
+    return PythonGraphTraversal(None,Bytecode()).sample(*args)
   @staticmethod
   def select(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).select(*args)
+    return PythonGraphTraversal(None,Bytecode()).select(*args)
   @staticmethod
   def sideEffect(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sideEffect(*args)
+    return PythonGraphTraversal(None,Bytecode()).sideEffect(*args)
   @staticmethod
   def simplePath(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).simplePath(*args)
+    return PythonGraphTraversal(None,Bytecode()).simplePath(*args)
   @staticmethod
   def start(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).start(*args)
+    return PythonGraphTraversal(None,Bytecode()).start(*args)
   @staticmethod
   def store(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).store(*args)
+    return PythonGraphTraversal(None,Bytecode()).store(*args)
   @staticmethod
   def subgraph(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).subgraph(*args)
+    return PythonGraphTraversal(None,Bytecode()).subgraph(*args)
   @staticmethod
   def sum(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).sum(*args)
+    return PythonGraphTraversal(None,Bytecode()).sum(*args)
   @staticmethod
   def tail(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).tail(*args)
+    return PythonGraphTraversal(None,Bytecode()).tail(*args)
   @staticmethod
   def timeLimit(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).timeLimit(*args)
+    return PythonGraphTraversal(None,Bytecode()).timeLimit(*args)
   @staticmethod
   def times(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).times(*args)
+    return PythonGraphTraversal(None,Bytecode()).times(*args)
   @staticmethod
   def to(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).to(*args)
+    return PythonGraphTraversal(None,Bytecode()).to(*args)
   @staticmethod
   def toE(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).toE(*args)
+    return PythonGraphTraversal(None,Bytecode()).toE(*args)
   @staticmethod
   def toV(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).toV(*args)
+    return PythonGraphTraversal(None,Bytecode()).toV(*args)
   @staticmethod
   def tree(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).tree(*args)
+    return PythonGraphTraversal(None,Bytecode()).tree(*args)
   @staticmethod
   def unfold(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).unfold(*args)
+    return PythonGraphTraversal(None,Bytecode()).unfold(*args)
   @staticmethod
   def union(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).union(*args)
+    return PythonGraphTraversal(None,Bytecode()).union(*args)
   @staticmethod
   def until(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).until(*args)
+    return PythonGraphTraversal(None,Bytecode()).until(*args)
   @staticmethod
   def value(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).value(*args)
+    return PythonGraphTraversal(None,Bytecode()).value(*args)
   @staticmethod
   def valueMap(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).valueMap(*args)
+    return PythonGraphTraversal(None,Bytecode()).valueMap(*args)
   @staticmethod
   def values(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).values(*args)
+    return PythonGraphTraversal(None,Bytecode()).values(*args)
   @staticmethod
   def where(*args):
-    return PythonGraphTraversal(globalTranslator.getAnonymousTraversalTranslator()).where(*args)
+    return PythonGraphTraversal(None,Bytecode()).where(*args)
 
 
 def V(*args):

@@ -27,6 +27,7 @@ from traversal import Barrier
 from traversal import Cardinality
 from traversal import Column
 from traversal import P
+from traversal import PythonTraversal
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -36,29 +37,18 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class JythonTranslator(Translator):
-    def __init__(self, alias, source_language="python", target_language="gremlin-jython"):
-        Translator.__init__(self, alias, source_language, target_language)
+    def __init__(self, traversal_source, anonymous_traversal="__", target_language="gremlin-jython"):
+        Translator.__init__(self, traversal_source, anonymous_traversal, target_language)
 
-    def addStep(self, traversal, step_name, *args):
-        self.traversal_script = self.traversal_script + "." + SymbolHelper.toJava(
-            step_name) + "(" + JythonTranslator.stringify(*args) + ")"
-
-    def addSpawnStep(self, traversal, step_name, *args):
-        newTranslator = JythonTranslator(self.alias, self.source_language, self.target_language)
-        newTranslator.traversal_script = self.traversal_script
-        newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
-            step_name) + "(" + JythonTranslator.stringify(*args) + ")"
-        traversal.translator = newTranslator
-
-    def addSource(self, traversal_source, source_name, *args):
-        newTranslator = JythonTranslator(self.alias, self.source_language, self.target_language)
-        newTranslator.traversal_script = self.traversal_script
-        newTranslator.traversal_script = newTranslator.traversal_script + "." + SymbolHelper.toJava(
-            source_name) + "(" + JythonTranslator.stringify(*args) + ")"
-        traversal_source.translator = newTranslator
-
-    def getAnonymousTraversalTranslator(self):
-        return JythonTranslator("__", self.source_language, self.target_language)
+    def translate(self, bytecode):
+        traversal_script = self.anonymous_traversal if self.traversal_source is None else self.traversal_source
+        for instruction in bytecode.source_instructions:
+            traversal_script = traversal_script + "." + SymbolHelper.toJava(
+                instruction[0]) + "(" + JythonTranslator.stringify(*instruction[1]) + ")"
+        for instruction in bytecode.step_instructions:
+            traversal_script = traversal_script + "." + SymbolHelper.toJava(
+                instruction[0]) + "(" + JythonTranslator.stringify(*instruction[1]) + ")"
+        return traversal_script
 
     @staticmethod
     def stringOrObject(arg):
@@ -81,6 +71,8 @@ class JythonTranslator(Translator):
             else:
                 return JythonTranslator.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
                     arg.operator) + "(" + JythonTranslator.stringOrObject(arg.value) + ")"
+        elif isinstance(arg, PythonTraversal):
+            return JythonTranslator(None, "__").translate(arg.bytecode)
         elif callable(arg):  # lambda that produces a string that is a lambda
             argLambdaString = arg().strip()
             argLength = len(inspect.getargspec(eval(argLambdaString)).args)

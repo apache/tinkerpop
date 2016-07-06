@@ -239,11 +239,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     public interface Admin<S, E> extends Traversal<S, E> {
 
         /**
-         * Get the {@link ByteCode} associated with the construction of this traversal.
+         * Get the {@link Bytecode} associated with the construction of this traversal.
          *
          * @return the byte code representation of the traversal
          */
-        public ByteCode getByteCode();
+        public Bytecode getBytecode();
 
         /**
          * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal.
