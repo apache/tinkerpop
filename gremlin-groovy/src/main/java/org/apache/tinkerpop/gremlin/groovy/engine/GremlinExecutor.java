@@ -51,6 +51,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -231,6 +232,8 @@ public class GremlinExecutor implements AutoCloseable {
         return eval(script, language, boundVars, lifeCycle);
     }
 
+    private static final AtomicInteger ugh = new AtomicInteger(0);
+
     /**
      * Evaluate a script and allow for the submission of alteration to the entire evaluation execution lifecycle.
      *
@@ -249,10 +252,35 @@ public class GremlinExecutor implements AutoCloseable {
         bindings.putAll(boundVars);
 
         // override the timeout if the lifecycle has a value assigned
-        final long seto = lifeCycle.getScriptEvaluationTimeoutOverride().orElse(scriptEvaluationTimeout);
+        final long scriptEvalTimeOut = lifeCycle.getScriptEvaluationTimeoutOverride().orElse(scriptEvaluationTimeout);
 
         final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
-        final FutureTask<Void> f = new FutureTask<>(() -> {
+        final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
+
+            if (scriptEvalTimeOut > 0) {
+                final Thread scriptEvalThread = Thread.currentThread();
+
+                logger.debug("Schedule timeout for script - {} - in thread [{}]", script, scriptEvalThread.getName());
+
+                // Schedule a timeout in the thread pool for future execution
+                final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
+                    logger.warn("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                    if (!evaluationFuture.isDone()) scriptEvalThread.interrupt();
+                }, scriptEvalTimeOut, TimeUnit.MILLISECONDS);
+
+                // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
+                // with exception
+                evaluationFuture.handleAsync((v, t) -> {
+                    if (!sf.isDone()) {
+                        logger.debug("Killing scheduled timeout on script evaluation - {} - as the eval completed (possibly with exception).", script);
+                        sf.cancel(true);
+                    }
+
+                    // no return is necessary - nothing downstream is concerned with what happens in here
+                    return null;
+                }, scheduledExecutorService);
+            }
+
             try {
                 lifeCycle.getBeforeEval().orElse(beforeEval).accept(bindings);
 
@@ -286,7 +314,7 @@ public class GremlinExecutor implements AutoCloseable {
                 if (root instanceof InterruptedException) {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings);
                     evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms for request [%s]: %s", seto, script, root.getMessage())));
+                            String.format("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of %s ms for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
                 } else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
@@ -296,22 +324,7 @@ public class GremlinExecutor implements AutoCloseable {
             return null;
         });
 
-        executorService.execute(f);
-
-        if (seto > 0) {
-            // Schedule a timeout in the thread pool for future execution
-            final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
-                logger.warn("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
-                if (!f.isDone()) f.cancel(true);
-            }, seto, TimeUnit.MILLISECONDS);
-
-            // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed
-            // with exception
-            evaluationFuture.handleAsync((v, t) -> {
-                logger.debug("Killing scheduled timeout on script evaluation as the eval completed (possibly with exception).");
-                return sf.cancel(true);
-            }, scheduledExecutorService);
-        }
+        executorService.execute(evalFuture);
 
         return evaluationFuture;
     }

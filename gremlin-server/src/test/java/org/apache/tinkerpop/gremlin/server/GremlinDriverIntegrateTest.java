@@ -124,6 +124,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
+            case "shouldProcessSessionRequestsInOrderAfterTimeout":
+                settings.scriptEvaluationTimeout = 1000;
+                settings.threadPoolWorker = 2;
+                break;
         }
 
         return settings;
@@ -1192,5 +1196,55 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(sessionWithoutManagedTx.submit("g.V().has('name','daniel').hasNext()").all().get().get(0).getBoolean(), is(true));
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldProcessSessionRequestsInOrderAfterTimeout() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet first = client.submit(
+                "Object mon1 = 'mon1';\n" +
+                        "synchronized (mon1) {\n" +
+                        "    mon1.wait();\n" +
+                        "} ");
+
+        final ResultSet second = client.submit(
+                "Object mon2 = 'mon2';\n" +
+                        "synchronized (mon2) {\n" +
+                        "    mon2.wait();\n" +
+                        "}");
+
+        final CompletableFuture<List<Result>> futureFirst = first.all();
+        final CompletableFuture<List<Result>> futureSecond = second.all();
+
+        final AtomicBoolean hit = new AtomicBoolean(false);
+        while (!futureFirst.isDone()) {
+            // futureSecond can't finish before futureFirst - racy business here?
+            assertThat(futureSecond.isDone(), is(false));
+            hit.set(true);
+        }
+
+        // should have entered the loop at least once and thus proven that futureSecond didn't return ahead of
+        // futureFirst
+        assertThat(hit.get(), is(true));
+
+        try {
+            futureFirst.get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 1000 ms for request"));
+        }
+
+        try {
+            futureSecond.get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 1000 ms for request"));
+        }
     }
 }
