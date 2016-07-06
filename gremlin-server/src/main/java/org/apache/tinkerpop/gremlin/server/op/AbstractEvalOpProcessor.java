@@ -26,7 +26,13 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptTimeoutException;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -41,10 +47,12 @@ import org.slf4j.LoggerFactory;
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -73,8 +81,13 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     /**
-     * Regex for validating binding variables.
+     * Regex for validating that binding variables.
+     *
+     * @deprecated As of release 3.1.2-incubating, not replaced. This {@code Pattern} is not used internally.
+     * Deprecated rather than just removing as it's possible that someone else might be using it when developing
+     * custom {@link OpProcessor} implementations.
      */
+    @Deprecated
     protected static final Pattern validBindingName = Pattern.compile("[a-zA-Z$_][a-zA-Z0-9$_]*");
 
     /**
@@ -85,12 +98,37 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
      * Use of {@code toUpperCase()} on the accessor values of {@link T} solves an issue where the {@code ScriptEngine}
      * ignores private scope on {@link T} and imports static fields.
      */
-    private static final List<String> invalidBindingsKeys = Arrays.asList(
-            T.id.getAccessor(), T.key.getAccessor(),
-            T.label.getAccessor(), T.value.getAccessor(),
-            T.id.getAccessor().toUpperCase(), T.key.getAccessor().toUpperCase(),
-            T.label.getAccessor().toUpperCase(), T.value.getAccessor().toUpperCase());
-    private static final String invalidBindingKeysJoined = String.join(",", invalidBindingsKeys);
+    protected static final Set<String> INVALID_BINDINGS_KEYS = new HashSet<>();
+
+    static {
+        INVALID_BINDINGS_KEYS.addAll(Arrays.asList(
+                T.id.name(), T.key.name(),
+                T.label.name(), T.value.name(),
+                T.id.getAccessor(), T.key.getAccessor(),
+                T.label.getAccessor(), T.value.getAccessor(),
+                T.id.getAccessor().toUpperCase(), T.key.getAccessor().toUpperCase(),
+                T.label.getAccessor().toUpperCase(), T.value.getAccessor().toUpperCase()));
+
+        for (Column enumItem : Column.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Order enumItem : Order.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Operator enumItem : Operator.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Scope enumItem : Scope.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+
+        for (Pop enumItem : Pop.values()) {
+            INVALID_BINDINGS_KEYS.add(enumItem.name());
+        }
+    }
 
     protected AbstractEvalOpProcessor(final boolean manageTransactions) {
         super(manageTransactions);
@@ -143,8 +181,9 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                 throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
-            if (bindings.keySet().stream().anyMatch(invalidBindingsKeys::contains)) {
-                final String msg = String.format("The [%s] message is using at least one of the invalid binding key of [%s]. It conflicts with standard static imports to Gremlin Server.", Tokens.OPS_EVAL, invalidBindingKeysJoined);
+            final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(bindings.keySet().iterator(), INVALID_BINDINGS_KEYS::contains));
+            if (!badBindings.isEmpty()) {
+                final String msg = String.format("The [%s] message supplies one or more invalid parameters key of [%s] - these are reserved names.", Tokens.OPS_EVAL, badBindings);
                 throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         }

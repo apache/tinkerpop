@@ -78,6 +78,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assert.assertEquals;
@@ -441,6 +442,26 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             if (!latch.await(3000, TimeUnit.MILLISECONDS))
                 fail("Request should have returned error, but instead timed out");
             assertThat(pass.get(), is(true));
+        }
+
+        try (SimpleClient client = new WebSocketClient()) {
+            final Map<String, Object> bindings = new HashMap<>();
+            bindings.put("id", "123");
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
+            assertTrue(pass.get());
         }
     }
 
