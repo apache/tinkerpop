@@ -218,8 +218,10 @@ public class GryoRegistrator implements KryoRegistrator {
         }
         //
         m.put(CompactBuffer[].class, null);
-        m.put(void.class, null);
-        m.put(Void.class, null);
+        // TODO: VoidSerializer is a default serializer and thus, may not be needed (if it is, you can't use FieldSerializer)
+        // TODO: We will have to copy/paste the shaded DefaultSerializer.VoidSerializer into an unshaded form.
+        //m.put(void.class, null);
+        //m.put(Void.class, null);
         return m;
     }
 
