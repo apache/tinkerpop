@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import java.util.Map;
-
 /**
  * Many {@link Step} instance can have a variable scope.
  * {@link Scope#global}: the step operates on the entire traversal.
