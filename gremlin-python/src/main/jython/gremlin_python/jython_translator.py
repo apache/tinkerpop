@@ -21,13 +21,13 @@ import inspect
 import sys
 from aenum import Enum
 
+from bytecode import Bytecode
 from translator import SymbolHelper
 from translator import Translator
 from traversal import Barrier
 from traversal import Cardinality
 from traversal import Column
 from traversal import P
-from traversal import Traversal
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -73,8 +73,8 @@ class JythonTranslator(Translator):
             else:
                 return self.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
                     arg.operator) + "(" + self.stringOrObject(arg.value) + ")"
-        elif isinstance(arg, Traversal):
-            return self.__internalTranslate(self.anonymous_traversal, arg.bytecode)
+        elif isinstance(arg, Bytecode):
+            return self.__internalTranslate(self.anonymous_traversal, arg)
         elif callable(arg):  # lambda that produces a string that is a lambda
             argLambdaString = arg().strip()
             argLength = len(inspect.getargspec(eval(argLambdaString)).args)

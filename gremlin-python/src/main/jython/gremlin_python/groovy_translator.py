@@ -20,10 +20,10 @@ under the License.
 import sys
 from aenum import Enum
 
+from bytecode import Bytecode
 from translator import SymbolHelper
 from translator import Translator
 from traversal import P
-from traversal import Traversal
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -67,8 +67,8 @@ class GroovyTranslator(Translator):
             else:
                 return self.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
                     arg.operator) + "(" + self.stringOrObject(arg.value) + ")"
-        elif isinstance(arg, Traversal):
-            return self.__internalTranslate(self.anonymous_traversal, arg.bytecode)
+        elif isinstance(arg, Bytecode):
+            return self.__internalTranslate(self.anonymous_traversal, arg)
         elif callable(arg):  # closures
             lambdaString = arg().strip()
             if lambdaString.startswith("{"):

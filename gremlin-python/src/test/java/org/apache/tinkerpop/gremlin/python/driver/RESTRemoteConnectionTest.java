@@ -104,10 +104,13 @@ public class RESTRemoteConnectionTest {
     @Test
     public void testRemoteConnectionBindings() throws Exception {
         for (final String alias : this.aliases) {
-            List<String> results = (List) jython.eval(alias + ".V().out(('a','knows')).out('created').name.next(2)");
+            final String traversalScript = jython.eval(alias + ".V().out(('a','knows'),'created')").toString();
+            assertEquals(traversalScript, "g.V().out(a, \"created\")"); // ensure the traversal string is binding based
+            final List<String> results = (List) jython.eval(alias + ".V().out(('a','knows')).out('created').name.next(2)");
             assertEquals(2, results.size());
             assertTrue(results.contains("lop"));
             assertTrue(results.contains("ripple"));
+
         }
     }
 }

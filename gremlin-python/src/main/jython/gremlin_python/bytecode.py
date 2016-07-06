@@ -19,6 +19,8 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+from traversal import Traversal
+
 
 class Bytecode(object):
     def __init__(self, bytecode=None):
@@ -30,20 +32,21 @@ class Bytecode(object):
 
     def add_source(self, source_name, *args):
         newArgs = ()
-        for i, arg in enumerate(args):  # convert bindings to their variable
-            if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-                newArgs = newArgs + (arg[1],)
-            else:
-                newArgs = newArgs + (arg,)
+        for arg in args:
+            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
         self.source_instructions.append((source_name, newArgs))
         return
 
     def add_step(self, step_name, *args):
         newArgs = ()
-        for i, arg in enumerate(args):  # convert bindings to their variable
-            if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-                newArgs = newArgs + (arg[1],)
-            else:
-                newArgs = newArgs + (arg,)
+        for arg in args:
+            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
         self.step_instructions.append((step_name, newArgs))
         return
+
+    @staticmethod
+    def __convertArgument(arg):
+        if isinstance(arg, Traversal):
+            return arg.bytecode
+        else:
+            return arg
