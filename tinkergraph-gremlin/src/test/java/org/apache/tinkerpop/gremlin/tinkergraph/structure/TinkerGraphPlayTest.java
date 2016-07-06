@@ -73,6 +73,7 @@ public class TinkerGraphPlayTest {
         System.out.println(traversal);
         System.out.println(traversal.toList());
         System.out.println(traversal);
+        System.out.println(bytecode);
     }
 
     @Test

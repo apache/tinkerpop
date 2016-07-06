@@ -191,54 +191,67 @@ def _not(*args):
       return P._not(*args)
 
 statics.add_static('_not',_not)
+
 def between(*args):
       return P.between(*args)
 
 statics.add_static('between',between)
+
 def eq(*args):
       return P.eq(*args)
 
 statics.add_static('eq',eq)
+
 def gt(*args):
       return P.gt(*args)
 
 statics.add_static('gt',gt)
+
 def gte(*args):
       return P.gte(*args)
 
 statics.add_static('gte',gte)
+
 def inside(*args):
       return P.inside(*args)
 
 statics.add_static('inside',inside)
+
 def lt(*args):
       return P.lt(*args)
 
 statics.add_static('lt',lt)
+
 def lte(*args):
       return P.lte(*args)
 
 statics.add_static('lte',lte)
+
 def neq(*args):
       return P.neq(*args)
 
 statics.add_static('neq',neq)
+
 def outside(*args):
       return P.outside(*args)
 
 statics.add_static('outside',outside)
+
 def test(*args):
       return P.test(*args)
 
 statics.add_static('test',test)
+
 def within(*args):
       return P.within(*args)
 
 statics.add_static('within',within)
+
 def without(*args):
       return P.without(*args)
 
 statics.add_static('without',without)
+
 
 class RawExpression(object):
    def __init__(self, *args):

@@ -173,7 +173,7 @@ under the License.
                 .sort { a, b -> a <=> b }
                 .forEach {
             pythonClass.append("def ${it}(*args):\n").append("      return __.${it}(*args)\n\n")
-            pythonClass.append("statics.add_static('${it}', ${it})\n")
+            pythonClass.append("statics.add_static('${it}', ${it})\n\n")
         }
         pythonClass.append("\n\n")
 

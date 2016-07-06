@@ -30,3 +30,6 @@ class RemoteGraph(Graph):
         traversal_strategies.global_cache[self.__class__] = TraversalStrategies([RemoteStrategy()])
         self.translator = translator
         self.remote_connection = remote_connection
+
+    def __repr__(self):
+        return "remotegraph[" + self.remote_connection.url + "]"

@@ -42,11 +42,11 @@ public final class Bytecode implements Cloneable, Serializable {
     private List<Instruction> stepInstructions = new ArrayList<>();
 
     public void addSource(final String sourceName, final Object... arguments) {
-        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments).toArray()));
+        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
     }
 
     public void addStep(final String stepName, final Object... arguments) {
-        this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments).toArray()));
+        this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
     }
 
     public List<Instruction> getSourceInstructions() {
@@ -116,7 +116,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
         @Override
         public String toString() {
-            return "[\"" + this.operator + "\"," + stringifyArguments() + "]";
+            return "[\"" + this.operator  + stringifyArguments() + "]";
         }
 
         @Override
@@ -133,7 +133,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
         private String stringifyArguments() {
             final List<Object> objects = TranslatorHelper.flattenArguments(this.arguments);
-            final StringBuilder builder = new StringBuilder("[");
+            final StringBuilder builder = new StringBuilder(objects.size() > 0 ? "\"," : "\"");
             for (final Object object : objects) {
                 if (object instanceof Traversal)
                     builder.append(((Traversal) object).asAdmin().getBytecode());
@@ -145,7 +145,6 @@ public final class Bytecode implements Cloneable, Serializable {
             }
             if (!objects.isEmpty())
                 builder.deleteCharAt(builder.length() - 1);
-            builder.append("]");
 
             return builder.toString();
 
@@ -155,22 +154,24 @@ public final class Bytecode implements Cloneable, Serializable {
 
     /////
 
-    private static List<Object> flattenArguments(final Object... arguments) {
+    private static Object[] flattenArguments(final Object... arguments) {
         if (arguments.length == 0)
-            return Collections.emptyList();
+            return new Object[]{};
         final List<Object> flatArguments = new ArrayList<>();
         for (final Object object : arguments) {
             if (object instanceof Object[]) {
-                Collections.addAll(flatArguments, (Object[]) object);
+                for (final Object nestObject : (Object[]) object) {
+                    flatArguments.add(convertArgument(nestObject));
+                }
             } else
                 flatArguments.add(convertArgument(object));
         }
-        return flatArguments;
+        return flatArguments.toArray();
     }
 
     private static Object convertArgument(final Object argument) {
-       if(argument instanceof Traversal.Admin)
-           return ((Traversal.Admin) argument).getBytecode();
+        if (argument instanceof Traversal.Admin)
+            return ((Traversal.Admin) argument).getBytecode();
         return argument;
     }
 }

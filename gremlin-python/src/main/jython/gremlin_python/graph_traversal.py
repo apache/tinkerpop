@@ -1229,369 +1229,461 @@ def V(*args):
       return __.V(*args)
 
 statics.add_static('V', V)
+
 def _and(*args):
       return __._and(*args)
 
 statics.add_static('_and', _and)
+
 def _as(*args):
       return __._as(*args)
 
 statics.add_static('_as', _as)
+
 def _in(*args):
       return __._in(*args)
 
 statics.add_static('_in', _in)
+
 def _is(*args):
       return __._is(*args)
 
 statics.add_static('_is', _is)
+
 def _not(*args):
       return __._not(*args)
 
 statics.add_static('_not', _not)
+
 def _or(*args):
       return __._or(*args)
 
 statics.add_static('_or', _or)
+
 def addE(*args):
       return __.addE(*args)
 
 statics.add_static('addE', addE)
+
 def addInE(*args):
       return __.addInE(*args)
 
 statics.add_static('addInE', addInE)
+
 def addOutE(*args):
       return __.addOutE(*args)
 
 statics.add_static('addOutE', addOutE)
+
 def addV(*args):
       return __.addV(*args)
 
 statics.add_static('addV', addV)
+
 def aggregate(*args):
       return __.aggregate(*args)
 
 statics.add_static('aggregate', aggregate)
+
 def barrier(*args):
       return __.barrier(*args)
 
 statics.add_static('barrier', barrier)
+
 def both(*args):
       return __.both(*args)
 
 statics.add_static('both', both)
+
 def bothE(*args):
       return __.bothE(*args)
 
 statics.add_static('bothE', bothE)
+
 def bothV(*args):
       return __.bothV(*args)
 
 statics.add_static('bothV', bothV)
+
 def branch(*args):
       return __.branch(*args)
 
 statics.add_static('branch', branch)
+
 def cap(*args):
       return __.cap(*args)
 
 statics.add_static('cap', cap)
+
 def choose(*args):
       return __.choose(*args)
 
 statics.add_static('choose', choose)
+
 def coalesce(*args):
       return __.coalesce(*args)
 
 statics.add_static('coalesce', coalesce)
+
 def coin(*args):
       return __.coin(*args)
 
 statics.add_static('coin', coin)
+
 def constant(*args):
       return __.constant(*args)
 
 statics.add_static('constant', constant)
+
 def count(*args):
       return __.count(*args)
 
 statics.add_static('count', count)
+
 def cyclicPath(*args):
       return __.cyclicPath(*args)
 
 statics.add_static('cyclicPath', cyclicPath)
+
 def dedup(*args):
       return __.dedup(*args)
 
 statics.add_static('dedup', dedup)
+
 def drop(*args):
       return __.drop(*args)
 
 statics.add_static('drop', drop)
+
 def emit(*args):
       return __.emit(*args)
 
 statics.add_static('emit', emit)
+
 def filter(*args):
       return __.filter(*args)
 
 statics.add_static('filter', filter)
+
 def flatMap(*args):
       return __.flatMap(*args)
 
 statics.add_static('flatMap', flatMap)
+
 def fold(*args):
       return __.fold(*args)
 
 statics.add_static('fold', fold)
+
 def group(*args):
       return __.group(*args)
 
 statics.add_static('group', group)
+
 def groupCount(*args):
       return __.groupCount(*args)
 
 statics.add_static('groupCount', groupCount)
+
 def groupV3d0(*args):
       return __.groupV3d0(*args)
 
 statics.add_static('groupV3d0', groupV3d0)
+
 def has(*args):
       return __.has(*args)
 
 statics.add_static('has', has)
+
 def hasId(*args):
       return __.hasId(*args)
 
 statics.add_static('hasId', hasId)
+
 def hasKey(*args):
       return __.hasKey(*args)
 
 statics.add_static('hasKey', hasKey)
+
 def hasLabel(*args):
       return __.hasLabel(*args)
 
 statics.add_static('hasLabel', hasLabel)
+
 def hasNot(*args):
       return __.hasNot(*args)
 
 statics.add_static('hasNot', hasNot)
+
 def hasValue(*args):
       return __.hasValue(*args)
 
 statics.add_static('hasValue', hasValue)
+
 def id(*args):
       return __.id(*args)
 
 statics.add_static('id', id)
+
 def identity(*args):
       return __.identity(*args)
 
 statics.add_static('identity', identity)
+
 def inE(*args):
       return __.inE(*args)
 
 statics.add_static('inE', inE)
+
 def inV(*args):
       return __.inV(*args)
 
 statics.add_static('inV', inV)
+
 def inject(*args):
       return __.inject(*args)
 
 statics.add_static('inject', inject)
+
 def key(*args):
       return __.key(*args)
 
 statics.add_static('key', key)
+
 def label(*args):
       return __.label(*args)
 
 statics.add_static('label', label)
+
 def limit(*args):
       return __.limit(*args)
 
 statics.add_static('limit', limit)
+
 def local(*args):
       return __.local(*args)
 
 statics.add_static('local', local)
+
 def loops(*args):
       return __.loops(*args)
 
 statics.add_static('loops', loops)
+
 def map(*args):
       return __.map(*args)
 
 statics.add_static('map', map)
+
 def mapKeys(*args):
       return __.mapKeys(*args)
 
 statics.add_static('mapKeys', mapKeys)
+
 def mapValues(*args):
       return __.mapValues(*args)
 
 statics.add_static('mapValues', mapValues)
+
 def match(*args):
       return __.match(*args)
 
 statics.add_static('match', match)
+
 def max(*args):
       return __.max(*args)
 
 statics.add_static('max', max)
+
 def mean(*args):
       return __.mean(*args)
 
 statics.add_static('mean', mean)
+
 def min(*args):
       return __.min(*args)
 
 statics.add_static('min', min)
+
 def optional(*args):
       return __.optional(*args)
 
 statics.add_static('optional', optional)
+
 def order(*args):
       return __.order(*args)
 
 statics.add_static('order', order)
+
 def otherV(*args):
       return __.otherV(*args)
 
 statics.add_static('otherV', otherV)
+
 def out(*args):
       return __.out(*args)
 
 statics.add_static('out', out)
+
 def outE(*args):
       return __.outE(*args)
 
 statics.add_static('outE', outE)
+
 def outV(*args):
       return __.outV(*args)
 
 statics.add_static('outV', outV)
+
 def path(*args):
       return __.path(*args)
 
 statics.add_static('path', path)
+
 def project(*args):
       return __.project(*args)
 
 statics.add_static('project', project)
+
 def properties(*args):
       return __.properties(*args)
 
 statics.add_static('properties', properties)
+
 def property(*args):
       return __.property(*args)
 
 statics.add_static('property', property)
+
 def propertyMap(*args):
       return __.propertyMap(*args)
 
 statics.add_static('propertyMap', propertyMap)
+
 def range(*args):
       return __.range(*args)
 
 statics.add_static('range', range)
+
 def repeat(*args):
       return __.repeat(*args)
 
 statics.add_static('repeat', repeat)
+
 def sack(*args):
       return __.sack(*args)
 
 statics.add_static('sack', sack)
+
 def sample(*args):
       return __.sample(*args)
 
 statics.add_static('sample', sample)
+
 def select(*args):
       return __.select(*args)
 
 statics.add_static('select', select)
+
 def sideEffect(*args):
       return __.sideEffect(*args)
 
 statics.add_static('sideEffect', sideEffect)
+
 def simplePath(*args):
       return __.simplePath(*args)
 
 statics.add_static('simplePath', simplePath)
+
 def start(*args):
       return __.start(*args)
 
 statics.add_static('start', start)
+
 def store(*args):
       return __.store(*args)
 
 statics.add_static('store', store)
+
 def subgraph(*args):
       return __.subgraph(*args)
 
 statics.add_static('subgraph', subgraph)
+
 def sum(*args):
       return __.sum(*args)
 
 statics.add_static('sum', sum)
+
 def tail(*args):
       return __.tail(*args)
 
 statics.add_static('tail', tail)
+
 def timeLimit(*args):
       return __.timeLimit(*args)
 
 statics.add_static('timeLimit', timeLimit)
+
 def times(*args):
       return __.times(*args)
 
 statics.add_static('times', times)
+
 def to(*args):
       return __.to(*args)
 
 statics.add_static('to', to)
+
 def toE(*args):
       return __.toE(*args)
 
 statics.add_static('toE', toE)
+
 def toV(*args):
       return __.toV(*args)
 
 statics.add_static('toV', toV)
+
 def tree(*args):
       return __.tree(*args)
 
 statics.add_static('tree', tree)
+
 def unfold(*args):
       return __.unfold(*args)
 
 statics.add_static('unfold', unfold)
+
 def union(*args):
       return __.union(*args)
 
 statics.add_static('union', union)
+
 def until(*args):
       return __.until(*args)
 
 statics.add_static('until', until)
+
 def value(*args):
       return __.value(*args)
 
 statics.add_static('value', value)
+
 def valueMap(*args):
       return __.valueMap(*args)
 
 statics.add_static('valueMap', valueMap)
+
 def values(*args):
       return __.values(*args)
 
 statics.add_static('values', values)
+
 def where(*args):
       return __.where(*args)
 
 statics.add_static('where', where)
+
 
 
