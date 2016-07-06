@@ -54,9 +54,13 @@ public final class GroovyTranslator implements Translator<String, String, String
         return new GroovyTranslator(traversalSource, anonymousTraversal);
     }
 
+    public static final GroovyTranslator of(final String traversalSource) {
+        return new GroovyTranslator(traversalSource, "__");
+    }
+
     @Override
     public String translate(final Bytecode bytecode) {
-        return this.translateFromStart(this.traversalSource, bytecode);
+        return this.internalTranslate(this.traversalSource, bytecode);
     }
 
     @Override
@@ -81,7 +85,7 @@ public final class GroovyTranslator implements Translator<String, String, String
 
     ///////
 
-    private String translateFromStart(final String start, final Bytecode bytecode) {
+    private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
@@ -139,7 +143,7 @@ public final class GroovyTranslator implements Translator<String, String, String
             final String lambdaString = ((Lambda) object).getLambdaScript();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Bytecode)
-            return this.translateFromStart(this.anonymousTraversal, (Bytecode) object);
+            return this.internalTranslate(this.anonymousTraversal, (Bytecode) object);
         else
             return null == object ? "null" : object.toString();
     }

@@ -19,14 +19,14 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+import traversal_strategies
 from graph import Graph
 from remote_strategy import RemoteStrategy
 from traversal_strategies import TraversalStrategies
-from traversal_strategies import cache
 
 
 class RemoteGraph(Graph):
     def __init__(self, translator, remote_connection):
-        cache[self.__class__] = TraversalStrategies([RemoteStrategy()])
+        traversal_strategies.global_cache[self.__class__] = TraversalStrategies([RemoteStrategy()])
         self.translator = translator
         self.remote_connection = remote_connection

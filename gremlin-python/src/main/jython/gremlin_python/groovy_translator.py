@@ -23,7 +23,7 @@ from aenum import Enum
 from translator import SymbolHelper
 from translator import Translator
 from traversal import P
-from traversal import PythonTraversal
+from traversal import Traversal
 from traversal import RawExpression
 
 if sys.version_info.major > 2:
@@ -37,17 +37,19 @@ class GroovyTranslator(Translator):
         Translator.__init__(self, traversal_source, anonymous_traversal, target_language)
 
     def translate(self, bytecode):
-        traversal_script = self.anonymous_traversal if self.traversal_source is None else self.traversal_source
+        return self.__internalTranslate(self.traversal_source, bytecode)
+
+    def __internalTranslate(self, start, bytecode):
+        traversal_script = start
         for instruction in bytecode.source_instructions:
             traversal_script = traversal_script + "." + SymbolHelper.toJava(
-                instruction[0]) + "(" + GroovyTranslator.stringify(*instruction[1]) + ")"
+                instruction[0]) + "(" + self.stringify(*instruction[1]) + ")"
         for instruction in bytecode.step_instructions:
             traversal_script = traversal_script + "." + SymbolHelper.toJava(
-                instruction[0]) + "(" + GroovyTranslator.stringify(*instruction[1]) + ")"
+                instruction[0]) + "(" + self.stringify(*instruction[1]) + ")"
         return traversal_script
 
-    @staticmethod
-    def stringOrObject(arg):
+    def stringOrObject(self, arg):
         if isinstance(arg, str):
             return "\"" + arg + "\""
         elif isinstance(arg, bool):
@@ -60,13 +62,13 @@ class GroovyTranslator(Translator):
             return SymbolHelper.toJava(type(arg).__name__) + "." + SymbolHelper.toJava(str(arg.name))
         elif isinstance(arg, P):
             if arg.other is None:
-                return "P." + SymbolHelper.toJava(arg.operator) + "(" + GroovyTranslator.stringOrObject(
+                return "P." + SymbolHelper.toJava(arg.operator) + "(" + self.stringOrObject(
                     arg.value) + ")"
             else:
-                return GroovyTranslator.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
-                    arg.operator) + "(" + GroovyTranslator.stringOrObject(arg.value) + ")"
-        elif isinstance(arg, PythonTraversal):
-            return GroovyTranslator(None, "__").translate(arg.bytecode)
+                return self.stringOrObject(arg.other) + "." + SymbolHelper.toJava(
+                    arg.operator) + "(" + self.stringOrObject(arg.value) + ")"
+        elif isinstance(arg, Traversal):
+            return self.__internalTranslate(self.anonymous_traversal, arg.bytecode)
         elif callable(arg):  # closures
             lambdaString = arg().strip()
             if lambdaString.startswith("{"):
@@ -76,15 +78,14 @@ class GroovyTranslator(Translator):
         elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):  # bindings
             return arg[0]
         elif isinstance(arg, RawExpression):
-            return "".join(GroovyTranslator.stringOrObject(i) for i in arg.parts)
+            return "".join(self.stringOrObject(i) for i in arg.parts)
         else:
             return str(arg)
 
-    @staticmethod
-    def stringify(*args):
+    def stringify(self, *args):
         if len(args) == 0:
             return ""
         elif len(args) == 1:
-            return GroovyTranslator.stringOrObject(args[0])
+            return self.stringOrObject(args[0])
         else:
-            return ", ".join(GroovyTranslator.stringOrObject(i) for i in args)
+            return ", ".join(self.stringOrObject(i) for i in args)

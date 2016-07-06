@@ -57,7 +57,7 @@ under the License.
 '''
 """)
         pythonClass.append("from traversal import RawExpression\n")
-        pythonClass.append("from traversal import PythonTraversal\n")
+        pythonClass.append("from traversal import Traversal\n")
         pythonClass.append("from bytecode import Bytecode\n")
         pythonClass.append("import statics\n\n")
 
@@ -65,7 +65,7 @@ under the License.
 // GraphTraversalSource //
 //////////////////////////
         pythonClass.append(
-                """class PythonGraphTraversalSource(object):
+                """class GraphTraversalSource(object):
   def __init__(self, graph, traversal_strategies, bytecode=Bytecode()):
     self.graph = graph
     self.traversal_strategies = traversal_strategies
@@ -88,7 +88,7 @@ under the License.
                 if (Traversal.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    traversal = PythonGraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("${method}", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
@@ -100,7 +100,7 @@ under the License.
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    source = PythonGraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("${method}", *args)
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
@@ -118,9 +118,9 @@ under the License.
 // GraphTraversal //
 ////////////////////
         pythonClass.append(
-                """class PythonGraphTraversal(PythonTraversal):
+                """class GraphTraversal(Traversal):
   def __init__(self, graph, traversal_strategies, bytecode):
-    PythonTraversal.__init__(self, graph, traversal_strategies, bytecode)
+    Traversal.__init__(self, graph, traversal_strategies, bytecode)
 """)
         GraphTraversal.getMethods()
                 .findAll { !it.name.equals("clone") }
@@ -159,7 +159,7 @@ under the License.
             pythonClass.append(
                     """  @staticmethod
   def ${method}(*args):
-    return PythonGraphTraversal(None, None, Bytecode()).${method}(*args)
+    return GraphTraversal(None, None, Bytecode()).${method}(*args)
 """)
         };
         pythonClass.append("\n\n")

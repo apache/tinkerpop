@@ -45,15 +45,6 @@ public class PythonJythonTranslator extends PythonTranslator {
         return new PythonJythonTranslator(traversalSource, importStatics);
     }
 
-    /*@Override
-    public Traversal.Admin<?, ?> addStep(final Traversal.Admin<?, ?> traversal, final String stepName, final Object... arguments) {
-        final Traversal.Admin<?, ?> temp = super.addStep(traversal, stepName, arguments);
-        if (!this.importStatics)
-            assert this.traversalScript.toString().startsWith(this.alias + ".");
-        return temp;
-    }*/
-
-
     @Override
     public String getTargetLanguage() {
         return "gremlin-jython";
@@ -62,17 +53,14 @@ public class PythonJythonTranslator extends PythonTranslator {
     @Override
     public String translate(final Bytecode bytecode) {
         final String traversal = super.translate(bytecode);
-        if (null != this.traversalSource) {
-            try {
-                final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-                jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-                        .put(this.traversalSource, jythonEngine.eval("RemoteGraph(JythonTranslator(\"" + this.traversalSource + "\"), None).traversal()"));
-                return jythonEngine.eval(traversal).toString();
-            } catch (final ScriptException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        } else
-            return traversal;
+        try {
+            final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
+            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
+                    .put(this.traversalSource, jythonEngine.eval("RemoteGraph(JythonTranslator(\"" + this.traversalSource + "\"), None).traversal()"));
+            return jythonEngine.eval(traversal).toString();
+        } catch (final ScriptException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     @Override

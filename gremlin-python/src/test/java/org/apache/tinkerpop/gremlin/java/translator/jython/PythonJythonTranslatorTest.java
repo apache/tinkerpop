@@ -88,7 +88,7 @@ public class PythonJythonTranslatorTest {
 
     @Test
     public void shouldHaveValidToString() {
-        Assert.assertEquals("translator[h:jython]", PythonTranslator.of("h","__").toString());
+        Assert.assertEquals("translator[h:jython]", PythonTranslator.of("h").toString());
         assertEquals("translator[h:gremlin-jython]", PythonJythonTranslator.of("h").toString());
     }
 

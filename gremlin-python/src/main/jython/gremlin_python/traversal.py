@@ -19,7 +19,7 @@ under the License.
 from aenum import Enum
 import statics
 
-class PythonTraversal(object):
+class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
         self.graph = graph
         self.traversal_strategies = traversal_strategies

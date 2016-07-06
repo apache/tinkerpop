@@ -78,6 +78,14 @@ public class PythonTranslator implements Translator<String, String, String> {
         return new PythonTranslator(traversalSource, anonymousTraversal, importStatics);
     }
 
+    public static PythonTranslator of(final String traversalSource) {
+        return new PythonTranslator(traversalSource, "__", false);
+    }
+
+    public static PythonTranslator of(final String traversalSource, final boolean importStatics) {
+        return new PythonTranslator(traversalSource, "__", importStatics);
+    }
+
     @Override
     public String getTraversalSource() {
         return this.traversalSource;
@@ -90,7 +98,10 @@ public class PythonTranslator implements Translator<String, String, String> {
 
     @Override
     public String translate(final Bytecode bytecode) {
-        return this.translateFromStart(this.traversalSource, bytecode);
+        final String traversal = this.internalTranslate(this.traversalSource, bytecode);
+        //if (this.importStatics)
+        //    assert !traversal.contains("__.");
+        return traversal;
     }
 
     @Override
@@ -105,7 +116,7 @@ public class PythonTranslator implements Translator<String, String, String> {
 
     ///////
 
-    private String translateFromStart(final String start, final Bytecode bytecode) {
+    private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
@@ -165,7 +176,7 @@ public class PythonTranslator implements Translator<String, String, String> {
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)
-            return this.translateFromStart(this.anonymousTraversal, (Bytecode) object);
+            return this.internalTranslate(this.anonymousTraversal, (Bytecode) object);
         else if (object instanceof Computer) {
             return "";
         } else if (object instanceof Lambda) {

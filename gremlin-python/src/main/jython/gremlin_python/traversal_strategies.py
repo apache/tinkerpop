@@ -19,7 +19,7 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-cache = {}
+global_cache = {}
 
 
 class TraversalStrategies(object):

@@ -19,10 +19,10 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-from graph_traversal import PythonGraphTraversalSource
-from traversal_strategies import cache
+import traversal_strategies
+from graph_traversal import GraphTraversalSource
 
 
 class Graph(object):
     def traversal(self):
-        return PythonGraphTraversalSource(self, cache[self.__class__])
+        return GraphTraversalSource(self, traversal_strategies.global_cache[self.__class__])

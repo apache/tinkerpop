@@ -29,9 +29,21 @@ class Bytecode(object):
             self.step_instructions = list(bytecode.step_instructions)
 
     def add_source(self, source_name, *args):
-        self.source_instructions.append((source_name, args))
+        newArgs = ()
+        for i, arg in enumerate(args):  # convert bindings to their variable
+            if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+                newArgs = newArgs + (arg[1],)
+            else:
+                newArgs = newArgs + (arg,)
+        self.source_instructions.append((source_name, newArgs))
         return
 
     def add_step(self, step_name, *args):
-        self.step_instructions.append((step_name, args))
+        newArgs = ()
+        for i, arg in enumerate(args):  # convert bindings to their variable
+            if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+                newArgs = newArgs + (arg[1],)
+            else:
+                newArgs = newArgs + (arg,)
+        self.step_instructions.append((step_name, newArgs))
         return

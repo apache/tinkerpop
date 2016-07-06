@@ -57,7 +57,7 @@ under the License.
         pythonClass.append("import statics\n")
 
         pythonClass.append("""
-class PythonTraversal(object):
+class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
         self.graph = graph
         self.traversal_strategies = traversal_strategies

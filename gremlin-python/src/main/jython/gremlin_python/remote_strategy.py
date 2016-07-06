@@ -24,8 +24,12 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 class RemoteStrategy(TraversalStrategy):
     def apply(self, traversal):
+        if not (traversal.graph.__class__.__name__ == "RemoteGraph"):
+            raise BaseException(
+                "RemoteStrategy can only be used with a RemoteGraph: " + traversal.graph.__class__.__name__)
         if traversal.results is None:
-            traversal.results = traversal.graph.remote_connection.submit(traversal.graph.translator.target_language,
-                                                                         traversal.graph.translator.translate(
-                                                                             traversal.bytecode), traversal.bindings)
+            traversal.results = traversal.graph.remote_connection.submit(
+                traversal.graph.translator.target_language,  # script engine
+                traversal.graph.translator.translate(traversal.bytecode),  # script
+                traversal.bindings)  # bindings
         return
