@@ -58,16 +58,16 @@ under the License.
 
         pythonClass.append("""
 class PythonTraversal(object):
-    def __init__(self, translator, bytecode, remote_connection=None):
-        self.translator = translator
+    def __init__(self, graph, traversal_strategies, bytecode):
+        self.graph = graph
+        self.traversal_strategies = traversal_strategies
         self.bytecode = bytecode
-        self.remote_connection = remote_connection
         self.results = None
         self.last_traverser = None
         self.bindings = {}
 
     def __repr__(self):
-        return self.translator.translate(self.bytecode)
+        return self.graph.translator.translate(self.bytecode)
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -85,7 +85,7 @@ class PythonTraversal(object):
 
     def __next__(self):
         if self.results is None:
-            self.results = self.remote_connection.submit(self.translator.target_language, self.translator.translate(self.bytecode), self.bindings)
+            self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
             self.last_traverser = next(self.results)
         object = self.last_traverser.object

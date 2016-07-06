@@ -49,9 +49,9 @@ public class RESTRemoteConnectionTest {
         try {
             JythonScriptEngineSetup.setup();
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("g", jython.eval("PythonGraphTraversalSource(GroovyTranslator('g'), Bytecode(), RESTRemoteConnection('http://localhost:8182'))"));
+                    .put("g", jython.eval("RemoteGraph(GroovyTranslator('g'), RESTRemoteConnection('http://localhost:8182')).traversal()"));
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("j", jython.eval("PythonGraphTraversalSource(JythonTranslator('g'), Bytecode(), RESTRemoteConnection('http://localhost:8182'))"));
+                    .put("j", jython.eval("RemoteGraph(JythonTranslator('g'), RESTRemoteConnection('http://localhost:8182')).traversal()"));
             new GremlinServer(Settings.read(RESTRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
         } catch (final Exception ex) {
             ex.printStackTrace();

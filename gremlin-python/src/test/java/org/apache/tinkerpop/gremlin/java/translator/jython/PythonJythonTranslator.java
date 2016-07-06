@@ -66,7 +66,7 @@ public class PythonJythonTranslator extends PythonTranslator {
             try {
                 final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
                 jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-                        .put(this.traversalSource, jythonEngine.eval("PythonGraphTraversalSource(JythonTranslator(\"" + this.traversalSource + "\"))"));
+                        .put(this.traversalSource, jythonEngine.eval("RemoteGraph(JythonTranslator(\"" + this.traversalSource + "\"), None).traversal()"));
                 return jythonEngine.eval(traversal).toString();
             } catch (final ScriptException e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
