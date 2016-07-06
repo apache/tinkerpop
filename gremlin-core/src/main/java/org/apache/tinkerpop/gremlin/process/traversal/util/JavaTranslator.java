@@ -27,7 +27,11 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,6 +40,8 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
 
     private final TraversalSource traversalSource;
     private final Class anonymousTraversal;
+    private final Map<String, List<Method>> traversalSourceMethodCache = new HashMap<>();
+    private final Map<String, List<Method>> traversalMethodCache = new HashMap<>();
 
     public JavaTranslator(final TraversalSource traversalSource, final Class anonymousSource) {
         this.traversalSource = traversalSource;
@@ -86,7 +92,7 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
 
     private Traversal.Admin<?, ?> translateFromAnonymous(final ByteCode byteCode) {
         try {
-            Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
+            final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
             for (final ByteCode.Instruction instruction : byteCode.getStepInstructions()) {
                 invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
             }
@@ -97,40 +103,52 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
     }
 
     private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
-        try {
+        // populate method cache for fast access to methods in subsequent calls
+        final Map<String, List<Method>> methodCache = delegate instanceof TraversalSource ? this.traversalSourceMethodCache : this.traversalMethodCache;
+        if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
-                if (method.getName().equals(methodName)) {
-                    if (returnType.isAssignableFrom(method.getReturnType())) {
-                        if (method.getParameterCount() == arguments.length || method.getParameters()[method.getParameters().length - 1].isVarArgs()) {
-                            final Parameter[] parameters = method.getParameters();
-                            final Object[] newArguments = new Object[parameters.length];
-                            boolean found = true;
-                            for (int i = 0; i < parameters.length; i++) {
-                                if (parameters[i].isVarArgs()) {
-                                    newArguments[i] = Arrays.copyOfRange(arguments, i, arguments.length, (Class) parameters[i].getType());
-                                    break;
+                List<Method> list = methodCache.get(method.getName());
+                if (null == list) {
+                    list = new ArrayList<>();
+                    methodCache.put(method.getName(), list);
+                }
+                list.add(method);
+            }
+        }
+        ///
+        try {
+            for (final Method method : methodCache.get(methodName)) {
+                if (returnType.isAssignableFrom(method.getReturnType())) {
+                    if (method.getParameterCount() == arguments.length || method.getParameters()[method.getParameters().length - 1].isVarArgs()) {
+                        final Parameter[] parameters = method.getParameters();
+                        final Object[] newArguments = new Object[parameters.length];
+                        boolean found = true;
+                        for (int i = 0; i < parameters.length; i++) {
+                            if (parameters[i].isVarArgs()) {
+                                newArguments[i] = Arrays.copyOfRange(arguments, i, arguments.length, (Class) parameters[i].getType());
+                                break;
+                            } else {
+                                if (arguments.length > 0 && (parameters[i].getType().isPrimitive() ||
+                                        parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
+                                        parameters[i].getType().isAssignableFrom(Traversal.Admin.class) && arguments[i] instanceof ByteCode)) {
+                                    newArguments[i] = arguments[i] instanceof ByteCode ?
+                                            this.translateFromAnonymous((ByteCode) arguments[i]) :
+                                            arguments[i];
                                 } else {
-                                    if (arguments.length > 0 && (parameters[i].getType().isPrimitive() ||
-                                            parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
-                                            parameters[i].getType().isAssignableFrom(Traversal.Admin.class) && arguments[i] instanceof ByteCode)) {
-                                        newArguments[i] = arguments[i] instanceof ByteCode ?
-                                                this.translateFromAnonymous((ByteCode) arguments[i]) :
-                                                arguments[i];
-                                    } else {
-                                        found = false;
-                                        break;
-                                    }
+                                    found = false;
+                                    break;
                                 }
                             }
-                            if (found)
-                                return 0 == newArguments.length ? method.invoke(delegate) : method.invoke(delegate, newArguments);
                         }
+                        if (found)
+                            return 0 == newArguments.length ? method.invoke(delegate) : method.invoke(delegate, newArguments);
                     }
                 }
             }
-        } catch (Throwable e) {
-            throw new IllegalStateException(e.getMessage() + methodName, e);
+        } catch (final Throwable e) {
+            e.printStackTrace();
+            throw new IllegalStateException(e.getMessage());
         }
-        throw new IllegalStateException("could not find method: " + methodName + "--" + Arrays.toString(arguments));
+        throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(arguments) + ")");
     }
 }
