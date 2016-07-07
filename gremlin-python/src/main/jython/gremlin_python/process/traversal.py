@@ -18,7 +18,7 @@ under the License.
 '''
 from abc import abstractmethod
 from aenum import Enum
-import statics
+from gremlin_python import statics
 
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
@@ -273,6 +273,17 @@ class Raw(object):
    def __str__(self):
       return str(self.value)
 
+
+'''
+TRAVERSER
+'''
+
+class Traverser(object):
+    def __init__(self, object, bulk):
+        self.object = object
+        self.bulk = bulk
+    def __repr__(self):
+        return str(self.object)
 
 '''
 TRAVERSAL STRATEGIES

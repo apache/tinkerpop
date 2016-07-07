@@ -46,10 +46,10 @@ version = __version__.version
 setup(
     name='gremlinpython',
     version=version,
-    packages=['gremlin_driver', 'gremlin_python', 'gremlin_rest_driver'],
+    packages=['gremlin_python', 'gremlin_python.driver', 'gremlin_python.process', 'gremlin_python.structure'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',
-    description='Gremlin Language Variant for Apache TinkerPop - Gremlin',
+    description='Gremlin-Python for Apache TinkerPop',
     long_description=open("README").read(),
     install_requires=[
         'aenum',

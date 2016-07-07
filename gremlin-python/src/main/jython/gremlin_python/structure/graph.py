@@ -16,24 +16,13 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from abc import abstractmethod
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-
-class Traverser(object):
-    def __init__(self, object, bulk):
-        self.object = object
-        self.bulk = bulk
-    def __repr__(self):
-        return str(self.object)
+from gremlin_python.process.graph_traversal import GraphTraversalSource
+from gremlin_python.process.traversal import TraversalStrategies
 
 
-class RemoteConnection(object):
-    def __init__(self, url):
-        self.url = url
-
-    @abstractmethod
-    def submit(self, target_language, script, bindings):
-        print "sending " + script + " to GremlinServer..."
-        return iter([])
+class Graph(object):
+    def traversal(self):
+        return GraphTraversalSource(self, TraversalStrategies.global_cache[self.__class__])

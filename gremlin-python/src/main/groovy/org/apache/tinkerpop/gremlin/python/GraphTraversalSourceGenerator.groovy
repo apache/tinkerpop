@@ -59,7 +59,7 @@ under the License.
         pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import Traversal\n")
         pythonClass.append("from traversal import Bytecode\n")
-        pythonClass.append("import statics\n\n")
+        pythonClass.append("from gremlin_python import statics\n\n")
 
 //////////////////////////
 // GraphTraversalSource //

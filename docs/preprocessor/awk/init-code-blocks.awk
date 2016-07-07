@@ -79,7 +79,7 @@ BEGIN {
     print "jython.eval('import sys')"
     print "jython.eval('sys.path.append(\"" PYTHONPATH "\")')"
     print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_python\")')"
-    print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_driver\")')"
+    print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_python.driver\")')"
     print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-variant/src/main/jython/gremlin_rest_driver\")')"
     print "jython.eval('from gremlin_python import *')"
     #print "jython.eval('from gremlin_rest_driver import RESTRemoteConnection')"

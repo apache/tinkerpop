@@ -18,8 +18,9 @@ under the License.
 '''
 import json
 import requests
-from gremlin_driver import RemoteConnection
-from gremlin_driver import Traverser
+
+from gremlin_python.process.traversal import Traverser
+from remote_connection import RemoteConnection
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -32,7 +33,8 @@ class RESTRemoteConnection(RemoteConnection):
         return "RESTRemoteConnection[" + self.url + "]"
 
     def submit(self, target_language, script, bindings):
-        response = requests.post(self.url, data=json.dumps({"gremlin": script, "language": target_language, "bindings": bindings}))
+        response = requests.post(self.url, data=json.dumps(
+            {"gremlin": script, "language": target_language, "bindings": bindings}))
         if response.status_code != requests.codes.ok:
             raise BaseException(response.text)
         results = []

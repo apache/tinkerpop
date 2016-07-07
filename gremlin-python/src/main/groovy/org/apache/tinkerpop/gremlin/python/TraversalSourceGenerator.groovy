@@ -55,7 +55,7 @@ under the License.
 """)
         pythonClass.append("from abc import abstractmethod\n")
         pythonClass.append("from aenum import Enum\n")
-        pythonClass.append("import statics\n")
+        pythonClass.append("from gremlin_python import statics\n")
 
         pythonClass.append("""
 class Traversal(object):
@@ -196,6 +196,17 @@ class Raw(object):
 """)
 
         pythonClass.append("""
+'''
+TRAVERSER
+'''
+
+class Traverser(object):
+    def __init__(self, object, bulk):
+        self.object = object
+        self.bulk = bulk
+    def __repr__(self):
+        return str(self.object)
+
 '''
 TRAVERSAL STRATEGIES
 '''

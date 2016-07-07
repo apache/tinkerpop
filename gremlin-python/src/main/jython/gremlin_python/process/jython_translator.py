@@ -17,14 +17,18 @@ specific language governing permissions and limitations
 under the License.
 '''
 
+import inspect
 import sys
 from aenum import Enum
 
+from traversal import Barrier
 from traversal import Bytecode
-from traversal import SymbolHelper
-from traversal import Translator
+from traversal import Cardinality
+from traversal import Column
 from traversal import P
 from traversal import RawExpression
+from traversal import SymbolHelper
+from traversal import Translator
 
 if sys.version_info.major > 2:
     long = int
@@ -32,8 +36,8 @@ if sys.version_info.major > 2:
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
-class GroovyTranslator(Translator):
-    def __init__(self, traversal_source, anonymous_traversal="__", target_language="gremlin-groovy"):
+class JythonTranslator(Translator):
+    def __init__(self, traversal_source, anonymous_traversal="__", target_language="gremlin-jython"):
         Translator.__init__(self, traversal_source, anonymous_traversal, target_language)
 
     def translate(self, bytecode):
@@ -52,13 +56,15 @@ class GroovyTranslator(Translator):
     def stringOrObject(self, arg):
         if isinstance(arg, str):
             return "\"" + arg + "\""
-        elif isinstance(arg, bool):
-            return str(arg).lower()
         elif isinstance(arg, long):
-            return str(arg) + "L"
-        elif isinstance(arg, float):
-            return str(arg) + "f"
-        elif isinstance(arg, Enum):  # Column, Order, Direction, Scope, T, etc.
+            return str(arg) + "L" if arg > 9223372036854775807L else "Long(" + str(arg) + ")"
+        elif isinstance(arg, Barrier):
+            return "Barrier" + "." + SymbolHelper.toJava(str(arg.name))
+        elif isinstance(arg, Column):
+            return "Column.valueOf('" + SymbolHelper.toJava(str(arg.name)) + "')"
+        elif isinstance(arg, Cardinality):
+            return "Cardinality" + "." + SymbolHelper.toJava(str(arg.name))
+        elif isinstance(arg, Enum):  # Order, Direction, Scope, T, etc.
             return SymbolHelper.toJava(type(arg).__name__) + "." + SymbolHelper.toJava(str(arg.name))
         elif isinstance(arg, P):
             if arg.other is None:
@@ -69,12 +75,17 @@ class GroovyTranslator(Translator):
                     arg.operator) + "(" + self.stringOrObject(arg.value) + ")"
         elif isinstance(arg, Bytecode):
             return self.__internalTranslate(self.anonymous_traversal, arg)
-        elif callable(arg):  # closures
-            lambdaString = arg().strip()
-            if lambdaString.startswith("{"):
-                return lambdaString
+        elif callable(arg):  # lambda that produces a string that is a lambda
+            argLambdaString = arg().strip()
+            argLength = len(inspect.getargspec(eval(argLambdaString)).args)
+            if argLength == 0:
+                return "JythonZeroArgLambda(" + argLambdaString + ")"
+            elif argLength == 1:
+                return "JythonOneArgLambda(" + argLambdaString + ")"
+            elif argLength == 2:
+                return "JythonTwoArgLambda(" + argLambdaString + ")"
             else:
-                return "{" + lambdaString + "}"
+                raise
         elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):  # bindings
             return arg[0]
         elif isinstance(arg, RawExpression):

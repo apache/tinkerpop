@@ -36,14 +36,14 @@ public class JythonScriptEngineSetup {
         try {
             final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
             jythonEngine.eval("import gremlin_python.statics");
-            jythonEngine.eval("from gremlin_python.traversal import *");
-            jythonEngine.eval("from gremlin_python.graph_traversal import *");
-            jythonEngine.eval("from gremlin_python.graph_traversal import __");
-            jythonEngine.eval("from gremlin_python.groovy_translator import GroovyTranslator");
-            jythonEngine.eval("from gremlin_python.jython_translator import JythonTranslator");
-            jythonEngine.eval("from gremlin_rest_driver import RESTRemoteConnection");
-            jythonEngine.eval("from gremlin_python.traversal import Bytecode");
-            jythonEngine.eval("from gremlin_python.remote_graph import RemoteGraph");
+            jythonEngine.eval("from gremlin_python.process.traversal import *");
+            jythonEngine.eval("from gremlin_python.process.graph_traversal import *");
+            jythonEngine.eval("from gremlin_python.process.graph_traversal import __");
+            jythonEngine.eval("from gremlin_python.process.groovy_translator import GroovyTranslator");
+            jythonEngine.eval("from gremlin_python.process.jython_translator import JythonTranslator");
+            jythonEngine.eval("from gremlin_python.driver.rest_remote_connection import RESTRemoteConnection");
+            jythonEngine.eval("from gremlin_python.process.traversal import Bytecode");
+            jythonEngine.eval("from gremlin_python.structure.remote_graph import RemoteGraph");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

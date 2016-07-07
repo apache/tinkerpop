@@ -19,7 +19,7 @@ under the License.
 from traversal import RawExpression
 from traversal import Traversal
 from traversal import Bytecode
-import statics
+from gremlin_python import statics
 
 class GraphTraversalSource(object):
   def __init__(self, graph, traversal_strategies, bytecode=Bytecode()):

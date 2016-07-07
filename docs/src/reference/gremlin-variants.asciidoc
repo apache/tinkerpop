@@ -58,7 +58,7 @@ To install Gremlin-Python, simply use Python's link:https://en.wikipedia.org/wik
 [source,bash]
 pip install requests
 pip install gremlin_python
-pip install gremlin_driver
+pip install gremlin_python.driver
 pip install gremlin_rest_driver
 
 There are three primary classes distributed with Gremlin-Python: `PythonGraphTraversalSource`, `PythonGraphTraversal`, and `__`.
@@ -73,10 +73,10 @@ These classes mirror `GraphTraversalSource`, `GraphTraversal`, and `__`, respect
 requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any <<connecting-via-remotegraph,`RemoteConnection`>>-enabled server).
 The `gremlin_rest_driver` is provided with Apache TinkerPop and it serves as a simple (though verbose) driver that sends traversals to GremlinServer
 via HTTP POST (using link:http://docs.python-requests.org/[requests]) and in return, is provided <<graphson-reader-writer,GraphSON>>-encoded results.
-`RESTRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_driver`.
+`RESTRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_python.driver`.
 
 NOTE: For developers wishing to provide another *driver implementation* (e.g. one using the more efficient
-link:https://en.wikipedia.org/wiki/WebSocket[WebSockets] protocol), be sure to extend `RemoteConnection` in `gremlin_driver` so it
+link:https://en.wikipedia.org/wiki/WebSocket[WebSockets] protocol), be sure to extend `RemoteConnection` in `gremlin_python.driver` so it
 can then be used by `PythonGraphTraversal`.
 
 When GremlinServer is running, Gremlin-Python can communicate with GremlinServer. The `conf/gremlin-server-rest.modern.yaml`
