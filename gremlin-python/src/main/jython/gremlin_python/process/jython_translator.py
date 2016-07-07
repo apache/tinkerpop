@@ -21,14 +21,14 @@ import inspect
 import sys
 from aenum import Enum
 
-from traversal import Barrier
-from traversal import Bytecode
-from traversal import Cardinality
-from traversal import Column
-from traversal import P
-from traversal import RawExpression
-from traversal import SymbolHelper
-from traversal import Translator
+from .traversal import Barrier
+from .traversal import Bytecode
+from .traversal import Cardinality
+from .traversal import Column
+from .traversal import P
+from .traversal import RawExpression
+from .traversal import SymbolHelper
+from .traversal import Translator
 
 if sys.version_info.major > 2:
     long = int

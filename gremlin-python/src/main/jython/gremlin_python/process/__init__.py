@@ -17,22 +17,22 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-from graph_traversal import GraphTraversal
-from graph_traversal import GraphTraversalSource
-from graph_traversal import __
-from groovy_translator import GroovyTranslator
-from jython_translator import JythonTranslator
-from traversal import Barrier
-from traversal import Bytecode
-from traversal import Cardinality
-from traversal import Column
-from traversal import Direction
-from traversal import Operator
-from traversal import Order
-from traversal import P
-from traversal import Pop
-from traversal import Scope
-from traversal import T
-from traversal import Traversal
+from .graph_traversal import GraphTraversal
+from .graph_traversal import GraphTraversalSource
+from .graph_traversal import __
+from .groovy_translator import GroovyTranslator
+from .jython_translator import JythonTranslator
+from .traversal import Barrier
+from .traversal import Bytecode
+from .traversal import Cardinality
+from .traversal import Column
+from .traversal import Direction
+from .traversal import Operator
+from .traversal import Order
+from .traversal import P
+from .traversal import Pop
+from .traversal import Scope
+from .traversal import T
+from .traversal import Traversal
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

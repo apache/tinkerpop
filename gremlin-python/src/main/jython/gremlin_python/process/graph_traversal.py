@@ -16,9 +16,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from traversal import RawExpression
-from traversal import Traversal
-from traversal import Bytecode
+from .traversal import RawExpression
+from .traversal import Traversal
+from .traversal import Bytecode
 from gremlin_python import statics
 
 class GraphTraversalSource(object):

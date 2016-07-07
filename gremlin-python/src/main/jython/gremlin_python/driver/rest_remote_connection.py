@@ -20,7 +20,7 @@ import json
 import requests
 
 from gremlin_python.process.traversal import Traverser
-from remote_connection import RemoteConnection
+from .remote_connection import RemoteConnection
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 

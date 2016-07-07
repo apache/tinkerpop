@@ -20,11 +20,11 @@ under the License.
 import sys
 from aenum import Enum
 
-from traversal import Bytecode
-from traversal import P
-from traversal import RawExpression
-from traversal import SymbolHelper
-from traversal import Translator
+from .traversal import Bytecode
+from .traversal import P
+from .traversal import RawExpression
+from .traversal import SymbolHelper
+from .traversal import Translator
 
 if sys.version_info.major > 2:
     long = int
