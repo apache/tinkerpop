@@ -19,17 +19,29 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import traversal_strategies
 from graph import Graph
-from remote_strategy import RemoteStrategy
-from traversal_strategies import TraversalStrategies
+from traversal import TraversalStrategies
+from traversal import TraversalStrategy
 
 
 class RemoteGraph(Graph):
     def __init__(self, translator, remote_connection):
-        traversal_strategies.global_cache[self.__class__] = TraversalStrategies([RemoteStrategy()])
+        TraversalStrategies.global_cache[self.__class__] = TraversalStrategies([RemoteStrategy()])
         self.translator = translator
         self.remote_connection = remote_connection
 
     def __repr__(self):
         return "remotegraph[" + self.remote_connection.url + "]"
+
+
+class RemoteStrategy(TraversalStrategy):
+    def apply(self, traversal):
+        if not (traversal.graph.__class__.__name__ == "RemoteGraph"):
+            raise BaseException(
+                "RemoteStrategy can only be used with a RemoteGraph: " + traversal.graph.__class__.__name__)
+        if traversal.results is None:
+            traversal.results = traversal.graph.remote_connection.submit(
+                traversal.graph.translator.target_language,  # script engine
+                traversal.graph.translator.translate(traversal.bytecode),  # script
+                traversal.bindings)  # bindings
+        return

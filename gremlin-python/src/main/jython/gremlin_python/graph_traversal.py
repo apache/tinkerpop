@@ -18,7 +18,7 @@ under the License.
 '''
 from traversal import RawExpression
 from traversal import Traversal
-from bytecode import Bytecode
+from traversal import Bytecode
 import statics
 
 class GraphTraversalSource(object):

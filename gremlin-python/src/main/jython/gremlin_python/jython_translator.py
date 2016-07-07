@@ -21,9 +21,9 @@ import inspect
 import sys
 from aenum import Enum
 
-from bytecode import Bytecode
-from translator import SymbolHelper
-from translator import Translator
+from traversal import Bytecode
+from traversal import SymbolHelper
+from traversal import Translator
 from traversal import Barrier
 from traversal import Cardinality
 from traversal import Column

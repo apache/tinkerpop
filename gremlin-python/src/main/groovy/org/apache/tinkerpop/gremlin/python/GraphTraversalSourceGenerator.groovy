@@ -58,7 +58,7 @@ under the License.
 """)
         pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import Traversal\n")
-        pythonClass.append("from bytecode import Bytecode\n")
+        pythonClass.append("from traversal import Bytecode\n")
         pythonClass.append("import statics\n\n")
 
 //////////////////////////

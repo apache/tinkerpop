@@ -53,6 +53,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
+        pythonClass.append("from abc import abstractmethod\n")
         pythonClass.append("from aenum import Enum\n")
         pythonClass.append("import statics\n")
 
@@ -192,6 +193,99 @@ class Raw(object):
    def __str__(self):
       return str(self.value)
 
+""")
+
+        pythonClass.append("""
+'''
+TRAVERSAL STRATEGIES
+'''
+
+class TraversalStrategies(object):
+    global_cache = {}
+
+    def __init__(self, traversal_strategies):
+        self.traversal_strategies = traversal_strategies
+        return
+
+    def apply_strategies(self, traversal):
+        for traversal_strategy in self.traversal_strategies:
+            traversal_strategy.apply(traversal)
+        return
+
+
+class TraversalStrategy(object):
+    @abstractmethod
+    def apply(self, traversal):
+        return
+
+'''
+BYTECODE AND TRANSLATOR
+'''
+
+class Bytecode(object):
+    def __init__(self, bytecode=None):
+        self.source_instructions = []
+        self.step_instructions = []
+        if bytecode is not None:
+            self.source_instructions = list(bytecode.source_instructions)
+            self.step_instructions = list(bytecode.step_instructions)
+
+    def add_source(self, source_name, *args):
+        newArgs = ()
+        for arg in args:
+            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
+        self.source_instructions.append((source_name, newArgs))
+        return
+
+    def add_step(self, step_name, *args):
+        newArgs = ()
+        for arg in args:
+            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
+        self.step_instructions.append((step_name, newArgs))
+        return
+
+    @staticmethod
+    def __convertArgument(arg):
+        if isinstance(arg, Traversal):
+            return arg.bytecode
+        else:
+            return arg
+
+
+TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
+               "_or": "or", "_is": "is", "_not": "not", "_from": "from",
+               "Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
+
+
+class Translator(object):
+    def __init__(self, traversal_source, anonymous_traversal, target_language):
+        self.traversal_source = traversal_source
+        self.anonymous_traversal = anonymous_traversal
+        self.target_language = target_language
+
+    @abstractmethod
+    def translate(self, bytecode):
+        return
+
+    @abstractmethod
+    def __repr__(self):
+        return "translator[" + self.traversal_source + ":" + self.target_language + "]"
+
+
+class SymbolHelper(object):
+    @staticmethod
+    def toJava(symbol):
+        if (symbol in TO_JAVA_MAP):
+            return TO_JAVA_MAP[symbol]
+        else:
+            return symbol
+
+    @staticmethod
+    def mapEnum(enum):
+        if (enum in enumMap):
+            return enumMap[enum]
+        else:
+            return enum
 """)
         //////////////
 

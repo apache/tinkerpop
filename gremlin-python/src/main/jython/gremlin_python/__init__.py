@@ -16,7 +16,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from bytecode import Bytecode
 from graph import Graph
 from graph_traversal import GraphTraversal
 from graph_traversal import GraphTraversalSource
@@ -24,6 +23,7 @@ from graph_traversal import __
 from groovy_translator import GroovyTranslator
 from jython_translator import JythonTranslator
 from remote_graph import RemoteGraph
+from traversal import Bytecode
 from traversal import Barrier
 from traversal import Cardinality
 from traversal import Column

@@ -42,7 +42,7 @@ public class JythonScriptEngineSetup {
             jythonEngine.eval("from gremlin_python.groovy_translator import GroovyTranslator");
             jythonEngine.eval("from gremlin_python.jython_translator import JythonTranslator");
             jythonEngine.eval("from gremlin_rest_driver import RESTRemoteConnection");
-            jythonEngine.eval("from gremlin_python.bytecode import Bytecode");
+            jythonEngine.eval("from gremlin_python.traversal import Bytecode");
             jythonEngine.eval("from gremlin_python.remote_graph import RemoteGraph");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);

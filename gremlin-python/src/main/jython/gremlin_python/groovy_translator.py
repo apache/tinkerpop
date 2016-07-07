@@ -20,9 +20,9 @@ under the License.
 import sys
 from aenum import Enum
 
-from bytecode import Bytecode
-from translator import SymbolHelper
-from translator import Translator
+from traversal import Bytecode
+from traversal import SymbolHelper
+from traversal import Translator
 from traversal import P
 from traversal import RawExpression
 
