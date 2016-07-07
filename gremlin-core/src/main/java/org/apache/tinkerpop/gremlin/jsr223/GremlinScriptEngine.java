@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import java.lang.reflect.Method;
 
 /**
  * A {@code GremlinScriptEngine} is an extension of the standard {@code ScriptEngine} and provides some specific
@@ -35,4 +36,10 @@ public interface GremlinScriptEngine extends ScriptEngine {
     GremlinScriptEngineFactory getFactory();
 
     Traversal.Admin eval(final Bytecode bytes, final Bindings bindings);
+
+    void addClassImport(final Class clazz);
+
+    void addEnumImport(final Enum e);
+
+    void addMethodImport(final Method method);
 }
