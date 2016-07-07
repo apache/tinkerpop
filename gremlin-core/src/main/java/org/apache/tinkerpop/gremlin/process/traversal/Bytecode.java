@@ -116,7 +116,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
         @Override
         public String toString() {
-            return "[\"" + this.operator  + stringifyArguments() + "]";
+            return "[\"" + this.operator + stringifyArguments() + "]";
         }
 
         @Override
@@ -154,7 +154,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     /////
 
-    private static Object[] flattenArguments(final Object... arguments) {
+    private static final Object[] flattenArguments(final Object... arguments) {
         if (arguments.length == 0)
             return new Object[]{};
         final List<Object> flatArguments = new ArrayList<>();
@@ -169,9 +169,7 @@ public final class Bytecode implements Cloneable, Serializable {
         return flatArguments.toArray();
     }
 
-    private static Object convertArgument(final Object argument) {
-        if (argument instanceof Traversal.Admin)
-            return ((Traversal.Admin) argument).getBytecode();
-        return argument;
+    private static final Object convertArgument(final Object argument) {
+        return argument instanceof Traversal ? ((Traversal) argument).asAdmin().getBytecode() : argument;
     }
 }

@@ -56,18 +56,28 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
             if (traversal.getGraph().isPresent() && traversal.getGraph().get() instanceof RemoteGraph)
                 return;
 
-            // translate the traversal and add its steps to this traversal
-            final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
-            final Bindings bindings = scriptEngine.createBindings();
-            scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
-            bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
-            final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.translate(traversal.getBytecode()).toString(), bindings);
-            assert !translatedTraversal.isLocked();
-            assert !traversal.isLocked();
-            traversal.setSideEffects(translatedTraversal.getSideEffects());
-            traversal.setStrategies(traversal.getStrategies().clone().removeStrategies(TranslationStrategy.class));
-            TraversalHelper.removeAllSteps(traversal);
-            TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
+            if (this.translator.getTargetLanguage().equals("gremlin-java")) {
+                final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin) this.translator.translate(traversal.getBytecode());
+                assert !translatedTraversal.isLocked();
+                assert !traversal.isLocked();
+                traversal.setSideEffects(translatedTraversal.getSideEffects());
+                traversal.setStrategies(translatedTraversal.getStrategies());
+                TraversalHelper.removeAllSteps(traversal);
+                TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
+            } else {
+                // translate the traversal and add its steps to this traversal
+                final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
+                final Bindings bindings = scriptEngine.createBindings();
+                scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
+                bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
+                final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.translate(traversal.getBytecode()).toString(), bindings);
+                assert !translatedTraversal.isLocked();
+                assert !traversal.isLocked();
+                traversal.setSideEffects(translatedTraversal.getSideEffects());
+                traversal.setStrategies(traversal.getStrategies().clone().removeStrategies(TranslationStrategy.class));
+                TraversalHelper.removeAllSteps(traversal);
+                TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
+            }
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }

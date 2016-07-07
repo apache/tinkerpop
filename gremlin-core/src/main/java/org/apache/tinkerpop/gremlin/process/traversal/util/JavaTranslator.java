@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -48,6 +49,10 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
         this.anonymousTraversal = anonymousSource;
     }
 
+    public static JavaTranslator of(final TraversalSource traversalSource, final Class anonymousSource) {
+        return new JavaTranslator(traversalSource, anonymousSource);
+    }
+
     @Override
     public TraversalSource getTraversalSource() {
         return this.traversalSource;
@@ -60,17 +65,15 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
 
     @Override
     public Traversal.Admin<?, ?> translate(final Bytecode bytecode) {
-        TraversalSource tempSource = this.traversalSource;
+        TraversalSource dynamicSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
-        if (null != tempSource) {
-            for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
-                tempSource = (TraversalSource) invokeMethod(tempSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
-            }
+        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+            dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
         boolean firstInstruction = true;
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             if (firstInstruction) {
-                traversal = (Traversal.Admin) invokeMethod(tempSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
+                traversal = (Traversal.Admin) invokeMethod(dynamicSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
                 firstInstruction = false;
             } else
                 invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
@@ -107,30 +110,44 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
         final Map<String, List<Method>> methodCache = delegate instanceof TraversalSource ? this.traversalSourceMethodCache : this.traversalMethodCache;
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
-                List<Method> list = methodCache.get(method.getName());
-                if (null == list) {
-                    list = new ArrayList<>();
-                    methodCache.put(method.getName(), list);
+                if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
+                    List<Method> list = methodCache.get(method.getName());
+                    if (null == list) {
+                        list = new ArrayList<>();
+                        methodCache.put(method.getName(), list);
+                    }
+                    list.add(method);
                 }
-                list.add(method);
             }
         }
         ///
         try {
             for (final Method method : methodCache.get(methodName)) {
                 if (returnType.isAssignableFrom(method.getReturnType())) {
-                    if (method.getParameterCount() == arguments.length || method.getParameters()[method.getParameters().length - 1].isVarArgs()) {
+                    if (method.getParameterCount() == arguments.length || (method.getParameterCount() > 0 && method.getParameters()[method.getParameters().length - 1].isVarArgs())) {
                         final Parameter[] parameters = method.getParameters();
                         final Object[] newArguments = new Object[parameters.length];
                         boolean found = true;
                         for (int i = 0; i < parameters.length; i++) {
                             if (parameters[i].isVarArgs()) {
-                                newArguments[i] = Arrays.copyOfRange(arguments, i, arguments.length, (Class) parameters[i].getType());
+                                Object[] varArgs = (Object[]) Array.newInstance(parameters[i].getType().getComponentType(), arguments.length - i);
+                                int counter = 0;
+                                for (int j = i; j < arguments.length; j++) {
+                                    varArgs[counter++] = arguments[j] instanceof Bytecode ?
+                                            this.translateFromAnonymous((Bytecode) arguments[j]) :
+                                            arguments[j];
+                                }
+                                newArguments[i] = varArgs;
                                 break;
                             } else {
-                                if (arguments.length > 0 && (parameters[i].getType().isPrimitive() ||
-                                        parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
-                                        parameters[i].getType().isAssignableFrom(Traversal.Admin.class) && arguments[i] instanceof Bytecode)) {
+                                if (i < arguments.length &&
+                                        (parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
+                                                (parameters[i].getType().isPrimitive() &&
+                                                        (Number.class.isAssignableFrom(arguments[i].getClass()) ||
+                                                                arguments[i].getClass().equals(Boolean.class) ||
+                                                                arguments[i].getClass().equals(Byte.class) ||
+                                                                arguments[i].getClass().equals(Character.class))) ||
+                                                (parameters[i].getType().isAssignableFrom(Traversal.class) && arguments[i] instanceof Bytecode))) {
                                     newArguments[i] = arguments[i] instanceof Bytecode ?
                                             this.translateFromAnonymous((Bytecode) arguments[i]) :
                                             arguments[i];
@@ -140,14 +157,14 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
                                 }
                             }
                         }
-                        if (found)
+                        if (found) {
                             return 0 == newArguments.length ? method.invoke(delegate) : method.invoke(delegate, newArguments);
+                        }
                     }
                 }
             }
         } catch (final Throwable e) {
-            e.printStackTrace();
-            throw new IllegalStateException(e.getMessage());
+            throw new IllegalStateException(e.getMessage(), e);
         }
         throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(arguments) + ")");
     }
