@@ -194,29 +194,40 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_rest_driver</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${basedir}/src/main/jython/gremlin_python.driver</directory>
-                            <includes>
-                                <include>**/*.pyc</include>
-                                <include>**/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*.py</exclude>
-                            </excludes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
                             <directory>${basedir}/src/main/jython/gremlin_python</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/driver</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/process</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/gremlin_python/structure</directory>
                             <includes>
                                 <include>**/*.pyc</include>
                                 <include>**/*.class</include>
