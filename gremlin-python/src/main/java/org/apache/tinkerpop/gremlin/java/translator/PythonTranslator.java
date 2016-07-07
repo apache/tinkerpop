@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonTranslator implements Translator<String, String, String> {
+public class PythonTranslator implements Translator.ScriptTranslator {
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
@@ -85,6 +85,8 @@ public class PythonTranslator implements Translator<String, String, String> {
     public static PythonTranslator of(final String traversalSource, final boolean importStatics) {
         return new PythonTranslator(traversalSource, "__", importStatics);
     }
+
+    //////
 
     @Override
     public String getTraversalSource() {

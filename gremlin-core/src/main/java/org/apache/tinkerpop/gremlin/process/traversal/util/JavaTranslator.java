@@ -37,24 +37,24 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class JavaTranslator implements Translator<TraversalSource, Class, Traversal.Admin<?, ?>> {
+public final class JavaTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
 
-    private final TraversalSource traversalSource;
+    private final S traversalSource;
     private final Class anonymousTraversal;
     private final Map<String, List<Method>> traversalSourceMethodCache = new HashMap<>();
     private final Map<String, List<Method>> traversalMethodCache = new HashMap<>();
 
-    public JavaTranslator(final TraversalSource traversalSource, final Class anonymousSource) {
+    public JavaTranslator(final S traversalSource, final Class anonymousSource) {
         this.traversalSource = traversalSource;
         this.anonymousTraversal = anonymousSource;
     }
 
-    public static JavaTranslator of(final TraversalSource traversalSource, final Class anonymousSource) {
-        return new JavaTranslator(traversalSource, anonymousSource);
+    public static <S extends TraversalSource, T extends Traversal.Admin<?, ?>> JavaTranslator<S, T> of(final S traversalSource, final Class anonymousSource) {
+        return new JavaTranslator<>(traversalSource, anonymousSource);
     }
 
     @Override
-    public TraversalSource getTraversalSource() {
+    public S getTraversalSource() {
         return this.traversalSource;
     }
 
@@ -64,21 +64,21 @@ public final class JavaTranslator implements Translator<TraversalSource, Class, 
     }
 
     @Override
-    public Traversal.Admin<?, ?> translate(final Bytecode bytecode) {
+    public T translate(final Bytecode bytecode) {
         TraversalSource dynamicSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
         for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
             dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
-        boolean firstInstruction = true;
+        boolean spawned = false;
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-            if (firstInstruction) {
+            if (!spawned) {
                 traversal = (Traversal.Admin) invokeMethod(dynamicSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
-                firstInstruction = false;
+                spawned = true;
             } else
                 invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
         }
-        return traversal;
+        return (T) traversal;
     }
 
     @Override

@@ -1165,16 +1165,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> profile(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.profile, sideEffectKey);
+        this.asAdmin().getBytecode().addStep(Traversal.Symbols.profile, sideEffectKey);
         return this.asAdmin().addStep(new ProfileSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
     @Override
     public default GraphTraversal<S, TraversalMetrics> profile() {
-        this.asAdmin().getBytecode().addStep(Symbols.profile);
-        return this.asAdmin()
-                .addStep(new ProfileSideEffectStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY))
-                .addStep(new SideEffectCapStep<Object, TraversalMetrics>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
+        return (GraphTraversal<S, TraversalMetrics>) Traversal.super.profile();
     }
 
     /**
@@ -1501,10 +1498,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String propertyMap = "propertyMap";
         public static final String valueMap = "valueMap";
         public static final String select = "select";
-        @Deprecated
-        public static final String mapValues = "mapValues";
-        @Deprecated
-        public static final String mapKeys = "mapKeys";
         public static final String key = "key";
         public static final String value = "value";
         public static final String path = "path";
@@ -1559,7 +1552,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String store = "store";
         public static final String aggregate = "aggregate";
         public static final String subgraph = "subgraph";
-        public static final String profile = "profile";
         public static final String barrier = "barrier";
         public static final String local = "local";
         public static final String emit = "emit";

@@ -57,4 +57,14 @@ public interface Translator<S, A, T> {
      * @return the language of the translation
      */
     public String getTargetLanguage();
+
+    ///
+
+    public interface ScriptTranslator extends Translator<String, String, String> {
+
+    }
+
+    public interface StepTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> extends Translator<S, Class, T> {
+
+    }
 }

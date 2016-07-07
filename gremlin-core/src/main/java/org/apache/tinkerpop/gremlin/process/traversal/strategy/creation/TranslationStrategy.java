@@ -51,36 +51,36 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
-        try {
-            // if the graph is RemoteGraph, RemoteStrategy will send the traversal
-            if (traversal.getGraph().isPresent() && traversal.getGraph().get() instanceof RemoteGraph)
-                return;
 
-            if (this.translator.getTargetLanguage().equals("gremlin-java")) {
-                final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin) this.translator.translate(traversal.getBytecode());
-                assert !translatedTraversal.isLocked();
-                assert !traversal.isLocked();
-                traversal.setSideEffects(translatedTraversal.getSideEffects());
-                traversal.setStrategies(translatedTraversal.getStrategies());
-                TraversalHelper.removeAllSteps(traversal);
-                TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
-            } else {
-                // translate the traversal and add its steps to this traversal
+        // if the graph is RemoteGraph, RemoteStrategy will send the traversal
+        if (traversal.getGraph().isPresent() && traversal.getGraph().get() instanceof RemoteGraph)
+            return;
+
+        final Traversal.Admin<?, ?> translatedTraversal;
+        ////////////////
+        if (this.translator instanceof Translator.StepTranslator) {
+            // reflection based translation
+            translatedTraversal = (Traversal.Admin<?, ?>) this.translator.translate(traversal.getBytecode());
+        } else if (this.translator instanceof Translator.ScriptTranslator) {
+            try {
+                // script based translation
                 final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
                 final Bindings bindings = scriptEngine.createBindings();
                 scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
                 bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
-                final Traversal.Admin<?, ?> translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.translate(traversal.getBytecode()).toString(), bindings);
-                assert !translatedTraversal.isLocked();
-                assert !traversal.isLocked();
-                traversal.setSideEffects(translatedTraversal.getSideEffects());
-                traversal.setStrategies(traversal.getStrategies().clone().removeStrategies(TranslationStrategy.class));
-                TraversalHelper.removeAllSteps(traversal);
-                TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
+                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.translate(traversal.getBytecode()).toString(), bindings);
+            } catch (final Exception e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
             }
-        } catch (final Exception e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+        } else {
+            throw new IllegalArgumentException("TranslationStrategy does not know how to process the provided translator type: " + this.translator.getClass().getSimpleName());
         }
+        ////////////////
+        assert !translatedTraversal.isLocked();
+        assert !traversal.isLocked();
+        translatedTraversal.getSideEffects().mergeInto(traversal.getSideEffects());
+        TraversalHelper.removeAllSteps(traversal);
+        TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
     }
 
     public TraversalSource getTraversalSource() {

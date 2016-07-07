@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroovyTranslator implements Translator<String, String, String> {
+public final class GroovyTranslator implements Translator.ScriptTranslator {
 
     private final String traversalSource;
     private final String anonymousTraversal;
@@ -57,6 +57,8 @@ public final class GroovyTranslator implements Translator<String, String, String
     public static final GroovyTranslator of(final String traversalSource) {
         return new GroovyTranslator(traversalSource, "__");
     }
+
+    ///////
 
     @Override
     public String translate(final Bytecode bytecode) {
