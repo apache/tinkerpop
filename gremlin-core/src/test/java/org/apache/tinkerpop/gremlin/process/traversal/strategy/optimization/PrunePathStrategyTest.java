@@ -41,6 +41,7 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -62,6 +63,9 @@ public class PrunePathStrategyTest {
     @Parameterized.Parameter(value = 1)
     public List<Set<String>> labels;
 
+    @Parameterized.Parameter(value = 2)
+    public Traversal.Admin optimized;
+
     @Test
     public void doTest() {
         for (final TraversalStrategies currentStrategies : this.strategies) {
@@ -70,6 +74,8 @@ public class PrunePathStrategyTest {
             currentTraversal.applyStrategies();
             final List<Object> keepLabels = getKeepLabels(currentTraversal);
             assertEquals(this.labels, keepLabels);
+            if (null != optimized)
+                assertEquals(currentTraversal, optimized);
         }
     }
 
@@ -102,27 +108,33 @@ public class PrunePathStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Object[][]{
-                {__.out(), Arrays.asList()},
-                {__.V().as("a").out().as("b").where(neq("a")).out(), Arrays.asList(Collections.emptySet())},
-                {__.V().as("a").out().where(neq("a")).out().select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet())},
-                {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.singleton("b"), Collections.emptySet())},
-                {__.V().match(__.as("a").out().as("b")), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")))},
-                {__.V().match(__.as("a").out().as("b")).select("a"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.emptySet())},
+                {__.out(), Arrays.asList(), null},
+                {__.V().as("a").out().as("b").where(neq("a")).out(), Arrays.asList(Collections.emptySet()), null},
+                {__.V().as("a").out().where(neq("a")).out().select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet()), null},
+                {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.singleton("b"), Collections.emptySet()), null},
+                {__.V().match(__.as("a").out().as("b")), Arrays.asList(new HashSet<>(Arrays.asList("a", "b"))), null},
+                {__.V().match(__.as("a").out().as("b")).select("a"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.emptySet()), null},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
-                        Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c")), Collections.singleton("a"), Collections.emptySet())},
-                {__.V().as("a").out().select("a").path(), Arrays.asList()},
-                {__.V().as("a").out().select("a").subgraph("b"), Arrays.asList(Collections.emptySet())},
-                {__.V().as("a").out().select("a").subgraph("b").select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet())},
-                {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), Arrays.asList(Collections.singleton("a"), Collections.emptySet())},
-                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet())},
+                        Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c")), Collections.singleton("a"), Collections.emptySet()), null},
+                {__.V().as("a").out().select("a").path(), Arrays.asList(), null},
+                {__.V().as("a").out().select("a").subgraph("b"), Arrays.asList(Collections.emptySet()), null},
+                {__.V().as("a").out().select("a").subgraph("b").select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet()), null},
+                {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), Arrays.asList(Collections.singleton("a"), Collections.emptySet()), null},
+                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet()), null},
                 {__.V().as("a").out().as("b").where(__.out().select("a", "b", "c").values("prop").count().is(gte(1))).out().where(neq("a")).out().select("b"),
-                        Arrays.asList(Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c"))), Collections.singleton("b"), Collections.emptySet())},
-                {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), Arrays.asList()},
-                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet())},
+                        Arrays.asList(Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c"))), Collections.singleton("b"), Collections.emptySet()), null},
+                {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), Arrays.asList(), null},
+                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet()), null},
                 // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
+                {__.V().as("a").out().as("b").select("a").out().out(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").select("a").count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").select("a").count()},
+                {__.V().as("a").out().as("b").select("a").barrier().count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").select("a").barrier().count()},
+                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").where(P.gt("a")).count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").where(P.gt("a")).count()},
+                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), Arrays.asList(Collections.singleton("b"), Collections.emptySet()), __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
         });
     }
 }

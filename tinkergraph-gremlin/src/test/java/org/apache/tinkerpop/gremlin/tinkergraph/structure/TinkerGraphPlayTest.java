@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
-
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -292,6 +291,7 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
+    @Ignore
     public void testBugs() {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
 

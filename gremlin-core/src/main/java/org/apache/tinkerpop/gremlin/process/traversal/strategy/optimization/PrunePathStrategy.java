@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
@@ -39,6 +41,8 @@ import java.util.Set;
  * @author Ted Wilmes (http://twilmes.org)
  */
 public final class PrunePathStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+
+    public static Integer MAX_BARRIER_SIZE = 1000;
 
     private static final PrunePathStrategy INSTANCE = new PrunePathStrategy();
     // these strategies do strong rewrites involving path labeling and thus, should run prior to PrunePathStrategy
@@ -103,6 +107,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
 
+        final boolean onGraphComputer = TraversalHelper.onGraphComputer(traversal);
         final TraversalParent parent = traversal.getParent();
         final Set<String> foundLabels = new HashSet<>();
         final Set<String> keepLabels = new HashSet<>();
@@ -141,8 +146,14 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                         foundLabels.add(label);
                 }
                 // add the keep labels to the path processor
-                if (currentStep instanceof PathProcessor)
+                if (currentStep instanceof PathProcessor) {
                     ((PathProcessor) currentStep).setKeepLabels(new HashSet<>(keepLabels));
+                    // OLTP barrier optimization that will try and bulk traversers after a path processor step to thin the stream
+                    if (!onGraphComputer &&
+                            !(currentStep.getNextStep() instanceof ReducingBarrierStep) &&
+                            !(currentStep.getNextStep() instanceof NoOpBarrierStep))
+                        TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), currentStep, traversal);
+                }
             } else {
                 // if there is a PATH requiring step in the traversal, do not drop labels
                 // set keep labels to null so that no labels are dropped

@@ -34,9 +34,13 @@ import java.util.Set;
  */
 public class PathUtil {
 
+    private PathUtil() {
+        // public static methods only
+    }
+
     public static Set<String> getReferencedLabels(final Traversal.Admin<?, ?> traversal) {
         final Set<String> referencedLabels = new HashSet<>();
-        for(final Step<?, ?> step : traversal.getSteps()) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
             referencedLabels.addAll(getReferencedLabels(step));
         }
         return referencedLabels;
@@ -46,12 +50,11 @@ public class PathUtil {
         final Set<String> referencedLabels = new HashSet<>();
 
         if (step instanceof Parameterizing) {
-            Parameters parameters = ((Parameterizing) step).getParameters();
+            final Parameters parameters = ((Parameterizing) step).getParameters();
             for (final Traversal.Admin trav : parameters.getTraversals()) {
                 for (final Object ss : trav.getSteps()) {
                     if (ss instanceof Scoping) {
-                        Set<String> labels = ((Scoping) ss).getScopeKeys();
-                        for (String label : labels) {
+                        for (String label : ((Scoping) ss).getScopeKeys()) {
                             referencedLabels.add(label);
                         }
                     }
