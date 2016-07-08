@@ -73,7 +73,7 @@ public class PrunePathStrategyTest {
             currentTraversal.setStrategies(currentStrategies);
             currentTraversal.applyStrategies();
             final List<Object> keepLabels = getKeepLabels(currentTraversal);
-            assertEquals(this.labels, keepLabels);
+            assertEquals(keepLabels, this.labels);
             if (null != optimized)
                 assertEquals(currentTraversal, optimized);
         }
@@ -84,9 +84,8 @@ public class PrunePathStrategyTest {
         for (Step step : traversal.getSteps()) {
             if (step instanceof PathProcessor) {
                 final Set<String> keepers = ((PathProcessor) step).getKeepLabels();
-                if (keepers != null) {
+                if (keepers != null)
                     keepLabels.add(keepers);
-                }
             }
             if (step instanceof TraversalParent) {
                 final TraversalParent parent = (TraversalParent) step;
@@ -135,6 +134,12 @@ public class PrunePathStrategyTest {
                 {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").where(P.gt("a")).count()},
                 {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), Arrays.asList(Collections.singleton("b"), Collections.emptySet()), __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
+                // TODO: why is the local child preserving c and e?
+                {__.V().as("a").out().as("b").select("a").select("b").local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
+                        Arrays.asList(new HashSet<>(Arrays.asList("b", "c", "e")), new HashSet<>(Arrays.asList("c", "e")), Arrays.asList(new HashSet<>(Arrays.asList("c", "e")), new HashSet<>(Arrays.asList("c", "e"))), Collections.emptySet()), null},
+                // TODO: same as above but note how path() makes things react
+                {__.V().as("a").out().as("b").select("a").select("b").path().local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
+                        Arrays.asList(Arrays.asList(new HashSet<>(Arrays.asList("c", "e")), new HashSet<>(Arrays.asList("c", "e")))), null},
         });
     }
 }

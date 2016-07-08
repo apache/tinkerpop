@@ -90,7 +90,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                 do {
                     // if this is the top level traversal, propagate all nested labels
                     // to previous PathProcess steps
-                    if (step instanceof PathProcessor) {
+                    if (step instanceof PathProcessor && null != ((PathProcessor) step).getKeepLabels()) {
                         ((PathProcessor) step).getKeepLabels().addAll(referencedLabels);
                     }
                     step = step.getPreviousStep();
