@@ -60,15 +60,15 @@ public interface PathProcessor {
         return max;
     }
 
-    void setKeepLabels(final Set<String> labels);
+    public void setKeepLabels(final Set<String> labels);
 
-    static void keepLabels(final Traverser traverser, final Set<String> labels) {
-        if(labels == null || labels.isEmpty()) {
-            return;
-        } else {
-            traverser.asAdmin().keepLabels(labels);
-        }
+    public Set<String> getKeepLabels();
+
+    public static <S> Traverser.Admin<S> processTraverserPathLabels(final Traverser.Admin<S> traverser, final Set<String> labels) {
+        if (null != labels && !labels.isEmpty())
+            traverser.keepLabels(labels);
+        return traverser;
     }
 
-    Set<String> getKeepLabels();
+
 }

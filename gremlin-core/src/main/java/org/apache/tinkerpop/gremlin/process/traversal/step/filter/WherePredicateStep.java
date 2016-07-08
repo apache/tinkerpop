@@ -120,9 +120,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
-        final Traverser.Admin<S> traverser = super.processNextStart();
-        PathProcessor.keepLabels(traverser, keepLabels);
-        return traverser;
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
     @Override

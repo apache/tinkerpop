@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
 
     private static final PathProcessorStrategy INSTANCE = new PathProcessorStrategy();
 
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(MatchPredicateStrategy.class));
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(MatchPredicateStrategy.class);
 
     private PathProcessorStrategy() {
     }

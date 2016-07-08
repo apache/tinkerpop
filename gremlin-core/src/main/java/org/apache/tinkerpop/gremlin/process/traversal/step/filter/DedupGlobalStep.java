@@ -83,9 +83,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected Traverser.Admin<S> processNextStart() {
-        final Traverser.Admin<S> traverser = super.processNextStart();
-        PathProcessor.keepLabels(traverser, keepLabels);
-        return traverser;
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
     @Override

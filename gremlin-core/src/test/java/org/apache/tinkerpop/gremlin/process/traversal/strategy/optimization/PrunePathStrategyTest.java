@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,45 +49,48 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class PrunePathStrategyTest {
 
+    private final List<TraversalStrategies> strategies = Arrays.asList(
+            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance(), PathProcessorStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()),
+            TraversalStrategies.GlobalCache.getStrategies(Graph.class));
+
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
     public List<Set<String>> labels;
 
-    void applyPrunePathStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(PrunePathStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-    }
-
     @Test
     public void doTest() {
-        applyPrunePathStrategy(traversal);
-        // get all path processors
-        List<Object> keepLabels = getKeepLabels(traversal);
-
-        assertEquals(labels, keepLabels);
+        for (final TraversalStrategies currentStrategies : this.strategies) {
+            final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
+            currentTraversal.setStrategies(currentStrategies);
+            System.out.println(currentStrategies);
+            currentTraversal.applyStrategies();
+            final List<Object> keepLabels = getKeepLabels(currentTraversal);
+            assertEquals(this.labels, keepLabels);
+        }
     }
 
-    private List<Object> getKeepLabels(Traversal.Admin traversal) {
+    private List<Object> getKeepLabels(final Traversal.Admin<?, ?> traversal) {
         List<Object> keepLabels = new ArrayList<>();
-        for(Step step : (List<Step>)traversal.getSteps()) {
-            if(step instanceof PathProcessor) {
+        for (Step step : traversal.getSteps()) {
+            if (step instanceof PathProcessor) {
                 final Set<String> keepers = ((PathProcessor) step).getKeepLabels();
-                if(keepers != null) {
+                if (keepers != null) {
                     keepLabels.add(keepers);
                 }
             }
-            if(step instanceof TraversalParent) {
-                TraversalParent parent = (TraversalParent) step;
-                List<Traversal.Admin<?, ?>> children = new ArrayList<>();
+            if (step instanceof TraversalParent) {
+                final TraversalParent parent = (TraversalParent) step;
+                final List<Traversal.Admin<?, ?>> children = new ArrayList<>();
                 children.addAll(parent.getGlobalChildren());
                 children.addAll(parent.getLocalChildren());
-                for(Traversal.Admin<?, ?> child : children) {
-                    List<Object> childLabels = getKeepLabels(child);
-                    if(childLabels.size() > 0) {
+                for (final Traversal.Admin<?, ?> child : children) {
+                    final List<Object> childLabels = getKeepLabels(child);
+                    if (childLabels.size() > 0) {
                         keepLabels.add(childLabels);
                     }
                 }
@@ -99,20 +103,27 @@ public class PrunePathStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Object[][]{
-                {__.V().as("a").out().as("b").where(neq("a")).out(), Arrays.asList(Collections.EMPTY_SET)},
-                {__.V().as("a").out().where(neq("a")).out().select("a"), Arrays.asList(Collections.singleton("a"), Collections.EMPTY_SET)},
+                {__.out(), Arrays.asList()},
+                {__.V().as("a").out().as("b").where(neq("a")).out(), Arrays.asList(Collections.emptySet())},
+                {__.V().as("a").out().where(neq("a")).out().select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet())},
+                {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.singleton("b"), Collections.emptySet())},
                 {__.V().match(__.as("a").out().as("b")), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")))},
-                {__.V().match(__.as("a").out().as("b")).select("a"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.EMPTY_SET)},
+                {__.V().match(__.as("a").out().as("b")).select("a"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.emptySet())},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
-                        Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c")), Collections.singleton("a"), Collections.EMPTY_SET)},
+                        Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c")), Collections.singleton("a"), Collections.emptySet())},
                 {__.V().as("a").out().select("a").path(), Arrays.asList()},
-                {__.V().as("a").out().select("a").subgraph("b"), Arrays.asList()},
-                {__.V().out().as("a").where(neq("a")).out().where(neq("a")), Arrays.asList(Collections.singleton("a"), Collections.EMPTY_SET)},
-                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.EMPTY_SET)},
+                {__.V().as("a").out().select("a").subgraph("b"), Arrays.asList(Collections.emptySet())},
+                {__.V().as("a").out().select("a").subgraph("b").select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet())},
+                {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), Arrays.asList(Collections.singleton("a"), Collections.emptySet())},
+                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet())},
+                {__.V().as("a").out().as("b").where(__.out().select("a", "b", "c").values("prop").count().is(gte(1))).out().where(neq("a")).out().select("b"),
+                        Arrays.asList(Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c"))), Collections.singleton("b"), Collections.emptySet())},
                 {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), Arrays.asList()},
-                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.EMPTY_SET)}
+                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet())},
+                // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
+                // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
         });
     }
 }

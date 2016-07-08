@@ -23,13 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -41,11 +41,8 @@ import java.util.Set;
 public final class PrunePathStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final PrunePathStrategy INSTANCE = new PrunePathStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        PRIORS.add(PathProcessorStrategy.class);
-    }
+    // these strategies do strong rewrites involving path labeling and thus, should run prior to PrunePathStrategy
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(RepeatUnrollStrategy.class, MatchPredicateStrategy.class, PathProcessorStrategy.class));
 
     private PrunePathStrategy() {
     }
@@ -54,10 +51,10 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
         return INSTANCE;
     }
 
-    protected Set<String> getAndPropagateReferencedLabels(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent().equals(EmptyStep.instance())) {
-            return Collections.EMPTY_SET;
-        }
+    private Set<String> getAndPropagateReferencedLabels(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getParent().equals(EmptyStep.instance()))
+            return Collections.emptySet();
+
         Step<?, ?> parent = traversal.getParent().asStep();
         Set<String> referencedLabels = new HashSet<>();
         // get referenced labels from this traversal
@@ -83,7 +80,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                     referencedLabels.addAll(labels);
                 }
                 step = step.getNextStep();
-            } while(!(step.equals(EmptyStep.instance())));
+            } while (!(step.equals(EmptyStep.instance())));
             if (topLevelParent) {
                 step = parent;
                 do {
@@ -105,10 +102,10 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        TraversalParent parent = traversal.getParent();
 
-        Set<String> foundLabels = new HashSet<>();
-        Set<String> keepLabels = new HashSet<>();
+        final TraversalParent parent = traversal.getParent();
+        final Set<String> foundLabels = new HashSet<>();
+        final Set<String> keepLabels = new HashSet<>();
 
         // If this traversal has a parent, it will need to inherit its
         // parent's keep labels.  If its direct parent is not a PathProcessor,
@@ -117,27 +114,20 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
         if (!parent.equals(EmptyStep.instance())) {
             // start with parents keep labels
             if (parent instanceof PathProcessor) {
-                PathProcessor parentPathProcess = (PathProcessor) parent;
-                if (parentPathProcess.getKeepLabels() != null) keepLabels.addAll(parentPathProcess.getKeepLabels());
-            } else {
-                Set<String> labels = getAndPropagateReferencedLabels(traversal);
-                keepLabels.addAll(labels);
-            }
+                final PathProcessor parentPathProcess = (PathProcessor) parent;
+                if (null != parentPathProcess.getKeepLabels()) keepLabels.addAll(parentPathProcess.getKeepLabels());
+            } else
+                keepLabels.addAll(getAndPropagateReferencedLabels(traversal));
         }
 
-        // check if the traversal contains any path or subgraph steps and if
+        // check if the traversal contains any PATH requiring steps and if
         // it does, note it so that the keep labels are set to null later on
         // which signals PathProcessors to not drop path information
-        boolean hasPathStep = false;
-        final List<PathStep> pathSteps = TraversalHelper.getStepsOfAssignableClassRecursively(PathStep.class, traversal);
-        final List<SubgraphStep> subgraphSteps = TraversalHelper.getStepsOfAssignableClassRecursively(SubgraphStep.class, traversal);
-        if (!pathSteps.isEmpty() || !subgraphSteps.isEmpty()) {
-            hasPathStep = true;
-        }
+        final boolean hasPathStep = TraversalHelper.anyStepRecursively(step -> step.getRequirements().contains(TraverserRequirement.PATH), traversal);
 
         final List<Step> steps = traversal.getSteps();
-        for(int i = steps.size() - 1; i >= 0; i--) {
-            Step currentStep = steps.get(i);
+        for (int i = steps.size() - 1; i >= 0; i--) {
+            final Step currentStep = steps.get(i);
             if (!hasPathStep) {
                 // maintain our list of labels to keep, repeatedly adding labels that were found during
                 // the last iteration
@@ -145,22 +135,19 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
 
                 final Set<String> labels = PathUtil.getReferencedLabels(currentStep);
                 for (final String label : labels) {
-                    if (foundLabels.contains(label)) {
+                    if (foundLabels.contains(label))
                         keepLabels.add(label);
-                    } else {
+                    else
                         foundLabels.add(label);
-                    }
                 }
-
-                if (currentStep instanceof PathProcessor) {
+                // add the keep labels to the path processor
+                if (currentStep instanceof PathProcessor)
                     ((PathProcessor) currentStep).setKeepLabels(new HashSet<>(keepLabels));
-                }
             } else {
-                // if there is a PathStep or SubgraphStep in the traversal, do not drop labels
-                if (currentStep instanceof PathProcessor) {
-                    // set keep labels to null so that no labels are dropped
+                // if there is a PATh requiring step in the traversal, do not drop labels
+                // set keep labels to null so that no labels are dropped
+                if (currentStep instanceof PathProcessor)
                     ((PathProcessor) currentStep).setKeepLabels(null);
-                }
             }
         }
     }

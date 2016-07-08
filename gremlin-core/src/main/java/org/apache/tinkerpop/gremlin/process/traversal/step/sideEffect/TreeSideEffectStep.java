@@ -69,6 +69,11 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
+    protected Traverser.Admin<S> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
+    }
+
+    @Override
     public String getSideEffectKey() {
         return this.sideEffectKey;
     }
@@ -123,5 +128,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
-    public Set<String> getKeepLabels() { return this.keepLabels; }
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
 }

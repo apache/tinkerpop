@@ -129,7 +129,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     protected Traverser.Admin<E> processNextStart() {
         final Traverser.Admin<E> traverser = super.processNextStart();
         if(!(this.getTraversal().getParent() instanceof MatchStep)) {
-            PathProcessor.keepLabels(traverser, keepLabels);
+            PathProcessor.processTraverserPathLabels(traverser, this.keepLabels);
         }
         return traverser;
     }

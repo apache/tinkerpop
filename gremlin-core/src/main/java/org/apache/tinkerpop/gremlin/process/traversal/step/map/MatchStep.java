@@ -18,11 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.*;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -38,7 +47,17 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -137,7 +156,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             TraversalHelper.insertAfterStep(new TraversalFlatMapStep<>(matchTraversal, newTraversal), matchTraversal.getStartStep(), matchTraversal);
         }
     }
-
 
 
     public ConnectiveStep.Connective getConnective() {
@@ -373,16 +391,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    protected List<Traversal.Admin> getRemainingTraversals(final Traverser.Admin traverser) {
+    protected List<Traversal.Admin<?, ?>> getRemainingTraversals(final Traverser.Admin<?> traverser) {
         final Set<String> tags = traverser.getTags();
-        final List<Traversal.Admin> remainingTraversals = new ArrayList<>();
-        for (final Traversal.Admin matchTraversal : matchTraversals) {
+        final List<Traversal.Admin<?, ?>> remainingTraversals = new ArrayList<>();
+        for (final Traversal.Admin<?, ?> matchTraversal : matchTraversals) {
             if (!tags.contains(matchTraversal.getStartStep().getId())) {
                 remainingTraversals.add(matchTraversal);
             } else {
                 // include the current traversal that the traverser is executing in the list of
                 // remaining traversals
-                for (final Step<?, ?> s : (List<Step<?, ?>>)matchTraversal.getSteps()) {
+                for (final Step<?, ?> s : matchTraversal.getSteps()) {
                     if (s.getId().equals(traverser.getStepId())) {
                         remainingTraversals.add(matchTraversal);
                         break;
@@ -410,14 +428,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     protected Traverser.Admin<Map<String, E>> processNextStart() throws NoSuchElementException {
         final Traverser.Admin<Map<String, E>> traverser = super.processNextStart();
-        if (keepLabels != null) {
+        if (null != this.keepLabels) {
             final Set<String> keepers = new HashSet<>();
-            List<Traversal.Admin> remainingTraversals = getRemainingTraversals(traverser);
-            for (Traversal.Admin trav : remainingTraversals) {
-                keepers.addAll(PathUtil.getReferencedLabels(trav));
+            for (final Traversal.Admin<?, ?> traversal : getRemainingTraversals(traverser)) {
+                keepers.addAll(PathUtil.getReferencedLabels(traversal));
             }
-            keepers.addAll(keepLabels);
-            PathProcessor.keepLabels(traverser, keepers);
+            keepers.addAll(this.keepLabels);
+            PathProcessor.processTraverserPathLabels(traverser, keepers);
         }
         return traverser;
     }
@@ -749,5 +766,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.matchEndLabels;
     }
 
-    public Set<String> getMatchStartLabels() { return this.matchStartLabels; }
+    public Set<String> getMatchStartLabels() {
+        return this.matchStartLabels;
+    }
 }

@@ -197,9 +197,9 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     MatchPredicateStrategy.instance(),
                     RepeatUnrollStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
+                    PrunePathStrategy.instance(),
                     ProfileStrategy.instance(),
-                    StandardVerificationStrategy.instance(),
-                    PrunePathStrategy.instance());
+                    StandardVerificationStrategy.instance());
 
             GRAPH_CACHE.put(Graph.class, graphStrategies);
             GRAPH_CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());

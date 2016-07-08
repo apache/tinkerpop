@@ -110,11 +110,11 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     @Override
     protected Traverser.Admin<Path> processNextStart() {
-        final Traverser.Admin<Path> traverser = super.processNextStart();
-        PathProcessor.keepLabels(traverser, keepLabels);
-        return traverser;
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
     @Override
-    public Set<String> getKeepLabels() { return this.keepLabels; }
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
 }

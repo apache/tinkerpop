@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public class PathUtil {
 
-    public static Set<String> getReferencedLabels(Traversal.Admin<?, ?> traversal) {
+    public static Set<String> getReferencedLabels(final Traversal.Admin<?, ?> traversal) {
         final Set<String> referencedLabels = new HashSet<>();
         for(final Step<?, ?> step : traversal.getSteps()) {
             referencedLabels.addAll(getReferencedLabels(step));
@@ -42,13 +42,13 @@ public class PathUtil {
         return referencedLabels;
     }
 
-    public static Set<String> getReferencedLabels(Step step) {
+    public static Set<String> getReferencedLabels(final Step step) {
         final Set<String> referencedLabels = new HashSet<>();
 
         if (step instanceof Parameterizing) {
             Parameters parameters = ((Parameterizing) step).getParameters();
-            for (Traversal.Admin trav : parameters.getTraversals()) {
-                for (Object ss : trav.getSteps()) {
+            for (final Traversal.Admin trav : parameters.getTraversals()) {
+                for (final Object ss : trav.getSteps()) {
                     if (ss instanceof Scoping) {
                         Set<String> labels = ((Scoping) ss).getScopeKeys();
                         for (String label : labels) {
@@ -60,7 +60,7 @@ public class PathUtil {
         }
 
         if (step instanceof Scoping) {
-            Set<String> labels = new HashSet<>(((Scoping) step).getScopeKeys());
+            final Set<String> labels = new HashSet<>(((Scoping) step).getScopeKeys());
             if (step instanceof MatchStep) {
                 // if this is the last step, keep everything, else just add founds
                 if (step.getNextStep() instanceof EmptyStep) {
