@@ -66,9 +66,11 @@ under the License.
 //////////////////////////
         pythonClass.append(
                 """class GraphTraversalSource(object):
-  def __init__(self, graph, traversal_strategies, bytecode=Bytecode()):
+  def __init__(self, graph, traversal_strategies, bytecode=None):
     self.graph = graph
     self.traversal_strategies = traversal_strategies
+    if bytecode is None:
+      bytecode = Bytecode()
     self.bytecode = bytecode
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
