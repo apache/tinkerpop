@@ -37,8 +37,11 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 * Fixed bug in `GremlinGroovyScriptEngineFileSandboxTest` resource loading
 * Improved `TinkerGraph` performance when iterating vertices and edges.
 * Fixed a bug where timeout functions provided to the `GremlinExecutor` were not executing in the same thread as the script evaluation.
+* Fixed a bug in the driver where many parallel requests over a session would sometimes force a connection to close and replace itself.
 * Optimized a few special cases in `RangeByIsCountStrategy`.
 * Added more "invalid" variable bindings to the list used by Gremlin Server to validate incoming bindings on requests.
+* Fixed a bug where the `ConnectionPool` in the driver would not grow with certain configuration options.
+* Fixed a bug where pauses in Gremlin Server writing to an overtaxed client would generate unexpected `FastNoSuchElementException` errors.
 * Named the thread pool used by Gremlin Server sessions: "gremlin-server-session-$n".
 * Fixed a bug in `BulkSet.equals()` which made itself apparent when using `store()` and `aggregate()` with labeled `cap()`.
 * Fixed a bug where `Result.one()` could potentially block indefinitely under certain circumstances.

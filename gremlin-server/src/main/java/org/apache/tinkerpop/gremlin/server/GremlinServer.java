@@ -161,8 +161,8 @@ public class GremlinServer {
 
             // when high value is reached then the channel becomes non-writable and stays like that until the
             // low value is so that there is time to recover
-            b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, settings.writeBufferLowWaterMark);
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
+            b.childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, settings.writeBufferLowWaterMark);
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             // fire off any lifecycle scripts that were provided by the user. hooks get initialized during

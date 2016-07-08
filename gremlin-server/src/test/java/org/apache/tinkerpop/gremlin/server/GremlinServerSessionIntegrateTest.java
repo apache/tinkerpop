@@ -50,10 +50,8 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -95,6 +93,9 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
                 settings.processors.add(processorSettings);
 
                 Logger.getRootLogger().setLevel(Level.INFO);
+                break;
+            case "shouldEnsureSessionBindingsAreThreadSafe":
+                settings.threadPoolWorker = 2;
                 break;
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
@@ -197,16 +198,15 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
         assertEquals(1, recordingAppender.getMessages().stream()
                 .filter(msg -> msg.equals("INFO - Session shouldHaveTheSessionTimeout closed\n")).count());
-
     }
 
     @Test
     public void shouldEnsureSessionBindingsAreThreadSafe() throws Exception {
-        final Cluster cluster = Cluster.open();
+        final Cluster cluster = Cluster.build().minInProcessPerConnection(16).maxInProcessPerConnection(64).create();
         final Client client = cluster.connect(name.getMethodName());
 
         client.submitAsync("a=100;b=1000;c=10000;null");
-        final int requests = 1000;
+        final int requests = 10000;
         final List<CompletableFuture<ResultSet>> futures = new ArrayList<>(requests);
         IntStream.range(0, requests).forEach(i -> {
             try {
@@ -218,12 +218,15 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
         assertEquals(requests, futures.size());
 
+        int counter = 0;
         for(CompletableFuture<ResultSet> f : futures) {
-            final Result r = f.get().all().get(3000, TimeUnit.MILLISECONDS).get(0);
+            final Result r = f.get().all().get(30000, TimeUnit.MILLISECONDS).get(0);
             assertEquals(11100, r.getInt());
+            counter++;
         }
 
-        client.close();
+        assertEquals(requests, counter);
+
         cluster.close();
     }
 
