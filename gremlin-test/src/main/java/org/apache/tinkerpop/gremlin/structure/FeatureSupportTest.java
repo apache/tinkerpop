@@ -587,7 +587,7 @@ public class FeatureSupportTest {
         public void shouldSupportRemovePropertyIfAPropertyCanBeRemoved() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                final Edge e = v.addEdge("self", v);
+                final Edge e = v.addEdge("self", v, "name", "foo");
                 e.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
@@ -635,6 +635,7 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         public void shouldEnableFeatureOnVertexIfNotEnabled() throws Exception {
             assumeThat(graph.features().supports(VertexPropertyFeatures.class, featureName), is(false));
             try {
@@ -735,7 +736,7 @@ public class FeatureSupportTest {
 
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+                v.property(VertexProperty.Cardinality.single, "test", "me", T.id, id);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -755,7 +756,7 @@ public class FeatureSupportTest {
 
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+                v.property(VertexProperty.Cardinality.single, "test", "me", T.id, id);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -775,7 +776,7 @@ public class FeatureSupportTest {
 
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+                v.property(VertexProperty.Cardinality.single, "test", "me", T.id, id);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -795,7 +796,7 @@ public class FeatureSupportTest {
 
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+                v.property(VertexProperty.Cardinality.single, "test", "me", T.id, id);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -816,7 +817,7 @@ public class FeatureSupportTest {
 
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+                v.property(VertexProperty.Cardinality.single, "test", "me", T.id, id);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -875,6 +876,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_MULTI_PROPERTIES, supported = false)
         public void shouldSupportMultiPropertyIfTheSameKeyCanBeAssignedMoreThanOnce() throws Exception {
             try {
@@ -889,6 +891,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldSupportMetaPropertyIfPropertiesCanBePutOnProperties() throws Exception {
@@ -904,6 +907,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldSupportMetaPropertyIfPropertiesCanBePutOnPropertiesViaVertexProperty() throws Exception {
@@ -919,6 +923,7 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES, supported = false)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldSupportMetaPropertyIfPropertiesHaveAnIteratorViaVertexProperty() throws Exception {
@@ -988,6 +993,7 @@ public class FeatureSupportTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_PROPERTIES)
         public void shouldSupportADataTypeIfEdgeHasPropertyEnabled() {
             assertEquals(edgePropertyFeatures.supportsProperties(), (edgePropertyFeatures.supportsBooleanValues() || edgePropertyFeatures.supportsDoubleValues()
                     || edgePropertyFeatures.supportsFloatValues() || edgePropertyFeatures.supportsIntegerValues()
@@ -1001,6 +1007,7 @@ public class FeatureSupportTest {
         }
 
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = VertexPropertyFeatures.FEATURE_PROPERTIES)
         public void shouldSupportADataTypeIfVertexHasPropertyEnabled() {
             assertEquals(vertexPropertyFeatures.supportsProperties(), (vertexPropertyFeatures.supportsBooleanValues() || vertexPropertyFeatures.supportsDoubleValues()
                     || vertexPropertyFeatures.supportsFloatValues() || vertexPropertyFeatures.supportsIntegerValues()
