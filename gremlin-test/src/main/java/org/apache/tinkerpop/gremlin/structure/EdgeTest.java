@@ -106,7 +106,7 @@ public class EdgeTest {
         public void shouldHaveExceptionConsistencyWhenUsingNullVertex() {
             final Vertex v = graph.addVertex();
             try {
-                v.addEdge("to-nothing", null);
+                v.addEdge("tonothing", null);
                 fail("Call to Vertex.addEdge() should throw an exception when vertex is null");
             } catch (Exception ex) {
                 validateException(Graph.Exceptions.argumentCanNotBeNull("vertex"), ex);
