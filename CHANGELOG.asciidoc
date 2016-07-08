@@ -258,7 +258,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Enured calls to `Result.hasNext()` were idempotent.
+* Fixed bug in `SubgraphStep` where features were not being checked properly prior to reading meta-properties.
+* Ensured calls to `Result.hasNext()` were idempotent.
 * Avoid hamcrest conflict by using mockito-core instead of mockito-all dependency in `gremlin-test`.
 * Fixed bug in `GremlinExecutor` causing Gremlin Server to lock up when parallel requests were submitted on the same session if those parallel requests included a script that blocked indefinitely.
 * Changed `GremlinExecutor` timeout scheduling so that the timer would not start until a time closer to the actual start of script evaluation.
