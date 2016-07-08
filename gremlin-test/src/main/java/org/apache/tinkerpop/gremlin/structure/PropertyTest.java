@@ -71,7 +71,7 @@ public class PropertyTest {
             final Vertex v = graph.addVertex("name", "marko");
             tryCommit(graph, (graph) -> {
                 final Vertex v1 = graph.vertices(v.id()).next();
-                final VertexProperty p = v1.property("nonexistent-key");
+                final VertexProperty p = v1.property("nonexistentkey");
                 assertEquals(VertexProperty.empty(), p);
             });
         }
@@ -191,10 +191,10 @@ public class PropertyTest {
         public void shouldGetValueThatIsNotPresentOnVertex() {
             final Vertex v = graph.addVertex();
             try {
-                v.value("does-not-exist");
+                v.value("doesnotexist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyDoesNotExist(v, "does-not-exist"), ex);
+                validateException(Property.Exceptions.propertyDoesNotExist(v, "doesnotexist"), ex);
             }
 
         }
@@ -207,10 +207,10 @@ public class PropertyTest {
             final Vertex v = graph.addVertex();
             final Edge e = v.addEdge("self", v);
             try {
-                e.value("does-not-exist");
+                e.value("doesnotexist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyDoesNotExist(e, "does-not-exist"), ex);
+                validateException(Property.Exceptions.propertyDoesNotExist(e, "doesnotexist"), ex);
             }
 
         }
