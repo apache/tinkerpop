@@ -33,8 +33,6 @@ import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,7 +59,7 @@ public class PrunePathStrategyTest {
     public Traversal.Admin traversal;
 
     @Parameterized.Parameter(value = 1)
-    public List<Set<String>> labels;
+    public String labels;
 
     @Parameterized.Parameter(value = 2)
     public Traversal.Admin optimized;
@@ -72,8 +70,7 @@ public class PrunePathStrategyTest {
             final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
             currentTraversal.setStrategies(currentStrategies);
             currentTraversal.applyStrategies();
-            final List<Object> keepLabels = getKeepLabels(currentTraversal);
-            assertEquals(keepLabels, this.labels);
+            assertEquals(getKeepLabels(currentTraversal).toString(), this.labels);
             if (null != optimized)
                 assertEquals(currentTraversal, optimized);
         }
@@ -107,39 +104,39 @@ public class PrunePathStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Object[][]{
-                {__.out(), Arrays.asList(), null},
-                {__.V().as("a").out().as("b").where(neq("a")).out(), Arrays.asList(Collections.emptySet()), null},
-                {__.V().as("a").out().where(neq("a")).out().select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet()), null},
-                {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.singleton("b"), Collections.emptySet()), null},
-                {__.V().match(__.as("a").out().as("b")), Arrays.asList(new HashSet<>(Arrays.asList("a", "b"))), null},
-                {__.V().match(__.as("a").out().as("b")).select("a"), Arrays.asList(new HashSet<>(Arrays.asList("a", "b")), Collections.emptySet()), null},
+                {__.out(), "[]", null},
+                {__.V().as("a").out().as("b").where(neq("a")).out(), "[[]]", null},
+                {__.V().as("a").out().where(neq("a")).out().select("a"), "[[a], []]", null},
+                {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), "[[a, b], [b], []]", null},
+                {__.V().match(__.as("a").out().as("b")), "[[a, b]]", null},
+                {__.V().match(__.as("a").out().as("b")).select("a"), "[[a, b], []]", null},
                 {__.V().out().out().match(
                         as("a").in("created").as("b"),
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
-                        Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c")), Collections.singleton("a"), Collections.emptySet()), null},
-                {__.V().as("a").out().select("a").path(), Arrays.asList(), null},
-                {__.V().as("a").out().select("a").subgraph("b"), Arrays.asList(Collections.emptySet()), null},
-                {__.V().as("a").out().select("a").subgraph("b").select("a"), Arrays.asList(Collections.singleton("a"), Collections.emptySet()), null},
-                {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), Arrays.asList(Collections.singleton("a"), Collections.emptySet()), null},
-                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet()), null},
+                        "[[a, b, c], [a], []]", null},
+                {__.V().as("a").out().select("a").path(), "[]", null},
+                {__.V().as("a").out().select("a").subgraph("b"), "[[]]", null},
+                {__.V().as("a").out().select("a").subgraph("b").select("a"), "[[a], []]", null},
+                {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), "[[a], []]", null},
+                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), "[[[a]], []]", null},
                 {__.V().as("a").out().as("b").where(__.out().select("a", "b", "c").values("prop").count().is(gte(1))).out().where(neq("a")).out().select("b"),
-                        Arrays.asList(Arrays.asList(new HashSet<>(Arrays.asList("a", "b", "c"))), Collections.singleton("b"), Collections.emptySet()), null},
-                {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), Arrays.asList(), null},
-                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), Arrays.asList(Arrays.asList(Collections.singleton("a")), Collections.emptySet()), null},
+                        "[[[a, b, c]], [b], []]", null},
+                {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), "[]", null},
+                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
                 // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
-                {__.V().as("a").out().as("b").select("a").out().out(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
-                {__.V().as("a").out().as("b").select("a").count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").select("a").count()},
-                {__.V().as("a").out().as("b").select("a").barrier().count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").select("a").barrier().count()},
-                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
-                {__.V().as("a").out().as("b").where(P.gt("a")).count(), Arrays.asList(Collections.emptySet()), __.V().as("a").out().as("b").where(P.gt("a")).count()},
-                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), Arrays.asList(Collections.singleton("b"), Collections.emptySet()), __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
+                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").select("a").count(), "[[]]", __.V().as("a").out().as("b").select("a").count()},
+                {__.V().as("a").out().as("b").select("a").barrier().count(), "[[]]", __.V().as("a").out().as("b").select("a").barrier().count()},
+                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
+                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
                 // TODO: why is the local child preserving c and e?
                 {__.V().as("a").out().as("b").select("a").select("b").local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
-                        Arrays.asList(new HashSet<>(Arrays.asList("b", "c", "e")), new HashSet<>(Arrays.asList("c", "e")), Arrays.asList(new HashSet<>(Arrays.asList("c", "e")), new HashSet<>(Arrays.asList("c", "e"))), Collections.emptySet()), null},
+                        "[[b, c, e], [c, e], [[c, e], [c, e]], []]", null},
                 // TODO: same as above but note how path() makes things react
                 {__.V().as("a").out().as("b").select("a").select("b").path().local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
-                        Arrays.asList(Arrays.asList(new HashSet<>(Arrays.asList("c", "e")), new HashSet<>(Arrays.asList("c", "e")))), null},
+                        "[[[c, e], [c, e]]]", null},
         });
     }
 }
