@@ -112,6 +112,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Vertex.class);
         CLASS_IMPORTS.add(VertexProperty.class);
         // tokens
+        CLASS_IMPORTS.add(SackFunctions.class);
         CLASS_IMPORTS.add(SackFunctions.Barrier.class);
         CLASS_IMPORTS.add(VertexProperty.Cardinality.class);
         CLASS_IMPORTS.add(Column.class);
@@ -217,6 +218,5 @@ public final class CoreImports {
 
     public static Set<Enum> getEnumImports() {
         return Collections.unmodifiableSet(ENUM_IMPORTS);
-
     }
 }

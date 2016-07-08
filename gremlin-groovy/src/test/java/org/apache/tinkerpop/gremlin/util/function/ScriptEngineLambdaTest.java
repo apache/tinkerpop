@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 /**
  * @author Matt Frantz (matthew.h.frantz+tinkerpop@gmail.com)
  */
+@org.junit.Ignore
 public class ScriptEngineLambdaTest {
 
     private final static String GROOVY_SCRIPT_ENGINE_NAME = "Groovy";

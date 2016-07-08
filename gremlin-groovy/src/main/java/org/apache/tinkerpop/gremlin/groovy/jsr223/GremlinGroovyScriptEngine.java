@@ -38,6 +38,12 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -53,7 +59,6 @@ import org.codehaus.groovy.util.ReferenceBundle;
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.IOException;
@@ -64,6 +69,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,7 +90,8 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
+public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
+        implements DependencyManager, AutoCloseable, GremlinScriptEngine {
 
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
@@ -187,6 +194,47 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     @Deprecated
     public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
         this((CompilerCustomizerProvider) importCustomizerProvider);
+    }
+
+    public GremlinGroovyScriptEngine(final Customizer... customizers) {
+        final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
+
+        GremlinLoader.load();
+
+        final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()
+                .filter(p -> p instanceof ImportCustomizer)
+                .map(p -> (ImportCustomizer) p)
+                .collect(Collectors.toList());
+        if (importCustomizers.isEmpty()) {
+            importCustomizerProvider = NoImportCustomizerProvider.INSTANCE;
+        } else {
+            final Set<String> imports = new HashSet<>();
+            final Set<String> staticImports = new HashSet<>();
+            importCustomizers.forEach(ic -> {
+                ic.getClassImports().forEach(c -> {
+                    final String importStatement = c.getName();
+                    imports.add(importStatement);
+                });
+
+                ic.getEnumImports().forEach(e -> {
+                    final String importStatement = e.getDeclaringClass().getCanonicalName() + ".*";
+                    staticImports.add(importStatement);
+                });
+
+                ic.getMethodImports().forEach(m -> {
+                    final String importStatement = m.getDeclaringClass().getCanonicalName() + ".*";
+                    staticImports.add(importStatement);
+                });
+            });
+
+            importCustomizerProvider = new EmptyImportCustomizerProvider(imports, staticImports);
+        }
+
+        interpreterModeEnabled = false;
+
+        customizerProviders = Collections.emptyList();
+
+        createClassLoader();
     }
 
     /**
@@ -321,6 +369,11 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
+    public Traversal.Admin eval(final Bytecode bytes, final Bindings bindings) {
+        return null;
+    }
+
+    @Override
     public void close() throws Exception {
     }
 
@@ -405,7 +458,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * {@inheritDoc}
      */
     @Override
-    public ScriptEngineFactory getFactory() {
+    public GremlinScriptEngineFactory getFactory() {
         if (factory == null) {
             synchronized (this) {
                 if (factory == null) {

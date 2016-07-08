@@ -18,22 +18,31 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.CustomizerManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinGroovyScriptEngineFactory implements ScriptEngineFactory {
+public class GremlinGroovyScriptEngineFactory implements GremlinScriptEngineFactory {
 
     private static final String ENGINE_NAME = "gremlin-groovy";
     private static final String LANGUAGE_NAME = "gremlin-groovy";
     private static final String PLAIN = "plain";
-    private static final List<String> EXTENSIONS = Arrays.asList("groovy");
+    private static final List<String> EXTENSIONS = Collections.singletonList("groovy");
+
+    private CustomizerManager manager;
+
+    @Override
+    public void setCustomizerManager(final CustomizerManager manager) {
+        this.manager = manager;
+    }
 
     @Override
     public String getEngineName() {
@@ -67,12 +76,12 @@ public class GremlinGroovyScriptEngineFactory implements ScriptEngineFactory {
 
     @Override
     public List<String> getMimeTypes() {
-        return Arrays.asList(PLAIN);
+        return Collections.singletonList(PLAIN);
     }
 
     @Override
     public List<String> getNames() {
-        return Arrays.asList(LANGUAGE_NAME);
+        return Collections.singletonList(LANGUAGE_NAME);
     }
 
     @Override
@@ -108,7 +117,8 @@ public class GremlinGroovyScriptEngineFactory implements ScriptEngineFactory {
     }
 
     @Override
-    public ScriptEngine getScriptEngine() {
-        return new GremlinGroovyScriptEngine();
+    public GremlinScriptEngine getScriptEngine() {
+        return manager.getCustomizers().isPresent() ?
+                new GremlinGroovyScriptEngine(manager.getCustomizers().get()) : new GremlinGroovyScriptEngine();
     }
 }

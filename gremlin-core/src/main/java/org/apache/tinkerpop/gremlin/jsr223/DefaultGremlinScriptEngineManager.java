@@ -31,8 +31,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 /**
  * The {@code ScriptEngineManager} implements a discovery, instantiation and configuration mechanism for
@@ -60,7 +62,7 @@ import java.util.ServiceLoader;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineManager {
+public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineManager, CustomizerManager {
 
     private static final boolean DEBUG = false;
 
@@ -106,6 +108,11 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
      */
     public DefaultGremlinScriptEngineManager(final ClassLoader loader) {
         initEngines(loader);
+    }
+
+    @Override
+    public Optional<Customizer[]> getCustomizers() {
+        return Optional.of(new Customizer[] { ImportCustomizer.GREMLIN_CORE });
     }
 
     /**
@@ -298,9 +305,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     @Override
     public List<GremlinScriptEngineFactory> getEngineFactories() {
         final List<GremlinScriptEngineFactory> res = new ArrayList<>(engineSpis.size());
-        for (GremlinScriptEngineFactory spi : engineSpis) {
-            res.add(spi);
-        }
+        res.addAll(engineSpis.stream().collect(Collectors.toList()));
         return Collections.unmodifiableList(res);
     }
 
@@ -355,11 +360,11 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     private void initEngines(final ClassLoader loader) {
-        Iterator<GremlinScriptEngineFactory> itr;
+        Iterator<GremlinScriptEngineFactory> itty;
         try {
             final ServiceLoader<GremlinScriptEngineFactory> sl = AccessController.doPrivileged(
                     (PrivilegedAction<ServiceLoader<GremlinScriptEngineFactory>>) () -> getServiceLoader(loader));
-            itr = sl.iterator();
+            itty = sl.iterator();
         } catch (ServiceConfigurationError err) {
             System.err.println("Can't find GremlinScriptEngineFactory providers: " +
                     err.getMessage());
@@ -371,9 +376,11 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
         }
 
         try {
-            while (itr.hasNext()) {
+            while (itty.hasNext()) {
                 try {
-                    engineSpis.add(itr.next());
+                    final GremlinScriptEngineFactory factory = itty.next();
+                    factory.setCustomizerManager(this);
+                    engineSpis.add(factory);
                 } catch (ServiceConfigurationError err) {
                     System.err.println("GremlinScriptEngineManager providers.next(): "
                             + err.getMessage());
@@ -392,12 +399,6 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     private GremlinScriptEngine createGremlinScriptEngine(final GremlinScriptEngineFactory spi) {
         final GremlinScriptEngine engine = spi.getScriptEngine();
         engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-
-        // these are standard imports from gremlin-core that are applied to all GremlinScriptEngine instances
-        CoreImports.getClassImports().forEach(engine::addClassImport);
-        CoreImports.getMethodImports().forEach(engine::addMethodImport);
-        CoreImports.getEnumImports().forEach(engine::addEnumImport);
-
         return engine;
     }
 }

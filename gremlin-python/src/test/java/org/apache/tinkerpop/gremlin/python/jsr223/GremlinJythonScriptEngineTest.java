@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.DefaultGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -45,7 +47,7 @@ public class GremlinJythonScriptEngineTest {
 
     @Test
     public void shouldGetEngineByName() throws Exception {
-        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
+        final ScriptEngine engine = new DefaultGremlinScriptEngineManager().getEngineByName("gremlin-jython");
         assertNotNull(engine);
         assertTrue(engine instanceof GremlinJythonScriptEngine);
         assertEquals(3, engine.eval("1+2"));
@@ -53,7 +55,7 @@ public class GremlinJythonScriptEngineTest {
 
     @Test
     public void shouldHaveCoreImports() throws Exception {
-        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
+        final ScriptEngine engine = new DefaultGremlinScriptEngineManager().getEngineByName("gremlin-jython");
         assertTrue(engine.eval("Graph") instanceof Class);
         assertTrue(engine.eval("__") instanceof Class);
         assertTrue(engine.eval("T") instanceof Class);
@@ -74,7 +76,7 @@ public class GremlinJythonScriptEngineTest {
 
     @Test
     public void shouldSupportJavaBasedGraphTraversal() throws Exception {
-        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
+        final ScriptEngine engine = new DefaultGremlinScriptEngineManager().getEngineByName("gremlin-jython");
         engine.getBindings(ScriptContext.ENGINE_SCOPE).put("graph", TinkerFactory.createModern());
         engine.eval("g = graph.traversal()");
         assertEquals(new HashSet<>(Arrays.asList("ripple", "lop")), engine.eval("g.V().repeat(out()).times(2).values('name').toSet()"));
@@ -87,7 +89,7 @@ public class GremlinJythonScriptEngineTest {
 
     @Test
     public void shouldSupportSugarMethods() throws Exception {
-        final ScriptEngine engine = new ScriptEngineManager().getEngineByName("gremlin-jython");
+        final ScriptEngine engine = new DefaultGremlinScriptEngineManager().getEngineByName("gremlin-jython");
         engine.getBindings(ScriptContext.ENGINE_SCOPE).put("graph", TinkerFactory.createModern());
         engine.eval("g = graph.traversal()");
         assertEquals(new HashSet<>(Arrays.asList("ripple", "lop")), engine.eval("g.V().repeat(__.out()).times(2)[0:2].name.toSet()"));

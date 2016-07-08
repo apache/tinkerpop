@@ -19,6 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.python.util.SymbolHelper;
 import org.apache.tinkerpop.gremlin.util.CoreImports;
@@ -27,8 +31,6 @@ import org.python.jsr223.PyScriptEngineFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import java.io.Reader;
 import java.lang.reflect.Method;
@@ -36,7 +38,7 @@ import java.lang.reflect.Method;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinJythonScriptEngine implements ScriptEngine {
+public class GremlinJythonScriptEngine implements GremlinScriptEngine {
 
     private final PyScriptEngine pyScriptEngine;
 
@@ -115,6 +117,11 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
     }
 
     @Override
+    public Traversal.Admin eval(final Bytecode bytes, final Bindings bindings) {
+        return null;
+    }
+
+    @Override
     public Object eval(final String script, final ScriptContext context) throws ScriptException {
         return this.pyScriptEngine.eval(script, context);
     }
@@ -182,7 +189,7 @@ public class GremlinJythonScriptEngine implements ScriptEngine {
     }
 
     @Override
-    public ScriptEngineFactory getFactory() {
+    public GremlinScriptEngineFactory getFactory() {
         return new GremlinJythonScriptEngineFactory();
     }
 }

@@ -76,7 +76,7 @@
         <finalName>${project.artifactId}-${project.version}</finalName>
         <resources>
             <resource>
-                <directory>${basedir}/src/main/resources
+                <directory>src/main/resources
                 </directory>
             </resource>
         </resources>

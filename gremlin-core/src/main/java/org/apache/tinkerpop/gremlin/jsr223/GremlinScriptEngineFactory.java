@@ -26,4 +26,6 @@ import javax.script.ScriptEngineFactory;
 public interface GremlinScriptEngineFactory extends ScriptEngineFactory {
     @Override
     GremlinScriptEngine getScriptEngine();
+
+    void setCustomizerManager(final CustomizerManager manager);
 }

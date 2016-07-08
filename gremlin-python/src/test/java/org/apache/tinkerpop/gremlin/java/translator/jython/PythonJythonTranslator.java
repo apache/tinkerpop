@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.java.translator.jython;
 
 import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator;
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
@@ -54,7 +55,7 @@ public class PythonJythonTranslator extends PythonTranslator {
     public String translate(final Bytecode bytecode) {
         final String traversal = super.translate(bytecode);
         try {
-            final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
+            final ScriptEngine jythonEngine = SingleGremlinScriptEngineManager.getInstance().getEngineByName("gremlin-jython");
             jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
                     .put(this.traversalSource, jythonEngine.eval("RemoteGraph(JythonTranslator(\"" + this.traversalSource + "\"), None).traversal()"));
             return jythonEngine.eval(traversal).toString();

@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFacto
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import org.apache.tinkerpop.gremlin.jsr223.DefaultGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +66,7 @@ import java.util.stream.Stream;
 public class ScriptEngines implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ScriptEngines.class);
 
-    private final static ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
+    private final static GremlinScriptEngineManager SCRIPT_ENGINE_MANAGER = new DefaultGremlinScriptEngineManager();
     private static final GremlinGroovyScriptEngineFactory gremlinGroovyScriptEngineFactory = new GremlinGroovyScriptEngineFactory();
 
     /**

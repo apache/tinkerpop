@@ -26,6 +26,7 @@ import static org.junit.Assert.assertSame;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@org.junit.Ignore
 public class ScriptEngineCacheTest {
 
     @Test

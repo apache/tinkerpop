@@ -18,22 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-
-import javax.script.Bindings;
-import javax.script.ScriptEngine;
-import java.lang.reflect.Method;
-
 /**
- * A {@code GremlinScriptEngine} is an extension of the standard {@code ScriptEngine} and provides some specific
- * methods that are important to the TinkerPop environment.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface GremlinScriptEngine extends ScriptEngine {
-    @Override
-    GremlinScriptEngineFactory getFactory();
+public interface Customizer {
 
-    Traversal.Admin eval(final Bytecode bytes, final Bindings bindings);
 }

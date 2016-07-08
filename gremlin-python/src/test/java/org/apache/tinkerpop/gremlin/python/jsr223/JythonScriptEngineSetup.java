@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.ScriptEngine;
@@ -34,7 +35,7 @@ public class JythonScriptEngineSetup {
 
     public static void setup() {
         try {
-            final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
+            final ScriptEngine jythonEngine = SingleGremlinScriptEngineManager.getInstance().getEngineByName("gremlin-jython");
             jythonEngine.eval("import gremlin_python.statics");
             jythonEngine.eval("from gremlin_python.process.traversal import *");
             jythonEngine.eval("from gremlin_python.process.graph_traversal import *");

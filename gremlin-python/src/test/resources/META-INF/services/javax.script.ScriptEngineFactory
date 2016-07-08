@@ -1,2 +1,0 @@
-org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory
-org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngineFactory

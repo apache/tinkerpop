@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.tinkerpop.gremlin.jsr223.DefaultGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.util.Map;
@@ -32,7 +35,7 @@ public final class ScriptEngineCache {
 
     public final static String DEFAULT_SCRIPT_ENGINE = "gremlin-groovy";
 
-    private final static ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
+    private final static GremlinScriptEngineManager SCRIPT_ENGINE_MANAGER = new DefaultGremlinScriptEngineManager();
     private final static Map<String, ScriptEngine> CACHED_ENGINES = new ConcurrentHashMap<>();
 
     public static ScriptEngine get(final String engineName) {

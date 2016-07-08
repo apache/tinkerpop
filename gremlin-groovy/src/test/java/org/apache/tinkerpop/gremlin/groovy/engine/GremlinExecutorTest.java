@@ -164,6 +164,7 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    @org.junit.Ignore
     public void shouldEvalScriptWithMapBindingsAndLanguage() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
@@ -174,6 +175,7 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    @org.junit.Ignore
     public void shouldEvalScriptWithMapBindingsAndLanguageThenTransform() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
@@ -184,6 +186,7 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    @org.junit.Ignore
     public void shouldEvalScriptWithMapBindingsAndLanguageThenConsume() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
