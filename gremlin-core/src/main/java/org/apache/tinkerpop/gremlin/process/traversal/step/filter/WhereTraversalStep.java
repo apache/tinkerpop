@@ -46,6 +46,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     protected Traversal.Admin<?, ?> whereTraversal;
     protected final Set<String> scopeKeys = new HashSet<>();
+    protected Set<String> keepLabels;
 
     public WhereTraversalStep(final Traversal.Admin traversal, final Traversal<?, ?> whereTraversal) {
         super(traversal);
@@ -88,6 +89,12 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
                 ElementRequirement.ID;
     }
 
+    @Override
+    protected Traverser.Admin<S> processNextStart() {
+        final Traverser.Admin<S> traverser = super.processNextStart();
+        PathProcessor.keepLabels(traverser, keepLabels);
+        return traverser;
+    }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
@@ -133,6 +140,14 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
                 TYPICAL_GLOBAL_REQUIREMENTS :
                 TYPICAL_LOCAL_REQUIREMENTS;
     }
+
+    @Override
+    public void setKeepLabels(Set<String> keepLabels) {
+        this.keepLabels = keepLabels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() { return this.keepLabels; }
 
     //////////////////////////////
 

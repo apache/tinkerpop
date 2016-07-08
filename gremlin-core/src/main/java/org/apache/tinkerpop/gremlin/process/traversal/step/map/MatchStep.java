@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -44,7 +46,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping {
+public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping, PathProcessor {
 
     public enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
 
@@ -60,6 +62,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     private Set<List<Object>> dedups = null;
     private Set<String> dedupLabels = null;
+    private Set<String> keepLabels = null;
 
     public MatchStep(final Traversal.Admin traversal, final ConnectiveStep.Connective connective, final Traversal... matchTraversals) {
         super(traversal);
@@ -134,6 +137,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             TraversalHelper.insertAfterStep(new TraversalFlatMapStep<>(matchTraversal, newTraversal), matchTraversal.getStartStep(), matchTraversal);
         }
     }
+
+
 
     public ConnectiveStep.Connective getConnective() {
         return this.connective;
@@ -368,6 +373,26 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
+    protected List<Traversal.Admin> getRemainingTraversals(final Traverser.Admin traverser) {
+        final Set<String> tags = traverser.getTags();
+        final List<Traversal.Admin> remainingTraversals = new ArrayList<>();
+        for (final Traversal.Admin matchTraversal : matchTraversals) {
+            if (!tags.contains(matchTraversal.getStartStep().getId())) {
+                remainingTraversals.add(matchTraversal);
+            } else {
+                // include the current traversal that the traverser is executing in the list of
+                // remaining traversals
+                for (final Step<?, ?> s : (List<Step<?, ?>>)matchTraversal.getSteps()) {
+                    if (s.getId().equals(traverser.getStepId())) {
+                        remainingTraversals.add(matchTraversal);
+                        break;
+                    }
+                }
+            }
+        }
+        return remainingTraversals;
+    }
+
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.connective.hashCode();
@@ -380,6 +405,21 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
+    }
+
+    @Override
+    protected Traverser.Admin<Map<String, E>> processNextStart() throws NoSuchElementException {
+        final Traverser.Admin<Map<String, E>> traverser = super.processNextStart();
+        if (keepLabels != null) {
+            final Set<String> keepers = new HashSet<>();
+            List<Traversal.Admin> remainingTraversals = getRemainingTraversals(traverser);
+            for (Traversal.Admin trav : remainingTraversals) {
+                keepers.addAll(PathUtil.getReferencedLabels(trav));
+            }
+            keepers.addAll(keepLabels);
+            PathProcessor.keepLabels(traverser, keepers);
+        }
+        return traverser;
     }
 
     //////////////////////////////
@@ -517,7 +557,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         public static boolean hasExecutedTraversal(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
-            return traverser.getTags().contains(traversal.getStartStep().getId());
+            final boolean hasExecuted = traverser.getTags().contains(traversal.getStartStep().getId());
+            if (hasExecuted) {
+                // This traverser has finished this traversal so it is safe to drop the tag label.
+                String traversalId = traversal.getStartStep().getId();
+                traverser.dropLabels(Collections.singleton(traversalId));
+            }
+            return hasExecuted;
         }
 
         public static TraversalType getTraversalType(final Traversal.Admin<Object, Object> traversal) {
@@ -552,7 +598,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 }
                 return 0;
             });
-            //System.out.println(sort);
             return sort.get(0);
         }
     }
@@ -678,4 +723,31 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             }
         }
     }
+
+    @Override
+    public void setKeepLabels(Set<String> labels) {
+        if (this.keepLabels != null) {
+            this.keepLabels.addAll(labels);
+        } else {
+            this.keepLabels = new HashSet<>(labels);
+        }
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        // add in start and end labels for this match b/c it's children may need to keep them
+        HashSet<String> keepThese = new HashSet<>();
+        if (keepLabels != null) {
+            keepThese.addAll(this.keepLabels);
+        }
+        keepThese.addAll(this.getMatchStartLabels());
+        keepThese.addAll(this.getMatchEndLabels());
+        return keepThese;
+    }
+
+    public Set<String> getMatchEndLabels() {
+        return this.matchEndLabels;
+    }
+
+    public Set<String> getMatchStartLabels() { return this.matchStartLabels; }
 }

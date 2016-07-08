@@ -19,10 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,4 +59,16 @@ public interface PathProcessor {
         }
         return max;
     }
+
+    void setKeepLabels(final Set<String> labels);
+
+    static void keepLabels(final Traverser traverser, final Set<String> labels) {
+        if(labels == null || labels.isEmpty()) {
+            return;
+        } else {
+            traverser.asAdmin().keepLabels(labels);
+        }
+    }
+
+    Set<String> getKeepLabels();
 }

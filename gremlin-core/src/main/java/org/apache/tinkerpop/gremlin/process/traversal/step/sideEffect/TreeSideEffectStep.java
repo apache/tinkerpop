@@ -44,6 +44,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
+    private Set<String> keepLabels;
 
     public TreeSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
@@ -115,4 +116,12 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
+
+    @Override
+    public void setKeepLabels(Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() { return this.keepLabels; }
 }

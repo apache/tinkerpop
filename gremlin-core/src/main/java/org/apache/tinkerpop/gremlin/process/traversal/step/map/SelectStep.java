@@ -49,6 +49,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     private final Pop pop;
     private final List<String> selectKeys;
     private final Set<String> selectKeysSet;
+    private Set<String> keepLabels;
 
     public SelectStep(final Traversal.Admin traversal, final Pop pop, final String... selectKeys) {
         super(traversal);
@@ -140,5 +141,20 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     public Pop getPop() {
         return this.pop;
+    }
+
+    @Override
+    public void setKeepLabels(Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() { return this.keepLabels; }
+
+    @Override
+    protected Traverser.Admin<Map<String, E>> processNextStart() {
+        final Traverser.Admin<Map<String, E>> traverser = super.processNextStart();
+        PathProcessor.keepLabels(traverser, keepLabels);
+        return traverser;
     }
 }
