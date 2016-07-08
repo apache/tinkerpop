@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.MemoryTraversalSi
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
@@ -66,8 +67,13 @@ public final class TraversalVertexProgramStep extends VertexProgramStep implemen
     @Override
     public TraversalVertexProgram generateProgram(final Graph graph, final Memory memory) {
         final Traversal.Admin<?, ?> computerSpecificTraversal = this.computerTraversal.getPure();
-        computerSpecificTraversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).clone());
-        this.getTraversal().getStrategies().toList().forEach(computerSpecificTraversal.getStrategies()::addStrategies);
+        final TraversalStrategies computerSpecificStrategies = this.getTraversal().getStrategies().clone();
+        TraversalStrategies.GlobalCache.getStrategies(graph.getClass())
+                .toList()
+                .stream()
+                .filter(s -> s instanceof TraversalStrategy.ProviderOptimizationStrategy)
+                .forEach(computerSpecificStrategies::addStrategies);
+        computerSpecificTraversal.setStrategies(computerSpecificStrategies);
         computerSpecificTraversal.setSideEffects(new MemoryTraversalSideEffects(this.getTraversal().getSideEffects()));
         computerSpecificTraversal.setParent(this);
         final TraversalVertexProgram.Builder builder = TraversalVertexProgram.build().traversal(computerSpecificTraversal);

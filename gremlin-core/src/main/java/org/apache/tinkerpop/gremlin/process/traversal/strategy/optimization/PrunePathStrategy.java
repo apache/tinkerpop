@@ -144,7 +144,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                 if (currentStep instanceof PathProcessor)
                     ((PathProcessor) currentStep).setKeepLabels(new HashSet<>(keepLabels));
             } else {
-                // if there is a PATh requiring step in the traversal, do not drop labels
+                // if there is a PATH requiring step in the traversal, do not drop labels
                 // set keep labels to null so that no labels are dropped
                 if (currentStep instanceof PathProcessor)
                     ((PathProcessor) currentStep).setKeepLabels(null);
