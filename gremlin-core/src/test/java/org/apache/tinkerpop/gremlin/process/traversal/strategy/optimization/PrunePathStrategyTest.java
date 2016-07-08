@@ -67,7 +67,6 @@ public class PrunePathStrategyTest {
         for (final TraversalStrategies currentStrategies : this.strategies) {
             final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
             currentTraversal.setStrategies(currentStrategies);
-            System.out.println(currentStrategies);
             currentTraversal.applyStrategies();
             final List<Object> keepLabels = getKeepLabels(currentTraversal);
             assertEquals(this.labels, keepLabels);

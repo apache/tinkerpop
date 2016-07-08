@@ -330,9 +330,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             }
             if (null == traverser) {
                 traverser = this.starts.next();
-                if (!this.hasPathLabel(traverser.path(), this.matchStartLabels))
-                    traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
-                traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
+                if (!traverser.getTags().contains(this.getId())) {
+                    traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
+                    if (!this.hasPathLabel(traverser.path(), this.matchStartLabels))
+                        traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
+                }
             }
             ///
             if (!this.isDuplicate(traverser)) {
@@ -362,9 +364,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.initializeMatchAlgorithm(TraversalEngine.Type.COMPUTER);
             }
             final Traverser.Admin traverser = this.starts.next();
-            if (!this.hasPathLabel(traverser.path(), this.matchStartLabels))
-                traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
-            traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
+            if (!traverser.getTags().contains(this.getId())) {
+                traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
+                if (!this.hasPathLabel(traverser.path(), this.matchStartLabels))
+                    traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
+            }
             ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.connective, traverser)) {
@@ -454,7 +458,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         @Override
         protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
-            traverser.addLabels(Collections.singleton(this.getId()));
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
             return null == this.selectKey ? traverser : traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
@@ -574,13 +577,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         public static boolean hasExecutedTraversal(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
-            final boolean hasExecuted = traverser.getTags().contains(traversal.getStartStep().getId());
-            if (hasExecuted) {
-                // This traverser has finished this traversal so it is safe to drop the tag label.
-                String traversalId = traversal.getStartStep().getId();
-                traverser.dropLabels(Collections.singleton(traversalId));
-            }
-            return hasExecuted;
+            return traverser.getTags().contains(traversal.getStartStep().getId());
         }
 
         public static TraversalType getTraversalType(final Traversal.Admin<Object, Object> traversal) {

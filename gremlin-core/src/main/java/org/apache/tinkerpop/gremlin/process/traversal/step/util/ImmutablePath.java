@@ -321,7 +321,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
         @Override
         public Path retract(final Set<String> labels) {
-            throw new UnsupportedOperationException("A head path can not have labels added to it");
+            return this;
         }
 
         @Override
