@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -43,6 +44,7 @@ public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerPr
             RangeByIsCountStrategy.class,
             ComputerVerificationStrategy.class,
             ProfileStrategy.class,
+            FilterRankingStrategy.class,
             ConnectiveStrategy.class,
             SideEffectStrategy.class));
 

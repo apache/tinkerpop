@@ -49,7 +49,7 @@ public class PathUtil {
     public static Set<String> getReferencedLabels(final Step step) {
         final Set<String> referencedLabels = new HashSet<>();
 
-        if (step instanceof Parameterizing) {
+        if (step instanceof Parameterizing) { // TODO: we should really make the mutation steps Scoping :|
             final Parameters parameters = ((Parameterizing) step).getParameters();
             for (final Traversal.Admin trav : parameters.getTraversals()) {
                 for (final Object ss : trav.getSteps()) {
