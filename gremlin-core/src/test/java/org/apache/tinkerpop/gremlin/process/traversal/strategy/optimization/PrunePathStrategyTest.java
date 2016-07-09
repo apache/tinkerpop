@@ -40,6 +40,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
@@ -71,9 +72,9 @@ public class PrunePathStrategyTest {
             final Traversal.Admin<?, ?> currentTraversal = this.traversal.clone();
             currentTraversal.setStrategies(currentStrategies);
             currentTraversal.applyStrategies();
-            assertEquals(getKeepLabels(currentTraversal).toString(), this.labels);
-            if (null != optimized)
-                assertEquals(currentTraversal, optimized);
+            assertEquals(this.labels, getKeepLabels(currentTraversal).toString());
+            if (null != this.optimized)
+                assertEquals(currentTraversal, this.optimized);
         }
     }
 
@@ -132,13 +133,17 @@ public class PrunePathStrategyTest {
                 {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
                 {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
+                {__.V().select("c").map(select("c").map(select("c"))).select("c"), "[[c], [[c], [[c]]], []]", null},
+                {__.V().select("c").map(select("c").map(select("c"))).select("b"), "[[b, c], [[b, c], [[b, c]]], []]", null},
                 // TODO: why are the global children preserving e?
+                // TODO: should be [[b, c, e], [c, e], [[c], [c]], [[c], [c]], []]
                 {__.V().as("a").out().as("b").select("a").select("b").union(
                         as("c").out().as("d", "e").select("c", "e").out().select("c"),
                         as("c").out().as("d", "e").select("c", "e").out().select("c")).
                         out().select("c"),
                         "[[b, c, e], [c, e], [[c, e], [c, e]], [[c, e], [c, e]], []]", null},
                 // TODO: why is the local child preserving e?
+                // TODO: should be [[b, c, e], [c, e], [[c], []], []]
                 {__.V().as("a").out().as("b").select("a").select("b").
                         local(as("c").out().as("d", "e").select("c", "e").out().select("c")).
                         out().select("c"),
@@ -155,7 +160,12 @@ public class PrunePathStrategyTest {
                 // TODO: repeat should be treated different cause of recursion (thus, below is good!)
                 {__.V().as("a").out().as("b").select("a").select("b").repeat(out().as("c").select("b")),
                         "[[b], [b], [[b]]]", null},
-
+                // TODO: below is broken -- the provided answer is correct.
+                // {__.V().select("a").map(select("c").map(select("b"))).select("c"),
+                //        "[[b, c], [[b, c], [[b, c]]], []]", null}
+                // TODO: below is broken -- the provided answer is correct.
+                // {__.V().select("a").map(select("b").repeat(select("c"))).select("a"),
+                //"[[a, b, c], [[a, b, c], [[a, b, c]]], []]", null}
         });
     }
 }
