@@ -39,6 +39,7 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
@@ -104,7 +105,7 @@ public class PrunePathStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Object[][]{
-                {__.out(), "[]", null},
+                {out(), "[]", null},
                 {__.V().as("a").out().as("b").where(neq("a")).out(), "[[]]", null},
                 {__.V().as("a").out().where(neq("a")).out().select("a"), "[[a], []]", null},
                 {__.V().as("a").out().as("b").where(neq("a")).out().select("a", "b").out().select("b"), "[[a, b], [b], []]", null},
@@ -118,11 +119,11 @@ public class PrunePathStrategyTest {
                 {__.V().as("a").out().select("a").subgraph("b"), "[[]]", null},
                 {__.V().as("a").out().select("a").subgraph("b").select("a"), "[[a], []]", null},
                 {__.V().out().as("a").where(neq("a")).out().where(neq("a")).out(), "[[a], []]", null},
-                {__.V().out().as("a").where(__.out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), "[[[a]], []]", null},
-                {__.V().as("a").out().as("b").where(__.out().select("a", "b", "c").values("prop").count().is(gte(1))).out().where(neq("a")).out().select("b"),
+                {__.V().out().as("a").where(out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")), "[[[a]], []]", null},
+                {__.V().as("a").out().as("b").where(out().select("a", "b", "c").values("prop").count().is(gte(1))).out().where(neq("a")).out().select("b"),
                         "[[[a, b, c]], [b], []]", null},
                 {__.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))), "[]", null},
-                {__.V().as("a").repeat(__.out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
+                {__.V().as("a").repeat(out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
                 // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
                 {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
@@ -131,12 +132,30 @@ public class PrunePathStrategyTest {
                 {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
                 {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
-                // TODO: why is the local child preserving c and e?
-                {__.V().as("a").out().as("b").select("a").select("b").local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
+                // TODO: why are the global children preserving e?
+                {__.V().as("a").out().as("b").select("a").select("b").union(
+                        as("c").out().as("d", "e").select("c", "e").out().select("c"),
+                        as("c").out().as("d", "e").select("c", "e").out().select("c")).
+                        out().select("c"),
+                        "[[b, c, e], [c, e], [[c, e], [c, e]], [[c, e], [c, e]], []]", null},
+                // TODO: why is the local child preserving e?
+                {__.V().as("a").out().as("b").select("a").select("b").
+                        local(as("c").out().as("d", "e").select("c", "e").out().select("c")).
+                        out().select("c"),
                         "[[b, c, e], [c, e], [[c, e], [c, e]], []]", null},
                 // TODO: same as above but note how path() makes things react
                 {__.V().as("a").out().as("b").select("a").select("b").path().local(as("c").out().as("d", "e").select("c", "e").out().select("c")).out().select("c"),
                         "[[[c, e], [c, e]]]", null},
+                // TODO: repeat should be treated different cause of recursion (thus, below is good!)
+                {__.V().as("a").out().as("b").select("a").select("b").repeat(out().as("c").select("b", "c").out().select("c")).out().select("c").out().select("b"),
+                        "[[b, c], [b, c], [[b, c], [b, c]], [b], []]", null},
+                // TODO: repeat should be treated different cause of recursion (thus, below is good!)
+                {__.V().as("a").out().as("b").select("a").select("b").repeat(out().as("c").select("b")).out().select("c").out().select("b"),
+                        "[[b, c], [b, c], [[b, c]], [b], []]", null},
+                // TODO: repeat should be treated different cause of recursion (thus, below is good!)
+                {__.V().as("a").out().as("b").select("a").select("b").repeat(out().as("c").select("b")),
+                        "[[b], [b], [[b]]]", null},
+
         });
     }
 }
