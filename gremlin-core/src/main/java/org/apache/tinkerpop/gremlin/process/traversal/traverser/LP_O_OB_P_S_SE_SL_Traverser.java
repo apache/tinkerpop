@@ -84,12 +84,14 @@ public class LP_O_OB_P_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
 
     @Override
     public void keepLabels(final Set<String> labels) {
-        if (!labels.isEmpty()) {
+        if (labels != null) {
             Set<String> retractLabels = new HashSet<>();
             List<Set<String>> existingLabels = this.path.labels();
-            for(Set<String> labelSet : existingLabels) {
-                for(String l : labelSet) {
-                    if(labels.contains(l) == false) { retractLabels.add(l); };
+            for (Set<String> labelSet : existingLabels) {
+                for (String l : labelSet) {
+                    if (labels.isEmpty() || labels.contains(l) == false) {
+                        retractLabels.add(l);
+                    }
                 }
             }
             this.path = this.path.retract(retractLabels);

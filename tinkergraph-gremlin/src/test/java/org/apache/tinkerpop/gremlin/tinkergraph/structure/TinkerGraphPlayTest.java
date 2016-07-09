@@ -19,16 +19,19 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,8 +42,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
@@ -53,6 +59,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -269,6 +276,50 @@ public class TinkerGraphPlayTest {
         logger.info(traversal.get().iterate().toString());
         traversal.get().forEachRemaining(x -> logger.info(x.toString()));
 
+    }
+
+    @Test
+    @Ignore
+    public void testPaths() throws Exception {
+        TinkerGraph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("/Users/twilmes/work/repos/scratch/incubator-tinkerpop/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphml/grateful-dead.xml");
+//        graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(1));
+
+        System.out.println(g.V().match(
+                __.as("a").in("sungBy").as("b"),
+                __.as("a").in("sungBy").as("c"),
+                __.as("b").out("writtenBy").as("d"),
+                __.as("c").out("writtenBy").as("e"),
+                __.as("d").has("name", "George_Harrison"),
+                __.as("e").has("name", "Bob_Marley")).select("a").count().next());
+
+//        System.out.println(g.V().as("a").out().where(neq("a")).barrier().out().count().profile().next());
+//        System.out.println(g.V().out().as("a").where(out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")).toList());
+//        System.out.println(g.V().match(
+//                __.as("a").out().as("b"),
+//                __.as("b").out().as("c")).select("c").count().profile().next());
+
+    }
+
+    @Test
+    @Ignore
+    public void testPlay9() throws Exception {
+        Graph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
+
+        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(4)).withStrategies(PrunePathStrategy.instance());
+        GraphTraversalSource h = graph.traversal().withComputer(Computer.compute().workers(4)).withoutStrategies(PrunePathStrategy.class);
+
+        for (final GraphTraversalSource source : Arrays.asList(g, h)) {
+            System.out.println(source.V().match(
+                    as("a").in("sungBy").as("b"),
+                    as("a").in("sungBy").as("c"),
+                    as("b").out("writtenBy").as("d"),
+                    as("c").out("writtenBy").as("e"),
+                    as("d").has("name", "George_Harrison"),
+                    as("e").has("name", "Bob_Marley")).select("a").count().profile().next());
+        }
     }
 
     @Test

@@ -23,6 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -30,11 +33,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,7 +53,8 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
 
     private static final PrunePathStrategy INSTANCE = new PrunePathStrategy();
     // these strategies do strong rewrites involving path labeling and thus, should run prior to PrunePathStrategy
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(RepeatUnrollStrategy.class, MatchPredicateStrategy.class, PathProcessorStrategy.class));
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
+            RepeatUnrollStrategy.class, MatchPredicateStrategy.class, PathProcessorStrategy.class));
 
     private PrunePathStrategy() {
     }
@@ -55,110 +63,124 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
         return INSTANCE;
     }
 
-    private Set<String> getAndPropagateReferencedLabels(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent().equals(EmptyStep.instance()))
-            return Collections.emptySet();
-
-        Step<?, ?> parent = traversal.getParent().asStep();
-        Set<String> referencedLabels = new HashSet<>();
-        // get referenced labels from this traversal
-        referencedLabels.addAll(PathUtil.getReferencedLabels(traversal));
-        Set<String> topLevelLabels = new HashSet<>();
-        while (true) {
-            // is this parent step in the top level traversal? If so, walk forwards and gather labels
-            // that should be kept because they are required in latter parts of the traversal
-            Step<?, ?> step;
-            boolean topLevelParent = false;
-            if (parent.getTraversal().getParent().equals(EmptyStep.instance())) {
-                step = parent;
-                topLevelParent = true;
-            } else {
-                // start at the beginning of the traversal
-                step = parent.getTraversal().getStartStep();
-            }
-            do {
-                Set<String> labels = PathUtil.getReferencedLabels(step);
-                if (topLevelParent) {
-                    topLevelLabels.addAll(labels);
-                } else {
-                    referencedLabels.addAll(labels);
-                }
-                step = step.getNextStep();
-            } while (!(step.equals(EmptyStep.instance())));
-            if (topLevelParent) {
-                step = parent;
-                do {
-                    // if this is the top level traversal, propagate all nested labels
-                    // to previous PathProcess steps
-                    if (step instanceof PathProcessor && null != ((PathProcessor) step).getKeepLabels()) {
-                        ((PathProcessor) step).getKeepLabels().addAll(referencedLabels);
-                    }
-                    step = step.getPreviousStep();
-                } while (!(step.equals(EmptyStep.instance())));
-                break;
-            } else {
-                parent = parent.getTraversal().getParent().asStep();
-            }
-        }
-        referencedLabels.addAll(topLevelLabels);
-        return referencedLabels;
-    }
-
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-
         final boolean onGraphComputer = TraversalHelper.onGraphComputer(traversal);
-        final TraversalParent parent = traversal.getParent();
         final Set<String> foundLabels = new HashSet<>();
         final Set<String> keepLabels = new HashSet<>();
-
-        // If this traversal has a parent, it will need to inherit its
-        // parent's keep labels.  If its direct parent is not a PathProcessor,
-        // walk back up to the top level traversal and work forwards to determine which labels
-        // must be kept.
-        if (!parent.equals(EmptyStep.instance())) {
-            // start with parents keep labels
-            if (parent instanceof PathProcessor) {
-                final PathProcessor parentPathProcess = (PathProcessor) parent;
-                if (null != parentPathProcess.getKeepLabels()) keepLabels.addAll(parentPathProcess.getKeepLabels());
-            } else
-                keepLabels.addAll(getAndPropagateReferencedLabels(traversal));
-        }
 
         // check if the traversal contains any PATH requiring steps and if
         // it does, note it so that the keep labels are set to null later on
         // which signals PathProcessors to not drop path information
         final boolean hasPathStep = TraversalHelper.anyStepRecursively(step -> step.getRequirements().contains(TraverserRequirement.PATH), traversal);
+        if (hasPathStep) {
+            for (final Step<?, ?> step : traversal.getSteps()) {
+                if(step instanceof PathProcessor) {
+                    ((PathProcessor) step).setKeepLabels(null);
+                }
+            }
+            return;
+        }
 
         final List<Step> steps = traversal.getSteps();
         for (int i = steps.size() - 1; i >= 0; i--) {
             final Step currentStep = steps.get(i);
-            if (!hasPathStep) {
-                // maintain our list of labels to keep, repeatedly adding labels that were found during
-                // the last iteration
-                keepLabels.addAll(foundLabels);
+            // maintain our list of labels to keep, repeatedly adding labels that were found during
+            // the last iteration
+            keepLabels.addAll(foundLabels);
 
-                final Set<String> labels = PathUtil.getReferencedLabels(currentStep);
-                for (final String label : labels) {
-                    if (foundLabels.contains(label))
-                        keepLabels.add(label);
-                    else
-                        foundLabels.add(label);
-                }
-                // add the keep labels to the path processor
-                if (currentStep instanceof PathProcessor) {
+            final Set<String> labels = PathUtil.getReferencedLabels(currentStep);
+            for (final String label : labels) {
+                if (foundLabels.contains(label))
+                    keepLabels.add(label);
+                else
+                    foundLabels.add(label);
+            }
+            // add the keep labels to the path processor
+            if (currentStep instanceof PathProcessor) {
+                PathProcessor pathProcessor = (PathProcessor) currentStep;
+                if (currentStep instanceof MatchStep && (currentStep.getNextStep().equals(EmptyStep.instance()) || currentStep.getNextStep() instanceof DedupGlobalStep)) {
+                    pathProcessor.setKeepLabels(((MatchStep) currentStep).getMatchStartLabels());
+                    pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep).getMatchEndLabels());
+                } else
                     ((PathProcessor) currentStep).setKeepLabels(new HashSet<>(keepLabels));
-                    // OLTP barrier optimization that will try and bulk traversers after a path processor step to thin the stream
-                    if (!onGraphComputer &&
-                            !(currentStep.getNextStep() instanceof ReducingBarrierStep) &&
-                            !(currentStep.getNextStep() instanceof NoOpBarrierStep))
-                        TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), currentStep, traversal);
+
+                if (currentStep.getTraversal().getParent().asStep() instanceof MatchStep) {
+                    pathProcessor.setKeepLabels(((MatchStep) currentStep.getTraversal().getParent().asStep()).getMatchStartLabels());
+                    pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep.getTraversal().getParent().asStep()).getMatchEndLabels());
                 }
-            } else {
-                // if there is a PATH requiring step in the traversal, do not drop labels
-                // set keep labels to null so that no labels are dropped
-                if (currentStep instanceof PathProcessor)
-                    ((PathProcessor) currentStep).setKeepLabels(null);
+
+                // OLTP barrier optimization that will try and bulk traversers after a path processor step to thin the stream
+                if (!onGraphComputer &&
+                        !(currentStep.getNextStep() instanceof ReducingBarrierStep) &&
+                        !(currentStep.getNextStep() instanceof NoOpBarrierStep))
+                    TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), currentStep, traversal);
+            }
+        }
+
+        keepLabels.addAll(foundLabels);
+
+        Step<?, ?> parent = traversal.getParent().asStep();
+        final List<Pair<Step, Set<String>>> parentKeeperPairs = new ArrayList<>();
+        while (!parent.equals(EmptyStep.instance())) {
+            parentKeeperPairs.add(new Pair<>(parent, PathUtil.whichLabelsReferencedFromHereForward(parent, foundLabels)));
+            parent = parent.getTraversal().getParent().asStep();
+        }
+
+        // set keep on necessary path processors
+        Collections.reverse(parentKeeperPairs);
+
+        boolean hasRepeat = false;
+
+        final Set<String> keeperTrail = new HashSet<>();
+        for (final Pair<Step, Set<String>> pair : parentKeeperPairs) {
+            Step step = pair.getValue0();
+            final Set<String> levelLabels = pair.getValue1();
+
+            if (step instanceof RepeatStep) {
+                hasRepeat = true;
+            }
+
+            // propagate requirements of keepLabels backwards
+            step = step.getPreviousStep();
+            while (!(step.equals(EmptyStep.instance()))) {
+                if (step instanceof PathProcessor) {
+                    if (((PathProcessor) step).getKeepLabels() == null) {
+                        ((PathProcessor) step).setKeepLabels(new HashSet<>(keepLabels));
+                    } else {
+                        ((PathProcessor) step).getKeepLabels().addAll(new HashSet<>(keepLabels));
+                    }
+                }
+                step = step.getPreviousStep();
+            }
+
+            while (!(step.equals(EmptyStep.instance()))) {
+                if (step instanceof PathProcessor) {
+                    final Set<String> referencedLabels = PathUtil.getReferencedLabelsAfterStep(step);
+                    for (final String ref : referencedLabels) {
+                        if (levelLabels.contains(ref)) {
+                            if (((PathProcessor) step).getKeepLabels() == null) {
+                                ((PathProcessor) step).setKeepLabels(new HashSet<>(Arrays.asList(ref)));
+                            } else {
+                                ((PathProcessor) step).getKeepLabels().addAll(new HashSet<>(Arrays.asList(ref)));
+                            }
+                        }
+                    }
+                }
+
+                step = step.getNextStep();
+            }
+
+            keeperTrail.addAll(levelLabels);
+        }
+
+        for (final Step currentStep : traversal.getSteps()) {
+            // go back through current level and add all keepers
+            if (currentStep instanceof PathProcessor) {
+                ((PathProcessor) currentStep).getKeepLabels().addAll(keeperTrail);
+                if (hasRepeat) {
+                    ((PathProcessor) currentStep).getKeepLabels().addAll(keepLabels);
+                }
             }
         }
     }
