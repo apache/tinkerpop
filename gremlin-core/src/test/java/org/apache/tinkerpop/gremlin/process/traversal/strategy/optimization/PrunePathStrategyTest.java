@@ -166,6 +166,8 @@ public class PrunePathStrategyTest {
                 // TODO: below is broken -- the provided answer is correct.
                 // {__.V().select("a").map(select("b").repeat(select("c"))).select("a"),
                 //"[[a, b, c], [[a, b, c], [[a, b, c]]], []]", null}
+                // TODO: once we are past the path, we can do selective selecting again
+                // {__.V().select("a").path().select("b").select("c"), "[[c], []]", null}
         });
     }
 }
