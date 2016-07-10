@@ -749,11 +749,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public void setKeepLabels(Set<String> labels) {
-        if (this.keepLabels != null) {
-            this.keepLabels.addAll(labels);
-        } else {
-            this.keepLabels = new HashSet<>(labels);
-        }
+        this.keepLabels = labels;
     }
 
     @Override

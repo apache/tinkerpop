@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
@@ -70,7 +69,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
         final Set<String> keepLabels = new HashSet<>();
 
         // check if the traversal contains any PATH requiring steps and if
-        // it does, note it so that the keep labels are set to null later on
+        // it does, note it so that the keep labels are set to null
         // which signals PathProcessors to not drop path information
         final boolean hasPathStep = TraversalHelper.anyStepRecursively(step -> step.getRequirements().contains(TraverserRequirement.PATH), traversal);
         if (hasPathStep) {
@@ -120,6 +119,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
 
         keepLabels.addAll(foundLabels);
 
+        // build a list of parent traversals and their required labels
         Step<?, ?> parent = traversal.getParent().asStep();
         final List<Pair<Step, Set<String>>> parentKeeperPairs = new ArrayList<>();
         while (!parent.equals(EmptyStep.instance())) {
@@ -127,7 +127,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
             parent = parent.getTraversal().getParent().asStep();
         }
 
-        // set keep on necessary path processors
+        // reverse the parent traversal list so that labels are kept from the top down
         Collections.reverse(parentKeeperPairs);
 
         boolean hasRepeat = false;
@@ -141,7 +141,8 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                 hasRepeat = true;
             }
 
-            // propagate requirements of keepLabels backwards
+            // propagate requirements of keep labels back through the traversal's previous steps
+            // to ensure that the label is not dropped before it reaches the step(s) that require it
             step = step.getPreviousStep();
             while (!(step.equals(EmptyStep.instance()))) {
                 if (step instanceof PathProcessor) {
@@ -154,6 +155,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                 step = step.getPreviousStep();
             }
 
+            // propagate keep labels forwards if future steps require a particular nested label
             while (!(step.equals(EmptyStep.instance()))) {
                 if (step instanceof PathProcessor) {
                     final Set<String> referencedLabels = PathUtil.getReferencedLabelsAfterStep(step);
@@ -176,6 +178,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
 
         for (final Step currentStep : traversal.getSteps()) {
             // go back through current level and add all keepers
+            // if there is one more RepeatSteps in this traversal's lineage, preserve keep labels
             if (currentStep instanceof PathProcessor) {
                 ((PathProcessor) currentStep).getKeepLabels().addAll(keeperTrail);
                 if (hasRepeat) {

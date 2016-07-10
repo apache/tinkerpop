@@ -91,11 +91,6 @@ public class MutablePath implements Path, Serializable {
         for (int i = this.labels.size() - 1; i >= 0; i--) {
             for (final String label : removeLabels) {
                 synchronized (this.labels.get(i)) {
-                    if (this.labels.get(i).isEmpty()) {
-                        this.labels.remove(i);
-                        this.objects.remove(i);
-                        continue;
-                    }
                     if (this.labels.get(i).contains(label)) {
                         this.labels.get(i).remove(label);
                         boolean empty = false;

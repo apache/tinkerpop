@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
+import java.util.HashSet;
 import java.util.function.Function;
 
 /**
@@ -43,19 +44,19 @@ public class ReferencePath extends MutablePath implements Attachable<Path> {
         path.forEach((object, labels) -> {
             if (object instanceof ReferenceElement || object instanceof ReferenceProperty || object instanceof ReferencePath) {
                 this.objects.add(object);
-                this.labels.add(labels);
+                this.labels.add(new HashSet<>(labels));
             } else if (object instanceof Element) {
                 this.objects.add(ReferenceFactory.detach((Element) object));
-                this.labels.add(labels);
+                this.labels.add(new HashSet<>(labels));
             } else if (object instanceof Property) {
                 this.objects.add(ReferenceFactory.detach((Property) object));
-                this.labels.add(labels);
+                this.labels.add(new HashSet<>(labels));
             } else if (object instanceof Path) {
                 this.objects.add(ReferenceFactory.detach((Path) object));
-                this.labels.add(labels);
+                this.labels.add(new HashSet<>(labels));
             } else {
                 this.objects.add(object);
-                this.labels.add(labels);
+                this.labels.add(new HashSet<>(labels));
             }
         });
     }

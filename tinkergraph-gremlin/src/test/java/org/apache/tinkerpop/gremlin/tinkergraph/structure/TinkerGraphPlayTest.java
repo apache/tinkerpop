@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -294,6 +295,13 @@ public class TinkerGraphPlayTest {
                 __.as("d").has("name", "George_Harrison"),
                 __.as("e").has("name", "Bob_Marley")).select("a").count().next());
 
+//        System.out.println(g.V().out("created").
+//                project("a","b").
+//                by("name").
+//                by(__.in("created").count()).
+//                order().by(select("b")).
+//                select("a").toList());
+
 //        System.out.println(g.V().as("a").out().where(neq("a")).barrier().out().count().profile().next());
 //        System.out.println(g.V().out().as("a").where(out().select("a").values("prop").count().is(gte(1))).out().where(neq("a")).toList());
 //        System.out.println(g.V().match(
@@ -313,12 +321,12 @@ public class TinkerGraphPlayTest {
 
         for (final GraphTraversalSource source : Arrays.asList(g, h)) {
             System.out.println(source.V().match(
-                    as("a").in("sungBy").as("b"),
-                    as("a").in("sungBy").as("c"),
-                    as("b").out("writtenBy").as("d"),
-                    as("c").out("writtenBy").as("e"),
-                    as("d").has("name", "George_Harrison"),
-                    as("e").has("name", "Bob_Marley")).select("a").count().profile().next());
+                    __.as("a").in("sungBy").as("b"),
+                    __.as("a").in("sungBy").as("c"),
+                    __.as("b").out("writtenBy").as("d"),
+                    __.as("c").out("writtenBy").as("e"),
+                    __.as("d").has("name", "George_Harrison"),
+                    __.as("e").has("name", "Bob_Marley")).select("a").count().profile().next());
         }
     }
 
