@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
-
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,15 +38,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
@@ -60,7 +55,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -71,22 +65,21 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlay8() throws Exception {
-        Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer();//GraphTraversalSource.computer());
-        //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
-        //System.out.println(g.V().hasLabel("person").fold().order(Scope.local).by("age").toList());
-        //System.out.println(g.V().repeat(out()).times(2).profile("m").explain());
-        final Traversal<?, ?> traversal = g.V().hasLabel("person").<Number>project("a", "b").by(__.outE().count()).by("age");
-        System.out.println(traversal.explain());
-        //System.out.println(g.V().hasLabel("person").pageRank().by("rank").by(bothE()).values("rank").profile("m").explain());
-        //System.out.println(traversal.asAdmin().clone().toString());
-        // final Traversal<?,?> clone = traversal.asAdmin().clone();
-        // clone.asAdmin().applyStrategies();
-        // System.out.println(clone);
-        System.out.println(traversal.asAdmin().toList());
-        //System.out.println(traversal.asAdmin().getSideEffects().get("m") + " ");
-        //System.out.println(g.V().pageRank().order().by(PageRankVertexProgram.PAGE_RANK).valueMap().toList());
+        Graph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
+        //Graph graph = TinkerFactory.createModern();
+
+        GraphTraversalSource g = graph.traversal().withStrategies(PrunePathStrategy.instance());
+        GraphTraversalSource h = graph.traversal().withoutStrategies(PrunePathStrategy.class);
+
+        for (final GraphTraversalSource source : Arrays.asList(h, g)) {
+            System.out.println(source.V().match(
+                    __.as("a").out().as("b"),
+                    __.as("b").out().as("c"),
+                    __.as("c").out().as("d")).select("d").count().profile().next());
+        }
     }
+
 
     @Test
     @Ignore

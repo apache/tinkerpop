@@ -35,12 +35,16 @@ import java.util.Set;
  */
 public class PathUtil {
 
+    private PathUtil() {
+        // static public methods only
+    }
+
     public static Set<String> getReferencedLabelsAfterStep(Step<?, ?> step) {
-        if(step.getNextStep().equals(EmptyStep.instance())) {
+        if (step.getNextStep().equals(EmptyStep.instance())) {
             return Collections.emptySet();
         }
         final Set<String> labels = new HashSet<>();
-        while(!(step = step.getNextStep()).equals(EmptyStep.instance())) {
+        while (!(step = step.getNextStep()).equals(EmptyStep.instance())) {
             labels.addAll(PathUtil.getReferencedLabels(step));
         }
         return labels;
@@ -54,11 +58,11 @@ public class PathUtil {
         return referencedLabels;
     }
 
-    public static Set<String> whichLabelsReferencedFromHereForward(Step<?, ?> step, final Set<String> labels) {
+    public static Set<String> whichLabelsReferencedFromHereForward(Step<?, ?> step) {
         final Set<String> found = new HashSet<>();
-        while(!step.equals(EmptyStep.instance())) {
+        while (!step.equals(EmptyStep.instance())) {
             final Set<String> referencedLabels = getReferencedLabels(step);
-            for(final String refLabel : referencedLabels) {
+            for (final String refLabel : referencedLabels) {
                 found.add(refLabel);
             }
             step = step.getNextStep();

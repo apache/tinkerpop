@@ -51,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ted Wilmes (http://twilmes.org)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
 public class PrunePathStrategyTest {
@@ -166,16 +167,16 @@ public class PrunePathStrategyTest {
                 {__.V().select("a").map(select("c").map(select("b"))).select("c"),
                         "[[b, c], [[b, c], [[c]]], []]", null},
                 {__.V().select("a").map(select("b").repeat(select("c"))).select("a"),
-                    "[[a, b, c], [[a, c], [[a, c]]], []]", null},
+                        "[[a, b, c], [[a, c], [[a, c]]], []]", null},
                 {__.V().select("c").map(select("c").map(select("c"))).select("c"), "[[c], [[c], [[c]]], []]", null},
                 {__.V().select("c").map(select("c").map(select("c"))).select("b"), "[[b, c], [[b, c], [[b]]], []]", null},
-                 {__.V().select("a").map(select("c").map(select("b"))).select("c"),
+                {__.V().select("a").map(select("c").map(select("b"))).select("c"),
                         "[[b, c], [[b, c], [[c]]], []]", null},
-                 {__.V().select("a").map(select("b").repeat(select("c"))).select("a"),
-                "[[a, b, c], [[a, c], [[a, c]]], []]", null},
-                {__.V().out("created").project("a","b").by("name").by(__.in("created").count()).order().by(select("b")).select("a"), "[[[a]], []]", null},
+                {__.V().select("a").map(select("b").repeat(select("c"))).select("a"),
+                        "[[a, b, c], [[a, c], [[a, c]]], []]", null},
+                {__.V().out("created").project("a", "b").by("name").by(__.in("created").count()).order().by(select("b")).select("a"), "[[[a]], []]", null},
                 {__.order().by("weight", Order.decr).store("w").by("weight").filter(values("weight").as("cw").
-                        select("w").by(limit(Scope.local, 1)).as("mw").where("cw", eq("mw"))).project("from","to","weight").by(__.outV()).by(__.inV()).by("weight"),
+                        select("w").by(limit(Scope.local, 1)).as("mw").where("cw", eq("mw"))).project("from", "to", "weight").by(__.outV()).by(__.inV()).by("weight"),
                         "[[[cw, mw], []]]", null}
         });
     }

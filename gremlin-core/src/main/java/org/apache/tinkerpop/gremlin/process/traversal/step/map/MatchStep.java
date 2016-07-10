@@ -38,7 +38,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PathUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -313,28 +315,33 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return false;
     }
 
+    private final TraverserSet standardAlgorithmBarrier = new TraverserSet();
+
     @Override
     protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
         while (true) {
-            Traverser.Admin traverser = null;
+
             if (this.first) {
                 this.first = false;
                 this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
-            } else {
+            } else if (this.standardAlgorithmBarrier.isEmpty()) {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
-                    if (matchTraversal.hasNext()) {
-                        traverser = matchTraversal.getEndStep().next();
-                        break;
+                    while (matchTraversal.hasNext() &&
+                            this.standardAlgorithmBarrier.size() < PrunePathStrategy.MAX_BARRIER_SIZE) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
+                        this.standardAlgorithmBarrier.add(matchTraversal.getEndStep().next());
                     }
                 }
             }
-            if (null == traverser) {
+            final Traverser.Admin traverser;
+            if (this.standardAlgorithmBarrier.isEmpty()) {
                 traverser = this.starts.next();
                 if (!traverser.getTags().contains(this.getId())) {
                     traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
                     if (!this.hasPathLabel(traverser.path(), this.matchStartLabels))
                         traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
                 }
+            } else {
+                traverser = this.standardAlgorithmBarrier.remove();
             }
             ///
             if (!this.isDuplicate(traverser)) {
@@ -499,7 +506,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             MatchStep parent = ((MatchStep) this.getTraversal().getParent().asStep());
             if (null != parent.getKeepLabels()) {
                 final Set<String> keepers = new HashSet<>();
-                for (final Traversal.Admin<?, ?> traversal : (List<Traversal.Admin<?, ?>>)parent.getRemainingTraversals(traverser)) {
+                for (final Traversal.Admin<?, ?> traversal : (List<Traversal.Admin<?, ?>>) parent.getRemainingTraversals(traverser)) {
                     keepers.addAll(PathUtil.getReferencedLabels(traversal));
                 }
                 keepers.addAll(parent.getKeepLabels());
@@ -509,7 +516,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         @Override
         protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
-
 
 
             while (true) {

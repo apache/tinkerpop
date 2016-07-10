@@ -95,7 +95,7 @@ public class IdentityRemovalStrategyTest {
 
             return new Iterator<GraphTraversal>() {
 
-                final int minIdentities = 3;
+                final int minIdentities = 5;
                 final int maxIdentities = 10;
                 final Integer[] starts = IntStream.range(0, 1000).boxed().toArray(Integer[]::new);
 

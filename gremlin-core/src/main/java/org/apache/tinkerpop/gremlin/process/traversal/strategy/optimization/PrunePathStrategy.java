@@ -38,17 +38,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Ted Wilmes (http://twilmes.org)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class PrunePathStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    public static Integer MAX_BARRIER_SIZE = 1000;
+    public static Integer MAX_BARRIER_SIZE = 2500;
 
     private static final PrunePathStrategy INSTANCE = new PrunePathStrategy();
     // these strategies do strong rewrites involving path labeling and thus, should run prior to PrunePathStrategy
@@ -74,7 +73,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
         final boolean hasPathStep = TraversalHelper.anyStepRecursively(step -> step.getRequirements().contains(TraverserRequirement.PATH), traversal);
         if (hasPathStep) {
             for (final Step<?, ?> step : traversal.getSteps()) {
-                if(step instanceof PathProcessor) {
+                if (step instanceof PathProcessor) {
                     ((PathProcessor) step).setKeepLabels(null);
                 }
             }
@@ -104,7 +103,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                 } else
                     ((PathProcessor) currentStep).setKeepLabels(new HashSet<>(keepLabels));
 
-                if (currentStep.getTraversal().getParent().asStep() instanceof MatchStep) {
+                if (currentStep.getTraversal().getParent() instanceof MatchStep) {
                     pathProcessor.setKeepLabels(((MatchStep) currentStep.getTraversal().getParent().asStep()).getMatchStartLabels());
                     pathProcessor.getKeepLabels().addAll(((MatchStep) currentStep.getTraversal().getParent().asStep()).getMatchEndLabels());
                 }
@@ -112,7 +111,8 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
                 // OLTP barrier optimization that will try and bulk traversers after a path processor step to thin the stream
                 if (!onGraphComputer &&
                         !(currentStep.getNextStep() instanceof ReducingBarrierStep) &&
-                        !(currentStep.getNextStep() instanceof NoOpBarrierStep))
+                        !(currentStep.getNextStep() instanceof NoOpBarrierStep) &&
+                        !(currentStep.getTraversal().getParent() instanceof MatchStep))
                     TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), currentStep, traversal);
             }
         }
@@ -123,7 +123,7 @@ public final class PrunePathStrategy extends AbstractTraversalStrategy<Traversal
         Step<?, ?> parent = traversal.getParent().asStep();
         final List<Pair<Step, Set<String>>> parentKeeperPairs = new ArrayList<>();
         while (!parent.equals(EmptyStep.instance())) {
-            parentKeeperPairs.add(new Pair<>(parent, PathUtil.whichLabelsReferencedFromHereForward(parent, foundLabels)));
+            parentKeeperPairs.add(new Pair<>(parent, PathUtil.whichLabelsReferencedFromHereForward(parent)));
             parent = parent.getTraversal().getParent().asStep();
         }
 
