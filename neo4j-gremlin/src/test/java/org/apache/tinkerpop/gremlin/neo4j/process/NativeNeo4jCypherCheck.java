@@ -199,8 +199,8 @@ public class NativeNeo4jCypherCheck extends AbstractNeo4jGremlinTest {
                 () -> n.cypher("MATCH (a)<-[:writtenBy]-(b), (b)-[:followedBy]->(c), (c)-[:writtenBy]->(d) WHERE a <> d AND a.name = 'Garcia' AND 'artist' IN labels(a) RETURN a.name, d.name"),
                 ///
                 () -> g.V().match(
-                        as("a").out("followed").as("b"),
-                        as("b").out("followed").as("c")).select("a").by("name"),
+                        as("a").out("followedBy").as("b"),
+                        as("b").out("followedBy").as("c")).select("a").by("name"),
                 () -> n.cypher("MATCH ((a)-[:followedBy]->(b), (b)-[:followedBy]->(c) RETURN a.name")
                 ///
                 /*() -> g.V().match(

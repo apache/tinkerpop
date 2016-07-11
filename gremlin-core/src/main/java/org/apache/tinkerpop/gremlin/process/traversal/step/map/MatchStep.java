@@ -351,16 +351,15 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 }
             }
             final Traverser.Admin traverser;
-            if (this.standardAlgorithmBarrier.isEmpty()) {
+            if (this.standardAlgorithmBarrier.isEmpty()) { // pull from previous step
                 traverser = this.starts.next();
                 if (!traverser.getTags().contains(this.getId())) {
                     traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
                     if (!this.hasPathLabel(traverser.path(), this.matchStartLabels))
                         traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
                 }
-            } else {
-                traverser = this.standardAlgorithmBarrier.remove();
-            }
+            } else
+                traverser = this.standardAlgorithmBarrier.remove(); // pull from internal lazy barrier
             ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.connective, traverser))
@@ -424,18 +423,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         final Set<String> tags = traverser.getTags();
         final List<Traversal.Admin<?, ?>> remainingTraversals = new ArrayList<>();
         for (final Traversal.Admin<?, ?> matchTraversal : matchTraversals) {
-            if (!tags.contains(matchTraversal.getStartStep().getId())) {
+            if (!tags.contains(matchTraversal.getStartStep().getId()))
                 remainingTraversals.add(matchTraversal);
-            }  /*else {
-                // include the current traversal that the traverser is executing in the list of
-                // remaining traversals
-                for (final Step<?, ?> s : matchTraversal.getSteps()) {
-                    if (s.getId().equals(traverser.getStepId())) {
-                        remainingTraversals.add(matchTraversal);
-                        break;
-                    }
-                }
-            } */
         }
         return remainingTraversals;
     }
@@ -461,7 +450,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     //////////////////////////////
 
-    public static class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
+    public static final class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
 
         private final String selectKey;
         private Set<String> scopeKeys = null;
@@ -510,9 +499,12 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    public static class MatchEndStep extends EndStep<Object> {
+    public static final class MatchEndStep extends EndStep<Object> {
 
         private final String matchKey;
+        // memoization of referenced labels Map<startStepId, referencedLabels>
+        private final Map<String, Set<String>> referencedLabelsMap = new HashMap<>();
+        private MatchStep<?, ?> parent = null;
 
         public MatchEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
@@ -520,42 +512,48 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
 
-        private void retractUnnecessaryLabels(final Traverser.Admin<Object> traverser) {
-            MatchStep parent = ((MatchStep) this.getTraversal().getParent().asStep());
-            if (null != parent.getKeepLabels()) {
-                final Set<String> keepers = new HashSet<>();
-                for (final Traversal.Admin<?, ?> traversal : (List<Traversal.Admin<?, ?>>) parent.getRemainingTraversals(traverser)) {
-                    keepers.addAll(PathUtil.getReferencedLabels(traversal));
+        private <S> Traverser.Admin<S> retractUnnecessaryLabels(final Traverser.Admin<S> traverser) {
+            if (null == this.parent.getKeepLabels())
+                return traverser;
+
+            final Set<String> keepers = new HashSet<>(this.parent.getKeepLabels());
+            for (final Traversal.Admin<?, ?> traversal : this.parent.getRemainingTraversals(traverser)) {
+                Set<String> referencedLabels = this.referencedLabelsMap.get(traversal.getStartStep().getId());
+                if (null == referencedLabels) {
+                    referencedLabels = new HashSet<>();
+                    for (final Step<?, ?> step : traversal.getSteps()) {
+                        referencedLabels.addAll(PathUtil.getReferencedLabels(step));
+                    }
+                    this.referencedLabelsMap.put(traversal.getStartStep().getId(), referencedLabels);
                 }
-                keepers.addAll(parent.getKeepLabels());
-                PathProcessor.processTraverserPathLabels(traverser, keepers);
+                keepers.addAll(referencedLabels);
             }
+            return PathProcessor.processTraverserPathLabels(traverser, keepers);
         }
 
         @Override
         protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
-
+            if (null == this.parent)
+                this.parent = ((MatchStep) this.getTraversal().getParent().asStep());
 
             while (true) {
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
                     if (this.traverserStepIdAndLabelsSetByChild)
-                        traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
-                    ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
-                    retractUnnecessaryLabels(traverser);
-                    return traverser;
+                        traverser.setStepId(this.parent.getId());
+                    this.parent.getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
+                    return this.retractUnnecessaryLabels(traverser);
                 }
                 // TODO: sideEffect check?
                 // path check
                 final Path path = traverser.path();
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.last, this.matchKey))) {
                     if (this.traverserStepIdAndLabelsSetByChild)
-                        traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
+                        traverser.setStepId(this.parent.getId());
                     traverser.addLabels(Collections.singleton(this.matchKey));
-                    ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
-                    retractUnnecessaryLabels(traverser);
-                    return traverser;
+                    this.parent.getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
+                    return this.retractUnnecessaryLabels(traverser);
                 }
             }
         }

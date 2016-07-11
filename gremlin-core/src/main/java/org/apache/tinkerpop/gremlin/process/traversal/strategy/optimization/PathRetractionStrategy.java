@@ -120,7 +120,9 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
         Step<?, ?> parent = traversal.getParent().asStep();
         final List<Pair<Step, Set<String>>> parentKeeperPairs = new ArrayList<>();
         while (!parent.equals(EmptyStep.instance())) {
-            parentKeeperPairs.add(new Pair<>(parent, PathUtil.whichLabelsReferencedFromHereForward(parent)));
+            Set<String> parentKeepLabels = new HashSet<>(PathUtil.getReferencedLabels(parent));
+            parentKeepLabels.addAll(PathUtil.getReferencedLabelsAfterStep(parent));
+            parentKeeperPairs.add(new Pair<>(parent, parentKeepLabels));
             parent = parent.getTraversal().getParent().asStep();
         }
 

@@ -65,18 +65,7 @@ public interface PathProcessor {
     public Set<String> getKeepLabels();
 
     public static <S> Traverser.Admin<S> processTraverserPathLabels(final Traverser.Admin<S> traverser, final Set<String> labels) {
-        if (null != labels)
-            traverser.keepLabels(labels);
+        if (null != labels) traverser.keepLabels(labels);
         return traverser;
     }
-
-    static void keepLabels(final Traverser traverser, final Set<String> labels) {
-        if(labels == null) {
-            return;
-        } else {
-            traverser.asAdmin().keepLabels(labels);
-        }
-    }
-
-
 }

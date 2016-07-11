@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,34 +39,12 @@ public class PathUtil {
     }
 
     public static Set<String> getReferencedLabelsAfterStep(Step<?, ?> step) {
-        if (step.getNextStep().equals(EmptyStep.instance())) {
-            return Collections.emptySet();
-        }
         final Set<String> labels = new HashSet<>();
-        while (!(step = step.getNextStep()).equals(EmptyStep.instance())) {
+        while (!(step instanceof EmptyStep)) {
             labels.addAll(PathUtil.getReferencedLabels(step));
-        }
-        return labels;
-    }
-
-    public static Set<String> getReferencedLabels(final Traversal.Admin<?, ?> traversal) {
-        final Set<String> referencedLabels = new HashSet<>();
-        for (final Step<?, ?> step : traversal.getSteps()) {
-            referencedLabels.addAll(getReferencedLabels(step));
-        }
-        return referencedLabels;
-    }
-
-    public static Set<String> whichLabelsReferencedFromHereForward(Step<?, ?> step) {
-        final Set<String> found = new HashSet<>();
-        while (!step.equals(EmptyStep.instance())) {
-            final Set<String> referencedLabels = getReferencedLabels(step);
-            for (final String refLabel : referencedLabels) {
-                found.add(refLabel);
-            }
             step = step.getNextStep();
         }
-        return found;
+        return labels;
     }
 
     public static Set<String> getReferencedLabels(final Step step) {
