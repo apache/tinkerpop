@@ -156,23 +156,43 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
     @Override
     public boolean hasLabel(final String label) {
-        return this.currentLabels.contains(label) || this.previousPath.hasLabel(label);
+        ImmutablePath currentPathSection = this;
+        while (true) {
+            if (currentPathSection.currentLabels.contains(label))
+                return true;
+            if (currentPathSection.previousPath instanceof TailPath)
+                return false;
+            else
+                currentPathSection = (ImmutablePath) currentPathSection.previousPath;
+        }
     }
 
     @Override
     public List<Object> objects() {
-        final List<Object> objectPath = new ArrayList<>();    // TODO: optimize
-        objectPath.addAll(this.previousPath.objects());
-        objectPath.add(this.currentObject);
-        return Collections.unmodifiableList(objectPath);
+        final List<Object> objects = new ArrayList<>();
+        ImmutablePath currentPathSection = this;
+        while (true) {
+            objects.add(0, currentPathSection.currentObject);
+            if (currentPathSection.previousPath instanceof TailPath)
+                break;
+            else
+                currentPathSection = (ImmutablePath) currentPathSection.previousPath;
+        }
+        return Collections.unmodifiableList(objects);
     }
 
     @Override
     public List<Set<String>> labels() {
-        final List<Set<String>> labelPath = new ArrayList<>();   // TODO: optimize
-        labelPath.addAll(this.previousPath.labels());
-        labelPath.add(this.currentLabels);
-        return Collections.unmodifiableList(labelPath);
+        final List<Set<String>> labels = new ArrayList<>();
+        ImmutablePath currentPathSection = this;
+        while (true) {
+            labels.add(0, currentPathSection.currentLabels);
+            if (currentPathSection.previousPath instanceof TailPath)
+                break;
+            else
+                currentPathSection = (ImmutablePath) currentPathSection.previousPath;
+        }
+        return Collections.unmodifiableList(labels);
     }
 
     @Override

@@ -76,17 +76,29 @@ public class PathTest {
             assertEquals(Integer.valueOf(2), path.get(1));
             assertEquals(Integer.valueOf(3), path.get(2));
             assertEquals(Integer.valueOf(3), path.get(3));
-            Path retractedPath = path.retract(Collections.singleton("f"));
+            Path retractedPath = path.retract(Collections.singleton("f")).clone();
             assertFalse(path.hasLabel("f"));
+            assertEquals(4, path.size());
             assertEquals(retractedPath, path);
             path = path.retract(Collections.singleton("b"));
             assertFalse(path.hasLabel("b"));
+            assertEquals(3, path.size());
+            assertEquals(retractedPath.retract(Collections.singleton("b")), path);
             path = path.retract(Collections.singleton("a"));
+            assertEquals(2, path.size());
             assertFalse(path.hasLabel("a"));
             assertTrue(path.hasLabel("d"));
             path = path.retract(new HashSet<>(Arrays.asList("c", "d")));
             assertFalse(path.hasLabel("c"));
             assertFalse(path.hasLabel("d"));
+            assertTrue(path.hasLabel("e"));
+            assertEquals(1, path.size());
+            path = path.retract(Collections.singleton("e"));
+            assertFalse(path.hasLabel("c"));
+            assertFalse(path.hasLabel("d"));
+            assertFalse(path.hasLabel("e"));
+            assertNotEquals(retractedPath, path);
+            assertEquals(0, path.size());
         });
     }
 
