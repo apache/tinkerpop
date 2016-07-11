@@ -76,6 +76,32 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     }
 
     @Override
+    public Path retract(final Set<String> labels) {
+        if (labels.isEmpty())
+            return this;
+
+        // get all the immutable path sections
+        final List<ImmutablePath> immutablePaths = new ArrayList<>();
+        ImmutablePath currentPathSection = this;
+        while (true) {
+            immutablePaths.add(0, currentPathSection);
+            if (currentPathSection.previousPath instanceof TailPath)
+                break;
+            else
+                currentPathSection = (ImmutablePath) currentPathSection.previousPath;
+        }
+        // build a new immutable path using the respective path sections that are not to be retracted
+        Path newPath = TailPath.instance();
+        for (final ImmutablePath immutablePath : immutablePaths) {
+            final Set<String> temp = new LinkedHashSet<>(immutablePath.currentLabels);
+            temp.removeAll(labels);
+            if (!temp.isEmpty())
+                newPath = newPath.extend(immutablePath.currentObject, temp);
+        }
+        return newPath;
+    }
+
+    @Override
     public <A> A get(final int index) {
         return (this.size() - 1) == index ? (A) this.currentObject : this.previousPath.get(index);
     }
@@ -164,13 +190,23 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         if (!(other instanceof Path))
             return false;
         final Path otherPath = (Path) other;
-        if (otherPath.size() != this.size())
+        int size = this.size();
+        if (otherPath.size() != size)
             return false;
-        for (int i = this.size() - 1; i >= 0; i--) {
-            if (!this.get(i).equals(otherPath.get(i)))
-                return false;
-            if (!this.labels().get(i).equals(otherPath.labels().get(i)))
-                return false;
+        if (size > 0) {
+            ImmutablePath currentPathSection = this;
+            final List<Object> otherObjects = otherPath.objects();
+            final List<Set<String>> otherLabels = otherPath.labels();
+            for (int i = otherLabels.size() - 1; i >= 0; i--) {
+                if (!currentPathSection.currentObject.equals(otherObjects.get(i)))
+                    return false;
+                if (!currentPathSection.currentLabels.equals(otherLabels.get(i)))
+                    return false;
+                if (currentPathSection.previousPath instanceof TailPath)
+                    break;
+                else
+                    currentPathSection = (ImmutablePath) currentPathSection.previousPath;
+            }
         }
         return true;
     }
@@ -195,7 +231,14 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
         @Override
         public Path extend(final Set<String> labels) {
+            if (labels.isEmpty())
+                return this;
             throw new UnsupportedOperationException("A head path can not have labels added to it");
+        }
+
+        @Override
+        public Path retract(final Set<String> labels) {
+            return this;
         }
 
         @Override

@@ -52,6 +52,9 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
+    public Path retract(final Set<String> labels) { return this; }
+
+    @Override
     public <A> A get(final String label) {
         throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
     }
