@@ -127,12 +127,6 @@ public class ScriptEngineLambdaTest {
         assertEquals(lambda.apply("foo"), "foo2");
     }
 
-    @AfterClass
-    public static void clearScriptEngineCache() {
-        ScriptEngineCache.get(GROOVY_SCRIPT_ENGINE_NAME).getBindings(ScriptContext.GLOBAL_SCOPE).clear();
-    }
-
-
     // Utilities
 
     /**

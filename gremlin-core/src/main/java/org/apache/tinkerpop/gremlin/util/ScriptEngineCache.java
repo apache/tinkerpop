@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util;
 
 import org.apache.tinkerpop.gremlin.jsr223.DefaultGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -28,7 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @deprecated As of release 3.3.0, replaced by {@link SingleGremlinScriptEngineManager}.
  */
+@Deprecated
 public final class ScriptEngineCache {
 
     private ScriptEngineCache() {}
