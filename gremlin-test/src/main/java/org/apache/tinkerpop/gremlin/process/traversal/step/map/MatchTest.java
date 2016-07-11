@@ -148,6 +148,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_hasLabelXsongsX_matchXa_name_b__a_performances_cX_selectXb_cX_count();
 
+    // reducing barrier on lazy standard shouldn't yield an empty barrier
+    public abstract Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valueMap_matchXa_selectXnameX_bX() {
@@ -521,6 +524,15 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_knows_count_bX_selectXbX() {
+        final Traversal<Vertex, Long> traversal = get_g_V_matchXa_knows_count_bX_selectXbX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0L, 0L, 0L, 0L, 0L, 2L), traversal);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -784,6 +796,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     __.as("a").values("name").as("b"),
                     __.as("a").values("performances").as("c")
             ).select("b", "c").count();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX() {
+            return g.V().match(as("a").out("knows").count().as("b")).select("b");
         }
     }
 }

@@ -38,7 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -177,6 +177,24 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     public List<Traversal.Admin<Object, Object>> getGlobalChildren() {
         return Collections.unmodifiableList(this.matchTraversals);
+    }
+
+    @Override
+    public void setKeepLabels(Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        return keepLabels;
+    }
+
+    public Set<String> getMatchEndLabels() {
+        return this.matchEndLabels;
+    }
+
+    public Set<String> getMatchStartLabels() {
+        return this.matchStartLabels;
     }
 
     @Override
@@ -327,7 +345,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             } else if (this.standardAlgorithmBarrier.isEmpty()) {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     while (matchTraversal.hasNext() &&
-                            this.standardAlgorithmBarrier.size() < PrunePathStrategy.MAX_BARRIER_SIZE) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
+                            this.standardAlgorithmBarrier.size() < PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
                         this.standardAlgorithmBarrier.add(matchTraversal.getEndStep().next());
                     }
                 }
@@ -751,23 +769,5 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.multiplicity = (double) ++this.endsCount / (double) this.startsCount;
             }
         }
-    }
-
-    @Override
-    public void setKeepLabels(Set<String> labels) {
-        this.keepLabels = labels;
-    }
-
-    @Override
-    public Set<String> getKeepLabels() {
-        return keepLabels;
-    }
-
-    public Set<String> getMatchEndLabels() {
-        return this.matchEndLabels;
-    }
-
-    public Set<String> getMatchStartLabels() {
-        return this.matchStartLabels;
     }
 }

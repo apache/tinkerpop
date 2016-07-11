@@ -348,5 +348,10 @@ public abstract class GroovyMatchTest {
             ).select('b', 'c').count();
             """)
         }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().match(__.as('a').out('knows').count().as('b')).select('b')")
+        }
     }
 }

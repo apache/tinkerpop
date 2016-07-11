@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -69,8 +69,8 @@ public class TinkerGraphPlayTest {
         graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
         //Graph graph = TinkerFactory.createModern();
 
-        GraphTraversalSource g = graph.traversal().withStrategies(PrunePathStrategy.instance());
-        GraphTraversalSource h = graph.traversal().withoutStrategies(PrunePathStrategy.class);
+        GraphTraversalSource g = graph.traversal().withStrategies(PathRetractionStrategy.instance());
+        GraphTraversalSource h = graph.traversal().withoutStrategies(PathRetractionStrategy.class);
 
         for (final GraphTraversalSource source : Arrays.asList(h, g)) {
             System.out.println(source.V().match(
@@ -309,8 +309,8 @@ public class TinkerGraphPlayTest {
         Graph graph = TinkerGraph.open();
         graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
 
-        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(4)).withStrategies(PrunePathStrategy.instance());
-        GraphTraversalSource h = graph.traversal().withComputer(Computer.compute().workers(4)).withoutStrategies(PrunePathStrategy.class);
+        GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(4)).withStrategies(PathRetractionStrategy.instance());
+        GraphTraversalSource h = graph.traversal().withComputer(Computer.compute().workers(4)).withoutStrategies(PathRetractionStrategy.class);
 
         for (final GraphTraversalSource source : Arrays.asList(g, h)) {
             System.out.println(source.V().match(

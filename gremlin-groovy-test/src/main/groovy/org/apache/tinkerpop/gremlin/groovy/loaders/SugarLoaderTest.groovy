@@ -22,13 +22,18 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest
 import org.apache.tinkerpop.gremlin.LoadGraphWith
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.structure.*
+import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.Graph
+import org.apache.tinkerpop.gremlin.structure.Property
+import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.structure.VertexProperty
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory
-import org.junit.Ignore
 import org.junit.Test
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq
-import static org.junit.Assert.*
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -91,7 +96,6 @@ class SugarLoaderTest extends AbstractGremlinTest {
         }
     }
 
-    @Ignore // TODO this is currently set to ignore because the PrunePathStrategy has no insight into the ending map and drops the path information
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldUseTraverserCategoryCorrectly() {

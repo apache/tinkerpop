@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inci
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -197,7 +197,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     MatchPredicateStrategy.instance(),
                     RepeatUnrollStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
-                    PrunePathStrategy.instance(),
+                    PathRetractionStrategy.instance(),
                     ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance());
 

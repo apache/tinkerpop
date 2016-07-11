@@ -46,7 +46,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
-import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PrunePathStrategy.MAX_BARRIER_SIZE;
+import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -54,13 +54,13 @@ import static org.junit.Assert.assertEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
-public class PrunePathStrategyTest {
+public class PathRetractionStrategyTest {
 
     private final List<TraversalStrategies> strategies = Arrays.asList(
-            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance(), PathProcessorStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PrunePathStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance()),
+            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()),
             TraversalStrategies.GlobalCache.getStrategies(Graph.class));
 
     @Parameterized.Parameter(value = 0)
@@ -124,6 +124,7 @@ public class PrunePathStrategyTest {
                         as("b").in("knows").as("c")).select("c").out("created").where(neq("a")).values("name"),
                         "[[a, c], [a], []]", null},
                 {__.V().as("a").out().select("a").path(), "[]", null},
+                {__.V().as("a").out().select("a").map(t -> t.path().get("a")), "[]", null}, // lambda introspection is not possible
                 {__.V().as("a").out().select("a").subgraph("b"), "[[]]", null},
                 {__.V().as("a").out().select("a").subgraph("b").select("a"), "[[a], []]", null},
                 {__.V().out().out().match(
@@ -138,12 +139,12 @@ public class PrunePathStrategyTest {
                 {__.V().as("a").repeat(out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
                 // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
-                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(DEFAULT_STANDARD_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").select("a").count(), "[[]]", __.V().as("a").out().as("b").select("a").count()},
                 {__.V().as("a").out().as("b").select("a").barrier().count(), "[[]]", __.V().as("a").out().as("b").select("a").barrier().count()},
-                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(DEFAULT_STANDARD_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
-                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
+                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(DEFAULT_STANDARD_BARRIER_SIZE).where(P.gt("b")).barrier(DEFAULT_STANDARD_BARRIER_SIZE).out()},
                 {__.V().select("c").map(select("c").map(select("c"))).select("c"), "[[c], [[c], [[c]]], []]", null},
                 {__.V().select("c").map(select("c").map(select("c"))).select("b"), "[[b, c], [[b, c], [[b]]], []]", null},
                 {__.V().as("a").out().as("b").select("a").select("b").union(

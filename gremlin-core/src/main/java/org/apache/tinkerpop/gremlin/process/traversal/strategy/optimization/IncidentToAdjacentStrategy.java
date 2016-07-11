@@ -69,9 +69,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     }
 
     @Override
-    public void apply(Traversal.Admin<?, ?> traversal) {
-        final Traversal.Admin root = TraversalHelper.getRootTraversal(traversal);
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, root))
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, TraversalHelper.getRootTraversal(traversal)))
             return;
         final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
