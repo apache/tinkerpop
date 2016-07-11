@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,121 +77,28 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
     @Override
     public Path retract(final Set<String> labels) {
-        if (labels == null || labels.isEmpty()) {
+        if (labels.isEmpty())
             return this;
-        }
 
-        // first see if the labels in the set are even present in this path
-        boolean found = false;
-        for (final Set<String> labelSet : labels()) {
-            if (!Collections.disjoint(labelSet, labels)) {
-                found = true;
+        // get all the immutable path sections
+        final List<ImmutablePath> immutablePaths = new ArrayList<>();
+        ImmutablePath currentPathSection = this;
+        while (true) {
+            immutablePaths.add(0, currentPathSection);
+            if (currentPathSection.previousPath instanceof TailPath)
                 break;
-            }
+            else
+                currentPathSection = (ImmutablePath) currentPathSection.previousPath;
         }
-
-        if (!found) {
-            return this;
+        // build a new immutable path using the respective path sections that are not to be retracted
+        Path newPath = TailPath.instance();
+        for (final ImmutablePath immutablePath : immutablePaths) {
+            final Set<String> temp = new LinkedHashSet<>(immutablePath.currentLabels);
+            temp.removeAll(labels);
+            if (!temp.isEmpty())
+                newPath = newPath.extend(immutablePath.currentObject, temp);
         }
-
-        if (this.previousPath instanceof TailPath) {
-            ImmutablePath clone = cloneImmutablePath(this);
-            clone.currentLabels.removeAll(labels);
-            clone.previousPath = TailPath.instance();
-            if (clone.currentLabels.isEmpty()) {
-                // return the previous tail path because this path segment can be dropped
-                return clone.previousPath;
-            }
-            return clone;
-        }
-
-        ImmutablePath parent;
-        ImmutablePath child;
-        if (this.previousPath != null) {
-            parent = this;
-            child = (ImmutablePath)this.previousPath;
-        } else {
-            parent = (ImmutablePath)this.previousPath;
-            child = this;
-        }
-
-        if (!Collections.disjoint(parent.currentLabels, labels)) {
-            ImmutablePath clonedParent = cloneImmutablePath(parent);
-            clonedParent.currentLabels.removeAll(labels);
-            if (clonedParent.currentLabels.isEmpty()) {
-                parent = (ImmutablePath) parent.previousPath;
-            } else {
-                parent = clonedParent;
-            }
-        }
-
-        // store the head and return it at the end of this
-        ImmutablePath head = parent;
-
-        // parents can be a mixture of ImmutablePaths and collapsed
-        // cloned ImmutablePaths that are a result of branching
-        List<Object> parents = new ArrayList<>();
-        parents.add(parent);
-
-        while(true) {
-            if (Collections.disjoint(child.currentLabels, labels)) {
-                parents.add(child);
-                if (child.previousPath instanceof TailPath) {
-                    break;
-                }
-                child = (ImmutablePath)child.previousPath;
-                continue;
-            }
-            // split path
-            // clone child
-            ImmutablePath clone = cloneImmutablePath(child);
-            clone.currentLabels.removeAll(labels);
-            if (clone.currentLabels.isEmpty()) {
-                clone.currentObject = null;
-            }
-
-            // walk back up and build parent clones or reuse
-            // other previously cloned paths
-            boolean headFound = false;
-            if (parents.size() > 0) {
-                boolean first = true;
-                // construct parents up to this point
-                ImmutablePath newPath = cloneImmutablePath((ImmutablePath)parents.get(0));
-                // replace the previous
-                ImmutablePath prevPath = newPath;
-                ImmutablePath lastPath = prevPath;
-                if (!headFound) {
-                    head = newPath;
-                }
-                for (int i = 1; i < parents.size(); i++) {
-                    ImmutablePath clonedPrev = cloneImmutablePath((ImmutablePath) parents.get(i));
-                    prevPath.previousPath = clonedPrev;
-                    lastPath = clonedPrev;
-                    prevPath = clonedPrev;
-                }
-
-                if (clone.currentLabels.isEmpty()) {
-                    lastPath.previousPath = clone.previousPath;
-                } else {
-                    lastPath.previousPath = clone;
-                }
-
-                parents = new ArrayList<>();
-                parents.add(lastPath);
-
-                if (child.previousPath instanceof TailPath) {
-                    break;
-                }
-
-                child = (ImmutablePath)child.previousPath;
-            }
-        }
-
-        return head;
-    }
-
-    private static ImmutablePath cloneImmutablePath(final ImmutablePath path) {
-        return new ImmutablePath(path.previousPath, path.currentObject, new HashSet<>(path.currentLabels));
+        return newPath;
     }
 
     @Override
@@ -315,7 +221,9 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
         @Override
         public Path extend(final Set<String> labels) {
-            if (labels.size() == 0) { return this; }
+            if (labels.size() == 0) {
+                return this;
+            }
             throw new UnsupportedOperationException("A head path can not have labels added to it");
         }
 

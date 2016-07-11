@@ -23,11 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -89,6 +87,32 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public void keepLabels(final Set<String> labels) {
+        final Set<String> retractLabels = new HashSet<>();
+        for (final Set<String> stepLabels : this.path.labels()) {
+            for (final String l : stepLabels) {
+                if (!labels.contains(l))
+                    retractLabels.add(l);
+            }
+        }
+        this.path = this.path.retract(retractLabels);
+    }
+
+    @Override
+    public void dropLabels(final Set<String> labels) {
+        if (!labels.isEmpty())
+            this.path = path.retract(labels);
+    }
+
+    @Override
+    public void dropPath() {
+        this.path = ImmutablePath.make();
+    }
+
+
+
+
+    /*@Override
+    public void keepLabels(final Set<String> labels) {
         if (!labels.isEmpty()) {
             Set<String> retractLabels = new HashSet<>();
             List<Set<String>> existingLabels = this.path.labels();
@@ -108,23 +132,7 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
                 this.path = this.path.retract(retractLabels);
             }
         }
-    }
-
-    @Override
-    public void dropLabels(final Set<String> labels) {
-        if(!labels.isEmpty()) {
-            this.path = this.path.retract(labels);
-        }
-    }
-
-    @Override
-    public void dropPath() {
-        if(path instanceof ImmutablePath) {
-            this.path = ImmutablePath.make();
-        } else {
-            this.path = MutablePath.make();
-        }
-    }
+    }*/
 
     @Override
     public int hashCode() {
