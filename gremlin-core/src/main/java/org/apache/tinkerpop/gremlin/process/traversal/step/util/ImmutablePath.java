@@ -190,13 +190,23 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         if (!(other instanceof Path))
             return false;
         final Path otherPath = (Path) other;
-        if (otherPath.size() != this.size())
+        int size = this.size();
+        if (otherPath.size() != size)
             return false;
-        for (int i = this.size() - 1; i >= 0; i--) {
-            if (!this.get(i).equals(otherPath.get(i)))
-                return false;
-            if (!this.labels().get(i).equals(otherPath.labels().get(i)))
-                return false;
+        if (size > 0) {
+            ImmutablePath currentPathSection = this;
+            final List<Object> otherObjects = otherPath.objects();
+            final List<Set<String>> otherLabels = otherPath.labels();
+            for (int i = otherLabels.size() - 1; i >= 0; i--) {
+                if (!currentPathSection.currentObject.equals(otherObjects.get(i)))
+                    return false;
+                if (!currentPathSection.currentLabels.equals(otherLabels.get(i)))
+                    return false;
+                if (currentPathSection.previousPath instanceof TailPath)
+                    break;
+                else
+                    currentPathSection = (ImmutablePath) currentPathSection.previousPath;
+            }
         }
         return true;
     }
@@ -221,9 +231,8 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
         @Override
         public Path extend(final Set<String> labels) {
-            if (labels.size() == 0) {
+            if (labels.isEmpty())
                 return this;
-            }
             throw new UnsupportedOperationException("A head path can not have labels added to it");
         }
 
