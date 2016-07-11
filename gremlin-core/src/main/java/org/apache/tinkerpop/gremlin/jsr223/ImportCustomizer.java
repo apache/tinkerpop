@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Provides the list of imports to apply to a {@link GremlinScriptEngine} instance.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ImportCustomizer implements Customizer {

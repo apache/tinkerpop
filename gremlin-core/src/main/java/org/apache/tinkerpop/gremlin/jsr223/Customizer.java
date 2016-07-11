@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 /**
+ * The {@code Customizer} provides a general way to provide configurations to a {@link GremlinScriptEngine}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -21,11 +21,24 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import javax.script.ScriptEngineFactory;
 
 /**
+ * Creates a {@link GremlinScriptEngine} implementation and supplies to it any {@link Customizer} implementations to
+ * it that are available on the {@link CustomizerManager}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GremlinScriptEngineFactory extends ScriptEngineFactory {
+
+    /**
+     * Creates a new {@link GremlinScriptEngine} instance. Unlike the JSR-223 implementation, the semantics for this
+     * interface expect a "new" instance to be created for each call to this method. Caching or pooling is something
+     * to be handled by a {@link GremlinScriptEngineManager}.
+     */
     @Override
     GremlinScriptEngine getScriptEngine();
 
+    /**
+     * The factory should take the {@link Customizer} implementations made available by the manager and supply them
+     * to the {@link GremlinScriptEngine} implementation it creates.
+     */
     void setCustomizerManager(final CustomizerManager manager);
 }

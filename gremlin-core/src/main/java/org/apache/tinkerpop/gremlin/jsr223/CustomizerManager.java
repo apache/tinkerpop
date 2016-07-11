@@ -21,8 +21,14 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import java.util.Optional;
 
 /**
+ * Holds the list of {@link Customizer} implementations that will be supplied to the {@link GremlinScriptEngine} when
+ * it is created.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface CustomizerManager {
+    /**
+     * Gets the list of {@link Customizer} implementations to assign to a new {@link GremlinScriptEngine}.
+     */
     public Optional<Customizer[]> getCustomizers();
 }
