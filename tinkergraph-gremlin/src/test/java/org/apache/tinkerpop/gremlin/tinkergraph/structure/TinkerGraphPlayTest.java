@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -76,9 +77,10 @@ public class TinkerGraphPlayTest {
 
         for (final GraphTraversalSource source : Arrays.asList(d, c, b, a)) {
             System.out.println(source + "--PathRetractionStrategy[" + source.getStrategies().toList().contains(PathRetractionStrategy.instance()) + "]");
-            System.out.println(source.V().match(
+            System.out.println(source.V().has("performances", P.gt(500)).match(
                     __.as("a").out().as("b"),
-                    __.as("a").in().as("c")).select("a").profile().next());
+                    __.as("b").out().as("c"),
+                    __.as("c").out().as("a")).select("a","b","c").profile().next());
         }
     }
 

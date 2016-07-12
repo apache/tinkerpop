@@ -181,8 +181,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
-    public void setKeepLabels(Set<String> labels) {
-        this.keepLabels = labels;
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = new HashSet<>(labels);
         if (null != this.dedupLabels)
             this.keepLabels.addAll(this.dedupLabels);
     }
@@ -360,12 +360,23 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             if (this.first) {
                 this.first = false;
                 this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
+                if (null != this.keepLabels &&
+                        this.keepLabels.containsAll(this.matchEndLabels) &&
+                        this.keepLabels.containsAll(this.matchStartLabels))
+                    this.keepLabels = null;
             } else { // TODO: if(standardAlgorithmBarrier.isEmpty()) -- leads to consistent counts without retracting paths, but orders of magnitude slower.
+                boolean stop = false;
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     while (matchTraversal.hasNext() &&
                             this.standardAlgorithmBarrier.size() < PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
                         this.standardAlgorithmBarrier.add(matchTraversal.getEndStep().next());
+                        if (null == this.keepLabels) {
+                            stop = true;
+                            break;
+                        }
                     }
+                    if (stop)
+                        break;
                 }
             }
             final Traverser.Admin traverser;
@@ -405,6 +416,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             if (this.first) {
                 this.first = false;
                 this.initializeMatchAlgorithm(TraversalEngine.Type.COMPUTER);
+                if (null != this.keepLabels &&
+                        this.keepLabels.containsAll(this.matchEndLabels) &&
+                        this.keepLabels.containsAll(this.matchStartLabels))
+                    this.keepLabels = null;
             }
             final Traverser.Admin traverser = this.starts.next();
             if (!traverser.getTags().contains(this.getId())) {
@@ -523,6 +538,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         private <S> Traverser.Admin<S> retractUnnecessaryLabels(final Traverser.Admin<S> traverser) {
             if (null == this.parent.getKeepLabels())
                 return traverser;
+
             final Set<String> keepers = new HashSet<>(this.parent.getKeepLabels());
             final Set<String> tags = traverser.getTags();
             for (final Traversal.Admin<?, ?> matchTraversal : this.parent.getGlobalChildren()) { // get remaining traversal patterns for the traverser
