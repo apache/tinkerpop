@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.creation;
 
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
@@ -28,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -64,7 +64,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         } else if (this.translator instanceof Translator.ScriptTranslator) {
             try {
                 // script based translation
-                final ScriptEngine scriptEngine = ScriptEngineCache.get(this.translator.getTargetLanguage());
+                final ScriptEngine scriptEngine = SingleGremlinScriptEngineManager.get(this.translator.getTargetLanguage());
                 final Bindings bindings = scriptEngine.createBindings();
                 scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
                 bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);

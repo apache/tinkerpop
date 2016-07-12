@@ -18,8 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.jsr223.DefaultGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 
 import javax.script.ScriptEngine;
@@ -28,17 +27,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * A cache of standard {@code ScriptEngine} instances, instantiated by the standard {@code ScriptEngineManager}.
+ * These instances are not "Gremlin-enabled". See {@link SingleGremlinScriptEngineManager} for the analogous class
+ * that loads {@link GremlinScriptEngine} instances.
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
- * @deprecated As of release 3.3.0, replaced by {@link SingleGremlinScriptEngineManager}.
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@Deprecated
 public final class ScriptEngineCache {
 
     private ScriptEngineCache() {}
 
     public final static String DEFAULT_SCRIPT_ENGINE = "gremlin-groovy";
 
-    private final static GremlinScriptEngineManager SCRIPT_ENGINE_MANAGER = new DefaultGremlinScriptEngineManager();
+    private final static ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
     private final static Map<String, ScriptEngine> CACHED_ENGINES = new ConcurrentHashMap<>();
 
     public static ScriptEngine get(final String engineName) {

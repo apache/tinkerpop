@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.python.driver;
 
-import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -41,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class RESTRemoteConnectionTest {
 
-    private static final ScriptEngine jython = SingleGremlinScriptEngineManager.getInstance().getEngineByName("gremlin-jython");
+    private static final ScriptEngine jython = ScriptEngineCache.get("jython");
 
     private final List<String> aliases = Arrays.asList("g", "j");
 

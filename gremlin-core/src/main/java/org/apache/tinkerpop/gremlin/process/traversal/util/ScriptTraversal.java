@@ -19,13 +19,13 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -77,7 +77,7 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
     public void applyStrategies() throws IllegalStateException {
         try {
             assert 0 == this.getSteps().size();
-            final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngine);
+            final ScriptEngine engine = SingleGremlinScriptEngineManager.get(this.scriptEngine);
             final Bindings engineBindings = engine.createBindings();
             final List<TraversalStrategy<?>> strategyList = this.getStrategies().toList();
             engineBindings.put(this.alias, this.factory.createTraversalSource(this.graph).withStrategies(strategyList.toArray(new TraversalStrategy[strategyList.size()])));
