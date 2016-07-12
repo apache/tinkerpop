@@ -80,7 +80,7 @@ public class TinkerGraphPlayTest {
             System.out.println(source.V().has("performances", P.gt(500)).match(
                     __.as("a").out().as("b"),
                     __.as("b").out().as("c"),
-                    __.as("c").out().as("a")).select("a","b","c").profile().next());
+                    __.as("c").out().as("a")).select("a").profile().next());
         }
     }
 

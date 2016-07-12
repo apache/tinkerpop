@@ -364,19 +364,17 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                         this.keepLabels.containsAll(this.matchEndLabels) &&
                         this.keepLabels.containsAll(this.matchStartLabels))
                     this.keepLabels = null;
-            } else { // TODO: if(standardAlgorithmBarrier.isEmpty()) -- leads to consistent counts without retracting paths, but orders of magnitude slower.
+            } else { // TODO: if(standardAlgorithmBarrier.isEmpty()) -- leads to consistent counts without retracting paths, but orders of magnitude slower (or make Traverser.tags an equality concept)
                 boolean stop = false;
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
-                    while (matchTraversal.hasNext() &&
-                            this.standardAlgorithmBarrier.size() < PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
+                    while (matchTraversal.hasNext()) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
                         this.standardAlgorithmBarrier.add(matchTraversal.getEndStep().next());
-                        if (null == this.keepLabels) {
+                        if (null == this.keepLabels || this.standardAlgorithmBarrier.size() >= PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) {
                             stop = true;
                             break;
                         }
                     }
-                    if (stop)
-                        break;
+                    if (stop) break;
                 }
             }
             final Traverser.Admin traverser;
