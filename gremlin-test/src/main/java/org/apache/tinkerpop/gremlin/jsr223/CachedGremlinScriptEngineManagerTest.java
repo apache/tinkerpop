@@ -20,8 +20,12 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.IntStream;
+
 import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite.ENGINE_TO_TEST;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -31,10 +35,15 @@ public class CachedGremlinScriptEngineManagerTest {
 
     @Test
     public void shouldBeSameInstance() {
-        final GremlinScriptEngine engineFirst = manager.getEngineByName(ENGINE_TO_TEST);
-        final GremlinScriptEngine engineSecond = manager.getEngineByName(ENGINE_TO_TEST);
+        final Set<GremlinScriptEngine> scriptEngines = new HashSet<>();
+        IntStream.range(0,100).forEach(i -> scriptEngines.add(manager.getEngineByName(ENGINE_TO_TEST)));
+        assertEquals(1, scriptEngines.size());
+    }
 
-        assertSame(engineFirst, engineSecond);
-        assertSame(engineSecond, engineFirst);
+    @Test
+    public void shouldBeSameInstanceInSingleManager() {
+        final Set<GremlinScriptEngine> scriptEngines = new HashSet<>();
+        IntStream.range(0,100).forEach(i -> scriptEngines.add(SingleGremlinScriptEngineManager.get(ENGINE_TO_TEST)));
+        assertEquals(1, scriptEngines.size());
     }
 }

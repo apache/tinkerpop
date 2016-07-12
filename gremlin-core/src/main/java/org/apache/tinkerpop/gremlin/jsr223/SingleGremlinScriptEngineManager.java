@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.jsr223;
 
 /**
+ * Provides static access to a {@link CachedGremlinScriptEngineManager} instance.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SingleGremlinScriptEngineManager {
@@ -28,5 +30,13 @@ public class SingleGremlinScriptEngineManager {
 
     public static GremlinScriptEngineManager getInstance(){
         return cached;
+    }
+
+    /**
+     * Delegates calls to the {@link CachedGremlinScriptEngineManager} instance ensuring that the same instance
+     * is returned for each {@code ScriptEngine} requested.
+     */
+    public static GremlinScriptEngine get(final String scriptEngineName) {
+        return cached.getEngineByName(scriptEngineName);
     }
 }
