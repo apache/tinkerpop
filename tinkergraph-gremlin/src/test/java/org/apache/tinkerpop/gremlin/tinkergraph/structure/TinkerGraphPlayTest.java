@@ -69,14 +69,16 @@ public class TinkerGraphPlayTest {
         graph.io(GraphMLIo.build()).readGraph("../data/grateful-dead.xml");
         //Graph graph = TinkerFactory.createModern();
 
-        GraphTraversalSource g = graph.traversal().withStrategies(PathRetractionStrategy.instance());
-        GraphTraversalSource h = graph.traversal().withoutStrategies(PathRetractionStrategy.class);
+        GraphTraversalSource a = graph.traversal().withComputer().withStrategies(PathRetractionStrategy.instance()); // .withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
+        GraphTraversalSource b = graph.traversal().withComputer().withoutStrategies(PathRetractionStrategy.class); //.withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
+        GraphTraversalSource c = graph.traversal().withStrategies(PathRetractionStrategy.instance()); // .withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
+        GraphTraversalSource d = graph.traversal().withoutStrategies(PathRetractionStrategy.class); //.withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
 
-        for (final GraphTraversalSource source : Arrays.asList(h, g)) {
-            System.out.println(source.V().match(
+        for (final GraphTraversalSource source : Arrays.asList(d, c, b, a)) {
+            System.out.println(source + "--PathRetractionStrategy[" + source.getStrategies().toList().contains(PathRetractionStrategy.instance()) + "]");
+            System.out.println(TimeUtil.clockWithResult(2, () -> source.V().match(
                     __.as("a").out().as("b"),
-                    __.as("b").out().as("c"),
-                    __.as("c").out().as("d")).select("d").count().profile().next());
+                    __.as("a").both().as("c")).select("a").count().next()));
         }
     }
 

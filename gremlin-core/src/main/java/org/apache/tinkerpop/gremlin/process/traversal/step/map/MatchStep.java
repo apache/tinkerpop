@@ -80,7 +80,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     private final String computedStartLabel;
     private MatchAlgorithm matchAlgorithm;
     private Class<? extends MatchAlgorithm> matchAlgorithmClass = CountMatchAlgorithm.class; // default is CountMatchAlgorithm (use MatchAlgorithmStrategy to change)
-    private final Map<String, Set<String>> referencedLabelsMap = new HashMap<>(); // memoization of referenced labels for MatchEndSteps (Map<startStepId, referencedLabels>)
+    private Map<String, Set<String>> referencedLabelsMap; // memoization of referenced labels for MatchEndSteps (Map<startStepId, referencedLabels>)
 
     private Set<List<Object>> dedups = null;
     private Set<String> dedupLabels = null;
@@ -338,14 +338,18 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return false;
     }
 
-    private void generatedReferencedLabelsMap() {
-        for (final Traversal.Admin<?, ?> traversal : this.matchTraversals) {
-            final Set<String> referencedLabels = new HashSet<>();
-            for (final Step<?, ?> step : traversal.getSteps()) {
-                referencedLabels.addAll(PathUtil.getReferencedLabels(step));
+    private Map<String, Set<String>> getReferencedLabelsMap() {
+        if (null == this.referencedLabelsMap) {
+            this.referencedLabelsMap = new HashMap<>();
+            for (final Traversal.Admin<?, ?> traversal : this.matchTraversals) {
+                final Set<String> referencedLabels = new HashSet<>();
+                for (final Step<?, ?> step : traversal.getSteps()) {
+                    referencedLabels.addAll(PathUtil.getReferencedLabels(step));
+                }
+                this.referencedLabelsMap.put(traversal.getStartStep().getId(), referencedLabels);
             }
-            this.referencedLabelsMap.put(traversal.getStartStep().getId(), referencedLabels);
         }
+        return this.referencedLabelsMap;
     }
 
     private final TraverserSet standardAlgorithmBarrier = new TraverserSet();
@@ -356,7 +360,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
             if (this.first) {
                 this.first = false;
-                this.generatedReferencedLabelsMap();
                 this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
             } else if (this.standardAlgorithmBarrier.isEmpty()) {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
@@ -401,7 +404,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         while (true) {
             if (this.first) {
                 this.first = false;
-                this.generatedReferencedLabelsMap();
                 this.initializeMatchAlgorithm(TraversalEngine.Type.COMPUTER);
             }
             final Traverser.Admin traverser = this.starts.next();
@@ -523,9 +525,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 return traverser;
             final Set<String> keepers = new HashSet<>(this.parent.getKeepLabels());
             final Set<String> tags = traverser.getTags();
-            for (final Traversal.Admin<?, ?> matchTraversal : this.parent.matchTraversals) { // get remaining traversal patterns for the traverser
-                if (!tags.contains(matchTraversal.getStartStep().getId())) {
-                    keepers.addAll(this.parent.referencedLabelsMap.get(matchTraversal.getStartStep().getId())); // get the reference labels required for those remaining traversals
+            for (final Traversal.Admin<?, ?> matchTraversal : this.parent.getGlobalChildren()) { // get remaining traversal patterns for the traverser
+                final String startStepId = matchTraversal.getStartStep().getId();
+                if (!tags.contains(startStepId)) {
+                    keepers.addAll(this.parent.getReferencedLabelsMap().get(startStepId)); // get the reference labels required for those remaining traversals
                 }
             }
             return PathProcessor.processTraverserPathLabels(traverser, keepers); // remove all reference labels that are no longer required
