@@ -48,6 +48,7 @@ public class B_O_Traverser<T> extends O_Traverser<T> {
 
     @Override
     public void merge(final Traverser.Admin<?> other) {
+        super.merge(other);
         this.bulk = this.bulk + other.bulk();
     }
 

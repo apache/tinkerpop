@@ -118,9 +118,9 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     @Override
     public boolean equals(final Object object) {
         return object instanceof B_O_S_SE_SL_Traverser
-                && ((B_O_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((B_O_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((B_O_S_SE_SL_Traverser) object).loops() == this.loops()
+                && ((B_O_S_SE_SL_Traverser) object).t.equals(this.t)
+                && ((B_O_S_SE_SL_Traverser) object).future.equals(this.future)
+                && ((B_O_S_SE_SL_Traverser) object).loops == this.loops
                 && (null == this.sack || (null != this.sideEffects && null != this.sideEffects.getSackMerger())); // hmmm... serialization in OLAP destroys the transient sideEffects
     }
 }

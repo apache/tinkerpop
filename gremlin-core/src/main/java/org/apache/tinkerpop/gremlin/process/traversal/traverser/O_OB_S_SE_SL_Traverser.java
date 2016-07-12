@@ -115,6 +115,7 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
 
     @Override
     public void merge(final Traverser.Admin<?> other) {
+        super.merge(other);
         if (null != this.sack && null != this.sideEffects.getSackMerger())
             this.sack = this.sideEffects.getSackMerger().apply(this.sack, other.sack());
     }

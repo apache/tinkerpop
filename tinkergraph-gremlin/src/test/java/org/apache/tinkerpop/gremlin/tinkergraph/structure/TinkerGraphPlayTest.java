@@ -76,9 +76,9 @@ public class TinkerGraphPlayTest {
 
         for (final GraphTraversalSource source : Arrays.asList(d, c, b, a)) {
             System.out.println(source + "--PathRetractionStrategy[" + source.getStrategies().toList().contains(PathRetractionStrategy.instance()) + "]");
-            System.out.println(TimeUtil.clockWithResult(2, () -> source.V().match(
+            System.out.println(source.V().match(
                     __.as("a").out().as("b"),
-                    __.as("a").both().as("c")).select("a").count().next()));
+                    __.as("a").in().as("c")).select("a").profile().next());
         }
     }
 

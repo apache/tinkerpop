@@ -108,32 +108,6 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         this.path = ImmutablePath.make();
     }
 
-
-
-
-    /*@Override
-    public void keepLabels(final Set<String> labels) {
-        if (!labels.isEmpty()) {
-            Set<String> retractLabels = new HashSet<>();
-            List<Set<String>> existingLabels = this.path.labels();
-            for(Set<String> labelSet : existingLabels) {
-                for(String l : labelSet) {
-                    if(labels.contains(l) == false) { retractLabels.add(l); };
-                }
-            }
-            this.path = this.path.retract(retractLabels);
-        } else if (labels.isEmpty()) {
-            Set<String> retractLabels = new HashSet<>();
-            List<Set<String>> existingLabels = this.path.labels();
-            for(Set<String> labelSet : existingLabels) {
-                retractLabels.addAll(labelSet);
-            }
-            if(!retractLabels.isEmpty()) {
-                this.path = this.path.retract(retractLabels);
-            }
-        }
-    }*/
-
     @Override
     public int hashCode() {
         return super.hashCode() + this.path.hashCode();
@@ -142,11 +116,11 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public boolean equals(final Object object) {
         return (object instanceof B_LP_O_S_SE_SL_Traverser)
-                && ((B_LP_O_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((B_LP_O_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((B_LP_O_S_SE_SL_Traverser) object).loops() == this.loops()
+                && ((B_LP_O_S_SE_SL_Traverser) object).t.equals(this.t)
+                && ((B_LP_O_S_SE_SL_Traverser) object).future.equals(this.future)
+                && ((B_LP_O_S_SE_SL_Traverser) object).loops == this.loops
                 && (null == this.sack || null != this.sideEffects.getSackMerger())
-                && ((B_LP_O_S_SE_SL_Traverser) object).path().popEquals(Pop.last, this.path); // this should be Pop.all?
+                && ((B_LP_O_S_SE_SL_Traverser) object).path.popEquals(Pop.last, this.path); // this should be Pop.all?
     }
 
 }

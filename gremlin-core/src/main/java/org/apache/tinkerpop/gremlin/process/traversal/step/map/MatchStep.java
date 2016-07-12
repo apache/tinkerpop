@@ -357,11 +357,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {
         while (true) {
-
             if (this.first) {
                 this.first = false;
                 this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
-            } else if (this.standardAlgorithmBarrier.isEmpty()) {
+            } else { // TODO: if(standardAlgorithmBarrier.isEmpty()) -- leads to consistent counts without retracting paths, but orders of magnitude slower.
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     while (matchTraversal.hasNext() &&
                             this.standardAlgorithmBarrier.size() < PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
@@ -370,7 +369,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 }
             }
             final Traverser.Admin traverser;
-            if (this.standardAlgorithmBarrier.isEmpty()) { // pull from previous step
+            if (this.standardAlgorithmBarrier.isEmpty()) {
                 traverser = this.starts.next();
                 if (!traverser.getTags().contains(this.getId())) {
                     traverser.getTags().add(this.getId()); // so the traverser never returns to this branch ever again
@@ -378,7 +377,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                         traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
                 }
             } else
-                traverser = this.standardAlgorithmBarrier.remove(); // pull from internal lazy barrier
+                traverser = this.standardAlgorithmBarrier.remove();
+
             ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.connective, traverser))
@@ -543,7 +543,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
-                    //if (this.traverserStepIdAndLabelsSetByChild) -- traverser equality is based on stepId, lets ensure they are all at the parent
+                    // if (this.traverserStepIdAndLabelsSetByChild) -- traverser equality is based on stepId, lets ensure they are all at the parent
                     traverser.setStepId(this.parent.getId());
                     this.parent.getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return this.retractUnnecessaryLabels(traverser);
@@ -552,7 +552,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 // path check
                 final Path path = traverser.path();
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.last, this.matchKey))) {
-                    //if (this.traverserStepIdAndLabelsSetByChild) -- traverser equality is based on stepId and thus, lets ensure they are all at the parent
+                    // if (this.traverserStepIdAndLabelsSetByChild) -- traverser equality is based on stepId and thus, lets ensure they are all at the parent
                     traverser.setStepId(this.parent.getId());
                     traverser.addLabels(this.matchKeyCollection);
                     this.parent.getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
