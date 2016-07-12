@@ -80,6 +80,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     private final String computedStartLabel;
     private MatchAlgorithm matchAlgorithm;
     private Class<? extends MatchAlgorithm> matchAlgorithmClass = CountMatchAlgorithm.class; // default is CountMatchAlgorithm (use MatchAlgorithmStrategy to change)
+    private final Map<String, Set<String>> referencedLabelsMap = new HashMap<>(); // memoization of referenced labels for MatchEndSteps (Map<startStepId, referencedLabels>)
 
     private Set<List<Object>> dedups = null;
     private Set<String> dedupLabels = null;
@@ -182,6 +183,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     public void setKeepLabels(Set<String> labels) {
         this.keepLabels = labels;
+        if (null != this.dedupLabels)
+            this.keepLabels.addAll(this.dedupLabels);
     }
 
     @Override
@@ -258,6 +261,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         if (!labels.isEmpty()) {
             this.dedups = new HashSet<>();
             this.dedupLabels = new HashSet<>(labels);
+            if (null != this.keepLabels)
+                this.keepLabels.addAll(this.dedupLabels);
         }
     }
 
@@ -333,6 +338,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return false;
     }
 
+    private void generatedReferencedLabelsMap() {
+        for (final Traversal.Admin<?, ?> traversal : this.matchTraversals) {
+            final Set<String> referencedLabels = new HashSet<>();
+            for (final Step<?, ?> step : traversal.getSteps()) {
+                referencedLabels.addAll(PathUtil.getReferencedLabels(step));
+            }
+            this.referencedLabelsMap.put(traversal.getStartStep().getId(), referencedLabels);
+        }
+    }
+
     private final TraverserSet standardAlgorithmBarrier = new TraverserSet();
 
     @Override
@@ -341,6 +356,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
             if (this.first) {
                 this.first = false;
+                this.generatedReferencedLabelsMap();
                 this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
             } else if (this.standardAlgorithmBarrier.isEmpty()) {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
@@ -385,6 +401,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         while (true) {
             if (this.first) {
                 this.first = false;
+                this.generatedReferencedLabelsMap();
                 this.initializeMatchAlgorithm(TraversalEngine.Type.COMPUTER);
             }
             final Traverser.Admin traverser = this.starts.next();
@@ -419,16 +436,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    protected List<Traversal.Admin<?, ?>> getRemainingTraversals(final Traverser.Admin<?> traverser) {
-        final Set<String> tags = traverser.getTags();
-        final List<Traversal.Admin<?, ?>> remainingTraversals = new ArrayList<>();
-        for (final Traversal.Admin<?, ?> matchTraversal : matchTraversals) {
-            if (!tags.contains(matchTraversal.getStartStep().getId()))
-                remainingTraversals.add(matchTraversal);
-        }
-        return remainingTraversals;
-    }
-
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.connective.hashCode();
@@ -443,17 +450,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.getSelfAndChildRequirements(TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
-    @Override
-    protected Traverser.Admin<Map<String, E>> processNextStart() throws NoSuchElementException {
-        return super.processNextStart();
-    }
-
     //////////////////////////////
 
     public static final class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
 
         private final String selectKey;
         private Set<String> scopeKeys = null;
+        private MatchStep<?, ?> parent = null;
 
         public MatchStartStep(final Traversal.Admin traversal, final String selectKey) {
             super(traversal);
@@ -462,8 +465,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         @Override
         protected Traverser.Admin<Object> processNextStart() throws NoSuchElementException {
+            if (null == this.parent)
+                this.parent = (MatchStep<?, ?>) this.getTraversal().getParent();
+
             final Traverser.Admin<Object> traverser = this.starts.next();
-            ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
+            this.parent.getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
             return null == this.selectKey ? traverser : traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
         }
@@ -502,33 +508,27 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     public static final class MatchEndStep extends EndStep<Object> {
 
         private final String matchKey;
-        // memoization of referenced labels Map<startStepId, referencedLabels>
-        private final Map<String, Set<String>> referencedLabelsMap = new HashMap<>();
+        private final Set<String> matchKeyCollection;
         private MatchStep<?, ?> parent = null;
 
         public MatchEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
             this.matchKey = matchKey;
+            this.matchKeyCollection = Collections.singleton(this.matchKey);
         }
 
 
         private <S> Traverser.Admin<S> retractUnnecessaryLabels(final Traverser.Admin<S> traverser) {
             if (null == this.parent.getKeepLabels())
                 return traverser;
-
             final Set<String> keepers = new HashSet<>(this.parent.getKeepLabels());
-            for (final Traversal.Admin<?, ?> traversal : this.parent.getRemainingTraversals(traverser)) {
-                Set<String> referencedLabels = this.referencedLabelsMap.get(traversal.getStartStep().getId());
-                if (null == referencedLabels) {
-                    referencedLabels = new HashSet<>();
-                    for (final Step<?, ?> step : traversal.getSteps()) {
-                        referencedLabels.addAll(PathUtil.getReferencedLabels(step));
-                    }
-                    this.referencedLabelsMap.put(traversal.getStartStep().getId(), referencedLabels);
+            final Set<String> tags = traverser.getTags();
+            for (final Traversal.Admin<?, ?> matchTraversal : this.parent.matchTraversals) { // get remaining traversal patterns for the traverser
+                if (!tags.contains(matchTraversal.getStartStep().getId())) {
+                    keepers.addAll(this.parent.referencedLabelsMap.get(matchTraversal.getStartStep().getId())); // get the reference labels required for those remaining traversals
                 }
-                keepers.addAll(referencedLabels);
             }
-            return PathProcessor.processTraverserPathLabels(traverser, keepers);
+            return PathProcessor.processTraverserPathLabels(traverser, keepers); // remove all reference labels that are no longer required
         }
 
         @Override
@@ -540,8 +540,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
-                    if (this.traverserStepIdAndLabelsSetByChild)
-                        traverser.setStepId(this.parent.getId());
+                    //if (this.traverserStepIdAndLabelsSetByChild) -- traverser equality is based on stepId, lets ensure they are all at the parent
+                    traverser.setStepId(this.parent.getId());
                     this.parent.getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return this.retractUnnecessaryLabels(traverser);
                 }
@@ -549,9 +549,9 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 // path check
                 final Path path = traverser.path();
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.last, this.matchKey))) {
-                    if (this.traverserStepIdAndLabelsSetByChild)
-                        traverser.setStepId(this.parent.getId());
-                    traverser.addLabels(Collections.singleton(this.matchKey));
+                    //if (this.traverserStepIdAndLabelsSetByChild) -- traverser equality is based on stepId and thus, lets ensure they are all at the parent
+                    traverser.setStepId(this.parent.getId());
+                    traverser.addLabels(this.matchKeyCollection);
                     this.parent.getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return this.retractUnnecessaryLabels(traverser);
                 }

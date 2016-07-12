@@ -151,6 +151,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // reducing barrier on lazy standard shouldn't yield an empty barrier
     public abstract Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX();
 
+    // verifying keep labels and dedup labels interactions
+    public abstract Traversal<Vertex, String> get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valueMap_matchXa_selectXnameX_bX() {
@@ -533,6 +536,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX();
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -801,6 +814,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_matchXa_knows_count_bX_selectXbX() {
             return g.V().match(as("a").out("knows").count().as("b")).select("b");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX() {
+            return g.V().match(
+                    as("a").out("knows").as("b"),
+                    as("b").out("created").as("c"),
+                    as("a").out("created").as("c")).dedup("a", "b", "c").<String>select("a").by("name");
         }
     }
 }

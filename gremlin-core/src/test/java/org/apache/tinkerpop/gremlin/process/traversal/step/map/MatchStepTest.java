@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -30,12 +29,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -423,43 +419,4 @@ public class MatchStepTest extends StepTest {
         assertEquals("a", MatchStep.Helper.computeStartLabel(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren()));
     }
 
-    @Test
-    public void testGetRemainingTraversals() {
-        Traverser.Admin traverser = B_LP_O_P_S_SE_SL_TraverserGenerator.instance().generate(1, EmptyStep.instance(), 1l);
-        traverser.addLabels(Collections.singleton("a"));
-
-        Traversal<Object, Vertex> mTraversal1 = as("a").out().as("b");
-        Traversal<Object, Vertex> mTraversal2 = as("b").out().as("c");
-        Traversal<Object, Vertex> mTraversal3 = as("a").out().as("d");
-        Traversal<Object, Vertex> mTraversal4 = as("c").out().as("e");
-        Traversal<Object, Vertex> mTraversal5 = as("c").out().as("f");
-
-
-        Traversal.Admin<?, ?> traversal = __.match(
-                mTraversal1,
-                mTraversal2,
-                mTraversal3,
-                mTraversal4,
-                mTraversal5).asAdmin();
-
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(PathRetractionStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-
-        MatchStep matchStep = (MatchStep) traversal.getStartStep();
-        assertEquals(new HashSet<>(Arrays.asList("a", "b", "c", "d", "e", "f")), matchStep.getKeepLabels());
-
-        traverser.getTags().add(mTraversal1.asAdmin().getStartStep().getId());
-        traverser.setStepId(mTraversal2.asAdmin().getStartStep().getId());
-
-        List<Traversal.Admin<?, ?>> remainingTraversals = matchStep.getRemainingTraversals(traverser);
-        assertEquals(Arrays.asList(mTraversal2, mTraversal3, mTraversal4, mTraversal5), remainingTraversals);
-
-        traverser.getTags().add(mTraversal2.asAdmin().getStartStep().getId());
-        traverser.setStepId(mTraversal3.asAdmin().getStartStep().getId());
-
-        remainingTraversals = matchStep.getRemainingTraversals(traverser);
-        assertEquals(Arrays.asList(mTraversal3, mTraversal4, mTraversal5), remainingTraversals);
-    }
 }
