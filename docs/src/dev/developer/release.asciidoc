@@ -55,6 +55,8 @@ during this period.
 ... All tickets categorized by having a "Component" assigned.
 ... All tickets are either of type "Bug" or "Enhancement".
 ... No tickets are marked as "Resolved" - convert these to "Closed".
+... Close tickets where work was completed, but the ticket was left open (e.g. search for "closed the pull request" in
+comments for hints on possible candidates).
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
