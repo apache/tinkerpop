@@ -25,6 +25,8 @@ import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite.ENGIN
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -33,40 +35,44 @@ public class ScriptEngineLambdaTest {
 
     @Test
     public void shouldCallAsFunction() {
-        final ScriptEngineLambda lambda = new ScriptEngineLambda(ENGINE_TO_TEST, "1+a");
+        // Function.apply
+        final ScriptEngineLambda lambda = newLambda("1+a");
         assertEquals(11, Integer.parseInt(lambda.apply(10).toString()));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnBadScriptAsFunction() {
-        new ScriptEngineLambda(ENGINE_TO_TEST, "1432423)a").apply("a");
+        newLambda("1432423)a").apply("a");
     }
 
     @Test
     public void shouldCallAsSupplier() {
-        final ScriptEngineLambda lambda = new ScriptEngineLambda(ENGINE_TO_TEST, "11");
+        // Supplier.get
+        final ScriptEngineLambda lambda = newLambda("11");
         assertEquals(11, lambda.get());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnBadScriptAsSupplier() {
-        new ScriptEngineLambda(ENGINE_TO_TEST, "1432423)a").get();
+        newLambda("1432423)a").get();
     }
 
     @Test
     public void shouldCallAsPredicate() {
-        final ScriptEngineLambda lambda = new ScriptEngineLambda(ENGINE_TO_TEST, "a > 10");
+        // Predicate.test
+        final ScriptEngineLambda lambda = newLambda("a > 10");
         assertThat(lambda.test(100), is(true));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnBadScriptAsPredicate() {
-        new ScriptEngineLambda(ENGINE_TO_TEST, "1432423)a").test(1);
+        newLambda("1432423)a").test(1);
     }
 
     @Test
     public void shouldCallAsConsumer() {
-        final ScriptEngineLambda lambda = new ScriptEngineLambda(ENGINE_TO_TEST, "a.setData('test')");
+        // Consumer.accept
+        final ScriptEngineLambda lambda = newLambda("a.setData('test')");
         final Junk junk = new Junk();
         lambda.accept(junk);
         assertEquals("test", junk.getData());
@@ -74,12 +80,13 @@ public class ScriptEngineLambdaTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnBadScriptAsConsumer() {
-        new ScriptEngineLambda(ENGINE_TO_TEST, "1432423)a").accept("1");
+        newLambda("1432423)a").accept("1");
     }
 
     @Test
     public void shouldCallAsBiConsumer() {
-        final ScriptEngineLambda lambda = new ScriptEngineLambda(ENGINE_TO_TEST, "a.setData('testa');b.setData('testb')");
+        // BiConsumer.accept
+        final ScriptEngineLambda lambda = newLambda("a.setData('testa');b.setData('testb')");
         final Junk junkA = new Junk();
         final Junk junkB = new Junk();
         lambda.accept(junkA, junkB);
@@ -90,12 +97,13 @@ public class ScriptEngineLambdaTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnBadScriptAsBiConsumer() {
-        new ScriptEngineLambda(ENGINE_TO_TEST, "1432423)a").accept("1", "2");
+        newLambda("1432423)a").accept("1", "2");
     }
 
     @Test
     public void shouldCallAsTriConsumer() {
-        final ScriptEngineLambda lambda = new ScriptEngineLambda(ENGINE_TO_TEST, "a.setData('testa');b.setData('testb');c.setData('testc')");
+        // TriConsumer.accept
+        final ScriptEngineLambda lambda = newLambda("a.setData('testa');b.setData('testb');c.setData('testc')");
         final Junk junkA = new Junk();
         final Junk junkB = new Junk();
         final Junk junkC = new Junk();
@@ -108,7 +116,32 @@ public class ScriptEngineLambdaTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnBadScriptAsTriConsumer() {
-        new ScriptEngineLambda(ENGINE_TO_TEST, "1432423)a").accept("1", "2", "3");
+        newLambda("1432423)a").accept("1", "2", "3");
+    }
+
+    @Test
+    public void shouldCallAsOneArgPredicate() {
+        final ScriptEngineLambda lambda = newLambda("a < 100");
+        assertTrue(lambda.test(0));
+        assertTrue(lambda.test(99));
+        assertFalse(lambda.test(100));
+    }
+
+    @Test
+    public void shouldCallTrivialFunction() {
+        final ScriptEngineLambda lambda = newLambda("2 + 2");
+        assertEquals(lambda.apply("foo"), 4);
+    }
+
+    @Test
+    public void shouldCallAsOneArgFunction() {
+        final ScriptEngineLambda lambda = newLambda("a + 2");
+        assertEquals(lambda.apply(3), 5);
+        assertEquals(lambda.apply(10), 12);
+    }
+
+    private static ScriptEngineLambda newLambda(final String script) {
+        return new ScriptEngineLambda(ENGINE_TO_TEST, script);
     }
 
     public static class Junk {
