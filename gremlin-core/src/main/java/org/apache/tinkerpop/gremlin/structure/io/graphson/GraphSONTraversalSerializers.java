@@ -228,7 +228,7 @@ public final class GraphSONTraversalSerializers {
                 return predicate.textValue().equals("and") ? new AndP(arguments) : new OrP(arguments);
             } else {
                 try {
-                    return (P) P.class.getMethod(predicate.textValue(), Object.class).invoke(null, oc.readValue(node.get("value").traverse(oc), Object.class));
+                    return (P) P.class.getMethod(predicate.textValue(), Object.class).invoke(null, oc.readValue(node.get("value").traverse(oc), Object.class)); // TODO: number stuff, eh?
                 } catch (Exception e) {
                     throw new IOException();
                 }

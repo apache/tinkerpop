@@ -28,13 +28,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Veri
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -92,7 +92,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
-            final List<Object> objects = TranslatorHelper.flattenArguments(arguments);
+            final List<Object> objects = Arrays.asList(arguments);
             if (objects.isEmpty())
                 traversalScript.append(".").append(methodName).append("()");
             else {

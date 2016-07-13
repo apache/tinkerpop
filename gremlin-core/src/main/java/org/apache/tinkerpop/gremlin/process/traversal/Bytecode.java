@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     @Override
     public String toString() {
-        return this.sourceInstructions + " " + this.stepInstructions;
+        return Arrays.asList(this.sourceInstructions, this.stepInstructions).toString();
     }
 
     @Override
@@ -75,6 +75,7 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    @Override
     public Bytecode clone() {
         try {
             final Bytecode clone = (Bytecode) super.clone();
@@ -106,7 +107,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
         @Override
         public String toString() {
-            return this.operator + "(" + Arrays.toString(arguments) + ")";
+            return this.operator + "(" + StringFactory.removeEndBrackets(Arrays.asList(this.arguments)) + ")";
         }
 
         @Override
@@ -121,24 +122,6 @@ public final class Bytecode implements Cloneable, Serializable {
             return this.operator.hashCode() + Arrays.hashCode(this.arguments);
         }
 
-        private String stringifyArguments() {
-            final List<Object> objects = TranslatorHelper.flattenArguments(this.arguments);
-            final StringBuilder builder = new StringBuilder(objects.size() > 0 ? "\"," : "\"");
-            for (final Object object : objects) {
-                if (object instanceof Traversal)
-                    builder.append(((Traversal) object).asAdmin().getBytecode());
-                else if (object instanceof String)
-                    builder.append("\"").append(object).append("\"");
-                else
-                    builder.append(object);
-                builder.append(",");
-            }
-            if (!objects.isEmpty())
-                builder.deleteCharAt(builder.length() - 1);
-
-            return builder.toString();
-
-        }
 
     }
 
