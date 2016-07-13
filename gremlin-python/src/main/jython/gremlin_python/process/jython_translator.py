@@ -57,7 +57,7 @@ class JythonTranslator(Translator):
         if isinstance(arg, str):
             return "\"" + arg + "\""
         elif isinstance(arg, long):
-            return str(arg) + "L" if arg > 9223372036854775807L else "Long(" + str(arg) + ")"
+            return str(arg) + "L" if arg > 9223372036854775807 else "Long(" + str(arg) + ")"
         elif isinstance(arg, Barrier):
             return "Barrier" + "." + SymbolHelper.toJava(str(arg.name))
         elif isinstance(arg, Column):
