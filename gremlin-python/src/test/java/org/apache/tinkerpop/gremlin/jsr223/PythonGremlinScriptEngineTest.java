@@ -24,6 +24,6 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(GremlinScriptEngineSuite.class)
-@EngineToTest(engineName = "gremlin-jython")
+@ScriptEngineToTest(scriptEngineName = "gremlin-jython")
 public class PythonGremlinScriptEngineTest {
 }

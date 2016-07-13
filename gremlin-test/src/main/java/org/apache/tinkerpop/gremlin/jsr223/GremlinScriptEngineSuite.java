@@ -38,9 +38,9 @@ public class GremlinScriptEngineSuite extends Suite {
     }
 
     public static String getScriptEngineName(final Class<?> klass) throws InitializationError {
-        final EngineToTest annotation = klass.getAnnotation(EngineToTest.class);
+        final ScriptEngineToTest annotation = klass.getAnnotation(ScriptEngineToTest.class);
         if (null == annotation)
             throw new InitializationError(String.format("class '%s' must have a EngineToTest annotation", klass.getName()));
-        return annotation.engineName();
+        return annotation.scriptEngineName();
     }
 }
