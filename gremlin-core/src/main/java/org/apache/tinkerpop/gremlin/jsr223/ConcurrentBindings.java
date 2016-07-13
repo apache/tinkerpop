@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.engine;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import javax.script.SimpleBindings;
 import java.util.Map;
@@ -24,12 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A {@code Bindings} that can be accessed concurrently by multiple threads. It is needed in cases where "global"
- * bindings are required for the {@code ScriptEngine}.
+ * bindings are required for the {@link GremlinScriptEngine} and need to be shared across threads.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.2.2, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings}.
  */
-@Deprecated
 public class ConcurrentBindings extends SimpleBindings {
 
     public ConcurrentBindings() {

@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.util.CoreImports;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
-import javax.script.SimpleBindings;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -89,7 +88,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     /**
      * Global bindings associated with script engines created by this manager.
      */
-    private Bindings globalScope = new SimpleBindings();
+    private Bindings globalScope = new ConcurrentBindings();
 
     /**
      * The effect of calling this constructor is the same as calling
@@ -117,6 +116,8 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
 
     /**
      * Stores the specified {@code Bindings} as a global for all {@link GremlinScriptEngine} objects created by it.
+     * If the bindings are to be updated by multiple threads it is recommended that a {@link ConcurrentBindings}
+     * instance is supplied.
      *
      * @throws IllegalArgumentException if bindings is null.
      */
