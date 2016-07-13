@@ -144,7 +144,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
-    public void setKeepLabels(Set<String> labels) {
+    public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }
 

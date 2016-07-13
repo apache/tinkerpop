@@ -113,7 +113,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
     }
 
     @Override
-    public void setKeepLabels(Set<String> labels) {
+    public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }
 

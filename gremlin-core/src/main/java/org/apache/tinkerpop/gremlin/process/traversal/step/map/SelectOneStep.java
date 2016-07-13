@@ -118,7 +118,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public void setKeepLabels(Set<String> labels) {
+    public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }
 
