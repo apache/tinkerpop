@@ -56,6 +56,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private Set<Object> duplicateSet = new HashSet<>();
     private boolean onGraphComputer = false;
     private final Set<String> dedupLabels;
+    private Set<String> keepLabels;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -78,6 +79,11 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public ElementRequirement getMaxRequirement() {
         return null == this.dedupLabels ? ElementRequirement.ID : PathProcessor.super.getMaxRequirement();
+    }
+
+    @Override
+    protected Traverser.Admin<S> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
     }
 
     @Override
@@ -193,4 +199,12 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     public MemoryComputeKey<Map<Object, Traverser.Admin<S>>> getMemoryComputeKey() {
         return MemoryComputeKey.of(this.getId(), (BinaryOperator) Operator.addAll, false, true);
     }
+
+    @Override
+    public void setKeepLabels(Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() { return this.keepLabels; }
 }

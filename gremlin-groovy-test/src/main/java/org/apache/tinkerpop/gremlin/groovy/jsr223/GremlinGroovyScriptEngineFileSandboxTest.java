@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.FileSandboxExtensio
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.script.Bindings;
@@ -46,10 +46,13 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineFileSandboxTest extends AbstractGremlinTest {
-    @BeforeClass
-    public static void init() throws Exception {
-        final File f = TestHelper.generateTempFileFromResource(GremlinGroovyScriptEngineFileSandboxTest.class, "sandbox.yaml", ".yaml");
-        System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, f.getAbsolutePath());
+    @Before
+    public void setup() throws Exception {
+        super.setup();
+        if (System.getProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX) == null) {
+            final File f = TestHelper.generateTempFileFromResource(graph.getClass(), GremlinGroovyScriptEngineFileSandboxTest.class, "sandbox.yaml", ".yaml");
+            System.setProperty(FileSandboxExtension.GREMLIN_SERVER_SANDBOX, f.getAbsolutePath());
+        }
     }
 
     @AfterClass

@@ -418,4 +418,5 @@ public class MatchStepTest extends StepTest {
                 as("b").in("created").count().is(P.gt(1))).asAdmin();
         assertEquals("a", MatchStep.Helper.computeStartLabel(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren()));
     }
+
 }

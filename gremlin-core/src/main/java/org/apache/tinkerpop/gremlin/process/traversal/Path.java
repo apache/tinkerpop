@@ -66,6 +66,14 @@ public interface Path extends Cloneable, Iterable<Object> {
     public Path extend(final Set<String> labels);
 
     /**
+     * Remove labels from path.
+     *
+     * @param labels the labels to remove
+     * @return the path with removed labels
+     */
+    public Path retract(final Set<String> labels);
+
+    /**
      * Get the object associated with the particular label of the path.
      * If the path as multiple labels of the type, then return a {@link List} of those objects.
      *

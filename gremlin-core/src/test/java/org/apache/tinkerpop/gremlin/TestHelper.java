@@ -106,7 +106,14 @@ public final class TestHelper {
      * See {@code TestHelper} in gremlin-test for the official version.
      */
     public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
-        final File temp = makeTestDataPath(resourceClass, "resources");
+        return generateTempFileFromResource(resourceClass, resourceClass, resourceName, extension);
+    }
+
+    /**
+     * See {@code TestHelper} in gremlin-test for the official version.
+     */
+    public static File generateTempFileFromResource(final Class graphClass, final Class resourceClass, final String resourceName, final String extension) throws IOException {
+        final File temp = makeTestDataPath(graphClass, "resources");
         if (!temp.exists()) temp.mkdirs();
         final File tempFile = new File(temp, resourceName + extension);
         final FileOutputStream outputStream = new FileOutputStream(tempFile);

@@ -85,6 +85,11 @@ changes there may prove important for the provider's implementation.
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Property Keys and Hyphens
++++++++++++++++++++++++++
+
+Graph providers should no longer rely on the test suite to validate that hyphens work for labels and property keys.
+
 Vertex and Edge Counts
 ++++++++++++++++++++++
 
@@ -94,6 +99,16 @@ identifying previously unrecognized bugs seems slim however, as there are many o
 in other ways. If those were passing previously, then these new asserts should likely not pose a problem.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1300[TINKERPOP-1300]
+
+Test Feature Annotations
+++++++++++++++++++++++++
+
+A large number of `gremlin-test` feature annotations were incorrect which caused test cases to run against graphs that
+did not support those features. The annotations have been fixed, but this opened the possibility that more test cases
+will run against the graph implementation. Providers should ensure that their graph `features()` are consistent with
+the capabilities of the graph implementation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1319[TINKERPOP-1319]
 
 Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^

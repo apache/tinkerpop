@@ -76,7 +76,7 @@ maxChunkSize: 8192
 maxContentLength: 65536
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
-writeBufferHighWaterMark: 32768
+writeBufferLowWaterMark: 32768
 writeBufferHighWaterMark: 65536
 ssl: {
   enabled: false}

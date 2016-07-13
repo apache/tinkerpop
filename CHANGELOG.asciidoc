@@ -26,6 +26,12 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `PathProcessor` steps now have the ability (if configured through a strategy) to drop `Traverser` path segments.
+* `MatchStep` in OLTP has a lazy barrier to increase the probability of bulking.
+* Added `PathRetractionStrategy` which will remove labeled path segments that will no longer be referenced.
+* Added `Path.retract()` to support retracting paths based on labels.
+* Optimized `ImmutablePath` and `MutablePath` equality code removing significant unnecessary object creation code.
+* Bumped to Groovy 2.4.7.
 * Added `RepeatUnrollStrategy` to linearize a `repeat()`-traversal if loop amount is known at compile time.
 * Fixed a bug in `BranchStep` around child integration during `clone()`.
 * Fixed a bug in `AbstractStep` around label set cloning.
@@ -257,17 +263,24 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Enured calls to `Result.hasNext()` were idempotent.
+* Fixed bug in `SubgraphStep` where features were not being checked properly prior to reading meta-properties.
+* Ensured calls to `Result.hasNext()` were idempotent.
 * Avoid hamcrest conflict by using mockito-core instead of mockito-all dependency in `gremlin-test`.
 * Fixed bug in `GremlinExecutor` causing Gremlin Server to lock up when parallel requests were submitted on the same session if those parallel requests included a script that blocked indefinitely.
 * Changed `GremlinExecutor` timeout scheduling so that the timer would not start until a time closer to the actual start of script evaluation.
 * Fixed bug in `SubgraphStrategy` where step labels were not being propogated properly to new steps injected by the strategy.
+* Fix incorrect test `FeatureRequirement` annotations.
 * Defaulted to `Edge.DEFAULT` if no edge label was supplied in GraphML.
 * Fixed bug in `IoGraphTest` causing IllegalArgumentException: URI is not hierarchical error for external graph implementations.
+* Fixed bug in `GremlinGroovyScriptEngineFileSandboxTest` resource loading
 * Improved `TinkerGraph` performance when iterating vertices and edges.
 * Fixed a bug where timeout functions provided to the `GremlinExecutor` were not executing in the same thread as the script evaluation.
+* Fixed a bug in the driver where many parallel requests over a session would sometimes force a connection to close and replace itself.
+* Graph providers should no longer rely on the test suite to validate that hyphens work for property keys.
 * Optimized a few special cases in `RangeByIsCountStrategy`.
 * Added more "invalid" variable bindings to the list used by Gremlin Server to validate incoming bindings on requests.
+* Fixed a bug where the `ConnectionPool` in the driver would not grow with certain configuration options.
+* Fixed a bug where pauses in Gremlin Server writing to an overtaxed client would generate unexpected `FastNoSuchElementException` errors.
 * Named the thread pool used by Gremlin Server sessions: "gremlin-server-session-$n".
 * Fixed a bug in `BulkSet.equals()` which made itself apparent when using `store()` and `aggregate()` with labeled `cap()`.
 * Fixed a bug where `Result.one()` could potentially block indefinitely under certain circumstances.

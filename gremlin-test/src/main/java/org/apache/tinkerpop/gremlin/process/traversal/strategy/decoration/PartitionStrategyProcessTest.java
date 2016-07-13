@@ -433,14 +433,14 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
         final Vertex vAA = sourceAA.addV().property("any", "aa").next();
-        final Edge eAtoAA = sourceAA.withSideEffect("vAA", vAA).V(vA.id()).addE("a->a").to("vAA").next();
+        final Edge eAtoAA = sourceAA.withSideEffect("vAA", vAA).V(vA.id()).addE("aTOa").to("vAA").next();
 
         final Vertex vB = sourceBA.addV().property("any", "b").next();
-        sourceBA.withSideEffect("vB", vB).V(vA.id()).addE("a->b").to("vB").next();
+        sourceBA.withSideEffect("vB", vB).V(vA.id()).addE("aTOb").to("vB").next();
 
         final Vertex vC = sourceCAB.addV().property("any", "c").next();
-        final Edge eBtovC = sourceCAB.withSideEffect("vC", vC).V(vB.id()).addE("b->c").to("vC").next();
-        final Edge eAtovC = sourceCAB.withSideEffect("vC", vC).V(vA.id()).addE("a->c").to("vC").next();
+        final Edge eBtovC = sourceCAB.withSideEffect("vC", vC).V(vB.id()).addE("bTOc").to("vC").next();
+        final Edge eAtovC = sourceCAB.withSideEffect("vC", vC).V(vA.id()).addE("aTOc").to("vC").next();
 
         assertEquals(0, IteratorUtils.count(sourceC.V()));
         assertEquals(0, IteratorUtils.count(sourceC.E()));

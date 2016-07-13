@@ -805,7 +805,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             //((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
             return (GraphTraversal<S, Edge>) this;
         } else {
-            // addInE("a", "co-developer", "b", "year", 2009)
+            // addInE("a", "codeveloper", "b", "year", 2009)
             this.addE(edgeLabelOrSecondVertexKey);
             if (direction.equals(Direction.OUT))
                 this.from(firstVertexKeyOrEdgeLabel).to((String) propertyKeyValues[0]);

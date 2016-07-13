@@ -63,7 +63,6 @@ public abstract class O_Traverser<T> extends AbstractTraverser<T> {
 
     @Override
     public void merge(final Traverser.Admin<?> other) {
-        super.merge(other);
         if (!other.getTags().isEmpty()) {
             if (this.tags == null) this.tags = new HashSet<>();
             this.tags.addAll(other.getTags());

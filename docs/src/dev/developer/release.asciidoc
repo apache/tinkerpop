@@ -54,6 +54,7 @@ during this period.
 .. Review JIRA tickets in the release and ensure that:
 ... All tickets categorized by having a "Component" assigned.
 ... All tickets are either of type "Bug" or "Enhancement".
+... No tickets are marked as "Resolved" - convert these to "Closed".
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.

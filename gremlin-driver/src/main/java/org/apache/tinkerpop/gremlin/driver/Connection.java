@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.handler.codec.CodecException;
-import io.netty.handler.codec.CorruptedFrameException;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
@@ -120,7 +119,9 @@ final class Connection {
      * the maximum number of in-process requests less the number of pending responses.
      */
     public int availableInProcess() {
-        return maxInProcess - pending.size();
+        // no need for a negative available amount - not sure that the pending size can ever exceed maximum, but
+        // better to avoid the negatives that would ensue if it did
+        return Math.max(0, maxInProcess - pending.size());
     }
 
     public boolean isDead() {
