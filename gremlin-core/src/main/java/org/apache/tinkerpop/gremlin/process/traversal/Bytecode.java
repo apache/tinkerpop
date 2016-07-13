@@ -59,24 +59,14 @@ public final class Bytecode implements Cloneable, Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder("[");
-        for (final Instruction instruction : this.sourceInstructions) {
-            builder.append(instruction).append(",\n");
-        }
-        for (final Instruction instruction : this.stepInstructions) {
-            builder.append(instruction).append(",\n");
-        }
-        if (builder.length() > 2)
-            builder.delete(builder.length() - 2, builder.length());
-        builder.append("]");
-        return builder.toString();
+        return this.sourceInstructions + " " + this.stepInstructions;
     }
 
     @Override
     public boolean equals(final Object object) {
         return object instanceof Bytecode &&
                 this.sourceInstructions.equals(((Bytecode) object).sourceInstructions) &&
-                this.stepInstructions.equals(((Bytecode) object).sourceInstructions);
+                this.stepInstructions.equals(((Bytecode) object).stepInstructions);
     }
 
     @Override
@@ -116,7 +106,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
         @Override
         public String toString() {
-            return "[\"" + this.operator + stringifyArguments() + "]";
+            return this.operator + "(" + Arrays.toString(arguments) + ")";
         }
 
         @Override

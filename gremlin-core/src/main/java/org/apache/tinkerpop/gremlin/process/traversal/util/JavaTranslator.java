@@ -164,7 +164,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 }
             }
         } catch (final Throwable e) {
-            throw new IllegalStateException(e.getMessage(), e);
+            throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(arguments) + ")", e);
         }
         throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(arguments) + ")");
     }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -32,12 +33,16 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -66,17 +71,23 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlay8() throws Exception {
-
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal();//GraphTraversalSource.computer());
-        System.out.println(g.V().as("a").repeat(out("created", "knows")).times(2).as("b").dedup().select("a", "b").toList());
-        final Bytecode bytecode = g.withComputer().V().as("a").repeat(out("created", "knows")).times(2).as("b").dedup().select("a", "b").asAdmin().getBytecode();
-        JavaTranslator translator = new JavaTranslator(g, __.class);
-        Traversal.Admin<?, ?> traversal = translator.translate(bytecode);
-        System.out.println(traversal);
-        System.out.println(traversal.toList());
-        System.out.println(traversal);
-        System.out.println(bytecode);
+        GraphTraversalSource g = graph.traversal().withComputer();
+
+        Traversal<?, ?> traversal1 = g.V().has("age", P.gt(10).and(P.lt(30))).out("knows", "created").repeat(__.as("a").out().as("b").hasLabel("software")).times(1).select("b").by(T.label).groupCount();
+        Bytecode bytecode1 = traversal1.asAdmin().getBytecode();
+        System.out.println("BYTECODE 1: \n  " + bytecode1 + "\n");
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        GraphSONWriter.build().create().writeObject(outputStream, bytecode1);
+        //
+        System.out.println("GRAPHSON BYTECODE: \n  " + new String(outputStream.toByteArray()) + "\n");
+        //
+        Traversal<?, ?> traversal2 = new JavaTranslator(graph.traversal(), __.class).translate(GraphSONReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
+        Bytecode bytecode2 = traversal2.asAdmin().getBytecode();
+        System.out.println("BYTECODE 2: \n  " + bytecode2 + "\n");
+        assert traversal1.equals(traversal2);
+        assert bytecode1.equals(bytecode2);
+        System.out.println("RESULT: \n  " + traversal2.toList());
     }
 
 
