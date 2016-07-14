@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -131,6 +132,7 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(VertexProperty.Cardinality.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(Column.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(Direction.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(SackFunctions.Barrier.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(Operator.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(Order.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(Pop.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -47,6 +48,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -184,21 +186,32 @@ public final class GraphSONTraversalSerializers {
             for (int j = 1; j < instruction.size(); j++) {
                 final JsonNode argument = instruction.get(j);
                 if (argument.getNodeType().equals(JsonNodeType.OBJECT)) {
-                    final String type = argument.get("@type").textValue();
-                    if (type.equals("Bytecode"))
-                        arguments.add(oc.readValue(argument.traverse(oc), Bytecode.class));
-                    else if (type.equals("P"))
-                        arguments.add(oc.readValue(argument.traverse(oc), P.class));
-                    else if (type.equals("Lambda"))
-                        arguments.add(oc.readValue(argument.traverse(oc), Lambda.class));
-                    else
-                        arguments.add(oc.readValue(argument.traverse(oc), Enum.class));
+                    if (argument.has("@type")) {
+                        final String type = argument.get("@type").textValue();
+                        if (type.equals("Bytecode"))
+                            arguments.add(oc.readValue(argument.traverse(oc), Bytecode.class));
+                        else if (type.equals("P"))
+                            arguments.add(oc.readValue(argument.traverse(oc), P.class));
+                        else if (type.equals("Lambda"))
+                            arguments.add(oc.readValue(argument.traverse(oc), Lambda.class));
+                        else
+                            arguments.add(oc.readValue(argument.traverse(oc), Enum.class));
+                    } else {
+                        arguments.add(oc.readValue(argument.traverse(oc), Object.class)); // TODO: vertices/edges/etc. don't get processed correctly
+                    }
                 } else if (argument.getNodeType().equals(JsonNodeType.NUMBER)) {
                     arguments.add(argument.asInt()); // TODO
                 } else if (argument.getNodeType().equals(JsonNodeType.STRING)) {
                     arguments.add(argument.textValue());
                 } else if (argument.getNodeType().equals(JsonNodeType.BOOLEAN)) {
                     arguments.add(argument.booleanValue());
+                } else if (argument.getNodeType().equals(JsonNodeType.ARRAY)) {
+                    final List<Object> list = new ArrayList<>();
+                    for (int k = 0; k < argument.size(); k++) {
+                        list.add(oc.readValue(argument.get(k).traverse(oc), Object.class));
+                        //list.add(argument.get(k).textValue());
+                    }
+                    arguments.add(list);
                 } else {
                     throw new IOException("Unknown argument: " + argument);
                 }
@@ -250,6 +263,8 @@ public final class GraphSONTraversalSerializers {
                 return Column.valueOf(node.get("value").textValue());
             else if (type.equals("Direction"))
                 return Direction.valueOf(node.get("value").textValue());
+            else if (type.equals("Barrier"))
+                return SackFunctions.Barrier.valueOf(node.get("value").textValue());
             else if (type.equals("Operator"))
                 return Operator.valueOf(node.get("value").textValue());
             else if (type.equals("Order"))
@@ -287,9 +302,10 @@ public final class GraphSONTraversalSerializers {
                 return predicate.textValue().equals("and") ? new AndP(arguments) : new OrP(arguments);
             } else {
                 try {
-                    return (P) P.class.getMethod(predicate.textValue(), Object.class).invoke(null, oc.readValue(node.get("value").traverse(oc), Object.class)); // TODO: number stuff, eh?
-                } catch (Exception e) {
-                    throw new IOException();
+                    final Object argument = oc.readValue(node.get("value").traverse(oc), Object.class);
+                    return (P) P.class.getMethod(predicate.textValue(), argument instanceof Collection ? Collection.class : Object.class).invoke(null, argument); // TODO: number stuff, eh?
+                } catch (final Exception e) {
+                    throw new IOException(e.getMessage(), e);
                 }
             }
         }

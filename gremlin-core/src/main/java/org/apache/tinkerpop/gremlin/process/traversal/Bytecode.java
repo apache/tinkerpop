@@ -40,6 +40,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
+    // private transient List<Instruction> instructions = null;
 
     public void addSource(final String sourceName, final Object... arguments) {
         this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
@@ -56,6 +57,15 @@ public final class Bytecode implements Cloneable, Serializable {
     public List<Instruction> getStepInstructions() {
         return Collections.unmodifiableList(this.stepInstructions);
     }
+
+    /*public List<Instruction> getInstructions() {
+        if (null == this.instructions) {
+            this.instructions = new ArrayList<>();
+            this.instructions.addAll(this.sourceInstructions);
+            this.instructions.addAll(this.stepInstructions);
+        }
+        return this.instructions;
+    }*/
 
     @Override
     public String toString() {
@@ -81,6 +91,7 @@ public final class Bytecode implements Cloneable, Serializable {
             final Bytecode clone = (Bytecode) super.clone();
             clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
             clone.stepInstructions = new ArrayList<>(this.stepInstructions);
+            //clone.instructions = null;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
