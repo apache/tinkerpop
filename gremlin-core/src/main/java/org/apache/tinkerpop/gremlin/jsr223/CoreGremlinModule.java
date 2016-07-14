@@ -21,14 +21,25 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import java.util.Optional;
 
 /**
- * Holds the list of {@link Customizer} implementations that will be supplied to the {@link GremlinScriptEngine} when
- * it is created.
+ * This module is required for a {@code ScriptEngine} to be Gremlin-enabled.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface CustomizerManager {
-    /**
-     * Gets the list of {@link Customizer} implementations to assign to a new {@link GremlinScriptEngine}.
-     */
-    public Optional<Customizer[]> getCustomizers();
+public class CoreGremlinModule implements GremlinModule {
+
+    private static final Optional<Customizer[]> CUSTOMIZERS = Optional.of(new Customizer[] { ImportCustomizer.GREMLIN_CORE });
+
+    public static final CoreGremlinModule INSTANCE = new CoreGremlinModule();
+
+    private CoreGremlinModule() {}
+
+    @Override
+    public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
+        return CUSTOMIZERS;
+    }
+
+    @Override
+    public String getName() {
+        return "tinkerpop.core";
+    }
 }

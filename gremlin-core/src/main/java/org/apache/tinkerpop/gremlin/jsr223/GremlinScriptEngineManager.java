@@ -37,7 +37,7 @@ import java.util.List;
  * {@code javax.script} packages, but adds some additional features that are specific to Gremlin and TinkerPop.
  * Unfortunately, it's not easily possible to extend {@code ScriptEngineManager} directly as there certain behaviors
  * don't appear to be be straightforward to implement and member variables are all private. It is important to note
- * that this class is designed to provide support for "Gremlin-enabled" {@code ScriptEngine} instances (i.e. those
+ * that this interface is designed to provide support for "Gremlin-enabled" {@code ScriptEngine} instances (i.e. those
  * that extend from {@link GremlinScriptEngine}) and is not meant to manage just any {@code ScriptEngine} instance
  * that may be on the path.
  *
@@ -96,6 +96,7 @@ public interface GremlinScriptEngineManager {
      * @throws NullPointerException if extension is {@code null}.
      */
     public GremlinScriptEngine getEngineByExtension(final String extension);
+
     /**
      * Look up and create a {@link GremlinScriptEngine} for a given mime type.  The algorithm used by
      * {@link #getEngineByName(String)} is used except that the search starts by looking for a
@@ -107,6 +108,7 @@ public interface GremlinScriptEngineManager {
      * @throws NullPointerException if mime-type is {@code null}.
      */
     public GremlinScriptEngine getEngineByMimeType(final String mimeType);
+
     /**
      * Returns a list whose elements are instances of all the {@link GremlinScriptEngineFactory} classes
      * found by the discovery mechanism.
@@ -114,6 +116,11 @@ public interface GremlinScriptEngineManager {
      * @return List of all discovered {@link GremlinScriptEngineFactory} objects.
      */
     public List<GremlinScriptEngineFactory> getEngineFactories();
+
+    /**
+     * Add {@link GremlinModule} instances to customize newly created {@link GremlinScriptEngine} instances.
+     */
+    public void addModule(final GremlinModule module);
 
     /**
      * Registers a {@link GremlinScriptEngineFactory} to handle a language name.  Overrides any such association found
@@ -144,4 +151,9 @@ public interface GremlinScriptEngineManager {
      * @throws NullPointerException if any of the parameters is null.
      */
     public void registerEngineExtension(final String extension, final GremlinScriptEngineFactory factory);
+
+    /**
+     * Get the list of {@link Customizer} instances filtered by the {@code scriptEngineName}.
+     */
+    public List<Customizer> getCustomizers(final String scriptEngineName);
 }

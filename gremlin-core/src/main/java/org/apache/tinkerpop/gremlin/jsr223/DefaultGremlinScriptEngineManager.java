@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The {@code ScriptEngineManager} implements a discovery, instantiation and configuration mechanism for
@@ -61,7 +62,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineManager, CustomizerManager {
+public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineManager {
 
     private static final boolean DEBUG = false;
 
@@ -91,6 +92,12 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     private Bindings globalScope = new ConcurrentBindings();
 
     /**
+     * List of extensions for the {@link GremlinScriptEngineManager} which will be used to supply
+     * {@link Customizer} instances to {@link GremlinScriptEngineFactory} that are instantiated.
+     */
+    private List<GremlinModule> modules = new ArrayList<>();
+
+    /**
      * The effect of calling this constructor is the same as calling
      * {@code DefaultGremlinScriptEngineManager(Thread.currentThread().getContextClassLoader())}.
      */
@@ -110,8 +117,17 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     @Override
-    public Optional<Customizer[]> getCustomizers() {
-        return Optional.of(new Customizer[] { ImportCustomizer.GREMLIN_CORE });
+    public List<Customizer> getCustomizers(final String scriptEngineName) {
+        return modules.stream().flatMap(module -> {
+            final Optional<Customizer[]> moduleCustomizers = module.getCustomizers(scriptEngineName);
+            return Stream.of(moduleCustomizers.orElse(new Customizer[0]));
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void addModule(final GremlinModule module) {
+        // TODO: should modules be a set based on "name" to ensure uniqueness? not sure what bad stuff can happen with dupes
+        if (module != null) modules.add(module);
     }
 
     /**
@@ -361,6 +377,9 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     private void initEngines(final ClassLoader loader) {
+        // always need this module for a scriptengine to be "Gremlin-enabled"
+        modules.add(CoreGremlinModule.INSTANCE);
+
         Iterator<GremlinScriptEngineFactory> itty;
         try {
             final ServiceLoader<GremlinScriptEngineFactory> sl = AccessController.doPrivileged(

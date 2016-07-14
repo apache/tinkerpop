@@ -19,9 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
-import org.apache.tinkerpop.gremlin.jsr223.CustomizerManager;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.python.jsr223.PyScriptEngineFactory;
 
@@ -39,10 +39,10 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
     private static final String PLAIN = "plain";
     private static final List<String> EXTENSIONS = Collections.singletonList("py");
 
-    private CustomizerManager manager;
+    private GremlinScriptEngineManager manager;
 
     @Override
-    public void setCustomizerManager(final CustomizerManager manager) {
+    public void setCustomizerManager(final GremlinScriptEngineManager manager) {
         this.manager = manager;
     }
 

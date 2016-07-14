@@ -22,7 +22,7 @@ import javax.script.ScriptEngineFactory;
 
 /**
  * Creates a {@link GremlinScriptEngine} implementation and supplies to it any {@link Customizer} implementations to
- * it that are available on the {@link CustomizerManager}.
+ * it that are available on the {@link GremlinScriptEngineManager}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -40,5 +40,5 @@ public interface GremlinScriptEngineFactory extends ScriptEngineFactory {
      * The factory should take the {@link Customizer} implementations made available by the manager and supply them
      * to the {@link GremlinScriptEngine} implementation it creates.
      */
-    void setCustomizerManager(final CustomizerManager manager);
+    void setCustomizerManager(final GremlinScriptEngineManager manager);
 }

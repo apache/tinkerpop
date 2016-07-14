@@ -30,6 +30,7 @@ public class GremlinScriptEngineSuite extends Suite {
 
     private static final Class<?>[] allTests = new Class<?>[]{
             CachedGremlinScriptEngineManagerTest.class,
+            GremlinEnabledScriptEngineTest.class,
             ScriptEngineLambdaTest.class };
 
     public GremlinScriptEngineSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {

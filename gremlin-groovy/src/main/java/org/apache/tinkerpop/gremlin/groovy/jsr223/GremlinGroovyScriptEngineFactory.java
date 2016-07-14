@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.jsr223.CustomizerManager;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 
 import javax.script.ScriptEngine;
@@ -37,10 +38,10 @@ public class GremlinGroovyScriptEngineFactory implements GremlinScriptEngineFact
     private static final String PLAIN = "plain";
     private static final List<String> EXTENSIONS = Collections.singletonList("groovy");
 
-    private CustomizerManager manager;
+    private GremlinScriptEngineManager manager;
 
     @Override
-    public void setCustomizerManager(final CustomizerManager manager) {
+    public void setCustomizerManager(final GremlinScriptEngineManager manager) {
         this.manager = manager;
     }
 
@@ -118,7 +119,8 @@ public class GremlinGroovyScriptEngineFactory implements GremlinScriptEngineFact
 
     @Override
     public GremlinScriptEngine getScriptEngine() {
-        return manager.getCustomizers().isPresent() ?
-                new GremlinGroovyScriptEngine(manager.getCustomizers().get()) : new GremlinGroovyScriptEngine();
+        final List<Customizer> customizers =  manager.getCustomizers(ENGINE_NAME);
+        return (customizers.isEmpty()) ? new GremlinGroovyScriptEngine() :
+                new GremlinGroovyScriptEngine(customizers.toArray(new Customizer[customizers.size()]));
     }
 }
