@@ -20,6 +20,7 @@ under the License.
 from graph_traversal import GraphTraversal
 from graph_traversal import GraphTraversalSource
 from graph_traversal import __
+from graphson_serializers import GraphSONSerializer
 from groovy_translator import GroovyTranslator
 from jython_translator import JythonTranslator
 from traversal import Barrier
