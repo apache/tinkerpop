@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 
 import java.time.Duration;
@@ -136,10 +137,12 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(Scope.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(T.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(P.class, new GraphSONTraversalSerializers.PJacksonSerializer());
+            addSerializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonSerializer());
             // -- deserializers for traversal
             addDeserializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonDeserializer());
             addDeserializer(Enum.class, new GraphSONTraversalSerializers.EnumJacksonDeserializer());
             addDeserializer(P.class, new GraphSONTraversalSerializers.PJacksonDeserializer());
+            addDeserializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonDeserializer());
 
         }
 

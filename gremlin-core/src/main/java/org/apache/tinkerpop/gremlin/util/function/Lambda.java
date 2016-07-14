@@ -45,6 +45,21 @@ public interface Lambda extends Serializable {
         public String getLambdaScript() {
             return this.lambdaSource;
         }
+
+        @Override
+        public String toString() {
+            return this.lambdaSource;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.lambdaSource.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object object) {
+            return object instanceof Lambda && ((Lambda) object).getLambdaScript().equals(this.lambdaSource);
+        }
     }
 
     public static class ZeroArgLambda<A> extends AbstractLambda implements Supplier<A> {
@@ -68,7 +83,7 @@ public interface Lambda extends Serializable {
 
         @Override
         public B apply(final A a) {
-            return null;
+            return (B) new ScriptEngineLambda("gremlin-groovy", this.getLambdaScript()).apply(a); // TODO: GremlinScriptEngine.lambda(String, Object... arguments)
         }
 
         @Override

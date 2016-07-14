@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -145,6 +146,24 @@ public final class GraphSONTraversalSerializers {
 
     }
 
+    final static class LambdaJacksonSerializer extends StdSerializer<Lambda> {
+
+        public LambdaJacksonSerializer() {
+            super(Lambda.class);
+        }
+
+        @Override
+        public void serialize(final Lambda lambda, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField("@type", "Lambda");
+            jsonGenerator.writeStringField("value", lambda.getLambdaScript());
+            jsonGenerator.writeNumberField("arguments", lambda instanceof Lambda.ZeroArgLambda ? 0 : lambda instanceof Lambda.OneArgLambda ? 1 : 2);
+            jsonGenerator.writeEndObject();
+        }
+
+    }
+
     ///////////////////
     // DESERIALIZERS //
     //////////////////
@@ -166,6 +185,8 @@ public final class GraphSONTraversalSerializers {
                         arguments.add(oc.readValue(argument.traverse(oc), Bytecode.class));
                     else if (type.equals("P"))
                         arguments.add(oc.readValue(argument.traverse(oc), P.class));
+                    else if (type.equals("Lambda"))
+                        arguments.add(oc.readValue(argument.traverse(oc), Lambda.class));
                     else
                         arguments.add(oc.readValue(argument.traverse(oc), Enum.class));
                 } else if (argument.getNodeType().equals(JsonNodeType.NUMBER)) {
@@ -207,36 +228,6 @@ public final class GraphSONTraversalSerializers {
         }
     }
 
-    final static class PJacksonDeserializer extends StdDeserializer<P> {
-
-        public PJacksonDeserializer() {
-            super(P.class);
-        }
-
-        @Override
-        public P deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-
-            final ObjectCodec oc = jsonParser.getCodec();
-            final JsonNode node = oc.readTree(jsonParser);
-            assert node.get("@type").textValue().equals("P");
-            final JsonNode predicate = node.get("predicate");
-            if (predicate.textValue().equals("and") || predicate.textValue().equals("or")) {
-                final List<P<?>> arguments = new ArrayList<>();
-                for (int i = 0; i < node.get("value").size(); i++) {
-                    arguments.add(oc.readValue(node.get("value").get(i).traverse(oc), P.class));
-                }
-                return predicate.textValue().equals("and") ? new AndP(arguments) : new OrP(arguments);
-            } else {
-                try {
-                    return (P) P.class.getMethod(predicate.textValue(), Object.class).invoke(null, oc.readValue(node.get("value").traverse(oc), Object.class)); // TODO: number stuff, eh?
-                } catch (Exception e) {
-                    throw new IOException();
-                }
-            }
-
-        }
-    }
-
     final static class EnumJacksonDeserializer extends StdDeserializer<Enum> {
 
         public EnumJacksonDeserializer() {
@@ -268,6 +259,57 @@ public final class GraphSONTraversalSerializers {
             else
                 throw new IOException("Unknown enum type: " + type);
 
+        }
+    }
+
+    final static class PJacksonDeserializer extends StdDeserializer<P> {
+
+        public PJacksonDeserializer() {
+            super(P.class);
+        }
+
+        @Override
+        public P deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+
+            final ObjectCodec oc = jsonParser.getCodec();
+            final JsonNode node = oc.readTree(jsonParser);
+            assert node.get("@type").textValue().equals("P");
+            final JsonNode predicate = node.get("predicate");
+            if (predicate.textValue().equals("and") || predicate.textValue().equals("or")) {
+                final List<P<?>> arguments = new ArrayList<>();
+                for (int i = 0; i < node.get("value").size(); i++) {
+                    arguments.add(oc.readValue(node.get("value").get(i).traverse(oc), P.class));
+                }
+                return predicate.textValue().equals("and") ? new AndP(arguments) : new OrP(arguments);
+            } else {
+                try {
+                    return (P) P.class.getMethod(predicate.textValue(), Object.class).invoke(null, oc.readValue(node.get("value").traverse(oc), Object.class)); // TODO: number stuff, eh?
+                } catch (Exception e) {
+                    throw new IOException();
+                }
+            }
+        }
+    }
+
+    final static class LambdaJacksonDeserializer extends StdDeserializer<Lambda> {
+
+        public LambdaJacksonDeserializer() {
+            super(Lambda.class);
+        }
+
+        @Override
+        public Lambda deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+
+            final ObjectCodec oc = jsonParser.getCodec();
+            final JsonNode node = oc.readTree(jsonParser);
+            assert node.get("@type").textValue().equals("Lambda");
+            final JsonNode lambda = node.get("value");
+            final int arguments = node.get("arguments").intValue();
+            return 0 == arguments ?
+                    new Lambda.ZeroArgLambda<>(lambda.textValue()) :
+                    1 == arguments ?
+                            new Lambda.OneArgLambda<>(lambda.textValue()) :
+                            new Lambda.TwoArgLambda<>(lambda.textValue());
         }
     }
 

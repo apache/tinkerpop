@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -61,6 +62,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
+import static org.apache.tinkerpop.gremlin.util.function.Lambda.function;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -74,7 +76,7 @@ public class TinkerGraphPlayTest {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal().withComputer();
 
-        Traversal<?, ?> traversal1 = g.V().has("age", P.gt(10).and(P.lt(30))).out("knows", "created").repeat(__.as("a").out().as("b").hasLabel("software")).times(1).select("b").by(T.label).groupCount();
+        Traversal<?, ?> traversal1 = g.V().has("age", P.gt(10).and(P.lt(30))).out("knows", "created").repeat(__.as("a").out().as("b").hasLabel("software")).times(1).select("b").by(T.label).groupCount().map(function("a.get()"));
         Bytecode bytecode1 = traversal1.asAdmin().getBytecode();
         System.out.println("BYTECODE 1: \n  " + bytecode1 + "\n");
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
