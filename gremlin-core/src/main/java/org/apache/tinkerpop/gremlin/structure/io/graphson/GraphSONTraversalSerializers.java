@@ -86,26 +86,30 @@ public final class GraphSONTraversalSerializers {
                 throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField("@type", "Bytecode");
-            jsonGenerator.writeArrayFieldStart("source");
-            for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
-                jsonGenerator.writeStartArray();
-                jsonGenerator.writeString(instruction.getOperator());
-                for (final Object argument : instruction.getArguments()) {
-                    jsonGenerator.writeObject(argument);
+            if (!bytecode.getSourceInstructions().isEmpty()) {
+                jsonGenerator.writeArrayFieldStart("source");
+                for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+                    jsonGenerator.writeStartArray();
+                    jsonGenerator.writeString(instruction.getOperator());
+                    for (final Object argument : instruction.getArguments()) {
+                        jsonGenerator.writeObject(argument);
+                    }
+                    jsonGenerator.writeEndArray();
                 }
                 jsonGenerator.writeEndArray();
             }
-            jsonGenerator.writeEndArray();
-            jsonGenerator.writeArrayFieldStart("step");
-            for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-                jsonGenerator.writeStartArray();
-                jsonGenerator.writeString(instruction.getOperator());
-                for (final Object argument : instruction.getArguments()) {
-                    jsonGenerator.writeObject(argument);
+            if (!bytecode.getStepInstructions().isEmpty()) {
+                jsonGenerator.writeArrayFieldStart("step");
+                for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+                    jsonGenerator.writeStartArray();
+                    jsonGenerator.writeString(instruction.getOperator());
+                    for (final Object argument : instruction.getArguments()) {
+                        jsonGenerator.writeObject(argument);
+                    }
+                    jsonGenerator.writeEndArray();
                 }
                 jsonGenerator.writeEndArray();
             }
-            jsonGenerator.writeEndArray();
 
             jsonGenerator.writeEndObject();
         }
