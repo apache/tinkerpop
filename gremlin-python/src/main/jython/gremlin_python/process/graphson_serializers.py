@@ -22,7 +22,6 @@ from aenum import Enum
 
 from traversal import Bytecode
 from traversal import P
-from traversal import SymbolHelper
 from traversal import Traversal
 
 
@@ -73,3 +72,23 @@ class GraphSONSerializer(object):
     @staticmethod
     def serialize(thing):
         return json.dumps(GraphSONSerializer.dictify(thing))
+
+
+TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
+               "_or": "or", "_is": "is", "_not": "not", "_from": "from"}
+
+
+class SymbolHelper(object):
+    @staticmethod
+    def toJava(symbol):
+        if (symbol in TO_JAVA_MAP):
+            return TO_JAVA_MAP[symbol]
+        else:
+            return symbol
+
+    @staticmethod
+    def mapEnum(enum):
+        if (enum in enumMap):
+            return enumMap[enum]
+        else:
+            return enum

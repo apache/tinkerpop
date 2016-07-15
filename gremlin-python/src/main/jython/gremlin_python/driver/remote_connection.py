@@ -22,10 +22,11 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class RemoteConnection(object):
-    def __init__(self, url):
+    def __init__(self, url, traversal_source):
         self.url = url
+        self.traversal_source = traversal_source
 
     @abstractmethod
-    def submit(self, target_language, script, bindings):
-        print "sending " + script + " to GremlinServer..."
+    def submit(self, target_language, bytecode):
+        print "sending " + bytecode + " to GremlinServer..."
         return iter([])

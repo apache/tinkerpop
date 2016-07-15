@@ -75,7 +75,7 @@ public class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends T
         try {
             final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
             jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("RemoteGraph(JythonTranslator(\"" + this.pythonTranslator.getTraversalSource() + "\"), None).traversal()"));
+                    .put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("RemoteGraph(None).traversal()"));
             final String graphsonBytecode = jythonEngine.eval("GraphSONSerializer.serialize(" + this.pythonTranslator.translate(bytecode) + ")").toString();
             //System.out.println(graphsonBytecode + "!!!!");
             return this.javaTranslator.translate(this.reader.readObject(new ByteArrayInputStream(graphsonBytecode.getBytes()), Bytecode.class));

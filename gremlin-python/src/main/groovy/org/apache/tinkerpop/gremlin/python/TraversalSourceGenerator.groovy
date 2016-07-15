@@ -68,7 +68,7 @@ class Traversal(object):
         self.bindings = {}
 
     def __repr__(self):
-        return self.graph.translator.translate(self.bytecode)
+        return str(self.bytecode)
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -230,7 +230,7 @@ class TraversalStrategy(object):
         return
 
 '''
-BYTECODE AND TRANSLATOR
+BYTECODE
 '''
 
 class Bytecode(object):
@@ -261,41 +261,6 @@ class Bytecode(object):
             return arg.bytecode
         else:
             return arg
-
-
-TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
-               "_or": "or", "_is": "is", "_not": "not", "_from": "from"}
-
-
-class Translator(object):
-    def __init__(self, traversal_source, anonymous_traversal, target_language):
-        self.traversal_source = traversal_source
-        self.anonymous_traversal = anonymous_traversal
-        self.target_language = target_language
-
-    @abstractmethod
-    def translate(self, bytecode):
-        return
-
-    @abstractmethod
-    def __repr__(self):
-        return "translator[" + self.traversal_source + ":" + self.target_language + "]"
-
-
-class SymbolHelper(object):
-    @staticmethod
-    def toJava(symbol):
-        if (symbol in TO_JAVA_MAP):
-            return TO_JAVA_MAP[symbol]
-        else:
-            return symbol
-
-    @staticmethod
-    def mapEnum(enum):
-        if (enum in enumMap):
-            return enumMap[enum]
-        else:
-            return enum
 """)
         //////////////
 

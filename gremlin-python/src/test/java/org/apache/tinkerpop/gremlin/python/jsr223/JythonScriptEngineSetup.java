@@ -39,8 +39,6 @@ public class JythonScriptEngineSetup {
             jythonEngine.eval("from gremlin_python.process.traversal import *");
             jythonEngine.eval("from gremlin_python.process.graph_traversal import *");
             jythonEngine.eval("from gremlin_python.process.graph_traversal import __");
-            jythonEngine.eval("from gremlin_python.process.groovy_translator import GroovyTranslator");
-            jythonEngine.eval("from gremlin_python.process.jython_translator import JythonTranslator");
             jythonEngine.eval("from gremlin_python.driver.rest_remote_connection import RESTRemoteConnection");
             jythonEngine.eval("from gremlin_python.process.traversal import Bytecode");
             jythonEngine.eval("from gremlin_python.structure.remote_graph import RemoteGraph");
