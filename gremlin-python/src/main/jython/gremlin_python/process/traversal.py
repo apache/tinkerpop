@@ -254,25 +254,6 @@ def without(*args):
 statics.add_static('without',without)
 
 
-class RawExpression(object):
-   def __init__(self, *args):
-      self.bindings = dict()
-      self.parts = [self._process_arg(arg) for arg in args]
-
-   def _process_arg(self, arg):
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-         self.bindings[arg[0]] = arg[1]
-         return Raw(arg[0])
-      else:
-         return Raw(arg)
-
-class Raw(object):
-   def __init__(self, value):
-      self.value = value
-
-   def __str__(self):
-      return str(self.value)
-
 
 '''
 TRAVERSER

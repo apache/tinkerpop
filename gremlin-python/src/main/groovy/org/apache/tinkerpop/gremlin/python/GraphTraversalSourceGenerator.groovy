@@ -56,7 +56,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-        pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import Traversal\n")
         pythonClass.append("from traversal import Bytecode\n")
         pythonClass.append("from gremlin_python import statics\n\n")
@@ -95,8 +94,6 @@ under the License.
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
-      elif isinstance(arg, RawExpression):
-        self.bindings.update(arg.bindings)
     return traversal
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
@@ -107,8 +104,6 @@ under the License.
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
-      elif isinstance(arg, RawExpression):
-        self.bindings.update(arg.bindings)
     return source
 """)
                 }
@@ -140,8 +135,6 @@ under the License.
     for arg in args:
       if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
         self.bindings[arg[0]] = arg[1]
-      elif isinstance(arg, RawExpression):
-        self.bindings.update(arg.bindings)
     return self
 """)
             }
