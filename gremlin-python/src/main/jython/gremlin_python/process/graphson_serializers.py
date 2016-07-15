@@ -37,14 +37,14 @@ class GraphSONSerializer(object):
             sources = []
             for instruction in thing.source_instructions:
                 inst = []
-                inst.append(instruction[0])
+                inst.append(SymbolHelper.toJava(instruction[0]))
                 for arg in instruction[1]:
                     inst.append(GraphSONSerializer.dictify(arg))
                 sources.append(inst)
             steps = []
             for instruction in thing.step_instructions:
                 inst = []
-                inst.append(instruction[0])
+                inst.append(SymbolHelper.toJava(instruction[0]))
                 for arg in instruction[1]:
                     inst.append(GraphSONSerializer.dictify(arg))
                 steps.append(inst)

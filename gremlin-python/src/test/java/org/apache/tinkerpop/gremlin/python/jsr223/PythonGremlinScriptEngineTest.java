@@ -16,19 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.apache.tinkerpop.gremlin.python.jsr223;
 
-package org.apache.tinkerpop.gremlin.java.translator.groovy;
-
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite;
+import org.apache.tinkerpop.gremlin.jsr223.ScriptEngineToTest;
 import org.junit.runner.RunWith;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = PythonGroovyTranslatorProvider.class, graph = TinkerGraph.class)
-public class PythonGroovyTranslatorProcessStandardTest {
-
+@RunWith(GremlinScriptEngineSuite.class)
+@ScriptEngineToTest(scriptEngineName = "gremlin-jython")
+public class PythonGremlinScriptEngineTest {
 }

@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.python.util.SymbolHelper
+import org.apache.tinkerpop.gremlin.python.jsr223.SymbolHelper
 
 import java.lang.reflect.Modifier
 

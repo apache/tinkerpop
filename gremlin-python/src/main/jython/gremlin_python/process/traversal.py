@@ -342,8 +342,7 @@ class Bytecode(object):
 
 
 TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
-               "_or": "or", "_is": "is", "_not": "not", "_from": "from",
-               "Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
+               "_or": "or", "_is": "is", "_not": "not", "_from": "from"}
 
 
 class Translator(object):

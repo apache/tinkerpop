@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -28,10 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.python.util.SymbolHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonTranslator implements Translator.ScriptTranslator {
+public final class PythonTranslator implements Translator.ScriptTranslator {
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
@@ -60,33 +60,19 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             .map(arg -> ((Enum) arg).name())
             .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
 
-    protected String traversalSource;
-    protected String anonymousTraversal;
-    protected final boolean importStatics;
+    private String traversalSource;
+    private String anonymousTraversal;
+    private final boolean importStatics;
 
-    protected PythonTranslator(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
+    public PythonTranslator(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
         this.traversalSource = traversalSource;
         this.anonymousTraversal = anonymousTraversal;
         this.importStatics = importStatics;
     }
 
-    public static PythonTranslator of(final String traversalSource, final String anonymousTraversal) {
-        return new PythonTranslator(traversalSource, anonymousTraversal, false);
+    public PythonTranslator(final String traversalSource, final String anonymousTraversal) {
+        this(traversalSource, anonymousTraversal, false);
     }
-
-    public static PythonTranslator of(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
-        return new PythonTranslator(traversalSource, anonymousTraversal, importStatics);
-    }
-
-    public static PythonTranslator of(final String traversalSource) {
-        return new PythonTranslator(traversalSource, "__", false);
-    }
-
-    public static PythonTranslator of(final String traversalSource, final boolean importStatics) {
-        return new PythonTranslator(traversalSource, "__", importStatics);
-    }
-
-    //////
 
     @Override
     public String getTraversalSource() {
@@ -100,7 +86,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
 
     @Override
     public String translate(final Bytecode bytecode) {
-        final String traversal = this.internalTranslate(this.traversalSource, bytecode);
+        final String traversal = this.internalTranslate(this.traversalSource, BytecodeHelper.filterInstructions(bytecode,
+                instruction -> !Arrays.asList("withTranslator", "withStrategies").contains(instruction.getOperator())));
         //if (this.importStatics)
         //    assert !traversal.contains("__.");
         return traversal;
@@ -120,6 +107,26 @@ public class PythonTranslator implements Translator.ScriptTranslator {
 
     private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
+        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+            final String methodName = instruction.getOperator();
+            final Object[] arguments = instruction.getArguments();
+            if (0 == arguments.length)
+                traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
+            else {
+                traversalScript.append(".");
+                String temp = SymbolHelper.toPython(methodName) + "(";
+                for (final Object object : arguments) {
+                    temp = temp + convertToString(object) + ",";
+                }
+                traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
+            }
+
+            // clip off __.
+            if (this.importStatics && traversalScript.substring(0, 3).startsWith(this.anonymousTraversal + ".")
+                    && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
+                traversalScript.delete(0, 3);
+            }
+        }
         for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();

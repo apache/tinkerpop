@@ -17,17 +17,22 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.util.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
@@ -50,7 +55,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
+public class PythonProvider extends AbstractGraphProvider {
 
     protected static final boolean IMPORT_STATICS = new Random().nextBoolean();
 
@@ -62,16 +67,26 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
+            "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
             "g_VX1X_out_injectXv2X_name",
-            "shouldSupportGraphFilter", // need to get Computer implemented as a class in Gremlin-Python
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
             "shouldTraversalResetProperly",
             "shouldHidePartitionKeyForValues",
-            "shouldAddStartsProperly",
+            //
+            "g_VXlistXv1_v2_v3XX_name",
+            "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
+            "g_VXv1X_hasXage_gt_30X",
+            "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
+            "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
+            //
+            PageRankTest.Traversals.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
+            EventStrategyProcessTest.class.getCanonicalName(),
+            CoreTraversalTest.class.getCanonicalName(),
+            PartitionStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
@@ -129,10 +144,14 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
             throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerGraph.IdManager.class.getName(), loadGraphWith.name()));
     }
 
+    /////////////////////////////
+    /////////////////////////////
+    /////////////////////////////
+
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         if ((Boolean) graph.configuration().getProperty("skipTest"))
-            return null;
+            return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             try {
@@ -142,7 +161,7 @@ public abstract class PythonTranslatorProvider extends AbstractGraphProvider {
             } catch (final ScriptException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            return graph.traversal();
+            return graph.traversal().withTranslator(new PythonGraphSONJavaTranslator<>(new PythonTranslator("g", "__", IMPORT_STATICS), new JavaTranslator<>(graph.traversal(), __.class))); // the bypass translator will ensure that gremlin-groovy is ultimately used
         }
     }
 

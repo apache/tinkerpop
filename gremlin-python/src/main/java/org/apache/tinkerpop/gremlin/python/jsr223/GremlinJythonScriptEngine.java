@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.python.util.SymbolHelper;
 import org.apache.tinkerpop.gremlin.util.CoreImports;
 import org.python.jsr223.PyScriptEngine;
 import org.python.jsr223.PyScriptEngineFactory;

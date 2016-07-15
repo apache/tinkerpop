@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.python.util;
+package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import java.util.HashMap;
 import java.util.Map;
