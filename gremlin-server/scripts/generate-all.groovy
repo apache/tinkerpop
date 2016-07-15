@@ -52,3 +52,10 @@ globals << [hook : [
     }
   }
 ] as LifeCycleHook]
+
+// add default TraversalSource instances for each graph instance
+globals << [gclassic : classic.traversal()]
+globals << [gmodern : modern.traversal()]
+globals << [gcrew : crew.traversal()]
+globals << [ggraph : graph.traversal()]
+globals << [ggrateful : grateful.traversal()]

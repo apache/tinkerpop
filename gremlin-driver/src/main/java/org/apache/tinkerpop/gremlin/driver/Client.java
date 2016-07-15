@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -132,7 +133,10 @@ public abstract class Client {
 
     /**
      * Submit a {@link Traversal} to the server for remote execution.
+     *
+     * @deprecated As of release 3.2.2, replaced by {@link #submit(Bytecode)}.
      */
+    @Deprecated
     public ResultSet submit(final Traversal traversal) {
         try {
             return submitAsync(traversal).get();
@@ -145,8 +149,31 @@ public abstract class Client {
 
     /**
      * An asynchronous version of {@link #submit(Traversal)}.
+     *
+     * @deprecated As of release 3.2.2, replaced by {@link #submitAsync(Bytecode)}.
      */
+    @Deprecated
     public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+    }
+
+    /**
+     * Submit a {@link Bytecode} to the server for remote execution.
+     */
+    public ResultSet submit(final Bytecode bytecode) {
+        try {
+            return submitAsync(bytecode).get();
+        } catch (UnsupportedOperationException uoe) {
+            throw uoe;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * An asynchronous version of {@link #submit(Traversal)}.
+     */
+    public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
     }
 
@@ -523,6 +550,16 @@ public abstract class Client {
             super(client.cluster, settings);
             this.client = client;
             this.aliases.putAll(rebindings);
+        }
+
+        @Override
+        public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
+            try {
+                return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_BYTECODE)
+                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, bytecode)).create());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         @Override

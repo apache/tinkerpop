@@ -38,7 +38,13 @@ public final class Tokens {
     public static final String OPS_USE = "use";
     public static final String OPS_VERSION = "version";
     public static final String OPS_AUTHENTICATION = "authentication";
+
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #OPS_BYTECODE}.
+     */
+    @Deprecated
     public static final String OPS_TRAVERSE = "traverse";
+    public static final String OPS_BYTECODE = "bytecode";
 
     public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";

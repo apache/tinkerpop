@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
@@ -320,6 +321,12 @@ public class GryoMapperTest {
     public void shouldHandleTraversalExplanation() throws Exception  {
         final TraversalExplanation te = __().out().outV().outE().explain();
         assertEquals(te.toString(), serializeDeserialize(te, TraversalExplanation.class).toString());
+    }
+
+    @Test
+    public void shouldHandleBytecode() throws Exception {
+        final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
+        assertEquals(bytecode.toString(), serializeDeserialize(bytecode, Bytecode.class).toString());
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

@@ -22,6 +22,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -318,6 +319,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
 
+            add(GryoTypeReg.of(Bytecode.class, 120, new GryoSerializers.BytecodeSerializer()));  // ***LAST ID***
+
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
             add(GryoTypeReg.of(HashSet.class, 62));
@@ -355,7 +358,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer())); // because they contain traversals
-            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119)); // ***LAST ID***
+            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();

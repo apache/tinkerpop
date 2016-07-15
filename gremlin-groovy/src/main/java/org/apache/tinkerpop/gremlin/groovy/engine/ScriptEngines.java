@@ -27,7 +27,10 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ConfigurationCustom
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +74,7 @@ public class ScriptEngines implements AutoCloseable {
     /**
      * {@code ScriptEngine} objects configured for the server keyed on the language name.
      */
-    private final Map<String, ScriptEngine> scriptEngines = new ConcurrentHashMap<>();
+    private final Map<String, GremlinScriptEngine> scriptEngines = new ConcurrentHashMap<>();
 
     private final AtomicBoolean controlOperationExecuting = new AtomicBoolean(false);
     private final Queue<Thread> controlWaiters = new ConcurrentLinkedQueue<>();
@@ -87,6 +90,18 @@ public class ScriptEngines implements AutoCloseable {
     public ScriptEngines(final Consumer<ScriptEngines> initializer) {
         this.initializer = initializer;
         this.initializer.accept(this);
+    }
+
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String language) throws ScriptException {
+        if (!scriptEngines.containsKey(language))
+            throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
+
+        awaitControlOp();
+
+        final GremlinScriptEngine engine = scriptEngines.get(language);
+        final Bindings all = mergeBindings(bindings, engine);
+
+        return engine.eval(bytecode, all);
     }
 
     /**
@@ -169,7 +184,7 @@ public class ScriptEngines implements AutoCloseable {
             if (scriptEngines.containsKey(language))
                 scriptEngines.remove(language);
 
-            final ScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports, config)
+            final GremlinScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports, config)
                     .orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
             scriptEngines.put(language, scriptEngine);
 
@@ -357,7 +372,7 @@ public class ScriptEngines implements AutoCloseable {
         }
     }
 
-    private static synchronized Optional<ScriptEngine> createScriptEngine(final String language,
+    private static synchronized Optional<GremlinScriptEngine> createScriptEngine(final String language,
                                                                           final Set<String> imports,
                                                                           final Set<String> staticImports,
                                                                           final Map<String, Object> config) {
@@ -404,7 +419,7 @@ public class ScriptEngines implements AutoCloseable {
             });
 
             final CompilerCustomizerProvider[] providerArray = new CompilerCustomizerProvider[providers.size()];
-            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(providers.toArray(providerArray)));
+            return Optional.of(new GremlinGroovyScriptEngine(providers.toArray(providerArray)));
         } else {
             return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }

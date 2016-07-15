@@ -59,7 +59,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Graph openTestGraph(final Configuration config) {
-        final String serverGraphName = config.getString(DriverRemoteConnection.GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME);
+        final String serverGraphName = config.getString(DriverRemoteConnection.GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME);
         return remoteCache.computeIfAbsent(serverGraphName,
                 k -> RemoteGraph.open(new DriverRemoteConnection(cluster, config)));
     }
@@ -73,7 +73,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, RemoteGraph.class.getName());
             put(RemoteGraph.GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
-            put(DriverRemoteConnection.GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, serverGraphName);
+            put(DriverRemoteConnection.GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, "g" + serverGraphName);
             put("hidden.for.testing.only", graphGetter);
         }};
     }

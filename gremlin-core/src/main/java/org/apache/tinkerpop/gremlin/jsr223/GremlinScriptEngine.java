@@ -23,7 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import java.lang.reflect.Method;
+import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 
 /**
  * A {@code GremlinScriptEngine} is an extension of the standard {@code ScriptEngine} and provides some specific
@@ -33,7 +34,18 @@ import java.lang.reflect.Method;
  */
 public interface GremlinScriptEngine extends ScriptEngine {
     @Override
-    GremlinScriptEngineFactory getFactory();
+    public GremlinScriptEngineFactory getFactory();
 
-    Traversal.Admin eval(final Bytecode bytes, final Bindings bindings);
+    /**
+     * Evaluates {@link Traversal} {@link Bytecode}.
+     */
+    public default Traversal.Admin eval(final Bytecode bytecode) throws ScriptException {
+        return eval(bytecode, new SimpleBindings());
+    }
+
+    /**
+     * Evaluates {@link Traversal} {@link Bytecode} with the specified {@code Bindings}. These {@code Bindings}
+     * supplied to this method will be merged with global engine bindings and override them where keys match.
+     */
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException;
 }

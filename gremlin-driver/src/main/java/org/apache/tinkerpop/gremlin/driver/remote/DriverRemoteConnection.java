@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -47,8 +48,22 @@ import java.util.function.Supplier;
 public class DriverRemoteConnection implements RemoteConnection {
 
     public static final String GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE = "gremlin.remoteGraph.driver.clusterFile";
+
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME}.
+     */
+    @Deprecated
     public static final String GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME = "gremlin.remoteGraph.driver.graphName";
+    public static final String GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME = "gremlin.remoteGraph.driver.sourceName";
+
+
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME}.
+     */
+    @Deprecated
     private static final String DEFAULT_GRAPH = "graph";
+    private static final String DEFAULT_TRAVERSAL_SOURCE = "g";
+
     private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private final Client client;
@@ -60,7 +75,10 @@ public class DriverRemoteConnection implements RemoteConnection {
         if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE));
 
-        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
+        if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME))
+            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
+        else
+            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         try {
             final Cluster cluster;
@@ -89,7 +107,11 @@ public class DriverRemoteConnection implements RemoteConnection {
      * This constructor is largely just for unit testing purposes and should not typically be used externally.
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
-        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
+        if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME))
+            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
+        else
+            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         tryCloseCluster = false;
         this.conf = Optional.of(conf);
@@ -161,13 +183,28 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
-
             if (attachElements && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new AttachingTraverserIterator<>(client.submit(t).iterator(), graph);
+                return new AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
             } else {
-                return new TraverserIterator<>(client.submit(t).iterator());
+                return new TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
+            }
+        } catch (Exception ex) {
+            throw new RemoteConnectionException(ex);
+        }
+    }
+
+    @Override
+    public <E> Iterator<Traverser.Admin<E>> submit(final Bytecode bytecode) throws RemoteConnectionException {
+        try {
+            // TODO: don't have a client-side traversal like we do in submit(Traversal) so what happens with VertexProgramStrategy
+            if (attachElements) {
+                if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
+                final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
+                return new AttachingTraverserIterator<>(client.submit(bytecode).iterator(), graph);
+            } else {
+                return new TraverserIterator<>(client.submit(bytecode).iterator());
             }
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);

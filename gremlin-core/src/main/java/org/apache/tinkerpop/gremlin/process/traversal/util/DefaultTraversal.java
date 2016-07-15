@@ -78,8 +78,14 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getBytecode());
     }
 
+    // TODO: clean up unused or redundant constructors
+
     public DefaultTraversal() {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new Bytecode());
+    }
+
+    public DefaultTraversal(final Bytecode bytecode) {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), bytecode);
     }
 
     public Bytecode getBytecode() {

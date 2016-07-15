@@ -100,8 +100,14 @@ public final class Bytecode implements Cloneable, Serializable {
 
     public static class Instruction implements Serializable {
 
-        private final String operator;
-        private final Object[] arguments;
+        private String operator;
+        private Object[] arguments;
+
+        private Instruction() {
+            // for gryo serialization
+            this.operator = null;
+            this.arguments = null;
+        }
 
         private Instruction(final String operator, final Object... arguments) {
             this.operator = operator;

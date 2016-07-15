@@ -38,6 +38,7 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import org.apache.tinkerpop.gremlin.java.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
@@ -369,8 +370,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     }
 
     @Override
-    public Traversal.Admin eval(final Bytecode bytes, final Bindings bindings) {
-        return null;
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException  {
+        // TODO: this is kinda bad because it makes the assumption that we will always alias to "g" (which is generally true, but maybe better to not hardcode?)
+        return (Traversal.Admin) this.eval(GroovyTranslator.of("g", "__").translate(bytecode), bindings);
     }
 
     @Override

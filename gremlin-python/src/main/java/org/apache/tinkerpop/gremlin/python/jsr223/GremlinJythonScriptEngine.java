@@ -116,7 +116,7 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
     }
 
     @Override
-    public Traversal.Admin eval(final Bytecode bytes, final Bindings bindings) {
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
         return null;
     }
 

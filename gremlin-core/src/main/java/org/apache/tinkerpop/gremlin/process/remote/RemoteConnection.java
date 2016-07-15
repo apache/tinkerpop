@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
@@ -32,5 +33,12 @@ import java.util.Iterator;
  */
 public interface RemoteConnection extends AutoCloseable {
 
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #submit(Bytecode)}.
+     */
+    @Deprecated
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException;
+
+
+    public <E> Iterator<Traverser.Admin<E>> submit(final Bytecode bytecode) throws RemoteConnectionException;
 }
