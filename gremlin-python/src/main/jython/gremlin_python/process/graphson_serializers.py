@@ -27,25 +27,25 @@ from traversal import Traversal
 
 class GraphSONSerializer(object):
     @staticmethod
-    def dictify(thing):
+    def __dictify(thing):
         if isinstance(thing, Traversal):
-            return GraphSONSerializer.dictify(thing.bytecode)
+            return GraphSONSerializer.__dictify(thing.bytecode)
         elif isinstance(thing, Bytecode):
             dict = {}
             dict["@type"] = "Bytecode"
             sources = []
             for instruction in thing.source_instructions:
                 inst = []
-                inst.append(SymbolHelper.toJava(instruction[0]))
+                inst.append(_SymbolHelper.toJava(instruction[0]))
                 for arg in instruction[1]:
-                    inst.append(GraphSONSerializer.dictify(arg))
+                    inst.append(GraphSONSerializer.__dictify(arg))
                 sources.append(inst)
             steps = []
             for instruction in thing.step_instructions:
                 inst = []
-                inst.append(SymbolHelper.toJava(instruction[0]))
+                inst.append(_SymbolHelper.toJava(instruction[0]))
                 for arg in instruction[1]:
-                    inst.append(GraphSONSerializer.dictify(arg))
+                    inst.append(GraphSONSerializer.__dictify(arg))
                 steps.append(inst)
             if len(sources) > 0:
                 dict["source"] = sources
@@ -54,31 +54,31 @@ class GraphSONSerializer(object):
             return dict
         elif isinstance(thing, Enum):
             dict = {}
-            dict["@type"] = SymbolHelper.toJava(type(thing).__name__)
-            dict["value"] = SymbolHelper.toJava(str(thing.name))
+            dict["@type"] = _SymbolHelper.toJava(type(thing).__name__)
+            dict["value"] = _SymbolHelper.toJava(str(thing.name))
             return dict
         elif isinstance(thing, P):
             dict = {}
             dict["@type"] = "P"
-            dict["predicate"] = SymbolHelper.toJava(thing.operator)
+            dict["predicate"] = _SymbolHelper.toJava(thing.operator)
             if thing.other is None:
-                dict["value"] = GraphSONSerializer.dictify(thing.value)
+                dict["value"] = GraphSONSerializer.__dictify(thing.value)
             else:
-                dict["value"] = [GraphSONSerializer.dictify(thing.value), GraphSONSerializer.dictify(thing.other)]
+                dict["value"] = [GraphSONSerializer.__dictify(thing.value), GraphSONSerializer.__dictify(thing.other)]
             return dict
         else:
             return thing
 
     @staticmethod
     def serialize(thing):
-        return json.dumps(GraphSONSerializer.dictify(thing))
+        return json.dumps(GraphSONSerializer.__dictify(thing))
 
 
 TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
                "_or": "or", "_is": "is", "_not": "not", "_from": "from"}
 
 
-class SymbolHelper(object):
+class _SymbolHelper(object):
     @staticmethod
     def toJava(symbol):
         if (symbol in TO_JAVA_MAP):
