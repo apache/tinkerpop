@@ -18,7 +18,7 @@ limitations under the License.
 TinkerPop 3.0.0
 ===============
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
 *A Gremlin Rāga in 7/16 Time*
 
@@ -27,7 +27,7 @@ TinkerPop 3.0.2
 
 *Release Date: October 19, 2015*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -90,7 +90,7 @@ TinkerPop 3.0.1
 
 *Release Date: September 2, 2015*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -106,7 +106,7 @@ capabilities, especially when combined with its built-in SSL feature.
 There have also been changes in how global variable bindings in Gremlin Server are established via initialization
 scripts.  The initialization scripts now allow for a `Map` of values that can be returned from those scripts.  
 That `Map` will be used to set global bindings for the server. See this 
-link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/gremlin-server/scripts/generate-modern.groovy[sample script] 
+link:https://github.com/apache/tinkerpop/blob/3.0.1-incubating/gremlin-server/scripts/generate-modern.groovy[sample script]
 for an example.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-576[TINKERPOP-576]

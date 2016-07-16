@@ -23,7 +23,7 @@
 # published KEYS file in order for that aspect of the validation
 # to pass.
 #
-# curl -L -O http://archive.apache.org/dist/incubator/tinkerpop/KEYS
+# curl -L -O https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 # gpg --import KEYS
 
 TMP_DIR="/tmp/tpdv"
@@ -39,9 +39,9 @@ fi
 
 if [ -z ${URL} ]; then
 
-  CONSOLE_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
-  SERVER_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
-  SOURCE_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
+  CONSOLE_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
+  SERVER_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
+  SOURCE_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
 
   echo -e "\nValidating binary distributions\n"
 

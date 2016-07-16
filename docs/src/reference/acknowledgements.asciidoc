@@ -23,14 +23,6 @@ Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools f
 applications. YourKit's leading software products: link:http://www.yourkit.com/java/profiler/index.jsp[YourKit Java Profiler]
 and link:http://www.yourkit.com/.net/profiler/index.jsp[YourKit .NET Profiler]
 
-image:egg-logo.png[width=200,float=left] link:http://incubator.apache.org/projects/tinkerpop.html[Apache TinkerPop] is
-an effort undergoing incubation at link:http://apache.org[The Apache Software Foundation] (ASF), sponsored by the
-Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the
-infrastructure, communications, and decision making process have stabilized in a manner consistent with other
-successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of
-the code, it does indicate that the project has yet to be fully endorsed by the ASF. Apache TinkerPop is distributed
-under the Apache License v2.0.
-
 image:ketrina-tinkerpop3.png[width=150,float=right] link:http://ketrinayim.tumblr.com[Ketrina Yim] -- Designing
 Gremlin and his friends for TinkerPop was one of my first major projects as a freelancer, and it's delightful to
 see them on the Web and all over the documentation! Drawing and tweaking the characters over time is like watching

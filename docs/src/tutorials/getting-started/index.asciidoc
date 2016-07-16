@@ -53,7 +53,7 @@ NOTE: Are you unsure of what a vertex or edge is? That topic is covered in the <
 but please allow the tutorial to get you oriented with the Gremlin Console first, so that you have an understanding of
 the tool that will help you with your learning experience.
 
-link:https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/x.y.z/apache-gremlin-console-x.y.z-bin.zip[Download the console],
+link:https://www.apache.org/dyn/closer.lua/tinkerpop/x.y.z/apache-gremlin-console-x.y.z-bin.zip[Download the console],
 unpackage it and start it:
 
 [source,text]
@@ -534,7 +534,7 @@ containing a Gremlin script to be processed with results returned.
 
 [source,text]
 ----
-$ curl -L -O https://www.apache.org/dist/incubator/tinkerpop/x.y.z/apache-gremlin-server-x.y.z-bin.zip
+$ curl -L -O https://www.apache.org/dist/tinkerpop/x.y.z/apache-gremlin-server-x.y.z-bin.zip
 $ unzip apache-gremlin-server-x.y.z-bin.zip
 $ cd apache-gremlin-server-x.y.z-bin.zip
 $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml

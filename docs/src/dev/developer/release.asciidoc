@@ -25,7 +25,6 @@ feedback.  Once a release point has been identified, the following phases repres
 * Pre-flight check.
 * Optionally, produce a release candidate for community feedback.
 * Submit the official release for PMC vote.
-* Submit the official release for Incubator vote.
 * Release and promote.
 
 NOTE: It might be helpful to use this document as generated from the currently release as opposed to one generate
@@ -114,8 +113,8 @@ current release was under development as this new release will have those change
 handled document generation and this step now merely needs to upload what was generated.
 . `mvn deploy -Papache-release -DcreateChecksum=true -DskipTests` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well).
 . Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote. Do NOT "release" the repository at this time.
-. Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
-.. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
+. Upload artifacts to `https://dist.apache.org/repos/dist/dev//tinkerpop` for `[VOTE]` review.
+.. `svn co --depth empty https://dist.apache.org/repos/dist/dev//tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
@@ -141,21 +140,12 @@ handled document generation and this step now merely needs to upload what was ge
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
-Incubator Vote
---------------
-
-A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
-
-. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below)
-.. Include the vote tally: "Apache TinkerPop (http://tinkerpop.apache.org/) would like to release TinkerPop xx.yy.zz. We had a dev@ VOTE which resulted in a tally of +1 (3), 0 (0), and -1 (0). We now present our artifacts for vote by Incubator."
-. *Wait for vote acceptance* (72 hours)
-
 Release & Promote
 -----------------
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
-. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/xx.yy.zz`
-. `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/xx.yy.zz`
+. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
+. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
@@ -177,7 +167,7 @@ Hello,
 We are happy to announce that TinkerPop xx.yy.zz is ready for release.
 
 The release artifacts can be found at this location:
-	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/xx.yy.zz/
+	https://dist.apache.org/repos/dist/dev/tinkerpop/xx.yy.zz/
 
 The source distribution is provided by:
 	apache-tinkerpop-xx.yy.zz-src.zip
@@ -187,7 +177,7 @@ Two binary distributions are provided for user convenience:
 	apache-gremlin-server-xx.yy.zz-bin.zip
 
 The GPG key used to sign the release artifacts is available at:
-    https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/KEYS
+    https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 
 The online docs can be found here:
 	http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
@@ -196,10 +186,10 @@ The online docs can be found here:
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 
 The tag in Apache Git can be found here:
-	https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git;XXXXXXXXXXXXXXXXXX
+	https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git;XXXXXXXXXXXXXXXXXX
 
 The release notes are available here:
-	https://github.com/apache/incubator-tinkerpop/blob/master/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+	https://github.com/apache/tinkerpop/blob/master/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
 
 The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
 
@@ -208,19 +198,6 @@ My vote is +1.
 Thank you very much,
 <TinkerPop Committer Name>
 ```
-
-If the above email template is used for the "Incubator Vote", then it should include the following just after the
-"release notes":
-
-```
-Finally, the dev@tinkerpop [VOTE] thread can be found at this location:
-
-    https://pony-poc.apache.org/thread.html/XXXXXXXXXXXXXXXXXX
-
-Result summary: +X (Y binding, Z non-binding), 0 (0), -1 (0)
-```
-
-where this link should point to the result of the VOTE.
 
 Dev Release RESULT VOTE
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -258,8 +235,8 @@ there is breaking change, an important game-changing feature or two, etc.]
 
 The release artifacts can be found at this location:
 
-https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
-https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
 
 The online docs can be found here:
 
@@ -271,7 +248,7 @@ http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [
 
 The release notes are available here:
 
-https://github.com/apache/incubator-tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
 
 The Central Maven repo has sync'd as well:
 

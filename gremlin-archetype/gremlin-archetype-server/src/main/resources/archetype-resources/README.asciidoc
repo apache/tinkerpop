@@ -28,7 +28,7 @@ Prerequisites
 
 * Java 8 Update 40+
 * link:https://maven.apache.org/[Maven 3.x]
-* Gremlin Server is link:http://archive.apache.org/dist/incubator/tinkerpop/[downloaded] and unpackaged
+* Gremlin Server is link:http://archive.apache.org/dist/tinkerpop/[downloaded] and unpackaged
 
 Building and Running
 --------------------
