@@ -25,7 +25,7 @@ Communication
 -------------
 
 TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
-link:http://mail-archives.apache.org/mod_mbox/incubator-tinkerpop-dev/[developer mailing list].  As a committer,
+link:https://lists.apache.org/list.html?dev@tinkerpop.apache.org[developer mailing list].  As a committer,
 it is a good idea to join both.
 
 It would also be helpful to join the public link:https://s.apache.org/tinkerpop[TinkerPop HipChat room] for developer
@@ -126,8 +126,8 @@ TinkerPop uses both link:https://travis-ci.com/[Travis] and link:https://www.app
 link:https://en.wikipedia.org/wiki/Continuous_integration[CI] services. Travis validates builds on Ubuntu, while
 AppVeyor validates builds on Windows.  The build statuses can be found here:
 
-* link:https://travis-ci.org/apache/incubator-tinkerpop[Travis Build Status]
-* link:https://ci.appveyor.com/project/ApacheSoftwareFoundation/incubator-tinkerpop[AppVeyor Build Status]
+* link:https://travis-ci.org/apache/tinkerpop[Travis Build Status]
+* link:https://ci.appveyor.com/project/ApacheSoftwareFoundation/tinkerpop[AppVeyor Build Status]
 
 Note that the CI process does not run integration tests or include Neo4j-related tests as those tests would likely
 exceed the allowable times for builds on these servers.
@@ -179,7 +179,7 @@ can cause problems for some graph providers.
 * Tests that are designed to use a `GraphProvider` implementation in conjunction with `AbstractGremlinTest` _and_ are
 in the `/test` directory should not be named with `Test` as the suffix, as this will cause them to execute in some
 environments without a `GraphProvider` being initialized by a suite. These types of tests should be suffixed with
-`Check` instead. Please see link:https://github.com/apache/incubator-tinkerpop/blob/e32a4187e4f25e290aabe14007f9087c48a06521/neo4j-gremlin/src/test/java/org/apache/tinkerpop/gremlin/neo4j/structure/NativeNeo4jStructureCheck.java[NativeNeo4jStructureCheck]
+`Check` instead. Please see link:https://github.com/apache/tinkerpop/blob/e32a4187e4f25e290aabe14007f9087c48a06521/neo4j-gremlin/src/test/java/org/apache/tinkerpop/gremlin/neo4j/structure/NativeNeo4jStructureCheck.java[NativeNeo4jStructureCheck]
 for an example.
 
 Gremlin Language Test Cases
@@ -284,12 +284,12 @@ and its distribution.
 To get started, TinkerPop has both "source" and "binary" LICENSE/NOTICE files:
 
 * Source LICENSE/NOTICE relate to files packaged with the released source code distribution:
-link:https://github.com/apache/incubator-tinkerpop/blob/master/LICENSE[LICENSE] / link:https://github.com/apache/incubator-tinkerpop/blob/master/NOTICE[NOTICE]
+link:https://github.com/apache/tinkerpop/blob/master/LICENSE[LICENSE] / link:https://github.com/apache/tinkerpop/blob/master/NOTICE[NOTICE]
 * Binary LICENSE/NOTICE relate to files packaged with the released binary distributions:
-** Gremlin Console link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-console/src/main/LICENSE[LICENSE]
-/ link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-console/src/main/NOTICE[NOTICE]
-** Gremlin Server link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-server/src/main/LICENSE[LICENSE]
-/ link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-server/src/main/NOTICE[NOTICE]
+** Gremlin Console link:https://github.com/apache/tinkerpop/blob/master/gremlin-console/src/main/LICENSE[LICENSE]
+/ link:https://github.com/apache/tinkerpop/blob/master/gremlin-console/src/main/NOTICE[NOTICE]
+** Gremlin Server link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/LICENSE[LICENSE]
+/ link:https://github.com/apache/tinkerpop/blob/master/gremlin-server/src/main/NOTICE[NOTICE]
 
 Source LICENSE and NOTICE
 ~~~~~~~~~~~~~~~~~~~~~~~~~

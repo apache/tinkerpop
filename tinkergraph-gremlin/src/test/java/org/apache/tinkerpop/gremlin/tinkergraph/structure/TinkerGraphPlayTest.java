@@ -211,7 +211,7 @@ public class TinkerGraphPlayTest {
 
         Graph graph = TinkerGraph.open();
         GraphTraversalSource g = graph.traversal();
-        graph.io(GraphMLIo.build()).readGraph("/projects/apache/incubator-tinkerpop/data/grateful-dead.xml");
+        graph.io(GraphMLIo.build()).readGraph("/projects/apache/tinkerpop/data/grateful-dead.xml");
         System.out.println(g.V().filter(outE("sungBy").count().is(0)).explain());
         System.out.println(g.V().filter(outE("sungBy").count().is(lt(1))).explain());
         System.out.println(g.V().filter(outE("sungBy").count().is(1)).explain());

@@ -121,9 +121,9 @@ limitations under the License.
         <module>gremlin-archetype</module>
     </modules>
     <scm>
-        <connection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</connection>
-        <developerConnection>scm:git:git@git-wip-us.apache.org:repos/asf/incubator-tinkerpop.git</developerConnection>
-        <url>https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git</url>
+        <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
+        <developerConnection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</developerConnection>
+        <url>https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git</url>
     </scm>
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>

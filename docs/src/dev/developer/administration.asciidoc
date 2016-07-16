@@ -83,10 +83,5 @@ Being a committer enables easier contribution to the project since there is no n
 process. This should enable better productivity.
 ----
 
-Finally, update the TinkerPop incubator project status page by:
-
-. Adding to the "News" section
-. Adding to the "Committers" section
-
 
 

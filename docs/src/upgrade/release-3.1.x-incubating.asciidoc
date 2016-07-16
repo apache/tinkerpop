@@ -18,7 +18,7 @@ limitations under the License.
 TinkerPop 3.1.0
 ===============
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=225]
 
 *A 187 On The Undercover Gremlinz*
 
@@ -27,7 +27,7 @@ TinkerPop 3.1.3
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -137,7 +137,7 @@ TinkerPop 3.1.2
 
 *Release Date: April 8, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -282,7 +282,7 @@ TinkerPop 3.1.1
 
 *Release Date: February 8, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -491,7 +491,7 @@ TinkerPop 3.1.0
 
 *Release Date: November 16, 2015*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Additional upgrade information can be found here:
 
