@@ -205,7 +205,7 @@ g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','priva
 g.V(1).properties('friendWeight').valueMap() <3>
 ----
 
-<1> For vertices, a cardinality can be provided for <<vertex properties,vertex-properties>>.
+<1> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
 <2> It is possible to select the property value (as well as key) via a traversal.
 <3> For vertices, the `property()`-step can add meta-properties.
 
@@ -376,7 +376,7 @@ g.V().group().by(bothE().count()).by(count())  <3>
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count())` will count the number of elements in each group (*traversal*).
 
-[cap-step]]
+[[cap-step]]
 Cap Step
 ~~~~~~~~
 
@@ -1127,6 +1127,12 @@ g.V().repeat(both()).times(3).values('age').min()
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
 
+[[option-step]]
+Option Step
+~~~~~~~~~~~~~
+
+An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
+
 [[or-step]]
 Or Step
 ~~~~~~~
@@ -1286,6 +1292,26 @@ path.c
 path.d == path.e
 ----
 
+<<<<<<< HEAD
+=======
+[[peerpressure-step]]
+PeerPressure Step
+~~~~~~~~~~~~~~~~~
+
+The `peerPressure()`-step (*map*/*sideEffect*) clusters vertices using <<peerpressurevertexprogram,`PeerPressureVertexProgram`>>.
+
+IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, can only be used against a graph that supports `GraphComputer` (OLAP).
+
+[gremlin-groovy,modern]
+----
+g = graph.traversal().withComputer()
+g.V().peerPressure().by('cluster').values('cluster')
+g.V().hasLabel('person').
+  peerPressure().by('cluster').
+  group().by('cluster').by('name')
+----
+
+>>>>>>> deb99f6... minor word and link cleanup
 [[profile-step]]
 Profile Step
 ~~~~~~~~~~~~

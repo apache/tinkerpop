@@ -324,7 +324,7 @@ backward compatible with previous versions) will become the future standard mode
 it provides a more efficient method for transaction management.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
-link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#considering-transactions[Reference Documentation - Considering Transactions]
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#considering-transactions[Reference Documentation - Considering Transactions]
 
 Deprecated credentialsDbLocation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -343,7 +343,7 @@ the `gremlin.tinkergraph.graphLocation` as soon as possible, as the deprecated s
 release.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
-link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#_security[Reference Documentation - Gremlin Server Security]
 
 TinkerGraph Supports Any I/O
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
