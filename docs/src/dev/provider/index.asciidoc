@@ -149,7 +149,7 @@ Implementing MapReduce Emitters
 +++++++++++++++++++++++++++++++
 
 image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model
-popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices
+popularized by link:http://hadoop.apache.org[Hadoop]. The primary difference is that all Mappers process the vertices
 of the graph, not an arbitrary key/value pair. However, the vertices' edges can not be accessed -- only their
 properties. This greatly reduces the amount of data needed to be pushed through the MapReduce engine as any edge
 information required, can be computed in the VertexProgram.execute() method. Moreover, at this stage, vertices can

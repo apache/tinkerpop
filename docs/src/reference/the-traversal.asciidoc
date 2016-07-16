@@ -205,7 +205,7 @@ g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','priva
 g.V(1).properties('friendWeight').valueMap() <3>
 ----
 
-<1> For vertices, a cardinality can be provided for <<vertex properties,vertex-properties>>.
+<1> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
 <2> It is possible to select the property value (as well as key) via a traversal.
 <3> For vertices, the `property()`-step can add meta-properties.
 
@@ -376,7 +376,7 @@ g.V().group().by(bothE().count()).by(count())  <3>
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count())` will count the number of elements in each group (*traversal*).
 
-[cap-step]]
+[[cap-step]]
 Cap Step
 ~~~~~~~~
 
@@ -1127,6 +1127,13 @@ g.V().repeat(both()).times(3).values('age').min()
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
 
+[[option-step]]
+Option Step
+~~~~~~~~~~~~~
+
+An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
+
+
 [[optional-step]]
 Optional Step
 ~~~~~~~~~~~~~
@@ -1359,7 +1366,7 @@ g.V().hasLabel('person').
   group().by('cluster').by('name')
 ----
 
-[profile-step]]
+[[profile-step]]
 Profile Step
 ~~~~~~~~~~~~
 

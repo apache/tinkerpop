@@ -62,7 +62,7 @@ Reviewing Changes
 Virtually all changes to TinkerPop's source code are performed via GitHub
 link:https://github.com/apache/tinkerpop/pulls[pull requests]. When a pull request is issue it undergoes a
 <<rtc,review process>> prior to be merged to a release branch. Anyone is free to comment and provide a vote (+1/+0/-1)
-on a pull request. Note that votes of non-commiters are considered non-binding, but are certainly considered in the
+on a pull request. Note that votes of non-committers are considered non-binding, but are certainly considered in the
 review process.
 
 Writing Documentation
@@ -182,7 +182,7 @@ to easily track what that branch is for.
 .. Consider which branch to create the branch from in the first place. In other words, is the change to be targetted
 at a specific TinkerPop version (e.g. a patch to an older version)? When in doubt, please ask on
 dev@tinkerpop.apache.org.
-. Bulid the project and run tests.
+. Build the project and run tests.
 .. A simple build can be accomplished with maven: `mvn clean install`.
 .. Often, a "simple build" isn't sufficient and integration tests are required:
 `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`. Note that Hadoop must be running for the integration
