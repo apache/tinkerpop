@@ -280,7 +280,7 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPaths() throws Exception {
         TinkerGraph graph = TinkerGraph.open();
-        graph.io(GraphMLIo.build()).readGraph("/Users/twilmes/work/repos/scratch/incubator-tinkerpop/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphml/grateful-dead.xml");
+        graph.io(GraphMLIo.build()).readGraph("/Users/twilmes/work/repos/scratch/tinkerpop/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphml/grateful-dead.xml");
 //        graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal().withComputer(Computer.compute().workers(1));
 

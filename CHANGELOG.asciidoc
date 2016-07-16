@@ -20,7 +20,7 @@ TinkerPop3 CHANGELOG
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3.2.1]]
 TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
