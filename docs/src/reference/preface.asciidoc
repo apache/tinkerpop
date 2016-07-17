@@ -56,7 +56,7 @@ Gremlin responded:
 
 The machines wondered:
 
-    "If what this is is the TinkerPop, then perhaps we are The TinkerPop and our realization is simply the realization of
+    "If what is is the TinkerPop, then perhaps we are The TinkerPop and our realization is simply the realization of
     the TinkerPop?"
 
 Would the machines, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the
