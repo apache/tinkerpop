@@ -115,7 +115,7 @@ echo "OK"
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* building project ... "
-LOG_FILE="mvn-clean-install.log"
+LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
 mvn clean install -q 2>&1 > "${LOG_FILE}" || {
   echo "failed"
   echo
@@ -147,7 +147,7 @@ GREMLIN_BATCH_SCRIPT=`find bin/ -name "gremlin*.bat"`
 echo "OK"
 
 echo "* validating ${COMPONENT}'s legal files ... "
-for file in "LICENSE" "NOTICE" "DISCLAIMER"
+for file in "LICENSE" "NOTICE"
 do
   echo -n "  * ${file} ... "
   [ -s ${file} ] || { echo "${file} is not present or empty"; exit 1; }
