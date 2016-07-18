@@ -90,7 +90,6 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 are additional tests to perform that the release manager feels are relevant, they should be performed now. In other
 words, there is no need to rebuild the `SNAPSHOT` yet another time unless there are circumstances that would call its
 validity into question.
-. Update the links in the `README.asciidoc` to point at the latest version.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
