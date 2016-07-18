@@ -23,7 +23,7 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-3]]
-TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.1.3 (Release Date: July 18, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed bug in `SubgraphStep` where features were not being checked properly prior to reading meta-properties.
@@ -65,6 +65,51 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 * Added support to Gremlin Driver to allow either plain text or GSSAPI SASL authentication allowing the client to pass the SASL mechanism in the request.
 * Improved dryRun functionality for the docs processor. It's now possible to dry run (or full run) only specific files.
 * Added precompile of `ScriptInputFormat` scripts to `ScriptRecordReader` to improve performance.
+
+Bugs
+^^^^
+
+* TINKERPOP-906 Install plugin always fails after first unresolved dependency
+* TINKERPOP-1088 Preserve Cardinality in Subgraph
+* TINKERPOP-1092 Gremlin Console init script with :x throws exception
+* TINKERPOP-1139 [Neo4JGraph] GraphTraversal with SubgraphStrategy removes addLabelStep (as("b"))
+* TINKERPOP-1196 Calls to Result.one() might block indefinitely
+* TINKERPOP-1215 Labeled a SideEffectCapStep cause problems.
+* TINKERPOP-1242 ScriptEngineTest randomly hangs indefinately.
+* TINKERPOP-1257 Bad SackTest variable use.
+* TINKERPOP-1265 Managed Session Eval Exceptions Rollback
+* TINKERPOP-1272 Gremlin Console distribution needs bin/init-tp-spark.sh
+* TINKERPOP-1284 StarGraph does not handle self-loops correctly.
+* TINKERPOP-1300 Many asserts around vertex/edge counts on graphs not applied
+* TINKERPOP-1317 IoGraphTest throws error: URI is not hierarchical
+* TINKERPOP-1318 java.lang.NoSuchMethodError: org/hamcrest/Matcher.describeMismatch
+* TINKERPOP-1319 several FeatureRequirement annotations are incorrect in gremlin-test
+* TINKERPOP-1320 GremlinGroovyScriptEngineFileSandboxTest throws error: URI is not hierarchical
+* TINKERPOP-1324 Better error for invalid args to addV()
+* TINKERPOP-1350 Server locks when submitting parallel requests on session
+* TINKERPOP-1351 Number of connections going beyond the pool max size
+* TINKERPOP-1352 Connection Pool doesn't always grow
+* TINKERPOP-1359 Exception thrown when calling subgraph() on Neo4jGraph
+* TINKERPOP-1360 intermittent error in spark-gremlin integration test
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-939 Neo4jGraph should support HighAvailability (Neo4jHA).
+* TINKERPOP-1003 Setting up latest/current links for bins and docs.
+* TINKERPOP-1020 Provide --dryRun selectivity for "half publishing" docs.
+* TINKERPOP-1063 TinkerGraph performance enhancements
+* TINKERPOP-1229 More Descriptive Messaging for :remote console
+* TINKERPOP-1260 Log for validate-distribution.sh
+* TINKERPOP-1263 Pass SASL mechanism name through with initial SASL response
+* TINKERPOP-1267 Configure Console for no timeout on remote requests
+* TINKERPOP-1269 More SSL settings for driver
+* TINKERPOP-1295 Precompile ScriptInputFormat scripts once during initialization of ScriptRecordReader
+* TINKERPOP-1301 Provide Javadoc for ScriptInput/OutputFormat's
+* TINKERPOP-1302 Ctrl-C should kill open remotes in Console
+* TINKERPOP-1312 .count().is(0) is not properly optimized
+* TINKERPOP-1314 Improve error detection in docs preprocessor
+* TINKERPOP-1354 Include all static enum imports in request validation for bindings *(breaking)*
 
 [[release-3-1-2-incubating]]
 TinkerPop 3.1.2 (Release Date: April 8, 2016)
