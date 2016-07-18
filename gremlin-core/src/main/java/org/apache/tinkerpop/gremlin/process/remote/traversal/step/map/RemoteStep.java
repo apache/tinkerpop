@@ -62,7 +62,6 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
         if (null == this.remoteIterator) {
             try {
-                Bytecode bc = traversal.getBytecode();
                 this.remoteIterator = this.remoteConnection.submit(this.traversal.getBytecode());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
