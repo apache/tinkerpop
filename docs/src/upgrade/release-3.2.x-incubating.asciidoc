@@ -25,9 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.1
 ---------------
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: July 18, 2016*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#tinkerpop-321-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#release-3-2-1[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
