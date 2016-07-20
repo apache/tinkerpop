@@ -46,6 +46,10 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailTest",
+        method = "g_V_repeatXbothX_timesX3X_tailX7X_reverseOrderIds",
+        reason = "RemoteGraph does not support addVertex")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest$Traversals",
         method = "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
         reason = "RemoteGraph can not handle a sideEffect that is spawned by a traversal")

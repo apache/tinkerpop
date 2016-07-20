@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,6 +113,40 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXbothX_timesX3X_tailX7X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_tailX7X();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            traversal.next();
+            counter++;
+        }
+        assertEquals(7, counter);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = Graph.Features.EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
+    public void g_V_repeatXbothX_timesX3X_tailX7X_reverseOrderIds() {
+        // construct the modern graph using ids in reverse order
+        final Vertex v1 = graph.addVertex(T.id, 6L, T.label, "person", "name", "marko", "age", 29);
+        final Vertex v2 = graph.addVertex(T.id, 5L, T.label, "person", "name", "vadas", "age", 27);
+        final Vertex v3 = graph.addVertex(T.id, 4L, T.label, "software", "name", "lop", "lang", "java");
+        final Vertex v4 = graph.addVertex(T.id, 3L, T.label, "person", "name", "josh", "age", 32);
+        final Vertex v5 = graph.addVertex(T.id, 2L, T.label, "software", "name", "ripple", "lang", "java");
+        final Vertex v6 = graph.addVertex(T.id, 1L, T.label, "person", "name", "peter", "age", 35);
+        v1.addEdge("knows", v2, "weight", 0.5d);
+        v1.addEdge("knows", v4, "weight", 1.0d);
+        v1.addEdge("created", v2, "weight", 0.4d);
+        v4.addEdge("knows", v5, "weight", 1.0d);
+        v4.addEdge("knows", v3, "weight", 0.4d);
+        v6.addEdge("knows", v3, "weight", 0.2d);
+
         final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_tailX7X();
         printTraversalForm(traversal);
         int counter = 0;
