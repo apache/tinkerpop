@@ -72,7 +72,7 @@ cd ${TMP_DIR}
 # validate downloads
 ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
 DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
-COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | awk '{for (i = 1; i <= NF; i++) sub(/./, toupper(substr($i, 1, 1)), $1); print}' | paste -sd ' ' -`
+COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | awk '{for (i = 1; i <= NF; i++) sub(/./, toupper(substr($i, 1, 1)), $1); print}' | paste -sd ' ' - | sed 's/Tinkerpop/TinkerPop/g'`
 
 if [ "${TYPE}" = "SOURCE" ]; then
   DIR_NAME=`sed -e 's/^[^-]*-//' <<< ${DIR_NAME}`
@@ -101,7 +101,7 @@ ACTUAL=`md5sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 echo "OK"
 
-echo -n "  * SHA1 chacksum ... "
+echo -n "  * SHA1 checksum ... "
 EXPECTED=`cat ${ZIP_FILENAME}.sha1`
 ACTUAL=`sha1sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
