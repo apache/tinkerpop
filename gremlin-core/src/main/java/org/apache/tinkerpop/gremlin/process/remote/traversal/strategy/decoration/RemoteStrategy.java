@@ -86,21 +86,9 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         if (null == remoteGraph.getConnection())
             throw new IllegalStateException("RemoteStrategy expects the RemoteGraph instance to have a RemoteConnection");
 
-        final Traversal.Admin<?, ?> remoteTraversal;
-        if (traversal.getStrategies().getStrategy(TranslationStrategy.class).isPresent()) {
-            // if there is a translator, send the translation over the wire (TODO: don't use ScriptTraversal -- RemoteConnection.submit(alias, scriptEngine, script, bindings)
-            remoteTraversal = new ScriptTraversal<>(traversal, traversal.getStrategies().getStrategy(TranslationStrategy.class).get());
-            TraversalHelper.removeAllSteps(traversal);
-        } else {
-            // if there is no translator, send the current traversal over the wire
-            remoteTraversal = new DefaultTraversal<>();
-            TraversalHelper.removeToTraversal(traversal.getStartStep(), EmptyStep.instance(), (Traversal.Admin) remoteTraversal);
-        }
-        // remove remote and translation strategies to avoid infinite loops
-        remoteTraversal.setStrategies(traversal.getStrategies().clone().removeStrategies(RemoteStrategy.class, TranslationStrategy.class));
-        remoteTraversal.setSideEffects(traversal.getSideEffects());
         // remote step wraps the traversal and emits the results from the remote connection
-        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteTraversal, remoteGraph.getConnection());
+        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal.clone(), remoteGraph.getConnection());
+        TraversalHelper.removeAllSteps(traversal);
         traversal.addStep(remoteStep);
 
         // validations

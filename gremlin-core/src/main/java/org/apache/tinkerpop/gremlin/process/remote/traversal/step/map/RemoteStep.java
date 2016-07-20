@@ -20,12 +20,9 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Iterator;
@@ -40,15 +37,12 @@ import java.util.NoSuchElementException;
 public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     private transient RemoteConnection remoteConnection;
-    private Traversal.Admin<S, E> remoteTraversal;
     private Iterator<Traverser.Admin<E>> remoteIterator;
 
     @SuppressWarnings("unchecked")
-    public RemoteStep(final Traversal.Admin traversal, final Traversal<S, E> remoteTraversal,
-                      final RemoteConnection remoteConnection) {
+    public RemoteStep(final Traversal.Admin traversal, final RemoteConnection remoteConnection) {
         super(traversal);
         this.remoteConnection = remoteConnection;
-        this.remoteTraversal = remoteTraversal.asAdmin();
     }
 
     @Override
@@ -69,10 +63,5 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
         }
 
         return this.remoteIterator.next();
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() ^ this.remoteTraversal.hashCode();
     }
 }
