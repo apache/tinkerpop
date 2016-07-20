@@ -87,7 +87,7 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
             throw new IllegalStateException("RemoteStrategy expects the RemoteGraph instance to have a RemoteConnection");
 
         // remote step wraps the traversal and emits the results from the remote connection
-        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal.clone(), remoteGraph.getConnection());
+        final RemoteStep<?, ?> remoteStep = new RemoteStep<>(traversal, remoteGraph.getConnection());
         TraversalHelper.removeAllSteps(traversal);
         traversal.addStep(remoteStep);
 
