@@ -97,6 +97,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -294,6 +295,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(UUID.class, 17, new UUIDSerializer()));
             add(GryoTypeReg.of(URI.class, 72, new URISerializer()));
             add(GryoTypeReg.of(VertexTerminator.class, 13));
+            add(GryoTypeReg.of(AbstractMap.SimpleEntry.class, 120));
+            add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121)); // ***LAST ID***
 
             add(GryoTypeReg.of(ReferenceEdge.class, 81));
             add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
@@ -355,7 +358,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(GroupStepV3d0.GroupBiOperatorV3d0.class, 113));
             add(GryoTypeReg.of(RangeGlobalStep.RangeBiOperator.class, 114));
             add(GryoTypeReg.of(OrderGlobalStep.OrderBiOperator.class, 118, new JavaSerializer())); // because they contain traversals
-            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119)); // ***LAST ID***
+            add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();
