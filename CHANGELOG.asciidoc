@@ -22,6 +22,12 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
+[[release-3-2-2]]
+TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added class registrations for `Map.Entry` implementations to `GryoMapper`.
+
 [[release-3-2-1]]
 TinkerPop 3.2.1 (Release Date: July 18, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
