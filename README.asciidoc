@@ -17,7 +17,7 @@ limitations under the License.
 TinkerPop3
 ----------
 
-image:https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="http://tinkerpop.apache.org"]
+image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="http://tinkerpop.apache.org"]
 
 Documentation
 ~~~~~~~~~~~~~

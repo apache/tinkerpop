@@ -123,7 +123,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
-    public void setKeepLabels(Set<String> labels) {
+    public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }
 

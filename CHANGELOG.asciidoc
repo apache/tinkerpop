@@ -20,11 +20,19 @@ TinkerPop3 CHANGELOG
 TinkerPop 3.2.0 (Nine Inch Gremlins)
 ------------------------------------
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
-[[release-3.2.1]]
-TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
+[[release-3-2-2]]
+TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added class registrations for `Map.Entry` implementations to `GryoMapper`.
+
+[[release-3-2-1]]
+TinkerPop 3.2.1 (Release Date: July 18, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This release also includes changes from <<release-3-1-3, 3.1.3>>.
 
 * `PathProcessor` steps now have the ability (if configured through a strategy) to drop `Traverser` path segments.
 * `MatchStep` in OLTP has a lazy barrier to increase the probability of bulking.
@@ -80,7 +88,56 @@ TinkerPop 3.2.1 (NOT OFFICIALLY RELEASED YET)
 * `Traversal` now allows cancellation with `Thread.interrupt()`.
 * Added a Gremlin language variant tutorial teaching people how to embed Gremlin in a host programming language.
 
-[[release-3.2.0-incubating]]
+Bugs
+^^^^
+
+* TINKERPOP-1281 Memory.HALTED_TRAVERSER transience is not sound.
+* TINKERPOP-1305 HALTED_TRAVERSERS hold wrong information
+* TINKERPOP-1307 NPE with OLTP nested group() in an OLAP group() traversal
+* TINKERPOP-1323 ComputerVerificationStrategy fails for nested match() steps
+* TINKERPOP-1341 UnshadedKryoAdapter fails to deserialize StarGraph when SparkConf sets spark.rdd.compress=true whereas GryoSerializer works
+* TINKERPOP-1348 TraversalInterruptionTest success dependent on iteration order
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-818 Consider a P.type()
+* TINKERPOP-946 Traversal respecting Thread.interrupt()
+* TINKERPOP-947 Enforce semantics of threaded transactions as manual *(breaking)*
+* TINKERPOP-1059 Add test to ensure transaction opening happens at read/write and not on close *(breaking)*
+* TINKERPOP-1071 Enhance pre-processor output
+* TINKERPOP-1091 Get KryoSerializer to work natively. *(breaking)*
+* TINKERPOP-1120 If there is no view nor messages, don't create empty views/messages in SparkExecutor
+* TINKERPOP-1144 Improve ScriptElementFactory
+* TINKERPOP-1155 gremlin.sh -e doesn't log line numbers for errors
+* TINKERPOP-1156 gremlin.sh could use a help text
+* TINKERPOP-1157 gremlin.sh should allow you to execute a script and go interactive on error or completion
+* TINKERPOP-1232 Write a tutorial demonstrating the 3 ways to write a Gremlin language variant.
+* TINKERPOP-1254 Support dropping traverser path information when it is no longer needed.
+* TINKERPOP-1268 Improve script execution options for console *(breaking)*
+* TINKERPOP-1273 Deprecate old performance tests
+* TINKERPOP-1276 Deprecate serializedResponseTimeout
+* TINKERPOP-1279 Add Iterable<V> parameter constructor to ConnectiveP subclasses
+* TINKERPOP-1282 Add more compliance tests around how memory and vertex compute keys are propagated in chained OLAP.
+* TINKERPOP-1286 Add Recipes documentation
+* TINKERPOP-1288 Support gremlin.spark.skipPartitioning configuration.
+* TINKERPOP-1290 Create VertexProgramInterceptor as a pattern for GraphComputer strategies.
+* TINKERPOP-1293 Implement GraphFilterStrategy as a default registration for GraphComputer
+* TINKERPOP-1294 Deprecate use of junit-benchmarks
+* TINKERPOP-1297 Gephi plugin on Gephi 0.9.x  *(breaking)*
+* TINKERPOP-1299 Refactor TraversalVertexProgram to make it easier to understand.
+* TINKERPOP-1308 Serialize to "reference" for Gremlin Server
+* TINKERPOP-1310 Allow OLAP to return properties as Detached
+* TINKERPOP-1321 Loosen coupling between TinkerPop serialization logic and shaded Kryo
+* TINKERPOP-1322 Provide fine-grained control of CompilerConfiguration
+* TINKERPOP-1328 Provide [gremlin-python] as an code executor in docs
+* TINKERPOP-1331 HADOOP_GREMLIN_LIBS can only point to local file system
+* TINKERPOP-1332 Improve .explain() Dialogue
+* TINKERPOP-1338 Bump to Groovy 2.4.7
+* TINKERPOP-1349 RepeatUnrollStrategy should unroll loops while maintaining equivalent semantics.
+* TINKERPOP-1355 Design HasContainer for extension
+
+[[release-3-2-0-incubating]]
 TinkerPop 3.2.0 (Release Date: April 8, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -257,10 +314,10 @@ Improvements
 TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 --------------------------------------------------
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-3]]
-TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.1.3 (Release Date: July 18, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed bug in `SubgraphStep` where features were not being checked properly prior to reading meta-properties.
@@ -302,6 +359,51 @@ TinkerPop 3.1.3 (NOT OFFICIALLY RELEASED YET)
 * Added support to Gremlin Driver to allow either plain text or GSSAPI SASL authentication allowing the client to pass the SASL mechanism in the request.
 * Improved dryRun functionality for the docs processor. It's now possible to dry run (or full run) only specific files.
 * Added precompile of `ScriptInputFormat` scripts to `ScriptRecordReader` to improve performance.
+
+Bugs
+^^^^
+
+* TINKERPOP-906 Install plugin always fails after first unresolved dependency
+* TINKERPOP-1088 Preserve Cardinality in Subgraph
+* TINKERPOP-1092 Gremlin Console init script with :x throws exception
+* TINKERPOP-1139 [Neo4JGraph] GraphTraversal with SubgraphStrategy removes addLabelStep (as("b"))
+* TINKERPOP-1196 Calls to Result.one() might block indefinitely
+* TINKERPOP-1215 Labeled a SideEffectCapStep cause problems.
+* TINKERPOP-1242 ScriptEngineTest randomly hangs indefinately.
+* TINKERPOP-1257 Bad SackTest variable use.
+* TINKERPOP-1265 Managed Session Eval Exceptions Rollback
+* TINKERPOP-1272 Gremlin Console distribution needs bin/init-tp-spark.sh
+* TINKERPOP-1284 StarGraph does not handle self-loops correctly.
+* TINKERPOP-1300 Many asserts around vertex/edge counts on graphs not applied
+* TINKERPOP-1317 IoGraphTest throws error: URI is not hierarchical
+* TINKERPOP-1318 java.lang.NoSuchMethodError: org/hamcrest/Matcher.describeMismatch
+* TINKERPOP-1319 several FeatureRequirement annotations are incorrect in gremlin-test
+* TINKERPOP-1320 GremlinGroovyScriptEngineFileSandboxTest throws error: URI is not hierarchical
+* TINKERPOP-1324 Better error for invalid args to addV()
+* TINKERPOP-1350 Server locks when submitting parallel requests on session
+* TINKERPOP-1351 Number of connections going beyond the pool max size
+* TINKERPOP-1352 Connection Pool doesn't always grow
+* TINKERPOP-1359 Exception thrown when calling subgraph() on Neo4jGraph
+* TINKERPOP-1360 intermittent error in spark-gremlin integration test
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-939 Neo4jGraph should support HighAvailability (Neo4jHA).
+* TINKERPOP-1003 Setting up latest/current links for bins and docs.
+* TINKERPOP-1020 Provide --dryRun selectivity for "half publishing" docs.
+* TINKERPOP-1063 TinkerGraph performance enhancements
+* TINKERPOP-1229 More Descriptive Messaging for :remote console
+* TINKERPOP-1260 Log for validate-distribution.sh
+* TINKERPOP-1263 Pass SASL mechanism name through with initial SASL response
+* TINKERPOP-1267 Configure Console for no timeout on remote requests
+* TINKERPOP-1269 More SSL settings for driver
+* TINKERPOP-1295 Precompile ScriptInputFormat scripts once during initialization of ScriptRecordReader
+* TINKERPOP-1301 Provide Javadoc for ScriptInput/OutputFormat's
+* TINKERPOP-1302 Ctrl-C should kill open remotes in Console
+* TINKERPOP-1312 .count().is(0) is not properly optimized
+* TINKERPOP-1314 Improve error detection in docs preprocessor
+* TINKERPOP-1354 Include all static enum imports in request validation for bindings *(breaking)*
 
 [[release-3-1-2-incubating]]
 TinkerPop 3.1.2 (Release Date: April 8, 2016)
@@ -723,7 +825,7 @@ Improvements
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
 [[release-3-0-2-incubating]]
 TinkerPop 3.0.2 (Release Date: October 19, 2015)

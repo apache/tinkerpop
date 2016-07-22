@@ -23,7 +23,7 @@
 # published KEYS file in order for that aspect of the validation
 # to pass.
 #
-# curl -L -O http://archive.apache.org/dist/incubator/tinkerpop/KEYS
+# curl -L -O https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 # gpg --import KEYS
 
 TMP_DIR="/tmp/tpdv"
@@ -39,9 +39,9 @@ fi
 
 if [ -z ${URL} ]; then
 
-  CONSOLE_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
-  SERVER_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
-  SOURCE_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
+  CONSOLE_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
+  SERVER_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
+  SOURCE_URL="https://dist.apache.org/repos/dist/dev/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
 
   echo -e "\nValidating binary distributions\n"
 
@@ -72,7 +72,7 @@ cd ${TMP_DIR}
 # validate downloads
 ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
 DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
-COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | awk '{for (i = 1; i <= NF; i++) sub(/./, toupper(substr($i, 1, 1)), $1); print}' | paste -sd ' ' -`
+COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | awk '{for (i = 1; i <= NF; i++) sub(/./, toupper(substr($i, 1, 1)), $1); print}' | paste -sd ' ' - | sed 's/Tinkerpop/TinkerPop/g'`
 
 if [ "${TYPE}" = "SOURCE" ]; then
   DIR_NAME=`sed -e 's/^[^-]*-//' <<< ${DIR_NAME}`
@@ -101,7 +101,7 @@ ACTUAL=`md5sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 echo "OK"
 
-echo -n "  * SHA1 chacksum ... "
+echo -n "  * SHA1 checksum ... "
 EXPECTED=`cat ${ZIP_FILENAME}.sha1`
 ACTUAL=`sha1sum ${ZIP_FILENAME} | awk '{print $1}'`
 [ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
@@ -115,7 +115,7 @@ echo "OK"
 if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* building project ... "
-LOG_FILE="mvn-clean-install.log"
+LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
 mvn clean install -q 2>&1 > "${LOG_FILE}" || {
   echo "failed"
   echo
@@ -147,7 +147,7 @@ GREMLIN_BATCH_SCRIPT=`find bin/ -name "gremlin*.bat"`
 echo "OK"
 
 echo "* validating ${COMPONENT}'s legal files ... "
-for file in "LICENSE" "NOTICE" "DISCLAIMER"
+for file in "LICENSE" "NOTICE"
 do
   echo -n "  * ${file} ... "
   [ -s ${file} ] || { echo "${file} is not present or empty"; exit 1; }

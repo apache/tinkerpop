@@ -104,7 +104,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     }
 
     @Override
-    public void setKeepLabels(Set<String> labels) {
+    public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }
 

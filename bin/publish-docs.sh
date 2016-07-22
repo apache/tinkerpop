@@ -36,7 +36,7 @@ bin/process-docs.sh || exit 1
 mvn process-resources -Djavadoc
 
 mkdir -p target/svn
-${SVN_CMD} co --depth immediates https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
+${SVN_CMD} co --depth immediates https://svn.apache.org/repos/asf/tinkerpop/site target/svn
 
 pushd target/svn
 ${SVN_CMD} update --depth empty "docs/${VERSION}"

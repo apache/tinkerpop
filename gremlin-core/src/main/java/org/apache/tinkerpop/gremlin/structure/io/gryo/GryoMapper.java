@@ -98,6 +98,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -295,6 +296,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(UUID.class, 17, new UUIDSerializer()));
             add(GryoTypeReg.of(URI.class, 72, new URISerializer()));
             add(GryoTypeReg.of(VertexTerminator.class, 13));
+            add(GryoTypeReg.of(AbstractMap.SimpleEntry.class, 120));
+            add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121)); // ***LAST ID***
 
             add(GryoTypeReg.of(ReferenceEdge.class, 81));
             add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
