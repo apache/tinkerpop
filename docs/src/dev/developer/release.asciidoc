@@ -135,7 +135,6 @@ handled document generation and this step now merely needs to upload what was ge
 .. `mvn deploy` - deploy the new `SNAPSHOT`
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
 .. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
-.. Update the links in the `README.asciidoc` to point at the `SNAPSHOT` version.
 .. Commit and push the `SNAPSHOT` changes to git
 .. Send email to advise that code freeze is lifted.
 .. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
