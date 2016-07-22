@@ -36,12 +36,6 @@ limitations under the License.
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- TODO: Remove the gremlin-variant dependency and consider a plugin instead (needed for the docs pre-processor -->
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-variant</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
