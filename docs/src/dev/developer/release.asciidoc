@@ -56,6 +56,9 @@ during this period.
 ... All tickets where work was completed are "Closed"
 .... Search for "closed the pull request" in comments for hints on possible tickets that were left open by mistake).
 .... Look for tickets marked as "Resolved" (some users might not have rights to mark as "Closed" - convert these to "Closed".
+... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
+assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
+Resolution may have been assigned).
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -94,11 +97,11 @@ validity into question.
 .. Update the release date
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
-= 3.1.0-incubating AND fixVersion not in (3.0.2-incubating, 3.0.1-incubating)`.
+= 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0)`.
 ... Consider use of an "Excel" export to organize, sort (by type and then id) and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
-3.1.0-incubating or 3.2.0-incubating for an example.
+3.2.1 for an example.
 .. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . Update "upgrade documentation":
 .. Update the release date.
@@ -132,7 +135,6 @@ handled document generation and this step now merely needs to upload what was ge
 .. `mvn deploy` - deploy the new `SNAPSHOT`
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
 .. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
-.. Update the links in the `README.asciidoc` to point at the `SNAPSHOT` version.
 .. Commit and push the `SNAPSHOT` changes to git
 .. Send email to advise that code freeze is lifted.
 .. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
@@ -149,7 +151,7 @@ Release & Promote
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
-. If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.1.0-incubating` is present and `3.1.1-incubating` is released then remove `3.1.0-incubating`.  However, if `3.0.2-incubating` is present and that line of code is still under potential development, it may stay.
+. If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
 Email Templates
