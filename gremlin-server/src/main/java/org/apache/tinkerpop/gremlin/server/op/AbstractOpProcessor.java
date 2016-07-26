@@ -138,7 +138,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
-                        if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                         break;
                     }
 
