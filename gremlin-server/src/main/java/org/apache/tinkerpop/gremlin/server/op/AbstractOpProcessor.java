@@ -128,31 +128,43 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
-                    Frame frame;
+                    Frame frame = null;
                     try {
                         frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code);
                     } catch (Exception ex) {
+                        // a frame may use a Bytebuf which is a countable release - if it does not get written
+                        // downstream it needs to be released here
+                        if (frame != null) frame.tryRelease();
+
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
-                        if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                         break;
                     }
 
-                    // only need to reset the aggregation list if there's more stuff to write
-                    if (itty.hasNext())
-                        aggregate = new ArrayList<>(resultIterationBatchSize);
-                    else {
-                        // iteration and serialization are both complete which means this finished successfully. note that
-                        // errors internal to script eval or timeout will rollback given GremlinServer's global configurations.
-                        // local errors will get rolledback below because the exceptions aren't thrown in those cases to be
-                        // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
-                        // there are no more items to iterate and serialization is complete
-                        if (managedTransactionsForRequest) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                    try {
+                        // only need to reset the aggregation list if there's more stuff to write
+                        if (itty.hasNext())
+                            aggregate = new ArrayList<>(resultIterationBatchSize);
+                        else {
+                            // iteration and serialization are both complete which means this finished successfully. note that
+                            // errors internal to script eval or timeout will rollback given GremlinServer's global configurations.
+                            // local errors will get rolledback below because the exceptions aren't thrown in those cases to be
+                            // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
+                            // there are no more items to iterate and serialization is complete
+                            if (managedTransactionsForRequest)
+                                attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
 
-                        // exit the result iteration loop as there are no more results left.  using this external control
-                        // because of the above commit.  some graphs may open a new transaction on the call to
-                        // hasNext()
-                        hasMore = false;
+                            // exit the result iteration loop as there are no more results left.  using this external control
+                            // because of the above commit.  some graphs may open a new transaction on the call to
+                            // hasNext()
+                            hasMore = false;
+                        }
+                    } catch (Exception ex) {
+                        // a frame may use a Bytebuf which is a countable release - if it does not get written
+                        // downstream it needs to be released here
+                        if (frame != null) frame.tryRelease();
+                        throw ex;
                     }
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
