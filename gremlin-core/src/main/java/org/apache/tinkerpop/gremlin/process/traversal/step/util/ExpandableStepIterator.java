@@ -29,7 +29,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ExpandableStepIterator<S> implements Iterator<Traverser.Admin<S>>, Serializable {
+public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin<S>>, Serializable {
 
     private final TraverserSet<S> traverserSet = new TraverserSet<>();
     private final MultiIterator<Traverser.Admin<S>> traverserIterators = new MultiIterator<>();
