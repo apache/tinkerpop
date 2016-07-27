@@ -1292,26 +1292,6 @@ path.c
 path.d == path.e
 ----
 
-<<<<<<< HEAD
-=======
-[[peerpressure-step]]
-PeerPressure Step
-~~~~~~~~~~~~~~~~~
-
-The `peerPressure()`-step (*map*/*sideEffect*) clusters vertices using <<peerpressurevertexprogram,`PeerPressureVertexProgram`>>.
-
-IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, can only be used against a graph that supports `GraphComputer` (OLAP).
-
-[gremlin-groovy,modern]
-----
-g = graph.traversal().withComputer()
-g.V().peerPressure().by('cluster').values('cluster')
-g.V().hasLabel('person').
-  peerPressure().by('cluster').
-  group().by('cluster').by('name')
-----
-
->>>>>>> deb99f6... minor word and link cleanup
 [[profile-step]]
 Profile Step
 ~~~~~~~~~~~~
