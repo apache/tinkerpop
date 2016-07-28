@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
@@ -36,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +58,20 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     protected AbstractOpProcessor(final boolean manageTransactions) {
         this.manageTransactions = manageTransactions;
     }
+
+    /**
+     * Provides a generic way of iterating a result set back to the client. Implementers should respect the
+     * {@link Settings#serializedResponseTimeout} configuration and break the serialization process if
+     * it begins to take too long to do so, throwing a {@link java.util.concurrent.TimeoutException} in such
+     * cases.
+     *
+     * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.
+     * @param itty The result to iterator
+     * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
+     */
+//    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException, InterruptedException {
+//        handleIterator(context, itty, Collections.emptyMap());
+//    }
 
     /**
      * Provides a generic way of iterating a result set back to the client. Implementers should respect the
@@ -105,6 +123,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         while (hasMore) {
             if (Thread.interrupted()) throw new InterruptedException();
 
+            final boolean forceFlush = isForceFlushed(ctx, msg, itty);
+
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
             // so iterating next() if the message is not written and flushed would bump the aggregate size beyond
             // the expected resultIterationBatchSize.  Total serialization time for the response remains in
@@ -112,17 +132,18 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             //
             // there is a need to check hasNext() on the iterator because if the channel is not writeable the
             // previous pass through the while loop will have next()'d the iterator and if it is "done" then a
-            // NoSuchElementException will raise its head.
+            // NoSuchElementException will raise its head. also need a check to ensure that this iteration doesn't
+            // require a forced flush which can be forced by sub-classes.
             //
             // this could be placed inside the isWriteable() portion of the if-then below but it seems better to
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
-            if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) aggregate.add(itty.next());
+            if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush) aggregate.add(itty.next());
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
             if (ctx.channel().isWritable()) {
-                if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                if (forceFlush || aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
 
                     // serialize here because in sessionless requests the serialization must occur in the same
@@ -130,7 +151,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     // thread that processed the eval of the script so, we have to push serialization down into that
                     Frame frame = null;
                     try {
-                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code);
+                        frame = makeFrame(ctx, msg, serializer, useBinary, aggregate, code, generateMetaData(ctx, msg, code, itty));
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
@@ -198,13 +219,42 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         stopWatch.stop();
     }
 
+    /**
+     * Determines if a {@link Frame} should be force flushed outside of the {@code resultIterationBatchSize} and the
+     * termination of the iterator. By default this method return {@code false}.
+     *
+     * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
+     *             this method
+     */
+    protected boolean isForceFlushed(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
+        return false;
+    }
+
+    /**
+     * Generates meta-data to put on a {@link ResponseMessage}.
+     *
+     * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
+     *             this method
+     */
+    protected Map<String,Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
+                                                  final ResponseStatusCode code, final Iterator itty) {
+        return Collections.emptyMap();
+    }
+
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                   final MessageSerializer serializer, final boolean useBinary, List<Object> aggregate,
-                                   final ResponseStatusCode code) throws Exception {
+                                     final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
+                                     final ResponseStatusCode code) throws Exception {
+        return makeFrame(ctx, msg, serializer, useBinary, aggregate, code, Collections.emptyMap());
+    }
+
+    protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
+                                   final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
+                                   final ResponseStatusCode code, final Map<String,Object> responseMetaData) throws Exception {
         try {
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
                         .code(code)
+                        .responseMetaData(responseMetaData)
                         .result(aggregate).create(), ctx.alloc()));
             } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
@@ -212,6 +262,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                 return new Frame(textSerializer.serializeResponseAsString(ResponseMessage.build(msg)
                         .code(code)
+                        .responseMetaData(responseMetaData)
                         .result(aggregate).create()));
             }
         } catch (Exception ex) {

@@ -83,6 +83,13 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     public Set<String> keys();
 
     /**
+     * Determines if there are any side-effects to be retrieved.
+     */
+    public default boolean isEmpty() {
+        return keys().size() == 0;
+    }
+
+    /**
      * Register a side-effect with the {@link TraversalSideEffects} providing a {@link Supplier} and a {@link BinaryOperator}.
      * If a null value is provided for the supplier or reducer, then it no supplier or reducer is registered.
      *

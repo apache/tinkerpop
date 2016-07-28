@@ -29,12 +29,12 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedActionException;
 import java.util.HashMap;
@@ -185,15 +185,30 @@ final class Handler {
                 final ResponseStatusCode statusCode = response.getStatus().getCode();
                 if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
                     final Object data = response.getResult().getData();
-                    if (data instanceof List) {
-                        // unrolls the collection into individual results to be handled by the queue.
-                        final List<Object> listToUnroll = (List<Object>) data;
-                        final ResultQueue queue = pending.get(response.getRequestId());
-                        listToUnroll.forEach(item -> tryUnrollTraverser(queue, item));
+                    final Map<String,Object> meta = response.getResult().getMeta();
+                    if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT)) {
+                        if (data instanceof List) {
+                            // unrolls the collection into individual results to be handled by the queue.
+                            final List<Object> listToUnroll = (List<Object>) data;
+                            final ResultQueue queue = pending.get(response.getRequestId());
+                            listToUnroll.forEach(item -> tryUnrollBulkedResult(queue, item));
+                        } else {
+                            // since this is not a list it can just be added to the queue
+                            final ResultQueue queue = pending.get(response.getRequestId());
+                            tryUnrollBulkedResult(queue, response.getResult().getData());
+                        }
                     } else {
-                        // since this is not a list it can just be added to the queue
-                        final ResultQueue queue = pending.get(response.getRequestId());
-                        tryUnrollTraverser(queue, response.getResult().getData());
+                        final String sideEffectKey = meta.get(Tokens.ARGS_SIDE_EFFECT).toString();
+                        final String aggregateTo = meta.getOrDefault(Tokens.ARGS_AGGREGATE_TO, Tokens.VAL_AGGREGATE_TO_NONE).toString();
+                        if (data instanceof List) {
+                            // unrolls the collection into individual results to be handled by the queue.
+                            final List<Object> listOfSideEffects = (List<Object>) data;
+                            final ResultQueue queue = pending.get(response.getRequestId());
+                            listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(sideEffectKey, aggregateTo, sideEffect));
+                        } else {
+                            // this should always be a list - something else would be an invalid protocol
+                            // TODO: error condition
+                        }
                     }
                 } else {
                     // this is a "success" but represents no results otherwise it is an error
@@ -211,12 +226,23 @@ final class Handler {
             }
         }
 
-        private void tryUnrollTraverser(final ResultQueue queue, final Object item) {
-            if (unrollTraversers && item instanceof Traverser) {
-                final Traverser t = (Traverser) item;
-                final Object traverserObject = t.get();
-                for (long ix = 0; ix < t.bulk(); ix++) {
-                    queue.add(new Result(traverserObject));
+        private void tryUnrollBulkedResult(final ResultQueue queue, final Object item) {
+            if (unrollTraversers) {
+                if (item instanceof BulkedResult) {
+                    final BulkedResult t = (BulkedResult) item;
+                    final Object result = t.getResult();
+                    for (long ix = 0; ix < t.getBulk(); ix++) {
+                        queue.add(new Result(result));
+                    }
+                } else if (item instanceof Traverser.Admin) {
+                    // TODO: i think this is just temporary code - needed for backward compatibility to the old way of serializing Traversal with java serialization
+                    final Traverser.Admin t = (Traverser.Admin) item;
+                    final Object result = t.get();
+                    for (long ix = 0; ix < t.bulk(); ix++) {
+                        queue.add(new Result(result));
+                    }
+                } else {
+                    queue.add(new Result(item));
                 }
             } else {
                 queue.add(new Result(item));

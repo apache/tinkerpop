@@ -18,27 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 import java.util.Iterator;
 
 /**
- * A simple abstraction of a "connection" to a "server" that is capable of processing a {@link Traversal} and
- * returning an {@link Iterator} of {@link Traverser} results.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface RemoteConnection extends AutoCloseable {
+public interface RemoteResponse<E> {
 
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #submit(Bytecode)}.
-     */
-    @Deprecated
-    public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException;
+    public Iterator<Traverser.Admin<E>> getResult();
 
-
-    public <E> RemoteResponse<E> submit(final Bytecode bytecode) throws RemoteConnectionException;
+    public TraversalSideEffects getSideEffects();
 }

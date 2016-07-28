@@ -86,6 +86,8 @@ public final class Tokens {
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
     public static final String ARGS_SASL_MECHANISM = "saslMechanism";
+    public static final String ARGS_SIDE_EFFECT = "sideEffect";
+    public static final String ARGS_AGGREGATE_TO = "aggregateTo";
 
     /**
      * @deprecated As of release 3.1.0-incubating, replaced by {@link #ARGS_ALIASES}.
@@ -151,4 +153,9 @@ public final class Tokens {
     @Deprecated
     public static final List<String> INFO_TYPES = Arrays.asList(ARGS_INFO_TYPE_DEPENDENCIES,
             ARGS_INFO_TYPE_IMPORTS);
+
+    public static final String VAL_AGGREGATE_TO_BULKSET = "bulkset";
+    public static final String VAL_AGGREGATE_TO_LIST = "list";
+    public static final String VAL_AGGREGATE_TO_MAP = "map";
+    public static final String VAL_AGGREGATE_TO_NONE = "none";
 }

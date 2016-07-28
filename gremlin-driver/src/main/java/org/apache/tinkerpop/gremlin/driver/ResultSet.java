@@ -18,9 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -56,6 +60,16 @@ public final class ResultSet implements Iterable<Result> {
         this.executor = executor;
         this.resultQueue = resultQueue;
         this.readCompleted = readCompleted;
+    }
+
+    public CompletableFuture<Map<String,Object>> getSideEffectResults() {
+        final CompletableFuture<Map<String,Object>> future = new CompletableFuture<>();
+        readCompleted.thenRunAsync(() -> {
+            final Map<String,Object> se = new HashMap<>();
+            resultQueue.getSideEffectKeys().forEach(k -> se.put(k, resultQueue.getSideEffect(k)));
+            future.complete(se);
+        }, executor);
+        return future;
     }
 
     /**

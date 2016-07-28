@@ -21,18 +21,16 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteResponse;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Iterator;
@@ -64,12 +62,12 @@ public class DriverRemoteConnection implements RemoteConnection {
     private static final String DEFAULT_GRAPH = "graph";
     private static final String DEFAULT_TRAVERSAL_SOURCE = "g";
 
-    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
-
     private final Client client;
     private final boolean tryCloseCluster;
     private final String connectionGraphName;
     private transient Optional<Configuration> conf = Optional.empty();
+
+    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     public DriverRemoteConnection(final Configuration conf) {
         if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
@@ -186,9 +184,9 @@ public class DriverRemoteConnection implements RemoteConnection {
             if (attachElements && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
+                return new DriverRemoteResponse.AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
             } else {
-                return new TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
+                return new DriverRemoteResponse.TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
             }
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
@@ -196,16 +194,10 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public <E> Iterator<Traverser.Admin<E>> submit(final Bytecode bytecode) throws RemoteConnectionException {
+    public <E> RemoteResponse<E> submit(final Bytecode bytecode) throws RemoteConnectionException {
         try {
-            // TODO: don't have a client-side traversal like we do in submit(Traversal) so what happens with VertexProgramStrategy
-            if (attachElements) {
-                if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
-                final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new AttachingTraverserIterator<>(client.submit(bytecode).iterator(), graph);
-            } else {
-                return new TraverserIterator<>(client.submit(bytecode).iterator());
-            }
+            final ResultSet rs = client.submit(bytecode);
+            return new DriverRemoteResponse<>(rs, attachElements, conf);
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
@@ -226,41 +218,5 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public String toString() {
         return "DriverServerConnection-" + client.getCluster() + " [graph=" + connectionGraphName + "]";
-    }
-
-    static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {
-
-        private Iterator<Result> inner;
-
-        public TraverserIterator(final Iterator<Result> resultIterator) {
-            inner = resultIterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return inner.hasNext();
-        }
-
-        @Override
-        public Traverser.Admin<E> next() {
-            return (Traverser.Admin<E>) inner.next().getObject();
-        }
-    }
-
-    static class AttachingTraverserIterator<E> extends TraverserIterator<E> {
-        private final Graph graph;
-
-        public AttachingTraverserIterator(final Iterator<Result> resultIterator, final Graph graph) {
-            super(resultIterator);
-            this.graph = graph;
-        }
-
-        @Override
-        public Traverser.Admin<E> next() {
-            final Traverser.Admin<E> traverser = super.next();
-            if (traverser.get() instanceof Attachable && !(traverser.get() instanceof Property))
-                traverser.set((E) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
-            return traverser;
-        }
     }
 }

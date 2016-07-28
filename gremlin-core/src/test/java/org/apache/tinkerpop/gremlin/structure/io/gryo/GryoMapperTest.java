@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -237,6 +238,14 @@ public class GryoMapperTest {
             assertThat(ex, instanceOf(UnsupportedOperationException.class));
             assertEquals("I don't do anything", ex.getMessage());
         }
+    }
+
+    @Test
+    public void shouldHandleBulkedResult() throws Exception  {
+        final BulkedResult br = new BulkedResult(123, 1000);
+        final BulkedResult inOut = serializeDeserialize(br, BulkedResult.class);
+        assertEquals(br.getBulk(), inOut.getBulk());
+        assertEquals(br.getResult(), inOut.getResult());
     }
 
     @Test

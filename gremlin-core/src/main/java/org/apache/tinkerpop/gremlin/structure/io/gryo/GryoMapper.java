@@ -22,6 +22,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResultSerializers;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -297,7 +299,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(URI.class, 72, new URISerializer()));
             add(GryoTypeReg.of(VertexTerminator.class, 13));
             add(GryoTypeReg.of(AbstractMap.SimpleEntry.class, 120));
-            add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121)); // ***LAST ID***
+            add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121));
 
             add(GryoTypeReg.of(ReferenceEdge.class, 81));
             add(GryoTypeReg.of(ReferenceVertexProperty.class, 82));
@@ -322,7 +324,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
 
-            add(GryoTypeReg.of(Bytecode.class, 120, new GryoSerializers.BytecodeSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
+            add(GryoTypeReg.of(BulkedResult.class, 123, new BulkedResultSerializers.BulkedResultGryoSerializer()));  // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteResponse;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -56,10 +57,11 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     @SuppressWarnings("unchecked")
     @Override
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
-
         if (null == this.remoteIterator) {
             try {
-                this.remoteIterator = this.remoteConnection.submit(this.bytecode);
+                final RemoteResponse remoteResponse = this.remoteConnection.submit(this.bytecode);
+                this.remoteIterator = remoteResponse.getResult();
+                this.traversal.setSideEffects(remoteResponse.getSideEffects());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
             }

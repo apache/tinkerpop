@@ -39,13 +39,16 @@ import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.Serializer;
-import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.SimpleBindings;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +181,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     try {
                         // compile the traversal - without it getEndStep() has nothing in it
                         traversal.applyStrategies();
-                        handleIterator(context, new DetachingIterator<>(traversal));
+                        handleIterator(context, new TraversalIterator(traversal));
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
@@ -207,6 +210,29 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }
+    }
+
+    @Override
+    protected boolean isForceFlushed(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
+        return itty instanceof TraversalIterator && ((TraversalIterator) itty).isNextBatchComingUp();
+    }
+
+    @Override
+    protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
+                                                   final ResponseStatusCode code, final Iterator itty) {
+        Map<String,Object> metaData = Collections.emptyMap();
+        if (itty instanceof TraversalIterator) {
+            final TraversalIterator traversalIterator = (TraversalIterator) itty;
+            final String key = traversalIterator.getCurrentSideEffectKey();
+            if (key != null) {
+                // TODO: cache this thing maybe?
+                metaData = new HashMap<>();
+                metaData.put(Tokens.ARGS_SIDE_EFFECT, key);
+                metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getCurrentSideEffectAggregator());
+            }
+        }
+
+        return metaData;
     }
 
     private void iterateSerializedTraversal(final Context context) throws OpProcessorException {

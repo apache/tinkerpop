@@ -19,14 +19,21 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,6 +47,8 @@ import java.util.concurrent.atomic.AtomicReference;
 final class ResultQueue {
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
+
+    private final Map<String, Object> sideEffectResult = new LinkedHashMap<>();
 
     private final AtomicReference<Throwable> error = new AtomicReference<>();
 
@@ -55,6 +64,47 @@ final class ResultQueue {
     public void add(final Result result) {
         this.resultLinkedBlockingQueue.offer(result);
         tryDrainNextWaiting(false);
+    }
+
+    public void addSideEffect(final String k, final String aggregateTo, final Object sideEffectValue) {
+        if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_BULKSET)) {
+            if (!sideEffectResult.containsKey(k))
+                putIfAbsent(k, new BulkSet());
+
+            final BulkSet bs = (BulkSet) sideEffectResult.get(k);
+            final BulkedResult bulkedResult = (BulkedResult) sideEffectValue;
+            bs.add(bulkedResult.getResult(), bulkedResult.getBulk());
+        } else if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_LIST)) {
+            if (!sideEffectResult.containsKey(k))
+                putIfAbsent(k, new ArrayList());
+
+            ((List) sideEffectResult.get(k)).add(sideEffectValue);
+        } else if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_MAP)) {
+            if (!sideEffectResult.containsKey(k))
+                putIfAbsent(k, new HashMap());
+
+            final Map m = (Map) sideEffectResult.get(k);
+            final Map.Entry entry = (Map.Entry) sideEffectValue;
+            m.put(entry.getKey(), entry.getValue());
+        } else if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_NONE)) {
+            if (!sideEffectResult.containsKey(k))
+                putIfAbsent(k, sideEffectValue);
+        } else {
+            // TODO: make better
+            throw new IllegalStateException("Invalid aggregatedfjaldjfalkjfaljfalj flkajslf ja");
+        }
+    }
+
+    private synchronized void putIfAbsent(final String key, final Object o) {
+        sideEffectResult.putIfAbsent(key, o);
+    }
+
+    public Set<String> getSideEffectKeys() {
+        return sideEffectResult.keySet();
+    }
+
+    public <V> V getSideEffect(final String k) {
+        return (V) sideEffectResult.get(k);
     }
 
     public CompletableFuture<List<Result>> await(final int items) {
