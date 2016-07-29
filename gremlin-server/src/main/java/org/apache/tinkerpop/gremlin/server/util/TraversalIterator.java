@@ -133,24 +133,6 @@ public class TraversalIterator implements Iterator<Object> {
             return Tokens.VAL_AGGREGATE_TO_NONE;
     }
 
-    static class BulkResultMakerIterator implements Iterator {
-        private final Iterator itty;
-
-        public BulkResultMakerIterator(final Iterator itty) {
-            this.itty = itty;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return itty.hasNext();
-        }
-
-        @Override
-        public Object next() {
-            return new BulkedResult(itty.next(), 1);
-        }
-    }
-
     static class BulkResultIterator implements Iterator {
 
         private final Iterator<Map.Entry<Object,Long>> itty;
