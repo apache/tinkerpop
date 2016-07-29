@@ -19,19 +19,13 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -46,10 +40,6 @@ public class DriverTraversalSideEffects implements TraversalSideEffects {
 
     public DriverTraversalSideEffects(final ResultSet rs) {
         this.rs = rs;
-    }
-
-    private synchronized void initializeFuture() {
-        if (null == future) future = rs.getSideEffectResults();
     }
 
     @Override
@@ -152,5 +142,9 @@ public class DriverTraversalSideEffects implements TraversalSideEffects {
     @Override
     public String toString() {
         return StringFactory.traversalSideEffectsString(this);
+    }
+
+    private synchronized void initializeFuture() {
+        if (null == future) future = rs.getSideEffectResults();
     }
 }

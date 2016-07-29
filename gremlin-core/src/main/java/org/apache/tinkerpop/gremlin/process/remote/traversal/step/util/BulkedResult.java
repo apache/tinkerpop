@@ -23,16 +23,16 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.util;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class BulkedResult {
-    private final Object result;
+public class BulkedResult<T> {
+    private final T result;
     private final long bulk;
 
-    public BulkedResult(final Object result, final long bulk) {
+    public BulkedResult(final T result, final long bulk) {
         this.result = result;
         this.bulk = bulk;
     }
 
-    public Object getResult() {
+    public T getResult() {
         return result;
     }
 

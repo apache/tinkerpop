@@ -36,6 +36,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
+ * A {@link RemoteResponse} implementation for the Gremlin Driver.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class DriverRemoteResponse<E> implements RemoteResponse<E> {
@@ -44,6 +46,9 @@ public class DriverRemoteResponse<E> implements RemoteResponse<E> {
     private final TraversalSideEffects sideEffects;
 
     public DriverRemoteResponse(final ResultSet rs, final boolean attach, Optional<Configuration> conf) {
+        // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
+        // require that the client have access to the Graph instance that produced the result. tests need that
+        // attachment process to properly execute in full hence this little hack.
         if (attach) {
             if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
             final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
@@ -67,7 +72,7 @@ public class DriverRemoteResponse<E> implements RemoteResponse<E> {
 
     static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {
 
-        private Iterator<Result> inner;
+        private final Iterator<Result> inner;
 
         public TraverserIterator(final Iterator<Result> resultIterator) {
             inner = resultIterator;
@@ -80,8 +85,8 @@ public class DriverRemoteResponse<E> implements RemoteResponse<E> {
 
         @Override
         public Traverser.Admin<E> next() {
-            final BulkedResult br = (BulkedResult) inner.next().getObject();
-            return new RemoteTraverser<>((E) br.getResult(), br.getBulk());
+            final BulkedResult<E> br = (BulkedResult) inner.next().getObject();
+            return new RemoteTraverser<>(br.getResult(), br.getBulk());
         }
     }
 

@@ -242,7 +242,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldHandleBulkedResult() throws Exception  {
-        final BulkedResult br = new BulkedResult(123, 1000);
+        final BulkedResult<Integer> br = new BulkedResult<>(123, 1000);
         final BulkedResult inOut = serializeDeserialize(br, BulkedResult.class);
         assertEquals(br.getBulk(), inOut.getBulk());
         assertEquals(br.getResult(), inOut.getResult());
