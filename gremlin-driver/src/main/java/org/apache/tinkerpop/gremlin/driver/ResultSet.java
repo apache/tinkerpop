@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;

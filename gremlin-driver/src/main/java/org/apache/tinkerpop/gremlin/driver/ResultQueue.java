@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.javatuples.Pair;
 
@@ -33,13 +34,12 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A queue of incoming {@link ResponseMessage} objects.  The queue is updated by the
- * {@link Handler.GremlinResponseHandler} until a response terminator is identified.
+ * A queue of incoming {@link Result} objects.  The queue is updated by the {@link Handler.GremlinResponseHandler}
+ * until a response terminator is identified.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -61,48 +61,92 @@ final class ResultQueue {
         this.readComplete = readComplete;
     }
 
+    /**
+     * Adds a {@link Result} to the queue which will be later read by the {@link ResultSet}.
+     *
+     * @param result a return value from the {@link Traversal} or script submitted for execution
+     */
     public void add(final Result result) {
         this.resultLinkedBlockingQueue.offer(result);
         tryDrainNextWaiting(false);
     }
 
+    /**
+     * Adds a side-effect to the queue which may later be read by the {@link ResultSet}. Note that the side-effect
+     * is only returned when a {@link Traversal} is submitted and refers to the side-effects defined in that traversal.
+     * A "script" will not return side-effects.
+     *
+     * @param k the key of the side-effect
+     * @param aggregateTo the value of the {@link ResponseMessage} metadata for {@link Tokens#ARGS_AGGREGATE_TO}.
+     * @param sideEffectValue the value of the side-effect itself
+     */
     public void addSideEffect(final String k, final String aggregateTo, final Object sideEffectValue) {
-        if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_BULKSET)) {
-            if (!sideEffectResult.containsKey(k))
-                putIfAbsent(k, new BulkSet());
+        switch (aggregateTo) {
+            case Tokens.VAL_AGGREGATE_TO_BULKSET:
+                if (!(sideEffectValue instanceof BulkedResult))
+                    throw new IllegalStateException(String.format("Side-effect \"%s\" value %s is a %s which does not aggregate to %s",
+                            k, sideEffectValue, sideEffectValue.getClass().getSimpleName(), aggregateTo));
 
-            final BulkSet bs = (BulkSet) sideEffectResult.get(k);
-            final BulkedResult bulkedResult = (BulkedResult) sideEffectValue;
-            bs.add(bulkedResult.getResult(), bulkedResult.getBulk());
-        } else if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_LIST)) {
-            if (!sideEffectResult.containsKey(k))
-                putIfAbsent(k, new ArrayList());
+                if (!sideEffectResult.containsKey(k))
+                    putIfAbsent(k, new BulkSet());
 
-            ((List) sideEffectResult.get(k)).add(sideEffectValue);
-        } else if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_MAP)) {
-            if (!sideEffectResult.containsKey(k))
-                putIfAbsent(k, new HashMap());
+                final BulkSet<Object> bs = validateAndGet(k, aggregateTo, BulkSet.class);
+                final BulkedResult bulkedResult = (BulkedResult) sideEffectValue;
+                bs.add(bulkedResult.getResult(), bulkedResult.getBulk());
+                break;
+            case Tokens.VAL_AGGREGATE_TO_LIST:
+                if (!sideEffectResult.containsKey(k))
+                    putIfAbsent(k, new ArrayList());
 
-            final Map m = (Map) sideEffectResult.get(k);
-            final Map.Entry entry = (Map.Entry) sideEffectValue;
-            m.put(entry.getKey(), entry.getValue());
-        } else if (aggregateTo.equals(Tokens.VAL_AGGREGATE_TO_NONE)) {
-            if (!sideEffectResult.containsKey(k))
-                putIfAbsent(k, sideEffectValue);
-        } else {
-            // TODO: make better
-            throw new IllegalStateException("Invalid aggregatedfjaldjfalkjfaljfalj flkajslf ja");
+                final List<Object> list = validateAndGet(k, aggregateTo, List.class);
+                list.add(sideEffectValue);
+                break;
+            case Tokens.VAL_AGGREGATE_TO_MAP:
+                if (!(sideEffectValue instanceof Map.Entry))
+                    throw new IllegalStateException(String.format("Side-effect \"%s\" value %s is a %s which does not aggregate to %s",
+                            k, sideEffectValue, sideEffectValue.getClass().getSimpleName(), aggregateTo));
+
+                if (!sideEffectResult.containsKey(k))
+                    putIfAbsent(k, new HashMap());
+
+                final Map<Object,Object > m = validateAndGet(k, aggregateTo, Map.class);
+                final Map.Entry entry = (Map.Entry) sideEffectValue;
+                m.put(entry.getKey(), entry.getValue());
+                break;
+            case Tokens.VAL_AGGREGATE_TO_NONE:
+                if (!sideEffectResult.containsKey(k))
+                    putIfAbsent(k, sideEffectValue);
+                break;
+            default:
+                throw new IllegalStateException(String.format("%s is an invalid value for %s", aggregateTo, Tokens.ARGS_AGGREGATE_TO));
         }
     }
 
-    private synchronized void putIfAbsent(final String key, final Object o) {
-        sideEffectResult.putIfAbsent(key, o);
+    private <V> V validateAndGet(final String k, final String aggregateTo, final Class<?> expected) {
+        final Object shouldBe = sideEffectResult.get(k);
+        if (!(expected.isAssignableFrom(shouldBe.getClass())))
+            throw new IllegalStateException(String.format("Side-effect \"%s\" contains the type %s that is not acceptable for %s",
+                    k, shouldBe.getClass().getSimpleName(), aggregateTo));
+
+        return (V) shouldBe;
     }
 
+    /**
+     * Gets the keys gather for the side-effect. If the queue is still filling (i.e. the read is not complete) then
+     * there could be inconsistent results depending on when this method is called. It would be best to wait to call
+     * this method on {@link #readComplete}.
+     */
     public Set<String> getSideEffectKeys() {
         return sideEffectResult.keySet();
     }
 
+    /**
+     * Gets the current values for the side-effect. If the queue is still filling (i.e. the read is not complete) then
+     * there could be inconsistent results depending on when this method is called. It would be best to wait to call
+     * this method on {@link #readComplete}.
+     *
+     * @param k the key of the side-effect
+     */
     public <V> V getSideEffect(final String k) {
         return (V) sideEffectResult.get(k);
     }
@@ -140,6 +184,10 @@ final class ResultQueue {
         error.set(throwable);
         this.readComplete.completeExceptionally(throwable);
         this.drainAllWaiting();
+    }
+
+    private synchronized void putIfAbsent(final String key, final Object o) {
+        sideEffectResult.putIfAbsent(key, o);
     }
 
     /**

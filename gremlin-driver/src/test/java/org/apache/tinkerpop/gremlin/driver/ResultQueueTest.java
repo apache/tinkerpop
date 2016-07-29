@@ -19,18 +19,26 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -285,5 +293,136 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         } finally {
             t.interrupt();
         }
+    }
+
+    @Test
+    public void shouldHandleBulkSetSideEffects() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("stephen", 1));
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+        assertEquals(1, ((BulkSet) resultQueue.getSideEffect("a")).get("stephen"));
+
+        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("brian", 2));
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("b"));
+        assertEquals(2, ((BulkSet) resultQueue.getSideEffect("b")).get("brian"));
+
+        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("brian", 2));
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("b"));
+        assertEquals(4, ((BulkSet) resultQueue.getSideEffect("b")).get("brian"));
+
+        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("belinda", 6));
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("b"));
+        assertEquals(6, ((BulkSet) resultQueue.getSideEffect("b")).get("belinda"));
+
+    }
+
+    @Test
+    public void shouldNotMixAggregatesForBulkSet() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("stephen", 1));
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+        assertEquals(1, ((BulkSet) resultQueue.getSideEffect("a")).get("stephen"));
+
+        try {
+            resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, Arrays.asList("stephen", "kathy", "alice"));
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("Side-effect \"a\" value [stephen, kathy, alice] is a ArrayList which does not aggregate to bulkset", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldHandleListSideEffects() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_LIST, "stephen");
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+        List<String> l = resultQueue.getSideEffect("a");
+        assertEquals(1, l.size());
+        assertEquals("stephen", l.get(0));
+
+        resultQueue.addSideEffect("d", Tokens.VAL_AGGREGATE_TO_LIST, "daniel");
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("d"));
+        l = resultQueue.getSideEffect("d");
+        assertEquals(1, l.size());
+        assertEquals("daniel", l.get(0));
+
+        resultQueue.addSideEffect("d", Tokens.VAL_AGGREGATE_TO_LIST, "dave");
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("d"));
+        l = resultQueue.getSideEffect("d");
+        assertEquals(2, l.size());
+        assertThat(l, contains("daniel","dave"));
+    }
+
+    @Test
+    public void shouldNotMixAggregatesForList() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("stephen", 1));
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+        assertEquals(1, ((BulkSet) resultQueue.getSideEffect("a")).get("stephen"));
+
+        try {
+            resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_LIST, Arrays.asList("stephen", "kathy", "alice"));
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("Side-effect \"a\" contains the type BulkSet that is not acceptable for list", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldHandleMapSideEffects() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        final Map<String,String> m = new HashMap<>();
+        m.put("s", "stephen");
+        m.put("m", "marko");
+        m.put("d", "daniel");
+
+        m.entrySet().forEach(e -> {
+            resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_MAP, e);
+            assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+            assertEquals(e.getValue(), ((Map) resultQueue.getSideEffect("a")).get(e.getKey()));
+        });
+
+        assertEquals(3, ((Map) resultQueue.getSideEffect("a")).size());
+    }
+
+    @Test
+    public void shouldNotMixAggregatesForMap() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        final Map<String,String> m = new HashMap<>();
+        m.put("s", "stephen");
+
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_MAP, m.entrySet().iterator().next());
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+        assertEquals("stephen", ((Map) resultQueue.getSideEffect("a")).get("s"));
+
+        try {
+            resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_MAP, Arrays.asList("stephen", "kathy", "alice"));
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("Side-effect \"a\" value [stephen, kathy, alice] is a ArrayList which does not aggregate to map", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldHandleNotAggregateSideEffects() {
+        assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
+
+        final Map<String,String> m = new HashMap<>();
+        m.put("s", "stephen");
+        m.put("m", "marko");
+        m.put("d", "daniel");
+
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_NONE, m);
+        assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
+        assertEquals("stephen", ((Map) resultQueue.getSideEffect("a")).get("s"));
+        assertEquals("marko", ((Map) resultQueue.getSideEffect("a")).get("m"));
+        assertEquals("daniel", ((Map) resultQueue.getSideEffect("a")).get("d"));
+        assertEquals(3, ((Map) resultQueue.getSideEffect("a")).size());
     }
 }
