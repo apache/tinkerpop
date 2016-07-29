@@ -26,9 +26,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
@@ -48,30 +45,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
+ * A base {@link OpProcessor} implementation that processes an {@code Iterator} of results in a generalized way while
+ * ensuring that graph transactions are properly managed.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
 
+    /**
+     * When set to {@code true}, transactions are always managed otherwise they can be overridden by the request.
+     */
     protected final boolean manageTransactions;
 
     protected AbstractOpProcessor(final boolean manageTransactions) {
         this.manageTransactions = manageTransactions;
     }
-
-    /**
-     * Provides a generic way of iterating a result set back to the client. Implementers should respect the
-     * {@link Settings#serializedResponseTimeout} configuration and break the serialization process if
-     * it begins to take too long to do so, throwing a {@link java.util.concurrent.TimeoutException} in such
-     * cases.
-     *
-     * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.
-     * @param itty The result to iterator
-     * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
-     */
-//    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException, InterruptedException {
-//        handleIterator(context, itty, Collections.emptyMap());
-//    }
 
     /**
      * Provides a generic way of iterating a result set back to the client. Implementers should respect the
@@ -123,6 +112,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         while (hasMore) {
             if (Thread.interrupted()) throw new InterruptedException();
 
+            // check if an implementation needs to force flush the aggregated results before the iteration batch
+            // size is reached.
             final boolean forceFlush = isForceFlushed(ctx, msg, itty);
 
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
@@ -241,6 +232,9 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         return Collections.emptyMap();
     }
 
+    /**
+     * @deprecated As of release 3.2.2, replaced by {@link #makeFrame(ChannelHandlerContext, RequestMessage, MessageSerializer, boolean, List, ResponseStatusCode, Map)}.
+     */
     protected static Frame makeFrame(final ChannelHandlerContext ctx, final RequestMessage msg,
                                      final MessageSerializer serializer, final boolean useBinary, final List<Object> aggregate,
                                      final ResponseStatusCode code) throws Exception {

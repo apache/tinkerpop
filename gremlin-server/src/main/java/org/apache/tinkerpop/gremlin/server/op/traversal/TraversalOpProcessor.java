@@ -225,7 +225,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final TraversalIterator traversalIterator = (TraversalIterator) itty;
             final String key = traversalIterator.getCurrentSideEffectKey();
             if (key != null) {
-                // TODO: cache this thing maybe?
                 metaData = new HashMap<>();
                 metaData.put(Tokens.ARGS_SIDE_EFFECT, key);
                 metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getCurrentSideEffectAggregator());
