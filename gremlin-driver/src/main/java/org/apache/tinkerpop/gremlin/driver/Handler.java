@@ -183,37 +183,40 @@ final class Handler {
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
             try {
                 final ResponseStatusCode statusCode = response.getStatus().getCode();
+                final ResultQueue queue = pending.get(response.getRequestId());
                 if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
                     final Object data = response.getResult().getData();
                     final Map<String,Object> meta = response.getResult().getMeta();
+
                     if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT)) {
+                        // this is a "result" from the server which is either the result of a script or a
+                        // serialized traversal
                         if (data instanceof List) {
                             // unrolls the collection into individual results to be handled by the queue.
                             final List<Object> listToUnroll = (List<Object>) data;
-                            final ResultQueue queue = pending.get(response.getRequestId());
                             listToUnroll.forEach(item -> tryUnrollBulkedResult(queue, item));
                         } else {
                             // since this is not a list it can just be added to the queue
-                            final ResultQueue queue = pending.get(response.getRequestId());
                             tryUnrollBulkedResult(queue, response.getResult().getData());
                         }
                     } else {
+                        // this is the side-effect from the server which is generated from a serialized traversal
                         final String sideEffectKey = meta.get(Tokens.ARGS_SIDE_EFFECT).toString();
                         final String aggregateTo = meta.getOrDefault(Tokens.ARGS_AGGREGATE_TO, Tokens.VAL_AGGREGATE_TO_NONE).toString();
                         if (data instanceof List) {
                             // unrolls the collection into individual results to be handled by the queue.
                             final List<Object> listOfSideEffects = (List<Object>) data;
-                            final ResultQueue queue = pending.get(response.getRequestId());
                             listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(sideEffectKey, aggregateTo, sideEffect));
                         } else {
-                            // this should always be a list - something else would be an invalid protocol
-                            // TODO: error condition
+                            // since this is not a list it can just be added to the queue. this likely shouldn't occur
+                            // however as the protocol will typically push everything to list first.
+                            queue.addSideEffect(sideEffectKey, aggregateTo, data);
                         }
                     }
                 } else {
                     // this is a "success" but represents no results otherwise it is an error
                     if (statusCode != ResponseStatusCode.NO_CONTENT)
-                        pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
+                        queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
                 }
 
                 // as this is a non-PARTIAL_CONTENT code - the stream is done
