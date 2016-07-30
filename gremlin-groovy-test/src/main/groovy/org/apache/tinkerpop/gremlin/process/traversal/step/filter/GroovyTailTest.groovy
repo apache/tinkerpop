@@ -65,6 +65,11 @@ public abstract class GroovyTailTest {
         }
 
         @Override
+        public Traversal<Vertex, Long> get_g_V_repeatXin_outX_timesX3X_tailX7X_count() {
+            TraversalScriptHelper.compute("g.V.repeat(__.in().out()).times(3).tail(7).count()",g)
+        }
+
+        @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
             TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)",g)
         }

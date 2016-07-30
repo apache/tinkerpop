@@ -64,8 +64,11 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             final Traverser.Admin<S> oldest = this.tail.pop();
             // Trim any excess from the oldest traverser.
             final long excess = this.tailBulk - this.limit;
-            if (excess > 0)
+            if (excess > 0) {
                 oldest.setBulk(oldest.bulk() - excess);
+                // Account for the loss of excess in the tail buffer
+                this.tailBulk -= excess;
+            }
             // Account for the loss of bulk in the tail buffer as we emit the oldest traverser.
             this.tailBulk -= oldest.bulk();
             return oldest;

@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.global;
@@ -35,6 +36,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X();
+
+    public abstract Traversal<Vertex, Long> get_g_V_repeatXin_outX_timesX3X_tailX7X_count();
 
     public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X();
 
@@ -118,6 +122,15 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
             counter++;
         }
         assertEquals(7, counter);
+    }
+
+    /** Scenario: Global scope, using repeat (excess BULK) */
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXin_outX_timesX3X_tailX7X_count() {
+        final Traversal<Vertex, Long> traversal = get_g_V_repeatXin_outX_timesX3X_tailX7X_count();
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList(7L), traversal);
     }
 
     /** Scenario: Local scope, List input, N>1 */
@@ -218,6 +231,11 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X() {
             return g.V().repeat(both()).times(3).tail(7);
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_repeatXin_outX_timesX3X_tailX7X_count() {
+            return g.V().repeat(in().out()).times(3).tail(7).count();
         }
 
         @Override
