@@ -47,19 +47,8 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     public static final String GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE = "gremlin.remoteGraph.driver.clusterFile";
 
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME}.
-     */
-    @Deprecated
-    public static final String GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME = "gremlin.remoteGraph.driver.graphName";
     public static final String GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME = "gremlin.remoteGraph.driver.sourceName";
 
-
-    /**
-     * @deprecated As of release 3.2.2, replaced by {@link #GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME}.
-     */
-    @Deprecated
-    private static final String DEFAULT_GRAPH = "graph";
     private static final String DEFAULT_TRAVERSAL_SOURCE = "g";
 
     private final Client client;
@@ -73,10 +62,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE));
 
-        if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME))
-            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
-        else
-            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         try {
             final Cluster cluster;
@@ -105,10 +91,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * This constructor is largely just for unit testing purposes and should not typically be used externally.
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
-        if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME))
-            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
-        else
-            connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
         tryCloseCluster = false;
@@ -121,7 +104,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * {@link RemoteConnection} to a graph on the server named "graph".
      */
     public static DriverRemoteConnection using(final Cluster cluster) {
-        return using(cluster, "graph");
+        return using(cluster, DEFAULT_TRAVERSAL_SOURCE);
     }
 
     /**
@@ -138,7 +121,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * this method will bind the {@link RemoteConnection} to a graph on the server named "graph".
      */
     public static DriverRemoteConnection using(final String clusterConfFile) {
-        return using(clusterConfFile, "graph");
+        return using(clusterConfFile, DEFAULT_TRAVERSAL_SOURCE);
     }
 
     /**

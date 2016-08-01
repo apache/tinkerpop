@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,10 +132,7 @@ public abstract class Client {
 
     /**
      * Submit a {@link Traversal} to the server for remote execution.
-     *
-     * @deprecated As of release 3.2.2, replaced by {@link #submit(Bytecode)}.
      */
-    @Deprecated
     public ResultSet submit(final Traversal traversal) {
         try {
             return submitAsync(traversal).get();
@@ -149,10 +145,7 @@ public abstract class Client {
 
     /**
      * An asynchronous version of {@link #submit(Traversal)}.
-     *
-     * @deprecated As of release 3.2.2, replaced by {@link #submitAsync(Bytecode)}.
      */
-    @Deprecated
     public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
     }
@@ -564,19 +557,7 @@ public abstract class Client {
 
         @Override
         public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-            final byte[] serializedTraversal;
-            try {
-                serializedTraversal = Serializer.serializeObject(traversal);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-
-            try {
-                return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_TRAVERSE)
-                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal)).create());
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
+            return submitAsync(traversal.asAdmin().getBytecode());
         }
 
         @Override

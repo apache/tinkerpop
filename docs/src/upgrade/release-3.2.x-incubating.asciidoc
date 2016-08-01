@@ -22,6 +22,26 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+TinkerPop 3.2.2
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+Traversal Serialization
++++++++++++++++++++++++
+
+There was an "internal" serialization format in place for `Traversal` which allowed one to be submitted to Gremlin
+Server directly over `RemoteGraph`. That format has been removed completely and is wholly replaced by the non-JVM
+specific approach of serializing `Bytecode`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1392[TINKERPOP-1392]
+
 TinkerPop 3.2.1
 ---------------
 

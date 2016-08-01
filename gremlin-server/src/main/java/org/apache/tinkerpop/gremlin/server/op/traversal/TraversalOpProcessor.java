@@ -28,10 +28,6 @@ import org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -41,7 +37,6 @@ import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +45,6 @@ import javax.script.SimpleBindings;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -88,20 +82,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final ThrowingConsumer<Context> op;
         switch (message.getOp()) {
-            case Tokens.OPS_TRAVERSE:
-                validateTraversalRequest(ctx, message);
-
-                final Optional<Map<String, String>> traverseAliases = message.optionalArgs(Tokens.ARGS_ALIASES);
-                final Map.Entry<String, String> traverserKv = traverseAliases.get().entrySet().iterator().next();
-                if (!ctx.getGraphManager().getGraphs().containsKey(traverserKv.getValue())) {
-                    final String msg = String.format("The graph [%s] for alias [%s] is not configured on the server.", traverserKv.getValue(), traverserKv.getKey());
-                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
-                }
-
-                op = this::iterateSerializedTraversal;
-                break;
             case Tokens.OPS_BYTECODE:
-                final Map<String, String> bytecodeAliases = validateTraversalRequest(ctx, message);
+                final Map<String, String> bytecodeAliases = validateTraversalRequest(message);
                 final Map.Entry<String, String> bytecodeKv = bytecodeAliases.entrySet().iterator().next();
                 if (!ctx.getGraphManager().getTraversalSources().containsKey(bytecodeKv.getValue())) {
                     final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", bytecodeKv.getValue(), bytecodeKv.getKey());
@@ -121,7 +103,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         return op;
     }
 
-    private static Map<String,String> validateTraversalRequest(final Context ctx, final RequestMessage message) throws OpProcessorException {
+    private static Map<String,String> validateTraversalRequest(final RequestMessage message) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_TRAVERSE, Tokens.ARGS_GREMLIN);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
@@ -232,108 +214,5 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }
 
         return metaData;
-    }
-
-    private void iterateSerializedTraversal(final Context context) throws OpProcessorException {
-        final RequestMessage msg = context.getRequestMessage();
-        logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
-
-        final byte[] serializedTraversal = (byte[]) msg.getArgs().get(Tokens.ARGS_GREMLIN);
-
-        // earlier validation in selection of this op method should free us to cast this without worry
-        final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
-
-        final Traversal.Admin<?, ?> traversal;
-        try {
-            traversal = (Traversal.Admin) Serializer.deserializeObject(serializedTraversal);
-        } catch (Exception ex) {
-            throw new OpProcessorException("Could not deserialize the Traversal instance",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                            .statusMessage(ex.getMessage()).create());
-        }
-
-        if (traversal.isLocked())
-            throw new OpProcessorException("Locked Traversals cannot be processed by the server",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
-                            .statusMessage("Locked Traversals cannot be processed by the server").create());
-
-        final Timer.Context timerContext = traversalOpTimer.time();
-        try {
-            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-            final GraphManager graphManager = context.getGraphManager();
-            final String graphName = aliases.entrySet().iterator().next().getValue();
-            final Graph graph = graphManager.getGraphs().get(graphName);
-            final boolean supportsTransactions = graph.features().graph().supportsTransactions();
-
-            configureTraversal(traversal, graph);
-
-            context.getGremlinExecutor().getExecutorService().submit(() -> {
-                try {
-                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
-
-                    try {
-                        // compile the traversal - without it getEndStep() has nothing in it
-                        traversal.applyStrategies();
-                        handleIterator(context, new DetachingIterator<>(traversal));
-                    } catch (TimeoutException ex) {
-                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
-                        logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
-                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
-                        return;
-                    } catch (Exception ex) {
-                        logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
-                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
-                        return;
-                    }
-
-                    if (graph.features().graph().supportsTransactions()) graph.tx().commit();
-                } catch (Exception ex) {
-                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                    if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
-                } finally {
-                    timerContext.stop();
-                }
-            });
-
-        } catch (Exception ex) {
-            timerContext.stop();
-            throw new OpProcessorException("Could not iterate the Traversal instance",
-                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-        }
-    }
-
-    private static void configureTraversal(final Traversal.Admin<?, ?> traversal, final Graph graph) {
-        traversal.setGraph(graph);
-        final List<TraversalStrategy<?>> strategies = TraversalStrategies.GlobalCache.getStrategies(graph.getClass()).toList();
-        final TraversalStrategy[] arrayOfStrategies = new TraversalStrategy[strategies.size()];
-        strategies.toArray(arrayOfStrategies);
-        traversal.getStrategies().addStrategies(arrayOfStrategies);
-    }
-
-    static class DetachingIterator<E> implements Iterator<Traverser.Admin<E>> {
-
-        private Iterator<Traverser.Admin<E>> inner;
-        private HaltedTraverserStrategy haltedTraverserStrategy;
-
-        public DetachingIterator(final Traversal.Admin<?, E> traversal) {
-            this.inner = traversal.getEndStep();
-            this.haltedTraverserStrategy = traversal.getStrategies().getStrategy(HaltedTraverserStrategy.class).orElse(
-                    Boolean.valueOf(System.getProperty("is.testing", "false")) ?
-                            HaltedTraverserStrategy.detached() :
-                            HaltedTraverserStrategy.reference());
-        }
-
-        @Override
-        public boolean hasNext() {
-            return this.inner.hasNext();
-        }
-
-        @Override
-        public Traverser.Admin<E> next() {
-            return this.haltedTraverserStrategy.halt(this.inner.next());
-        }
     }
 }
