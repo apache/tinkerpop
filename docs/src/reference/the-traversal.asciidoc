@@ -1133,6 +1133,7 @@ Option Step
 
 An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
 
+
 [[optional-step]]
 Optional Step
 ~~~~~~~~~~~~~
@@ -1365,7 +1366,7 @@ g.V().hasLabel('person').
   group().by('cluster').by('name')
 ----
 
-[profile-step]]
+[[profile-step]]
 Profile Step
 ~~~~~~~~~~~~
 
