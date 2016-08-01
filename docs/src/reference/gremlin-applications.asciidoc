@@ -733,7 +733,7 @@ WebSockets-based connection, it can also be configured to support link:http://en
 The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of
 programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started
 with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
-as the API for the endpoint is very similar to Rexster's link:https://github.org/apache/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
+as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
 Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
 script as a request.  For each request, it returns a response containing the serialized results of that script.
@@ -1567,7 +1567,7 @@ Display stack trace? [yN] n
 ----
 
 The same behavior would be seen with REST or when using sessionless requests through one of the Gremlin Server drivers.
-If having this behavior is desireable, then <<considering-sessions,consider sessions>>.
+If having this behavior is desireable, then <<sessions,consider sessions>>.
 
 There is an exception to this notion of state not existing between requests and that is globally defined functions.
 All functions created via scripts are global to the server.

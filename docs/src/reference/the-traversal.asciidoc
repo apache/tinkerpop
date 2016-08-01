@@ -205,7 +205,7 @@ g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','priva
 g.V(1).properties('friendWeight').valueMap() <3>
 ----
 
-<1> For vertices, a cardinality can be provided for <<vertex properties,vertex-properties>>.
+<1> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
 <2> It is possible to select the property value (as well as key) via a traversal.
 <3> For vertices, the `property()`-step can add meta-properties.
 
@@ -376,7 +376,7 @@ g.V().group().by(bothE().count()).by(count())  <3>
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count())` will count the number of elements in each group (*traversal*).
 
-[cap-step]]
+[[cap-step]]
 Cap Step
 ~~~~~~~~
 
@@ -1126,6 +1126,12 @@ g.V().repeat(both()).times(3).values('age').min()
 
 IMPORTANT: `min(local)` determines the min of the current, local object (not the objects in the traversal stream).
 This works for `Collection` and `Number`-type objects. For any other object, a min of `Double.NaN` is returned.
+
+[[option-step]]
+Option Step
+~~~~~~~~~~~~~
+
+An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
 
 [[optional-step]]
 Optional Step
@@ -2308,7 +2314,7 @@ Gremlin attempts to provide the user a comprehensive collection of steps in the 
 leverage a lambda in practice. It is advised that users only leverage a lambda if and only if there is no
 corresponding lambda-less step that encompasses the desired functionality. The reason being, lambdas can not be
 optimized by Gremlin's compiler strategies as they can not be programmatically inspected (see
-<<traversalstrategy,traversal strategies>>). It is also not currently possible to send a lambda for remote execution to Gremlin-Server or a driver that supports remote execution. 
+<<traversalstrategy,traversal strategies>>). It is also not currently possible to send a lambda for remote execution to Gremlin-Server or a driver that supports remote execution.
 
 In many situations where a lambda could be used, either a corresponding step exists or a traversal can be provided in
 its place. A `TraversalLambda` behaves like a typical lambda, but it can be optimized and it yields less objects than

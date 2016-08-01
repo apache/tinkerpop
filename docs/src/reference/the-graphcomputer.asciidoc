@@ -74,7 +74,7 @@ image::graphcomputer.png[width=500]
 The example below demonstrates how to submit a VertexProgram to a graph's GraphComputer. `GraphComputer.submit()`
 yields a `Future<ComputerResult>`. The `ComputerResult` has the resultant computed graph which can be a full copy
 of the original graph (see <<hadoop-gremlin,Hadoop-Gremlin>>) or a view over the original graph (see
-<<tinkergraph,TinkerGraph>>). The ComputerResult also provides access to computational side-effects called `Memory`
+<<tinkergraph-gremlin,TinkerGraph>>). The ComputerResult also provides access to computational side-effects called `Memory`
 (which includes, for example, runtime, number of iterations, results of MapReduce jobs, and VertexProgram-specific
 memory manipulations).
 
