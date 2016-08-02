@@ -61,8 +61,12 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
             if (useBinary) {
                 final Frame serialized;
 
-                // if the request came in on a session then the serialization must occur in that same thread.
-                if (null == session)
+                // if the request came in on a session then the serialization must occur in that same thread, except
+                // in the case of an error where we can free the session executor from having to do that job. the
+                // problem here is that if the session executor is used in the case of an error and the executor is
+                // blocked by parallel requests then there is no thread available to serialize the result and send
+                // back the response as the workers get all tied up behind the session executor.
+                if (null == session || !o.getStatus().getCode().isSuccess())
                     serialized = new Frame(serializer.serializeResponseAsBinary(o, ctx.alloc()));
                 else
                     serialized = new Frame(session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, ctx.alloc())).get());
@@ -75,8 +79,9 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
 
                 final Frame serialized;
 
-                // if the request came in on a session then the serialization must occur in that same thread.
-                if (null == session)
+                // if the request came in on a session then the serialization must occur that same thread except
+                // in the case of errors for reasons described above.
+                if (null == session || !o.getStatus().getCode().isSuccess())
                     serialized = new Frame(textSerializer.serializeResponseAsString(o));
                 else
                     serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get());
