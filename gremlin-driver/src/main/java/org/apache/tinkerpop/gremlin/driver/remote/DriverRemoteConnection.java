@@ -53,7 +53,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     private final Client client;
     private final boolean tryCloseCluster;
-    private final String connectionGraphName;
+    private final String remoteTraversalSourceName;
     private transient Optional<Configuration> conf = Optional.empty();
 
     private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
@@ -62,7 +62,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE));
 
-        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+        remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         try {
             final Cluster cluster;
@@ -72,7 +72,7 @@ public class DriverRemoteConnection implements RemoteConnection {
                 cluster = conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) ?
                         Cluster.open(conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE)) : Cluster.open(conf.subset("clusterConfiguration"));
 
-            client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+            client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(remoteTraversalSourceName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -81,9 +81,9 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.conf = Optional.of(conf);
     }
 
-    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName) {
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
-        this.connectionGraphName = connectionGraphName;
+    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String remoteTraversalSourceName) {
+        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(remoteTraversalSourceName);
+        this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
     }
 
@@ -91,9 +91,9 @@ public class DriverRemoteConnection implements RemoteConnection {
      * This constructor is largely just for unit testing purposes and should not typically be used externally.
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
-        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+        remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(remoteTraversalSourceName);
         tryCloseCluster = false;
         this.conf = Optional.of(conf);
     }
@@ -111,8 +111,8 @@ public class DriverRemoteConnection implements RemoteConnection {
      * Creates a {@link DriverRemoteConnection} from an existing {@link Cluster} instance. When {@link #close()} is
      * called, the {@link Cluster} is left open for the caller to close.
      */
-    public static DriverRemoteConnection using(final Cluster cluster, final String connectionGraphName) {
-        return new DriverRemoteConnection(cluster, false, connectionGraphName);
+    public static DriverRemoteConnection using(final Cluster cluster, final String remoteTraversalSourceName) {
+        return new DriverRemoteConnection(cluster, false, remoteTraversalSourceName);
     }
 
     /**
@@ -128,9 +128,9 @@ public class DriverRemoteConnection implements RemoteConnection {
      * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
      * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed.
      */
-    public static DriverRemoteConnection using(final String clusterConfFile, final String connectionGraphName) {
+    public static DriverRemoteConnection using(final String clusterConfFile, final String remoteTraversalSourceName) {
         try {
-            return new DriverRemoteConnection(Cluster.open(clusterConfFile), true, connectionGraphName);
+            return new DriverRemoteConnection(Cluster.open(clusterConfFile), true, remoteTraversalSourceName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -143,7 +143,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * or {@code clusterConfiguration}. The {@code clusterConfigurationFile} key is a pointer to a file location
      * containing a configuration for a {@link Cluster}. The {@code clusterConfiguration} should contain the actual
      * contents of a configuration that would be used by a {@link Cluster}.  This {@code configuration} may also
-     * contain the optional, but likely necessary, {@code connectionGraphName} which tells the
+     * contain the optional, but likely necessary, {@code remoteTraversalSourceName} which tells the
      * {@code DriverServerConnection} which graph on the server to bind to.
      */
     public static DriverRemoteConnection using(final Configuration conf) {
@@ -153,11 +153,11 @@ public class DriverRemoteConnection implements RemoteConnection {
         if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException("A configuration must contain either 'clusterConfigurationFile' and 'clusterConfiguration'");
 
-        final String connectionGraphName = conf.getString("connectionGraphName", "graph");
+        final String remoteTraversalSourceName = conf.getString(DEFAULT_TRAVERSAL_SOURCE, DEFAULT_TRAVERSAL_SOURCE);
         if (conf.containsKey("clusterConfigurationFile"))
-            return using(conf.getString("clusterConfigurationFile"), connectionGraphName);
+            return using(conf.getString("clusterConfigurationFile"), remoteTraversalSourceName);
         else {
-            return using(Cluster.open(conf.subset("clusterConfiguration")), connectionGraphName);
+            return using(Cluster.open(conf.subset("clusterConfiguration")), remoteTraversalSourceName);
         }
     }
 
@@ -200,6 +200,6 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     @Override
     public String toString() {
-        return "DriverServerConnection-" + client.getCluster() + " [graph=" + connectionGraphName + "]";
+        return "DriverServerConnection-" + client.getCluster() + " [graph=" + remoteTraversalSourceName + "]";
     }
 }
