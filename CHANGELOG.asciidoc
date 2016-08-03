@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added new recipe for "Traversal Induced Values".
 * Fixed a potential leak of a `ReferenceCounted` resource in Gremlin Server.
 * Added class registrations for `Map.Entry` implementations to `GryoMapper`.
 
