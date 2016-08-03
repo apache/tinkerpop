@@ -69,7 +69,7 @@ mkdir -p target/postprocess-asciidoc/tmp
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
 TP_HOME=`pwd`
-CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone"`
+CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone"`
 PLUGIN_DIR="${CONSOLE_HOME}/ext"
 TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
 TMP_DIR="/tmp/tp-docs-preprocessor"
@@ -79,7 +79,7 @@ mkdir -p "${TMP_DIR}"
 HISTORY_FILE=".gremlin_groovy_history"
 [ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} ${TMP_DIR}
 
-pushd gremlin-server/target/apache-gremlin-server-*-standalone > /dev/null
+pushd gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone > /dev/null
 bin/gremlin-server.sh conf/gremlin-server-modern.yaml > /dev/null 2> /dev/null &
 GREMLIN_SERVER_PID=$!
 popd > /dev/null
