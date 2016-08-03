@@ -113,11 +113,11 @@ class RemoteCommand extends ComplexCommandSupport {
 
         // the console is in remote evaluation mode.  closing at this point will needs to exit that mode and then
         // kill the remote itself
-        def line = !mediator.localEvaluation ? swapEvaluationMode() : ""
+        if (!mediator.localEvaluation) swapEvaluationMode()
 
         def removed = mediator.removeCurrent()
         removed.close()
-        return line.isEmpty() ? "Removed - $removed" : "$line and removed - $removed"
+        return "Removed - $removed"
     }
 
     def Object do_console = {
