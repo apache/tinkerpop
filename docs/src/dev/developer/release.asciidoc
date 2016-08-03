@@ -121,7 +121,7 @@ handled document generation and this step now merely needs to upload what was ge
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
 .. `cd dev/xx.yy.zz`
-.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
+.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
