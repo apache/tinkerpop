@@ -38,8 +38,10 @@ class RemoteStrategy(TraversalStrategy):
         if not (traversal.graph.__class__.__name__ == "RemoteGraph"):
             raise BaseException(
                 "RemoteStrategy can only be used with a RemoteGraph: " + traversal.graph.__class__.__name__)
-        if traversal.results is None:
-            traversal.results = traversal.graph.remote_connection.submit(
+        if traversal.traversers is None:
+            remote_response = traversal.graph.remote_connection.submit(
                 'gremlin-groovy',  # script engine
                 traversal.bytecode),  # script
+            traversal.side_effects = remote_response.side_effects
+            traversal.traversers = remote_response.traversers
         return

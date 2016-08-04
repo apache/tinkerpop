@@ -21,6 +21,7 @@ import requests
 
 from gremlin_python.process.traversal import Traverser
 from remote_connection import RemoteConnection
+from remote_connection import RemoteResponse
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -37,7 +38,7 @@ class RESTRemoteConnection(RemoteConnection):
             {"gremlin": bytecode, "source": self.traversal_source, "language": target_language, "bindings": None}))
         if response.status_code != requests.codes.ok:
             raise BaseException(response.text)
-        results = []
+        traversers = []
         for x in response.json()['result']['data']:
-            results.append(Traverser(x, 1))
-        return iter(results)
+            traversers.append(Traverser(x, 1))
+        return RemoteResponse(iter(traversers), {})
