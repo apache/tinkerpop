@@ -63,7 +63,8 @@ class Traversal(object):
         self.graph = graph
         self.traversal_strategies = traversal_strategies
         self.bytecode = bytecode
-        self.results = None
+        self.side_effects = {}
+        self.traversers = None
         self.last_traverser = None
         self.bindings = {}
 
@@ -85,10 +86,10 @@ class Traversal(object):
         return self
 
     def __next__(self):
-        if self.results is None:
+        if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
-            self.last_traverser = next(self.results)
+            self.last_traverser = next(self.traversers)
         object = self.last_traverser.object
         self.last_traverser.bulk = self.last_traverser.bulk - 1
         if self.last_traverser.bulk <= 0:

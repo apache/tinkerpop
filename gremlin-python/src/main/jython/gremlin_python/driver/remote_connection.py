@@ -29,4 +29,10 @@ class RemoteConnection(object):
     @abstractmethod
     def submit(self, target_language, bytecode):
         print "sending " + bytecode + " to GremlinServer..."
-        return iter([])
+        return RemoteResponse(iter([]), {})
+
+
+class RemoteResponse(object):
+    def __init__(self, traversers, side_effects):
+        self.traversers = traversers
+        self.side_effects = side_effects
