@@ -63,7 +63,7 @@ public class MyApplication {
 ----
 
 In query languages like link:https://en.wikipedia.org/wiki/SQL[SQL], the user must construct a string representation of
-their query and submit it to the database for evaluation. This is because SQL can be expressed in Java as they use fundamentally
+their query and submit it to the database for evaluation. This is because SQL cannot be expressed in Java as they use fundamentally
 different constructs in their expression. The same example above is presented below using SQL and the
 link:https://en.wikipedia.org/wiki/Java_Database_Connectivity[JDBC] interface. The take home point is that Gremlin does
 not exist outside the programming language in which it will be used. Gremlin was designed to be able to easily be
@@ -137,7 +137,7 @@ Language Drivers
 
 image:language-drivers.png[width=375,float=right] A Gremlin language driver is a software library that is able to
 communicate with a TinkerPop-enabled graph system whether directly via the JVM or indirectly via
-link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]. By in large, if a
+link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]. By and large, if a
 language driver is being developed, it is typically being developed to interact with GremlinServer or a
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-remotegraph[RemoteConnection].
 Language drivers are responsible for submitting Gremlin traversals to a TinkerPop-enabled graph system and
@@ -252,7 +252,7 @@ link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala] were developed. 
 available in Java. To leverage these niceties, Gremlin-Scala "wraps" `GraphTraversal` in order to provide Scala-idiomatic extensions.
 Another example is Apache TinkerPop's Gremlin-Groovy which does the same via the
 link:http://tinkerpop.apache.org/docs/x.y.z/reference/#sugar-plugin[Sugar plugin], but uses
-link:http://groovy-lang.org/metaprogramming.html[meta-programming] instead of object wrapping, where "behing the scenes,"
+link:http://groovy-lang.org/metaprogramming.html[meta-programming] instead of object wrapping, where "behind the scenes,"
 Groovy meta-programming is doing object wrapping.
 
 The Jython classes below wrap `GraphTraversalSource` and `GraphTraversal`. In doing so, they add methods
