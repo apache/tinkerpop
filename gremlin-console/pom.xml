@@ -61,6 +61,17 @@ limitations under the License.
             <artifactId>gprof</artifactId>
             <version>0.3.1-groovy-2.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>optional</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>optional</scope>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>

@@ -70,6 +70,13 @@ limitations under the License.
             <artifactId>jBCrypt</artifactId>
             <version>jbcrypt-0.4</version>
         </dependency>
+        <!-- TEST -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>

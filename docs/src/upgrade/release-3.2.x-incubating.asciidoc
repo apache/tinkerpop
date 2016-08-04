@@ -22,6 +22,46 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Nine Inch Gremlins*
 
+TinkerPop 3.2.2
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.2/CHANGELOG.asciidoc#release-3-2-2[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Log4j Dependencies
+^^^^^^^^^^^^^^^^^^
+
+There were a number of changes to the Log4j dependencies in the various modules. Log4j was formerly included as part
+of the `slf4j-log4j12` in `gremlin-core`, however that "forced" use of Log4j as a logger implementation when that
+really wasn't necessary or desired. If a project depended on `gremlin-core` or other TinkerPop project to get its
+Log4j implementation then those applications will need to now include the dependency themselves directly.
+
+Note that Gremlin Server and Gremlin Console explicitly package Log4j in their respective binary distributions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1151[TINKERPOP-1151]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Log4j Dependencies
+++++++++++++++++++
+
+There were a number of changes to the Log4j dependencies in the various modules. Log4j was formerly included as part
+of the `slf4j-log4j12` in `gremlin-core`, however that "forced" use of log4j as a logger implementation when that
+really wasn't necessary or desired. The `slf4j-log4j12` dependency is now in "test" scope for most of the modules. The
+exception to that rule is `gremlin-test` which prescribes it as "optional". That change means that developers
+dependending on `gremlin-test` (or `gremlin-groovy-test`) will need to explicitly specify it as a dependency in their
+`pom.xml` (or a different slf4j implementation if that better suits them).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1151[TINKERPOP-1151]
+
 TinkerPop 3.2.1
 ---------------
 
