@@ -42,7 +42,7 @@ public interface RemoteResponse<E> {
      * a {@link RemoteTraverser} instance to feed that {@code Iterator} or create their own implementation of it if
      * there is some advantage to doing so.
      */
-    public Iterator<Traverser.Admin<E>> getResult();
+    public Iterator<Traverser.Admin<E>> getTraversers();
 
     /**
      * Gets the side-effects (if any) from the remotely executed {@link Traversal}. Simple implementations could

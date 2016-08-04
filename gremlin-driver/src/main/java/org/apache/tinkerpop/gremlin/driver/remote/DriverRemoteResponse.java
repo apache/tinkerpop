@@ -61,7 +61,7 @@ public class DriverRemoteResponse<E> implements RemoteResponse<E> {
     }
 
     @Override
-    public Iterator<Traverser.Admin<E>> getResult() {
+    public Iterator<Traverser.Admin<E>> getTraversers() {
         return resultIterator;
     }
 
