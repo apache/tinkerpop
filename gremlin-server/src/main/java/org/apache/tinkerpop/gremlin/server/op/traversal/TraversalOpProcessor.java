@@ -105,18 +105,18 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     private static Map<String,String> validateTraversalRequest(final RequestMessage message) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_TRAVERSE, Tokens.ARGS_GREMLIN);
+            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
         if (!aliases.isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_TRAVERSE, Tokens.ARGS_ALIASES);
+            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (aliases.get().size() != 1) {
-            final String msg = String.format("A message with an [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_TRAVERSE, Tokens.ARGS_ALIASES);
+            final String msg = String.format("A message with an [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
