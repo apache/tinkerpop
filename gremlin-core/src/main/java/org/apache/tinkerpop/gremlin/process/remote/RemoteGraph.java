@@ -46,6 +46,10 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest",
+        method = "g_V_hasXnoX_groupCountXaX_capXaX",
+        reason = "This test asserts an empty side-effect which reflects as a null rather than an \"empty\" and thus doens't assert")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest",
         method = "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
         reason = "Issues with Longs")

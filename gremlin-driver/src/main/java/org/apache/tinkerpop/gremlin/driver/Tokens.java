@@ -33,18 +33,15 @@ public final class Tokens {
     public static final String OPS_BYTECODE = "bytecode";
     public static final String OPS_EVAL = "eval";
     public static final String OPS_INVALID = "invalid";
+    public static final String OPS_GATHER = "gather";
+    public static final String OPS_KEYS = "keys";
+    public static final String OPS_CLOSE = "close";
 
     /**
      * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
      */
     @Deprecated
     public static final String OPS_SHOW = "show";
-
-    /**
-     * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
-     */
-    @Deprecated
-    public static final String OPS_CLOSE = "close";
 
     /**
      * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
@@ -82,6 +79,7 @@ public final class Tokens {
     public static final String ARGS_SASL_MECHANISM = "saslMechanism";
     public static final String ARGS_SIDE_EFFECT = "sideEffect";
     public static final String ARGS_AGGREGATE_TO = "aggregateTo";
+    public static final String ARGS_SIDE_EFFECT_KEY = "sideEffectKey";
 
     /**
      * @deprecated As of release 3.1.0-incubating, replaced by {@link #ARGS_ALIASES}.

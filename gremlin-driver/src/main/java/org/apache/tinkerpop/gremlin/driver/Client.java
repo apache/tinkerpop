@@ -556,6 +556,15 @@ public abstract class Client {
         }
 
         @Override
+        public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+            final RequestMessage.Builder builder = RequestMessage.from(msg);
+            if (!aliases.isEmpty())
+                builder.addArg(Tokens.ARGS_ALIASES, aliases);
+
+            return super.submitAsync(builder.create());
+        }
+
+        @Override
         public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
             return submitAsync(traversal.asAdmin().getBytecode());
         }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -28,7 +29,7 @@ import java.util.Iterator;
  * A simple abstraction of a "connection" to a "server" that is capable of processing a {@link Traversal} and
  * returning results. Results refer to both the {@link Iterator} of results from the submitted {@link Traversal}
  * as well as the side-effects produced by that {@link Traversal}. Those results together are wrapped in a
- * {@link RemoteResponse}.
+ * {@link Traversal}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -42,9 +43,9 @@ public interface RemoteConnection extends AutoCloseable {
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException;
 
     /**
-     * Submits {@link Traversal} {@link Bytecode} to a server and returns a {@link RemoteResponse}.
-     * The {@link RemoteResponse} is an abstraction over two types of results that can be returned as part of the
+     * Submits {@link Traversal} {@link Bytecode} to a server and returns a {@link Traversal}.
+     * The {@link Traversal} is an abstraction over two types of results that can be returned as part of the
      * response from the server: the results of the {@link Traversal} itself and the the side-effects that it produced.
      */
-    public <E> RemoteResponse<E> submit(final Bytecode bytecode) throws RemoteConnectionException;
+    public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
 }

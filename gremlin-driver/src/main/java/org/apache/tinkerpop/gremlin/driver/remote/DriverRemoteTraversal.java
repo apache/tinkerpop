@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteResponse;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -35,16 +37,16 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * A {@link RemoteResponse} implementation for the Gremlin Driver.
+ * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DriverRemoteResponse<E> implements RemoteResponse<E> {
+public class DriverRemoteTraversal<S,E> extends AbstractRemoteTraversal<S,E> {
 
     private final Iterator<Traverser.Admin<E>> resultIterator;
-    private final TraversalSideEffects sideEffects;
+    private final RemoteTraversalSideEffects sideEffects;
 
-    public DriverRemoteResponse(final ResultSet rs, final boolean attach, Optional<Configuration> conf) {
+    public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
         // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
         // require that the client have access to the Graph instance that produced the result. tests need that
         // attachment process to properly execute in full hence this little hack.
@@ -56,17 +58,22 @@ public class DriverRemoteResponse<E> implements RemoteResponse<E> {
             resultIterator = new TraverserIterator<>(rs.iterator());
         }
 
-        sideEffects = new DriverTraversalSideEffects(rs);
+        sideEffects = new DriverRemoteTraversalSideEffects(client, rs.getOriginalRequestMessage().getRequestId());
     }
 
     @Override
-    public Iterator<Traverser.Admin<E>> getTraversers() {
-        return resultIterator;
-    }
-
-    @Override
-    public TraversalSideEffects getSideEffects() {
+    public RemoteTraversalSideEffects getSideEffects() {
         return sideEffects;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return resultIterator.hasNext();
+    }
+
+    @Override
+    public E next() {
+        return (E) resultIterator.next();
     }
 
     static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {

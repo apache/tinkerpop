@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteResponse;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -167,9 +167,9 @@ public class DriverRemoteConnection implements RemoteConnection {
             if (attachElements && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new DriverRemoteResponse.AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
+                return new DriverRemoteTraversal.AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
             } else {
-                return new DriverRemoteResponse.TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
+                return new DriverRemoteTraversal.TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
             }
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
@@ -177,10 +177,10 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public <E> RemoteResponse<E> submit(final Bytecode bytecode) throws RemoteConnectionException {
+    public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException {
         try {
             final ResultSet rs = client.submit(bytecode);
-            return new DriverRemoteResponse<>(rs, attachElements, conf);
+            return new DriverRemoteTraversal<>(rs, client, attachElements, conf);
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }

@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.op.traversal;
 
 import com.codahale.metrics.Timer;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -27,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -35,9 +38,10 @@ import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.server.util.SideEffectIterator;
 import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;;
+import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +51,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -60,6 +66,11 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(TraversalOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "traversal";
     public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
+
+    private static final Cache<UUID, TraversalSideEffects> cache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build();
 
     public TraversalOpProcessor() {
         super(true);
@@ -92,6 +103,65 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                 op = this::iterateBytecodeTraversal;
                 break;
+            case Tokens.OPS_GATHER:
+                final Optional<String> sideEffectForGather = message.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
+                if (!sideEffectForGather.isPresent()) {
+                    final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_GATHER, Tokens.ARGS_SIDE_EFFECT);
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
+                final Optional<String> sideEffectKey = message.optionalArgs(Tokens.ARGS_SIDE_EFFECT_KEY);
+                if (!sideEffectKey.isPresent()) {
+                    final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_GATHER, Tokens.ARGS_SIDE_EFFECT_KEY);
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
+                validatedAliases(message);
+
+                op = this::gatherSideEffect;
+
+                break;
+            case Tokens.OPS_KEYS:
+                final Optional<String> sideEffectForKeys = message.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
+                if (!sideEffectForKeys.isPresent()) {
+                    final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_GATHER, Tokens.ARGS_SIDE_EFFECT);
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
+                validatedAliases(message);
+
+                op = context -> {
+                    final RequestMessage msg = context.getRequestMessage();
+                    logger.debug("Close request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
+
+                    final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
+                    final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
+
+                    if (null == sideEffects) {
+                        final String msgDefault = String.format("Could not find side-effects for %s.", sideEffect.get());
+                        throw new OpProcessorException(msgDefault, ResponseMessage.build(message).code(ResponseStatusCode.SERVER_ERROR).statusMessage(msgDefault).create());
+                    }
+
+                    handleIterator(context, sideEffects.keys().iterator());
+                };
+
+                break;
+            case Tokens.OPS_CLOSE:
+                final Optional<String> sideEffectForClose = message.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
+                if (!sideEffectForClose.isPresent()) {
+                    final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_CLOSE, Tokens.ARGS_SIDE_EFFECT);
+                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                }
+
+                op = context -> {
+                    final RequestMessage msg = context.getRequestMessage();
+                    logger.debug("Close request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
+
+                    final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
+                    cache.invalidate(sideEffect.get());
+                };
+
+                break;
             case Tokens.OPS_INVALID:
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
                 throw new OpProcessorException(msgInvalid, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).statusMessage(msgInvalid).create());
@@ -109,6 +179,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
+        final Optional<Map<String, String>> aliases = validatedAliases(message);
+
+        return aliases.get();
+    }
+
+    private static Optional<Map<String, String>> validatedAliases(RequestMessage message) throws OpProcessorException {
         final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
         if (!aliases.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
@@ -119,8 +195,72 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final String msg = String.format("A message with an [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
+        return aliases;
+    }
 
-        return aliases.get();
+    private void gatherSideEffect(final Context context) throws OpProcessorException {
+        final RequestMessage msg = context.getRequestMessage();
+        logger.debug("Side-effect request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
+
+        // earlier validation in selection of this op method should free us to cast this without worry
+        final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
+        final Optional<String> sideEffectKey = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT_KEY);
+        final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();
+
+        final GraphManager graphManager = context.getGraphManager();
+        final String traversalSourceName = aliases.entrySet().iterator().next().getValue();
+        final TraversalSource g = graphManager.getTraversalSources().get(traversalSourceName);
+
+        final Timer.Context timerContext = traversalOpTimer.time();
+        try {
+            final ChannelHandlerContext ctx = context.getChannelHandlerContext();
+            final Graph graph = g.getGraph();
+            final boolean supportsTransactions = graph.features().graph().supportsTransactions();
+
+            context.getGremlinExecutor().getExecutorService().submit(() -> {
+                try {
+                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+
+                    try {
+                        final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
+
+                        if (null == sideEffects) {
+                            final String errorMessage = String.format("Could not find side-effects for %s.", sideEffect.get());
+                            logger.warn(errorMessage);
+                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                            if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                            return;
+                        }
+
+                        handleIterator(context, new SideEffectIterator(sideEffects.get(sideEffectKey.get()), sideEffectKey.get()));
+                    } catch (TimeoutException ex) {
+                        final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
+                        logger.warn(errorMessage);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        return;
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
+                        ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        return;
+                    }
+
+                    if (graph.features().graph().supportsTransactions()) graph.tx().commit();
+                } catch (Exception ex) {
+                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                    if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+                } finally {
+                    timerContext.stop();
+                }
+            });
+
+        } catch (Exception ex) {
+            timerContext.stop();
+            throw new OpProcessorException("Could not iterate the Traversal instance",
+                    ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+        }
     }
 
     private void iterateBytecodeTraversal(final Context context) throws OpProcessorException {
@@ -164,6 +304,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         // compile the traversal - without it getEndStep() has nothing in it
                         traversal.applyStrategies();
                         handleIterator(context, new TraversalIterator(traversal));
+
+                        if (!traversal.getSideEffects().isEmpty())
+                            cache.put(msg.getRequestId(), traversal.getSideEffects());
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
@@ -195,21 +338,16 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     @Override
-    protected boolean isForceFlushed(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
-        return itty instanceof TraversalIterator && ((TraversalIterator) itty).isNextBatchComingUp();
-    }
-
-    @Override
     protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
                                                    final ResponseStatusCode code, final Iterator itty) {
         Map<String,Object> metaData = Collections.emptyMap();
-        if (itty instanceof TraversalIterator) {
-            final TraversalIterator traversalIterator = (TraversalIterator) itty;
-            final String key = traversalIterator.getCurrentSideEffectKey();
+        if (itty instanceof SideEffectIterator) {
+            final SideEffectIterator traversalIterator = (SideEffectIterator) itty;
+            final String key = traversalIterator.getSideEffectKey();
             if (key != null) {
                 metaData = new HashMap<>();
                 metaData.put(Tokens.ARGS_SIDE_EFFECT, key);
-                metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getCurrentSideEffectAggregator());
+                metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getSideEffectAggregator());
             }
         }
 

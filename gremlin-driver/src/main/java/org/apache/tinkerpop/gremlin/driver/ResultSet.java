@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -50,24 +50,20 @@ import java.util.stream.StreamSupport;
 public final class ResultSet implements Iterable<Result> {
     private final ResultQueue resultQueue;
     private final ExecutorService executor;
+    private final RequestMessage originalRequestMessage;
 
     private final CompletableFuture<Void> readCompleted;
 
     public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
-                     final CompletableFuture<Void> readCompleted) {
+                     final CompletableFuture<Void> readCompleted, final RequestMessage originalRequestMessage) {
         this.executor = executor;
         this.resultQueue = resultQueue;
         this.readCompleted = readCompleted;
+        this.originalRequestMessage = originalRequestMessage;
     }
 
-    public CompletableFuture<Map<String,Object>> getSideEffectResults() {
-        final CompletableFuture<Map<String,Object>> future = new CompletableFuture<>();
-        readCompleted.thenRunAsync(() -> {
-            final Map<String,Object> se = new HashMap<>();
-            resultQueue.getSideEffectKeys().forEach(k -> se.put(k, resultQueue.getSideEffect(k)));
-            future.complete(se);
-        }, executor);
-        return future;
+    public RequestMessage getOriginalRequestMessage() {
+        return originalRequestMessage;
     }
 
     /**

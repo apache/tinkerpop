@@ -20,14 +20,14 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteResponse;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -39,7 +39,7 @@ import java.util.NoSuchElementException;
 public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     private transient RemoteConnection remoteConnection;
-    private Iterator<Traverser.Admin<E>> remoteIterator;
+    private RemoteTraversal<?,E> remoteTraversal;
     private Bytecode bytecode;
 
     @SuppressWarnings("unchecked")
@@ -57,16 +57,15 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     @SuppressWarnings("unchecked")
     @Override
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
-        if (null == this.remoteIterator) {
+        if (null == this.remoteTraversal) {
             try {
-                final RemoteResponse remoteResponse = this.remoteConnection.submit(this.bytecode);
-                this.remoteIterator = remoteResponse.getTraversers();
-                this.traversal.setSideEffects(remoteResponse.getSideEffects());
+                remoteTraversal = this.remoteConnection.submit(this.bytecode);
+                this.traversal.setSideEffects(remoteTraversal.getSideEffects());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
             }
         }
 
-        return this.remoteIterator.next();
+        return (Traverser.Admin<E>) this.remoteTraversal.next();
     }
 }

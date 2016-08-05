@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,7 +45,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
     @Before
     public void setupThis() {
-        resultSet = new ResultSet(resultQueue, pool, readCompleted);
+        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create());
     }
 
     @Test
@@ -193,31 +194,5 @@ public class ResultSetTest extends AbstractResultQueueTest {
         }
 
         assertEquals(100, counter.get());
-    }
-
-    @Test
-    public void shouldRetrieveSideEffects() throws Exception {
-        final Iterator itty = resultSet.iterator();
-        final CompletableFuture<Map<String,Object>> sideEffects = resultSet.getSideEffectResults();
-
-        assertThat(sideEffects.isDone(), is(false));
-
-        // queue is not marked finished so the side effect future is still not complete
-        addToQueue(100, 1, true, false);
-
-        for (int i = 0; i < 101; i++) {
-            assertThat(itty.hasNext(), is(true));
-        }
-
-        // now complete the queue
-        addToQueue(0, 1, true, true, 0);
-
-        // addToQueue doesn't block for "read complete" so gotta spin the thread
-        while (!readCompleted.isDone()) {
-            Thread.sleep(10);
-        }
-
-        // side effects are empty in this case, but that's fine for the purpose of this test
-        assertThat(sideEffects.isDone(), is(true));
     }
 }

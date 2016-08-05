@@ -193,23 +193,22 @@ final class Handler {
                         if (data instanceof List) {
                             // unrolls the collection into individual results to be handled by the queue.
                             final List<Object> listToUnroll = (List<Object>) data;
-                            listToUnroll.forEach(item -> tryUnrollBulkedResult(queue, item));
+                            listToUnroll.forEach(item -> tryUnrollTraverser(queue, item));
                         } else {
                             // since this is not a list it can just be added to the queue
-                            tryUnrollBulkedResult(queue, response.getResult().getData());
+                            tryUnrollTraverser(queue, response.getResult().getData());
                         }
                     } else {
                         // this is the side-effect from the server which is generated from a serialized traversal
-                        final String sideEffectKey = meta.get(Tokens.ARGS_SIDE_EFFECT).toString();
                         final String aggregateTo = meta.getOrDefault(Tokens.ARGS_AGGREGATE_TO, Tokens.VAL_AGGREGATE_TO_NONE).toString();
                         if (data instanceof List) {
                             // unrolls the collection into individual results to be handled by the queue.
                             final List<Object> listOfSideEffects = (List<Object>) data;
-                            listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(sideEffectKey, aggregateTo, sideEffect));
+                            listOfSideEffects.forEach(sideEffect -> queue.addSideEffect(aggregateTo, sideEffect));
                         } else {
                             // since this is not a list it can just be added to the queue. this likely shouldn't occur
                             // however as the protocol will typically push everything to list first.
-                            queue.addSideEffect(sideEffectKey, aggregateTo, data);
+                            queue.addSideEffect(aggregateTo, data);
                         }
                     }
                 } else {
@@ -228,10 +227,9 @@ final class Handler {
             }
         }
 
-        private void tryUnrollBulkedResult(final ResultQueue queue, final Object item) {
+        private void tryUnrollTraverser(final ResultQueue queue, final Object item) {
             if (unrollTraversers) {
                 if (item instanceof Traverser.Admin) {
-                    // TODO: i think this is just temporary code - needed for backward compatibility to the old way of serializing Traversal with java serialization
                     final Traverser.Admin t = (Traverser.Admin) item;
                     final Object result = t.get();
                     for (long ix = 0; ix < t.bulk(); ix++) {
