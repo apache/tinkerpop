@@ -330,4 +330,14 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         }
         return result;
     }
+
+    @Override
+    public Traverser.Admin<E> nextTraverser() {
+        return this.finalEndStep.next();
+    }
+
+    @Override
+    public boolean hasNextTraverser() {
+        return this.finalEndStep.hasNext();
+    }
 }

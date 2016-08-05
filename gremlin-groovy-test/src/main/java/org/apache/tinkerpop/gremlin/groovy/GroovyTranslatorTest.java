@@ -55,8 +55,8 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
                 .asAdmin();
         final List<Integer> sacks = new ArrayList<>();
         final List<Integer> lengths = new ArrayList<>();
-        while (t.hasNext()) {
-            final Traverser.Admin<Integer> traverser = t.getEndStep().next();
+        while (t.hasNextTraverser()) {
+            final Traverser.Admin<Integer> traverser = t.nextTraverser();
             sacks.add(traverser.sack());
             lengths.add(traverser.get());
         }
@@ -83,6 +83,6 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h","__").toString());
+        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h", "__").toString());
     }
 }

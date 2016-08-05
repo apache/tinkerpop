@@ -23,9 +23,10 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -40,9 +41,11 @@ import java.util.function.Supplier;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DriverRemoteTraversal<S,E> extends AbstractRemoteTraversal<S,E> {
+public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
-    private final Iterator<Traverser.Admin<E>> resultIterator;
+    private final Iterator<Traverser.Admin<E>> traversers;
+    private long lastEndCount = 0;
+    private E lastEnd = null;
     private final RemoteTraversalSideEffects sideEffects;
 
     public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
@@ -52,27 +55,51 @@ public class DriverRemoteTraversal<S,E> extends AbstractRemoteTraversal<S,E> {
         if (attach) {
             if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
             final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-            resultIterator = new AttachingTraverserIterator<>(rs.iterator(), graph);
+            this.traversers = new AttachingTraverserIterator<>(rs.iterator(), graph);
         } else {
-            resultIterator = new TraverserIterator<>(rs.iterator());
+            this.traversers = new TraverserIterator<>(rs.iterator());
         }
 
-        sideEffects = new DriverRemoteTraversalSideEffects(client, rs.getOriginalRequestMessage().getRequestId());
+        this.sideEffects = new DriverRemoteTraversalSideEffects(client, rs.getOriginalRequestMessage().getRequestId());
     }
 
     @Override
     public RemoteTraversalSideEffects getSideEffects() {
-        return sideEffects;
+        return this.sideEffects;
+    }
+
+    private void moveTraverserCursor() {
+        while (0 == this.lastEndCount) {
+            if (this.traversers.hasNext()) {
+                final Traverser.Admin<E> traverser = this.traversers.next();
+                this.lastEndCount = traverser.bulk();
+                this.lastEnd = traverser.get();
+            }
+        }
     }
 
     @Override
     public boolean hasNext() {
-        return resultIterator.hasNext();
+        this.moveTraverserCursor();
+        return 0 != this.lastEndCount;
     }
+
 
     @Override
     public E next() {
-        return (E) resultIterator.next();
+        this.moveTraverserCursor();
+        if (0 == this.lastEndCount) throw FastNoSuchElementException.instance();
+        return this.lastEnd;
+    }
+
+    @Override
+    public Traverser.Admin<E> nextTraverser() {
+        return this.traversers.next();
+    }
+
+    @Override
+    public boolean hasNextTraverser() {
+        return this.traversers.hasNext();
     }
 
     static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {

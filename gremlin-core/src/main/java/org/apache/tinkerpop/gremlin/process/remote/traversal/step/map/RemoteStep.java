@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -38,7 +39,7 @@ import java.util.NoSuchElementException;
 public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     private transient RemoteConnection remoteConnection;
-    private RemoteTraversal<?,E> remoteTraversal;
+    private RemoteTraversal<?, E> remoteTraversal;
     private Bytecode bytecode;
 
     @SuppressWarnings("unchecked")
@@ -65,6 +66,7 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
             }
         }
 
-        return (Traverser.Admin<E>) this.remoteTraversal.next();
+        final Traverser.Admin<E> traverser = this.remoteTraversal.nextTraverser();
+        return this.getTraversal().getTraverserGenerator().generate(traverser.get(), (Step) this, traverser.bulk());
     }
 }

@@ -73,7 +73,8 @@ public abstract class AbstractRemoteTraversalSideEffects implements RemoteTraver
 
     @Override
     public <S> Supplier<S> getSackInitialValue() {
-        throw new UnsupportedOperationException("Remote traversals do not support this method");
+        return null;
+        // throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 
     @Override
