@@ -340,8 +340,8 @@ The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `po
 `pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of both binary
 distributions, either:
 
-* target/apache-gremlin-console-x.y.z-distribution.zip
-* target/apache-gremlin-server-x.y.z-distribution.zip
+* target/apache-tinkerpop-gremlin-console-x.y.z-distribution.zip
+* target/apache-tinkerpop-gremlin-server-x.y.z-distribution.zip
 
 Apache licensed software does not need to be included in LICENSE, but if the new dependency is an Apache-approved
 license (e.g. BSD, MIT) then it should be added in the pattern already defined. A copy of the LICENSE should be
