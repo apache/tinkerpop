@@ -19,12 +19,11 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -300,13 +298,13 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         final CompletableFuture<List<Result>> o = resultQueue.await(1);
         assertThat(o.isDone(), is(false));
 
-        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("brian", 2));
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("brian", 2));
         assertThat(o.isDone(), is(false));
 
-        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("brian", 2));
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("brian", 2));
         assertThat(o.isDone(), is(false));
 
-        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("belinda", 6));
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_BULKSET, new DefaultRemoteTraverser<>("belinda", 6));
         assertThat(o.isDone(), is(false));
 
         resultQueue.markComplete();

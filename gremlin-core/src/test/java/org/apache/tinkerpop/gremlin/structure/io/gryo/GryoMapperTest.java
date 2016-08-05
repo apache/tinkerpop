@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -241,9 +241,9 @@ public class GryoMapperTest {
     }
 
     @Test
-    public void shouldHandleBulkedResult() throws Exception  {
-        final RemoteTraverser<Integer> br = new RemoteTraverser<>(123, 1000);
-        final RemoteTraverser inOut = serializeDeserialize(br, RemoteTraverser.class);
+    public void shouldHandleDefaultRemoteTraverser() throws Exception  {
+        final DefaultRemoteTraverser<Integer> br = new DefaultRemoteTraverser<>(123, 1000);
+        final DefaultRemoteTraverser inOut = serializeDeserialize(br, DefaultRemoteTraverser.class);
         assertEquals(br.bulk(), inOut.bulk());
         assertEquals(br.get(), inOut.get());
     }

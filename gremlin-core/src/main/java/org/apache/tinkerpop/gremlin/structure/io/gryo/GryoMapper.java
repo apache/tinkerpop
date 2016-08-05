@@ -22,8 +22,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverserSerializers;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverserSerializers;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -323,7 +323,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
-            add(GryoTypeReg.of(RemoteTraverser.class, 123, new RemoteTraverserSerializers.GryoSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new DefaultRemoteTraverserSerializers.GryoSerializer()));  // ***LAST ID***
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
 

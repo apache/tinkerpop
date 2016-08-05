@@ -26,24 +26,24 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class RemoteTraverserSerializers {
+public final class DefaultRemoteTraverserSerializers {
 
-    private RemoteTraverserSerializers() {}
+    private DefaultRemoteTraverserSerializers() {}
 
     /**
-     * Serializes {@link RemoteTraverser} to and from Gryo.
+     * Serializes {@link DefaultRemoteTraverser} to and from Gryo.
      */
-    public final static class GryoSerializer implements SerializerShim<RemoteTraverser> {
+    public final static class GryoSerializer implements SerializerShim<DefaultRemoteTraverser> {
         @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final RemoteTraverser remoteTraverser) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final DefaultRemoteTraverser remoteTraverser) {
             kryo.writeClassAndObject(output, remoteTraverser.get());
             output.writeLong(remoteTraverser.bulk());
         }
 
         @Override
-        public <I extends InputShim> RemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<RemoteTraverser> remoteTraverserClass) {
+        public <I extends InputShim> DefaultRemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<DefaultRemoteTraverser> remoteTraverserClass) {
             final Object o = kryo.readClassAndObject(input);
-            return new RemoteTraverser<>(o, input.readLong());
+            return new DefaultRemoteTraverser<>(o, input.readLong());
         }
     }
 }

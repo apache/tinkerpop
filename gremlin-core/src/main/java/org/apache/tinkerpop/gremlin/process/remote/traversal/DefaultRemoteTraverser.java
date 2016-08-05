@@ -18,29 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
-
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteTraverser<T> extends AbstractTraverser<T> {
-    private final long bulk;
-
-    public RemoteTraverser(T t, final long bulk) {
-        super(t);
-        this.bulk = bulk;
-    }
-
-    @Override
-    public long bulk() {
-        return this.bulk;
-    }
-
-    @Override
-    public Set<String> getTags() {
-        return Collections.emptySet();
+public class DefaultRemoteTraverser<T> extends AbstractRemoteTraverser<T> {
+    public DefaultRemoteTraverser(final T t, final long bulk) {
+        super(t, bulk);
     }
 }

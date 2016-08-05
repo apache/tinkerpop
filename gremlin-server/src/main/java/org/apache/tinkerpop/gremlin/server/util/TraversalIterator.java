@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
@@ -49,6 +49,6 @@ public class TraversalIterator implements Iterator<Object> {
     @Override
     public Object next() {
         final Traverser.Admin t = this.haltedTraverserStrategy.halt((Traverser.Admin) traversalIterator.next());
-        return new RemoteTraverser<>(t.get(), t.bulk());
+        return new DefaultRemoteTraverser<>(t.get(), t.bulk());
     }
 }

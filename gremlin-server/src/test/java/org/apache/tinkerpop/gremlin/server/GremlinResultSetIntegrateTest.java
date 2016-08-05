@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -125,7 +125,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final ResultSet resultSet = aliased.submit(g.V().both().barrier().both().barrier());
         final List<Result> results = resultSet.all().get();
 
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(RemoteTraverser.class));
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(DefaultRemoteTraverser.class));
         assertEquals(6, results.size());
 
         aliased.close();

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -88,7 +88,7 @@ public class SideEffectIterator implements Iterator<Object> {
         @Override
         public Object next() {
             final Map.Entry<Object, Long> entry = itty.next();
-            return new RemoteTraverser<>(entry.getKey(), entry.getValue());
+            return new DefaultRemoteTraverser<>(entry.getKey(), entry.getValue());
         }
     }
 }
