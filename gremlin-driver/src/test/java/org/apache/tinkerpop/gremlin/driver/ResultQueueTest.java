@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
 
@@ -299,19 +299,19 @@ public class ResultQueueTest extends AbstractResultQueueTest {
     public void shouldHandleBulkSetSideEffects() {
         assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
 
-        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("stephen", 1));
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("stephen", 1));
         assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
         assertEquals(1, ((BulkSet) resultQueue.getSideEffect("a")).get("stephen"));
 
-        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("brian", 2));
+        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("brian", 2));
         assertThat(resultQueue.getSideEffectKeys(), hasItem("b"));
         assertEquals(2, ((BulkSet) resultQueue.getSideEffect("b")).get("brian"));
 
-        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("brian", 2));
+        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("brian", 2));
         assertThat(resultQueue.getSideEffectKeys(), hasItem("b"));
         assertEquals(4, ((BulkSet) resultQueue.getSideEffect("b")).get("brian"));
 
-        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("belinda", 6));
+        resultQueue.addSideEffect("b", Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("belinda", 6));
         assertThat(resultQueue.getSideEffectKeys(), hasItem("b"));
         assertEquals(6, ((BulkSet) resultQueue.getSideEffect("b")).get("belinda"));
 
@@ -321,7 +321,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
     public void shouldNotMixAggregatesForBulkSet() {
         assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
 
-        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("stephen", 1));
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("stephen", 1));
         assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
         assertEquals(1, ((BulkSet) resultQueue.getSideEffect("a")).get("stephen"));
 
@@ -360,7 +360,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
     public void shouldNotMixAggregatesForList() {
         assertThat(resultQueue.getSideEffectKeys().isEmpty(), is(true));
 
-        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new BulkedResult("stephen", 1));
+        resultQueue.addSideEffect("a", Tokens.VAL_AGGREGATE_TO_BULKSET, new RemoteTraverser<>("stephen", 1));
         assertThat(resultQueue.getSideEffectKeys(), hasItem("a"));
         assertEquals(1, ((BulkSet) resultQueue.getSideEffect("a")).get("stephen"));
 

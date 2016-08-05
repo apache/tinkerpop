@@ -19,8 +19,8 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.javatuples.Pair;
 
@@ -83,7 +83,7 @@ final class ResultQueue {
     public void addSideEffect(final String k, final String aggregateTo, final Object sideEffectValue) {
         switch (aggregateTo) {
             case Tokens.VAL_AGGREGATE_TO_BULKSET:
-                if (!(sideEffectValue instanceof BulkedResult))
+                if (!(sideEffectValue instanceof Traverser.Admin))
                     throw new IllegalStateException(String.format("Side-effect \"%s\" value %s is a %s which does not aggregate to %s",
                             k, sideEffectValue, sideEffectValue.getClass().getSimpleName(), aggregateTo));
 
@@ -91,8 +91,8 @@ final class ResultQueue {
                     putIfAbsent(k, new BulkSet());
 
                 final BulkSet<Object> bs = validateAndGet(k, aggregateTo, BulkSet.class);
-                final BulkedResult bulkedResult = (BulkedResult) sideEffectValue;
-                bs.add(bulkedResult.getResult(), bulkedResult.getBulk());
+                final Traverser.Admin traverser = (Traverser.Admin) sideEffectValue;
+                bs.add(traverser.get(), traverser.bulk());
                 break;
             case Tokens.VAL_AGGREGATE_TO_LIST:
                 if (!sideEffectResult.containsKey(k))

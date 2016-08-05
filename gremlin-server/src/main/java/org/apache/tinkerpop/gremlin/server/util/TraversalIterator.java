@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -90,7 +90,7 @@ public class TraversalIterator implements Iterator<Object> {
         // first iterate the traversal end step
         if (traversalIterator.hasNext()) {
             final Traverser.Admin t = this.haltedTraverserStrategy.halt((Traverser.Admin) traversalIterator.next());
-            next = new BulkedResult(t.get(), t.bulk());
+            next = new RemoteTraverser<>(t.get(), t.bulk());
 
             // since there are no items left in the "result" then get the side-effect keys iterator
             if (!traversalIterator.hasNext())
@@ -149,7 +149,7 @@ public class TraversalIterator implements Iterator<Object> {
         @Override
         public Object next() {
             final Map.Entry<Object, Long> entry = itty.next();
-            return new BulkedResult(entry.getKey(), entry.getValue());
+            return new RemoteTraverser<>(entry.getKey(), entry.getValue());
         }
     }
 }

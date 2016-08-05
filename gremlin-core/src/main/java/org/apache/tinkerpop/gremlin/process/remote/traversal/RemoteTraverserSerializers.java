@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.remote.traversal.step.util;
+package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
@@ -26,22 +26,24 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class BulkedResultSerializers {
+public final class RemoteTraverserSerializers {
+
+    private RemoteTraverserSerializers() {}
 
     /**
-     * Serializes {@link BulkedResult} to and from Gryo.
+     * Serializes {@link RemoteTraverser} to and from Gryo.
      */
-    public final static class BulkedResultGryoSerializer implements SerializerShim<BulkedResult> {
+    public final static class GryoSerializer implements SerializerShim<RemoteTraverser> {
         @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final BulkedResult bulkedResult) {
-            kryo.writeClassAndObject(output, bulkedResult.getResult());
-            output.writeLong(bulkedResult.getBulk());
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final RemoteTraverser remoteTraverser) {
+            kryo.writeClassAndObject(output, remoteTraverser.get());
+            output.writeLong(remoteTraverser.bulk());
         }
 
         @Override
-        public <I extends InputShim> BulkedResult read(final KryoShim<I, ?> kryo, final I input, final Class<BulkedResult> bulkedResultClass) {
+        public <I extends InputShim> RemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<RemoteTraverser> remoteTraverserClass) {
             final Object o = kryo.readClassAndObject(input);
-            return new BulkedResult(o, input.readLong());
+            return new RemoteTraverser<>(o, input.readLong());
         }
     }
 }

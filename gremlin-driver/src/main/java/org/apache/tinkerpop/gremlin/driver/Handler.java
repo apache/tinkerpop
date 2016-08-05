@@ -29,7 +29,6 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,13 +230,7 @@ final class Handler {
 
         private void tryUnrollBulkedResult(final ResultQueue queue, final Object item) {
             if (unrollTraversers) {
-                if (item instanceof BulkedResult) {
-                    final BulkedResult t = (BulkedResult) item;
-                    final Object result = t.getResult();
-                    for (long ix = 0; ix < t.getBulk(); ix++) {
-                        queue.add(new Result(result));
-                    }
-                } else if (item instanceof Traverser.Admin) {
+                if (item instanceof Traverser.Admin) {
                     // TODO: i think this is just temporary code - needed for backward compatibility to the old way of serializing Traversal with java serialization
                     final Traverser.Admin t = (Traverser.Admin) item;
                     final Object result = t.get();

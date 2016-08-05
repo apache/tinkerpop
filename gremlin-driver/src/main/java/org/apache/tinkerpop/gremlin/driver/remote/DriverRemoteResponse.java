@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteResponse;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.step.util.BulkedResult;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -85,8 +84,7 @@ public class DriverRemoteResponse<E> implements RemoteResponse<E> {
 
         @Override
         public Traverser.Admin<E> next() {
-            final BulkedResult<E> br = (BulkedResult) inner.next().getObject();
-            return new RemoteTraverser<>(br.getResult(), br.getBulk());
+            return (RemoteTraverser<E>) inner.next().getObject();
         }
     }
 
