@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -158,6 +159,9 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
     public static boolean isLegal(final Traversal.Admin<?, ?> traversal) {
         final Step<?, ?> startStep = traversal.getStartStep();
         final Step<?, ?> endStep = traversal.getEndStep();
+        // right now this is not supported because of how the SparkStarBarrierInterceptor mutates the traversal prior to local evaluation
+        if (traversal.getStrategies().toList().stream().filter(strategy -> strategy instanceof SubgraphStrategy).findAny().isPresent())
+            return false;
         if (!startStep.getClass().equals(GraphStep.class) || ((GraphStep) startStep).returnsEdge())
             return false;
         if (!endStep.getClass().equals(CountGlobalStep.class) &&
