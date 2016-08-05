@@ -204,11 +204,11 @@ Jython 2.7.0 (default:9987c746f838, Apr 29 2015, 02:25:11)
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import sys
 # this list is longer than displayed, including all jars in lib/, not just Apache TinkerPop jars
->>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-console-x.y.z.jar")
->>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-core-x.y.z.jar")
->>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-driver-x.y.z.jar")
->>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/lib/gremlin-shaded-x.y.z.jar")
->>> sys.path.append("/usr/local/apache-gremlin-console-x.y.z-standalone/ext/tinkergraph-gremlin/lib/tinkergraph-gremlin-x.y.z.jar")
+>>> sys.path.append("/usr/local/apache-tinkerpop-gremlin-console-x.y.z-standalone/lib/gremlin-console-x.y.z.jar")
+>>> sys.path.append("/usr/local/apache-tinkerpop-gremlin-console-x.y.z-standalone/lib/gremlin-core-x.y.z.jar")
+>>> sys.path.append("/usr/local/apache-tinkerpop-gremlin-console-x.y.z-standalone/lib/gremlin-driver-x.y.z.jar")
+>>> sys.path.append("/usr/local/apache-tinkerpop-gremlin-console-x.y.z-standalone/lib/gremlin-shaded-x.y.z.jar")
+>>> sys.path.append("/usr/local/apache-tinkerpop-gremlin-console-x.y.z-standalone/ext/tinkergraph-gremlin/lib/tinkergraph-gremlin-x.y.z.jar")
 # import Java classes
 >>> from org.apache.tinkerpop.gremlin.tinkergraph.structure import TinkerFactory
 >>> from org.apache.tinkerpop.gremlin.process.traversal.dsl.graph import __
