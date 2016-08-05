@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTra
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractRemoteTraverser<T> extends AbstractTraverser<T> implements RemoteTraverser<T> {
-    private final long bulk;
+    private long bulk;
 
     public AbstractRemoteTraverser(final T t, final long bulk) {
         super(t);
@@ -34,5 +34,10 @@ public abstract class AbstractRemoteTraverser<T> extends AbstractTraverser<T> im
     @Override
     public long bulk() {
         return this.bulk;
+    }
+
+    @Override
+    public void setBulk(final long bulk) {
+        this.bulk = bulk;
     }
 }

@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTrave
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -44,8 +44,7 @@ import java.util.function.Supplier;
 public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
     private final Iterator<Traverser.Admin<E>> traversers;
-    private long lastEndCount = 0;
-    private E lastEnd = null;
+    private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
     private final RemoteTraversalSideEffects sideEffects;
 
     public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
@@ -68,38 +67,34 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
         return this.sideEffects;
     }
 
-    private void moveTraverserCursor() {
-        while (0 == this.lastEndCount) {
-            if (this.traversers.hasNext()) {
-                final Traverser.Admin<E> traverser = this.traversers.next();
-                this.lastEndCount = traverser.bulk();
-                this.lastEnd = traverser.get();
-            }
+    @Override
+    public boolean hasNext() {
+        return this.lastTraverser.bulk() > 0L || this.traversers.hasNext();
+    }
+
+    @Override
+    public E next() {
+        if (0L == this.lastTraverser.bulk())
+            this.lastTraverser = this.traversers.next();
+        if (1L == this.lastTraverser.bulk()) {
+            final E temp = this.lastTraverser.get();
+            this.lastTraverser = EmptyTraverser.instance();
+            return temp;
+        } else {
+            this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
+            return this.lastTraverser.get();
         }
     }
 
     @Override
-    public boolean hasNext() {
-        this.moveTraverserCursor();
-        return 0 != this.lastEndCount;
-    }
-
-
-    @Override
-    public E next() {
-        this.moveTraverserCursor();
-        if (0 == this.lastEndCount) throw FastNoSuchElementException.instance();
-        return this.lastEnd;
-    }
-
-    @Override
     public Traverser.Admin<E> nextTraverser() {
-        return this.traversers.next();
-    }
-
-    @Override
-    public boolean hasNextTraverser() {
-        return this.traversers.hasNext();
+        if (0L == this.lastTraverser.bulk())
+            return this.traversers.next();
+        else {
+            final Traverser.Admin<E> temp = this.lastTraverser;
+            this.lastTraverser = EmptyTraverser.instance();
+            return temp;
+        }
     }
 
     static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {

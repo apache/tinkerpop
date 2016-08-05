@@ -55,7 +55,7 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
                 .asAdmin();
         final List<Integer> sacks = new ArrayList<>();
         final List<Integer> lengths = new ArrayList<>();
-        while (t.hasNextTraverser()) {
+        while (t.hasNext()) {
             final Traverser.Admin<Integer> traverser = t.nextTraverser();
             sacks.add(traverser.sack());
             lengths.add(traverser.get());

@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -40,13 +39,11 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     private transient RemoteConnection remoteConnection;
     private RemoteTraversal<?, E> remoteTraversal;
-    private Bytecode bytecode;
 
     @SuppressWarnings("unchecked")
     public RemoteStep(final Traversal.Admin traversal, final RemoteConnection remoteConnection) {
         super(traversal);
         this.remoteConnection = remoteConnection;
-        this.bytecode = traversal.getBytecode();
     }
 
     @Override
@@ -59,14 +56,14 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (null == this.remoteTraversal) {
             try {
-                remoteTraversal = this.remoteConnection.submit(this.bytecode);
-                this.traversal.setSideEffects(remoteTraversal.getSideEffects());
+                this.remoteTraversal = this.remoteConnection.submit(this.traversal.getBytecode());
+                this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
             }
         }
-
-        final Traverser.Admin<E> traverser = this.remoteTraversal.nextTraverser();
-        return this.getTraversal().getTraverserGenerator().generate(traverser.get(), (Step) this, traverser.bulk());
+        return this.remoteTraversal.nextTraverser();
+        //final Traverser.Admin<E> remoteTraverser = this.remoteTraversal.nextTraverser();
+        //return this.getTraversal().getTraverserGenerator().generate(remoteTraverser.get(), (Step) this, remoteTraverser.bulk());
     }
 }

@@ -464,9 +464,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             return this.getEndStep().next();
         }
 
-        public default boolean hasNextTraverser() {
-            return this.getEndStep().hasNext();
-        }
     }
 
 }

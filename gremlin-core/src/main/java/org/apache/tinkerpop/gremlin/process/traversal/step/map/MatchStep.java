@@ -367,7 +367,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             } else { // TODO: if(standardAlgorithmBarrier.isEmpty()) -- leads to consistent counts without retracting paths, but orders of magnitude slower (or make Traverser.tags an equality concept)
                 boolean stop = false;
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
-                    while (matchTraversal.hasNextTraverser()) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
+                    while (matchTraversal.hasNext()) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
                         this.standardAlgorithmBarrier.add(matchTraversal.nextTraverser());
                         if (null == this.keepLabels || this.standardAlgorithmBarrier.size() >= PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) {
                             stop = true;
