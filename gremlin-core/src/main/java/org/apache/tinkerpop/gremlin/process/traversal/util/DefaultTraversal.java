@@ -164,7 +164,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Traverser.Admin<E> nextTraverser() {
         if (!this.locked) this.applyStrategies();
-        if (this.lastTraverser.bulk() > 0) {
+        if (this.lastTraverser.bulk() > 0L) {
             final Traverser.Admin<E> temp = this.lastTraverser;
             this.lastTraverser = EmptyTraverser.instance();
             return temp;
@@ -182,20 +182,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public E next() {
         if (!this.locked) this.applyStrategies();
-        if (this.lastTraverser.bulk() > 0) {
-            this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
-            return this.lastTraverser.get();
-        } else {
+        if (this.lastTraverser.bulk() == 0L)
             this.lastTraverser = this.finalEndStep.next();
-            if (this.lastTraverser.bulk() == 1) {
-                final E temp = this.lastTraverser.get();
-                this.lastTraverser = EmptyTraverser.instance();
-                return temp;
-            } else {
-                this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
-                return this.lastTraverser.get();
-            }
-        }
+        this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
+        return this.lastTraverser.get();
     }
 
     @Override
