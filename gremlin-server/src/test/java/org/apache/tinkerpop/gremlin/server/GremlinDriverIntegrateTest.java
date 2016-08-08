@@ -125,8 +125,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
             case "shouldProcessSessionRequestsInOrderAfterTimeout":
-                settings.scriptEvaluationTimeout = 1000;
-                settings.threadPoolWorker = 2;
+                settings.scriptEvaluationTimeout = 250;
+                settings.threadPoolWorker = 1;
                 break;
         }
 
@@ -1210,48 +1210,55 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect(name.getMethodName());
 
-        final ResultSet first = client.submit(
-                "Object mon1 = 'mon1';\n" +
-                        "synchronized (mon1) {\n" +
-                        "    mon1.wait();\n" +
-                        "} ");
+        for(int index = 0; index < 50; index++)
+        {
+            final CompletableFuture<ResultSet> first = client.submitAsync(
+                    "Object mon1 = 'mon1';\n" +
+                            "synchronized (mon1) {\n" +
+                            "    mon1.wait();\n" +
+                            "} ");
 
-        final ResultSet second = client.submit(
-                "Object mon2 = 'mon2';\n" +
-                        "synchronized (mon2) {\n" +
-                        "    mon2.wait();\n" +
-                        "}");
+            final CompletableFuture<ResultSet> second = client.submitAsync(
+                    "Object mon2 = 'mon2';\n" +
+                            "synchronized (mon2) {\n" +
+                            "    mon2.wait();\n" +
+                            "}");
 
-        final CompletableFuture<List<Result>> futureFirst = first.all();
-        final CompletableFuture<List<Result>> futureSecond = second.all();
+            final CompletableFuture<ResultSet> third = client.submitAsync(
+                    "Object mon3 = 'mon3';\n" +
+                            "synchronized (mon3) {\n" +
+                            "    mon3.wait();\n" +
+                            "}");
 
-        final AtomicBoolean hit = new AtomicBoolean(false);
-        while (!futureFirst.isDone()) {
-            // futureSecond can't finish before futureFirst - racy business here?
-            assertThat(futureSecond.isDone(), is(false));
-            hit.set(true);
+            final CompletableFuture<ResultSet> fourth = client.submitAsync(
+                    "Object mon4 = 'mon4';\n" +
+                            "synchronized (mon4) {\n" +
+                            "    mon4.wait();\n" +
+                            "}");
+
+            final CompletableFuture<List<Result>> futureFirst = first.get().all();
+            final CompletableFuture<List<Result>> futureSecond = second.get().all();
+            final CompletableFuture<List<Result>> futureThird = third.get().all();
+            final CompletableFuture<List<Result>> futureFourth = fourth.get().all();
+
+            assertFutureTimeout(futureFirst);
+            assertFutureTimeout(futureSecond);
+            assertFutureTimeout(futureThird);
+            assertFutureTimeout(futureFourth);
         }
+    }
 
-        // should have entered the loop at least once and thus proven that futureSecond didn't return ahead of
-        // futureFirst
-        assertThat(hit.get(), is(true));
-
-        try {
+    private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
+        try
+        {
             futureFirst.get();
             fail("Should have timed out");
-        } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 1000 ms for request"));
         }
-
-        try {
-            futureSecond.get();
-            fail("Should have timed out");
-        } catch (Exception ex) {
+        catch (Exception ex)
+        {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 1000 ms for request"));
+            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms for request"));
         }
     }
 }

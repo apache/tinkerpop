@@ -1381,7 +1381,7 @@ Tuning
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
 * Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.  Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.sh`.
-* When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`. Note that if using sessions that will accept parallel requests on the same session, then this value should be no less than `2`.
+* When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
 by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in
 this pool.  When this pool is exhausted of threads, Gremlin Server will continue to accept incoming requests, but
@@ -1527,10 +1527,6 @@ request.
 
 A session is a "heavier" approach to the simple "request/response" approach of sessionless requests, but is sometimes
 necessary for a given use case.
-
-IMPORTANT: If submitting requests in parallel to a single session in Gremlin Server, then the `threadPoolWorker`
-setting can be no less than `2` or else the session may be prone to becoming locked if scripts sent on that session
-tend to block for extended periods of time.
 
 [[considering-transactions]]
 Considering Transactions

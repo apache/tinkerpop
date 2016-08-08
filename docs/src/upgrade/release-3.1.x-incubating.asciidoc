@@ -22,6 +22,26 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *A 187 On The Undercover Gremlinz*
 
+TinkerPop 3.1.4
+---------------
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asciidoc#tinkerpop-314-release-date-XXXXXXX-XX-2016[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Gremlin Server Workers
+^^^^^^^^^^^^^^^^^^^^^^
+
+In release 3.1.3, a link:http://tinkerpop.apache.org/docs/3.1.3/upgrade/#_tinkerpop_3_1_3[recommendation] was made to
+ensure that the `threadPoolWorker` setting for Gremlin Server was no less than `2` in cases where Gremlin Server was
+being used with sessions that accept parallel requests. In 3.1.4, that is no longer the case and a size of `1` remains
+acceptable even in that specific case.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1350[TINKERPOP-1350]
+
 TinkerPop 3.1.3
 ---------------
 
@@ -73,8 +93,6 @@ with sessions that accept parallel requests, then this value should be no less t
 those that block for an extended period of time) may cause Gremlin Server to lock up the session.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1350[TINKERPOP-1350]
-
-
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
