@@ -230,7 +230,8 @@ final class Connection {
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        future.complete(new ResultSet(handler, cluster.executor(), readCompleted, requestMessage));
+                        future.complete(new ResultSet(handler, cluster.executor(), readCompleted,
+                                requestMessage, pool.host));
                     }
                 });
         channel.writeAndFlush(requestMessage, promise);

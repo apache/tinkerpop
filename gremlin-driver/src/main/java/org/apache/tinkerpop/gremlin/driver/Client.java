@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -473,7 +474,15 @@ public abstract class Client {
          */
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
-            final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
+            final Iterator<Host> possibleHosts;
+            if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
+                // TODO: not sure what should be done if unavailable - select new host and re-submit traversal?
+                final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
+                msg.getArgs().remove(Tokens.ARGS_HOST);
+                possibleHosts = IteratorUtils.of(host);
+            } else {
+                possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
+            }
 
             // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
             // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).

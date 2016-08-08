@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Host;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -38,20 +39,25 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
     private final Client client;
     private Set<String> keys = null;
     private final UUID serverSideEffect;
+    private final Host host;
 
     private final Map<String, Object> sideEffects = new HashMap<>();
 
-    public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect) {
+    public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host) {
         this.client = client;
         this.serverSideEffect = serverSideEffect;
+        this.host = host;
     }
 
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
         if (!sideEffects.containsKey(key)) {
+            // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
+            // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
             final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
                     .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffect)
                     .addArg(Tokens.ARGS_SIDE_EFFECT_KEY, key)
+                    .addArg(Tokens.ARGS_HOST, host)
                     .processor("traversal").create();
             try {
                 final Result result = client.submitAsync(msg).get().one();
@@ -67,8 +73,11 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
     @Override
     public Set<String> keys() {
         if (null == keys) {
+            // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
+            // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
             final RequestMessage msg = RequestMessage.build(Tokens.OPS_KEYS)
                     .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffect)
+                    .addArg(Tokens.ARGS_HOST, host)
                     .processor("traversal").create();
             try {
                 keys = client.submitAsync(msg).get().all().get().stream().map(r -> r.getString()).collect(Collectors.toSet());

@@ -59,7 +59,10 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
             this.traversers = new TraverserIterator<>(rs.iterator());
         }
 
-        this.sideEffects = new DriverRemoteTraversalSideEffects(client, rs.getOriginalRequestMessage().getRequestId());
+        this.sideEffects = new DriverRemoteTraversalSideEffects(
+                client,
+                rs.getOriginalRequestMessage().getRequestId(),
+                rs.getHost());
     }
 
     @Override

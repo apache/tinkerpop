@@ -45,7 +45,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
     @Before
     public void setupThis() {
-        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create());
+        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
     }
 
     @Test

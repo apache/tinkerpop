@@ -73,6 +73,7 @@ public final class Tokens {
     public static final String ARGS_GREMLIN = "gremlin";
     public static final String ARGS_LANGUAGE = "language";
     public static final String ARGS_SCRIPT_EVAL_TIMEOUT = "scriptEvaluationTimeout";
+    public static final String ARGS_HOST = "host";
     public static final String ARGS_SESSION = "session";
     public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     public static final String ARGS_SASL = "sasl";
