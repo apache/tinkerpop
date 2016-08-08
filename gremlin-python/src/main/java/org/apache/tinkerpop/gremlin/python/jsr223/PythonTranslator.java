@@ -160,7 +160,9 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     }
 
     private String convertToString(final Object object) {
-        if (object instanceof String)
+        if (object instanceof Bytecode.Binding)
+            return ((Bytecode.Binding) object).variable();
+        else if (object instanceof String)
             return "\"" + object + "\"";
         else if (object instanceof List) {
             final List<String> list = new ArrayList<>(((List) object).size());

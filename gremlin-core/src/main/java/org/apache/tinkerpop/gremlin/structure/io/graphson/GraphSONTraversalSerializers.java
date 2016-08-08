@@ -170,6 +170,24 @@ public final class GraphSONTraversalSerializers {
 
     }
 
+    final static class BindingJacksonSerializer extends StdSerializer<Bytecode.Binding> {
+
+        public BindingJacksonSerializer() {
+            super(Bytecode.Binding.class);
+        }
+
+        @Override
+        public void serialize(final Bytecode.Binding binding, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField("@type", "Binding");
+            jsonGenerator.writeStringField("variable", binding.variable());
+            jsonGenerator.writeObjectField("value", binding.value());
+            jsonGenerator.writeEndObject();
+        }
+
+    }
+
     ///////////////////
     // DESERIALIZERS //
     //////////////////
@@ -190,6 +208,8 @@ public final class GraphSONTraversalSerializers {
                         final String type = argument.get("@type").textValue();
                         if (type.equals("Bytecode"))
                             arguments.add(oc.readValue(argument.traverse(oc), Bytecode.class));
+                        else if (type.equals("Binding"))
+                            arguments.add(oc.readValue(argument.traverse(oc), Bytecode.Binding.class));
                         else if (type.equals("P"))
                             arguments.add(oc.readValue(argument.traverse(oc), P.class));
                         else if (type.equals("Lambda"))
@@ -330,6 +350,23 @@ public final class GraphSONTraversalSerializers {
                     1 == arguments ?
                             new Lambda.OneArgLambda<>(lambda.textValue()) :
                             new Lambda.TwoArgLambda<>(lambda.textValue());
+        }
+    }
+
+    final static class BindingJacksonDeserializer extends StdDeserializer<Bytecode.Binding> {
+
+        public BindingJacksonDeserializer() {
+            super(Bytecode.Binding.class);
+        }
+
+        @Override
+        public Bytecode.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final ObjectCodec oc = jsonParser.getCodec();
+            final JsonNode node = oc.readTree(jsonParser);
+            assert node.get("@type").textValue().equals("Binding");
+            final String variable = node.get("variable").textValue();
+            final Object value = oc.readValue(node.get("value").traverse(oc), Object.class);
+            return new Bytecode.Binding<>(variable, value);
         }
     }
 

@@ -17,20 +17,28 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RemoteGraphGroovyTranslatorProvider extends RemoteGraphProvider {
+public class Bindings {
 
-    @Override
-    public GraphTraversalSource traversal(final Graph graph) {
-        return graph.traversal().withTranslator(GroovyTranslator.of("g","__"));
+    private final Map<Object, String> map = new HashMap<>();
+
+    public <V> V of(final String variable, final V value) {
+        this.map.put(value, variable);
+        return value;
+    }
+
+    public <V> String get(final V value) {
+        return this.map.get(value);
+    }
+
+    public void clear() {
+        this.map.clear();
     }
 }

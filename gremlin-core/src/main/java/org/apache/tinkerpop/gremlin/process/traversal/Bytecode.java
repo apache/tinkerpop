@@ -25,7 +25,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * When a {@link TraversalSource} is manipulated, a {@link Traversal} is spawned and then mutated, a language
@@ -40,14 +42,22 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
-    // private transient List<Instruction> instructions = null;
+    private transient Bindings bindings = null;
+    private Map<String, Object> map = new HashMap<>();
 
     public void addSource(final String sourceName, final Object... arguments) {
-        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+        if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
+            this.bindings = (Bindings) arguments[0];
+            this.bindings.clear();
+        } else {
+            this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+            if (null != this.bindings) this.bindings.clear();
+        }
     }
 
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
+        if (null != this.bindings) this.bindings.clear();
     }
 
     public List<Instruction> getSourceInstructions() {
@@ -58,14 +68,9 @@ public final class Bytecode implements Cloneable, Serializable {
         return Collections.unmodifiableList(this.stepInstructions);
     }
 
-    /*public List<Instruction> getInstructions() {
-        if (null == this.instructions) {
-            this.instructions = new ArrayList<>();
-            this.instructions.addAll(this.sourceInstructions);
-            this.instructions.addAll(this.stepInstructions);
-        }
-        return this.instructions;
-    }*/
+    public Map<String, Object> getBindings() {
+        return this.map;
+    }
 
     @Override
     public String toString() {
@@ -91,7 +96,6 @@ public final class Bytecode implements Cloneable, Serializable {
             final Bytecode clone = (Bytecode) super.clone();
             clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
             clone.stepInstructions = new ArrayList<>(this.stepInstructions);
-            //clone.instructions = null;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -142,9 +146,45 @@ public final class Bytecode implements Cloneable, Serializable {
 
     }
 
+    public static class Binding<V> {
+
+        private final String variable;
+        private final V value;
+
+        public Binding(final String variable, final V value) {
+            this.variable = variable;
+            this.value = value;
+        }
+
+        public String variable() {
+            return this.variable;
+        }
+
+        public V value() {
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            return "binding[" + this.variable + "=" + this.value + "]";
+        }
+
+        @Override
+        public boolean equals(final Object object) {
+            return object instanceof Binding &&
+                    this.variable.equals(((Binding) object).variable) &&
+                    this.value.equals(((Binding) object).value);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.variable.hashCode() + this.value.hashCode();
+        }
+    }
+
     /////
 
-    private static final Object[] flattenArguments(final Object... arguments) {
+    private final Object[] flattenArguments(final Object... arguments) {
         if (arguments.length == 0)
             return new Object[]{};
         final List<Object> flatArguments = new ArrayList<>();
@@ -159,7 +199,20 @@ public final class Bytecode implements Cloneable, Serializable {
         return flatArguments.toArray();
     }
 
-    private static final Object convertArgument(final Object argument) {
-        return argument instanceof Traversal ? ((Traversal) argument).asAdmin().getBytecode() : argument;
+    private final Object convertArgument(final Object argument) {
+        if (argument instanceof Traversal) {
+            ((Traversal) argument).asAdmin().getBytecode().getBindings().forEach(this.map::put);
+            return ((Traversal) argument).asAdmin().getBytecode();
+        }
+
+        if (null != this.bindings) {
+            final String variable = this.bindings.get(argument);
+            if (null != variable) {
+                this.map.put(variable, argument);
+                return new Binding<>(variable, argument);
+            }
+        }
+
+        return argument;
     }
 }

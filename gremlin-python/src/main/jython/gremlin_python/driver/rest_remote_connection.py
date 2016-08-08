@@ -35,7 +35,7 @@ class RESTRemoteConnection(RemoteConnection):
 
     def submit(self, target_language, bytecode):
         response = requests.post(self.url, data=json.dumps(
-            {"gremlin": bytecode, "source": self.traversal_source, "language": target_language, "bindings": None}))
+            {"gremlin": bytecode, "source": self.traversal_source, "language": target_language, "bindings": bytecode.bindings}))
         if response.status_code != requests.codes.ok:
             raise BaseException(response.text)
         traversers = []

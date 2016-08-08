@@ -79,6 +79,7 @@ public interface TraversalSource extends Cloneable {
             // static fields only
         }
 
+        public static final String withBindings = "withBindings";
         public static final String withSack = "withSack";
         public static final String withStrategies = "withStrategies";
         public static final String withoutStrategies = "withoutStrategies";
@@ -126,6 +127,12 @@ public interface TraversalSource extends Cloneable {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(new TranslationStrategy(clone, translator));
         clone.getBytecode().addSource(Symbols.withTranslator, translator);
+        return clone;
+    }
+
+    public default TraversalSource withBindings(final Bindings bindings) {
+        final TraversalSource clone = this.clone();
+        clone.getBytecode().addSource(Symbols.withBindings, bindings);
         return clone;
     }
 

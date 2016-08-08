@@ -91,9 +91,6 @@ under the License.
                             """  def ${method}(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("${method}", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return traversal
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
@@ -101,9 +98,6 @@ under the License.
                             """  def ${method}(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("${method}", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
 """)
                 }
@@ -132,9 +126,6 @@ under the License.
                 pythonClass.append(
                         """  def ${method}(self, *args):
     self.bytecode.add_step("${method}", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
 """)
             }

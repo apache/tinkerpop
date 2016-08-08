@@ -140,11 +140,13 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(T.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
             addSerializer(P.class, new GraphSONTraversalSerializers.PJacksonSerializer());
             addSerializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonSerializer());
+            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonSerializer());
             // -- deserializers for traversal
             addDeserializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonDeserializer());
             addDeserializer(Enum.class, new GraphSONTraversalSerializers.EnumJacksonDeserializer());
             addDeserializer(P.class, new GraphSONTraversalSerializers.PJacksonDeserializer());
             addDeserializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonDeserializer());
+            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonDeserializer());
 
         }
 

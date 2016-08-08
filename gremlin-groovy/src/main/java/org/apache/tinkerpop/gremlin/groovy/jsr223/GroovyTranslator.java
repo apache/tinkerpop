@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -121,7 +121,9 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     }
 
     private String convertToString(final Object object) {
-        if (object instanceof String)
+        if (object instanceof Bytecode.Binding)
+            return ((Bytecode.Binding) object).variable();
+        else if (object instanceof String)
             return "\"" + object + "\"";
         else if (object instanceof List) {
             final List<String> list = new ArrayList<>(((List) object).size());
