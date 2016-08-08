@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 
 /**
  * A {@code GremlinScriptEngine} is an extension of the standard {@code ScriptEngine} and provides some specific
@@ -40,7 +39,9 @@ public interface GremlinScriptEngine extends ScriptEngine {
      * Evaluates {@link Traversal} {@link Bytecode}.
      */
     public default Traversal.Admin eval(final Bytecode bytecode) throws ScriptException {
-        return eval(bytecode, new SimpleBindings());
+        final Bindings bindings = this.createBindings();
+        bindings.putAll(bytecode.getBindings());
+        return eval(bytecode, bindings);
     }
 
     /**

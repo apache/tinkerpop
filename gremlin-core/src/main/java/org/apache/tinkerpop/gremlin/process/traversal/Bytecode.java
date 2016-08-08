@@ -42,8 +42,8 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
+    // required for Gremlin-Java
     private transient Bindings bindings = null;
-    private Map<String, Object> map = new HashMap<>();
 
     public void addSource(final String sourceName, final Object... arguments) {
         if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
@@ -69,7 +69,23 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     public Map<String, Object> getBindings() {
-        return this.map;
+        final Map<String, Object> bindingsMap = new HashMap<>();
+        for (final Instruction instruction : this.sourceInstructions) {
+            addInstructionBindings(bindingsMap, instruction);
+        }
+        for (final Instruction instruction : this.stepInstructions) {
+            addInstructionBindings(bindingsMap, instruction);
+        }
+        return bindingsMap;
+    }
+
+    private static void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
+        for (final Object argument : instruction.getArguments()) {
+            if (argument instanceof Binding)
+                bindingsMap.put(((Binding) argument).variable, ((Binding) argument).value);
+            if (argument instanceof Bytecode)
+                bindingsMap.putAll(((Bytecode) argument).getBindings());
+        }
     }
 
     @Override
@@ -200,17 +216,13 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     private final Object convertArgument(final Object argument) {
-        if (argument instanceof Traversal) {
-            ((Traversal) argument).asAdmin().getBytecode().getBindings().forEach(this.map::put);
+        if (argument instanceof Traversal)
             return ((Traversal) argument).asAdmin().getBytecode();
-        }
 
         if (null != this.bindings) {
-            final String variable = this.bindings.get(argument);
-            if (null != variable) {
-                this.map.put(variable, argument);
+            final String variable = this.bindings.getBoundVariable(argument);
+            if (null != variable)
                 return new Binding<>(variable, argument);
-            }
         }
 
         return argument;

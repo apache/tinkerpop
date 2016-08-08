@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.jsr223;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = TinkerGraphGraphSONTranslatorProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphGraphSONTranslatorProcessStandardTest {
+@GraphProviderClass(provider = TinkerGraphJavaTranslatorProvider.class, graph = TinkerGraph.class)
+public class TinkerGraphJavaTranslatorProcessStandardTest {
 }

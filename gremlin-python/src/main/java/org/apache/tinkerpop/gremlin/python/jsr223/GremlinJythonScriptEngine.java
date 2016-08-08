@@ -117,7 +117,9 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
 
     @Override
     public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
-        return null;
+        bindings.putAll(bytecode.getBindings());
+        // TODO: this is kinda bad because it makes the assumption that we will always alias to "g" (which is generally true, but maybe better to not hardcode?)
+        return (Traversal.Admin) this.eval(new PythonTranslator("g", "__").translate(bytecode), bindings);
     }
 
     @Override

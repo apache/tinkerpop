@@ -21,6 +21,7 @@ import json
 from abc import abstractmethod
 from aenum import Enum
 
+from traversal import Binding
 from traversal import Bytecode
 from traversal import P
 from traversal import Traversal
@@ -95,6 +96,15 @@ class PSerializer(GraphSONSerializer):
         return dict
 
 
+class BindingSerializer(GraphSONSerializer):
+    def _dictify(self, binding):
+        dict = {}
+        dict["@type"] = "Binding"
+        dict["variable"] = binding.variable
+        dict["value"] = GraphSONWriter._dictify(binding.value)
+        return dict
+
+
 class TraversalSerializer(BytecodeSerializer):
     def _dictify(self, traversal):
         return BytecodeSerializer._dictify(self, traversal.bytecode)
@@ -121,6 +131,7 @@ class _SymbolHelper(object):
 
 serializers = {
     Bytecode: BytecodeSerializer(),
+    Binding: BindingSerializer(),
     P: PSerializer(),
     Enum: EnumSerializer(),
     Traversal: TraversalSerializer()

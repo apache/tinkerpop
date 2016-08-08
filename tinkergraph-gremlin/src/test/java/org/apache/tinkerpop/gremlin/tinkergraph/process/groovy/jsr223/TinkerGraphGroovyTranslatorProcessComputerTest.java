@@ -17,17 +17,17 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = RemoteGraphGroovyTranslatorComputerProvider.class, graph = RemoteGraph.class)
-public class RemoteGraphGroovyTranslatorProcessComputerTest {
+@GraphProviderClass(provider = TinkerGraphGroovyTranslatorComputerProvider.class, graph = TinkerGraph.class)
+public class TinkerGraphGroovyTranslatorProcessComputerTest {
 }

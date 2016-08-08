@@ -17,16 +17,15 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.util.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 
@@ -38,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
+public class TinkerGraphGroovyTranslatorProvider extends TinkerGraphProvider {
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
@@ -71,9 +70,7 @@ public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
         if ((Boolean) graph.configuration().getProperty("skipTest"))
             return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
-        else {
-            final GraphTraversalSource g = graph.traversal();
-            return g.withTranslator(JavaTranslator.of(g,__.class));
-        }
+        else
+            return graph.traversal().withTranslator(GroovyTranslator.of("g","__"));
     }
 }
