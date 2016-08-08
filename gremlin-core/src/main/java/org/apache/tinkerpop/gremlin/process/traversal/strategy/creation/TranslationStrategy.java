@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.creation;
 
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -32,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -64,11 +64,11 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         } else if (this.translator instanceof Translator.ScriptTranslator) {
             try {
                 // script based translation
-                final ScriptEngine scriptEngine = SingleGremlinScriptEngineManager.get(this.translator.getTargetLanguage());
+                final GremlinScriptEngine scriptEngine = SingleGremlinScriptEngineManager.get(this.translator.getTargetLanguage());
                 final Bindings bindings = scriptEngine.createBindings();
-                scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).forEach(bindings::put);
+                bindings.putAll(scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE));
                 bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
-                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(this.translator.translate(traversal.getBytecode()).toString(), bindings);
+                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(traversal.getBytecode(), bindings);
             } catch (final Exception e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
@@ -78,7 +78,7 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         ////////////////
         assert !translatedTraversal.isLocked();
         assert !traversal.isLocked();
-        translatedTraversal.getSideEffects().mergeInto(traversal.getSideEffects());
+        traversal.setSideEffects(translatedTraversal.getSideEffects());
         TraversalHelper.removeAllSteps(traversal);
         TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
     }

@@ -17,21 +17,18 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.process.remote;
 
-import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphComputerProvider;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
-public class TinkerGraphJavaTranslatorComputerProvider extends TinkerGraphJavaTranslatorProvider {
-
-    @Override
-    public GraphTraversalSource traversal(final Graph graph) {
-        return super.traversal(graph).withComputer();
-    }
+@RunWith(ProcessComputerSuite.class)
+@GraphProviderClass(provider = RemoteGraphComputerProvider.class, graph = RemoteGraph.class)
+public class RemoteGraphProcessComputerTest {
 }

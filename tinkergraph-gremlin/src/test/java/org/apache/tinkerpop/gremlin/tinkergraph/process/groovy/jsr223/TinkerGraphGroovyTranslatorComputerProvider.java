@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;

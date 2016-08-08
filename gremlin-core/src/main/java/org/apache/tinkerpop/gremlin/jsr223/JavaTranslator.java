@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.util;
+package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;

@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.JavaTranslator;
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 

@@ -17,38 +17,21 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.jsr223;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-
-import java.util.Random;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
-public class RemoteGraphGroovyTranslatorComputerProvider extends RemoteGraphGroovyTranslatorProvider {
-
-    private final Random RANDOM = new Random();
+public class TinkerGraphJavaTranslatorComputerProvider extends TinkerGraphJavaTranslatorProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        assert graph instanceof RemoteGraph;
-        final int state = RANDOM.nextInt(3);
-        switch (state) {
-            case 0:
-                return super.traversal(graph).withComputer();
-            case 1:
-                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class));
-            case 2:
-                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class).workers(1));
-            default:
-                throw new IllegalStateException("This state should not have occurred: " + state);
-        }
+        return super.traversal(graph).withComputer();
     }
 }

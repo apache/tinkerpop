@@ -75,7 +75,7 @@ under the License.
     return "graphtraversalsource[" + str(self.graph) + "]"
 """)
         GraphTraversalSource.getMethods()
-                .findAll { !it.name.equals("clone") }
+                .findAll { !it.name.equals("clone") && !it.name.equals(TraversalSource.Symbols.withBindings) }
                 .collect { it.name }
                 .unique()
                 .sort { a, b -> a <=> b }

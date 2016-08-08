@@ -17,20 +17,16 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.java.translator;
+package org.apache.tinkerpop.gremlin.tinkergraph.process.jsr223;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.util.JavaTranslator;
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 
@@ -42,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
+public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
 
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
@@ -50,24 +46,14 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
             "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
             "g_VX1X_out_injectXv2X_name",
+            "shouldSupportGraphFilter",
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
             "shouldTraversalResetProperly",
             "shouldHidePartitionKeyForValues",
-            //
-            "g_VXlistXv1_v2_v3XX_name",
-            "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
-            "g_VXv1X_hasXage_gt_30X",
-            "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
-            "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
-            //
-            PageRankTest.Traversals.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
-            EventStrategyProcessTest.class.getCanonicalName(),
-            CoreTraversalTest.class.getCanonicalName(),
-            PartitionStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
 
@@ -87,7 +73,7 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withTranslator(new GraphSONTranslator<>(JavaTranslator.of(g, __.class)));
+            return g.withTranslator(JavaTranslator.of(g,__.class));
         }
     }
 }

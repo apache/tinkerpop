@@ -17,32 +17,17 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.runner.RunWith;
 
 /**
- * Bindings are specific to Gremlin-Java.
- * They enable the creation of {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding} arguments in {@link Bytecode}.
- * Use the Bindings instance when defining a binding via {@link Bindings#of(String, Object)}.
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Bindings {
-
-    private final Map<Object, String> map = new HashMap<>();
-
-    public <V> V of(final String variable, final V value) {
-        this.map.put(value, variable);
-        return value;
-    }
-
-    protected <V> String getBoundVariable(final V value) {
-        return this.map.get(value);
-    }
-
-    protected void clear() {
-        this.map.clear();
-    }
+@RunWith(ProcessComputerSuite.class)
+@GraphProviderClass(provider = TinkerGraphGraphSONTranslatorComputerProvider.class, graph = TinkerGraph.class)
+public class TinkerGraphGraphSONTranslatorProcessComputerTest {
 }

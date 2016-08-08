@@ -45,10 +45,6 @@ class GraphTraversalSource(object):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("inject", *args)
     return traversal
-  def withBindings(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    source.bytecode.add_source("withBindings", *args)
-    return source
   def withBulk(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
