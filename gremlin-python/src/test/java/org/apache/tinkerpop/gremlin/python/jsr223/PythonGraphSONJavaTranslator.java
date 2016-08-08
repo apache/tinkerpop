@@ -19,16 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
+import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import java.io.ByteArrayInputStream;
@@ -74,10 +75,11 @@ public class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends T
 
         try {
             final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-            jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("RemoteGraph(None).traversal()"));
-            final String graphsonBytecode = jythonEngine.eval("GraphSONWriter.writeObject(" + this.pythonTranslator.translate(bytecode) + ")").toString();
-            //System.out.println(graphsonBytecode + "!!!!");
+            final Bindings bindings = jythonEngine.createBindings();
+            bindings.putAll(jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE));
+            bindings.put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("RemoteGraph(None).traversal()"));
+            bindings.putAll(bytecode.getBindings());
+            final String graphsonBytecode = jythonEngine.eval("GraphSONWriter.writeObject(" + this.pythonTranslator.translate(bytecode) + ")", bindings).toString();
             return this.javaTranslator.translate(this.reader.readObject(new ByteArrayInputStream(graphsonBytecode.getBytes()), Bytecode.class));
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);

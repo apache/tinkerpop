@@ -20,12 +20,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -53,21 +50,6 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
         this.factory = new TraversalSourceFactory<>(traversalSource);
         this.scriptEngine = scriptEngine;
         this.script = script;
-        this.bindings = bindings;
-        if (this.bindings.length % 2 != 0)
-            throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
-    }
-
-    public ScriptTraversal(final Traversal traversal, TranslationStrategy translationStrategy, final Object... bindings) {
-        super();
-        final Translator translator = translationStrategy.getTranslator();
-        final TraversalSource traversalSource = translationStrategy.getTraversalSource().clone().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
-        //
-        this.alias = translator.getTraversalSource().toString();
-        this.graph = traversalSource.getGraph();
-        this.factory = new TraversalSourceFactory<>(traversalSource);
-        this.scriptEngine = translator.getTargetLanguage();
-        this.script = translator.translate(traversal.asAdmin().getBytecode()).toString();
         this.bindings = bindings;
         if (this.bindings.length % 2 != 0)
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");

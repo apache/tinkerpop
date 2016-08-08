@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -91,7 +92,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
         final Bytecode clone = BytecodeHelper.filterInstructions(bytecode,
-                instruction -> !Arrays.asList("withTranslator", "withStrategies").contains(instruction.getOperator()));
+                instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies));
         for (final Bytecode.Instruction instruction : clone.getSourceInstructions()) {
             processInstruction(traversalScript, instruction);
         }

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
@@ -43,7 +44,8 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportStringSupplierLambdas() throws Exception {
-        final GraphTraversalSource g = graph.traversal().withTranslator(GroovyTranslator.of("g", "__"));
+        GraphTraversalSource g = graph.traversal();
+        g = g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", "__")));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("it.get().label().equals('person')"))

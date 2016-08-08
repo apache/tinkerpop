@@ -79,11 +79,11 @@ public final class Bytecode implements Cloneable, Serializable {
         return bindingsMap;
     }
 
-    private static void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
+    private static final void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
         for (final Object argument : instruction.getArguments()) {
             if (argument instanceof Binding)
                 bindingsMap.put(((Binding) argument).variable, ((Binding) argument).value);
-            if (argument instanceof Bytecode)
+            else if (argument instanceof Bytecode)
                 bindingsMap.putAll(((Bytecode) argument).getBindings());
         }
     }

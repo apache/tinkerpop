@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
@@ -27,10 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 
@@ -87,7 +88,7 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withTranslator(new GraphSONTranslator<>(JavaTranslator.of(g, __.class)));
+            return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g, __.class))));
         }
     }
 }

@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.python.jsr223;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
@@ -29,10 +30,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
@@ -161,7 +162,8 @@ public class PythonProvider extends AbstractGraphProvider {
             } catch (final ScriptException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            return graph.traversal().withTranslator(new PythonGraphSONJavaTranslator<>(new PythonTranslator("g", "__", IMPORT_STATICS), new JavaTranslator<>(graph.traversal(), __.class))); // the bypass translator will ensure that gremlin-groovy is ultimately used
+            final GraphTraversalSource g = graph.traversal();
+            return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(new PythonTranslator("g", "__", IMPORT_STATICS), new JavaTranslator<>(graph.traversal(), __.class))));
         }
     }
 

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionCompu
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
@@ -70,7 +71,9 @@ public class TinkerGraphGroovyTranslatorProvider extends TinkerGraphProvider {
         if ((Boolean) graph.configuration().getProperty("skipTest"))
             return graph.traversal();
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
-        else
-            return graph.traversal().withTranslator(GroovyTranslator.of("g","__"));
+        else {
+            final GraphTraversalSource g = graph.traversal();
+            return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", "__")));
+        }
     }
 }

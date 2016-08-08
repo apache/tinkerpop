@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
@@ -87,7 +88,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     @Override
     public String translate(final Bytecode bytecode) {
         final String traversal = this.internalTranslate(this.traversalSource, BytecodeHelper.filterInstructions(bytecode,
-                instruction -> !Arrays.asList("withTranslator", "withStrategies").contains(instruction.getOperator())));
+                instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)));
         //if (this.importStatics)
         //    assert !traversal.contains("__.");
         return traversal;

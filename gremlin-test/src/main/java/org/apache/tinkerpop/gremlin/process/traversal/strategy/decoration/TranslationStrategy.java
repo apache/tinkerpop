@@ -17,11 +17,12 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.creation;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -33,14 +34,29 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStrategy.CreationStrategy> implements TraversalStrategy.CreationStrategy {
+public final class TranslationStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private final TraversalSource traversalSource;
     private final Translator translator;
+
+    private static final Set<Class<? extends DecorationStrategy>> POSTS = new HashSet<>(Arrays.asList(
+            ConnectiveStrategy.class,
+            ElementIdStrategy.class,
+            EventStrategy.class,
+            HaltedTraverserStrategy.class,
+            PartitionStrategy.class,
+            RequirementsStrategy.class,
+            SackStrategy.class,
+            SideEffectStrategy.class,
+            SubgraphStrategy.class,
+            RemoteStrategy.class));
 
     public TranslationStrategy(final TraversalSource traversalSource, final Translator translator) {
         this.traversalSource = traversalSource;
@@ -83,12 +99,10 @@ public class TranslationStrategy extends AbstractTraversalStrategy<TraversalStra
         TraversalHelper.removeToTraversal((Step) translatedTraversal.getStartStep(), EmptyStep.instance(), traversal);
     }
 
-    public TraversalSource getTraversalSource() {
-        return this.traversalSource;
-    }
 
-    public Translator getTranslator() {
-        return this.translator;
+    @Override
+    public Set<Class<? extends DecorationStrategy>> applyPost() {
+        return POSTS;
     }
 
 }

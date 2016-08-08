@@ -33,16 +33,17 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -64,7 +65,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Comp
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -134,7 +134,6 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Storage.class);
         CLASS_IMPORTS.add(Configuration.class);
         // strategies
-        CLASS_IMPORTS.add(TranslationStrategy.class);
         CLASS_IMPORTS.add(ConnectiveStrategy.class);
         CLASS_IMPORTS.add(ElementIdStrategy.class);
         CLASS_IMPORTS.add(EventStrategy.class);
@@ -162,6 +161,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(GraphTraversalSource.class);
         CLASS_IMPORTS.add(TraversalMetrics.class);
         CLASS_IMPORTS.add(Translator.class);
+        CLASS_IMPORTS.add(Bindings.class);
         // graph computer
         CLASS_IMPORTS.add(Computer.class);
         CLASS_IMPORTS.add(ComputerResult.class);

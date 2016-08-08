@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -31,6 +31,7 @@ public class RemoteGraphGroovyTranslatorProvider extends RemoteGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        return graph.traversal().withTranslator(GroovyTranslator.of("g","__"));
+        final GraphTraversalSource g = graph.traversal();
+        return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", "__")));
     }
 }
