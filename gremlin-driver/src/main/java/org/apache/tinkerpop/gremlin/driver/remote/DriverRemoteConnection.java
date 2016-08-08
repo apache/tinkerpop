@@ -72,7 +72,7 @@ public class DriverRemoteConnection implements RemoteConnection {
                 cluster = conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) ?
                         Cluster.open(conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE)) : Cluster.open(conf.subset("clusterConfiguration"));
 
-            client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(remoteTraversalSourceName);
+            client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -82,7 +82,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String remoteTraversalSourceName) {
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(remoteTraversalSourceName);
+        client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
     }
@@ -93,7 +93,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
         remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(remoteTraversalSourceName);
+        client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         tryCloseCluster = false;
         this.conf = Optional.of(conf);
     }

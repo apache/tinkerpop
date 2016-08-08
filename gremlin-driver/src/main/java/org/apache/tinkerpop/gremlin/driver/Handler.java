@@ -29,7 +29,6 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,11 +170,9 @@ final class Handler {
     static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
         private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
         private final ConcurrentMap<UUID, ResultQueue> pending;
-        private final boolean unrollTraversers;
 
-        public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending, final Client.Settings settings) {
+        public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending) {
             this.pending = pending;
-            unrollTraversers = settings.unrollTraversers();
         }
 
         @Override
@@ -193,10 +190,10 @@ final class Handler {
                         if (data instanceof List) {
                             // unrolls the collection into individual results to be handled by the queue.
                             final List<Object> listToUnroll = (List<Object>) data;
-                            listToUnroll.forEach(item -> tryUnrollTraverser(queue, item));
+                            listToUnroll.forEach(item -> queue.add(new Result(item)));
                         } else {
                             // since this is not a list it can just be added to the queue
-                            tryUnrollTraverser(queue, response.getResult().getData());
+                            queue.add(new Result(response.getResult().getData()));
                         }
                     } else {
                         // this is the side-effect from the server which is generated from a serialized traversal
@@ -225,23 +222,6 @@ final class Handler {
                 // error handling is at play.
                 ReferenceCountUtil.release(response);
             }
-        }
-
-        private void tryUnrollTraverser(final ResultQueue queue, final Object item) {
-            if (unrollTraversers) {
-                if (item instanceof Traverser.Admin) {
-                    final Traverser.Admin t = (Traverser.Admin) item;
-                    final Object result = t.get();
-                    for (long ix = 0; ix < t.bulk(); ix++) {
-                        queue.add(new Result(result));
-                    }
-                } else {
-                    queue.add(new Result(item));
-                }
-            } else {
-                queue.add(new Result(item));
-            }
-            // TODO: queue.add(new Result(item));
         }
 
         @Override

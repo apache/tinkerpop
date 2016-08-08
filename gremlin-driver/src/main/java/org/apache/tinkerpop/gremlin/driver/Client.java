@@ -23,9 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -707,27 +705,14 @@ public abstract class Client {
      * Settings given to {@link Cluster#connect(Settings)} that configures how a {@link Client} will behave.
      */
     public static class Settings {
-        private final boolean unrollTraversers;
         private final Optional<SessionSettings> session;
 
         private Settings(final Builder builder) {
-            this.unrollTraversers = builder.unrollTraversers;
             this.session = builder.session;
         }
 
         public static Builder build() {
             return new Builder();
-        }
-
-        /**
-         * A request to Gremlin Server may return a {@link Traverser}. By default a {@link Traverser} is "unrolled"
-         * into an actual result on the client side. So, if the {@link Traverser} contained a {@link Vertex} then
-         * the {@link Vertex} would be extracted out of that {@link Traverser} for purposes of the result.  If this
-         * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
-         * and it will be up to the user to work with that component directly.
-         */
-        public boolean unrollTraversers() {
-            return unrollTraversers;
         }
 
         /**
@@ -739,22 +724,9 @@ public abstract class Client {
         }
 
         public static class Builder {
-            private boolean unrollTraversers = true;
             private Optional<SessionSettings> session = Optional.empty();
 
             private Builder() {}
-
-            /**
-             * A request to Gremlin Server may return a {@link Traverser}. By default a {@link Traverser} is "unrolled"
-             * into an actual result on the client side. So, if the {@link Traverser} contained a {@link Vertex} then
-             * the {@link Vertex} would be extracted out of that {@link Traverser} for purposes of the result.  If this
-             * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
-             * and it will be up to the user to work with that component directly.
-             */
-            public Builder unrollTraversers(final boolean unrollTraversers) {
-                this.unrollTraversers = unrollTraversers;
-                return this;
-            }
 
             /**
              * Enables a session. By default this will create a random session name and configure transactions to be

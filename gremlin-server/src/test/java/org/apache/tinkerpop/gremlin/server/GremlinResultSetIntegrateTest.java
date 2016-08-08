@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -100,35 +100,20 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final ResultSet resultSet = aliased.submit(g.V().both().both());
         final List<Result> results = resultSet.all().get();
 
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
         assertEquals(30, results.size());
     }
 
     @Test
-    public void shouldHandleVertexResultFromTraversalAsTraversersUnrolled() throws Exception {
+    public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
         final Client aliased = client.alias("g");
         final ResultSet resultSetUnrolled = aliased.submit(g.V().both().barrier().both().barrier());
         final List<Result> results = resultSetUnrolled.all().get();
 
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
-        assertEquals(30, results.size());
-    }
-
-    @Test
-    public void shouldHandleVertexResultFromTraversalAsTraversers() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final Client clientWithUnrolling = cluster.connect(Client.Settings.build().unrollTraversers(false).create());
-        final Client aliased = clientWithUnrolling.alias("g");
-        final ResultSet resultSet = aliased.submit(g.V().both().barrier().both().barrier());
-        final List<Result> results = resultSet.all().get();
-
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(DefaultRemoteTraverser.class));
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
         assertEquals(6, results.size());
-
-        aliased.close();
     }
 
     @Test
