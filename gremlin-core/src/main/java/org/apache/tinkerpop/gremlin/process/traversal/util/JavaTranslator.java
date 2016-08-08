@@ -121,6 +121,12 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             }
         }
         ///
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof Bytecode.Binding)
+                arguments[i] = ((Bytecode.Binding) arguments[i]).value();
+            else if (arguments[i] instanceof Bytecode)
+                arguments[i] = translateFromAnonymous((Bytecode) arguments[i]);
+        }
         try {
             for (final Method method : methodCache.get(methodName)) {
                 if (returnType.isAssignableFrom(method.getReturnType())) {
@@ -133,9 +139,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                 Object[] varArgs = (Object[]) Array.newInstance(parameters[i].getType().getComponentType(), arguments.length - i);
                                 int counter = 0;
                                 for (int j = i; j < arguments.length; j++) {
-                                    varArgs[counter++] = arguments[j] instanceof Bytecode ?
-                                            this.translateFromAnonymous((Bytecode) arguments[j]) :
-                                            arguments[j];
+                                    varArgs[counter++] = arguments[j];
                                 }
                                 newArguments[i] = varArgs;
                                 break;
@@ -146,11 +150,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                                         (Number.class.isAssignableFrom(arguments[i].getClass()) ||
                                                                 arguments[i].getClass().equals(Boolean.class) ||
                                                                 arguments[i].getClass().equals(Byte.class) ||
-                                                                arguments[i].getClass().equals(Character.class))) ||
-                                                (parameters[i].getType().isAssignableFrom(Traversal.class) && arguments[i] instanceof Bytecode))) {
-                                    newArguments[i] = arguments[i] instanceof Bytecode ?
-                                            this.translateFromAnonymous((Bytecode) arguments[i]) :
-                                            arguments[i];
+                                                                arguments[i].getClass().equals(Character.class))))) {
+                                    newArguments[i] = arguments[i];
                                 } else {
                                     found = false;
                                     break;

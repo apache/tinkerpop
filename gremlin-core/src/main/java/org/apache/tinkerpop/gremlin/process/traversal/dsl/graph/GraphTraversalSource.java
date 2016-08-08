@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -111,6 +112,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     //// CONFIGURATIONS
+
+    @Override
+    public GraphTraversalSource withBindings(final Bindings bindings) {
+        return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
+    }
 
     @Override
     public GraphTraversalSource withTranslator(final Translator translator) {

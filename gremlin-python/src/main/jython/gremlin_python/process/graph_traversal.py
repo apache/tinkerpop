@@ -32,86 +32,54 @@ class GraphTraversalSource(object):
   def E(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("E", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return traversal
   def V(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("V", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return traversal
   def addV(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("addV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return traversal
   def inject(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("inject", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return traversal
+  def withBindings(self, *args):
+    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source.bytecode.add_source("withBindings", *args)
+    return source
   def withBulk(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withComputer(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withComputer", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withPath(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withPath", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withSack(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withSack", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withSideEffect(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withSideEffect", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withStrategies(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withStrategies", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withTranslator(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withTranslator", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
   def withoutStrategies(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("withoutStrategies", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return source
 
 
@@ -120,603 +88,303 @@ class GraphTraversal(Traversal):
     Traversal.__init__(self, graph, traversal_strategies, bytecode)
   def V(self, *args):
     self.bytecode.add_step("V", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _and(self, *args):
     self.bytecode.add_step("_and", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _as(self, *args):
     self.bytecode.add_step("_as", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _from(self, *args):
     self.bytecode.add_step("_from", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _in(self, *args):
     self.bytecode.add_step("_in", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _is(self, *args):
     self.bytecode.add_step("_is", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _not(self, *args):
     self.bytecode.add_step("_not", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def _or(self, *args):
     self.bytecode.add_step("_or", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def addE(self, *args):
     self.bytecode.add_step("addE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def addInE(self, *args):
     self.bytecode.add_step("addInE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def addOutE(self, *args):
     self.bytecode.add_step("addOutE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def addV(self, *args):
     self.bytecode.add_step("addV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def aggregate(self, *args):
     self.bytecode.add_step("aggregate", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def asAdmin(self, *args):
     self.bytecode.add_step("asAdmin", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def barrier(self, *args):
     self.bytecode.add_step("barrier", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def both(self, *args):
     self.bytecode.add_step("both", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def bothE(self, *args):
     self.bytecode.add_step("bothE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def bothV(self, *args):
     self.bytecode.add_step("bothV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def branch(self, *args):
     self.bytecode.add_step("branch", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def by(self, *args):
     self.bytecode.add_step("by", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def cap(self, *args):
     self.bytecode.add_step("cap", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def choose(self, *args):
     self.bytecode.add_step("choose", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def coalesce(self, *args):
     self.bytecode.add_step("coalesce", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def coin(self, *args):
     self.bytecode.add_step("coin", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def constant(self, *args):
     self.bytecode.add_step("constant", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def count(self, *args):
     self.bytecode.add_step("count", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def cyclicPath(self, *args):
     self.bytecode.add_step("cyclicPath", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def dedup(self, *args):
     self.bytecode.add_step("dedup", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def drop(self, *args):
     self.bytecode.add_step("drop", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def emit(self, *args):
     self.bytecode.add_step("emit", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def filter(self, *args):
     self.bytecode.add_step("filter", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def flatMap(self, *args):
     self.bytecode.add_step("flatMap", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def fold(self, *args):
     self.bytecode.add_step("fold", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def group(self, *args):
     self.bytecode.add_step("group", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def groupCount(self, *args):
     self.bytecode.add_step("groupCount", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def groupV3d0(self, *args):
     self.bytecode.add_step("groupV3d0", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def has(self, *args):
     self.bytecode.add_step("has", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def hasId(self, *args):
     self.bytecode.add_step("hasId", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def hasKey(self, *args):
     self.bytecode.add_step("hasKey", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def hasLabel(self, *args):
     self.bytecode.add_step("hasLabel", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def hasNot(self, *args):
     self.bytecode.add_step("hasNot", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def hasValue(self, *args):
     self.bytecode.add_step("hasValue", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def id(self, *args):
     self.bytecode.add_step("id", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def identity(self, *args):
     self.bytecode.add_step("identity", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def inE(self, *args):
     self.bytecode.add_step("inE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def inV(self, *args):
     self.bytecode.add_step("inV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def inject(self, *args):
     self.bytecode.add_step("inject", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def iterate(self, *args):
     self.bytecode.add_step("iterate", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def key(self, *args):
     self.bytecode.add_step("key", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def label(self, *args):
     self.bytecode.add_step("label", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def limit(self, *args):
     self.bytecode.add_step("limit", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def local(self, *args):
     self.bytecode.add_step("local", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def loops(self, *args):
     self.bytecode.add_step("loops", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def map(self, *args):
     self.bytecode.add_step("map", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def mapKeys(self, *args):
     self.bytecode.add_step("mapKeys", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def mapValues(self, *args):
     self.bytecode.add_step("mapValues", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def match(self, *args):
     self.bytecode.add_step("match", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def max(self, *args):
     self.bytecode.add_step("max", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def mean(self, *args):
     self.bytecode.add_step("mean", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def min(self, *args):
     self.bytecode.add_step("min", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def option(self, *args):
     self.bytecode.add_step("option", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def optional(self, *args):
     self.bytecode.add_step("optional", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def order(self, *args):
     self.bytecode.add_step("order", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def otherV(self, *args):
     self.bytecode.add_step("otherV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def out(self, *args):
     self.bytecode.add_step("out", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def outE(self, *args):
     self.bytecode.add_step("outE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def outV(self, *args):
     self.bytecode.add_step("outV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def pageRank(self, *args):
     self.bytecode.add_step("pageRank", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def path(self, *args):
     self.bytecode.add_step("path", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def peerPressure(self, *args):
     self.bytecode.add_step("peerPressure", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def profile(self, *args):
     self.bytecode.add_step("profile", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def program(self, *args):
     self.bytecode.add_step("program", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def project(self, *args):
     self.bytecode.add_step("project", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def properties(self, *args):
     self.bytecode.add_step("properties", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def property(self, *args):
     self.bytecode.add_step("property", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def propertyMap(self, *args):
     self.bytecode.add_step("propertyMap", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def range(self, *args):
     self.bytecode.add_step("range", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def repeat(self, *args):
     self.bytecode.add_step("repeat", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def sack(self, *args):
     self.bytecode.add_step("sack", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def sample(self, *args):
     self.bytecode.add_step("sample", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def select(self, *args):
     self.bytecode.add_step("select", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def sideEffect(self, *args):
     self.bytecode.add_step("sideEffect", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def simplePath(self, *args):
     self.bytecode.add_step("simplePath", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def store(self, *args):
     self.bytecode.add_step("store", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def subgraph(self, *args):
     self.bytecode.add_step("subgraph", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def sum(self, *args):
     self.bytecode.add_step("sum", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def tail(self, *args):
     self.bytecode.add_step("tail", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def timeLimit(self, *args):
     self.bytecode.add_step("timeLimit", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def times(self, *args):
     self.bytecode.add_step("times", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def to(self, *args):
     self.bytecode.add_step("to", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def toE(self, *args):
     self.bytecode.add_step("toE", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def toV(self, *args):
     self.bytecode.add_step("toV", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def tree(self, *args):
     self.bytecode.add_step("tree", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def unfold(self, *args):
     self.bytecode.add_step("unfold", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def union(self, *args):
     self.bytecode.add_step("union", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def until(self, *args):
     self.bytecode.add_step("until", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def value(self, *args):
     self.bytecode.add_step("value", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def valueMap(self, *args):
     self.bytecode.add_step("valueMap", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def values(self, *args):
     self.bytecode.add_step("values", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
   def where(self, *args):
     self.bytecode.add_step("where", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
     return self
 
 

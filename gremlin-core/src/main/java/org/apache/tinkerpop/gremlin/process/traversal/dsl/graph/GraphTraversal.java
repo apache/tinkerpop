@@ -1270,7 +1270,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <M, E2> GraphTraversal<S, E2> branch(final Function<Traverser<E>, M> function) {
-        return this.branch(__.map(function));
+        this.asAdmin().getBytecode().addStep(Symbols.branch, function);
+        final BranchStep<E, E2, M> branchStep = new BranchStep<>(this.asAdmin());
+        branchStep.setBranchTraversal((Traversal.Admin<E, M>) __.map(function));
+        return this.asAdmin().addStep(branchStep);
     }
 
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> choiceTraversal) {
@@ -1285,16 +1288,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
-        return this.choose(__.map(new FunctionTraverser<>(choiceFunction)));
+        this.asAdmin().getBytecode().addStep(Symbols.choose, choiceFunction);
+        return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) __.map(new FunctionTraverser<>(choiceFunction))));
     }
 
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        return this.choose(__.filter(new PredicateTraverser<>(choosePredicate)), trueChoice, falseChoice);
+        this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
+        return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
     public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
-        return this.choose(optionalTraversal, optionalTraversal.asAdmin().clone(), __.identity());
+        this.asAdmin().getBytecode().addStep(Symbols.optional, optionalTraversal);
+        return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) optionalTraversal, (Traversal.Admin<E, E2>) optionalTraversal.asAdmin().clone(), (Traversal.Admin<E, E2>) __.<E2>identity()));
     }
 
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {

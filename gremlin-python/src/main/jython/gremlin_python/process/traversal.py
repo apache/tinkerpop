@@ -28,7 +28,6 @@ class Traversal(object):
         self.side_effects = {}
         self.traversers = None
         self.last_traverser = None
-        self.bindings = {}
 
     def __repr__(self):
         return str(self.bytecode)
@@ -297,6 +296,7 @@ class Bytecode(object):
     def __init__(self, bytecode=None):
         self.source_instructions = []
         self.step_instructions = []
+        self.bindings = {}
         if bytecode is not None:
             self.source_instructions = list(bytecode.source_instructions)
             self.step_instructions = list(bytecode.step_instructions)
@@ -304,20 +304,33 @@ class Bytecode(object):
     def add_source(self, source_name, *args):
         newArgs = ()
         for arg in args:
-            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
+            newArgs = newArgs + (self.__convertArgument(arg),)
         self.source_instructions.append((source_name, newArgs))
         return
 
     def add_step(self, step_name, *args):
         newArgs = ()
         for arg in args:
-            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
+            newArgs = newArgs + (self.__convertArgument(arg),)
         self.step_instructions.append((step_name, newArgs))
         return
 
-    @staticmethod
-    def __convertArgument(arg):
+    def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
+            self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
+        elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+            self.bindings[arg[0]] = arg[1]
+            return Binding(arg[0],arg[1])
         else:
             return arg
+
+'''
+BINDING
+'''
+
+class Binding(object):
+    def __init__(self,variable,value):
+        self.variable = variable
+        self.value = value
+
