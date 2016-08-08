@@ -23,9 +23,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Bindings are specific to Gremlin-Java.
+ * Bindings are used to associate a variable with a value.
  * They enable the creation of {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding} arguments in {@link Bytecode}.
  * Use the Bindings instance when defining a binding via {@link Bindings#of(String, Object)}.
+ * For instance:
+ * <p>
+ * <code>
+ * b = new Bindings()
+ * g = graph.traversal().withBindings(b)
+ * g.V().out(b.of("a","knows"))
+ * // bindings can be reused over and over
+ * g.V().out("knows").in(b.of("a","created"))
+ * </code>
+ * </p>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
