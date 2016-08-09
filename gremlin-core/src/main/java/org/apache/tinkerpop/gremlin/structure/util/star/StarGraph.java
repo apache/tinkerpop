@@ -317,16 +317,13 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-            final Edge edge = this.addOutEdge(label, inVertex, keyValues);
+            final Edge edge;
             if (inVertex.equals(this)) {
-                if(null == this.inEdges)
-                    this.inEdges = new HashMap<>();
-                List<Edge> inE = this.inEdges.get(label);
-                if (null == inE) {
-                    inE = new ArrayList<>();
-                    this.inEdges.put(label, inE);
-                }
-                inE.add(edge);
+                // Handle self-loops specially...
+                edge = addSelfEdge(label, keyValues);
+            } else {
+                // ...and add an out-edge for all other cases
+                edge = this.addOutEdge(label, inVertex, keyValues);
             }
             return edge;
         }
@@ -368,6 +365,37 @@ public final class StarGraph implements Graph, Serializable {
             ElementHelper.attachProperties(inEdge, keyValues);
             inE.add(inEdge);
             return inEdge;
+        }
+
+        Edge addSelfEdge(final String label, final Object... keyValues) {
+            // Create one StarSelfEdge instance.  Store it in both the inEdges and outEdges maps.
+
+            ElementHelper.validateLabel(label);
+            ElementHelper.legalPropertyKeyValueArray(keyValues);
+            final StarEdge selfEdge = new StarSelfEdge(ElementHelper.getIdValue(keyValues).orElse(nextId()), label);
+            ElementHelper.attachProperties(selfEdge, keyValues);
+
+            // add to inEdges
+            if (null == this.inEdges)
+                this.inEdges = new HashMap<>();
+            List<Edge> inE = this.inEdges.get(label);
+            if (null == inE) {
+                inE = new ArrayList<>();
+                this.inEdges.put(label, inE);
+            }
+            inE.add(selfEdge);
+
+            // add to outEdges
+            if (null == this.outEdges)
+                this.outEdges = new HashMap<>();
+            List<Edge> outE = this.outEdges.get(label);
+            if (null == outE) {
+                outE = new ArrayList<>();
+                this.outEdges.put(label, outE);
+            }
+            outE.add(selfEdge);
+
+            return selfEdge;
         }
 
         @Override
@@ -467,14 +495,21 @@ public final class StarGraph implements Graph, Serializable {
                         final Map<String, List<Edge>> outEdges = new HashMap<>();
                         final Map<String, List<Edge>> inEdges = new HashMap<>();
                         graphFilter.legalEdges(this).forEachRemaining(edge -> {
-                            if (edge instanceof StarGraph.StarOutEdge) {
+                            if (edge instanceof StarOutEdge || edge instanceof StarSelfEdge) {
                                 List<Edge> edges = outEdges.get(edge.label());
                                 if (null == edges) {
                                     edges = new ArrayList<>();
                                     outEdges.put(edge.label(), edges);
+                                } else if (edges.contains(edge) && edge instanceof StarSelfEdge) {
+                                    // This is a self-edge, and we've already seen it.
+                                    // Each self-edge is returned by legalEdges twice, but
+                                    // we only need to process it once.  We don't need to
+                                    // continue, and we don't need to check inEdges either.
+                                    return;
                                 }
                                 edges.add(edge);
-                            } else {
+                            }
+                            if (edge instanceof StarInEdge || edge instanceof StarSelfEdge) {
                                 List<Edge> edges = inEdges.get(edge.label());
                                 if (null == edges) {
                                     edges = new ArrayList<>();
@@ -766,6 +801,24 @@ public final class StarGraph implements Graph, Serializable {
         public Vertex inVertex() {
             return starVertex;
         }
+    }
+
+    public final class StarSelfEdge extends StarEdge {
+
+        private StarSelfEdge(final Object id, final String label) {
+            super(id, label, id);
+        }
+
+        @Override
+        public Vertex outVertex() {
+            return starVertex;
+        }
+
+        @Override
+        public Vertex inVertex() {
+            return starVertex;
+        }
+
     }
 
     ////////////////////////
