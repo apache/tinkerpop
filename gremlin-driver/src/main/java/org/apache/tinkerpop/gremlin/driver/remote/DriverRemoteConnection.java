@@ -21,17 +21,16 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Iterator;
@@ -47,20 +46,23 @@ import java.util.function.Supplier;
 public class DriverRemoteConnection implements RemoteConnection {
 
     public static final String GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE = "gremlin.remoteGraph.driver.clusterFile";
-    public static final String GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME = "gremlin.remoteGraph.driver.graphName";
-    private static final String DEFAULT_GRAPH = "graph";
-    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
+
+    public static final String GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME = "gremlin.remoteGraph.driver.sourceName";
+
+    private static final String DEFAULT_TRAVERSAL_SOURCE = "g";
 
     private final Client client;
     private final boolean tryCloseCluster;
-    private final String connectionGraphName;
+    private final String remoteTraversalSourceName;
     private transient Optional<Configuration> conf = Optional.empty();
+
+    private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     public DriverRemoteConnection(final Configuration conf) {
         if (conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE));
 
-        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
+        remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         try {
             final Cluster cluster;
@@ -70,7 +72,7 @@ public class DriverRemoteConnection implements RemoteConnection {
                 cluster = conf.containsKey(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE) ?
                         Cluster.open(conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_CLUSTERFILE)) : Cluster.open(conf.subset("clusterConfiguration"));
 
-            client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+            client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -79,9 +81,9 @@ public class DriverRemoteConnection implements RemoteConnection {
         this.conf = Optional.of(conf);
     }
 
-    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String connectionGraphName) {
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
-        this.connectionGraphName = connectionGraphName;
+    private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String remoteTraversalSourceName) {
+        client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
+        this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
     }
 
@@ -89,8 +91,9 @@ public class DriverRemoteConnection implements RemoteConnection {
      * This constructor is largely just for unit testing purposes and should not typically be used externally.
      */
     DriverRemoteConnection(final Cluster cluster, final Configuration conf) {
-        connectionGraphName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, DEFAULT_GRAPH);
-        client = cluster.connect(Client.Settings.build().unrollTraversers(false).create()).alias(connectionGraphName);
+        remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_GRAPH_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
+
+        client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
         tryCloseCluster = false;
         this.conf = Optional.of(conf);
     }
@@ -101,15 +104,15 @@ public class DriverRemoteConnection implements RemoteConnection {
      * {@link RemoteConnection} to a graph on the server named "graph".
      */
     public static DriverRemoteConnection using(final Cluster cluster) {
-        return using(cluster, "graph");
+        return using(cluster, DEFAULT_TRAVERSAL_SOURCE);
     }
 
     /**
      * Creates a {@link DriverRemoteConnection} from an existing {@link Cluster} instance. When {@link #close()} is
      * called, the {@link Cluster} is left open for the caller to close.
      */
-    public static DriverRemoteConnection using(final Cluster cluster, final String connectionGraphName) {
-        return new DriverRemoteConnection(cluster, false, connectionGraphName);
+    public static DriverRemoteConnection using(final Cluster cluster, final String remoteTraversalSourceName) {
+        return new DriverRemoteConnection(cluster, false, remoteTraversalSourceName);
     }
 
     /**
@@ -118,16 +121,16 @@ public class DriverRemoteConnection implements RemoteConnection {
      * this method will bind the {@link RemoteConnection} to a graph on the server named "graph".
      */
     public static DriverRemoteConnection using(final String clusterConfFile) {
-        return using(clusterConfFile, "graph");
+        return using(clusterConfFile, DEFAULT_TRAVERSAL_SOURCE);
     }
 
     /**
      * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
      * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed.
      */
-    public static DriverRemoteConnection using(final String clusterConfFile, final String connectionGraphName) {
+    public static DriverRemoteConnection using(final String clusterConfFile, final String remoteTraversalSourceName) {
         try {
-            return new DriverRemoteConnection(Cluster.open(clusterConfFile), true, connectionGraphName);
+            return new DriverRemoteConnection(Cluster.open(clusterConfFile), true, remoteTraversalSourceName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -140,7 +143,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * or {@code clusterConfiguration}. The {@code clusterConfigurationFile} key is a pointer to a file location
      * containing a configuration for a {@link Cluster}. The {@code clusterConfiguration} should contain the actual
      * contents of a configuration that would be used by a {@link Cluster}.  This {@code configuration} may also
-     * contain the optional, but likely necessary, {@code connectionGraphName} which tells the
+     * contain the optional, but likely necessary, {@code remoteTraversalSourceName} which tells the
      * {@code DriverServerConnection} which graph on the server to bind to.
      */
     public static DriverRemoteConnection using(final Configuration conf) {
@@ -150,25 +153,34 @@ public class DriverRemoteConnection implements RemoteConnection {
         if (!conf.containsKey("clusterConfigurationFile") && !conf.containsKey("clusterConfiguration"))
             throw new IllegalStateException("A configuration must contain either 'clusterConfigurationFile' and 'clusterConfiguration'");
 
-        final String connectionGraphName = conf.getString("connectionGraphName", "graph");
+        final String remoteTraversalSourceName = conf.getString(DEFAULT_TRAVERSAL_SOURCE, DEFAULT_TRAVERSAL_SOURCE);
         if (conf.containsKey("clusterConfigurationFile"))
-            return using(conf.getString("clusterConfigurationFile"), connectionGraphName);
+            return using(conf.getString("clusterConfigurationFile"), remoteTraversalSourceName);
         else {
-            return using(Cluster.open(conf.subset("clusterConfiguration")), connectionGraphName);
+            return using(Cluster.open(conf.subset("clusterConfiguration")), remoteTraversalSourceName);
         }
     }
 
     @Override
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> t) throws RemoteConnectionException {
         try {
-
             if (attachElements && !t.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent()) {
                 if (!conf.isPresent()) throw new IllegalStateException("Traverser can't be reattached for testing");
                 final Graph graph = ((Supplier<Graph>) conf.get().getProperty("hidden.for.testing.only")).get();
-                return new AttachingTraverserIterator<>(client.submit(t).iterator(), graph);
+                return new DriverRemoteTraversal.AttachingTraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator(), graph);
             } else {
-                return new TraverserIterator<>(client.submit(t).iterator());
+                return new DriverRemoteTraversal.TraverserIterator<>(client.submit(t.asAdmin().getBytecode()).iterator());
             }
+        } catch (Exception ex) {
+            throw new RemoteConnectionException(ex);
+        }
+    }
+
+    @Override
+    public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException {
+        try {
+            final ResultSet rs = client.submit(bytecode);
+            return new DriverRemoteTraversal<>(rs, client, attachElements, conf);
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
@@ -188,42 +200,6 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     @Override
     public String toString() {
-        return "DriverServerConnection-" + client.getCluster() + " [graph=" + connectionGraphName + "]";
-    }
-
-    static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {
-
-        private Iterator<Result> inner;
-
-        public TraverserIterator(final Iterator<Result> resultIterator) {
-            inner = resultIterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return inner.hasNext();
-        }
-
-        @Override
-        public Traverser.Admin<E> next() {
-            return (Traverser.Admin<E>) inner.next().getObject();
-        }
-    }
-
-    static class AttachingTraverserIterator<E> extends TraverserIterator<E> {
-        private final Graph graph;
-
-        public AttachingTraverserIterator(final Iterator<Result> resultIterator, final Graph graph) {
-            super(resultIterator);
-            this.graph = graph;
-        }
-
-        @Override
-        public Traverser.Admin<E> next() {
-            final Traverser.Admin<E> traverser = super.next();
-            if (traverser.get() instanceof Attachable && !(traverser.get() instanceof Property))
-                traverser.set((E) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
-            return traverser;
-        }
+        return "DriverServerConnection-" + client.getCluster() + " [graph=" + remoteTraversalSourceName + "]";
     }
 }

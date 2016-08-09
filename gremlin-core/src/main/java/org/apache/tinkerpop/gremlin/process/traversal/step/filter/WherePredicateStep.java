@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -33,12 +34,13 @@ import java.util.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping {
+public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor {
 
     protected String startKey;
     protected List<String> selectKeys;
     protected P<Object> predicate;
     protected final Set<String> scopeKeys = new HashSet<>();
+    protected Set<String> keepLabels;
 
     public WherePredicateStep(final Traversal.Admin traversal, final Optional<String> startKey, final P<String> predicate) {
         super(traversal);
@@ -114,5 +116,20 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
                 TYPICAL_GLOBAL_REQUIREMENTS :
                 TYPICAL_LOCAL_REQUIREMENTS;
+    }
+
+    @Override
+    protected Traverser.Admin<S> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
+    }
+
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
     }
 }

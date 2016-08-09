@@ -149,7 +149,7 @@ Implementing MapReduce Emitters
 +++++++++++++++++++++++++++++++
 
 image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model
-popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices
+popularized by link:http://hadoop.apache.org[Hadoop]. The primary difference is that all Mappers process the vertices
 of the graph, not an arbitrary key/value pair. However, the vertices' edges can not be accessed -- only their
 properties. This greatly reduces the amount of data needed to be pushed through the MapReduce engine as any edge
 information required, can be computed in the VertexProgram.execute() method. Moreover, at this stage, vertices can
@@ -837,7 +837,7 @@ evaluated and is committed when the script completes (or rolled back if an error
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
 |language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`).
 |aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
-be aliased to different variable names for purposes of the current request.  The value represents the name the
+be aliased to different variable names for purposes of the current request.  The value represents the name of the
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
@@ -898,6 +898,51 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 |Key |Type |Description
 |session |String | *Required* The session identifier for the session to close.
 |=========================================================
+
+Traversal OpProcessor
+^^^^^^^^^^^^^^^^^^^^^
+
+Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The Traversal
+OpProcessor however allows Gremlin `Bytecode` to be submitted to the server. Supporting this OpProcessor makes it
+possible to submit a `Traversal` directly to Gremlin Server allowing
+link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants] to
+directly submit a `Traversal` in the native language of the GLV without having to use a script in a different language.
+
+[width="100%",cols="3,10a",options="header"]
+|=========================================================
+|Key |Description
+|processor |This value should be set to `traversal`
+|op |
+[cols="3,10",options="header"]
+!=========================================================
+!Key !Description
+!`authentication` !A request that contains the response to a server challenge for authentication.
+!`bytecode` !A request that contains the `Bytecode` representation of a `Traversal`.
+|=========================================================
+
+'`authentication` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|sasl |byte[] | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server.
+|=========================================================
+
+'`bytecode` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|gremlin |String | *Required* The `Bytecode` representation of a `Traversal`.
+|aliases |Map | *Required* A map with a single key/value pair that refers to a globally bound `TraversalSource` object
+to be aliased to different variable names for purposes of the current request.  The value represents the name of the
+global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
+example, if the Gremlin Server defines two `TraversalSource` instances named `g1`, it would be possible
+to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g".
+|=========================================================
+
+Unlike Standard and Session OpProcessors, the Traversal OpProcessor does not simply return the results of the
+`Traversal`. It instead returns a representation of the `Traverser` objects and any side-effects produced by the
+`Traversal` itself.
+
 
 Authentication
 ~~~~~~~~~~~~~~

@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.2.2-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-console</artifactId>
     <name>Apache TinkerPop :: Gremlin Console</name>
@@ -34,12 +34,6 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- TODO: Remove the gremlin-variant dependency and consider a plugin instead (needed for the docs pre-processor -->
-        <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-variant</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -187,7 +181,7 @@ limitations under the License.
                         <descriptor>src/assembly/standalone.xml</descriptor>
                         <descriptor>src/assembly/distribution.xml</descriptor>
                     </descriptors>
-                    <finalName>apache-${project.artifactId}-${project.version}</finalName>
+                    <finalName>apache-tinkerpop-${project.artifactId}-${project.version}</finalName>
                     <outputDirectory>target</outputDirectory>
                     <workDirectory>target/assembly/work</workDirectory>
                     <tarLongFileMode>warn</tarLongFileMode>

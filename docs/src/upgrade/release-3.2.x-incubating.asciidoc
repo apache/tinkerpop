@@ -18,16 +18,36 @@ limitations under the License.
 TinkerPop 3.2.0
 ===============
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=225]
 
 *Nine Inch Gremlins*
 
-TinkerPop 3.2.1
+TinkerPop 3.2.2
 ---------------
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#tinkerpop-321-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+Traversal Serialization
++++++++++++++++++++++++
+
+There was an "internal" serialization format in place for `Traversal` which allowed one to be submitted to Gremlin
+Server directly over `RemoteGraph`. That format has been removed completely and is wholly replaced by the non-JVM
+specific approach of serializing `Bytecode`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1392[TINKERPOP-1392]
+
+TinkerPop 3.2.1
+---------------
+
+*Release Date: July 18, 2016*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.1/CHANGELOG.asciidoc#release-3-2-1[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -212,7 +232,7 @@ TinkerPop 3.2.0
 
 *Release Date: Release Date: April 8, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#tinkerpop-320-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#tinkerpop-320-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~

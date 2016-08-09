@@ -96,39 +96,24 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldHandleVertexResultFromTraversal() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        final Client aliased = client.alias("graph");
+        final Client aliased = client.alias("g");
         final ResultSet resultSet = aliased.submit(g.V().both().both());
         final List<Result> results = resultSet.all().get();
 
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
+        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
         assertEquals(30, results.size());
     }
 
     @Test
-    public void shouldHandleVertexResultFromTraversalAsTraversersUnrolled() throws Exception {
+    public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
-        final Client aliased = client.alias("graph");
+        final Client aliased = client.alias("g");
         final ResultSet resultSetUnrolled = aliased.submit(g.V().both().barrier().both().barrier());
         final List<Result> results = resultSetUnrolled.all().get();
 
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Vertex.class));
-        assertEquals(30, results.size());
-    }
-
-    @Test
-    public void shouldHandleVertexResultFromTraversalAsTraversers() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final Client clientWithUnrolling = cluster.connect(Client.Settings.build().unrollTraversers(false).create());
-        final Client aliased = clientWithUnrolling.alias("graph");
-        final ResultSet resultSet = aliased.submit(g.V().both().barrier().both().barrier());
-        final List<Result> results = resultSet.all().get();
-
         assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
         assertEquals(6, results.size());
-
-        aliased.close();
     }
 
     @Test

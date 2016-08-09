@@ -50,7 +50,7 @@ BEGIN {
   print "if (f.exists()) f.deleteDir()"
   print ":set max-iteration 100"
   if (lang == "python") {
-    print "import org.apache.tinkerpop.gremlin.java.translator.PythonTranslator"
+    print "import org.apache.tinkerpop.gremlin.python.jsr223.PythonTranslator"
     print "import javax.script.ScriptEngineManager"
     print "import javax.script.SimpleBindings"
     print "def downloadFile(String url, final String localPath) {"

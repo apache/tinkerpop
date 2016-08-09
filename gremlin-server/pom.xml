@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.2.2-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-server</artifactId>
     <name>Apache TinkerPop :: Gremlin Server</name>
@@ -44,6 +44,11 @@ limitations under the License.
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.3.1</version>
         </dependency>
         <!-- METRICS -->
         <dependency>
@@ -130,7 +135,7 @@ limitations under the License.
                         <descriptor>src/assembly/standalone.xml</descriptor>
                         <descriptor>src/assembly/distribution.xml</descriptor>
                     </descriptors>
-                    <finalName>apache-${project.artifactId}-${project.version}</finalName>
+                    <finalName>apache-tinkerpop-${project.artifactId}-${project.version}</finalName>
                     <outputDirectory>target</outputDirectory>
                     <workDirectory>target/assembly/work</workDirectory>
                     <tarLongFileMode>warn</tarLongFileMode>

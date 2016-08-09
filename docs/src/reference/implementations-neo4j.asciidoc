@@ -33,7 +33,7 @@ Neo4j-Gremlin
 </dependency>
 ----
 
-link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
+link:http://neo4j.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.com[Neo4j graph database].
 
 WARNING: Unless under a commercial agreement with Neo Technology, Neo4j is licensed
 link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2
@@ -69,8 +69,8 @@ NOTE: `Neo4jGraphStep` will attempt to discern which indices to use when executi
 
 The Gremlin-Console session below demonstrates Neo4j indices. For more information, please refer to the Neo4j documentation:
 
-* Manipulating indices with link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[Cypher].
-* Manipulating indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/tutorials-java-embedded-new-index.html[Java API].
+* Manipulating indices with link:http://neo4j.com/docs/developer-manual/current/#query-schema-index[Cypher].
+* Manipulating indices with the Neo4j link:http://neo4j.com/docs/stable/tutorials-java-embedded-new-index.html[Java API].
 
 [gremlin-groovy]
 ----
@@ -116,7 +116,7 @@ graph.close()
 Multi/Meta-Properties
 ~~~~~~~~~~~~~~~~~~~~~
 
-`Neo4jGraph` supports both multi- and meta-properties (see <<_vertex_properties,vertex properties>>). These features
+`Neo4jGraph` supports both multi- and meta-properties (see <<vertex-properties,vertex properties>>). These features
 are not native to Neo4j and are implemented using "hidden" Neo4j nodes. For example, when a vertex has multiple
 "name" properties, each property is a new node (multi-properties) which can have properties attached to it
 (meta-properties). As such, the native, underlying representation may become difficult to query directly using
@@ -156,7 +156,7 @@ Cypher
 
 image::gremlin-loves-cypher.png[width=400]
 
-NeoTechnology are the creators of the graph pattern-match query language link:http://www.neo4j.org/learn/cypher[Cypher].
+NeoTechnology are the creators of the graph pattern-match query language link:https://neo4j.com/developer/cypher-query-language/[Cypher].
 It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.cypher()` graph traversal method.
 
 [gremlin-groovy]
@@ -179,7 +179,7 @@ Multi-Label
 
 TinkerPop3 requires every `Element` to have a single, immutable string label (i.e. a `Vertex`, `Edge`, and
 `VertexProperty`). In Neo4j, a `Node` (vertex) can have an
-link:http://neo4j.com/docs/stable/graphdb-neo4j-labels.html[arbitrary number of labels] while a `Relationship`
+link:http://neo4j.com/docs/developer-manual/current/#graphdb-neo4j-labels[arbitrary number of labels] while a `Relationship`
 (edge) can have one and only one. Furthermore, in Neo4j, `Node` labels are mutable while `Relationship` labels are
 not. In order to handle this mismatch, three `Neo4jVertex` specific methods exist in Neo4j-Gremlin.
 

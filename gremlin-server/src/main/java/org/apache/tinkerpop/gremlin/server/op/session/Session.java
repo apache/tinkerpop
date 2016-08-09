@@ -100,6 +100,10 @@ public class Session {
         return executor;
     }
 
+    public String getSessionId() {
+        return session;
+    }
+
     public void touch() {
         // if the task of killing is cancelled successfully then reset the session monitor. otherwise this session
         // has already been killed and there's nothing left to do with this session.

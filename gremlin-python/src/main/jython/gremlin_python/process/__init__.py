@@ -20,8 +20,8 @@ under the License.
 from .graph_traversal import GraphTraversal
 from .graph_traversal import GraphTraversalSource
 from .graph_traversal import __
-from .groovy_translator import GroovyTranslator
-from .jython_translator import JythonTranslator
+from .graphson import GraphSONWriter
+from .graphson import serializers
 from .traversal import Barrier
 from .traversal import Bytecode
 from .traversal import Cardinality

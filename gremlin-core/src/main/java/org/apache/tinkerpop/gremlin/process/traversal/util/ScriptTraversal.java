@@ -19,13 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -58,26 +55,11 @@ public final class ScriptTraversal<S, E> extends DefaultTraversal<S, E> {
             throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
     }
 
-    public ScriptTraversal(final Traversal traversal, TranslationStrategy translationStrategy, final Object... bindings) {
-        super();
-        final Translator translator = translationStrategy.getTranslator();
-        final TraversalSource traversalSource = translationStrategy.getTraversalSource().clone().withoutStrategies(TranslationStrategy.class, RemoteStrategy.class);
-        //
-        this.alias = translator.getTraversalSource().toString();
-        this.graph = traversalSource.getGraph();
-        this.factory = new TraversalSourceFactory<>(traversalSource);
-        this.scriptEngine = translator.getTargetLanguage();
-        this.script = translator.translate(traversal.asAdmin().getBytecode()).toString();
-        this.bindings = bindings;
-        if (this.bindings.length % 2 != 0)
-            throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
-    }
-
     @Override
     public void applyStrategies() throws IllegalStateException {
         try {
             assert 0 == this.getSteps().size();
-            final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngine);
+            final ScriptEngine engine = SingleGremlinScriptEngineManager.get(this.scriptEngine);
             final Bindings engineBindings = engine.createBindings();
             final List<TraversalStrategy<?>> strategyList = this.getStrategies().toList();
             engineBindings.put(this.alias, this.factory.createTraversalSource(this.graph).withStrategies(strategyList.toArray(new TraversalStrategy[strategyList.size()])));

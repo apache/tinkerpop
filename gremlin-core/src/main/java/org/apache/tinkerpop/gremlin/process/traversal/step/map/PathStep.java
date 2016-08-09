@@ -39,6 +39,7 @@ import java.util.Set;
 public final class PathStep<S> extends MapStep<S, Path> implements TraversalParent, PathProcessor, ByModulating {
 
     private TraversalRing<Object, Object> traversalRing;
+    private Set<String> keepLabels;
 
     public PathStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -100,5 +101,20 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH);
+    }
+
+    @Override
+    public void setKeepLabels(final Set<String> labels) {
+        this.keepLabels = labels;
+    }
+
+    @Override
+    protected Traverser.Admin<Path> processNextStart() {
+        return PathProcessor.processTraverserPathLabels(super.processNextStart(), this.keepLabels);
+    }
+
+    @Override
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
     }
 }

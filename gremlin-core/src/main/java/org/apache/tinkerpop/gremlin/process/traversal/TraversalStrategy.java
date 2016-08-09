@@ -29,7 +29,7 @@ import java.util.Set;
 
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
- * There are 6 pre-defined "traversal categories": {@link CreationStrategy}, {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link ProviderOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
+ * There are 6 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link ProviderOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
  * Strategies within a category are sorted amongst themselves and then category sorts are applied in the ordered specified previous.
  * That is, decorations are applied, then optimizations, then provider optimizations, then finalizations, and finally, verifications.
  * If a strategy does not fit within the specified categories, then it can simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
@@ -67,7 +67,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
     }
 
     /**
-     * The type of traversal strategy -- i.e. {@link CreationStrategy}, {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, or {@link VerificationStrategy}.
+     * The type of traversal strategy -- i.e. {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, or {@link VerificationStrategy}.
      *
      * @return the traversal strategy category class
      */
@@ -83,35 +83,6 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
     /**
      * Implemented by strategies that adds "application logic" to the traversal (e.g. {@link PartitionStrategy}).
      */
-    public interface CreationStrategy extends TraversalStrategy<CreationStrategy> {
-
-        @Override
-        public default Class<CreationStrategy> getTraversalCategory() {
-            return CreationStrategy.class;
-        }
-
-        @Override
-        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(CreationStrategy.class))
-                return 0;
-            else if (otherTraversalCategory.equals(DecorationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(ProviderOptimizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
-                return -1;
-            else if (otherTraversalCategory.equals(VerificationStrategy.class))
-                return -1;
-            else
-                return 0;
-        }
-    }
-
-    /**
-     * Implemented by strategies that adds "application logic" to the traversal (e.g. {@link PartitionStrategy}).
-     */
     public interface DecorationStrategy extends TraversalStrategy<DecorationStrategy> {
 
         @Override
@@ -121,9 +92,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
         @Override
         public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(CreationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(DecorationStrategy.class))
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 0;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return -1;
@@ -152,9 +121,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
         @Override
         public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(CreationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(DecorationStrategy.class))
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return 0;
@@ -182,9 +149,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
         @Override
         public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(CreationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(DecorationStrategy.class))
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return 1;
@@ -212,9 +177,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
         @Override
         public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(CreationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(DecorationStrategy.class))
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return 1;
@@ -243,9 +206,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
         @Override
         public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
-            if (otherTraversalCategory.equals(CreationStrategy.class))
-                return 1;
-            else if (otherTraversalCategory.equals(DecorationStrategy.class))
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return 1;

@@ -19,25 +19,26 @@ under the License.
 import json
 import requests
 
-from gremlin_python.process.traversal import Traverser
+from ..process.traversal import Traverser
 from .remote_connection import RemoteConnection
+from .remote_connection import RemoteResponse
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class RESTRemoteConnection(RemoteConnection):
-    def __init__(self, url):
-        RemoteConnection.__init__(self, url)
+    def __init__(self, url, traversal_source):
+        RemoteConnection.__init__(self, url, traversal_source)
 
     def __repr__(self):
         return "RESTRemoteConnection[" + self.url + "]"
 
-    def submit(self, target_language, script, bindings):
+    def submit(self, target_language, bytecode):
         response = requests.post(self.url, data=json.dumps(
-            {"gremlin": script, "language": target_language, "bindings": bindings}))
+            {"gremlin": bytecode, "source": self.traversal_source, "language": target_language, "bindings": bytecode.bindings}))
         if response.status_code != requests.codes.ok:
             raise BaseException(response.text)
-        results = []
+        traversers = []
         for x in response.json()['result']['data']:
-            results.append(Traverser(x, 1))
-        return iter(results)
+            traversers.append(Traverser(x, 1))
+        return RemoteResponse(iter(traversers), {})

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,14 +50,27 @@ import java.util.stream.StreamSupport;
 public final class ResultSet implements Iterable<Result> {
     private final ResultQueue resultQueue;
     private final ExecutorService executor;
+    private final RequestMessage originalRequestMessage;
+    private final Host host;
 
     private final CompletableFuture<Void> readCompleted;
 
     public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
-                     final CompletableFuture<Void> readCompleted) {
+                     final CompletableFuture<Void> readCompleted, final RequestMessage originalRequestMessage,
+                     final Host host) {
         this.executor = executor;
+        this.host = host;
         this.resultQueue = resultQueue;
         this.readCompleted = readCompleted;
+        this.originalRequestMessage = originalRequestMessage;
+    }
+
+    public RequestMessage getOriginalRequestMessage() {
+        return originalRequestMessage;
+    }
+
+    public Host getHost() {
+        return host;
     }
 
     /**

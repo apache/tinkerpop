@@ -18,14 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 
 import java.time.Duration;
@@ -42,7 +55,6 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 /**
  * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
@@ -80,7 +92,7 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
             addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
             addSerializer(Tree.class, new GraphSONSerializers.TreeJacksonSerializer());
-           
+
             // java.util
             addSerializer(Map.Entry.class, new JavaUtilSerializers.MapEntryJacksonSerializer());
 
@@ -112,6 +124,30 @@ abstract class GraphSONModule extends SimpleModule {
             addDeserializer(YearMonth.class, new JavaTimeSerializers.YearMonthJacksonDeserializer());
             addDeserializer(ZonedDateTime.class, new JavaTimeSerializers.ZonedDateTimeJacksonDeserializer());
             addDeserializer(ZoneOffset.class, new JavaTimeSerializers.ZoneOffsetJacksonDeserializer());
+
+            // traversal
+            // TODO: review (added for integration with new GraphSON model for GLV bytecode)
+            addSerializer(Traversal.class, new GraphSONTraversalSerializers.TraversalJacksonSerializer());
+            addSerializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonSerializer());
+            addSerializer(VertexProperty.Cardinality.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(Column.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(Direction.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(SackFunctions.Barrier.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(Operator.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(Order.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(Pop.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(Scope.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(T.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
+            addSerializer(P.class, new GraphSONTraversalSerializers.PJacksonSerializer());
+            addSerializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonSerializer());
+            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonSerializer());
+            // -- deserializers for traversal
+            addDeserializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonDeserializer());
+            addDeserializer(Enum.class, new GraphSONTraversalSerializers.EnumJacksonDeserializer());
+            addDeserializer(P.class, new GraphSONTraversalSerializers.PJacksonDeserializer());
+            addDeserializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonDeserializer());
+            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonDeserializer());
+
         }
 
         public static Builder build() {
@@ -120,7 +156,8 @@ abstract class GraphSONModule extends SimpleModule {
 
         static final class Builder implements GraphSONModuleBuilder {
 
-            private Builder() {}
+            private Builder() {
+            }
 
             @Override
             public GraphSONModule create(final boolean normalize) {

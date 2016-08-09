@@ -18,9 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.util.CoreImports;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
-import javax.script.SimpleBindings;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -29,8 +30,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The {@code ScriptEngineManager} implements a discovery, instantiation and configuration mechanism for
@@ -51,6 +55,10 @@ import java.util.ServiceLoader;
  * that this class is designed to provide support for "Gremlin-enabled" {@code ScriptEngine} instances (i.e. those
  * that extend from {@link GremlinScriptEngine}) and is not meant to manage just any {@code ScriptEngine} instance
  * that may be on the path.
+ * <p/>
+ * As this is a "Gremlin" {@code ScriptEngine}, certain common imports are automatically applied when a
+ * {@link GremlinScriptEngine} is instantiated via the {@link GremlinScriptEngineFactory}.. Initial imports from
+ * gremlin-core come from the {@link CoreImports}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -81,7 +89,13 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     /**
      * Global bindings associated with script engines created by this manager.
      */
-    private Bindings globalScope = new SimpleBindings();
+    private Bindings globalScope = new ConcurrentBindings();
+
+    /**
+     * List of extensions for the {@link GremlinScriptEngineManager} which will be used to supply
+     * {@link Customizer} instances to {@link GremlinScriptEngineFactory} that are instantiated.
+     */
+    private List<GremlinModule> modules = new ArrayList<>();
 
     /**
      * The effect of calling this constructor is the same as calling
@@ -102,8 +116,24 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
         initEngines(loader);
     }
 
+    @Override
+    public List<Customizer> getCustomizers(final String scriptEngineName) {
+        return modules.stream().flatMap(module -> {
+            final Optional<Customizer[]> moduleCustomizers = module.getCustomizers(scriptEngineName);
+            return Stream.of(moduleCustomizers.orElse(new Customizer[0]));
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void addModule(final GremlinModule module) {
+        // TODO: should modules be a set based on "name" to ensure uniqueness? not sure what bad stuff can happen with dupes
+        if (module != null) modules.add(module);
+    }
+
     /**
      * Stores the specified {@code Bindings} as a global for all {@link GremlinScriptEngine} objects created by it.
+     * If the bindings are to be updated by multiple threads it is recommended that a {@link ConcurrentBindings}
+     * instance is supplied.
      *
      * @throws IllegalArgumentException if bindings is null.
      */
@@ -164,9 +194,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
         if (null != (obj = nameAssociations.get(shortName))) {
             final GremlinScriptEngineFactory spi = (GremlinScriptEngineFactory) obj;
             try {
-                final GremlinScriptEngine engine = spi.getScriptEngine();
-                engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-                return engine;
+                return createGremlinScriptEngine(spi);
             } catch (Exception exp) {
                 if (DEBUG) exp.printStackTrace();
             }
@@ -184,9 +212,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
                 for (String name : names) {
                     if (shortName.equals(name)) {
                         try {
-                            final GremlinScriptEngine engine = spi.getScriptEngine();
-                            engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-                            return engine;
+                            return createGremlinScriptEngine(spi);
                         } catch (Exception exp) {
                             if (DEBUG) exp.printStackTrace();
                         }
@@ -213,11 +239,9 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
         //look for registered extension first
         Object obj;
         if (null != (obj = extensionAssociations.get(extension))) {
-            final GremlinScriptEngineFactory spi = (GremlinScriptEngineFactory)obj;
+            final GremlinScriptEngineFactory spi = (GremlinScriptEngineFactory) obj;
             try {
-                final GremlinScriptEngine engine = spi.getScriptEngine();
-                engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-                return engine;
+                return createGremlinScriptEngine(spi);
             } catch (Exception exp) {
                 if (DEBUG) exp.printStackTrace();
             }
@@ -234,9 +258,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             for (String ext : exts) {
                 if (extension.equals(ext)) {
                     try {
-                        final GremlinScriptEngine engine = spi.getScriptEngine();
-                        engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-                        return engine;
+                        return createGremlinScriptEngine(spi);
                     } catch (Exception exp) {
                         if (DEBUG) exp.printStackTrace();
                     }
@@ -264,9 +286,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
         if (null != (obj = mimeTypeAssociations.get(mimeType))) {
             final GremlinScriptEngineFactory spi = (GremlinScriptEngineFactory) obj;
             try {
-                final GremlinScriptEngine engine = spi.getScriptEngine();
-                engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-                return engine;
+                return createGremlinScriptEngine(spi);
             } catch (Exception exp) {
                 if (DEBUG) exp.printStackTrace();
             }
@@ -283,9 +303,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
             for (String type : types) {
                 if (mimeType.equals(type)) {
                     try {
-                        final GremlinScriptEngine engine = spi.getScriptEngine();
-                        engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
-                        return engine;
+                        return createGremlinScriptEngine(spi);
                     } catch (Exception exp) {
                         if (DEBUG) exp.printStackTrace();
                     }
@@ -304,9 +322,7 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     @Override
     public List<GremlinScriptEngineFactory> getEngineFactories() {
         final List<GremlinScriptEngineFactory> res = new ArrayList<>(engineSpis.size());
-        for (GremlinScriptEngineFactory spi : engineSpis) {
-            res.add(spi);
-        }
+        res.addAll(engineSpis.stream().collect(Collectors.toList()));
         return Collections.unmodifiableList(res);
     }
 
@@ -361,42 +377,48 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     }
 
     private void initEngines(final ClassLoader loader) {
-        Iterator<GremlinScriptEngineFactory> itr;
+        // always need this module for a scriptengine to be "Gremlin-enabled"
+        modules.add(CoreGremlinModule.INSTANCE);
+
+        Iterator<GremlinScriptEngineFactory> itty;
         try {
             final ServiceLoader<GremlinScriptEngineFactory> sl = AccessController.doPrivileged(
                     (PrivilegedAction<ServiceLoader<GremlinScriptEngineFactory>>) () -> getServiceLoader(loader));
-            itr = sl.iterator();
+            itty = sl.iterator();
         } catch (ServiceConfigurationError err) {
             System.err.println("Can't find GremlinScriptEngineFactory providers: " +
                     err.getMessage());
-            if (DEBUG) {
-                err.printStackTrace();
-            }
+            if (DEBUG) err.printStackTrace();
+
             // do not throw any exception here. user may want to manager their own factories using this manager
             // by explicit registration (by registerXXX) methods.
             return;
         }
 
         try {
-            while (itr.hasNext()) {
+            while (itty.hasNext()) {
                 try {
-                    engineSpis.add(itr.next());
+                    final GremlinScriptEngineFactory factory = itty.next();
+                    factory.setCustomizerManager(this);
+                    engineSpis.add(factory);
                 } catch (ServiceConfigurationError err) {
                     System.err.println("GremlinScriptEngineManager providers.next(): "
                             + err.getMessage());
-                    if (DEBUG) {
-                        err.printStackTrace();
-                    }
+                    if (DEBUG) err.printStackTrace();
                 }
             }
         } catch (ServiceConfigurationError err) {
             System.err.println("GremlinScriptEngineManager providers.hasNext(): "
                     + err.getMessage());
-            if (DEBUG) {
-                err.printStackTrace();
-            }
+            if (DEBUG) err.printStackTrace();
             // do not throw any exception here. user may want to manage their own factories using this manager
             // by explicit registration (by registerXXX) methods.
         }
+    }
+
+    private GremlinScriptEngine createGremlinScriptEngine(final GremlinScriptEngineFactory spi) {
+        final GremlinScriptEngine engine = spi.getScriptEngine();
+        engine.setBindings(getBindings(), ScriptContext.GLOBAL_SCOPE);
+        return engine;
     }
 }

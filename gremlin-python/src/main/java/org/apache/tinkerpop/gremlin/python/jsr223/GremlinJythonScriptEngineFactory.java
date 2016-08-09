@@ -19,22 +19,32 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.python.jsr223.PyScriptEngineFactory;
 
 import javax.script.ScriptEngine;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory {
+public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory implements GremlinScriptEngineFactory {
 
     private static final String ENGINE_NAME = "gremlin-jython";
     private static final String LANGUAGE_NAME = "gremlin-jython";
     private static final String PLAIN = "plain";
-    private static final List<String> EXTENSIONS = Arrays.asList("py");
+    private static final List<String> EXTENSIONS = Collections.singletonList("py");
+
+    private GremlinScriptEngineManager manager;
+
+    @Override
+    public void setCustomizerManager(final GremlinScriptEngineManager manager) {
+        this.manager = manager;
+    }
 
     @Override
     public String getEngineName() {
@@ -63,12 +73,12 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory {
 
     @Override
     public List<String> getMimeTypes() {
-        return Arrays.asList(PLAIN);
+        return Collections.singletonList(PLAIN);
     }
 
     @Override
     public List<String> getNames() {
-        return Arrays.asList(LANGUAGE_NAME);
+        return Collections.singletonList(LANGUAGE_NAME);
     }
 
     @Override
@@ -88,7 +98,7 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory {
     }
 
     @Override
-    public ScriptEngine getScriptEngine() {
+    public GremlinScriptEngine getScriptEngine() {
         return new GremlinJythonScriptEngine();
     }
 }

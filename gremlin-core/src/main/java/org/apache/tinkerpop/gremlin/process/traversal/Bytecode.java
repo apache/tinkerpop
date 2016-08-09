@@ -19,13 +19,15 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TranslatorHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * When a {@link TraversalSource} is manipulated, a {@link Traversal} is spawned and then mutated, a language
@@ -40,13 +42,22 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
+    // required for Gremlin-Java
+    private transient Bindings bindings = null;
 
     public void addSource(final String sourceName, final Object... arguments) {
-        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+        if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
+            this.bindings = (Bindings) arguments[0];
+            this.bindings.clear();
+        } else {
+            this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+            if (null != this.bindings) this.bindings.clear();
+        }
     }
 
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
+        if (null != this.bindings) this.bindings.clear();
     }
 
     public List<Instruction> getSourceInstructions() {
@@ -57,26 +68,36 @@ public final class Bytecode implements Cloneable, Serializable {
         return Collections.unmodifiableList(this.stepInstructions);
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder builder = new StringBuilder("[");
+    public Map<String, Object> getBindings() {
+        final Map<String, Object> bindingsMap = new HashMap<>();
         for (final Instruction instruction : this.sourceInstructions) {
-            builder.append(instruction).append(",\n");
+            addInstructionBindings(bindingsMap, instruction);
         }
         for (final Instruction instruction : this.stepInstructions) {
-            builder.append(instruction).append(",\n");
+            addInstructionBindings(bindingsMap, instruction);
         }
-        if (builder.length() > 2)
-            builder.delete(builder.length() - 2, builder.length());
-        builder.append("]");
-        return builder.toString();
+        return bindingsMap;
+    }
+
+    private static final void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
+        for (final Object argument : instruction.getArguments()) {
+            if (argument instanceof Binding)
+                bindingsMap.put(((Binding) argument).variable, ((Binding) argument).value);
+            else if (argument instanceof Bytecode)
+                bindingsMap.putAll(((Bytecode) argument).getBindings());
+        }
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.asList(this.sourceInstructions, this.stepInstructions).toString();
     }
 
     @Override
     public boolean equals(final Object object) {
         return object instanceof Bytecode &&
                 this.sourceInstructions.equals(((Bytecode) object).sourceInstructions) &&
-                this.stepInstructions.equals(((Bytecode) object).sourceInstructions);
+                this.stepInstructions.equals(((Bytecode) object).stepInstructions);
     }
 
     @Override
@@ -85,6 +106,7 @@ public final class Bytecode implements Cloneable, Serializable {
     }
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    @Override
     public Bytecode clone() {
         try {
             final Bytecode clone = (Bytecode) super.clone();
@@ -116,7 +138,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
         @Override
         public String toString() {
-            return "[\"" + this.operator + stringifyArguments() + "]";
+            return this.operator + "(" + StringFactory.removeEndBrackets(Arrays.asList(this.arguments)) + ")";
         }
 
         @Override
@@ -131,30 +153,48 @@ public final class Bytecode implements Cloneable, Serializable {
             return this.operator.hashCode() + Arrays.hashCode(this.arguments);
         }
 
-        private String stringifyArguments() {
-            final List<Object> objects = TranslatorHelper.flattenArguments(this.arguments);
-            final StringBuilder builder = new StringBuilder(objects.size() > 0 ? "\"," : "\"");
-            for (final Object object : objects) {
-                if (object instanceof Traversal)
-                    builder.append(((Traversal) object).asAdmin().getBytecode());
-                else if (object instanceof String)
-                    builder.append("\"").append(object).append("\"");
-                else
-                    builder.append(object);
-                builder.append(",");
-            }
-            if (!objects.isEmpty())
-                builder.deleteCharAt(builder.length() - 1);
 
-            return builder.toString();
+    }
 
+    public static class Binding<V> implements Serializable {
+
+        private final String variable;
+        private final V value;
+
+        public Binding(final String variable, final V value) {
+            this.variable = variable;
+            this.value = value;
         }
 
+        public String variable() {
+            return this.variable;
+        }
+
+        public V value() {
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            return "binding[" + this.variable + "=" + this.value + "]";
+        }
+
+        @Override
+        public boolean equals(final Object object) {
+            return object instanceof Binding &&
+                    this.variable.equals(((Binding) object).variable) &&
+                    this.value.equals(((Binding) object).value);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.variable.hashCode() + this.value.hashCode();
+        }
     }
 
     /////
 
-    private static final Object[] flattenArguments(final Object... arguments) {
+    private final Object[] flattenArguments(final Object... arguments) {
         if (arguments.length == 0)
             return new Object[]{};
         final List<Object> flatArguments = new ArrayList<>();
@@ -169,7 +209,16 @@ public final class Bytecode implements Cloneable, Serializable {
         return flatArguments.toArray();
     }
 
-    private static final Object convertArgument(final Object argument) {
-        return argument instanceof Traversal ? ((Traversal) argument).asAdmin().getBytecode() : argument;
+    private final Object convertArgument(final Object argument) {
+        if (argument instanceof Traversal)
+            return ((Traversal) argument).asAdmin().getBytecode();
+
+        if (null != this.bindings) {
+            final String variable = this.bindings.getBoundVariable(argument);
+            if (null != variable)
+                return new Binding<>(variable, argument);
+        }
+
+        return argument;
     }
 }

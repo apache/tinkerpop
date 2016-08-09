@@ -25,9 +25,8 @@ from gremlin_python.process.traversal import TraversalStrategy
 
 
 class RemoteGraph(Graph):
-    def __init__(self, translator, remote_connection):
+    def __init__(self, remote_connection):
         TraversalStrategies.global_cache[self.__class__] = TraversalStrategies([RemoteStrategy()])
-        self.translator = translator
         self.remote_connection = remote_connection
 
     def __repr__(self):
@@ -39,9 +38,10 @@ class RemoteStrategy(TraversalStrategy):
         if not (traversal.graph.__class__.__name__ == "RemoteGraph"):
             raise BaseException(
                 "RemoteStrategy can only be used with a RemoteGraph: " + traversal.graph.__class__.__name__)
-        if traversal.results is None:
-            traversal.results = traversal.graph.remote_connection.submit(
-                traversal.graph.translator.target_language,  # script engine
-                traversal.graph.translator.translate(traversal.bytecode),  # script
-                traversal.bindings)  # bindings
+        if traversal.traversers is None:
+            remote_response = traversal.graph.remote_connection.submit(
+                'gremlin-groovy',  # script engine
+                traversal.bytecode),  # script
+            traversal.side_effects = remote_response.side_effects
+            traversal.traversers = remote_response.traversers
         return

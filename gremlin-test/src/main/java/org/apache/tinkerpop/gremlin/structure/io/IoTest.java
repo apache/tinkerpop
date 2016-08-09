@@ -270,7 +270,7 @@ public class IoTest {
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
             v1.addEdge("CONTROL", v2);
-            v1.addEdge("SELF-LOOP", v1);
+            v1.addEdge("SELFLOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
             final Graph target = graphProvider.openTestGraph(targetConf);
@@ -299,7 +299,7 @@ public class IoTest {
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
             v1.addEdge("CONTROL", v2);
-            v1.addEdge("SELF-LOOP", v1);
+            v1.addEdge("SELFLOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
             final Graph target = graphProvider.openTestGraph(targetConf);;
@@ -444,7 +444,7 @@ public class IoTest {
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
             v1.addEdge("CONTROL", v2);
-            v1.addEdge("SELF-LOOP", v1);
+            v1.addEdge("SELFLOOP", v1);
 
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
             final Graph target = graphProvider.openTestGraph(targetConf);

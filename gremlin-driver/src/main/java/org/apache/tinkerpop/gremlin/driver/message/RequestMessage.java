@@ -95,6 +95,14 @@ public final class RequestMessage {
         return o == null ? Optional.empty() : Optional.of((T) o);
     }
 
+    public static Builder from(final RequestMessage msg) {
+        final Builder builder = build(msg.op)
+                .overrideRequestId(msg.requestId)
+                .processor(msg.processor);
+        msg.args.forEach(builder::addArg);
+        return builder;
+    }
+
     public static Builder build(final String op) {
         return new Builder(op);
     }

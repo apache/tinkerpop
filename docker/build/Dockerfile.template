@@ -18,5 +18,6 @@
 FROM tinkerpop:hadoop-HADOOP_VERSION
 
 RUN mkdir -p /usr/src/tinkerpop
+RUN curl -s https://bootstrap.pypa.io/ez_setup.py | python
 WORKDIR /usr/src/tinkerpop
 COPY . /usr/src/tinkerpop

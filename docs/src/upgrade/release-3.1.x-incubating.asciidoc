@@ -18,16 +18,16 @@ limitations under the License.
 TinkerPop 3.1.0
 ===============
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=225]
 
 *A 187 On The Undercover Gremlinz*
 
 TinkerPop 3.1.3
 ---------------
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: July 18, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-MONTH-DAY-YEAR[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-july-18-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -85,6 +85,11 @@ changes there may prove important for the provider's implementation.
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Property Keys and Hyphens
++++++++++++++++++++++++++
+
+Graph providers should no longer rely on the test suite to validate that hyphens work for labels and property keys.
+
 Vertex and Edge Counts
 ++++++++++++++++++++++
 
@@ -94,6 +99,16 @@ identifying previously unrecognized bugs seems slim however, as there are many o
 in other ways. If those were passing previously, then these new asserts should likely not pose a problem.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1300[TINKERPOP-1300]
+
+Test Feature Annotations
+++++++++++++++++++++++++
+
+A large number of `gremlin-test` feature annotations were incorrect which caused test cases to run against graphs that
+did not support those features. The annotations have been fixed, but this opened the possibility that more test cases
+will run against the graph implementation. Providers should ensure that their graph `features()` are consistent with
+the capabilities of the graph implementation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1319[TINKERPOP-1319]
 
 Graph Language Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -122,7 +137,7 @@ TinkerPop 3.1.2
 
 *Release Date: April 8, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -267,7 +282,7 @@ TinkerPop 3.1.1
 
 *Release Date: February 8, 2016*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
@@ -309,7 +324,7 @@ backward compatible with previous versions) will become the future standard mode
 it provides a more efficient method for transaction management.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
-link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#considering-transactions[Reference Documentation - Considering Transactions]
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#considering-transactions[Reference Documentation - Considering Transactions]
 
 Deprecated credentialsDbLocation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -328,7 +343,7 @@ the `gremlin.tinkergraph.graphLocation` as soon as possible, as the deprecated s
 release.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
-link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/reference/#_security[Reference Documentation - Gremlin Server Security]
 
 TinkerGraph Supports Any I/O
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -476,7 +491,7 @@ TinkerPop 3.1.0
 
 *Release Date: November 16, 2015*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Additional upgrade information can be found here:
 

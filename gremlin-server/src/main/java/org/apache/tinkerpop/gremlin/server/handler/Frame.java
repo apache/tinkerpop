@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.util.ReferenceCounted;
+
 /**
  * A holder for a {@code String} or {@code ByteBuf} that represents a message to be written back to the requesting
  * client.
@@ -33,5 +35,14 @@ public class Frame {
 
     public Object getMsg() {
         return msg;
+    }
+
+    /**
+     * If the object contained in the frame is {@code ReferenceCounted} then it may need to be released or else
+     * Netty will generate warnings that counted resources are leaking.
+     */
+    public void tryRelease() {
+        if (msg instanceof ReferenceCounted)
+            ((ReferenceCounted) msg).release();
     }
 }

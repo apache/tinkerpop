@@ -210,7 +210,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         int count = 0;
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
-            assertEquals("co-developer", edge.label());
+            assertEquals("codeveloper", edge.label());
             assertEquals(2009, (int) edge.value("year"));
             assertEquals(1, IteratorUtils.count(edge.properties()));
             assertEquals("person", edge.inVertex().label());
@@ -235,7 +235,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         int count = 0;
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
-            assertEquals("co-developer", edge.label());
+            assertEquals("codeveloper", edge.label());
             assertEquals(2009, (int) edge.value("year"));
             assertEquals(1, IteratorUtils.count(edge.properties()));
             assertEquals("person", edge.inVertex().label());
@@ -321,7 +321,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X() {
-            return g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").addE("co-developer").from("a").to("b").property("year", 2009);
+            return g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").addE("codeveloper").from("a").to("b").property("year", 2009);
         }
 
         @Override
@@ -348,7 +348,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X() {
-            return g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").select("a", "b").addInE("a", "co-developer", "b", "year", 2009);
+            return g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").select("a", "b").addInE("a", "codeveloper", "b", "year", 2009);
         }
 
         @Override

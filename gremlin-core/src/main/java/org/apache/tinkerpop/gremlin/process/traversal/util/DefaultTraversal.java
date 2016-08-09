@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DefaultTraverserGeneratorFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -47,8 +48,7 @@ import java.util.Set;
  */
 public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
-    private E lastEnd = null;
-    private long lastEndCount = 0l;
+    private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
     protected transient Graph graph;
@@ -78,8 +78,14 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getBytecode());
     }
 
+    // TODO: clean up unused or redundant constructors
+
     public DefaultTraversal() {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new Bytecode());
+    }
+
+    public DefaultTraversal(final Bytecode bytecode) {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), bytecode);
     }
 
     public Bytecode getBytecode() {
@@ -156,34 +162,36 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public Traverser.Admin<E> nextTraverser() {
+        if (!this.locked) this.applyStrategies();
+        if (this.lastTraverser.bulk() > 0L) {
+            final Traverser.Admin<E> temp = this.lastTraverser;
+            this.lastTraverser = EmptyTraverser.instance();
+            return temp;
+        } else {
+            return this.finalEndStep.next();
+        }
+    }
+
+    @Override
     public boolean hasNext() {
         if (!this.locked) this.applyStrategies();
-        return this.lastEndCount > 0l || this.finalEndStep.hasNext();
+        return this.lastTraverser.bulk() > 0L || this.finalEndStep.hasNext();
     }
 
     @Override
     public E next() {
         if (!this.locked) this.applyStrategies();
-        if (this.lastEndCount > 0l) {
-            this.lastEndCount--;
-            return this.lastEnd;
-        } else {
-            final Traverser<E> next = this.finalEndStep.next();
-            final long nextBulk = next.bulk();
-            if (nextBulk == 1) {
-                return next.get();
-            } else {
-                this.lastEndCount = nextBulk - 1;
-                this.lastEnd = next.get();
-                return this.lastEnd;
-            }
-        }
+        if (this.lastTraverser.bulk() == 0L)
+            this.lastTraverser = this.finalEndStep.next();
+        this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
+        return this.lastTraverser.get();
     }
 
     @Override
     public void reset() {
         this.steps.forEach(Step::reset);
-        this.lastEndCount = 0l;
+        this.lastTraverser = EmptyTraverser.instance();
     }
 
     @Override
@@ -221,8 +229,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
             clone.strategies = this.strategies;
-            clone.lastEnd = null;
-            clone.lastEndCount = 0l;
             for (final Step<?, ?> step : this.steps) {
                 final Step<?, ?> clonedStep = step.clone();
                 clonedStep.setTraversal(clone);

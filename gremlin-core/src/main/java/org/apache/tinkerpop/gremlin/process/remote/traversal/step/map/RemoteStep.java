@@ -20,14 +20,13 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -39,15 +38,12 @@ import java.util.NoSuchElementException;
 public final class RemoteStep<S, E> extends AbstractStep<S, E> {
 
     private transient RemoteConnection remoteConnection;
-    private Traversal.Admin<S, E> remoteTraversal;
-    private Iterator<Traverser.Admin<E>> remoteIterator;
+    private RemoteTraversal<?, E> remoteTraversal;
 
     @SuppressWarnings("unchecked")
-    public RemoteStep(final Traversal.Admin traversal, final Traversal<S, E> remoteTraversal,
-                      final RemoteConnection remoteConnection) {
+    public RemoteStep(final Traversal.Admin traversal, final RemoteConnection remoteConnection) {
         super(traversal);
         this.remoteConnection = remoteConnection;
-        this.remoteTraversal = remoteTraversal.asAdmin();
     }
 
     @Override
@@ -58,20 +54,16 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     @SuppressWarnings("unchecked")
     @Override
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
-
-        if (null == this.remoteIterator) {
+        if (null == this.remoteTraversal) {
             try {
-                this.remoteIterator = this.remoteConnection.submit(this.remoteTraversal);
+                this.remoteTraversal = this.remoteConnection.submit(this.traversal.getBytecode());
+                this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);
             }
         }
-
-        return this.remoteIterator.next();
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() ^ this.remoteTraversal.hashCode();
+        return this.remoteTraversal.nextTraverser();
+        //final Traverser.Admin<E> remoteTraverser = this.remoteTraversal.nextTraverser();
+        //return this.getTraversal().getTraverserGenerator().generate(remoteTraverser.get(), (Step) this, remoteTraverser.bulk());
     }
 }

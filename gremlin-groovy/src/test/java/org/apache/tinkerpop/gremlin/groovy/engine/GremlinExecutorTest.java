@@ -166,34 +166,34 @@ public class GremlinExecutorTest {
     @Test
     public void shouldEvalScriptWithMapBindingsAndLanguage() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+                .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
-        assertEquals(2.0, gremlinExecutor.eval("1+x", "nashorn", b).get());
+        assertEquals(2, gremlinExecutor.eval("1+x", "gremlin-groovy", b).get());
         gremlinExecutor.close();
     }
 
     @Test
     public void shouldEvalScriptWithMapBindingsAndLanguageThenTransform() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+                .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
-        assertEquals(4, gremlinExecutor.eval("1+x", "nashorn", b, r -> ((Double) r).intValue() * 2).get());
+        assertEquals(4, gremlinExecutor.eval("1+x", "gremlin-groovy", b, r -> (int) r * 2).get());
         gremlinExecutor.close();
     }
 
     @Test
     public void shouldEvalScriptWithMapBindingsAndLanguageThenConsume() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+                .addEngineSettings("gremlin-groovy", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
         final Map<String,Object> b = new HashMap<>();
         b.put("x", 1);
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger result = new AtomicInteger(0);
-        assertEquals(2.0, gremlinExecutor.eval("1+x", "nashorn", b, r -> {
-            result.set(((Double) r).intValue() * 2);
+        assertEquals(2, gremlinExecutor.eval("1+x", "gremlin-groovy", b, r -> {
+            result.set((int) r * 2);
             latch.countDown();
         }).get());
 

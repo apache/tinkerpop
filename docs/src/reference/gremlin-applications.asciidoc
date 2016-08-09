@@ -355,7 +355,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] Graphs - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
 [INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
 [INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
@@ -364,9 +364,12 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] OpLoader - Adding the standard OpProcessor.
 [INFO] OpLoader - Adding the control OpProcessor.
 [INFO] OpLoader - Adding the session OpProcessor.
+[INFO] OpLoader - Adding the traversal OpProcessor.
+[INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-lite with org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
 [INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
@@ -733,7 +736,7 @@ WebSockets-based connection, it can also be configured to support link:http://en
 The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of
 programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started
 with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
-as the API for the endpoint is very similar to Rexster's link:https://github.org/apache/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
+as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
 Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
 script as a request.  For each request, it returns a response containing the serialized results of that script.
@@ -825,7 +828,7 @@ proxy for sending traversals to Gremlin Server for remote execution. It is not a
 `TinkerGraph` or `Neo4jGraph`, in that most of its methods are not implemented. For example, calls to most methods
 like, `addVertex()` or `edges()` will result in an `UnsupportedOperationException`. The only method used on
 `RemoteGraph` is `traversal()`, which generates a `GraphTraversalSource` that includes a `RemoteStrategy`. The
-`RemoteStrategy` submits takes traversals constructed from it, serializes them and submits them to Gremlin Server
+`RemoteStrategy` takes traversals constructed from it, serializes them and submits them to Gremlin Server
 and the results are returned as though working with the `Graph` instance in embedded mode.
 
 `RemoteGraph` is an interesting alternative to the other methods for connecting to Gremlin Server in that all other
@@ -844,7 +847,7 @@ One way to create a `RemoteGraph` instance is by configuration file. Here is an 
 ----
 gremlin.remoteGraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
 gremlin.remoteGraph.driver.clusterFile=conf/remote-objects.yaml
-gremlin.remoteGraph.driver.graphName=graph
+gremlin.remoteGraph.driver.sourceName=g
 ----
 
 The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
@@ -852,8 +855,8 @@ The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of t
 other setting, `gremlin.remoteGraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
 provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
 connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting Via Java">> section for more
-information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.graphName` setting tells the
-`DriverRemoteConnection` the name of the graph in Gremlin Server to connect to.
+information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.sourceName` setting tells the
+`DriverRemoteConnection` the name of the `TraversalSource` in Gremlin Server to connect to.
 
 Gremlin Server needs to be running for this example to work. Use the following configuration:
 
@@ -885,8 +888,9 @@ cluster.close()
 If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
 the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
 
-WARNING: `RemoteGraph` does not support steps that use lambdas in the `Traversal`. Lambda expressions are not
-serializable and therefore can't be remotely executed.
+IMPORTANT: `RemoteGraph` uses the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable the
+retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling eviction
+times and sizing) can be done in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
 
 Configuring
 ~~~~~~~~~~~
@@ -981,6 +985,47 @@ packaged with Gremlin Server due to its LGPL licensing that conflicts with the T
 run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from
 link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory
 before starting the server.
+
+OpProcessor Configurations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An `OpProcessor` provides a way to plug-in handlers to Gremlin Server's processing flow. Gremlin Server uses this
+plug-in system itself to expose the packaged functionality that it exposes. Configurations can be supplied to an
+`OpProcessor` through the `processors` key in the Gremlin Server configuration file. Each `OpProcessor` can take a
+`Map` of arguments which are specific to a particular implementation:
+
+[source,yaml]
+----
+processors:
+  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
+----
+
+The following sub-sections describe those configurations for each `OpProcessor` implementations supplied with Gremlin
+Server.
+
+SessionOpProcessor
+++++++++++++++++++
+
+The `SessionOpProcessor` provides a way to interact with Gremlin Server over a <<sessions,session>>.
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Name |Description |Default
+|sessionTimeout |Time in milliseconds before a session will time out. |28800000
+|=========================================================
+
+[[traversalopprocessor]]
+TraversalOpProcessor
+++++++++++++++++++++
+
+The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,RemoteGraph>>.
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Name |Description |Default
+|cacheExpirationTime |Time in milliseconds before side-effects from a `Traversal` will be evicted. |60000
+|cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
+|=========================================================
 
 Security and Execution
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -1567,7 +1612,7 @@ Display stack trace? [yN] n
 ----
 
 The same behavior would be seen with REST or when using sessionless requests through one of the Gremlin Server drivers.
-If having this behavior is desireable, then <<considering-sessions,consider sessions>>.
+If having this behavior is desireable, then <<sessions,consider sessions>>.
 
 There is an exception to this notion of state not existing between requests and that is globally defined functions.
 All functions created via scripts are global to the server.

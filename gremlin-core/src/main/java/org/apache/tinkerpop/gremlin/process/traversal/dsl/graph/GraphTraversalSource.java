@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -73,6 +74,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     ////////////////
+
+    @Override
+    public Optional<Class> getAnonymousTraversalClass() {
+        return Optional.of(__.class);
+    }
 
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
@@ -113,8 +119,8 @@ public class GraphTraversalSource implements TraversalSource {
     //// CONFIGURATIONS
 
     @Override
-    public GraphTraversalSource withTranslator(final Translator translator) {
-        return (GraphTraversalSource) TraversalSource.super.withTranslator(translator);
+    public GraphTraversalSource withBindings(final Bindings bindings) {
+        return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
     }
 
     @Override

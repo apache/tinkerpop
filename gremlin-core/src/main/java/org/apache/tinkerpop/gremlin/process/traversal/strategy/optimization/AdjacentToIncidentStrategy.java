@@ -67,7 +67,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
     }
 
     @Override
-    public void apply(Traversal.Admin<?, ?> traversal) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         final List<Step> steps = traversal.getSteps();
         final int size = steps.size() - 1;
         Step prev = null;

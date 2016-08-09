@@ -21,10 +21,11 @@ package org.apache.tinkerpop.gremlin.groovy;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.java.translator.GroovyTranslator;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
@@ -43,7 +44,8 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportStringSupplierLambdas() throws Exception {
-        final GraphTraversalSource g = graph.traversal().withTranslator(GroovyTranslator.of("g", "__"));
+        GraphTraversalSource g = graph.traversal();
+        g = g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", "__")));
         GraphTraversal.Admin<Vertex, Integer> t = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("it.get().label().equals('person')"))
@@ -56,7 +58,7 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
         final List<Integer> sacks = new ArrayList<>();
         final List<Integer> lengths = new ArrayList<>();
         while (t.hasNext()) {
-            final Traverser.Admin<Integer> traverser = t.getEndStep().next();
+            final Traverser.Admin<Integer> traverser = t.nextTraverser();
             sacks.add(traverser.sack());
             lengths.add(traverser.get());
         }
@@ -83,6 +85,6 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
 
     @Test
     public void shouldHaveValidToString() {
-        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h","__").toString());
+        assertEquals("translator[h:gremlin-groovy]", GroovyTranslator.of("h", "__").toString());
     }
 }

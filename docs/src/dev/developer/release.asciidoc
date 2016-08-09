@@ -25,7 +25,6 @@ feedback.  Once a release point has been identified, the following phases repres
 * Pre-flight check.
 * Optionally, produce a release candidate for community feedback.
 * Submit the official release for PMC vote.
-* Submit the official release for Incubator vote.
 * Release and promote.
 
 NOTE: It might be helpful to use this document as generated from the currently release as opposed to one generate
@@ -54,6 +53,12 @@ during this period.
 .. Review JIRA tickets in the release and ensure that:
 ... All tickets categorized by having a "Component" assigned.
 ... All tickets are either of type "Bug" or "Enhancement".
+... All tickets where work was completed are "Closed"
+.... Search for "closed the pull request" in comments for hints on possible tickets that were left open by mistake).
+.... Look for tickets marked as "Resolved" (some users might not have rights to mark as "Closed" - convert these to "Closed".
+... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
+assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
+Resolution may have been assigned).
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -88,16 +93,15 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 are additional tests to perform that the release manager feels are relevant, they should be performed now. In other
 words, there is no need to rebuild the `SNAPSHOT` yet another time unless there are circumstances that would call its
 validity into question.
-. Update the links in the `README.asciidoc` to point at the latest version.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
-= 3.1.0-incubating AND fixVersion not in (3.0.2-incubating, 3.0.1-incubating)`.
+= 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0)`.
 ... Consider use of an "Excel" export to organize, sort (by type and then id) and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
-3.1.0-incubating or 3.2.0-incubating for an example.
+3.2.1 for an example.
 .. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . Update "upgrade documentation":
 .. Update the release date.
@@ -111,13 +115,13 @@ current release was under development as this new release will have those change
 handled document generation and this step now merely needs to upload what was generated.
 . `mvn deploy -Papache-release -DcreateChecksum=true -DskipTests` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well).
 . Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote. Do NOT "release" the repository at this time.
-. Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
-.. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
+. Upload artifacts to `https://dist.apache.org/repos/dist/dev//tinkerpop` for `[VOTE]` review.
+.. `svn co --depth empty https://dist.apache.org/repos/dist/dev//tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
 .. `cd dev/xx.yy.zz`
-.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
+.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
@@ -131,33 +135,23 @@ handled document generation and this step now merely needs to upload what was ge
 .. `mvn deploy` - deploy the new `SNAPSHOT`
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
 .. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
-.. Update the links in the `README.asciidoc` to point at the `SNAPSHOT` version.
 .. Commit and push the `SNAPSHOT` changes to git
 .. Send email to advise that code freeze is lifted.
 .. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
-Incubator Vote
---------------
-
-A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
-
-. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below)
-.. Include the vote tally: "Apache TinkerPop (http://tinkerpop.apache.org/) would like to release TinkerPop xx.yy.zz. We had a dev@ VOTE which resulted in a tally of +1 (3), 0 (0), and -1 (0). We now present our artifacts for vote by Incubator."
-. *Wait for vote acceptance* (72 hours)
-
 Release & Promote
 -----------------
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
-. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/xx.yy.zz`
-. `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/xx.yy.zz`
+. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
+. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
-. If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.1.0-incubating` is present and `3.1.1-incubating` is released then remove `3.1.0-incubating`.  However, if `3.0.2-incubating` is present and that line of code is still under potential development, it may stay.
+. If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
 Email Templates
@@ -174,7 +168,7 @@ Hello,
 We are happy to announce that TinkerPop xx.yy.zz is ready for release.
 
 The release artifacts can be found at this location:
-	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/xx.yy.zz/
+	https://dist.apache.org/repos/dist/dev/tinkerpop/xx.yy.zz/
 
 The source distribution is provided by:
 	apache-tinkerpop-xx.yy.zz-src.zip
@@ -184,7 +178,7 @@ Two binary distributions are provided for user convenience:
 	apache-gremlin-server-xx.yy.zz-bin.zip
 
 The GPG key used to sign the release artifacts is available at:
-    https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/KEYS
+    https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 
 The online docs can be found here:
 	http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
@@ -193,10 +187,10 @@ The online docs can be found here:
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 
 The tag in Apache Git can be found here:
-	https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git;XXXXXXXXXXXXXXXXXX
+	https://git-wip-us.apache.org/repos/asf?p=tinkerpop.git;XXXXXXXXXXXXXXXXXX
 
 The release notes are available here:
-	https://github.com/apache/incubator-tinkerpop/blob/master/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+	https://github.com/apache/tinkerpop/blob/master/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
 
 The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
 
@@ -205,19 +199,6 @@ My vote is +1.
 Thank you very much,
 <TinkerPop Committer Name>
 ```
-
-If the above email template is used for the "Incubator Vote", then it should include the following just after the
-"release notes":
-
-```
-Finally, the dev@tinkerpop [VOTE] thread can be found at this location:
-
-    https://pony-poc.apache.org/thread.html/XXXXXXXXXXXXXXXXXX
-
-Result summary: +X (Y binding, Z non-binding), 0 (0), -1 (0)
-```
-
-where this link should point to the result of the VOTE.
 
 Dev Release RESULT VOTE
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -255,8 +236,8 @@ there is breaking change, an important game-changing feature or two, etc.]
 
 The release artifacts can be found at this location:
 
-https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
-https://www.apache.org/dyn/closer.lua/incubator/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
 
 The online docs can be found here:
 
@@ -268,7 +249,7 @@ http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [
 
 The release notes are available here:
 
-https://github.com/apache/incubator-tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
+https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXX
 
 The Central Maven repo has sync'd as well:
 

@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -51,7 +51,7 @@ public final class TraversalScriptFunction<S, E> implements Function<Graph, Trav
 
     public Traversal.Admin<S, E> apply(final Graph graph) {
         try {
-            final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngineName);
+            final ScriptEngine engine = SingleGremlinScriptEngineManager.get(this.scriptEngineName);
             final Bindings engineBindings = engine.createBindings();
             engineBindings.put("g", this.traversalSourceFactory.createTraversalSource(graph));
             for (int i = 0; i < this.bindings.length; i = i + 2) {

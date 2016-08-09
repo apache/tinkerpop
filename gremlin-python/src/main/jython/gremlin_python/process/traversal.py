@@ -25,12 +25,12 @@ class Traversal(object):
         self.graph = graph
         self.traversal_strategies = traversal_strategies
         self.bytecode = bytecode
-        self.results = None
+        self.side_effects = {}
+        self.traversers = None
         self.last_traverser = None
-        self.bindings = {}
 
     def __repr__(self):
-        return self.graph.translator.translate(self.bytecode)
+        return str(self.bytecode)
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -47,10 +47,10 @@ class Traversal(object):
         return self
 
     def __next__(self):
-        if self.results is None:
+        if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
-            self.last_traverser = next(self.results)
+            self.last_traverser = next(self.traversers)
         object = self.last_traverser.object
         self.last_traverser.bulk = self.last_traverser.bulk - 1
         if self.last_traverser.bulk <= 0:
@@ -254,25 +254,6 @@ def without(*args):
 statics.add_static('without',without)
 
 
-class RawExpression(object):
-   def __init__(self, *args):
-      self.bindings = dict()
-      self.parts = [self._process_arg(arg) for arg in args]
-
-   def _process_arg(self, arg):
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-         self.bindings[arg[0]] = arg[1]
-         return Raw(arg[0])
-      else:
-         return Raw(arg)
-
-class Raw(object):
-   def __init__(self, value):
-      self.value = value
-
-   def __str__(self):
-      return str(self.value)
-
 
 '''
 TRAVERSER
@@ -308,13 +289,14 @@ class TraversalStrategy(object):
         return
 
 '''
-BYTECODE AND TRANSLATOR
+BYTECODE
 '''
 
 class Bytecode(object):
     def __init__(self, bytecode=None):
         self.source_instructions = []
         self.step_instructions = []
+        self.bindings = {}
         if bytecode is not None:
             self.source_instructions = list(bytecode.source_instructions)
             self.step_instructions = list(bytecode.step_instructions)
@@ -322,56 +304,33 @@ class Bytecode(object):
     def add_source(self, source_name, *args):
         newArgs = ()
         for arg in args:
-            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
+            newArgs = newArgs + (self.__convertArgument(arg),)
         self.source_instructions.append((source_name, newArgs))
         return
 
     def add_step(self, step_name, *args):
         newArgs = ()
         for arg in args:
-            newArgs = newArgs + (Bytecode.__convertArgument(arg),)
+            newArgs = newArgs + (self.__convertArgument(arg),)
         self.step_instructions.append((step_name, newArgs))
         return
 
-    @staticmethod
-    def __convertArgument(arg):
+    def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
+            self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
+        elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
+            self.bindings[arg[0]] = arg[1]
+            return Binding(arg[0],arg[1])
         else:
             return arg
 
+'''
+BINDING
+'''
 
-TO_JAVA_MAP = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
-               "_or": "or", "_is": "is", "_not": "not", "_from": "from",
-               "Cardinality": "VertexProperty.Cardinality", "Barrier": "SackFunctions.Barrier"}
+class Binding(object):
+    def __init__(self,variable,value):
+        self.variable = variable
+        self.value = value
 
-
-class Translator(object):
-    def __init__(self, traversal_source, anonymous_traversal, target_language):
-        self.traversal_source = traversal_source
-        self.anonymous_traversal = anonymous_traversal
-        self.target_language = target_language
-
-    @abstractmethod
-    def translate(self, bytecode):
-        return
-
-    @abstractmethod
-    def __repr__(self):
-        return "translator[" + self.traversal_source + ":" + self.target_language + "]"
-
-
-class SymbolHelper(object):
-    @staticmethod
-    def toJava(symbol):
-        if (symbol in TO_JAVA_MAP):
-            return TO_JAVA_MAP[symbol]
-        else:
-            return symbol
-
-    @staticmethod
-    def mapEnum(enum):
-        if (enum in enumMap):
-            return enumMap[enum]
-        else:
-            return enum

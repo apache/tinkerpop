@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.python.util.SymbolHelper
+import org.apache.tinkerpop.gremlin.python.jsr223.SymbolHelper
 
 import java.lang.reflect.Modifier
 
@@ -56,7 +56,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-        pythonClass.append("from traversal import RawExpression\n")
         pythonClass.append("from traversal import Traversal\n")
         pythonClass.append("from traversal import Bytecode\n")
         pythonClass.append("from gremlin_python import statics\n\n")
@@ -66,15 +65,17 @@ under the License.
 //////////////////////////
         pythonClass.append(
                 """class GraphTraversalSource(object):
-  def __init__(self, graph, traversal_strategies, bytecode=Bytecode()):
+  def __init__(self, graph, traversal_strategies, bytecode=None):
     self.graph = graph
     self.traversal_strategies = traversal_strategies
+    if bytecode is None:
+      bytecode = Bytecode()
     self.bytecode = bytecode
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
 """)
         GraphTraversalSource.getMethods()
-                .findAll { !it.name.equals("clone") }
+                .findAll { !it.name.equals("clone") && !it.name.equals(TraversalSource.Symbols.withBindings) }
                 .collect { it.name }
                 .unique()
                 .sort { a, b -> a <=> b }
@@ -90,11 +91,6 @@ under the License.
                             """  def ${method}(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("${method}", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
-      elif isinstance(arg, RawExpression):
-        self.bindings.update(arg.bindings)
     return traversal
 """)
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
@@ -102,11 +98,6 @@ under the License.
                             """  def ${method}(self, *args):
     source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     source.bytecode.add_source("${method}", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
-      elif isinstance(arg, RawExpression):
-        self.bindings.update(arg.bindings)
     return source
 """)
                 }
@@ -135,11 +126,6 @@ under the License.
                 pythonClass.append(
                         """  def ${method}(self, *args):
     self.bytecode.add_step("${method}", *args)
-    for arg in args:
-      if isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
-        self.bindings[arg[0]] = arg[1]
-      elif isinstance(arg, RawExpression):
-        self.bindings.update(arg.bindings)
     return self
 """)
             }

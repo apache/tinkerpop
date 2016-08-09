@@ -44,6 +44,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     private Graph subgraph;
     private String sideEffectKey;
     private Graph.Features.VertexFeatures parentGraphFeatures;
+    private boolean subgraphSupportsMetaProperties = false;
 
     private static final Map<String, Object> DEFAULT_CONFIGURATION = new HashMap<String, Object>() {{
         put(Graph.GRAPH, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"); // hard coded because TinkerGraph is not part of gremlin-core
@@ -58,11 +59,14 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
     @Override
     protected void sideEffect(final Traverser.Admin<Edge> traverser) {
         parentGraphFeatures = ((Graph) traversal.getGraph().get()).features().vertex();
-        if (null == this.subgraph) {
-            this.subgraph = traverser.sideEffects(this.sideEffectKey);
-            if (!this.subgraph.features().vertex().supportsUserSuppliedIds() || !this.subgraph.features().edge().supportsUserSuppliedIds())
+        if (null == subgraph) {
+            subgraph = traverser.sideEffects(sideEffectKey);
+            if (!subgraph.features().vertex().supportsUserSuppliedIds() || !subgraph.features().edge().supportsUserSuppliedIds())
                 throw new IllegalArgumentException("The provided subgraph must support user supplied ids for vertices and edges: " + this.subgraph);
         }
+
+        subgraphSupportsMetaProperties = subgraph.features().vertex().supportsMetaProperties();
+
         addEdgeToSubgraph(traverser.get());
     }
 
@@ -99,10 +103,17 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
         final Iterator<Vertex> vertexIterator = subgraph.vertices(vertex.id());
         if (vertexIterator.hasNext()) return vertexIterator.next();
         final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
+
         vertex.properties().forEachRemaining(vertexProperty -> {
             final VertexProperty.Cardinality cardinality = parentGraphFeatures.getCardinality(vertexProperty.key());
             final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(cardinality, vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id());
-            vertexProperty.properties().forEachRemaining(property -> subgraphVertexProperty.property(property.key(), property.value()));
+
+            // only iterate the VertexProperties if the current graph can have them and if the subgraph can support
+            // them. unfortunately we don't have a way to write a test for this as we dont' have a graph that supports
+            // user supplied ids and doesn't support metaproperties.
+            if (parentGraphFeatures.supportsMetaProperties() && subgraphSupportsMetaProperties) {
+                vertexProperty.properties().forEachRemaining(property -> subgraphVertexProperty.property(property.key(), property.value()));
+            }
         });
         return subgraphVertex;
     }

@@ -120,8 +120,12 @@ final class ConnectionPool {
         if (connections.isEmpty()) {
             logger.debug("Tried to borrow connection but the pool was empty for {} - scheduling pool creation and waiting for connection", host);
             for (int i = 0; i < minPoolSize; i++) {
-                scheduledForCreation.incrementAndGet();
-                newConnection();
+                // If many connections are borrowed at the same time there needs to be a check to make sure no
+                // additional ones get scheduled for creation
+                if (scheduledForCreation.get() < minPoolSize) {
+                    scheduledForCreation.incrementAndGet();
+                    newConnection();
+                }
             }
 
             return waitForConnection(timeout, unit);
@@ -148,15 +152,7 @@ final class ConnectionPool {
             final int borrowed = leastUsedConn.borrowed.get();
             final int availableInProcess = leastUsedConn.availableInProcess();
 
-            // if the number borrowed starts to exceed what's available for this connection, then we need
-            // to wait for a connection to become available. this is an interesting comparison for "busy-ness"
-            // because it compares the number of times the connection was borrowed to what's in-process.  the
-            // in-process number refers to the number of outstanding requests less the maxInProcessForConnection
-            // setting.  this scenario can only really happen if
-            // maxInProcessForConnection=maxSimultaneousUsagePerConnection or if there is some sort of batch type
-            // operation where more than one message is sent on a single borrowed connection before it is returned
-            // to the pool.
-            if (borrowed >= leastUsedConn.availableInProcess()) {
+            if (borrowed >= maxSimultaneousUsagePerConnection && leastUsedConn.availableInProcess() == 0) {
                 logger.debug("Least used connection selected from pool for {} but borrowed [{}] >= availableInProcess [{}] - wait",
                         host, borrowed, availableInProcess);
                 return waitForConnection(timeout, unit);
@@ -188,8 +184,10 @@ final class ConnectionPool {
 
             // destroy a connection that exceeds the minimum pool size - it does not have the right to live if it
             // isn't busy. replace a connection that has a low available in process count which likely means that
-            // it's backing up with requests that might never have returned. if neither of these scenarios are met
-            // then let the world know the connection is available.
+            // it's backing up with requests that might never have returned. consider the maxPoolSize in this condition
+            // because if it is equal to 1 (which it is for a session) then there is no need to replace the connection
+            // as it will be responsible for every single request. if neither of these scenarios are met then let the
+            // world know the connection is available.
             final int poolSize = connections.size();
             final int availableInProcess = connection.availableInProcess();
             if (poolSize > minPoolSize && borrowed <= minSimultaneousUsagePerConnection) {
@@ -197,7 +195,7 @@ final class ConnectionPool {
                     logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousUsagePerConnection {} so destroy {}",
                             host, poolSize, minPoolSize, borrowed, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
-            } else if (availableInProcess < minInProcess) {
+            } else if (availableInProcess < minInProcess && maxPoolSize > 1) {
                 if (logger.isDebugEnabled())
                     logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
                 replaceConnection(connection);
@@ -234,10 +232,6 @@ final class ConnectionPool {
         return closeFuture.compareAndSet(null, future) ? future : closeFuture.get();
     }
 
-    public int opened() {
-        return open.get();
-    }
-
     private CompletableFuture[] killAvailableConnections() {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
         for (Connection connection : connections) {
@@ -251,7 +245,6 @@ final class ConnectionPool {
     void replaceConnection(final Connection connection) {
         logger.debug("Replace {}", connection);
 
-        open.decrementAndGet();
         considerNewConnection();
         definitelyDestroyConnection(connection);
     }
@@ -324,15 +317,18 @@ final class ConnectionPool {
     }
 
     private void definitelyDestroyConnection(final Connection connection) {
-        bin.add(connection);
-        connections.remove(connection);
-        open.decrementAndGet();
+        // only add to the bin for future removal if its not already there.
+        if (!bin.contains(connection)) {
+            bin.add(connection);
+            connections.remove(connection);
+            open.decrementAndGet();
+        }
 
-        if (connection.borrowed.get() == 0 && bin.remove(connection))
+        // only close the connection for good once it is done being borrowed
+        if (connection.borrowed.get() == 0 && bin.remove(connection)) {
             connection.closeAsync();
-
-        if (logger.isDebugEnabled())
             logger.debug("{} destroyed", connection.getConnectionInfo());
+        }
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {

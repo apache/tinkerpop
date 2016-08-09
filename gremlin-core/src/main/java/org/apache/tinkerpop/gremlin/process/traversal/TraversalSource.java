@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.creation.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -29,6 +28,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -79,12 +79,12 @@ public interface TraversalSource extends Cloneable {
             // static fields only
         }
 
+        public static final String withBindings = "withBindings";
         public static final String withSack = "withSack";
         public static final String withStrategies = "withStrategies";
         public static final String withoutStrategies = "withoutStrategies";
         public static final String withComputer = "withComputer";
         public static final String withSideEffect = "withSideEffect";
-        public static final String withTranslator = "withTranslator";
     }
 
     /////////////////////////////
@@ -117,15 +117,15 @@ public interface TraversalSource extends Cloneable {
     }
 
     /**
-     * Add a {@link Translator} to translate any traversal from this traversal source language into some target language.
+     * Using the provided {@link Bindings} to create {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding}.
+     * The bindings serve as a relay for ensure bound arguments are encoded as {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding} in {@link Bytecode}.
      *
-     * @param translator the translator that will do the source to targer language translation
-     * @return a new traversal source with updated strategies
+     * @param bindings the bindings instance to use
+     * @return a new traversal source with set bindings
      */
-    public default TraversalSource withTranslator(final Translator translator) {
+    public default TraversalSource withBindings(final Bindings bindings) {
         final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(new TranslationStrategy(clone, translator));
-        clone.getBytecode().addSource(Symbols.withTranslator, translator);
+        clone.getBytecode().addSource(Symbols.withBindings, bindings);
         return clone;
     }
 
@@ -384,6 +384,10 @@ public interface TraversalSource extends Cloneable {
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
         clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
         return clone;
+    }
+
+    public default Optional<Class> getAnonymousTraversalClass() {
+        return Optional.empty();
     }
 
     /**

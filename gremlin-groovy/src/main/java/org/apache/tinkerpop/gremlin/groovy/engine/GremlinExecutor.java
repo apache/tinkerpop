@@ -504,7 +504,7 @@ public class GremlinExecutor implements AutoCloseable {
         private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
         private List<List<String>> use = new ArrayList<>();
-        private Bindings globalBindings = new ConcurrentBindings();
+        private Bindings globalBindings = new org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings();
 
         private Builder() {
         }
@@ -532,10 +532,11 @@ public class GremlinExecutor implements AutoCloseable {
 
         /**
          * Bindings to apply to every script evaluated. Note that the entries of the supplied {@code Bindings} object
-         * will be copied into a newly created {@link ConcurrentBindings} object at the call of this method.
+         * will be copied into a newly created {@link org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings} object
+         * at the call of this method.
          */
         public Builder globalBindings(final Bindings bindings) {
-            this.globalBindings = new ConcurrentBindings(bindings);
+            this.globalBindings = new org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings(bindings);
             return this;
         }
 

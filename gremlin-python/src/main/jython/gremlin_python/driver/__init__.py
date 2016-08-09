@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 from .remote_connection import RemoteConnection
+from .remote_connection import RemoteResponse
 from .rest_remote_connection import RESTRemoteConnection
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

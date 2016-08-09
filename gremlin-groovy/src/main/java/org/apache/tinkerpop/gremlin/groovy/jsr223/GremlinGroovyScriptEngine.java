@@ -18,6 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import groovy.grape.Grape;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.DelegatingMetaClass;
+import groovy.lang.MetaClass;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+import groovy.lang.Script;
+import groovy.lang.Tuple;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
@@ -29,15 +38,12 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
-import groovy.grape.Grape;
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.DelegatingMetaClass;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Script;
-import groovy.lang.Tuple;
+import org.apache.tinkerpop.gremlin.jsr223.Customizer;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
+import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -53,7 +59,6 @@ import org.codehaus.groovy.util.ReferenceBundle;
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.IOException;
@@ -64,6 +69,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,12 +85,12 @@ import java.util.stream.Collectors;
  * down on compilation times of future evaluations of the same script.  This {@code ScriptEngine} implementation is
  * heavily adapted from the {@code GroovyScriptEngineImpl} to include some additional functionality.
  *
- * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
- *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
  */
-public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
+public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
+        implements DependencyManager, AutoCloseable, GremlinScriptEngine {
 
     /**
      * An "internal" key for sandboxing the script engine - technically not for public use.
@@ -95,10 +101,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * The attribute key (passed as a binding on the context) for how to cache scripts.  The value must be one of
      * the following:
      * <ul>
-     *     <li>{@link #REFERENCE_TYPE_HARD}</li>
-     *     <li>{@link #REFERENCE_TYPE_SOFT}</li>
-     *     <li>{@link #REFERENCE_TYPE_WEAK}</li>
-     *     <li>{@link #REFERENCE_TYPE_PHANTOM}</li>
+     * <li>{@link #REFERENCE_TYPE_HARD}</li>
+     * <li>{@link #REFERENCE_TYPE_SOFT}</li>
+     * <li>{@link #REFERENCE_TYPE_WEAK}</li>
+     * <li>{@link #REFERENCE_TYPE_PHANTOM}</li>
      * </ul>
      */
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
@@ -135,7 +141,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
-    public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>(){
+    public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>() {
         @Override
         protected Map<String, Object> initialValue() {
             return new HashMap<>();
@@ -189,6 +195,47 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this((CompilerCustomizerProvider) importCustomizerProvider);
     }
 
+    public GremlinGroovyScriptEngine(final Customizer... customizers) {
+        final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
+
+        GremlinLoader.load();
+
+        final List<ImportCustomizer> importCustomizers = listOfCustomizers.stream()
+                .filter(p -> p instanceof ImportCustomizer)
+                .map(p -> (ImportCustomizer) p)
+                .collect(Collectors.toList());
+        if (importCustomizers.isEmpty()) {
+            importCustomizerProvider = NoImportCustomizerProvider.INSTANCE;
+        } else {
+            final Set<String> imports = new HashSet<>();
+            final Set<String> staticImports = new HashSet<>();
+            importCustomizers.forEach(ic -> {
+                ic.getClassImports().forEach(c -> {
+                    final String importStatement = c.getName();
+                    imports.add(importStatement);
+                });
+
+                ic.getEnumImports().forEach(e -> {
+                    final String importStatement = e.getDeclaringClass().getCanonicalName() + ".*";
+                    staticImports.add(importStatement);
+                });
+
+                ic.getMethodImports().forEach(m -> {
+                    final String importStatement = m.getDeclaringClass().getCanonicalName() + ".*";
+                    staticImports.add(importStatement);
+                });
+            });
+
+            importCustomizerProvider = new EmptyImportCustomizerProvider(imports, staticImports);
+        }
+
+        interpreterModeEnabled = false;
+
+        customizerProviders = Collections.emptyList();
+
+        createClassLoader();
+    }
+
     /**
      * Creates a new instance with the specified {@link CompilerCustomizerProvider} objects.
      */
@@ -209,7 +256,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         // remove used providers as the rest will be applied directly
         customizerProviders = providers.stream()
                 .filter(p -> p != null &&
-                             !((p instanceof ImportCustomizerProvider)))
+                        !((p instanceof ImportCustomizerProvider)))
                 .collect(Collectors.toList());
 
         createClassLoader();
@@ -321,6 +368,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
+    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
+        bindings.putAll(bytecode.getBindings());
+        // TODO: this is kinda bad because it makes the assumption that we will always alias to "g" (which is generally true, but maybe better to not hardcode?)
+        return (Traversal.Admin) this.eval(GroovyTranslator.of("g", "__").translate(bytecode), bindings);
+    }
+
+    @Override
     public void close() throws Exception {
     }
 
@@ -405,7 +459,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      * {@inheritDoc}
      */
     @Override
-    public ScriptEngineFactory getFactory() {
+    public GremlinScriptEngineFactory getFactory() {
         if (factory == null) {
             synchronized (this) {
                 if (factory == null) {
@@ -573,22 +627,22 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     private void registerBindingTypes(final ScriptContext context) {
-        final Map<String,ClassNode> variableTypes = new HashMap<>();
+        final Map<String, ClassNode> variableTypes = new HashMap<>();
         clearVarTypes();
 
         // use null for the classtype if the binding value itself is null - not fully sure if that is
         // a sound way to deal with that.  didn't see a class type for null - maybe it should just be
         // unknown and be "Object".  at least null is properly being accounted for now.
         context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) ->
-            variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
+                variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
 
         COMPILE_OPTIONS.get().put(COMPILE_OPTIONS_VAR_TYPES, variableTypes);
     }
 
     private static void clearVarTypes() {
-        final Map<String,Object> m = COMPILE_OPTIONS.get();
+        final Map<String, Object> m = COMPILE_OPTIONS.get();
         if (m.containsKey(COMPILE_OPTIONS_VAR_TYPES))
-            ((Map<String,ClassNode>) m.get(COMPILE_OPTIONS_VAR_TYPES)).clear();
+            ((Map<String, ClassNode>) m.get(COMPILE_OPTIONS_VAR_TYPES)).clear();
     }
 
     private Object invokeImpl(final Object thiz, final String name, final Object args[]) throws ScriptException, NoSuchMethodException {

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -81,6 +82,29 @@ public class LP_O_OB_P_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     }
 
     @Override
+    public void keepLabels(final Set<String> labels) {
+        final Set<String> retractLabels = new HashSet<>();
+        for (final Set<String> stepLabels : this.path.labels()) {
+            for (final String l : stepLabels) {
+                if (!labels.contains(l))
+                    retractLabels.add(l);
+            }
+        }
+        this.path = this.path.retract(retractLabels);
+    }
+
+    @Override
+    public void dropLabels(final Set<String> labels) {
+        if (!labels.isEmpty())
+            this.path = path.retract(labels);
+    }
+
+    @Override
+    public void dropPath() {
+        this.path = ImmutablePath.make();
+    }
+
+    @Override
     public int hashCode() {
         return super.hashCode() + this.path.hashCode();
     }
@@ -88,11 +112,11 @@ public class LP_O_OB_P_S_SE_SL_Traverser<T> extends O_OB_S_SE_SL_Traverser<T> {
     @Override
     public boolean equals(final Object object) {
         return (object instanceof LP_O_OB_P_S_SE_SL_Traverser)
-                && ((LP_O_OB_P_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((LP_O_OB_P_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((LP_O_OB_P_S_SE_SL_Traverser) object).loops() == this.loops()
+                && ((LP_O_OB_P_S_SE_SL_Traverser) object).t.equals(this.t)
+                && ((LP_O_OB_P_S_SE_SL_Traverser) object).future.equals(this.future)
+                && ((LP_O_OB_P_S_SE_SL_Traverser) object).loops == this.loops
                 && (null == this.sack || null != this.sideEffects.getSackMerger())
-                && ((LP_O_OB_P_S_SE_SL_Traverser) object).path().equals(this.path);
+                && ((LP_O_OB_P_S_SE_SL_Traverser) object).path.equals(this.path);
     }
 
 }

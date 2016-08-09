@@ -80,7 +80,20 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public Path extend(final Set<String> labels) {
-        this.labels.get(this.labels.size() - 1).addAll(labels);
+        if (!labels.isEmpty())
+            this.labels.get(this.labels.size() - 1).addAll(labels);
+        return this;
+    }
+
+    @Override
+    public Path retract(final Set<String> removeLabels) {
+        for (int i = this.labels.size() - 1; i >= 0; i--) {
+            this.labels.get(i).removeAll(removeLabels);
+            if (this.labels.get(i).isEmpty()) {
+                this.labels.remove(i);
+                this.objects.remove(i);
+            }
+        }
         return this;
     }
 
@@ -153,12 +166,15 @@ public class MutablePath implements Path, Serializable {
         if (!(other instanceof Path))
             return false;
         final Path otherPath = (Path) other;
-        if (otherPath.size() != this.size())
+        if (otherPath.size() != this.objects.size())
             return false;
-        for (int i = this.size() - 1; i >= 0; i--) {
-            if (!this.objects.get(i).equals(otherPath.get(i)))
+
+        final List<Object> otherPathObjects = otherPath.objects();
+        final List<Set<String>> otherPathLabels = otherPath.labels();
+        for (int i = this.objects.size() - 1; i >= 0; i--) {
+            if (!this.objects.get(i).equals(otherPathObjects.get(i)))
                 return false;
-            if (!this.labels.get(i).equals(otherPath.labels().get(i)))
+            if (!this.labels.get(i).equals(otherPathLabels.get(i)))
                 return false;
         }
         return true;

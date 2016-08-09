@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.2.2-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
@@ -76,7 +76,7 @@
         <finalName>${project.artifactId}-${project.version}</finalName>
         <resources>
             <resource>
-                <directory>${basedir}/src/main/resources
+                <directory>src/main/resources
                 </directory>
             </resource>
         </resources>

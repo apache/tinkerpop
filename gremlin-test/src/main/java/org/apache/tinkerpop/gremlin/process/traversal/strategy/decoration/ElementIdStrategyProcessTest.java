@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldGenerateDefaultIdOnGraphAddVWithGeneratedCustomId() throws Exception {
-        final ElementIdStrategy strategy = ElementIdStrategy.build().idMaker(() -> "xxx").create();
+        final ElementIdStrategy strategy = ElementIdStrategy.build().idMaker(new ConstantSupplier<>("xxx")).create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().property("name", "stephen").next();
         assertEquals("stephen", v.value("name"));
@@ -159,7 +160,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", sg.E(e).id().next());
         assertEquals("some-id", sg.E("some-id").id().next());
@@ -171,7 +172,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value").next();
         assertEquals("value", e.value("test"));
         assertNotNull(UUID.fromString(sg.E(e).id().next().toString()));
     }
@@ -182,7 +183,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
@@ -195,7 +196,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value", "name", "some-id").next();
+        final Edge e = sg.withSideEffect("v", v).V(v).addE(Direction.OUT, "self", "v", "test", "value", "name", "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
