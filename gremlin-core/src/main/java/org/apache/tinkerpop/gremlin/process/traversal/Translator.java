@@ -20,6 +20,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 /**
+ * A Translator will translate {@link Bytecode} into another representation. That representation may be a
+ * Java instance via {@link StepTranslator} or a String script in some language via {@link ScriptTranslator}.
+ * The parameterization of Translator is S (traversal source), A (anonymous traversal), and T (full translation).
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Translator<S, A, T> {

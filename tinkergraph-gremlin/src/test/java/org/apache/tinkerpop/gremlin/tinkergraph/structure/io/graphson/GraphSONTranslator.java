@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -26,13 +27,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,7 +67,7 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
             }
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             this.writer.writeObject(outputStream, BytecodeHelper.filterInstructions(bytecode,
-                    instruction -> !Arrays.asList("withTranslator", "withStrategies").contains(instruction.getOperator())));
+                    instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)));
             // System.out.println(new String(outputStream.toByteArray()));
             return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
         } catch (final Exception e) {

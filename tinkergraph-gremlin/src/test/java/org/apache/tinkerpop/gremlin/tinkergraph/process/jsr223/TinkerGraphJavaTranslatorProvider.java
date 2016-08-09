@@ -21,13 +21,10 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.jsr223;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 
@@ -44,18 +41,7 @@ public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
-            "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
-            "g_VX1X_out_injectXv2X_name",
-            "shouldSupportGraphFilter",
-            "shouldNeverPropagateANoBulkTraverser",
-            "shouldNeverPropagateANullValuedTraverser",
-            "shouldTraversalResetProperly",
-            "shouldHidePartitionKeyForValues",
-            ProgramTest.Traversals.class.getCanonicalName(),
-            TraversalInterruptionTest.class.getCanonicalName(),
-            TraversalInterruptionComputerTest.class.getCanonicalName(),
-            ElementIdStrategyProcessTest.class.getCanonicalName()));
+            ProgramTest.Traversals.class.getCanonicalName()));
 
 
     @Override

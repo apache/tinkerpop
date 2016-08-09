@@ -68,12 +68,9 @@ public class PythonProvider extends AbstractGraphProvider {
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
             "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
             "g_VX1X_out_injectXv2X_name",
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
-            "shouldTraversalResetProperly",
-            "shouldHidePartitionKeyForValues",
             //
             "g_VXlistXv1_v2_v3XX_name",
             "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
@@ -86,7 +83,6 @@ public class PythonProvider extends AbstractGraphProvider {
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
-            CoreTraversalTest.class.getCanonicalName(),
             PartitionStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
@@ -163,7 +159,7 @@ public class PythonProvider extends AbstractGraphProvider {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(new PythonTranslator("g", "__", IMPORT_STATICS), new JavaTranslator<>(graph.traversal(), __.class))));
+            return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(new PythonTranslator("g", "__", IMPORT_STATICS), new JavaTranslator<>(g, __.class))));
         }
     }
 

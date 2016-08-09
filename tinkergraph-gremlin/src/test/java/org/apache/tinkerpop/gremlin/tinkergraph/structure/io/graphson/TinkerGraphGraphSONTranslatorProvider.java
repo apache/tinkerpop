@@ -28,10 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 
@@ -48,14 +48,8 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
-            "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            "g_V_both_hasLabelXpersonX_order_byXage_decrX_name",
-            "g_VX1X_out_injectXv2X_name",
-            "shouldNeverPropagateANoBulkTraverser",
-            "shouldNeverPropagateANullValuedTraverser",
-            "shouldTraversalResetProperly",
-            "shouldHidePartitionKeyForValues",
             //
+            "g_VX1X_out_injectXv2X_name",
             "g_VXlistXv1_v2_v3XX_name",
             "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
             "g_VXv1X_hasXage_gt_30X",
