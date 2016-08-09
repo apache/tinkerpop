@@ -828,7 +828,7 @@ proxy for sending traversals to Gremlin Server for remote execution. It is not a
 `TinkerGraph` or `Neo4jGraph`, in that most of its methods are not implemented. For example, calls to most methods
 like, `addVertex()` or `edges()` will result in an `UnsupportedOperationException`. The only method used on
 `RemoteGraph` is `traversal()`, which generates a `GraphTraversalSource` that includes a `RemoteStrategy`. The
-`RemoteStrategy` submits takes traversals constructed from it, serializes them and submits them to Gremlin Server
+`RemoteStrategy` takes traversals constructed from it, serializes them and submits them to Gremlin Server
 and the results are returned as though working with the `Graph` instance in embedded mode.
 
 `RemoteGraph` is an interesting alternative to the other methods for connecting to Gremlin Server in that all other
@@ -847,7 +847,7 @@ One way to create a `RemoteGraph` instance is by configuration file. Here is an 
 ----
 gremlin.remoteGraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
 gremlin.remoteGraph.driver.clusterFile=conf/remote-objects.yaml
-gremlin.remoteGraph.driver.graphName=graph
+gremlin.remoteGraph.driver.sourceName=g
 ----
 
 The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
@@ -855,8 +855,8 @@ The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of t
 other setting, `gremlin.remoteGraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
 provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
 connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting Via Java">> section for more
-information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.graphName` setting tells the
-`DriverRemoteConnection` the name of the graph in Gremlin Server to connect to.
+information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.sourceName` setting tells the
+`DriverRemoteConnection` the name of the `TraversalSource` in Gremlin Server to connect to.
 
 Gremlin Server needs to be running for this example to work. Use the following configuration:
 
@@ -888,8 +888,9 @@ cluster.close()
 If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
 the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
 
-WARNING: `RemoteGraph` does not support steps that use lambdas in the `Traversal`. Lambda expressions are not
-serializable and therefore can't be remotely executed.
+IMPORTANT: `RemoteGraph` uses the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable the
+retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling eviction
+times and sizing) can be done in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
 
 Configuring
 ~~~~~~~~~~~
@@ -984,6 +985,47 @@ packaged with Gremlin Server due to its LGPL licensing that conflicts with the T
 run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from
 link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory
 before starting the server.
+
+OpProcessor Configurations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An `OpProcessor` provides a way to plug-in handlers to Gremlin Server's processing flow. Gremlin Server uses this
+plug-in system itself to expose the packaged functionality that it exposes. Configurations can be supplied to an
+`OpProcessor` through the `processors` key in the Gremlin Server configuration file. Each `OpProcessor` can take a
+`Map` of arguments which are specific to a particular implementation:
+
+[source,yaml]
+----
+processors:
+  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
+----
+
+The following sub-sections describe those configurations for each `OpProcessor` implementations supplied with Gremlin
+Server.
+
+SessionOpProcessor
+++++++++++++++++++
+
+The `SessionOpProcessor` provides a way to interact with Gremlin Server over a <<sessions,session>>.
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Name |Description |Default
+|sessionTimeout |Time in milliseconds before a session will time out. |28800000
+|=========================================================
+
+[[traversalopprocessor]]
+TraversalOpProcessor
+++++++++++++++++++++
+
+The `TraversalOpProcessor` provides a way to use <<connecting-via-remotegraph,RemoteGraph>>.
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Name |Description |Default
+|cacheExpirationTime |Time in milliseconds before side-effects from a `Traversal` will be evicted. |60000
+|cacheMaxSize |The maximum number of entries in the side-effect cache. |1000
+|=========================================================
 
 Security and Execution
 ^^^^^^^^^^^^^^^^^^^^^^
