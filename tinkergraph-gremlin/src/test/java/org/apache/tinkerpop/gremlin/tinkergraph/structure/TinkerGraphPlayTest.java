@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -28,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -83,7 +83,7 @@ public class TinkerGraphPlayTest {
         //
         System.out.println("GRAPHSON BYTECODE: \n  " + new String(outputStream.toByteArray()) + "\n");
         //
-        Traversal<?, ?> traversal2 = new JavaTranslator(graph.traversal(), __.class).translate(GraphSONReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
+        Traversal<?, ?> traversal2 = JavaTranslator.of(graph.traversal()).translate(GraphSONReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
         Bytecode bytecode2 = traversal2.asAdmin().getBytecode();
         System.out.println("BYTECODE 2: \n  " + bytecode2 + "\n");
         assert traversal1.equals(traversal2);

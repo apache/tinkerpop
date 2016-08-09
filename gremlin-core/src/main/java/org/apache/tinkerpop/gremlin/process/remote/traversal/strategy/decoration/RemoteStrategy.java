@@ -70,7 +70,7 @@ public final class RemoteStrategy extends AbstractTraversalStrategy<TraversalStr
         if (Boolean.valueOf(System.getProperty("is.testing", "false")) &&
                 (TraversalHelper.hasStepOfAssignableClassRecursively(ProfileSideEffectStep.class, traversal) ||
                         traversal.getBytecode().toString().contains("$"))) {
-            throw new VerificationException("RemoteGraph does not support profiling nor lambdas", traversal);
+            throw new VerificationException("Test suite does not support profiling nor lambdas", traversal);
         }
 
         if (!(traversal.getGraph().orElse(EmptyGraph.instance()) instanceof RemoteGraph))

@@ -53,7 +53,7 @@ public final class BytecodeHelper {
                 if (object instanceof Lambda)
                     return Optional.of(((Lambda) object).getLambdaLanguage());
                 else if (object instanceof Bytecode) {
-                    Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
+                    final Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
                     if (temp.isPresent())
                         return temp;
                 }
@@ -64,7 +64,7 @@ public final class BytecodeHelper {
                 if (object instanceof Lambda)
                     return Optional.of(((Lambda) object).getLambdaLanguage());
                 else if (object instanceof Bytecode) {
-                    Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
+                    final Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
                     if (temp.isPresent())
                         return temp;
                 }
