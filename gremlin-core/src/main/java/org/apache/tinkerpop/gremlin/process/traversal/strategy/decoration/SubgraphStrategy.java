@@ -176,19 +176,19 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     public final static class Builder {
 
-        private Traversal<Vertex, ?> vertexCriterion = null;
-        private Traversal<Edge, ?> edgeCriterion = null;
+        private Traversal<Vertex, ?> vertexPredicate = null;
+        private Traversal<Edge, ?> edgePredicate = null;
 
         private Builder() {
         }
 
         public Builder vertices(final Traversal<Vertex, ?> vertexPredicate) {
-            this.vertexCriterion = vertexPredicate;
+            this.vertexPredicate = vertexPredicate;
             return this;
         }
 
         public Builder edges(final Traversal<Edge, ?> edgePredicate) {
-            this.edgeCriterion = edgePredicate;
+            this.edgePredicate = edgePredicate;
             return this;
         }
 
@@ -209,9 +209,9 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         public SubgraphStrategy create() {
-            if (null == this.edgeCriterion && null == this.vertexCriterion)
+            if (null == this.edgePredicate && null == this.vertexPredicate)
                 throw new IllegalStateException("A subgraph must be filtered by an edge or vertex criterion");
-            return new SubgraphStrategy(this.vertexCriterion, this.edgeCriterion);
+            return new SubgraphStrategy(this.vertexPredicate, this.edgePredicate);
         }
     }
 }

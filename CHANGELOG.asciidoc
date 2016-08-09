@@ -29,6 +29,8 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 * Added new recipe for "Traversal Induced Values".
 * Fixed a potential leak of a `ReferenceCounted` resource in Gremlin Server.
 * Added class registrations for `Map.Entry` implementations to `GryoMapper`.
+* Fixed a severe bug in `SubgraphStrategy`.
+* Deprecated `SubgraphStrategy.Builder.vertexCriterion()/edgeCriterion()` in favor of `vertices()/edges()`.
 
 [[release-3-2-1]]
 TinkerPop 3.2.1 (Release Date: July 18, 2016)
