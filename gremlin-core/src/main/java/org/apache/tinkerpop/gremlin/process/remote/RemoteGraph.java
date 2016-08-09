@@ -62,6 +62,14 @@ import java.util.Iterator;
         method = "g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name",
         reason = "Issues with Longs")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest",
+        method = "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
+        reason = "Issues with BigInteger")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest",
+        method = "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
+        reason = "Issues with Longs")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest",
         method = "*",
         reason = "hmmmm")

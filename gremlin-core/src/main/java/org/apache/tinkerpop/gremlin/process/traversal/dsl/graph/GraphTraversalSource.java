@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -73,6 +74,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     ////////////////
+
+    @Override
+    public Optional<Class> getAnonymousTraversalClass() {
+        return Optional.of(__.class);
+    }
 
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;

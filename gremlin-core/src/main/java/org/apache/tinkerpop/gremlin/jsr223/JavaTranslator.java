@@ -44,13 +44,13 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     private final Map<String, List<Method>> traversalSourceMethodCache = new HashMap<>();
     private final Map<String, List<Method>> traversalMethodCache = new HashMap<>();
 
-    public JavaTranslator(final S traversalSource, final Class anonymousSource) {
+    private JavaTranslator(final S traversalSource, final Class anonymousSource) {
         this.traversalSource = traversalSource;
         this.anonymousTraversal = anonymousSource;
     }
 
-    public static <S extends TraversalSource, T extends Traversal.Admin<?, ?>> JavaTranslator<S, T> of(final S traversalSource, final Class anonymousSource) {
-        return new JavaTranslator<>(traversalSource, anonymousSource);
+    public static <S extends TraversalSource, T extends Traversal.Admin<?, ?>> JavaTranslator<S, T> of(final S traversalSource) {
+        return new JavaTranslator<>(traversalSource, traversalSource.getAnonymousTraversalClass().orElse(null));
     }
 
     @Override

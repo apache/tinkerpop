@@ -34,16 +34,25 @@ public interface Lambda extends Serializable {
 
     public String getLambdaScript();
 
+    public String getLambdaLanguage();
+
     public abstract static class AbstractLambda implements Lambda {
         private final String lambdaSource;
+        private final String lambdaLanguage;
 
-        private AbstractLambda(final String lambdaSource) {
+        private AbstractLambda(final String lambdaSource, final String lambdaLanguage) {
             this.lambdaSource = lambdaSource;
+            this.lambdaLanguage = lambdaLanguage;
         }
 
         @Override
         public String getLambdaScript() {
             return this.lambdaSource;
+        }
+
+        @Override
+        public String getLambdaLanguage() {
+            return this.lambdaLanguage;
         }
 
         @Override
@@ -53,19 +62,21 @@ public interface Lambda extends Serializable {
 
         @Override
         public int hashCode() {
-            return this.lambdaSource.hashCode();
+            return this.lambdaSource.hashCode() + this.lambdaLanguage.hashCode();
         }
 
         @Override
         public boolean equals(final Object object) {
-            return object instanceof Lambda && ((Lambda) object).getLambdaScript().equals(this.lambdaSource);
+            return object instanceof Lambda &&
+                    ((Lambda) object).getLambdaScript().equals(this.lambdaSource) &&
+                    ((Lambda) object).getLambdaLanguage().equals(this.lambdaLanguage);
         }
     }
 
     public static class ZeroArgLambda<A> extends AbstractLambda implements Supplier<A> {
 
-        public ZeroArgLambda(final String lambdaSource) {
-            super(lambdaSource);
+        public ZeroArgLambda(final String lambdaSource, final String lambdaLanguage) {
+            super(lambdaSource, lambdaLanguage);
         }
 
         @Override
@@ -77,13 +88,13 @@ public interface Lambda extends Serializable {
 
     public static class OneArgLambda<A, B> extends AbstractLambda implements Function<A, B>, Predicate<A>, Consumer<A> {
 
-        public OneArgLambda(final String lambdaSource) {
-            super(lambdaSource);
+        public OneArgLambda(final String lambdaSource, final String lambdaLanguage) {
+            super(lambdaSource, lambdaLanguage);
         }
 
         @Override
         public B apply(final A a) {
-            return (B) new ScriptEngineLambda("gremlin-groovy", this.getLambdaScript()).apply(a); // TODO: GremlinScriptEngine.lambda(String, Object... arguments)
+            return null;
         }
 
         @Override
@@ -99,8 +110,8 @@ public interface Lambda extends Serializable {
 
     public static class TwoArgLambda<A, B, C> extends AbstractLambda implements BiFunction<A, B, C>, Comparator<A> {
 
-        public TwoArgLambda(final String lambdaSource) {
-            super(lambdaSource);
+        public TwoArgLambda(final String lambdaSource, final String lambdaLanguage) {
+            super(lambdaSource, lambdaLanguage);
         }
 
         @Override
@@ -115,31 +126,57 @@ public interface Lambda extends Serializable {
         }
     }
 
+    ///
 
-    ////
+    public static String DEFAULT_LAMBDA_LANGUAGE = "gremlin-groovy";
+
+    public static <A, B> Function<A, B> function(final String lambdaSource, final String lambdaLanguage) {
+        return new OneArgLambda<>(lambdaSource, lambdaLanguage);
+    }
+
+    public static <A> Predicate<A> predicate(final String lambdaSource, final String lambdaLanguage) {
+        return new OneArgLambda<>(lambdaSource, lambdaLanguage);
+    }
+
+    public static <A> Consumer<A> consumer(final String lambdaSource, final String lambdaLanguage) {
+        return new OneArgLambda<>(lambdaSource, lambdaLanguage);
+    }
+
+    public static <A> Supplier<A> supplier(final String lambdaSource, final String lambdaLanguage) {
+        return new ZeroArgLambda<>(lambdaSource, lambdaLanguage);
+    }
+
+    public static <A> Comparator<A> comparator(final String lambdaSource, final String lambdaLanguage) {
+        return new TwoArgLambda<>(lambdaSource, lambdaLanguage);
+    }
+
+    public static <A, B, C> BiFunction<A, B, C> biFunction(final String lambdaSource, final String lambdaLanguage) {
+        return new TwoArgLambda<>(lambdaSource, lambdaLanguage);
+    }
+
+    //
 
     public static <A, B> Function<A, B> function(final String lambdaSource) {
-        return new OneArgLambda<>(lambdaSource);
+        return new OneArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
 
     public static <A> Predicate<A> predicate(final String lambdaSource) {
-        return new OneArgLambda<>(lambdaSource);
+        return new OneArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
 
     public static <A> Consumer<A> consumer(final String lambdaSource) {
-        return new OneArgLambda<>(lambdaSource);
+        return new OneArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
 
     public static <A> Supplier<A> supplier(final String lambdaSource) {
-        return new ZeroArgLambda<>(lambdaSource);
+        return new ZeroArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
 
     public static <A> Comparator<A> comparator(final String lambdaSource) {
-        return new TwoArgLambda<>(lambdaSource);
+        return new TwoArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
 
     public static <A, B, C> BiFunction<A, B, C> biFunction(final String lambdaSource) {
-        return new TwoArgLambda<>(lambdaSource);
+        return new TwoArgLambda<>(lambdaSource, DEFAULT_LAMBDA_LANGUAGE);
     }
-
 }

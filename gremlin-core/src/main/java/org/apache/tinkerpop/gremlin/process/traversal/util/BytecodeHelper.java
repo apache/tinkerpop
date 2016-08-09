@@ -20,7 +20,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -43,5 +45,31 @@ public final class BytecodeHelper {
                 clone.addStep(instruction.getOperator(), instruction.getArguments());
         }
         return clone;
+    }
+
+    public static Optional<String> getLambdaLanguage(final Bytecode bytecode) {
+        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+            for (Object object : instruction.getArguments()) {
+                if (object instanceof Lambda)
+                    return Optional.of(((Lambda) object).getLambdaLanguage());
+                else if (object instanceof Bytecode) {
+                    Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
+                    if (temp.isPresent())
+                        return temp;
+                }
+            }
+        }
+        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+            for (Object object : instruction.getArguments()) {
+                if (object instanceof Lambda)
+                    return Optional.of(((Lambda) object).getLambdaLanguage());
+                else if (object instanceof Bytecode) {
+                    Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
+                    if (temp.isPresent())
+                        return temp;
+                }
+            }
+        }
+        return Optional.empty();
     }
 }

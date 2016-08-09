@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.jsr223;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
@@ -41,6 +44,10 @@ public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
+            TraversalInterruptionTest.class.getCanonicalName(),
+            TraversalInterruptionComputerTest.class.getCanonicalName(),
+            "shouldNeverPropagateANoBulkTraverser",
+            "shouldNeverPropagateANullValuedTraverser",
             ProgramTest.Traversals.class.getCanonicalName()));
 
 
@@ -60,7 +67,7 @@ public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, JavaTranslator.of(g, __.class)));
+            return g.withStrategies(new TranslationStrategy(g, JavaTranslator.of(g)));
         }
     }
 }

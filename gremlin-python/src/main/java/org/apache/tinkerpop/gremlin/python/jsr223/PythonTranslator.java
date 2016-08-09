@@ -28,10 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -87,8 +84,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
     @Override
     public String translate(final Bytecode bytecode) {
-        final String traversal = this.internalTranslate(this.traversalSource, BytecodeHelper.filterInstructions(bytecode,
-                instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)));
+        final String traversal = this.internalTranslate(this.traversalSource, bytecode);
         //if (this.importStatics)
         //    assert !traversal.contains("__.");
         return traversal;
@@ -110,6 +106,8 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
             final String methodName = instruction.getOperator();
+            if (methodName.equals(TraversalSource.Symbols.withStrategies))
+                continue;
             final Object[] arguments = instruction.getArguments();
             if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
@@ -154,10 +152,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                 traversalScript.delete(0, 3);
             }
         }
-        final String script = traversalScript.toString();
-        if (script.contains("$"))
-            throw new VerificationException("Lambdas are currently not supported: " + script, EmptyTraversal.instance());
-        return script;
+        return traversalScript.toString();
     }
 
     private String convertToString(final Object object) {

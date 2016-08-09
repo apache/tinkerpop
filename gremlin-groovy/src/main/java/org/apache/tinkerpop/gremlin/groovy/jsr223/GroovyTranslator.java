@@ -25,10 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -91,22 +88,19 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
     private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
-        final Bytecode clone = BytecodeHelper.filterInstructions(bytecode,
-                instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies));
-        for (final Bytecode.Instruction instruction : clone.getSourceInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
             processInstruction(traversalScript, instruction);
         }
-        for (final Bytecode.Instruction instruction : clone.getStepInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
             processInstruction(traversalScript, instruction);
         }
-        final String script = traversalScript.toString();
-        if (script.contains("$"))
-            throw new VerificationException("Lambdas are currently not supported: " + script, EmptyTraversal.instance());
-        return script;
+        return traversalScript.toString();
     }
 
     private void processInstruction(final StringBuilder traversalScript, final Bytecode.Instruction instruction) {
         final String methodName = instruction.getOperator();
+        if (methodName.equals(TraversalSource.Symbols.withStrategies))
+            return;
         final Object[] arguments = instruction.getArguments();
         final List<Object> objects = Arrays.asList(arguments);
         if (objects.isEmpty())
@@ -117,7 +111,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             for (final Object object : objects) {
                 temp = temp + convertToString(object) + ",";
             }
-            traversalScript.append(temp.substring(0, temp.length() - 1) + ")");
+            traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
         }
     }
 

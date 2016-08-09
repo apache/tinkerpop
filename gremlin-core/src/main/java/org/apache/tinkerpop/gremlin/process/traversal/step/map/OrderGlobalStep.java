@@ -81,7 +81,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> traversal) {
-        this.addComparator((Traversal.Admin<S, C>) traversal, (Comparator) Order.incr);
+        this.modulateBy(traversal, Order.incr);
     }
 
     @Override
@@ -103,7 +103,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
     public int hashCode() {
         int result = super.hashCode();
         for (int i = 0; i < this.comparators.size(); i++) {
-            result ^= this.comparators.get(i).hashCode() * (i+1);
+            result ^= this.comparators.get(i).hashCode() * (i + 1);
         }
         return result;
     }
@@ -153,7 +153,7 @@ public final class OrderGlobalStep<S, C extends Comparable> extends CollectingBa
             // for serializers that need a no-arg constructor
         }
 
-        public OrderBiOperator(final ChainedComparator<S,?> chainedComparator, final long limit) {
+        public OrderBiOperator(final ChainedComparator<S, ?> chainedComparator, final long limit) {
             this.chainedComparator = chainedComparator;
             this.limit = limit;
         }

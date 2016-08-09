@@ -82,7 +82,7 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g, __.class))));
+            return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g))));
         }
     }
 }

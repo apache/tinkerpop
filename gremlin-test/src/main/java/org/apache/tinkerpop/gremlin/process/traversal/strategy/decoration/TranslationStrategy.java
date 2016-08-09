@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
@@ -30,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
@@ -68,9 +68,10 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         if (!(traversal.getParent() instanceof EmptyStep))
             return;
 
-        // if the graph is RemoteGraph, RemoteStrategy will send the traversal
-        if (traversal.getGraph().isPresent() && traversal.getGraph().get() instanceof RemoteGraph)
-            return;
+        // verifications to ensure unsupported steps do not exist in the traversal
+        if (Boolean.valueOf(System.getProperty("is.testing", "false")) &&
+                (traversal.getBytecode().toString().contains("$") || traversal.getBytecode().toString().contains("HashSetSupplier")))
+            throw new VerificationException("Test suite does not support profiling nor lambdas", traversal);
 
         final Traversal.Admin<?, ?> translatedTraversal;
         ////////////////

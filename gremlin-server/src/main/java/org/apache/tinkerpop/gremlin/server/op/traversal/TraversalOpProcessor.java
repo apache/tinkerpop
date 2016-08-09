@@ -27,10 +27,12 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.ScriptEngines;
+import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -98,7 +100,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }};
     }
 
-    private static  Cache<UUID, TraversalSideEffects> cache = null;
+    private static Cache<UUID, TraversalSideEffects> cache = null;
 
     public TraversalOpProcessor() {
         super(true);
@@ -218,7 +220,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         return op;
     }
 
-    private static Map<String,String> validateTraversalRequest(final RequestMessage message) throws OpProcessorException {
+    private static Map<String, String> validateTraversalRequest(final RequestMessage message) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
@@ -323,12 +325,15 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final Traversal.Admin<?, ?> traversal;
         try {
-            // TODO: hardcoded to gremlin-groovy translation for now
-            final ScriptEngines engines = context.getGremlinExecutor().getScriptEngines();
-            final SimpleBindings b = new SimpleBindings();
-            b.put("g", g);
-
-            traversal = engines.eval(bytecode, b, "gremlin-groovy");
+            final Optional<String> lambdaLanguage = BytecodeHelper.getLambdaLanguage(bytecode);
+            if (!lambdaLanguage.isPresent())
+                traversal = JavaTranslator.of(g).translate(bytecode);
+            else {
+                final ScriptEngines engines = context.getGremlinExecutor().getScriptEngines();
+                final SimpleBindings b = new SimpleBindings();
+                b.put("g", g);
+                traversal = engines.eval(bytecode, b, lambdaLanguage.get());
+            }
         } catch (Exception ex) {
             throw new OpProcessorException("Could not deserialize the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
@@ -385,7 +390,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     @Override
     protected Map<String, Object> generateMetaData(final ChannelHandlerContext ctx, final RequestMessage msg,
                                                    final ResponseStatusCode code, final Iterator itty) {
-        Map<String,Object> metaData = Collections.emptyMap();
+        Map<String, Object> metaData = Collections.emptyMap();
         if (itty instanceof SideEffectIterator) {
             final SideEffectIterator traversalIterator = (SideEffectIterator) itty;
             final String key = traversalIterator.getSideEffectKey();

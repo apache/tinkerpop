@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -383,6 +384,10 @@ public interface TraversalSource extends Cloneable {
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
         clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
         return clone;
+    }
+
+    public default Optional<Class> getAnonymousTraversalClass() {
+        return Optional.empty();
     }
 
     /**

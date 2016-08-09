@@ -24,9 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 
@@ -59,12 +57,6 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
     @Override
     public T translate(final Bytecode bytecode) {
         try {
-            for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-                for (final Object argument : instruction.getArguments()) {
-                    if (argument.toString().contains("$"))
-                        throw new VerificationException("Lambdas are currently not supported: " + bytecode, EmptyTraversal.instance());
-                }
-            }
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             this.writer.writeObject(outputStream, BytecodeHelper.filterInstructions(bytecode,
                     instruction -> !instruction.getOperator().equals(TraversalSource.Symbols.withStrategies)));
