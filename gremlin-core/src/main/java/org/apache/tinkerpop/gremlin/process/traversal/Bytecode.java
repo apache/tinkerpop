@@ -162,7 +162,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     }
 
-    public static class Binding<V> {
+    public static class Binding<V> implements Serializable {
 
         private final String variable;
         private final V value;
