@@ -56,9 +56,9 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-        pythonClass.append("from traversal import Traversal\n")
-        pythonClass.append("from traversal import Bytecode\n")
-        pythonClass.append("from gremlin_python import statics\n\n")
+        pythonClass.append("from .traversal import Traversal\n")
+        pythonClass.append("from .traversal import Bytecode\n")
+        pythonClass.append("from .. import statics\n\n")
 
 //////////////////////////
 // GraphTraversalSource //
