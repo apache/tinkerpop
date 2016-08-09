@@ -70,6 +70,14 @@ import java.util.Iterator;
         method = "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
         reason = "Issues with Longs")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest",
+        method = "g_VXlistXv1_v2_v3XX_name",
+        reason = "Issues with ids")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
+        method = "g_VXv1X_hasXage_gt_30X",
+        reason = "Issues with ids")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest",
         method = "*",
         reason = "hmmmm")
