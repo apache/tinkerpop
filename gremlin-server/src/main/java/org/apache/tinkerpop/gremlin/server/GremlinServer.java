@@ -109,10 +109,8 @@ public class GremlinServer {
         serverGremlinExecutor = new ServerGremlinExecutor<>(settings, null, workerGroup, EventLoopGroup.class);
         gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
 
-        // force an early load of the OpLoader (even if not used by a Channelizer).  this is an expensive operation
-        // as it uses ServiceLoader and if left uninitialized puts a burden on the first client request that passes
-        // through an OpProcessor
-        OpLoader.getProcessors();
+        // initialize the OpLoader with configurations being passed to each OpProcessor implementation loaded
+        OpLoader.init(settings);
     }
 
     /**

@@ -36,6 +36,14 @@ public interface OpProcessor extends AutoCloseable {
     public String getName();
 
     /**
+     * Initialize the {@code OpProcessor} with settings from the server. This method should only be called once at
+     * server startup by a single thread.
+     */
+    public default void init(final Settings settings) {
+        // do nothing by default
+    }
+
+    /**
      * Given the context (which contains the RequestMessage), return back a Consumer function that will be
      * executed with the context.  A typical implementation will simply check the "op" field on the RequestMessage
      * and return the Consumer function for that particular operation.

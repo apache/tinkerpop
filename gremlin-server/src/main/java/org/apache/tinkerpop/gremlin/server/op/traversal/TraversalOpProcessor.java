@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
@@ -67,10 +68,37 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     public static final String OP_PROCESSOR_NAME = "traversal";
     public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
 
-    private static final Cache<UUID, TraversalSideEffects> cache = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .maximumSize(10_000)
-            .build();
+    public static final Settings.ProcessorSettings DEFAULT_SETTINGS = new Settings.ProcessorSettings();
+
+    /**
+     * Configuration setting for how long a cached side-effect will be available before it is evicted from the cache.
+     */
+    public static final String CONFIG_CACHE_EXPIRATION_TIME = "cacheExpirationTime";
+
+    /**
+     * Default timeout for a cached side-effect is ten minutes.
+     */
+    public static final long DEFAULT_CACHE_EXPIRATION_TIME = 600000;
+
+    /**
+     * Configuration setting for the maximum number of entries the cache will have.
+     */
+    public static final String CONFIG_CACHE_MAX_SIZE = "cacheMaxSize";
+
+    /**
+     * Default size of the max size of the cache.
+     */
+    public static final long DEFAULT_CACHE_MAX_SIZE = 1000;
+
+    static {
+        DEFAULT_SETTINGS.className = TraversalOpProcessor.class.getCanonicalName();
+        DEFAULT_SETTINGS.config = new HashMap<String, Object>() {{
+            put(CONFIG_CACHE_EXPIRATION_TIME, DEFAULT_CACHE_EXPIRATION_TIME);
+            put(CONFIG_CACHE_MAX_SIZE, DEFAULT_CACHE_MAX_SIZE);
+        }};
+    }
+
+    private static  Cache<UUID, TraversalSideEffects> cache = null;
 
     public TraversalOpProcessor() {
         super(true);
@@ -84,6 +112,23 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     @Override
     public void close() throws Exception {
         // do nothing = no resources to release
+    }
+
+    @Override
+    public void init(final Settings settings) {
+        final Settings.ProcessorSettings processorSettings = settings.processors.stream()
+                .filter(p -> p.className.equals(TraversalOpProcessor.class.getCanonicalName()))
+                .findAny().orElse(TraversalOpProcessor.DEFAULT_SETTINGS);
+        final long maxSize = Long.parseLong(processorSettings.config.get(TraversalOpProcessor.CONFIG_CACHE_MAX_SIZE).toString());
+        final long expirationTime = Long.parseLong(processorSettings.config.get(TraversalOpProcessor.CONFIG_CACHE_EXPIRATION_TIME).toString());
+
+        cache = Caffeine.newBuilder()
+                .expireAfterWrite(expirationTime, TimeUnit.MILLISECONDS)
+                .maximumSize(maxSize)
+                .build();
+
+        logger.info("Initialized cache for {} with size {} and expiration time of {} ms",
+                TraversalOpProcessor.class.getSimpleName(), maxSize, expirationTime);
     }
 
     @Override
