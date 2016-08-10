@@ -291,7 +291,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         return;
                     }
 
-                    if (graph.features().graph().supportsTransactions()) graph.tx().commit();
+                    // there was no "writing" here, just side-effect retrieval, so if a transaction was opened then
+                    // just close with rollback
+                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
@@ -368,7 +370,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         return;
                     }
 
-                    if (graph.features().graph().supportsTransactions()) graph.tx().commit();
+                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().commit();
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
