@@ -220,7 +220,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     private static Map<String, String> validateTraversalRequest(final RequestMessage message) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
+            final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
@@ -232,12 +232,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     private static Optional<Map<String, String>> validatedAliases(RequestMessage message) throws OpProcessorException {
         final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
         if (!aliases.isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
+            final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (aliases.get().size() != 1) {
-            final String msg = String.format("A message with an [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
+            final String msg = String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
         return aliases;
@@ -260,11 +260,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final Graph graph = g.getGraph();
-            final boolean supportsTransactions = graph.features().graph().supportsTransactions();
 
             context.getGremlinExecutor().getExecutorService().submit(() -> {
                 try {
-                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                    beforeProcessing(graph, context);
 
                     try {
                         final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
@@ -273,7 +272,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                             final String errorMessage = String.format("Could not find side-effects for %s.", sideEffect.get());
                             logger.warn(errorMessage);
                             ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
-                            if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                            onError(graph, context);
                             return;
                         }
 
@@ -282,22 +281,20 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
-                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        onError(graph, context);
                         return;
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a side-effect on iteration for request [%s].", msg.getRequestId()), ex);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        onError(graph, context);
                         return;
                     }
 
-                    // there was no "writing" here, just side-effect retrieval, so if a transaction was opened then
-                    // just close with rollback
-                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                    onSideEffectSuccess(graph, context);
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a side-effect on request [%s].", msg.getRequestId()), ex);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                    if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+                    onError(graph, context);
                 } finally {
                     timerContext.stop();
                 }
@@ -344,11 +341,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final Graph graph = g.getGraph();
-            final boolean supportsTransactions = graph.features().graph().supportsTransactions();
 
             context.getGremlinExecutor().getExecutorService().submit(() -> {
                 try {
-                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                    beforeProcessing(graph, context);
 
                     try {
                         // compile the traversal - without it getEndStep() has nothing in it
@@ -361,20 +357,20 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
-                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        onError(graph, context);
                         return;
                     } catch (Exception ex) {
                         logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                        if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
+                        onError(graph, context);
                         return;
                     }
 
-                    if (supportsTransactions && graph.tx().isOpen()) graph.tx().commit();
+                    onTraversalSuccess(graph, context);
                 } catch (Exception ex) {
                     logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
-                    if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+                    onError(graph, context);
                 } finally {
                     timerContext.stop();
                 }
@@ -385,6 +381,24 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }
+    }
+
+    protected void beforeProcessing(final Graph graph, final Context ctx) {
+        if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+    }
+
+    protected void onError(final Graph graph, final Context ctx) {
+        if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+    }
+
+    protected void onTraversalSuccess(final Graph graph, final Context ctx) {
+        if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
+    }
+
+    protected void onSideEffectSuccess(final Graph graph, final Context ctx) {
+        // there was no "writing" here, just side-effect retrieval, so if a transaction was opened then
+        // just close with rollback
+        if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     @Override
