@@ -902,11 +902,52 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 Traversal OpProcessor
 ^^^^^^^^^^^^^^^^^^^^^
 
-Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The Traversal
-OpProcessor however allows Gremlin `Bytecode` to be submitted to the server. Supporting this OpProcessor makes it
-possible to submit a `Traversal` directly to Gremlin Server allowing
-link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants] to
-directly submit a `Traversal` in the native language of the GLV without having to use a script in a different language.
+Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The
+`TraversalOpProcessor` however allows Gremlin `Bytecode` to be submitted to the server. Supporting this `OpProcessor`
+makes it possible for a link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variant]
+to submit a `Traversal` directly to Gremlin Server in the native language of the GLV without having to use a script in
+a different language.
+
+Unlike Standard and Session OpProcessors, the Traversal OpProcessor does not simply return the results of the
+`Traversal`. It instead returns `Traverser` objects which allows the client to take advantage of
+link:http://tinkerpop.apache.org/docs/current/reference/#barrier-step[bulking]. To describe this interaction more
+directly, the returned `Traverser` will represent some value from the `Traversal` result and the number of times it
+is represented in the the full stream of results. So, if a `Traversal` happens to return the same vertex twenty times
+it won't return twenty instances of the same object. It will return one in `Traverser` with the `bulk` value set to
+twenty. Under this model, the amount of processing and network overhead can be reduced considerably.
+
+To demonstrate consider this example:
+
+[gremlin-groovy]
+----
+cluster = Cluster.open()
+client = cluster.connect()
+aliased = client.alias("g")
+g = org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.INSTANCE.traversal()       <1>
+rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
+aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
+rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>
+----
+
+<1> All commands through this step are just designed to demonstrate bulking with Gremlin Server and don't represent
+a real-world way that this feature would be used.
+<2> Submit a `Traversal` that happens to ensure that the server uses bulking. Note that a `Traverser` is returned
+and that there are only six results.
+<3> In actuality, however, if this same `Traversal` is iterated there are thirty results. Without bulking, the previous
+request would have sent back thirty traversers.
+<4> Note that the sum of the bulk of each `Traverser` is thirty.
+
+The full iteration of aa `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
+unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
+directly within TinkerPop's `RemoteGraph` implementations.
+
+One of the important aspects of the Traversal OpProcessor is that it enables the user to not only get the results of
+the `Traversal` but also the side-effects that it produces. When the `Traversal` is submitted with the "bytecode"
+operation, the results are iterated back as usual, but any side-effects are retained on the server in a cache keyed by
+the identifier of the request that originally submitted the `Traversal`. The client will want to retain that identifier
+if it intends to later get side-effects. The Traversal OpProcessor supplies the "keys" and "gather" operations to get
+the keys stored in the side-effect and to get the value of a specific side-effect respectively. Finally, a "close"
+operation is available to clear the cache of a specific side-effect.
 
 [width="100%",cols="3,10a",options="header"]
 |=========================================================
@@ -918,6 +959,9 @@ directly submit a `Traversal` in the native language of the GLV without having t
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
 !`bytecode` !A request that contains the `Bytecode` representation of a `Traversal`.
+!`close` !Releases side-effects held in cache for a particular `Traversal`.
+!`gather` !Gets a particular side-effect as produced by a previously executed `Traversal`.
+!`keys` !Gets all the keys of all side-effects as produced by a previously executed `Traversal`.
 |=========================================================
 
 '`authentication` operation arguments'
@@ -939,10 +983,38 @@ example, if the Gremlin Server defines two `TraversalSource` instances named `g1
 to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g".
 |=========================================================
 
-Unlike Standard and Session OpProcessors, the Traversal OpProcessor does not simply return the results of the
-`Traversal`. It instead returns a representation of the `Traverser` objects and any side-effects produced by the
-`Traversal` itself.
+'`close` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
+|=========================================================
 
+'`gather` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
+|sideEffectKey |String | *Required* The key for a specific side-effect.
+|aliases |Map | *Required* A map with a single key/value pair that refers to a globally bound `TraversalSource` object
+to be aliased to different variable names for purposes of the current request.  The value represents the name of the
+global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
+example, if the Gremlin Server defines two `TraversalSource` instances named `g1`, it would be possible
+to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g".
+|=========================================================
+
+When using "gather" it is important to note the metadata that is returned on the `ResponseMessage`. It returns both the
+"sideEffectKey" that was requested as well as a value keyed as "aggregateTo". The "aggregateTo" field describes how the
+streamed side-effect data should be treated on the client. It provides a hint as to whether or not the data should be
+rolled back up into a single object or simply left as-is. There are four values for "aggregateTo": `bulkset`, `list`,
+`map` and `none`.
+
+'`keys` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|sideEffect |UUID | *Required* The unique identifier for the request that original submitted the traversal (side-effects are keyed by that value)
+|=========================================================
 
 Authentication
 ~~~~~~~~~~~~~~

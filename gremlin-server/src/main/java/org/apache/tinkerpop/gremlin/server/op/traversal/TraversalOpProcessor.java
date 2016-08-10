@@ -175,8 +175,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                validatedAliases(message);
-
                 op = context -> {
                     final RequestMessage msg = context.getRequestMessage();
                     logger.debug("Close request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
@@ -396,7 +394,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final String key = traversalIterator.getSideEffectKey();
             if (key != null) {
                 metaData = new HashMap<>();
-                metaData.put(Tokens.ARGS_SIDE_EFFECT, key);
+                metaData.put(Tokens.ARGS_SIDE_EFFECT_KEY, key);
                 metaData.put(Tokens.ARGS_AGGREGATE_TO, traversalIterator.getSideEffectAggregator());
             }
         }

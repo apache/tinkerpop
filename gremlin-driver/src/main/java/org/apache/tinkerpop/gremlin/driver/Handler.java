@@ -184,7 +184,7 @@ final class Handler {
                     final Object data = response.getResult().getData();
                     final Map<String,Object> meta = response.getResult().getMeta();
 
-                    if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT)) {
+                    if (!meta.containsKey(Tokens.ARGS_SIDE_EFFECT_KEY)) {
                         // this is a "result" from the server which is either the result of a script or a
                         // serialized traversal
                         if (data instanceof List) {
