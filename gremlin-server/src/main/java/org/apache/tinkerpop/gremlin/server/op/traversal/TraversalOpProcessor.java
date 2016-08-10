@@ -285,7 +285,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
                         return;
                     } catch (Exception ex) {
-                        logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
+                        logger.warn(String.format("Exception processing a side-effect on iteration for request [%s].", msg.getRequestId()), ex);
                         ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
                         if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
                         return;
@@ -295,7 +295,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     // just close with rollback
                     if (supportsTransactions && graph.tx().isOpen()) graph.tx().rollback();
                 } catch (Exception ex) {
-                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    logger.warn(String.format("Exception processing a side-effect on request [%s].", msg.getRequestId()), ex);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
                     if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
                 } finally {
@@ -305,7 +305,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         } catch (Exception ex) {
             timerContext.stop();
-            throw new OpProcessorException("Could not iterate the Traversal instance",
+            throw new OpProcessorException("Could not iterate the side-effect instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }
     }
