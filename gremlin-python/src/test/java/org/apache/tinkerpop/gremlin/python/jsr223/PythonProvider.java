@@ -157,7 +157,7 @@ public class PythonProvider extends AbstractGraphProvider {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(new PythonTranslator("g", "__", IMPORT_STATICS), JavaTranslator.of(g))));
+            return g.withStrategies(new TranslationStrategy(g, new PythonGraphSONJavaTranslator<>(PythonTranslator.of("g", "__", IMPORT_STATICS), JavaTranslator.of(g))));
         }
     }
 

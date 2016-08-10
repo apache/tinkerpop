@@ -62,14 +62,22 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     private String anonymousTraversal;
     private final boolean importStatics;
 
-    public PythonTranslator(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
+    private PythonTranslator(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
         this.traversalSource = traversalSource;
         this.anonymousTraversal = anonymousTraversal;
         this.importStatics = importStatics;
     }
 
-    public PythonTranslator(final String traversalSource, final String anonymousTraversal) {
-        this(traversalSource, anonymousTraversal, false);
+    public static final PythonTranslator of(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
+        return new PythonTranslator(traversalSource, anonymousTraversal, importStatics);
+    }
+
+    public static final PythonTranslator of(final String traversalSource, final String anonymousTraversal) {
+        return new PythonTranslator(traversalSource, anonymousTraversal, false);
+    }
+
+    public static final PythonTranslator of(final String traversalSource) {
+        return new PythonTranslator(traversalSource, "__", false);
     }
 
     @Override
@@ -104,32 +112,12 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
     private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
-        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
+            final Object[] arguments = instruction.getArguments();
             if (methodName.equals(TraversalSource.Symbols.withStrategies))
                 continue;
-            final Object[] arguments = instruction.getArguments();
-            if (0 == arguments.length)
-                traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
-            else {
-                traversalScript.append(".");
-                String temp = SymbolHelper.toPython(methodName) + "(";
-                for (final Object object : arguments) {
-                    temp = temp + convertToString(object) + ",";
-                }
-                traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
-            }
-
-            // clip off __.
-            if (this.importStatics && traversalScript.substring(0, 3).startsWith(this.anonymousTraversal + ".")
-                    && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
-                traversalScript.delete(0, 3);
-            }
-        }
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-            final String methodName = instruction.getOperator();
-            final Object[] arguments = instruction.getArguments();
-            if (0 == arguments.length)
+            else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
             else if (methodName.equals("range") && 2 == arguments.length)
                 traversalScript.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
@@ -145,7 +133,6 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                 }
                 traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
             }
-
             // clip off __.
             if (this.importStatics && traversalScript.substring(0, 3).startsWith(this.anonymousTraversal + ".")
                     && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {

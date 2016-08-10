@@ -20,21 +20,24 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * When a {@link TraversalSource} is manipulated, a {@link Traversal} is spawned and then mutated, a language
- * agnostic representation of those mutations is recorded in a byte code instance. Byte code is simply a list
- * of ordered instructions where an instruction is a string operator and an array of arguments. Byte code is used by
- * {@link Translator} instances which translate a traversal to another language by analyzing the
- * byte code as opposed to the Java traversal object representation on heap.
+ * When a {@link TraversalSource} is manipulated and then a {@link Traversal} is spawned and mutated, a language
+ * agnostic representation of those mutations is recorded in a bytecode instance. Bytecode is simply a list
+ * of ordered instructions where an instruction is a string operator and a (flattened) array of arguments.
+ * Bytecode is used by {@link Translator} instances which are able to translate a traversal in one language to another
+ * by analyzing the bytecode as opposed to the Java traversal object representation on heap.
+ * <p>
+ * Bytecode can be serialized between environments and machines by way of a GraphSON representation.
+ * Thus, Gremlin-Python can create bytecode in Python and ship it to Gremlin-Java for evaluation in Java.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -42,9 +45,14 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
-    // required for Gremlin-Java
     private transient Bindings bindings = null;
 
+    /**
+     * Add a {@link TraversalSource} instruction to the bytecode.
+     *
+     * @param sourceName the traversal source method name (e.g. withSack())
+     * @param arguments  the traversal source method arguments
+     */
     public void addSource(final String sourceName, final Object... arguments) {
         if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
             this.bindings = (Bindings) arguments[0];
@@ -55,19 +63,50 @@ public final class Bytecode implements Cloneable, Serializable {
         }
     }
 
+    /**
+     * Add a {@link Traversal} instruction to the bytecode.
+     *
+     * @param stepName  the traversal method name (e.g. out())
+     * @param arguments the traversal method arguments
+     */
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
         if (null != this.bindings) this.bindings.clear();
     }
 
-    public List<Instruction> getSourceInstructions() {
-        return Collections.unmodifiableList(this.sourceInstructions);
+    /**
+     * Get the {@link TraversalSource} instructions associated with this bytecode.
+     *
+     * @return an iterable of instructions
+     */
+    public Iterable<Instruction> getSourceInstructions() {
+        return this.sourceInstructions;
     }
 
-    public List<Instruction> getStepInstructions() {
-        return Collections.unmodifiableList(this.stepInstructions);
+    /**
+     * Get the {@link Traversal} instructions associated with this bytecode.
+     *
+     * @return an iterable of instructions
+     */
+    public Iterable<Instruction> getStepInstructions() {
+        return this.stepInstructions;
     }
 
+    /**
+     * Get both the {@link TraversalSource} and {@link Traversal} instructions of this bytecode.
+     * The traversal source instructions are provided prior to the traversal instructions.
+     *
+     * @return an interable of all the instructions in this bytecode
+     */
+    public Iterable<Instruction> getInstructions() {
+        return () -> IteratorUtils.concat(this.sourceInstructions.iterator(), this.stepInstructions.iterator());
+    }
+
+    /**
+     * Get all the bindings (in a nested, recurssive manner) from all the arguments of all the instructions of this bytecode.
+     *
+     * @return a map of string variable and object value bindings
+     */
     public Map<String, Object> getBindings() {
         final Map<String, Object> bindingsMap = new HashMap<>();
         for (final Instruction instruction : this.sourceInstructions) {

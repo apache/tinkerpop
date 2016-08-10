@@ -48,18 +48,7 @@ public final class BytecodeHelper {
     }
 
     public static Optional<String> getLambdaLanguage(final Bytecode bytecode) {
-        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
-            for (Object object : instruction.getArguments()) {
-                if (object instanceof Lambda)
-                    return Optional.of(((Lambda) object).getLambdaLanguage());
-                else if (object instanceof Bytecode) {
-                    final Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
-                    if (temp.isPresent())
-                        return temp;
-                }
-            }
-        }
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             for (Object object : instruction.getArguments()) {
                 if (object instanceof Lambda)
                     return Optional.of(((Lambda) object).getLambdaLanguage());

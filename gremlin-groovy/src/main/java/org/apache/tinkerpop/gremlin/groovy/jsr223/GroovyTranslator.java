@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -88,31 +87,23 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
     private String internalTranslate(final String start, final Bytecode bytecode) {
         final StringBuilder traversalScript = new StringBuilder(start);
-        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
-            processInstruction(traversalScript, instruction);
-        }
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-            processInstruction(traversalScript, instruction);
+        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
+            final String methodName = instruction.getOperator();
+            if (methodName.equals(TraversalSource.Symbols.withStrategies))
+                continue;
+            final Object[] arguments = instruction.getArguments();
+            if (0 == arguments.length)
+                traversalScript.append(".").append(methodName).append("()");
+            else {
+                traversalScript.append(".");
+                String temp = methodName + "(";
+                for (final Object object : arguments) {
+                    temp = temp + convertToString(object) + ",";
+                }
+                traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
+            }
         }
         return traversalScript.toString();
-    }
-
-    private void processInstruction(final StringBuilder traversalScript, final Bytecode.Instruction instruction) {
-        final String methodName = instruction.getOperator();
-        if (methodName.equals(TraversalSource.Symbols.withStrategies))
-            return;
-        final Object[] arguments = instruction.getArguments();
-        final List<Object> objects = Arrays.asList(arguments);
-        if (objects.isEmpty())
-            traversalScript.append(".").append(methodName).append("()");
-        else {
-            traversalScript.append(".");
-            String temp = methodName + "(";
-            for (final Object object : objects) {
-                temp = temp + convertToString(object) + ",";
-            }
-            traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
-        }
     }
 
     private String convertToString(final Object object) {

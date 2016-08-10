@@ -24,8 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
@@ -37,7 +35,7 @@ import java.io.ByteArrayInputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
+final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
 
     private final PythonTranslator pythonTranslator;
     private final JavaTranslator<S, T> javaTranslator;
@@ -65,14 +63,6 @@ public class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends T
 
     @Override
     public T translate(final Bytecode bytecode) {
-
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-            for (final Object argument : instruction.getArguments()) {
-                if (argument.toString().contains("$"))
-                    throw new VerificationException("Lambdas are currently not supported: " + bytecode, EmptyTraversal.instance());
-            }
-        }
-
         try {
             final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
             final Bindings bindings = jythonEngine.createBindings();

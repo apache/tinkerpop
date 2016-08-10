@@ -88,7 +88,7 @@ public final class GraphSONTraversalSerializers {
                 throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField("@type", "Bytecode");
-            if (!bytecode.getSourceInstructions().isEmpty()) {
+            if (bytecode.getSourceInstructions().iterator().hasNext()) {
                 jsonGenerator.writeArrayFieldStart("source");
                 for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
                     jsonGenerator.writeStartArray();
@@ -100,7 +100,7 @@ public final class GraphSONTraversalSerializers {
                 }
                 jsonGenerator.writeEndArray();
             }
-            if (!bytecode.getStepInstructions().isEmpty()) {
+            if (bytecode.getStepInstructions().iterator().hasNext()) {
                 jsonGenerator.writeArrayFieldStart("step");
                 for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
                     jsonGenerator.writeStartArray();

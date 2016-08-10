@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -71,13 +72,16 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         // verifications to ensure unsupported steps do not exist in the traversal
         if (Boolean.valueOf(System.getProperty("is.testing", "false")) &&
                 (traversal.getBytecode().toString().contains("$") || traversal.getBytecode().toString().contains("HashSetSupplier")))
-            throw new VerificationException("Test suite does not support profiling nor lambdas", traversal);
+            throw new VerificationException("Test suite does not support lambdas", traversal);
 
         final Traversal.Admin<?, ?> translatedTraversal;
+        final Bytecode bytecode = Boolean.valueOf(System.getProperty("is.testing", "false")) ?
+                insertBindingsForTesting(traversal.getBytecode()) :
+                traversal.getBytecode();
         ////////////////
         if (this.translator instanceof Translator.StepTranslator) {
             // reflection based translation
-            translatedTraversal = (Traversal.Admin<?, ?>) this.translator.translate(traversal.getBytecode());
+            translatedTraversal = (Traversal.Admin<?, ?>) this.translator.translate(bytecode);
         } else if (this.translator instanceof Translator.ScriptTranslator) {
             try {
                 // script based translation
@@ -85,7 +89,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
                 final Bindings bindings = scriptEngine.createBindings();
                 bindings.putAll(scriptEngine.getContext().getBindings(ScriptContext.ENGINE_SCOPE));
                 bindings.put(this.translator.getTraversalSource().toString(), this.traversalSource);
-                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(traversal.getBytecode(), bindings);
+                translatedTraversal = (Traversal.Admin<?, ?>) scriptEngine.eval(bytecode, bindings);
             } catch (final Exception e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
             }
@@ -104,6 +108,28 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
     @Override
     public Set<Class<? extends DecorationStrategy>> applyPost() {
         return POSTS;
+    }
+
+    private static final Bytecode insertBindingsForTesting(final Bytecode bytecode) {
+        final Bytecode newBytecode = new Bytecode();
+        bytecode.getSourceInstructions().forEach(instruction -> newBytecode.addSource(instruction.getOperator(), instruction.getArguments()));
+        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+            final Object[] args = instruction.getArguments();
+            final Object[] newArgs = new Object[args.length];
+
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].equals("knows"))
+                    newArgs[i] = new Bytecode.Binding<>("a", "knows");
+                else if (args[i].equals("created"))
+                    newArgs[i] = new Bytecode.Binding<>("b", "created");
+                else if (args[i].equals(10))
+                    newArgs[i] = new Bytecode.Binding<>("c", 10);
+                else
+                    newArgs[i] = args[i];
+            }
+            newBytecode.addStep(instruction.getOperator(), newArgs);
+        }
+        return newBytecode;
     }
 
 }
