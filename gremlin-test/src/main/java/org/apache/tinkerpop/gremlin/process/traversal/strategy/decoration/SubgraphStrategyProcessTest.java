@@ -22,26 +22,28 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -54,9 +56,8 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterVertexCriterion() throws Exception {
-        final Traversal<Vertex,?> vertexCriterion = __.has("name", P.within("josh", "lop", "ripple"));
+        final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
         final GraphTraversalSource sg = create(strategy);
@@ -139,10 +140,10 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldFilterEdgeCriterion() throws Exception {
-        final Traversal<Edge,?> edgeCriterion = __.or(
-            __.has("weight", 1.0d).hasLabel("knows"), // 8
-            __.has("weight", 0.4d).hasLabel("created").outV().has("name", "marko"), // 9
-            __.has("weight", 1.0d).hasLabel("created") // 10
+        final Traversal<Edge, ?> edgeCriterion = __.or(
+                has("weight", 1.0d).hasLabel("knows"), // 8
+                has("weight", 0.4d).hasLabel("created").outV().has("name", "marko"), // 9
+                has("weight", 1.0d).hasLabel("created") // 10
         );
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
@@ -227,14 +228,30 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void shouldFilterComplexVertexCriterion() throws Exception {
+        checkResults(Arrays.asList("vadas", "josh"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in("knows").has("name", "marko")).create()).
+                V().values("name"));
+        checkResults(Arrays.asList("vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in().has("name", "marko")).create()).
+                V().values("name"));
+
+        checkResults(Arrays.asList("vadas", "josh"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in("knows").where(out("created").has("name", "lop"))).create()).
+                V().values("name"));
+        checkResults(Arrays.asList("vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.<Vertex>in().where(has("name", "marko").out("created").has("name", "lop"))).create()).
+                V().values("name"));
+
+        checkResults(Arrays.asList("marko", "vadas", "josh", "lop"), g.withStrategies(SubgraphStrategy.build().vertices(__.or(both().has("name", "marko"), has("name", "marko"))).create()).
+                V().where(bothE().count().is(P.neq(0))).values("name"));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void shouldFilterMixedCriteria() throws Exception {
-        final Traversal<Vertex,?> vertexCriterion = __.has("name", P.within("josh", "lop", "ripple"));
+        final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
         // 9 isn't present because marko is not in the vertex list
         final Traversal<Edge, ?> edgeCriterion = __.or(
-                __.has("weight", 0.4d).hasLabel("created"), // 11
-                __.has("weight", 1.0d).hasLabel("created") // 10
+                has("weight", 0.4d).hasLabel("created"), // 11
+                has("weight", 1.0d).hasLabel("created") // 10
         );
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).vertexCriterion(vertexCriterion).create();
@@ -309,10 +326,9 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterVertexCriterionAndKeepLabels() throws Exception {
         // this will exclude "peter"
-        final Traversal<Vertex, ?> vertexCriterion = __.has("name", P.within("ripple", "josh", "marko"));
+        final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("ripple", "josh", "marko"));
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
         final GraphTraversalSource sg = create(strategy);
@@ -327,7 +343,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
     public void shouldGetExcludedVertex() throws Exception {
-        final Traversal<Vertex,?> vertexCriterion = __.has("name", P.within("josh", "lop", "ripple"));
+        final Traversal<Vertex, ?> vertexCriterion = has("name", P.within("josh", "lop", "ripple"));
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
         final GraphTraversalSource sg = create(strategy);
@@ -338,10 +354,10 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
     public void shouldGetExcludedEdge() throws Exception {
-        final Traversal<Edge,?> edgeCriterion = __.or(
-                __.has("weight", 1.0d).hasLabel("knows"), // 8
-                __.has("weight", 0.4d).hasLabel("created").outV().has("name", "marko"), // 9
-                __.has("weight", 1.0d).hasLabel("created") // 10
+        final Traversal<Edge, ?> edgeCriterion = __.or(
+                has("weight", 1.0d).hasLabel("knows"), // 8
+                has("weight", 0.4d).hasLabel("created").outV().has("name", "marko"), // 9
+                has("weight", 1.0d).hasLabel("created") // 10
         );
 
         final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
@@ -349,7 +365,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();
     }
-    
+
     private GraphTraversalSource create(final SubgraphStrategy strategy) {
         return graphProvider.traversal(graph, strategy);
     }

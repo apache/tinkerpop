@@ -46,6 +46,8 @@ include::cycle-detection.asciidoc[]
 
 include::centrality.asciidoc[]
 
+include::traversal-induced-values.asciidoc[]
+
 Implementation Recipes
 ======================
 

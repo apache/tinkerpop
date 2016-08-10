@@ -174,8 +174,8 @@ The source distribution is provided by:
 	apache-tinkerpop-xx.yy.zz-src.zip
 
 Two binary distributions are provided for user convenience:
-	apache-gremlin-console-xx.yy.zz-bin.zip
-	apache-gremlin-server-xx.yy.zz-bin.zip
+	apache-tinkerpop-gremlin-console-xx.yy.zz-bin.zip
+	apache-tinkerpop-gremlin-server-xx.yy.zz-bin.zip
 
 The GPG key used to sign the release artifacts is available at:
     https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
@@ -236,8 +236,8 @@ there is breaking change, an important game-changing feature or two, etc.]
 
 The release artifacts can be found at this location:
 
-https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-gremlin-console-xx.yy.zz-bin.zip
-https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-gremlin-server-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-gremlin-console-xx.yy.zz-bin.zip
+https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-gremlin-server-xx.yy.zz-bin.zip
 
 The online docs can be found here:
 

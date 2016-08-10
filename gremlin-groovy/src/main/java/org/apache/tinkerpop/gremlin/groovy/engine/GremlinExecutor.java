@@ -232,8 +232,6 @@ public class GremlinExecutor implements AutoCloseable {
         return eval(script, language, boundVars, lifeCycle);
     }
 
-    private static final AtomicInteger ugh = new AtomicInteger(0);
-
     /**
      * Evaluate a script and allow for the submission of alteration to the entire evaluation execution lifecycle.
      *
