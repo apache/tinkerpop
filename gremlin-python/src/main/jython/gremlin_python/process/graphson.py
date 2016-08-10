@@ -20,6 +20,7 @@ under the License.
 import json
 from abc import abstractmethod
 from aenum import Enum
+from types import FunctionType
 
 from .traversal import Binding
 from .traversal import Bytecode
@@ -105,6 +106,17 @@ class BindingSerializer(GraphSONSerializer):
         return dict
 
 
+class LambdaSerializer(GraphSONSerializer):
+    def _dictify(self, lambdaObject):
+        lambdaString = lambdaObject()
+        dict = {}
+        dict["@type"] = "Lambda"
+        dict["value"] = lambdaString
+        dict["language"] = "gremlin-python"
+        dict["arguments"] = eval(lambdaString).func_code.co_argcount
+        return dict
+
+
 class TraversalSerializer(BytecodeSerializer):
     def _dictify(self, traversal):
         return BytecodeSerializer._dictify(self, traversal.bytecode)
@@ -134,5 +146,6 @@ serializers = {
     Binding: BindingSerializer(),
     P: PSerializer(),
     Enum: EnumSerializer(),
+    FunctionType: LambdaSerializer(),
     Traversal: TraversalSerializer()
 }
