@@ -51,7 +51,7 @@ public abstract class TraversalStrategyPerformanceTest {
      * original traversal. Default is 100.
      */
     protected double getAssertionPercentile() {
-        return 100.0;
+        return 95.0;
     }
 
     protected abstract Class<? extends TraversalStrategy> getStrategyUnderTest();
