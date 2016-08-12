@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -36,11 +37,15 @@ public class Log4jRecordingAppenderTest {
     private Log4jRecordingAppender recordingAppender = null;
     private static final String lineSeparator = System.getProperty("line.separator");
 
+    private Level originalConfiguredLevel = null;
+
     @Before
     public void setupForEachTest() {
         recordingAppender = new Log4jRecordingAppender();
         final Logger rootLogger = Logger.getRootLogger();
+        if (null == originalConfiguredLevel) originalConfiguredLevel = rootLogger.getLevel();
         rootLogger.addAppender(recordingAppender);
+        rootLogger.setLevel(Level.ALL);
 
         logger.error("ERROR");
         logger.warn("WARN");
@@ -51,6 +56,7 @@ public class Log4jRecordingAppenderTest {
     public void teardownForEachTest() {
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.removeAppender(recordingAppender);
+        rootLogger.setLevel(originalConfiguredLevel);
     }
 
     @Test
