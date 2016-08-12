@@ -56,7 +56,7 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXin_outX_timesX3X_tailX7X_count() {
-            TraversalScriptHelper.compute("g.V.repeat(__.in().out()).times(3).tail(7).count()",g)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.repeat(__.in().out()).times(3).tail(7).count()")
         }
 
         @Override
