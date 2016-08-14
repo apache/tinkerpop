@@ -41,7 +41,7 @@ class RemoteStrategy(TraversalStrategy):
         if traversal.traversers is None:
             remote_response = traversal.graph.remote_connection.submit(
                 'gremlin-groovy',  # script engine
-                traversal.bytecode),  # script
+                traversal.bytecode)  # script
             traversal.side_effects = remote_response.side_effects
             traversal.traversers = remote_response.traversers
         return

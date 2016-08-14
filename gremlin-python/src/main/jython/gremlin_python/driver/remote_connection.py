@@ -16,23 +16,37 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from abc import abstractmethod
+import abc
+
+import six
+
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
+@six.add_metaclass(abc.ABCMeta)
 class RemoteConnection(object):
-    def __init__(self, url, traversal_source):
-        self.url = url
-        self.traversal_source = traversal_source
 
-    @abstractmethod
+    def __init__(self, url, traversal_source):
+        self._url = url
+        self._traversal_source = traversal_source
+
+    @property
+    def url(self):
+        return self._url
+
+    @property
+    def traversal_source(self):
+        return self._traversal_source
+
+    @abc.abstractmethod
     def submit(self, target_language, bytecode):
         print "sending " + bytecode + " to GremlinServer..."
         return RemoteResponse(iter([]), {})
 
 
 class RemoteResponse(object):
+
     def __init__(self, traversers, side_effects):
         self.traversers = traversers
         self.side_effects = side_effects
