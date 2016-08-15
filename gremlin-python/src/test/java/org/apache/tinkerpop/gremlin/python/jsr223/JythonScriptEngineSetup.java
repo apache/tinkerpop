@@ -35,11 +35,15 @@ public class JythonScriptEngineSetup {
     public static void setup() {
         try {
             final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
+            if (null != System.getenv("PYTHONPATH")) {
+                jythonEngine.eval("import sys");
+                jythonEngine.eval("sys.path.append('" + System.getenv("PYTHONPATH") + "')");
+            }
             jythonEngine.eval("import gremlin_python.statics");
             jythonEngine.eval("from gremlin_python.process.traversal import *");
             jythonEngine.eval("from gremlin_python.process.graph_traversal import *");
             jythonEngine.eval("from gremlin_python.process.graph_traversal import __");
-            jythonEngine.eval("from gremlin_python.driver.websocket_remote_connection import WebSocketRemoteConnection");
+            // jythonEngine.eval("from gremlin_python.driver.websocket_remote_connection import WebSocketRemoteConnection");
             jythonEngine.eval("from gremlin_python.process.traversal import Bytecode");
             jythonEngine.eval("from gremlin_python.structure.remote_graph import RemoteGraph");
             jythonEngine.eval("from gremlin_python.process.graphson import GraphSONWriter");

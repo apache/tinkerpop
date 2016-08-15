@@ -73,6 +73,13 @@ public interface Lambda extends Serializable {
         }
     }
 
+    public static class UnknownArgLambda extends AbstractLambda {
+
+        public UnknownArgLambda(final String lambdaSource, final String lambdaLanguage) {
+            super(lambdaSource, lambdaLanguage);
+        }
+    }
+
     public static class ZeroArgLambda<A> extends AbstractLambda implements Supplier<A> {
 
         public ZeroArgLambda(final String lambdaSource, final String lambdaLanguage) {

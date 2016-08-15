@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 from .remote_connection import RemoteConnection
-from .remote_connection import RemoteResponse
-from .rest_remote_connection import RESTRemoteConnection
+from .remote_connection import RemoteTraversal
+from .websocket_remote_connection import WebSocketRemoteConnection
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

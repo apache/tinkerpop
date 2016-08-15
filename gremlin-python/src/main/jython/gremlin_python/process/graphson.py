@@ -26,6 +26,7 @@ from .traversal import Binding
 from .traversal import Bytecode
 from .traversal import P
 from .traversal import Traversal
+from .. import statics
 
 
 class GraphSONWriter(object):
@@ -59,14 +60,14 @@ class BytecodeSerializer(GraphSONSerializer):
         sources = []
         for instruction in bytecode.source_instructions:
             inst = []
-            inst.append(_SymbolHelper.toJava(instruction[0]))
+            inst.append(_SymbolHelper.toGremlin(instruction[0]))
             for arg in instruction[1]:
                 inst.append(GraphSONWriter._dictify(arg))
             sources.append(inst)
         steps = []
         for instruction in bytecode.step_instructions:
             inst = []
-            inst.append(_SymbolHelper.toJava(instruction[0]))
+            inst.append(_SymbolHelper.toGremlin(instruction[0]))
             for arg in instruction[1]:
                 inst.append(GraphSONWriter._dictify(arg))
             steps.append(inst)
@@ -80,8 +81,8 @@ class BytecodeSerializer(GraphSONSerializer):
 class EnumSerializer(GraphSONSerializer):
     def _dictify(self, enum):
         dict = {}
-        dict["@type"] = _SymbolHelper.toJava(type(enum).__name__)
-        dict["value"] = _SymbolHelper.toJava(str(enum.name))
+        dict["@type"] = _SymbolHelper.toGremlin(type(enum).__name__)
+        dict["value"] = _SymbolHelper.toGremlin(str(enum.name))
         return dict
 
 
@@ -89,7 +90,7 @@ class PSerializer(GraphSONSerializer):
     def _dictify(self, p):
         dict = {}
         dict["@type"] = "P"
-        dict["predicate"] = _SymbolHelper.toJava(p.operator)
+        dict["predicate"] = _SymbolHelper.toGremlin(p.operator)
         if p.other is None:
             dict["value"] = GraphSONWriter._dictify(p.value)
         else:
@@ -111,9 +112,10 @@ class LambdaSerializer(GraphSONSerializer):
         lambdaString = lambdaObject()
         dict = {}
         dict["@type"] = "Lambda"
-        dict["value"] = lambdaString
-        dict["language"] = "gremlin-python"
-        dict["arguments"] = eval(lambdaString).func_code.co_argcount
+        dict["value"] = lambdaString if isinstance(lambdaString, str) else lambdaString[0]
+        dict["language"] = statics.lambdaLanguage if isinstance(lambdaString, str) else lambdaString[1]
+        if dict["language"] is "gremlin-jython":
+            dict["arguments"] = eval(dict["value"]).func_code.co_argcount
         return dict
 
 
@@ -127,18 +129,8 @@ class _SymbolHelper(object):
                  "_or": "or", "_is": "is", "_not": "not", "_from": "from"}
 
     @staticmethod
-    def toJava(symbol):
-        if (symbol in _SymbolHelper.symbolMap):
-            return _SymbolHelper.symbolMap[symbol]
-        else:
-            return symbol
-
-    @staticmethod
-    def mapEnum(enum):
-        if (enum in enumMap):
-            return enumMap[enum]
-        else:
-            return enum
+    def toGremlin(symbol):
+        return _SymbolHelper.symbolMap[symbol] if symbol in _SymbolHelper.symbolMap else symbol
 
 
 serializers = {

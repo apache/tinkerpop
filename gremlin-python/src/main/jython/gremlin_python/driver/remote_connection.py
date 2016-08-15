@@ -17,16 +17,15 @@ specific language governing permissions and limitations
 under the License.
 '''
 import abc
-
 import six
 
+from ..process.traversal import Traversal
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 @six.add_metaclass(abc.ABCMeta)
 class RemoteConnection(object):
-
     def __init__(self, url, traversal_source):
         self._url = url
         self._traversal_source = traversal_source
@@ -40,13 +39,13 @@ class RemoteConnection(object):
         return self._traversal_source
 
     @abc.abstractmethod
-    def submit(self, target_language, bytecode):
+    def submit(self, bytecode):
         print "sending " + bytecode + " to GremlinServer..."
-        return RemoteResponse(iter([]), {})
+        return RemoteTraversal(iter([]), {})
 
 
-class RemoteResponse(object):
-
+class RemoteTraversal(Traversal):
     def __init__(self, traversers, side_effects):
+        Traversal.__init__(self, None, None, None)
         self.traversers = traversers
         self.side_effects = side_effects

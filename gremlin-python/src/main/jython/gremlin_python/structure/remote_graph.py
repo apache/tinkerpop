@@ -19,9 +19,9 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-from .graph import Graph
 from gremlin_python.process.traversal import TraversalStrategies
 from gremlin_python.process.traversal import TraversalStrategy
+from .graph import Graph
 
 
 class RemoteGraph(Graph):
@@ -39,9 +39,7 @@ class RemoteStrategy(TraversalStrategy):
             raise BaseException(
                 "RemoteStrategy can only be used with a RemoteGraph: " + traversal.graph.__class__.__name__)
         if traversal.traversers is None:
-            remote_response = traversal.graph.remote_connection.submit(
-                'gremlin-groovy',  # script engine
-                traversal.bytecode)  # script
-            traversal.side_effects = remote_response.side_effects
-            traversal.traversers = remote_response.traversers
+            remote_traversal = traversal.graph.remote_connection.submit(traversal.bytecode)
+            traversal.side_effects = remote_traversal.side_effects
+            traversal.traversers = remote_traversal.traversers
         return

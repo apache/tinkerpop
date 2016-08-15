@@ -70,17 +70,6 @@ class Traversal(object):
     def __repr__(self):
         return str(self.bytecode)
 
-    def __getitem__(self, index):
-        if isinstance(index, int):
-            return self.range(index, index + 1)
-        elif isinstance(index, slice):
-            return self.range(index.start, index.stop)
-        else:
-            raise TypeError("Index must be int or slice")
-
-    def __getattr__(self, key):
-        return self.values(key)
-
     def __iter__(self):
         return self
 
@@ -100,6 +89,16 @@ class Traversal(object):
 
     def toSet(self):
         return set(iter(self))
+
+    def nextTraverser(self):
+        if self.traversers is None:
+            self.traversal_strategies.apply_strategies(self)
+        if self.last_traverser is None:
+            return next(self.traversers)
+        else:
+            temp = self.last_traverser
+            self.last_traverser = None
+            return temp
 
     def next(self, amount=None):
         if amount is None:

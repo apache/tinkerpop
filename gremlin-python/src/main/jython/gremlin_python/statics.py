@@ -20,6 +20,7 @@ from aenum import Enum
 
 staticMethods = {}
 staticEnums = {}
+lambdaLanguage = "gremlin-jython"
 
 
 def add_static(key, value):
