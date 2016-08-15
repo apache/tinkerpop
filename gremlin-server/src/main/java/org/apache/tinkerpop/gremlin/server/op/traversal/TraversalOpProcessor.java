@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.SideEffectIterator;
 import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -307,11 +308,11 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         }
     }
 
-    private void iterateBytecodeTraversal(final Context context) throws OpProcessorException {
+    private void iterateBytecodeTraversal(final Context context) throws OpProcessorException, Exception {
         final RequestMessage msg = context.getRequestMessage();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
-        final Bytecode bytecode = (Bytecode) msg.getArgs().get(Tokens.ARGS_GREMLIN);
+        final Bytecode bytecode = GraphSONMapper.build().create().createMapper().readValue(msg.getArgs().get(Tokens.ARGS_GREMLIN).toString(), Bytecode.class);
 
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();

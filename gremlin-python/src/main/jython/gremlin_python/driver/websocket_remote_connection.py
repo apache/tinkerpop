@@ -158,7 +158,7 @@ class Response:
         self._processor = processor
         self._session = session
         self._username = username
-        self._password
+        self._password = password
 
     @gen.coroutine
     def receive(self):
