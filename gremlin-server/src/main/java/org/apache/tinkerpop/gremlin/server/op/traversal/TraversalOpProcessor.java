@@ -46,6 +46,7 @@ import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public class TraversalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(TraversalOpProcessor.class);
+    private static final ObjectMapper mapper = GraphSONMapper.build().create().createMapper();
     public static final String OP_PROCESSOR_NAME = "traversal";
     public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
 
@@ -312,7 +314,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final RequestMessage msg = context.getRequestMessage();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
-        final Bytecode bytecode = GraphSONMapper.build().create().createMapper().readValue(msg.getArgs().get(Tokens.ARGS_GREMLIN).toString(), Bytecode.class);
+        // TODO: Look to polish this up in GraphSON 2.0 when we don't have type lossiness anymore
+        // right now the TraversalOpPorcessor can take a direct GraphSON representation of Bytecode or directly take
+        // deserialized Bytecode object.
+        final Object bytecodeObj = msg.getArgs().get(Tokens.ARGS_GREMLIN);
+        final Bytecode bytecode = bytecodeObj instanceof Bytecode ? (Bytecode) bytecodeObj :
+            mapper.readValue(bytecodeObj.toString(), Bytecode.class);
 
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();

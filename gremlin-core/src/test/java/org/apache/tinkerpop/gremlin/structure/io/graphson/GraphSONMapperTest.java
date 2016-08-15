@@ -36,6 +36,8 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.junit.Assert.assertEquals;
@@ -145,6 +147,8 @@ public class GraphSONMapperTest {
     public void shouldHandleDefaultRemoteTraverser() throws Exception {
         final DefaultRemoteTraverser<String> traverser = new DefaultRemoteTraverser<>("test", 100);
         final String json = mapper.writeValueAsString(traverser);
-        // TODO: ASSERTION~~
+        final Map<String,Object> m = mapper.readValue(json, HashMap.class);
+        assertEquals("test", m.get("value"));
+        assertEquals(100, m.get("bulk"));
     }
 }

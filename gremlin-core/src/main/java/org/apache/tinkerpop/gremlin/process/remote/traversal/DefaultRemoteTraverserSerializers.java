@@ -19,12 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
@@ -62,11 +65,22 @@ public final class DefaultRemoteTraverserSerializers {
         @Override
         public void serialize(final Traverser traverserInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
+            ser(traverserInstance, jsonGenerator, serializerProvider, null);
+        }
+
+        @Override
+        public void serializeWithType(final Traverser traverserInstance, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(traverserInstance, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        private static void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, Traverser.class.getName());
             jsonGenerator.writeObjectField("bulk", traverserInstance.bulk());
             jsonGenerator.writeObjectField("value", traverserInstance.get());
             jsonGenerator.writeEndObject();
         }
-
     }
 }
