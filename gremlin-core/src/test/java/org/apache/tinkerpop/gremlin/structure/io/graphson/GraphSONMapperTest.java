@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -138,5 +139,12 @@ public class GraphSONMapperTest {
         final ZoneOffset o = ZonedDateTime.now().getOffset();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
+    }
+
+    @Test
+    public void shouldHandleDefaultRemoteTraverser() throws Exception {
+        final DefaultRemoteTraverser<String> traverser = new DefaultRemoteTraverser<>("test", 100);
+        final String json = mapper.writeValueAsString(traverser);
+        // TODO: ASSERTION~~
     }
 }

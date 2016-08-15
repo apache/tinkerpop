@@ -18,10 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+
+import java.io.IOException;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -45,5 +51,22 @@ public final class DefaultRemoteTraverserSerializers {
             final Object o = kryo.readClassAndObject(input);
             return new DefaultRemoteTraverser<>(o, input.readLong());
         }
+    }
+
+    public final static class GraphSONSerializer extends StdSerializer<Traverser> {
+
+        public GraphSONSerializer() {
+            super(Traverser.class);
+        }
+
+        @Override
+        public void serialize(final Traverser traverserInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField("bulk", traverserInstance.bulk());
+            jsonGenerator.writeObjectField("value", traverserInstance.get());
+            jsonGenerator.writeEndObject();
+        }
+
     }
 }

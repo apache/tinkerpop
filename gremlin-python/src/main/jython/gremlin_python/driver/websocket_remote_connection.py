@@ -26,6 +26,7 @@ from tornado import websocket
 from ..process.traversal import Traverser
 from .remote_connection import RemoteConnection
 from .remote_connection import RemoteResponse
+from ..process.graphson import GraphSONWriter
 
 
 class GremlinServerError(Exception):
@@ -48,8 +49,8 @@ class WebSocketRemoteConnection(RemoteConnection):
     def submit(self,
                target_language,
                bytecode,
-               op="eval",
-               processor="",
+               op="bytecode",
+               processor="traversal",
                session=None):
         traversers = self._loop.run_sync(lambda: self._submit(
             target_language, bytecode, op, processor, session))
@@ -107,7 +108,7 @@ class WebSocketRemoteConnection(RemoteConnection):
             "op": op,
             "processor": processor,
             "args": {
-                "gremlin": gremlin,
+                "gremlin": GraphSONWriter.writeObject(gremlin),
                 "bindings": bindings,
                 "language":  lang,
                 "aliases": {'g': self.traversal_source}
@@ -178,7 +179,7 @@ class Response:
         elif status_code in [200, 206]:
             traversers = []
             for result in data:
-                traversers.append(Traverser(result, 1))
+                traversers.append(Traverser(result['value'], result['bulk']))
             if status_code == 200:
                 self._closed = True
         else:

@@ -166,6 +166,7 @@
                             <libraries>
                                 <param>aenum</param>
                                 <param>requests</param>
+                                <param>tornado</param>
                             </libraries>
                         </configuration>
                     </execution>

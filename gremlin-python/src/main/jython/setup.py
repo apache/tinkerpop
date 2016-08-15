@@ -53,6 +53,7 @@ setup(
     long_description=open("README").read(),
     install_requires=[
         'aenum',
-        'requests'
+        'requests',
+        'tornado'
     ]
 )
