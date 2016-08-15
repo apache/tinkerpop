@@ -21,12 +21,15 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Constructs Gryo IO implementations given a {@link Graph} and {@link IoRegistry}. Implementers of the {@link Graph}
@@ -38,10 +41,12 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
 
     private final IoRegistry registry;
     private final Graph graph;
+    private Optional<Consumer<Mapper.Builder>> onMapper;
 
-    private GryoIo(final IoRegistry registry, final Graph graph) {
-        this.registry = registry;
-        this.graph = graph;
+    private GryoIo(final Builder builder) {
+        this.registry = builder.registry;
+        this.graph = builder.graph;
+        this.onMapper = Optional.ofNullable(builder.onMapper);
     }
 
     /**
@@ -64,7 +69,9 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
      */
     @Override
     public GryoMapper.Builder mapper() {
-        return (null == this.registry) ? GryoMapper.build() : GryoMapper.build().addRegistry(this.registry);
+        final GryoMapper.Builder builder = (null == this.registry) ? GryoMapper.build() : GryoMapper.build().addRegistry(this.registry);
+        onMapper.ifPresent(c -> c.accept(builder));
+        return builder;
     }
 
     /**
@@ -95,10 +102,21 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
 
         private IoRegistry registry = null;
         private Graph graph;
+        private Consumer<Mapper.Builder> onMapper = null;
 
+        /**
+         * @deprecated As of release 3.2.2, replaced by {@link #onMapper(Consumer)}.
+         */
+        @Deprecated
         @Override
         public Io.Builder<GryoIo> registry(final IoRegistry registry) {
             this.registry = registry;
+            return this;
+        }
+
+        @Override
+        public Io.Builder<? extends Io> onMapper(final Consumer<Mapper.Builder> onMapper) {
+            this.onMapper = onMapper;
             return this;
         }
 
@@ -111,7 +129,7 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
         @Override
         public GryoIo create() {
             if (null == graph) throw new IllegalArgumentException("The graph argument was not specified");
-            return new GryoIo(registry, graph);
+            return new GryoIo(this);
         }
     }
 }

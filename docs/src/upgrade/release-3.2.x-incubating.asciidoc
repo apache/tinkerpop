@@ -50,6 +50,17 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+Deprecated Io.Builder.registry()
+++++++++++++++++++++++++++++++++
+
+The `Io.Builder.registry()` has been deprecated in favor of `Io.Builder.onMapper(Consumer<Mapper>)`. This change gives
+the `Graph` implementation greater flexibility over how to modify the `Mapper` implementation. In most cases, the
+implementation will simply add its `IoRegistry` to allow the `Mapper` access to custom serialization classes, but this
+approach makes it possible to also set other specific settings that aren't generalized across all IO implementations.
+A good example of this type of usage would be to provide a custom `ClassRessolver` implementation to a `GryoMapper`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1402[TINKERPOP-1402]
+
 Log4j Dependencies
 ++++++++++++++++++
 
