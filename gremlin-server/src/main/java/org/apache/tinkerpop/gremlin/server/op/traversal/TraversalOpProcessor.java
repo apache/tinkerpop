@@ -144,13 +144,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final ThrowingConsumer<Context> op;
         switch (message.getOp()) {
             case Tokens.OPS_BYTECODE:
-                final Map<String, String> bytecodeAliases = validateTraversalRequest(message);
-                final Map.Entry<String, String> bytecodeKv = bytecodeAliases.entrySet().iterator().next();
-                if (!ctx.getGraphManager().getTraversalSources().containsKey(bytecodeKv.getValue())) {
-                    final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", bytecodeKv.getValue(), bytecodeKv.getKey());
-                    throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
-                }
-
+                validateTraversalSourceAlias(ctx, message, validateTraversalRequest(message));
                 op = this::iterateBytecodeTraversal;
                 break;
             case Tokens.OPS_GATHER:
@@ -166,7 +160,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                validatedAliases(message);
+                validateTraversalSourceAlias(ctx, message, validatedAliases(message).get());
 
                 op = this::gatherSideEffect;
 
@@ -221,6 +215,14 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         return op;
     }
 
+    private static void validateTraversalSourceAlias(final Context ctx, final RequestMessage message, final Map<String, String> aliases) throws OpProcessorException {
+        final String traversalSourceBindingForAlias = aliases.values().iterator().next();
+        if (!ctx.getGraphManager().getTraversalSources().containsKey(traversalSourceBindingForAlias)) {
+            final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", traversalSourceBindingForAlias, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+        }
+    }
+
     private static Map<String, String> validateTraversalRequest(final RequestMessage message) throws OpProcessorException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
@@ -239,10 +241,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
-        if (aliases.get().size() != 1) {
-            final String msg = String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
+        if (aliases.get().size() != 1 || !aliases.get().containsKey(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS)) {
+            final String msg = String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment named '%s'.",
+                    Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
+
         return aliases;
     }
 
@@ -336,7 +340,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             else {
                 final ScriptEngines engines = context.getGremlinExecutor().getScriptEngines();
                 final SimpleBindings b = new SimpleBindings();
-                b.put("g", g);
+                b.put(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS, g);
                 traversal = engines.eval(bytecode, b, lambdaLanguage.get());
             }
         } catch (Exception ex) {

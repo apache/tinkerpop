@@ -980,7 +980,10 @@ operation is available to clear the cache of a specific side-effect.
 to be aliased to different variable names for purposes of the current request.  The value represents the name of the
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1`, it would be possible
-to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g".
+to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g". Note
+that unlike users of `alias` in other contexts, in this case, the key can *only* be set to "g" and there can be only
+one key value pair present (since only one `Traversal` is being submitted, there is no sense to having more than a
+single alias).
 |=========================================================
 
 '`close` operation arguments'
@@ -1000,7 +1003,10 @@ to send an alias pair with key of "g" and value of "g1" and thus allow the scrip
 to be aliased to different variable names for purposes of the current request.  The value represents the name of the
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1`, it would be possible
-to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g".
+to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g". Note
+that unlike users of `alias` in other contexts, in this case, the key can *only* be set to "g" and there can be only
+one key value pair present (since only one `Traversal` is being submitted, there is no sense to having more than a
+single alias).
 |=========================================================
 
 When using "gather" it is important to note the metadata that is returned on the `ResponseMessage`. It returns both the

@@ -151,4 +151,6 @@ public final class Tokens {
     public static final String VAL_AGGREGATE_TO_LIST = "list";
     public static final String VAL_AGGREGATE_TO_MAP = "map";
     public static final String VAL_AGGREGATE_TO_NONE = "none";
+
+    public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
 }
