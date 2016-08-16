@@ -50,6 +50,7 @@ while [ ${i} -lt ${pluginsCount} ]; do
   fi
   ((i++))
 done
+echo ":install org.apache.tinkerpop gremlin-python ${TP_VERSION}" >> ${INSTALL_FILE}
 
 echo "System.exit(0)" >> ${INSTALL_FILE}
 echo -ne " * tinkerpop-sugar ... "
