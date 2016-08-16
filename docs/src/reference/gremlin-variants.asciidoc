@@ -201,3 +201,4 @@ g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()
 1. A zero-arg lambda yields 2-tuple where the second element is the lambda language.
 2. The default lambda language can be statically changed.
 3. A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
+
