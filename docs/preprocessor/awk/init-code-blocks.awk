@@ -50,23 +50,22 @@ BEGIN {
   print "if (f.exists()) f.deleteDir()"
   print ":set max-iteration 100"
   if (lang == "python") {
-    print "import org.apache.tinkerpop.gremlin.python.jsr223.PythonTranslator"
-    print "import javax.script.ScriptEngineManager"
-    print "import javax.script.SimpleBindings"
+    print "import static javax.script.ScriptContext.*"
     print "jython = new org.apache.tinkerpop.gremlin.python.jsr223.GremlinJythonScriptEngine()"
+    print "jython.eval('import os')"
+    print "jython.eval('os.chdir(\"" TP_HOME "\")')"
     print "jython.eval('import sys')"
-    # print "jython.eval('sys.path.append(\"" PYTHONPATH "\")')"
+    print "jython.eval('sys.path.append(\"" PYTHONPATH "\")')"
     print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-python/target/test-classes/Lib\")')"
-    # print "jython.eval('sys.path.append(\"/Users/marko/software/tinkerpop/gremlin-python/target/test-classes/Lib\")')"
     print "jython.eval('from gremlin_python import statics')"
     print "jython.eval('from gremlin_python.process.traversal import *')"
     print "jython.eval('from gremlin_python.process.graph_traversal import GraphTraversal')"
     print "jython.eval('from gremlin_python.process.graph_traversal import GraphTraversalSource')"
     print "jython.eval('from gremlin_python.process.graph_traversal import __')"
-    # print "jython.eval('from gremlin_python.driver.websocket_remote_connection import WebSocketRemoteConnection')"
     print "jython.eval('from gremlin_python.structure.remote_graph import RemoteGraph')"
     print "jython.eval('from gremlin_python.process.graphson import GraphSONWriter')"
-    print "jython.eval('from gremlin_python.process.graphson import serializers')"
+    # print "jython.eval('from gremlin_python.process.graphson import serializers')"
+    # print "jython.eval('from gremlin_python.driver.websocket_remote_connection import WebSocketRemoteConnection')"
     print "jython.eval('statics.load_statics(globals())')"
     print "jythonBindings = jython.createBindings()"
     print "jythonBindings.put('g', jython.eval('RemoteGraph(None).traversal()'))"
@@ -76,6 +75,11 @@ BEGIN {
     print "groovyBindings.put('g', g)"
     print "groovyBindings.put('TinkerGraphComputer', TinkerGraphComputer)"
     print "groovy.getContext().setBindings(groovyBindings, javax.script.ScriptContext.GLOBAL_SCOPE)"
+    print "def processTraversal(t, jython, groovy) {"
+    print "  jython.getContext().getBindings(GLOBAL_SCOPE).put('j', jython.eval(t))"
+    print "  groovy.getContext().getBindings(GLOBAL_SCOPE).put('j', jython.eval('GraphSONWriter.writeObject(j)').toString())"
+    print "  return groovy.eval(groovy.eval('GroovyTranslator.of(\"g\").translate(GraphSONReader.build().create().mapper.readValue(j,Bytecode.class))').toString())"
+    print "}"
   }
   print "'-IGNORE'"
 }
@@ -84,9 +88,7 @@ BEGIN {
   if (delimiter == 2 && !($0 ~ /^pb\([0-9]*\); '----'/)) {
     switch (lang) {
       case "python":
-        print "jython.getContext().getBindings(javax.script.ScriptContext.GLOBAL_SCOPE).put('j',\"\"\"" gensub("\\('id',([0-9]+)\\)", "\\1", "g") "\"\"\")"
-        print "groovy.getContext().getBindings(javax.script.ScriptContext.GLOBAL_SCOPE).put('j', jython.eval('GraphSONWriter.writeObject(j)').toString())"
-        print "groovy.eval(groovy.eval('GroovyTranslator.of(\"g\").translate(GraphSONReader.build().create().mapper.readValue(j,Bytecode.class))').toString())"
+        print "processTraversal(\"\"\"" gensub("\\('id',([0-9]+)\\)", "\\1", "g") "\"\"\", jython, groovy)"
         break
       default:
         print

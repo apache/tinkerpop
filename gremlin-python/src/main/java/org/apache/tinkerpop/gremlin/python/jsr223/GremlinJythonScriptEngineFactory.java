@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.python.jsr223.PyScriptEngineFactory;
 
 import javax.script.ScriptEngine;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,8 +35,8 @@ import java.util.List;
  */
 public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory implements GremlinScriptEngineFactory {
 
-    private static final String ENGINE_NAME = "gremlin-jython";
-    private static final String LANGUAGE_NAME = "gremlin-jython";
+    private static final String GREMLIN_JYTHON = "gremlin-jython";
+    private static final String GREMLIN_PYTHON = "gremlin-python";
     private static final String PLAIN = "plain";
     private static final List<String> EXTENSIONS = Collections.singletonList("py");
 
@@ -48,7 +49,7 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
 
     @Override
     public String getEngineName() {
-        return ENGINE_NAME;
+        return GREMLIN_JYTHON;
     }
 
     @Override
@@ -63,7 +64,7 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
 
     @Override
     public String getLanguageName() {
-        return LANGUAGE_NAME;
+        return GREMLIN_JYTHON;
     }
 
     @Override
@@ -78,7 +79,7 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
 
     @Override
     public List<String> getNames() {
-        return Collections.singletonList(LANGUAGE_NAME);
+        return Arrays.asList(GREMLIN_JYTHON, GREMLIN_PYTHON);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class GremlinJythonScriptEngineFactory extends PyScriptEngineFactory impl
         } else if (key.equals(ScriptEngine.ENGINE_VERSION)) {
             return this.getEngineVersion();
         } else if (key.equals(ScriptEngine.NAME)) {
-            return ENGINE_NAME;
+            return GREMLIN_JYTHON;
         } else if (key.equals(ScriptEngine.LANGUAGE)) {
             return this.getLanguageName();
         } else if (key.equals(ScriptEngine.LANGUAGE_VERSION)) {

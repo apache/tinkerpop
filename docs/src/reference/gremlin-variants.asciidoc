@@ -54,7 +54,6 @@ prefixes `_` in front of these terms for their use with graph traversal. For ins
 To install Gremlin-Python, simply use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
 [source,bash]
-pip install requests
 pip install gremlin_python
 
 There are three primary classes distributed with Gremlin-Python: `GraphTraversalSource`, `GraphTraversal`, and `__`.
@@ -100,7 +99,6 @@ Within the CPython console, it is possible to evaluate the following.
 [source,python]
 graph = RemoteGraph(WebSocketsRemoteConnection('ws://localhost:8182','g'))
 g = graph.traversal()
-g.V().repeat(__.out()).times(2).name.toList()
 
 When the traversal above is submitted to the `RemoteConnection`, it's `Bytecode` is sent in order to construct the equivalent traversal
 in GremlinServer (thus, remotely). The bytecode is analyzed to determine which language the bytecode should be translated to.
@@ -177,8 +175,8 @@ In Gremlin-Python, bindings are 2-tuples and used as follows.
 
 [gremlin-python,modern]
 ----
-g.V(('x',1)).out('created').name
-g.V(('x',4)).out('created').name
+g.V(('id',1)).out('created').name
+g.V(('id',4)).out('created').name
 ----
 
 The Lambda Solution
@@ -193,18 +191,16 @@ such that the remote connection host can infer which translator to use.
 
 [gremlin-python,modern]
 ----
-g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum() <2>
+g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum()
 ----
 
-todo: put below back into above.
+A zero-arg lambda can yield a 2-tuple with the first element being the lambda script and second element being the lambda language.
+If the zero-arg lambda yields a string representation of a lambda (not a 2-tuple), then the language is assumed to be Gremlin-Jython.
+
+To change the default lambda language, update `gremlin_python.statics.default_lambda_language`.
 
 [source,python]
-g.V().out().map(lambda: "lambda x: x.get().value('name').length()").sum() <1>
-gremlin_python.statics.default_lambda_language = "gremlin-groovy" <3>
-g.V().out().map(lambda: "it.get().value('name').length()").sum() <4>
-
-<1> A zero-arg lambda yields a string representation of a lambda in Gremlin-Jython.
-<2> A zero-arg lambda can yield a 2-tuple with the second element being the lambda language.
-<3> The default lambda language can be changed so a 2-tuple is no needed.
-<4> A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
+g.V().out().map(lambda: "lambda x: x.get().value('name').length()").sum()
+gremlin_python.statics.default_lambda_language = "gremlin-groovy"
+g.V().out().map(lambda: "it.get().value('name').length()").sum()
 
