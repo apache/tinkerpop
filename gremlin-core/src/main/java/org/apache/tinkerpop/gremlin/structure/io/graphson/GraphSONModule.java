@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverserSerializers;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -143,7 +142,7 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(P.class, new GraphSONTraversalSerializers.PJacksonSerializer());
             addSerializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonSerializer());
             addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonSerializer());
-            addSerializer(Traverser.class, new DefaultRemoteTraverserSerializers.GraphSONSerializer());
+            addSerializer(Traverser.class, new GraphSONTraversalSerializers.TraverserSerializer());
             // -- deserializers for traversal
             addDeserializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonDeserializer());
             addDeserializer(Enum.class, new GraphSONTraversalSerializers.EnumJacksonDeserializer());

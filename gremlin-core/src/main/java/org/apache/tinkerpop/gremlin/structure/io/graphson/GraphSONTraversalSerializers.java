@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -43,6 +44,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeType;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
@@ -188,6 +190,34 @@ public final class GraphSONTraversalSerializers {
             jsonGenerator.writeEndObject();
         }
 
+    }
+
+    final static class TraverserSerializer extends StdSerializer<Traverser> {
+
+        public TraverserSerializer() {
+            super(Traverser.class);
+        }
+
+        @Override
+        public void serialize(final Traverser traverserInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(traverserInstance, jsonGenerator, serializerProvider, null);
+        }
+
+        @Override
+        public void serializeWithType(final Traverser traverserInstance, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(traverserInstance, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        private static void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, Traverser.class.getName());
+            jsonGenerator.writeObjectField("bulk", traverserInstance.bulk());
+            jsonGenerator.writeObjectField("value", traverserInstance.get());
+            jsonGenerator.writeEndObject();
+        }
     }
 
     ///////////////////
