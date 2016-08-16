@@ -30,7 +30,7 @@ structure as best as possible given the constructs of the host language. A stron
 that the general Gremlin reference documentation is applicable to all variants and that users moving between development
 languages can easily adopt the Gremlin language variant for that language.
 
-image::gremlin-variant-architecture.png[width=600,float=left]
+image::gremlin-variant-architecture.png[width=650,float=left]
 
 NOTE: The information herein describes how to use the Gremlin language variants distributed
 with Apache TinkerPop. For information on how to build a Gremlin language variant,
@@ -59,6 +59,7 @@ pip install gremlin_python
 There are three primary classes distributed with Gremlin-Python: `GraphTraversalSource`, `GraphTraversal`, and `__`.
 
 [source,python]
+from gremlin_python import statics
 from gremlin_python.structure.remote_graph import RemoteGraph
 from gremlin_python.process.graph_traversal import GraphTraversalSource
 from gremlin_python.process.graph_traversal import GraphTraversal
@@ -114,9 +115,9 @@ makes traversals a bit more concise.
 
 [gremlin-python,modern]
 ----
-g.V().both()[1:3]
-g.V().both()[1]
-g.V().both().name
+g.V().both()[1:3].toList()
+g.V().both()[1].toList()
+g.V().both().name.toList()
 ----
 
 Static Enums and Methods
@@ -140,19 +141,19 @@ These can be used analogously to how they are used in Gremlin-Java.
 
 [gremlin-python,modern]
 ----
-g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr)
+g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr).toList()
 ----
 
 Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be removed.
 
 [source,python]
-gremlin_python.statics.load_statics(globals())
+statics.load_statics(globals())
 
 With statics loaded its possible to represent the above traversal as below.
 
 [gremlin-python,modern]
 ----
-g.V().hasLabel('person').has('age',gt(30)).order().by('age',decr)
+g.V().hasLabel('person').has('age',gt(30)).order().by('age',decr).toList()
 ----
 
 Finally, statics includes all the `__`-methods and thus, anonymous traversals like `__.out()` can be expressed as below.
@@ -160,7 +161,7 @@ That is, without the `__.`-prefix.
 
 [gremlin-python,modern]
 ----
-g.V().repeat(out()).times(2).name.fold()
+g.V().repeat(out()).times(2).name.fold().toList()
 ----
 
 RemoteConnection Bindings
@@ -175,8 +176,8 @@ In Gremlin-Python, bindings are 2-tuples and used as follows.
 
 [gremlin-python,modern]
 ----
-g.V(('id',1)).out('created').name
-g.V(('id',4)).out('created').name
+g.V(('id',1)).out('created').name.toList()
+g.V(('id',4)).out('created').name.toList()
 ----
 
 The Lambda Solution
@@ -187,20 +188,16 @@ As a simple solution, it is up to the Gremlin variant to decide lambdas (in any 
 encoded in the standard `Bytecode` format. In Gremlin-Python, a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda]
 should be a zero-arg callable that returns a string representation of a lambda. The default lambda language is `gremlin-jython`
 and can be changed via `statics.default_lambda_language.` When the lambda is represented in `Bytecode` its language is encoded
-such that the remote connection host can infer which translator to use.
+such that the remote connection host can infer which translator to use. A zero-arg lambda yields a string representation of a lambda in Gremlin-Jython.
+For example, `g.V().out().map(lambda: "lambda x: x.get().value('name').length()").sum().toList()`.
 
 [gremlin-python,modern]
 ----
-g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum()
+g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
+statics.default_lambda_language = 'gremlin-groovy'
+g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()
 ----
 
-A zero-arg lambda can yield a 2-tuple with the first element being the lambda script and second element being the lambda language.
-If the zero-arg lambda yields a string representation of a lambda (not a 2-tuple), then the language is assumed to be Gremlin-Jython.
-
-To change the default lambda language, update `gremlin_python.statics.default_lambda_language`.
-
-[source,python]
-g.V().out().map(lambda: "lambda x: x.get().value('name').length()").sum()
-gremlin_python.statics.default_lambda_language = "gremlin-groovy"
-g.V().out().map(lambda: "it.get().value('name').length()").sum()
-
+1. A zero-arg lambda yields 2-tuple where the second element is the lambda language.
+2. The default lambda language can be statically changed.
+3. A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
