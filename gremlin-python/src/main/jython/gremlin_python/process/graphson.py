@@ -113,7 +113,7 @@ class LambdaSerializer(GraphSONSerializer):
         dict = {}
         dict["@type"] = "Lambda"
         dict["value"] = lambdaString if isinstance(lambdaString, str) else lambdaString[0]
-        dict["language"] = statics.lambdaLanguage if isinstance(lambdaString, str) else lambdaString[1]
+        dict["language"] = statics.default_lambda_language if isinstance(lambdaString, str) else lambdaString[1]
         if dict["language"] is "gremlin-jython":
             dict["arguments"] = eval(dict["value"]).func_code.co_argcount
         return dict

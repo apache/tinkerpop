@@ -30,7 +30,7 @@ structure as best as possible given the constructs of the host language. A stron
 that the general Gremlin reference documentation is applicable to all variants and that users moving between development
 languages can easily adopt the Gremlin language variant for that language.
 
-image::gremlin-variants-architecture.png[width=500,float=left]
+image::gremlin-variant-architecture.png[width=600,float=left]
 
 NOTE: The information herein describes how to use the Gremlin language variants distributed
 with Apache TinkerPop. For information on how to build a Gremlin language variant,
@@ -48,6 +48,9 @@ link:https://en.wikipedia.org/wiki/CPython[CPython] machine. Python's syntax has
 namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
 with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
+CAUTION: Python has `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` as reserved words. Gremlin-Python simply
+prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
+
 To install Gremlin-Python, simply use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
 [source,bash]
@@ -61,17 +64,16 @@ from gremlin_python.structure.remote_graph import RemoteGraph
 from gremlin_python.process.graph_traversal import GraphTraversalSource
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.driver.rest_remote_connection import RESTRemoteConnection
+from gremlin_python.driver.websocket_remote_connection import WebSocketRemoteConnection
 
 These classes mirror `GraphTraversalSource`, `GraphTraversal`, and `__`, respectively in Gremlin-Java. The `GraphTraversalSource`
 requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any <<connecting-via-remotegraph,`RemoteConnection`>>-enabled server).
 The `gremlin_rest_driver` is provided with Apache TinkerPop and it serves as a simple (though verbose) driver that sends traversals to GremlinServer
 via HTTP POST (using link:http://docs.python-requests.org/[requests]) and in return, is provided <<graphson-reader-writer,GraphSON>>-encoded results.
-`RESTRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_python.driver`.
+`WebSocketRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_python.driver`.
 
-NOTE: For developers wishing to provide another *driver implementation* (e.g. one using the more efficient
-link:https://en.wikipedia.org/wiki/WebSocket[WebSockets] protocol), be sure to extend `RemoteConnection` in `gremlin_python.driver` so it
-can then be used by Gremlin-Python's `GraphTraversal`.
+IMPORTANT: For developers wishing to provide another *driver implementation*, be sure to extend `RemoteConnection` in
+`gremlin_python.driver` so it can then be used by Gremlin-Python's `GraphTraversal`.
 
 When GremlinServer is running, Gremlin-Python can communicate with GremlinServer. The `conf/gremlin-server-rest.modern.yaml`
 configuration is used to expose GremlinServer's REST interface.
@@ -96,17 +98,15 @@ $ bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
 Within the CPython console, it is possible to evaluate the following.
 
 [source,python]
-graph = RemoteGraph(RESTRemoteConnection('http://localhost:8182','g'))
+graph = RemoteGraph(WebSocketsRemoteConnection('ws://localhost:8182','g'))
 g = graph.traversal()
 g.V().repeat(__.out()).times(2).name.toList()
 
-CAUTION: Python has `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` as reserved words. Gremlin-Python simply
-prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
-
 When the traversal above is submitted to the `RemoteConnection`, it's `Bytecode` is sent in order to construct the equivalent traversal
 in GremlinServer (thus, remotely). The bytecode is analyzed to determine which language the bytecode should be translated to.
-If the traversal does not have lambdas, it will use Gremlin-Java. If it has lambdas in Groovy, it will use Gremlin-Groovy (`GremlinGroovyScriptEngine`).
-Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (`GremlinJythonScriptEngine`).
+If the traversal does not have lambdas, it will typically use Gremlin-Java. If it has lambdas written in Groovy,
+it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`). Likewise, if it has lambdas represented in Python, it will use
+Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
 
 Gremlin-Python Sugar
 ~~~~~~~~~~~~~~~~~~~~
@@ -169,31 +169,37 @@ RemoteConnection Bindings
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a traversal bytecode is sent over a `RemoteConnection` (e.g. GremlinServer), it will be translated, compiled, and executed accordingly.
-If the same traversal is sent again, it can simply be executed as the compiled version will typically be cached.
+If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version is typically cached.
 Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
 from `g.V(4).out('created').name'` as they are different scripts. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
-`{x : 4}` is the same. If a traversal is going to be run over and over again, but with different parameters, then bindings should be used.
-This can significantly speed up execution as compilation need only occur once. In Gremlin-Python, bindings are 2-tuples and used as follows.
+`{x : 4}` are the same. If a traversal is going to be executed repeatedly, but with different parameters, then bindings should be used.
+In Gremlin-Python, bindings are 2-tuples and used as follows.
 
 [gremlin-python,modern]
 ----
-g.V(('id',1)).out('created').name
-g.V(('id',4)).out('created').name
+g.V(('x',1)).out('created').name
+g.V(('x',4)).out('created').name
 ----
-
-In the two examples above, the remote compiler is only used once.
 
 The Lambda Solution
 ~~~~~~~~~~~~~~~~~~~
 
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is extremely difficult.
-As a simple solution, it is up to the `Translator` to decide how
-link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambdas] should be treated. For `PythonTranslator`
-and `GroovyTranslator`, a lambda should be a zero-arg callable that returns a string representation of a Python or Groovy closure.
-When the lambda is represented in `Bytecode` its language is encoded such that GremlinServer will know which translator to use.
+As a simple solution, it is up to the Gremlin variant to decide lambdas (in any language) should be expressed and ultimately
+encoded in the standard `Bytecode` format. In Gremlin-Python, a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda]
+should be a zero-arg callable that returns a string representation of a lambda. The default lambda language is `gremlin-jython`
+and can be changed via `statics.default_lambda_language.` When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator to use.
 
 [gremlin-python,modern]
 ----
-g.V().out().map(lambda: "it.get().value('name').length()").sum()
+g.V().out().map(lambda: "lambda x: x.get().value('name').length()").sum() <1>
+g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum() <2>
+gremlin_python.statics.default_lambda_language = "gremlin-groovy" <3>
+g.V().out().map(lambda: "it.get().value('name').length()").sum() <4>
 ----
 
+<1> A zero-arg lambda yields a string representation of a lambda in Gremlin-Jython.
+<2> A zero-arg lambda can yield a 2-tuple with the second element being the lambda language.
+<3> The default lambda language can be changed so a 2-tuple is no needed.
+<4> A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
