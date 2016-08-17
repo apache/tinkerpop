@@ -93,6 +93,7 @@ public interface TraversalSource extends Cloneable {
         public static final String withoutStrategies = "withoutStrategies";
         public static final String withComputer = "withComputer";
         public static final String withSideEffect = "withSideEffect";
+        public static final String withRemote = "withRemote";
     }
 
     /////////////////////////////

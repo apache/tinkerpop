@@ -20,6 +20,7 @@ import abc
 import six
 
 from ..process.traversal import Traversal
+from ..process.traversal import TraversalStrategy
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -49,3 +50,15 @@ class RemoteTraversal(Traversal):
         Traversal.__init__(self, None, None, None)
         self.traversers = traversers
         self.side_effects = side_effects
+
+
+class RemoteStrategy(TraversalStrategy):
+    def __init__(self, remote_connection):
+        self.remote_connection = remote_connection
+
+    def apply(self, traversal):
+        if traversal.traversers is None:
+            remote_traversal = self.remote_connection.submit(traversal.bytecode)
+            traversal.side_effects = remote_traversal.side_effects
+            traversal.traversers = remote_traversal.traversers
+        return

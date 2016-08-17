@@ -17,7 +17,9 @@ specific language governing permissions and limitations
 under the License.
 '''
 from .traversal import Traversal
+from .traversal import TraversalStrategies
 from .traversal import Bytecode
+from ..driver.remote_connection import RemoteStrategy
 from .. import statics
 
 class GraphTraversalSource(object):
@@ -46,36 +48,36 @@ class GraphTraversalSource(object):
     traversal.bytecode.add_step("inject", *args)
     return traversal
   def withBulk(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
     return source
   def withComputer(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withComputer", *args)
     return source
   def withPath(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withPath", *args)
     return source
-  def withRemote(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    source.bytecode.add_source("withRemote", *args)
-    return source
   def withSack(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withSack", *args)
     return source
   def withSideEffect(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withSideEffect", *args)
     return source
   def withStrategies(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withStrategies", *args)
     return source
   def withoutStrategies(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withoutStrategies", *args)
+    return source
+  def withRemote(self, remote_connection):
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
 
 
