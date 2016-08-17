@@ -21,7 +21,7 @@ from .remote_connection import RemoteStrategy
 from .remote_connection import RemoteTraversal
 
 try:
-    from .websocket_remote_connection import WebSocketRemoteConnection
+    from .driver_remote_connection import DriverRemoteConnection
 except ImportError:
     pass
 

@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class WebSocketRemoteConnectionTest {
+public class DriverRemoteConnectionTest {
 
     private static final ScriptEngine jython = ScriptEngineCache.get("jython");
 
@@ -49,10 +49,10 @@ public class WebSocketRemoteConnectionTest {
         try {
             JythonScriptEngineSetup.setup();
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("g", jython.eval("Graph().traversal().withRemote(WebSocketRemoteConnection('ws://localhost:8182','g'))"));
+                    .put("g", jython.eval("Graph().traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g'))"));
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("j", jython.eval("Graph().traversal().withRemote(WebSocketRemoteConnection('ws://localhost:8182','g'))"));
-            new GremlinServer(Settings.read(WebSocketRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
+                    .put("j", jython.eval("Graph().traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g'))"));
+            new GremlinServer(Settings.read(DriverRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
         } catch (final Exception ex) {
             ex.printStackTrace();
         }

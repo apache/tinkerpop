@@ -63,7 +63,7 @@ BEGIN {
     print "jython.eval('from gremlin_python.structure.graph import Graph')"
     print "jython.eval('from gremlin_python.process.graphson import GraphSONWriter')"
     # print "jython.eval('from gremlin_python.process.graphson import serializers')"
-    # print "jython.eval('from gremlin_python.driver.websocket_remote_connection import WebSocketRemoteConnection')"
+    # print "jython.eval('from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection')"
     print "jython.eval('statics.load_statics(globals())')"
     print "jythonBindings = jython.createBindings()"
     print "jythonBindings.put('g', jython.eval('Graph().traversal()'))"

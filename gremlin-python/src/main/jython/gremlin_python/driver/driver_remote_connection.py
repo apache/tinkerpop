@@ -32,11 +32,11 @@ class GremlinServerError(Exception):
     pass
 
 
-class WebSocketRemoteConnection(RemoteConnection):
+class DriverRemoteConnection(RemoteConnection):
     """Remote connection to the Gremlin Server"""
 
     def __init__(self, url, traversal_source, loop=None, username='', password=''):
-        super(WebSocketRemoteConnection, self).__init__(url, traversal_source)
+        super(DriverRemoteConnection, self).__init__(url, traversal_source)
         if loop is None:
             self._loop = ioloop.IOLoop.current()
         self._ws = self._loop.run_sync(lambda: websocket.websocket_connect(self.url))
