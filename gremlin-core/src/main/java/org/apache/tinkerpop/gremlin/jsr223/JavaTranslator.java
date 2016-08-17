@@ -44,23 +44,19 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     private final Map<String, List<Method>> traversalSourceMethodCache = new HashMap<>();
     private final Map<String, List<Method>> traversalMethodCache = new HashMap<>();
 
-    private JavaTranslator(final S traversalSource, final Class anonymousSource) {
+    private JavaTranslator(final S traversalSource) {
         this.traversalSource = traversalSource;
-        this.anonymousTraversal = anonymousSource;
+        // todo: could produce an NPE later on. need a good model for when a traversal species doesn't support nesting.
+        this.anonymousTraversal = traversalSource.getAnonymousTraversalClass().orElse(null);
     }
 
     public static <S extends TraversalSource, T extends Traversal.Admin<?, ?>> JavaTranslator<S, T> of(final S traversalSource) {
-        return new JavaTranslator<>(traversalSource, traversalSource.getAnonymousTraversalClass().orElse(null));
+        return new JavaTranslator<>(traversalSource);
     }
 
     @Override
     public S getTraversalSource() {
         return this.traversalSource;
-    }
-
-    @Override
-    public Class getAnonymousTraversal() {
-        return this.anonymousTraversal;
     }
 
     @Override

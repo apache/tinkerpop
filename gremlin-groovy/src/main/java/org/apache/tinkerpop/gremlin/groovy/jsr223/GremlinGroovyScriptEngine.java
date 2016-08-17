@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -370,8 +371,14 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     @Override
     public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
         bindings.putAll(bytecode.getBindings());
-        // TODO: this is kinda bad because it makes the assumption that we will always alias to "g" (which is generally true, but maybe better to not hardcode?)
-        return (Traversal.Admin) this.eval(GroovyTranslator.of("g", "__").translate(bytecode), bindings);
+        String traversalSource = "g";
+        for (final Map.Entry<String, Object> entry : bindings.entrySet()) {
+            if (entry.getValue() instanceof TraversalSource) {
+                traversalSource = entry.getKey();
+                break;
+            }
+        }
+        return (Traversal.Admin) this.eval(GroovyTranslator.of(traversalSource).translate(bytecode), bindings);
     }
 
     @Override

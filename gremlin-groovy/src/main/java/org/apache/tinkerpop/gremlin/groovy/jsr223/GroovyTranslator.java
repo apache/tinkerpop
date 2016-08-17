@@ -41,19 +41,13 @@ import java.util.List;
 public final class GroovyTranslator implements Translator.ScriptTranslator {
 
     private final String traversalSource;
-    private final String anonymousTraversal;
 
-    private GroovyTranslator(final String traversalSource, final String anonymousTraversal) {
+    private GroovyTranslator(final String traversalSource) {
         this.traversalSource = traversalSource;
-        this.anonymousTraversal = anonymousTraversal;
-    }
-
-    public static final GroovyTranslator of(final String traversalSource, final String anonymousTraversal) {
-        return new GroovyTranslator(traversalSource, anonymousTraversal);
     }
 
     public static final GroovyTranslator of(final String traversalSource) {
-        return new GroovyTranslator(traversalSource, "__");
+        return new GroovyTranslator(traversalSource);
     }
 
     ///////
@@ -76,11 +70,6 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     @Override
     public String getTraversalSource() {
         return this.traversalSource;
-    }
-
-    @Override
-    public String getAnonymousTraversal() {
-        return this.anonymousTraversal;
     }
 
     ///////
@@ -140,10 +129,10 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Computer) { // TODO: blow out
             return "";
         } else if (object instanceof Lambda) {
-            final String lambdaString = ((Lambda) object).getLambdaScript();
+            final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Bytecode)
-            return this.internalTranslate(this.anonymousTraversal, (Bytecode) object);
+            return this.internalTranslate("__", (Bytecode) object);
         else
             return null == object ? "null" : object.toString();
     }

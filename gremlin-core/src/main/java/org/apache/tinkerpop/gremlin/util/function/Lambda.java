@@ -36,13 +36,17 @@ public interface Lambda extends Serializable {
 
     public String getLambdaLanguage();
 
+    public int getLambdaArguments();
+
     public abstract static class AbstractLambda implements Lambda {
         private final String lambdaSource;
         private final String lambdaLanguage;
+        private final int lambdaArguments;
 
-        private AbstractLambda(final String lambdaSource, final String lambdaLanguage) {
+        private AbstractLambda(final String lambdaSource, final String lambdaLanguage, final int lambdaArguments) {
             this.lambdaSource = lambdaSource;
             this.lambdaLanguage = lambdaLanguage;
+            this.lambdaArguments = lambdaArguments;
         }
 
         @Override
@@ -56,18 +60,24 @@ public interface Lambda extends Serializable {
         }
 
         @Override
+        public int getLambdaArguments() {
+            return this.lambdaArguments;
+        }
+
+        @Override
         public String toString() {
             return this.lambdaSource;
         }
 
         @Override
         public int hashCode() {
-            return this.lambdaSource.hashCode() + this.lambdaLanguage.hashCode();
+            return this.lambdaSource.hashCode() + this.lambdaLanguage.hashCode() + this.lambdaArguments;
         }
 
         @Override
         public boolean equals(final Object object) {
             return object instanceof Lambda &&
+                    ((Lambda) object).getLambdaArguments() == this.getLambdaArguments() &&
                     ((Lambda) object).getLambdaScript().equals(this.lambdaSource) &&
                     ((Lambda) object).getLambdaLanguage().equals(this.lambdaLanguage);
         }
@@ -75,15 +85,15 @@ public interface Lambda extends Serializable {
 
     public static class UnknownArgLambda extends AbstractLambda {
 
-        public UnknownArgLambda(final String lambdaSource, final String lambdaLanguage) {
-            super(lambdaSource, lambdaLanguage);
+        public UnknownArgLambda(final String lambdaSource, final String lambdaLanguage, final int lambdaArguments) {
+            super(lambdaSource, lambdaLanguage, lambdaArguments);
         }
     }
 
     public static class ZeroArgLambda<A> extends AbstractLambda implements Supplier<A> {
 
         public ZeroArgLambda(final String lambdaSource, final String lambdaLanguage) {
-            super(lambdaSource, lambdaLanguage);
+            super(lambdaSource, lambdaLanguage, 0);
         }
 
         @Override
@@ -96,7 +106,7 @@ public interface Lambda extends Serializable {
     public static class OneArgLambda<A, B> extends AbstractLambda implements Function<A, B>, Predicate<A>, Consumer<A> {
 
         public OneArgLambda(final String lambdaSource, final String lambdaLanguage) {
-            super(lambdaSource, lambdaLanguage);
+            super(lambdaSource, lambdaLanguage, 1);
         }
 
         @Override
@@ -118,7 +128,7 @@ public interface Lambda extends Serializable {
     public static class TwoArgLambda<A, B, C> extends AbstractLambda implements BiFunction<A, B, C>, Comparator<A> {
 
         public TwoArgLambda(final String lambdaSource, final String lambdaLanguage) {
-            super(lambdaSource, lambdaLanguage);
+            super(lambdaSource, lambdaLanguage, 2);
         }
 
         @Override

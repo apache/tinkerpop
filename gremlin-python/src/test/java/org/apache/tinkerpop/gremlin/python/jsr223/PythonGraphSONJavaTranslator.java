@@ -52,11 +52,6 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
     }
 
     @Override
-    public Class getAnonymousTraversal() {
-        return this.javaTranslator.getAnonymousTraversal();
-    }
-
-    @Override
     public String getTargetLanguage() {
         return this.javaTranslator.getTargetLanguage();
     }

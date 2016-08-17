@@ -186,20 +186,28 @@ The Lambda Solution
 Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is extremely difficult.
 As a simple solution, it is up to the Gremlin variant to decide lambdas (in any language) should be expressed and ultimately
 encoded in the standard `Bytecode` format. In Gremlin-Python, a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda]
-should be a zero-arg callable that returns a string representation of a lambda. The default lambda language is `gremlin-jython`
-and can be changed via `statics.default_lambda_language.` When the lambda is represented in `Bytecode` its language is encoded
-such that the remote connection host can infer which translator to use. A zero-arg lambda yields a string representation of a lambda in Gremlin-Jython.
-For example, `g.V().out().map(lambda: "lambda x: x.get().value('name').length()").sum().toList()`.
+should be a zero-arg callable that returns a string representation of a lambda. The default lambda language is `gremlin-python`
+and can be changed via `gremlin_python.statics.default_lambda_language.` When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator to use.
 
 [gremlin-python,modern]
 ----
+g.V().out().map(lambda: "lambda x: len(x.get().value('name'))").sum().toList()
+statics.default_lambda_language
 g.V().out().map(lambda: ("it.get().value('name').length()", "gremlin-groovy")).sum().toList()
 statics.default_lambda_language = 'gremlin-groovy'
 g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()
+g.V().out().map(lambda: ("lambda x: len(x.get().value('name'))", "gremlin-python")).sum().toList()
+statics.default_lambda_language = 'gremlin-python'
+g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()
 ----
 
-1. A zero-arg lambda yields 2-tuple where the second element is the lambda language.
-2. The default lambda language can be statically changed.
-3. A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
-
+1. A zero-arg lambda yields a string representation of a lambda in Gremlin-Python.
+2. The default lambda language is currently Gremlin-Python.
+2. A zero-arg lambda yields a 2-tuple where the second element is the language of the lambda (Gremlin-Groovy).
+3. The default lambda language can be statically changed.
+4. A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
+5. A zero-arg lambda yields a 2-tuple where the second element is the language of the lambda (Gremlin-Python).
+6. The default lambda language is changed back to Gremlin-Python.
+7. If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 

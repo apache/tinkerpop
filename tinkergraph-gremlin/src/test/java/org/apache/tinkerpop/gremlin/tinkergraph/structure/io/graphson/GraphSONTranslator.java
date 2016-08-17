@@ -50,11 +50,6 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
     }
 
     @Override
-    public Class getAnonymousTraversal() {
-        return this.wrappedTranslator.getAnonymousTraversal();
-    }
-
-    @Override
     public T translate(final Bytecode bytecode) {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

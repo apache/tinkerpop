@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.util.CoreImports;
 import org.python.jsr223.PyScriptEngine;
@@ -33,6 +34,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.io.Reader;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -70,13 +72,21 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
                     "from java.lang import Long\n" +
                     "import org.apache.tinkerpop.gremlin.util.function.Lambda\n" + // todo: remove or remove imported subclass names? (choose)
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import AbstractLambda\n" +
+                    "from org.apache.tinkerpop.gremlin.util.function.Lambda import UnknownArgLambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import ZeroArgLambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import OneArgLambda\n" +
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import TwoArgLambda\n\n" +
 
+                    "class JythonUnknownArgLambda(UnknownArgLambda):\n" +
+                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
+                    "    UnknownArgLambda.__init__(self, 'nothing', lang, -1)\n" +
+                    "    self.func = func\n" +
+                    "  def __repr__(self):\n" +
+                    "    return 'JythonUnknownArgLambda'\n\n" +
+
                     "class JythonZeroArgLambda(ZeroArgLambda):\n" +
-                    "  def __init__(self,func):\n" +
-                    "    AbstractLambda.__init__(self, 'nothing')\n" +
+                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
+                    "    ZeroArgLambda.__init__(self, 'nothing', lang)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
                     "    return 'JythonZeroArgLambda'\n" +
@@ -84,8 +94,8 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
                     "    return self.func()\n\n" +
 
                     "class JythonOneArgLambda(OneArgLambda):\n" +
-                    "  def __init__(self,func):\n" +
-                    "    AbstractLambda.__init__(self, 'nothing')\n" +
+                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
+                    "    OneArgLambda.__init__(self, 'nothing', lang)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
                     "    return 'JythonOneArgLambda'\n" +
@@ -99,8 +109,8 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
                     "    return self.func(a,b)\n\n" +
 
                     "class JythonTwoArgLambda(TwoArgLambda):\n" +
-                    "  def __init__(self,func):\n" +
-                    "    AbstractLambda.__init__(self, 'nothing')\n" +
+                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
+                    "    TwoArgLambda.__init__(self, 'nothing', lang)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
                     "    return 'JythonTwoArgLambda'\n" +
@@ -118,8 +128,14 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
     @Override
     public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings) throws ScriptException {
         bindings.putAll(bytecode.getBindings());
-        // TODO: this is kinda bad because it makes the assumption that we will always alias to "g" (which is generally true, but maybe better to not hardcode?)
-        return (Traversal.Admin) this.eval(PythonTranslator.of("g", "__").translate(bytecode), bindings);
+        String traversalSource = "g";
+        for (final Map.Entry<String, Object> entry : bindings.entrySet()) {
+            if (entry.getValue() instanceof TraversalSource) {
+                traversalSource = entry.getKey();
+                break;
+            }
+        }
+        return (Traversal.Admin) this.eval(JythonTranslator.of(traversalSource).translate(bytecode), bindings);
     }
 
     @Override

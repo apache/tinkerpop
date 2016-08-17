@@ -32,6 +32,6 @@ public class RemoteGraphGroovyTranslatorProvider extends RemoteGraphProvider {
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         final GraphTraversalSource g = graph.traversal();
-        return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", "__")));
+        return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g")));
     }
 }

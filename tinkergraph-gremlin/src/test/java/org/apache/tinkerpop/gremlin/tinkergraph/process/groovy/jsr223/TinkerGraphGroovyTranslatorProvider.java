@@ -69,7 +69,7 @@ public class TinkerGraphGroovyTranslatorProvider extends TinkerGraphProvider {
             //throw new VerificationException("This test current does not work with Gremlin-Python", EmptyTraversal.instance());
         else {
             final GraphTraversalSource g = graph.traversal();
-            return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g", "__")));
+            return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g")));
         }
     }
 }

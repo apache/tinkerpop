@@ -109,13 +109,20 @@ class BindingSerializer(GraphSONSerializer):
 
 class LambdaSerializer(GraphSONSerializer):
     def _dictify(self, lambdaObject):
-        lambdaString = lambdaObject()
+        lambdaResult = lambdaObject()
         dict = {}
         dict["@type"] = "Lambda"
-        dict["value"] = lambdaString if isinstance(lambdaString, str) else lambdaString[0]
-        dict["language"] = statics.default_lambda_language if isinstance(lambdaString, str) else lambdaString[1]
-        if dict["language"] is "gremlin-jython":
+        script = lambdaResult if isinstance(lambdaResult, str) else lambdaResult[0]
+        language = statics.default_lambda_language if isinstance(lambdaResult, str) else lambdaResult[1]
+        dict["value"] = script
+        dict["language"] = language
+        if language == "gremlin-jython" or language == "gremlin-python":
+            if not script.strip().startswith("lambda"):
+                script = "lambda " + script
+                dict["value"] = script
             dict["arguments"] = eval(dict["value"]).func_code.co_argcount
+        else:
+            dict["arguments"] = -1
         return dict
 
 

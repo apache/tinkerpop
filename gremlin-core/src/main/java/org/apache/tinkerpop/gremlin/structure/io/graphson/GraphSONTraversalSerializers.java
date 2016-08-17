@@ -167,8 +167,7 @@ public final class GraphSONTraversalSerializers {
             jsonGenerator.writeStringField("@type", "Lambda");
             jsonGenerator.writeStringField("value", lambda.getLambdaScript());
             jsonGenerator.writeStringField("language", lambda.getLambdaLanguage());
-            if (!(lambda instanceof Lambda.UnknownArgLambda))
-                jsonGenerator.writeNumberField("arguments", lambda instanceof Lambda.ZeroArgLambda ? 0 : lambda instanceof Lambda.OneArgLambda ? 1 : 2);
+            jsonGenerator.writeNumberField("arguments", lambda.getLambdaArguments());
             jsonGenerator.writeEndObject();
         }
 
@@ -377,12 +376,12 @@ public final class GraphSONTraversalSerializers {
             assert node.get("@type").textValue().equals("Lambda");
             final String lambdaScript = node.get("value").textValue();
             final String lambdaLanguage = node.get("language").textValue();
-            final int arguments = node.has("argument") ? node.get("arguments").intValue() : -1;
-            if (-1 == arguments || arguments > 2)
-                return new Lambda.UnknownArgLambda(lambdaScript, lambdaLanguage);
-            else if (0 == arguments)
+            final int lambdaArguments = node.get("arguments").intValue();
+            if (-1 == lambdaArguments || lambdaArguments > 2)
+                return new Lambda.UnknownArgLambda(lambdaScript, lambdaLanguage, lambdaArguments);
+            else if (0 == lambdaArguments)
                 return new Lambda.ZeroArgLambda<>(lambdaScript, lambdaLanguage);
-            else if (1 == arguments)
+            else if (1 == lambdaArguments)
                 return new Lambda.OneArgLambda<>(lambdaScript, lambdaLanguage);
             else
                 return new Lambda.TwoArgLambda<>(lambdaScript, lambdaLanguage);

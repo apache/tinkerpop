@@ -40,7 +40,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,34 +50,28 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PythonTranslator implements Translator.ScriptTranslator {
+public class PythonTranslator implements Translator.ScriptTranslator {
 
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
             .flatMap(arg -> IteratorUtils.stream(new ArrayIterator<>(arg)))
             .map(arg -> ((Enum) arg).name())
-            .collect(Collectors.toCollection(() -> new HashSet<>(Arrays.asList("not"))));
+            .collect(Collectors.toCollection(() -> new HashSet<>(Collections.singleton("not"))));
 
-    private String traversalSource;
-    private String anonymousTraversal;
+    private final String traversalSource;
     private final boolean importStatics;
 
-    private PythonTranslator(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
+    PythonTranslator(final String traversalSource, final boolean importStatics) {
         this.traversalSource = traversalSource;
-        this.anonymousTraversal = anonymousTraversal;
         this.importStatics = importStatics;
     }
 
-    public static final PythonTranslator of(final String traversalSource, final String anonymousTraversal, final boolean importStatics) {
-        return new PythonTranslator(traversalSource, anonymousTraversal, importStatics);
+    public static PythonTranslator of(final String traversalSource, final boolean importStatics) {
+        return new PythonTranslator(traversalSource, importStatics);
     }
 
-    public static final PythonTranslator of(final String traversalSource, final String anonymousTraversal) {
-        return new PythonTranslator(traversalSource, anonymousTraversal, false);
-    }
-
-    public static final PythonTranslator of(final String traversalSource) {
-        return new PythonTranslator(traversalSource, "__", false);
+    public static PythonTranslator of(final String traversalSource) {
+        return new PythonTranslator(traversalSource, false);
     }
 
     @Override
@@ -86,21 +80,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     }
 
     @Override
-    public String getAnonymousTraversal() {
-        return this.anonymousTraversal;
-    }
-
-    @Override
     public String translate(final Bytecode bytecode) {
-        final String traversal = this.internalTranslate(this.traversalSource, bytecode);
-        //if (this.importStatics)
-        //    assert !traversal.contains("__.");
-        return traversal;
+        return this.internalTranslate(this.traversalSource, bytecode);
     }
 
     @Override
     public String getTargetLanguage() {
-        return "jython";
+        return "gremlin-python";
     }
 
     @Override
@@ -134,7 +120,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                 traversalScript.append(temp.substring(0, temp.length() - 1)).append(")");
             }
             // clip off __.
-            if (this.importStatics && traversalScript.substring(0, 3).startsWith(this.anonymousTraversal + ".")
+            if (this.importStatics && traversalScript.substring(0, 3).startsWith("__.")
                     && !NO_STATIC.stream().filter(name -> traversalScript.substring(3).startsWith(SymbolHelper.toPython(name))).findAny().isPresent()) {
                 traversalScript.delete(0, 3);
             }
@@ -170,14 +156,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)
-            return this.internalTranslate(this.anonymousTraversal, (Bytecode) object);
-        else if (object instanceof Computer) {
+            return this.internalTranslate("__", (Bytecode) object);
+        else if (object instanceof Computer)
             return "";
-        } else if (object instanceof Lambda) {
-            final String lambdaString = ((Lambda) object).getLambdaScript();
-            return lambdaString.startsWith("lambda") ? lambdaString : "lambda: \"" + lambdaString + "\"";
-        } else
-            return null == object ? "" : object.toString();
+        else if (object instanceof Lambda)
+            return convertLambdaToString((Lambda) object);
+        else
+            return null == object ? "None" : object.toString();
     }
 
     private String convertStatic(final String name) {
@@ -196,6 +181,11 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         } else
             current.append(convertStatic("P.")).append(p.getBiPredicate().toString()).append("(").append(convertToString(p.getValue())).append(")");
         return current;
+    }
+
+    protected String convertLambdaToString(final Lambda lambda) {
+        final String lambdaString = lambda.getLambdaScript().trim();
+        return lambdaString.startsWith("lambda") ? lambdaString : "lambda " + lambdaString;
     }
 
 }

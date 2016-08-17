@@ -22,29 +22,20 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 /**
  * A Translator will translate {@link Bytecode} into another representation. That representation may be a
  * Java instance via {@link StepTranslator} or a String script in some language via {@link ScriptTranslator}.
- * The parameterization of Translator is S (traversal source), A (anonymous traversal), and T (full translation).
+ * The parameterization of Translator is S (traversal source) and T (full translation).
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Translator<S, A, T> {
+public interface Translator<S, T> {
 
     /**
      * Get the {@link TraversalSource} representation rooting this translator.
-     * For string-based translators, this is typically a "g".
-     * For java-based translators, this is typically the {@link TraversalSource} instance which the {@link Traversal} will be built from.
+     * For string-based translators ({@link ScriptTranslator}), this is typically a "g".
+     * For java-based translators ({@link StepTranslator}), this is typically the {@link TraversalSource} instance which the {@link Traversal} will be built from.
      *
      * @return the traversal source representation
      */
     public S getTraversalSource();
-
-    /**
-     * Get the anonymous traversal representation to be used by this translator.
-     * For string-based translators, this is typically "__".
-     * For java-based translators, this is typically the {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__} class for the respective traversal classø.
-     *
-     * @return the anonymous traversal representation
-     */
-    public A getAnonymousTraversal();
 
     /**
      * Translate {@link Bytecode} into a new representation.
@@ -64,11 +55,11 @@ public interface Translator<S, A, T> {
 
     ///
 
-    public interface ScriptTranslator extends Translator<String, String, String> {
+    public interface ScriptTranslator extends Translator<String, String> {
 
     }
 
-    public interface StepTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> extends Translator<S, Class, T> {
+    public interface StepTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> extends Translator<S, T> {
 
     }
 }

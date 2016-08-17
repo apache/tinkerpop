@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class RESTRemoteConnectionTest {
+public class WebSocketRemoteConnectionTest {
 
     private static final ScriptEngine jython = ScriptEngineCache.get("jython");
 
@@ -52,7 +52,7 @@ public class RESTRemoteConnectionTest {
                     .put("g", jython.eval("RemoteGraph(WebSocketRemoteConnection('ws://localhost:8182','g')).traversal()"));
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
                     .put("j", jython.eval("RemoteGraph(WebSocketRemoteConnection('ws://localhost:8182','g')).traversal()"));
-            new GremlinServer(Settings.read(RESTRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
+            new GremlinServer(Settings.read(WebSocketRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
         } catch (final Exception ex) {
             ex.printStackTrace();
         }
