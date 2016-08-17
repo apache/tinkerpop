@@ -202,3 +202,4 @@ g.V().out().map(lambda: "it.get().value('name').length()").sum().toList()
 2. The default lambda language can be statically changed.
 3. A zero-arg lambda yields a string representation of a closure in Gremlin-Groovy.
 
+
