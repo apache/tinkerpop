@@ -57,7 +57,9 @@ under the License.
 '''
 """)
         pythonClass.append("from .traversal import Traversal\n")
+        pythonClass.append("from .traversal import TraversalStrategies\n")
         pythonClass.append("from .traversal import Bytecode\n")
+        pythonClass.append("from ..driver.remote_connection import RemoteStrategy\n")
         pythonClass.append("from .. import statics\n\n")
 
 //////////////////////////
@@ -75,7 +77,11 @@ under the License.
     return "graphtraversalsource[" + str(self.graph) + "]"
 """)
         GraphTraversalSource.getMethods()
-                .findAll { !it.name.equals("clone") && !it.name.equals(TraversalSource.Symbols.withBindings) }
+                .findAll {
+            !it.name.equals("clone") &&
+                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
+                    !it.name.equals(TraversalSource.Symbols.withRemote)
+        }
                 .collect { it.name }
                 .unique()
                 .sort { a, b -> a <=> b }
@@ -96,13 +102,18 @@ under the License.
                 } else if (TraversalSource.isAssignableFrom(returnType)) {
                     pythonClass.append(
                             """  def ${method}(self, *args):
-    source = GraphTraversalSource(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("${method}", *args)
     return source
 """)
                 }
             }
         }
+        pythonClass.append("""  def withRemote(self, remote_connection):
+    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+    source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
+    return source
+""")
         pythonClass.append("\n\n")
 
 ////////////////////

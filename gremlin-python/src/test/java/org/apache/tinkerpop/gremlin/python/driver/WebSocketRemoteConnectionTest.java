@@ -49,9 +49,9 @@ public class WebSocketRemoteConnectionTest {
         try {
             JythonScriptEngineSetup.setup();
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("g", jython.eval("RemoteGraph(WebSocketRemoteConnection('ws://localhost:8182','g')).traversal()"));
+                    .put("g", jython.eval("Graph().traversal().withRemote(WebSocketRemoteConnection('ws://localhost:8182','g'))"));
             jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("j", jython.eval("RemoteGraph(WebSocketRemoteConnection('ws://localhost:8182','g')).traversal()"));
+                    .put("j", jython.eval("Graph().traversal().withRemote(WebSocketRemoteConnection('ws://localhost:8182','g'))"));
             new GremlinServer(Settings.read(WebSocketRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
         } catch (final Exception ex) {
             ex.printStackTrace();
