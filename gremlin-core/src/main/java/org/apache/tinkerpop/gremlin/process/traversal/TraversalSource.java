@@ -55,8 +55,8 @@ import java.util.function.UnaryOperator;
  */
 public interface TraversalSource extends Cloneable {
 
-    // TODO: this is GraphFactory naming convention, but we're not GraphFactory compliant anymore so maybe change the config option?
-    public static final String GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remoteGraph.remoteConnectionClass";
+    public static final String GREMLIN_REMOTE = "gremlin.remote.";
+    public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
 
     /**
      * Get the {@link TraversalStrategies} associated with this traversal source.
@@ -397,17 +397,17 @@ public interface TraversalSource extends Cloneable {
 
     /**
      * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
-     * Expects key for {@link #GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS} as well as any configuration required by
+     * Expects key for {@link #GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
      * the underlying {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object
      * is passed down without change to the creation of the {@link RemoteConnection} instance.
      */
     public default TraversalSource withRemote(final Configuration conf) {
-        if (!conf.containsKey(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS))
-            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS + "' key");
+        if (!conf.containsKey(GREMLIN_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
 
         final RemoteConnection remoteConnection;
         try {
-            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
             final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
             remoteConnection = ctor.newInstance(conf);
         } catch (Exception ex) {

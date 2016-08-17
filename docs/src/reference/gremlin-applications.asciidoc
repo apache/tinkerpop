@@ -811,8 +811,8 @@ quite possible that such a script will generate `OutOfMemoryError` exceptions on
 WebSockets configuration, which supports streaming, if that type of use case is required.
 
 [[connecting-via-remotegraph]]
-Connecting via RemoteGraph
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Connecting via withRemote
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [source,xml]
 ----
@@ -823,39 +823,33 @@ Connecting via RemoteGraph
 </dependency>
 ----
 
-image:remote-graph.png[width=145,float=left] `RemoteGraph` is a lightweight `Graph` implementation that acts as a
-proxy for sending traversals to Gremlin Server for remote execution. It is not a "full" implementation like
-`TinkerGraph` or `Neo4jGraph`, in that most of its methods are not implemented. For example, calls to most methods
-like, `addVertex()` or `edges()` will result in an `UnsupportedOperationException`. The only method used on
-`RemoteGraph` is `traversal()`, which generates a `GraphTraversalSource` that includes a `RemoteStrategy`. The
-`RemoteStrategy` takes traversals constructed from it, serializes them and submits them to Gremlin Server
-and the results are returned as though working with the `Graph` instance in embedded mode.
-
-`RemoteGraph` is an interesting alternative to the other methods for connecting to Gremlin Server in that all other
-methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
+image:remote-graph.png[width=145,float=left] A `TraversalSource` has several `withRemote()` methods which provide an
+interesting alternative to the other methods for connecting to Gremlin Server. It is interesting in that all other
+methods involve construction of a `String` representation of the `Traversal` which is then submitted as a script
 to Gremlin Server (via driver or REST). This approach is quite akin to SQL, where query strings are embedded into code
 and submitted to a database server. While there are patterns for taking this approach that can lead to maintainable
-application code, using `RemoteGraph` could be a better method as it brings some good benefits with it:
+application code, using `withRemote()` could be a better method as it brings some good benefits with it:
 
 * Get auto-complete when writing traversals in an IDE.
 * Get compile-time errors in traversal writing.
 * Get the feel of working with an embedded database.
 
-One way to create a `RemoteGraph` instance is by configuration file. Here is an example of what that file looks like:
+One way to create a `Traversal` instance that is remote-enabled is by configuration file. Here is an example of what
+that file looks like:
 
 [source,properties]
 ----
-gremlin.remoteGraph.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
-gremlin.remoteGraph.driver.clusterFile=conf/remote-objects.yaml
-gremlin.remoteGraph.driver.sourceName=g
+gremlin.remote.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection
+gremlin.remote.driver.clusterFile=conf/remote-objects.yaml
+gremlin.remote.driver.sourceName=g
 ----
 
-The `gremlin.remoteGraph.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
+The `gremlin.remote.remoteConnectionClass` should be an implementation of the `RemoteConnection` interface in
 `gremlin-core`. In this case, it points at the `gremlin-driver` implementation, called `DriverRemoteConnection`. The
-other setting, `gremlin.remoteGraph.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
+other setting, `gremlin.remote.driver.clusterFile`, is a configuration to `DriverRemoteConnection`, and it
 provides a pointer to the config file to use to construct a `gremlin-driver` `Cluster` object to be utilized when
 connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting Via Java">> section for more
-information on those classes and their usage. Finally, the `gremlin.remoteGraph.driver.sourceName` setting tells the
+information on those classes and their usage. Finally, the `gremlin.remote.driver.sourceName` setting tells the
 `DriverRemoteConnection` the name of the `TraversalSource` in Gremlin Server to connect to.
 
 Gremlin Server needs to be running for this example to work. Use the following configuration:
@@ -863,23 +857,27 @@ Gremlin Server needs to be running for this example to work. Use the following c
 [source,bourne]
 $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 
-`RemoteGraph` can be demonstrated in the Gremlin Console just like any other `Graph` instance:
+To configure a "remote" traversal, there first needs to be a `TraversalSource`. A `TraversalSource` can be generated
+from any `Graph` instance with the `traversal()` method. Of course, any traversals generated from this source using the
+`withRemote()` configuration option will not execute against the local graph. That could be confusing and it maybe be
+easier to think of the local graph as being "empty". To that end, it is recommended that when using `withRemote()`,
+the `TraversalSource` be generated with `EmptyGraph` as follows:
 
 [gremlin-groovy]
 ----
-graph = RemoteGraph.open('conf/remote-graph.properties')
-g = graph.traversal()
+graph = EmptyGraph.instance()
+g = graph.traversal().withRemote('conf/remote-graph.properties'))
 g.V().valueMap(true)
 ----
 
-If working with multiple `RemoteGraph` instances it is more efficient to construct your own `Cluster` object and
-re-use it.
+If working with multiple remote `TraversalSource` instances it is more efficient to construct a `Cluster` object and
+then re-use it.
 
 [gremlin-groovy]
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
-graph = RemoteGraph.open(DriverRemoteConnection.using(cluster, "graph"))
-g = graph.traversal()
+graph = EmptyGraph.instance()
+g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V().valueMap(true)
 graph.close()
 cluster.close()
