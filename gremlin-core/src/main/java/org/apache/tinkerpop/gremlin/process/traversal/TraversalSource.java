@@ -18,15 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -49,6 +54,9 @@ import java.util.function.UnaryOperator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalSource extends Cloneable {
+
+    // TODO: this is GraphFactory naming convention, but we're not GraphFactory compliant anymore so maybe change the config option?
+    public static final String GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS = "gremlin.remoteGraph.remoteConnectionClass";
 
     /**
      * Get the {@link TraversalStrategies} associated with this traversal source.
@@ -383,6 +391,47 @@ public interface TraversalSource extends Cloneable {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
         clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        return clone;
+    }
+
+    /**
+     * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     * Expects key for {@link #GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS} as well as any configuration required by
+     * the underlying {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object
+     * is passed down without change to the creation of the {@link RemoteConnection} instance.
+     */
+    public default TraversalSource withRemote(final Configuration conf) {
+        if (!conf.containsKey(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS + "' key");
+
+        final RemoteConnection remoteConnection;
+        try {
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
+            remoteConnection = ctor.newInstance(conf);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        return withRemote(remoteConnection);
+    }
+
+    /**
+     * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     * Calls {@link #withRemote(Configuration)} after reading the properties file specified.
+     */
+    public default TraversalSource withRemote(final String configFile) throws Exception {
+        return withRemote(new PropertiesConfiguration(configFile));
+    }
+
+    /**
+     * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     *
+     * @param connection the {@link RemoteConnection} instance to use to submit the {@link Traversal}.
+     */
+    public default TraversalSource withRemote(final RemoteConnection connection) {
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
         return clone;
     }
 

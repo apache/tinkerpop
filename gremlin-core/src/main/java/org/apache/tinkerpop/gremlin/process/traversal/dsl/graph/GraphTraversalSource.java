@@ -18,8 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -38,8 +41,10 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -223,6 +228,21 @@ public class GraphTraversalSource implements TraversalSource {
         RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.PATH);
         clone.bytecode.addSource(Symbols.withPath);
         return clone;
+    }
+
+    @Override
+    public GraphTraversalSource withRemote(final Configuration conf) {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(conf);
+    }
+
+    @Override
+    public GraphTraversalSource withRemote(final String configFile) throws Exception {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(configFile);
+    }
+
+    @Override
+    public GraphTraversalSource withRemote(final RemoteConnection connection) {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(connection);
     }
 
     //// SPAWNS

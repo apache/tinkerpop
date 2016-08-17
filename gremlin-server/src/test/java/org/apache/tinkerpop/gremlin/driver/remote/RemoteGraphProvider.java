@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -95,6 +97,16 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     @Override
     public Set<Class> getImplementations() {
         return IMPLEMENTATION;
+    }
+
+    @Override
+    public GraphTraversalSource traversal(final Graph graph) {
+        // ensure that traversal is created using withRemote() rather than just using RemoteGraph. withRemote() is
+        // the appropriate way for users to create a remote traversal. RemoteGraph has been deprecated for users
+        // concerns and will be likely relegated to the test module so that OptOut can continue to work and we can
+        // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
+        // moved with breaking change.
+        return super.traversal(graph).withRemote(((RemoteGraph) graph).getConnection());
     }
 
     public static void startServer() throws Exception {

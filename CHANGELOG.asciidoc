@@ -35,6 +35,7 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 * Added `Traversal.Admin.nextTraverser()` to get the next result in bulk-form (w/ default implementation).
 * Added `TraversalSource.getAnonymousTraversalClass()` (w/ default implementation).
 * Added `GremlinScriptEngine` interface which specifies a `eval(Bytecode, Bindings)` method.
+* Deprecated `RemoteGraph` in favor of `TraversalSource.withRemote()` as it is more technically correct to tie a remote traversal to the `TraversalSource` than a `Graph` instance.
 * `GremlinGroovyScriptEngine` implements `GremlinScriptEngine`.
 * Added `GremlinJythonScriptEngine` which implements `GremlinScriptEngine`.
 * Removed support for submitting a Java serialized `Traversal` to Gremlin Server.
