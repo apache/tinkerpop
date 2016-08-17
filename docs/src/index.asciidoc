@@ -1,0 +1,87 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500]
+
+*x.y.z*
+
+TinkerPop Compendium
+====================
+
+image::tinkerpop-reading.png[width=800,align="center"]
+
+The primary documentation for Apache TinkerPop is the link:http://tinkerpop.apache.org/docs/x.y.z/reference[Reference Documentation],
+which provides the most complete guide to TinkerPop usage. All other documentation tends to exist in support of that
+reference guide. Other documentation tends to fall into one of these other categories:
+
+1. <<tutorials,Tutorials>> - Brief but detailed explanations of specific technologies, patterns, use cases or best practices related
+to TinkerPop.
+1. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
+1. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement TinkerPop's
+interfaces).
+
+NOTE: Some of the documentation listed here leads to third-party web sites. Such documentation is supplemental to
+Apache TinkerPop. Third-party documentation is marked as such in the listings below.
+
+////
+Note the "+" following the link in each table entry - it forces an asciidoc line break after the link
+////
+
+[[tutorials]]
+Tutorials
+---------
+
+[width="100%",cols="<.<3,<.^10",grid="none"]
+|=========================================================
+|image:gremlin-gym-cropped.png[] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/[Getting Started with TinkerPop] +
+A gentle introduction to TinkerPop and the Gremlin traversal language that is divided into five, ten and fifteen minute tutorial blocks.
+|image:gremlin-dashboard.png[] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] +
+Provides a detailed look at The Gremlin Console and how it can be used when working with TinkerPop.
+|image:gremlin-lab-coat.png[width=200] |link:http://sql2gremlin.com/[Sql2Gremlin] +
+Learn Gremlin using typical patterns found when querying data with SQL. (*external*)
+^|image:gremlin-standing.png[width=125] |link:https://academy.datastax.com/resources/getting-started-graph-databases[Getting Started with Graph Databases] +
+A brief overview of RDBMS architecture in comparison to graph, basic graph terminology, a real-world use case for graph,
+and an overview of Gremlin. (*external*)
+|=========================================================
+
+[[publications]]
+Publications
+------------
+
+Unless otherwise noted, all "publications" are externally managed:
+
+* Rodriguez, M.A., link:http://www.datastax.com/dev/blog/the-mechanics-of-gremlin-olap["The Mechanics of Gremlin OLAP,"] DataStax Engineering Blog, April 2016.
+* Rodriguez, M.A., link:http://www.slideshare.net/slidarko/quantum-processes-in-graph-computing["Quantum Processes in Graph Computing,"] GraphDay '16 Presentation, Austin Texas, January 2016. [video presentation]
+* Rodriguez, M.A., Watkins, J.H., link:http://arxiv.org/abs/1511.06278["Quantum Walks with Gremlin,"] GraphDay '16 Proceedings, Austin Texas, January 2016.
+* Rodriguez, M.A., "(Keynote): link:http://www.slideshare.net/slidarko/acm-dbpl-keynote-the-graph-traversal-machine-and-language[The Gremlin Graph Traversal Machine and Language,"] ACM Database Programming Language Conference Presentation, October 2015.
+* Rodriguez, M.A., link:http://arxiv.org/abs/1508.03843["The Gremlin Graph Traversal Machine and Language,"] ACM Database Programming Languages Conference Proceedings, October 2015.
+* Mallette, S.P., link:http://www.slideshare.net/StephenMallette/tinkerpopfinal["What's New In Apache TinkerPop?,"] Cassandra Summit, September 2015.
+* Rodriguez, M.A., Kuppitz, D., link:http://www.datastax.com/dev/blog/the-benefits-of-the-gremlin-graph-traversal-machine["The Benefits of the Gremlin Graph Traversal Machine,"] DataStax Engineering Blog, September 2015.
+* Rodriguez, M.A., Kuppitz, D., link:http://www.slideshare.net/slidarko/the-gremlin-traversal-language["The Gremlin Graph Traversal Language,"] 2015 NoSQLNow Conference, August 2015.
+* Rodriguez, M.A., Kuppitz, D., Yim, K., link:http://www.datastax.com/dev/blog/tales-from-the-tinkerpop["Tales from the TinkerPop,"] DataStax Engineering Blog, July 2015.
+
+[[developer]]
+Developer
+---------
+
+[width="100%",cols="<.<3,<.^10",grid="none"]
+|=========================================================
+|image:business-gremlin.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/[Contributors] +
+Provides information on ways to contribute to TinkerPop as well as details on building the project and other specific information for contributors.
+|image:tinkerpop-enabled.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Providers] +
+Documentation for providers who implement the TinkerPop interfaces, develop plugins or drivers, or provide other third-party libraries for TinkerPop.
+|=========================================================
