@@ -81,6 +81,7 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -126,6 +127,7 @@ public final class CoreImports {
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
         CLASS_IMPORTS.add(RemoteGraph.class);
+        CLASS_IMPORTS.add(EmptyGraph.class);
         // io
         CLASS_IMPORTS.add(GraphReader.class);
         CLASS_IMPORTS.add(GraphWriter.class);
