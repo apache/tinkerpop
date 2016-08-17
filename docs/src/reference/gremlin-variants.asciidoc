@@ -61,13 +61,13 @@ Gremlin-Python users will typically make use of the following classes.
 [source,python]
 >>> from gremlin_python import statics
 >>> from gremlin_python.structure.graph import Graph
+>>> from gremlin_python.process.graph_traversal import __
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 
 In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
-The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any <<connecting-via-remotegraph,`RemoteConnection`>>-enabled server).
-The `gremlin_rest_driver` is provided with Apache TinkerPop and it serves as a simple (though verbose) driver that sends traversals to GremlinServer
-via HTTP POST (using link:http://docs.python-requests.org/[requests]) and in return, is provided <<graphson-reader-writer,GraphSON>>-encoded results.
-`DriverRemoteConnection` extends the abstract class `RemoteConnection` in `gremlin_python.driver`.
+The `GraphTraversalSource` requires a driver in order to communicate with <<gremlin-server,GremlinServer>> (or any
+<<connecting-via-remotegraph,`RemoteConnection`>>-enabled server). The `gremlin_python.driver.driver_remote_connection`
+is provided with Apache TinkerPop's Gremlin-Python distribution.
 
 IMPORTANT: For developers wishing to provide another *driver implementation*, be sure to extend `RemoteConnection` in
 `gremlin_python.driver` so it can then be used by Gremlin-Python's `GraphTraversal`.
