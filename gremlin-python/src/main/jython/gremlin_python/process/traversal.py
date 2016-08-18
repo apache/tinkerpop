@@ -186,6 +186,8 @@ class P(object):
       return P("_and", arg, self)
    def _or(self, arg):
       return P("_or", arg, self)
+   def __repr__(self):
+      return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 
 def _not(*args):
       return P._not(*args)
@@ -326,6 +328,9 @@ class Bytecode(object):
             return Binding(arg[0],arg[1])
         else:
             return arg
+
+    def __repr__(self):
+        return str(self.source_instructions) + str(self.step_instructions)
 
 '''
 BINDING
