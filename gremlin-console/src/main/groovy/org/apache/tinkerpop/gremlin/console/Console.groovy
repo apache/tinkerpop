@@ -68,12 +68,33 @@ class Console {
     public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
     private static final int DEFAULT_ITERATION_MAX = 100
     private static int maxIteration = DEFAULT_ITERATION_MAX
+    
+	public static final String PREF_GREMLIN_COLOR = "gremlin.color"
+    def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "green") }
+	
+	public static final String PREF_ERROR_COLOR = "error.color"
+    def errorColor = { Preferences.get(PREF_ERROR_COLOR, "bold,red") }
+	
+	public static final String PREF_INFO_COLOR = "info.color"
+    def infoColor = { Preferences.get(PREF_INFO_COLOR, "reset") }
+	
+	public static final String PREF_INPUT_PROMPT_COLOR = "input.prompt.color"
+    def inputPromptColor = { Preferences.get(PREF_INPUT_PROMPT_COLOR, "white") }
+	
+	public static final String PREF_RESULT_PROMPT_COLOR = "result.prompt.color"
+    def resultPromptColor = { Preferences.get(PREF_RESULT_PROMPT_COLOR, "white") }
+    
+	public static final String PREF_EMPTY_RESULT_COLOR = "empty.result.indicator"
+	def emptyResult = { Preferences.get(PREF_EMPTY_RESULT_COLOR, "null") }
+	
+	public static final String PREF_INPUT_PROMPT = "input.prompt"
+    def inputPrompt = { Preferences.get(PREF_INPUT_PROMPT, "gremlin>") }
+    
+	public static final String PREF_RESULT_PROMPT = "result.prompt"
+    static def resultPrompt = { Preferences.get(PREF_RESULT_PROMPT, "==>") }
 
-    private static final String STANDARD_INPUT_PROMPT = "gremlin> "
-    private static final String STANDARD_RESULT_PROMPT = "==>"
     private static final String IMPORT_SPACE = "import "
     private static final String IMPORT_STATIC_SPACE = "import static "
-    private static final String NULL = "null"
     private static final String ELLIPSIS = "..."
 
     private Iterator tempIterator = Collections.emptyIterator()
@@ -96,12 +117,12 @@ class Console {
 
         if (!io.quiet) {
             io.out.println()
-            io.out.println("         " + ansi().fg(Ansi.Color.GREEN).a("\\").fg(Ansi.Color.YELLOW).a(",").fg(Ansi.Color.GREEN).a(",").fg(Ansi.Color.YELLOW).a(",").fg(Ansi.Color.GREEN).a("/").reset())
-            io.out.println("         " + ansi().fg(Ansi.Color.GREEN).a("(o o)").reset())
-            io.out.println(ansi().fg(Ansi.Color.BLUE).a("-----").fg(Ansi.Color.GREEN).a("oOOo").fg(Ansi.Color.BLUE).a("-").fg(Ansi.Color.GREEN).a("(3)").fg(Ansi.Color.BLUE).a("-").fg(Ansi.Color.GREEN).a("oOOo").fg(Ansi.Color.BLUE).a("-----").reset())
+            io.out.println(String.format("@|%s          \\,,,/|@", gremlinColor.call()))
+            io.out.println(String.format("@|%s          (o o)|@", gremlinColor.call()))
+            io.out.println(String.format("@|%s -----oOOo-(3)-oOOo-----|@", gremlinColor.call()))
         }
 
-        maxIteration = Integer.parseInt(Preferences.get(PREFERENCE_ITERATION_MAX, Integer.toString(DEFAULT_ITERATION_MAX)))
+        maxIteration = Preferences.get(PREFERENCE_ITERATION_MAX, DEFAULT_ITERATION_MAX.toString()).toInteger()
         Preferences.addChangeListener(new PreferenceChangeListener() {
             @Override
             void preferenceChange(PreferenceChangeEvent evt) {
@@ -142,7 +163,7 @@ class Console {
             groovy.setHistory(history)
             runner.setHistory(history)
         } catch (IOException ignored) {
-            io.err.println("Unable to create history file: " + ConsoleFs.HISTORY_FILE)
+            io.err.println(String.format("@|%s Unable to create history file: %s |@ ", errorColor.call(), ConsoleFs.HISTORY_FILE))
         }
 
         GremlinLoader.load()
@@ -158,7 +179,7 @@ class Console {
                     pluggedIn.activate()
 
                     if (!io.quiet)
-                        io.out.println("plugin activated: " + plugin.getName())
+                        io.out.println(String.format("@|%s plugin activated: %s |@", infoColor.call(), plugin.getName()))
                 }
             }
         }
@@ -193,7 +214,7 @@ class Console {
             groovy.setResultHook(handleResultShowNothing)
     }
 
-    private def handlePrompt = { interactive ? STANDARD_INPUT_PROMPT : "" }
+    private def handlePrompt = { interactive ? Ansi.ansi().render(String.format("@|%s %s |@", inputPromptColor.call(), inputPrompt.call())) : "" }
 
     private def handleResultShowNothing = { args -> null }
 
@@ -210,11 +231,11 @@ class Console {
                 int counter = 0;
                 while (this.tempIterator.hasNext() && (maxIteration == -1 || counter < maxIteration)) {
                     final Object object = this.tempIterator.next()
-                    io.out.println(buildResultPrompt() + ((null == object) ? NULL : object.toString()))
+                    io.out.println(String.format("@|%s %s|@", resultPromptColor.call(), (buildResultPrompt() + ((null == object) ? emptyResult.doCall() : object.toString()))))
                     counter++;
                 }
                 if (this.tempIterator.hasNext())
-                    io.out.println(ELLIPSIS);
+                    io.out.println(String.format("@|%s %s|@", resultPromptColor.call(),ELLIPSIS));
                 this.tempIterator = Collections.emptyIterator();
                 return null
             } else {
@@ -255,10 +276,10 @@ class Console {
                         }
                     } else if (result instanceof TraversalExplanation) {
                         final int width = TerminalFactory.get().getWidth();
-                        io.out.println(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))
+                        io.out.println(String.format("@|%s %s|@", resultPromptColor.call(),(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
-                        io.out.println(buildResultPrompt() + ((null == result) ? NULL : result.toString()))
+                        io.out.println(String.format("@|%s %s|@", resultPromptColor.call(),(buildResultPrompt() + ((null == result) ? emptyResult.doCall() : result.toString()))))
                         return null
                     }
                 } catch (final Exception e) {
@@ -277,14 +298,14 @@ class Console {
                 String message = e.getMessage()
                 if (null != message) {
                     message = message.replace("startup failed:", "")
-                    io.err.println("@|bold,red " + message.trim() +" |@ ")
+                    io.err.println(String.format("@|%s %s |@", errorColor.call(), message.trim()))
                 } else {
-                    io.err.println("@|bold,red " + e + " |@ ")
+                    io.err.println(String.format("@|%s %s |@", errorColor.call(),e))
                 }
 
                 if (interactive) {
-                    io.err.print("@|bold Type ':help' or ':h' for help.|@ \n")
-                    io.err.print("@|bold,red Display stack trace? [yN]|@ ")
+                    io.err.println(String.format("@|%s %s |@", infoColor.call(),"Type ':help' or ':h' for help."))
+                    io.err.print(String.format("@|%s %s |@", errorColor.call(), "Display stack trace? [yN]"))
                     io.err.flush()
                     String line = new BufferedReader(io.in).readLine()
                     if (null == line)
@@ -299,11 +320,11 @@ class Console {
                     System.exit(1)
                 }
             } catch (Exception ignored) {
-                io.err.println("@|bold,red An undefined error has occurred: " + err + "|@ ")
+                io.err.println(String.format("@|%s %s |@", errorColor.call(), "An undefined error has occurred: " + err))
                 if (!interactive) System.exit(1)
             }
         } else {
-            io.err.println("@|bold,red An undefined error has occurred: " + err.toString() + "|@ ")
+            io.err.println(String.format("@|%s %s |@", errorColor.call(), "An undefined error has occurred: " + err.toString()))
             if (!interactive) System.exit(1)
         }
 
@@ -319,7 +340,7 @@ class Console {
         if (groovyshellEnv != null)
             return groovyshellEnv
 
-        return STANDARD_RESULT_PROMPT
+        return resultPrompt.call()
     }
 
     private void executeInShell(final List<String> scriptAndArgs) {
@@ -341,7 +362,7 @@ class Console {
                     lineNumber++
                     groovy.execute(line)
                 } catch (Exception ex) {
-                    io.err.println("Error in $scriptFile at [$lineNumber: $line] - ${ex.message}")
+                    io.err.println(String.format("@|%s %s |@", errorColor.call(), "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
                     if (interactive)
                         break
                     else {
@@ -354,10 +375,10 @@ class Console {
 
             if (!interactive) System.exit(0)
         } catch (FileNotFoundException ignored) {
-            io.err.println("Gremlin file not found at [$scriptFile].")
+            io.err.println(String.format("@|%s %s |@", errorColor.call(), "Gremlin file not found at [$scriptFile]."))
             if (!interactive) System.exit(1)
         } catch (Exception ex) {
-            io.err.println("Failure processing Gremlin script [$scriptFile] - ${ex.message}")
+            io.err.println(String.format("@|%s %s |@", errorColor.call(), "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
             if (!interactive) System.exit(1)
         }
     }

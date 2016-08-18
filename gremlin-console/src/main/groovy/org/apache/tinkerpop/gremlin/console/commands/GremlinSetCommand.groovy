@@ -61,6 +61,14 @@ class GremlinSetCommand extends SetCommand {
 
             // add Gremlin Console specific preferences here
             set << Console.PREFERENCE_ITERATION_MAX
+			set << Console.PREF_GREMLIN_COLOR
+			set << Console.PREF_ERROR_COLOR			
+			set << Console.PREF_INFO_COLOR			
+			set << Console.PREF_INPUT_PROMPT_COLOR			
+			set << Console.PREF_RESULT_PROMPT_COLOR			
+			set << Console.PREF_EMPTY_RESULT_COLOR			
+			set << Console.PREF_INPUT_PROMPT			
+			set << Console.PREF_RESULT_PROMPT
 
             return set.toList()
         }
