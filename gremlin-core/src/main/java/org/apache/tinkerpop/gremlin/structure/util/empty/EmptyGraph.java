@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -94,6 +95,11 @@ public final class EmptyGraph implements Graph {
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return Collections.emptyIterator();
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.graphString(this, "vertices: 0 edges: 0");
     }
 
     /**
