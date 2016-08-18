@@ -876,7 +876,6 @@ then re-use it.
 
 [gremlin-groovy]
 ----
-import org.apache.tinkerpop.gremlin.structure.util.empty.*
 cluster = Cluster.open('conf/remote-objects.yaml')
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
@@ -890,6 +889,26 @@ the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
 IMPORTANT: `RemoteGraph` uses the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable the
 retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling eviction
 times and sizing) can be done in the Gremlin Server configuration file as described <<traversalopprocessor, here>>.
+
+Finally, Gremlin `Bytecode` supports the encoding of bindings which allow GremlinServer to cache traversals that will
+be reused over and over again save that some parameterization may change. Thus, instead of translating, compiling, and
+then executing each submitted bytecode, it is possible to simply execute. To express bindings in Gremlin-Java and
+Gremlin-Groovy, use the `withBindings()` traversal source method.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open('conf/remote-objects.yaml')
+b = new Bindings()
+g = EmptyGraph.instance().traversal().withBindings(b).withRemote(DriverRemoteConnection.using(cluster, "g"))
+g.V(b.of('id',1)).out('created').values('name')
+g.V(b.of('id',4)).out('created').values('name')
+g.V(b.of('id',4)).out('created').values('name').getBytecode()
+g.V(b.of('id',4)).out('created').values('name').getBytecode().getBindings()
+cluster.close()
+----
+
+Both traversals are abstractly defined as `g.V(id).out('created').values('name')` and thus, the first submission
+can be cached for faster evaluation on the next submission.
 
 Configuring
 ~~~~~~~~~~~

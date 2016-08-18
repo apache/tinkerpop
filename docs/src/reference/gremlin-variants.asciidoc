@@ -169,8 +169,8 @@ That is, without the `__.`-prefix.
 g.V().repeat(out()).times(2).name.fold().toList()
 ----
 
-RemoteConnection Bindings
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Bindings
+~~~~~~~~
 
 When a traversal bytecode is sent over a `RemoteConnection` (e.g. GremlinServer), it will be translated, compiled, and then executed.
 If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
@@ -191,12 +191,12 @@ in statically typed languages where bindings need to have the same typing as the
 The Lambda Solution
 ~~~~~~~~~~~~~~~~~~~
 
-Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is extremely difficult.
-In Gremlin-Python, a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda]
-should be represented as a zero-arg callable that returns a string representation of a lambda.
-The default lambda language is `gremlin-python` and can be changed via `gremlin_python.statics.default_lambda_language.`
-When the lambda is represented in `Bytecode` its language is encoded such that the remote connection host can infer
-which translator and ultimate execution engine to use.
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most language do not support lambda introspection and thus, code analysis. In Gremlin-Python,
+a link:https://docs.python.org/2/reference/expressions.html#lambda[Python lambda] should be represented as a zero-arg callable
+that returns a string representation of a lambda. The default lambda language is `gremlin-python` and can be changed via
+`gremlin_python.statics.default_lambda_language`. When the lambda is represented in `Bytecode` its language is encoded
+such that the remote connection host can infer which translator and ultimate execution engine to use.
 
 [gremlin-python,modern]
 ----
