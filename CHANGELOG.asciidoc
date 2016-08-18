@@ -30,7 +30,7 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 * Added `Bytecode` which specifies the instructions and arguments used to construct a traversal.
 * Created an experimental GraphSON representation of `Bytecode` that will be considered unstable until 3.3.0.
 * Added `Translator` which allows from the translation of `Bytecode` into some other form (e.g. script, `Traversal`, etc.).
-* Added `JavaTranslator`, `GroovyTranslator`, and `PythonTranslator` for translating `Bytecode` into the respective languages.
+* Added `JavaTranslator`, `GroovyTranslator`, `PythonTranslator`, and `JythonTranslator` for translating `Bytecode` accordingly.
 * Added `TranslationStrategy` to `gremlin-test` so translators can be tested against the the process test suite.
 * Added `Traversal.Admin.nextTraverser()` to get the next result in bulk-form (w/ default implementation).
 * Added `TraversalSource.getAnonymousTraversalClass()` (w/ default implementation).
