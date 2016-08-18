@@ -97,6 +97,7 @@ class Console {
             io.out.println("         \\,,,/")
             io.out.println("         (o o)")
             io.out.println("-----oOOo-(3)-oOOo-----")
+            io.out.println("Type ':help' or ':h' for help.")
         }
 
         maxIteration = Integer.parseInt(Preferences.get(PREFERENCE_ITERATION_MAX, Integer.toString(DEFAULT_ITERATION_MAX)))
