@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import java.io.File;
@@ -35,6 +36,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 /**
@@ -239,6 +241,13 @@ public class GraphFactoryTest {
         GraphFactory.open(conf);
     }
 
+    @Test
+    public void shouldCreateAnEmptyGraphInstance() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(Graph.GRAPH, EmptyGraph.class.getName());
+        final Graph graph = GraphFactory.open(conf);
+        assertSame(EmptyGraph.instance(), graph);
+    }
 
     public static class MockGraphWithoutOpen implements Graph {
         @Override
