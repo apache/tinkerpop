@@ -42,6 +42,8 @@ import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.codehaus.groovy.tools.shell.util.HelpFormatter
 import org.codehaus.groovy.tools.shell.util.Preferences
 import org.fusesource.jansi.Ansi
+import static org.fusesource.jansi.Ansi.ansi
+import org.fusesource.jansi.Ansi.Color
 import org.fusesource.jansi.AnsiConsole
 
 import java.util.prefs.PreferenceChangeEvent
@@ -94,9 +96,9 @@ class Console {
 
         if (!io.quiet) {
             io.out.println()
-            io.out.println("         \\,,,/")
-            io.out.println("         (o o)")
-            io.out.println("-----oOOo-(3)-oOOo-----")
+            io.out.println("         " + ansi().fg(Ansi.Color.GREEN).a("\\").fg(Ansi.Color.YELLOW).a(",").fg(Ansi.Color.GREEN).a(",").fg(Ansi.Color.YELLOW).a(",").fg(Ansi.Color.GREEN).a("/").reset())
+            io.out.println("         " + ansi().fg(Ansi.Color.GREEN).a("(o o)").reset())
+            io.out.println(ansi().fg(Ansi.Color.BLUE).a("-----").fg(Ansi.Color.GREEN).a("oOOo").fg(Ansi.Color.BLUE).a("-").fg(Ansi.Color.GREEN).a("(3)").fg(Ansi.Color.BLUE).a("-").fg(Ansi.Color.GREEN).a("oOOo").fg(Ansi.Color.BLUE).a("-----").reset())
         }
 
         maxIteration = Integer.parseInt(Preferences.get(PREFERENCE_ITERATION_MAX, Integer.toString(DEFAULT_ITERATION_MAX)))
@@ -275,13 +277,14 @@ class Console {
                 String message = e.getMessage()
                 if (null != message) {
                     message = message.replace("startup failed:", "")
-                    io.err.println(message.trim())
+                    io.err.println("@|bold,red " + message.trim() +" |@ ")
                 } else {
-                    io.err.println(e)
+                    io.err.println("@|bold,red " + e + " |@ ")
                 }
 
                 if (interactive) {
-                    io.err.print("Display stack trace? [yN] ")
+                    io.err.print("@|bold Type ':help' or ':h' for help.|@ \n")
+                    io.err.print("@|bold,red Display stack trace? [yN]|@ ")
                     io.err.flush()
                     String line = new BufferedReader(io.in).readLine()
                     if (null == line)
@@ -296,11 +299,11 @@ class Console {
                     System.exit(1)
                 }
             } catch (Exception ignored) {
-                io.err.println("An undefined error has occurred: " + err)
+                io.err.println("@|bold,red An undefined error has occurred: " + err + "|@ ")
                 if (!interactive) System.exit(1)
             }
         } else {
-            io.err.println("An undefined error has occurred: " + err.toString())
+            io.err.println("@|bold,red An undefined error has occurred: " + err.toString() + "|@ ")
             if (!interactive) System.exit(1)
         }
 
@@ -379,12 +382,17 @@ class Console {
             D(longOpt: 'debug', "Enabled debug Console output")
             i(longOpt: 'interactive', argName: "SCRIPT ARG1 ARG2 ...", args: Option.UNLIMITED_VALUES, valueSeparator: ' ' as char, "Execute the specified script and leave the console open on completion")
             e(longOpt: 'execute', argName: "SCRIPT ARG1 ARG2 ...", args: Option.UNLIMITED_VALUES, valueSeparator: ' ' as char, "Execute the specified script (SCRIPT ARG1 ARG2 ...) and close the console on completion")
+            C(longOpt: 'color', "Disable use of ANSI colors")
         }
         OptionAccessor options = cli.parse(args)
 
         if (options == null) {
             // CliBuilder prints error, but does not exit
             System.exit(22) // Invalid Args
+        }
+
+        if (options.C) {
+            Ansi.enabled = false
         }
 
         if (options.h) {
