@@ -25,7 +25,8 @@ from gremlin_python.process.traversal import TraversalStrategies
 
 class Graph(object):
     def __init__(self):
-        TraversalStrategies.global_cache[self.__class__] = TraversalStrategies()
+        if self.__class__ not in TraversalStrategies.global_cache:
+            TraversalStrategies.global_cache[self.__class__] = TraversalStrategies()
 
     def traversal(self):
         return GraphTraversalSource(self, TraversalStrategies.global_cache[self.__class__])
