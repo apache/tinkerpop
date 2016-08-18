@@ -64,6 +64,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -93,6 +94,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
         imports.add(DetachedElement.class.getPackage().getName() + DOT_STAR);
         imports.add(RemoteGraph.class.getPackage().getName() + DOT_STAR);
+        imports.add(EmptyGraph.class.getPackage().getName() + DOT_STAR);
         staticImports.add(T.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);
