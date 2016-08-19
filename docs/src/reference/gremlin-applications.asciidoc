@@ -150,19 +150,48 @@ some other useful operations.  The following table outlines the most commonly us
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
 |=========================================================
 
-Gremlin Console adds a special `max-iteration` preference that can be configured with the standard `:set` command
-from the Groovy Shell.  Use this setting to control the maximum number of results that the Console will display.
-Consider the following usage:
+Console Preferences
+~~~~~~~~~~~~~~~~~~~
 
-[gremlin-groovy]
-----
-:set max-iteration 10
-(0..200)
-:set max-iteration 5
-(0..200)
-----
+Preferences are set with `:set name value`.  Value can not contain spaces. Preferences are removed by `:purge preferences`
 
-If this setting is not present, the console will default the maximum to 100 results.
+[width="100%",cols="3,^2,10",options="header"]
+|=========================================================
+|Preference |Type |Description
+|max-iteration | int | Controls the maximum number of results that the Console will display. Default: 100 results.
+|gremlin.color | colors | Color of the ASCII art gremlin on startup.
+|info.color | colors | Color of "info" type messages.
+|error.color | colors | Color of "error" type messages.
+|vertex.color | colors | Color of vertices results.
+|edge.color | colors | Color of edges in results.
+|string.color | colors | Colors of strings in results.
+|number.color | colors | Color of numbers in results.
+|T.color | colors| Color of Tokens in results.
+|input.prompt.color | colors | Color of the input prompt.
+|result.prompt.color | colors | Color of the result prompt.
+|input.prompt | string | Text of the input prompt.
+|result.prompt | string | Text of the result prompt.
+|empty.result.indicator | string | Text of the void/no results indicator.
+|=========================================================
+
+Colors can contain a comma-separated combination of 1 each of foreground, background, and attribute.
+
+[width="100%",cols="3,^2,10",options="header"]
+|=========================================================
+|Foreground |Background |Attributes
+|black|bg_black|bold
+|blue|bg_blue|faint
+|cyan|bg_cyan|underline
+|green|bg_green|
+|magenta|bg_magenta|
+|red|bg_red|
+|white|bg_white|
+|yellow|bg_yellow|
+|=========================================================
+
+Example:
+```:set gremlin.color bg_black,green,bold```
+
 
 Dependencies and Plugin Usage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1838,7 +1867,7 @@ g.V.map{it.name}  // sugar
 Utilities Plugin
 ~~~~~~~~~~~~~~~~
 
-The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in the console.  
+The Utilities Plugin provides various functions, helper methods and imports of external classes that are useful in the console.
 
 NOTE: The Utilities Plugin is enabled in the Gremlin Console by default.
 
