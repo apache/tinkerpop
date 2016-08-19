@@ -153,7 +153,7 @@ some other useful operations.  The following table outlines the most commonly us
 Console Preferences
 ~~~~~~~~~~~~~~~~~~~
 
-Preferences are set with `:set name value`.  Value can not contain spaces. Preferences are removed by `:purge preferences`
+Preferences are set with `:set name value`.  Values can contain spaces when quoted. Preferences are removed by `:purge preferences`
 
 [width="100%",cols="3,^2,10",options="header"]
 |=========================================================
