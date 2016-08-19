@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Introduced GraphSON 2.0.
+* Deprecated `embedTypes` on the builder for `GraphSONMapper`.
 * Defaulted the `gremlinPool` setting in Gremlin Server to be zero, which will instructs it to use `Runtime.availableProcessors()` for that settings.
 * Changed scope of log4j dependencies so that they would only be used in tests and the binary distributions of Gremlin Console and Server.
 * Deprecated `Io.Builder.registry()` in favor of the newly introduced `Io.Builder.onMapper()`.

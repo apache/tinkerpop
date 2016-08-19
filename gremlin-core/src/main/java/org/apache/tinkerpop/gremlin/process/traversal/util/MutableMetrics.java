@@ -42,6 +42,18 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         this.name = name;
     }
 
+    // create a MutableMetrics from an Immutable one.
+    // needed that for tests, don't know if it is worth keeping it public.
+    // TODO: see if it's ok to add this
+    public MutableMetrics(Metrics other) {
+        this.id = other.getId();
+        this.name = other.getName();
+        this.annotations.putAll(other.getAnnotations());
+        this.durationNs = other.getDuration(TimeUnit.NANOSECONDS);
+        other.getCounts().forEach((key, count) -> this.counts.put(key, new AtomicLong(count)));
+        other.getNested().forEach(nested -> this.addNested(new MutableMetrics(nested)));
+    }
+
     public void addNested(MutableMetrics metrics) {
         this.nested.put(metrics.getId(), metrics);
     }

@@ -33,9 +33,9 @@ import java.util.Map;
 /**
  * GraphSON serializers for classes in {@code java.util.*}.
  */
-final class JavaUtilSerializers {
+final class JavaUtilSerializersV1d0 {
 
-    private JavaUtilSerializers() {}
+    private JavaUtilSerializersV1d0() {}
 
     final static class MapEntryJacksonSerializer extends StdSerializer<Map.Entry> {
 

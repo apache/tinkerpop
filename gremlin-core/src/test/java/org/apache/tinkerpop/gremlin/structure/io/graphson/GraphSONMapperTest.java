@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -35,12 +37,25 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class GraphSONMapperTest {
-    private final ObjectMapper mapper = GraphSONMapper.build().embedTypes(false).create().createMapper();
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {GraphSONMapper.build().version(GraphSONVersion.V1_0).embedTypes(false).create().createMapper()},
+                {GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
+        });
+    }
+
+    @Parameterized.Parameter
+    public ObjectMapper mapper;
+
 
     @Test
     public void shouldHandleTraversalExplanation() throws Exception {

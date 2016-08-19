@@ -55,4 +55,41 @@ public final class GraphSONUtil {
             serializer.serialize(object, jsonGenerator, serializerProvider);
         }
     }
+
+    public static void writeStartObject(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+        if (typeSerializer != null)
+            typeSerializer.writeTypePrefixForObject(o, jsonGenerator);
+        else
+            jsonGenerator.writeStartObject();
+    }
+
+    public static void writeEndObject(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+        if (typeSerializer != null)
+            typeSerializer.writeTypeSuffixForObject(o, jsonGenerator);
+        else
+            jsonGenerator.writeEndObject();
+    }
+
+    public static void writeStartArray(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+        if (typeSerializer != null)
+            typeSerializer.writeTypePrefixForArray(o, jsonGenerator);
+        else
+            jsonGenerator.writeStartArray();
+    }
+
+
+    public static void writeEndArray(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+        if (typeSerializer != null)
+            typeSerializer.writeTypeSuffixForArray(o, jsonGenerator);
+        else
+            jsonGenerator.writeEndArray();
+    }
+
+    static void safeWriteObjectField(JsonGenerator jsonGenerator, String key, Object value) {
+        try {
+            jsonGenerator.writeObjectField(key, value);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

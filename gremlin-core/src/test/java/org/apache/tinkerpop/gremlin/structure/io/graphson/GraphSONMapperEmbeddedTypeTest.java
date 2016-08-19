@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,11 +39,26 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class GraphSONMapperEmbeddedTypeTest {
-    private final ObjectMapper mapper = GraphSONMapper.build().embedTypes(true).create().createMapper();
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {GraphSONMapper.build().version(GraphSONVersion.V1_0).embedTypes(true).create().createMapper()},
+                {GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()
+                        .createMapper()},
+        });
+    }
+
+    @Parameterized.Parameter
+    public ObjectMapper mapper;
 
     @Test
     public void shouldHandleDuration()throws Exception  {
@@ -120,6 +135,40 @@ public class GraphSONMapperEmbeddedTypeTest {
     public void shouldHandleZonedOffset()throws Exception  {
         final ZoneOffset o  = ZonedDateTime.now().getOffset();
         assertEquals(o, serializeDeserialize(o, ZoneOffset.class));
+    }
+
+    @Test
+    public void shouldHandleMapWithTypesUsingEmbedTypeSetting() throws Exception {
+        final ObjectMapper mapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V1_0)
+                .typeInfo(TypeInfo.PARTIAL_TYPES)
+                .create()
+                .createMapper();
+
+        final Map<String,Object> m = new HashMap<>();
+        m.put("test", 100L);
+
+        final String json = mapper.writeValueAsString(m);
+        final Map read = mapper.readValue(json, HashMap.class);
+
+        assertEquals(100L, read.get("test"));
+    }
+
+    @Test
+    public void shouldNotHandleMapWithTypesUsingEmbedTypeSetting() throws Exception {
+        final ObjectMapper mapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V1_0)
+                .typeInfo(TypeInfo.NO_TYPES)
+                .create()
+                .createMapper();
+
+        final Map<String,Object> m = new HashMap<>();
+        m.put("test", 100L);
+
+        final String json = mapper.writeValueAsString(m);
+        final Map read = mapper.readValue(json, HashMap.class);
+
+        assertEquals(100, read.get("test"));
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
