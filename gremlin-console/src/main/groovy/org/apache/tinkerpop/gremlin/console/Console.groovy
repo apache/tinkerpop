@@ -66,7 +66,7 @@ class Console {
         AnsiConsole.systemInstall()
         // Register jline ansi detector
         Ansi.setDetector(new AnsiDetector())
-        Ansi.enabled = false
+        Ansi.enabled = true
     }
 
     public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
@@ -136,9 +136,9 @@ class Console {
 
         if (!io.quiet) {
             io.out.println()
-            io.out.println(ansiRender(gremlinColor, "         \\,,,/"))
-            io.out.println(ansiRender(gremlinColor, "         (o o)"))
-            io.out.println(ansiRender(gremlinColor, "-----oOOo-(3)-oOOo-----"))
+            io.out.println("         " + ansiRender(gremlinColor, "\\,,,/"))
+            io.out.println("         " + ansiRender(gremlinColor, "(o o)"))
+            io.out.println("" + ansiRender(gremlinColor, "-----oOOo-(3)-oOOo-----"))
         }
 
         maxIteration = Preferences.get(PREFERENCE_ITERATION_MAX, DEFAULT_ITERATION_MAX.toString()).toInteger()
