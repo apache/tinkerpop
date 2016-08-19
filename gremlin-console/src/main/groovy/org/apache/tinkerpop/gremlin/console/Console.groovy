@@ -300,7 +300,7 @@ class Console {
                         io.out.println(ansiRender(resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
-                        io.out.println(ansiRender(resultPromptColor,(buildResultPrompt() + ((null == result) ? emptyResult.doCall() : result.toString()))))
+                        io.out.println(ansiRender(resultPromptColor,(buildResultPrompt() + ((null == result) ? emptyResult.call() : result.toString()))))
                         return null
                     }
                 } catch (final Exception e) {
