@@ -252,9 +252,16 @@ class Bytecode(object):
     def __repr__(self):
         return str(self.source_instructions) + str(self.step_instructions)
 
+
 '''
-BINDING
+BINDINGS
 '''
+
+class Bindings(object):
+    def of(self,variable,value):
+        if not isinstance(variable, str):
+            raise TypeError("Variable must be str")
+        return (variable,value)
 
 class Binding(object):
     def __init__(self,variable,value):

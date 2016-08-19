@@ -34,5 +34,6 @@ from .traversal import Pop
 from .traversal import Scope
 from .traversal import T
 from .traversal import Traversal
+from .traversal import Bindings
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

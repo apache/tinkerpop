@@ -80,6 +80,9 @@ class GraphTraversalSource(object):
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
 
+  def withBindings(self, bindings):
+    return self
+
 
 class GraphTraversal(Traversal):
   def __init__(self, graph, traversal_strategies, bytecode):
