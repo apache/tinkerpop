@@ -17,8 +17,6 @@
 
 host: localhost
 port: 8182
-threadPoolWorker: 1
-gremlinPool: 8
 scriptEvaluationTimeout: 30000
 graphs: {
   graph: conf/tinkergraph-empty.properties}
@@ -36,7 +34,6 @@ serializers:
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 strictTransactionManagement: false
-threadPoolBoss: 1
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

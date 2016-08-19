@@ -25,8 +25,6 @@
 
 host: localhost
 port: 8182
-threadPoolWorker: 1
-gremlinPool: 8
 scriptEvaluationTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer
 graphs: {
@@ -59,7 +57,6 @@ metrics: {
   gangliaReporter: {enabled: false, interval: 180000, addressingMode: MULTICAST},
   graphiteReporter: {enabled: false, interval: 180000}}
 strictTransactionManagement: false
-threadPoolBoss: 1
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

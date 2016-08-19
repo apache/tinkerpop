@@ -82,6 +82,7 @@ public class GremlinServer {
     public GremlinServer(final Settings settings) {
         settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
         this.settings = settings;
+        provideDefaultForGremlinPoolSize(settings);
         this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
         if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
             logger.warn("cannot use epoll in non-linux env, falling back to NIO");
@@ -395,5 +396,10 @@ public class GremlinServer {
 
     private static void printHeader() {
         logger.info(getHeader());
+    }
+
+    private static void provideDefaultForGremlinPoolSize(final Settings settings) {
+        if (settings.gremlinPool == 0)
+            settings.gremlinPool = Runtime.getRuntime().availableProcessors();
     }
 }

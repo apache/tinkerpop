@@ -88,10 +88,10 @@ public class Settings {
 
     /**
      * Size of the Gremlin thread pool. This pool handles Gremlin script execution and other related "long-run"
-     * processing.  This setting should be sufficiently large to ensure that requests processed by the non-blocking
-     * worker threads are processed with limited queuing.  Defaults to 8.
+     * processing. Defaults to a setting of 0 which indicates the value should be set to
+     * {@code Runtime#availableProcessors()}.
      */
-    public int gremlinPool = 8;
+    public int gremlinPool = 0;
 
     /**
      * Size of the boss thread pool.  Defaults to 1 and should likely stay at 1.  The bossy thread accepts incoming

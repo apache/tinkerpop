@@ -44,6 +44,16 @@ Note that Gremlin Server and Gremlin Console explicitly package Log4j in their r
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1151[TINKERPOP-1151]
 
+Default for gremlinPool
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The `gremlinPool` setting in Gremlin Server is now defaulted to zero. When set to zero, Gremlin Server will use the
+value provided by `Runtime.availableProcessors()` to set the pool size. Note that the packaged YAML files no longer
+contain the thread pool settings as all are now driven by sensible defaults. Obviously these values can be added
+and overridden as needed.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1373[TINKERPOP-1373]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
