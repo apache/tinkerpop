@@ -36,9 +36,9 @@ import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
-import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
@@ -66,7 +66,7 @@ class Console {
         AnsiConsole.systemInstall()
         // Register jline ansi detector
         Ansi.setDetector(new AnsiDetector())
-        Ansi.enabled = true
+        Ansi.enabled = false
     }
 
     public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
@@ -74,25 +74,34 @@ class Console {
     private static int maxIteration = DEFAULT_ITERATION_MAX
     
 	public static final String PREF_GREMLIN_COLOR = "gremlin.color"
-    def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "green") }
+    def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
 	
 	public static final String PREF_VERTEX_COLOR = "vertex.color"
-	def vertexColor = { Preferences.get(PREF_GREMLIN_COLOR, "green") }
+	def vertexColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
 	
 	public static final String PREF_EDGE_COLOR = "edge.color"
-	def edgeColor = { Preferences.get(PREF_GREMLIN_COLOR, "bg_blue,bold") }
+	def edgeColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
 	
 	public static final String PREF_ERROR_COLOR = "error.color"
-    def errorColor = { Preferences.get(PREF_ERROR_COLOR, "bold,red") }
+    def errorColor = { Preferences.get(PREF_ERROR_COLOR, "reset") }
 	
 	public static final String PREF_INFO_COLOR = "info.color"
     def infoColor = { Preferences.get(PREF_INFO_COLOR, "reset") }
 	
+	public static final String PREF_STRING_COLOR = "string.color"
+	def stringColor = { Preferences.get(PREF_STRING_COLOR, "reset") }
+	
+	public static final String PREF_NUMBER_COLOR = "number.color"
+	def numberColor = { Preferences.get(PREF_NUMBER_COLOR, "reset") }
+	
+	public static final String PREF_T_COLOR = "T.color"
+	def tColor = { Preferences.get(PREF_T_COLOR, "reset") }
+	
 	public static final String PREF_INPUT_PROMPT_COLOR = "input.prompt.color"
-    def inputPromptColor = { Preferences.get(PREF_INPUT_PROMPT_COLOR, "white") }
+    def inputPromptColor = { Preferences.get(PREF_INPUT_PROMPT_COLOR, "reset") }
 	
 	public static final String PREF_RESULT_PROMPT_COLOR = "result.prompt.color"
-    def resultPromptColor = { Preferences.get(PREF_RESULT_PROMPT_COLOR, "white") }
+    def resultPromptColor = { Preferences.get(PREF_RESULT_PROMPT_COLOR, "reset") }
     
 	public static final String PREF_EMPTY_RESULT_COLOR = "empty.result.indicator"
 	def emptyResult = { Preferences.get(PREF_EMPTY_RESULT_COLOR, "null") }
@@ -242,26 +251,8 @@ class Console {
                 while (this.tempIterator.hasNext() && (maxIteration == -1 || counter < maxIteration)) {
                     final Object object = this.tempIterator.next()
 					String prompt = ansiRender(resultPromptColor, buildResultPrompt())
-					if (object instanceof Vertex) {
-						io.out.println(prompt + ansiRender(vertexColor, object.toString()))
-					} else if (object instanceof Edge) {
-						io.out.println(prompt + ansiRender(edgeColor, object.toString()))
-					} else if (object instanceof Path) {
-						List<String> buf = new ArrayList<>();
-						Path path = (Path) object
-						def pathIter = path.iterator()
-						while (pathIter.hasNext()) {
-							object = pathIter.next()
-							if (object instanceof Vertex) {
-								buf.add(ansiRender(vertexColor, object.toString()))
-							} else if (object instanceof Edge) {
-								buf.add(ansiRender(edgeColor, object.toString()))
-							}
-						}
-						io.out.println(prompt + "[" + buf.join(",") + "]")
-					} else {
-						io.out.println(ansiRender(resultPromptColor, (buildResultPrompt() + ((null == object) ? emptyResult.doCall() : object.toString()))))
-					}
+					String colorizedResult = colorizeResult(object)
+					io.out.println(prompt + ((null == object) ? emptyResult.call() : colorizedResult))
                     counter++;
                 }
                 if (this.tempIterator.hasNext())
@@ -319,6 +310,36 @@ class Console {
             }
         }
     }
+	
+	def colorizeResult = { object ->
+		if (object instanceof Vertex) {
+			 return ansiRender(vertexColor, object.toString())
+		} else if (object instanceof Edge) {
+			return ansiRender(edgeColor, object.toString())
+		} else if (object instanceof Iterable) {
+			List<String> buf = new ArrayList<>();
+			def pathIter = object.iterator()
+			while (pathIter.hasNext()) {
+				Object n = pathIter.next()
+				buf.add(colorizeResult(n))
+			}
+			return ("[" + buf.join(",") + "]")
+		} else if (object instanceof Map) {
+			List<String> buf = new ArrayList<>();
+			object.each{k, v ->
+				buf.add(colorizeResult(k) + ":" + colorizeResult(v))
+			}
+			return ("[" + buf.join(",") + "]")
+		} else if (object instanceof String) {
+			return ansiRender(stringColor, object)
+		} else if (object instanceof Number) {
+			return ansiRender(numberColor, object)
+		} else if (object instanceof T) {
+			return ansiRender(tColor, object)
+		} else {
+			return object.toString()
+		}
+	}
 
     private def handleError = { err ->
         this.tempIterator = Collections.emptyIterator();
@@ -413,7 +434,7 @@ class Console {
         }
     }
 	
-	def ansiRender = { color, text -> Ansi.ansi().render(String.format("@|%s %s|@", color.call(), text)) }
+	def ansiRender = { color, text -> Ansi.ansi().render(String.format("@|%s %s|@", color.call(), text)).toString() }
 
     public static void main(final String[] args) {
         // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated

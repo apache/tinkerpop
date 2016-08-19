@@ -71,7 +71,10 @@ class GremlinSetCommand extends SetCommand {
 			set << Console.PREF_RESULT_PROMPT
 			set << Console.PREF_EDGE_COLOR
 			set << Console.PREF_VERTEX_COLOR
-
+			set << Console.PREF_STRING_COLOR
+			set << Console.PREF_NUMBER_COLOR
+			set << Console.PREF_T_COLOR
+			
             return set.toList()
         }
 

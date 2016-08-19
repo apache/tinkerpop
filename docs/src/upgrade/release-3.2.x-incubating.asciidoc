@@ -54,6 +54,28 @@ and overridden as needed.
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1373[TINKERPOP-1373]
 
+New Console Preferences
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Colors
+
+* gremlin.color
+* info.color
+* error.color
+* input.prompt.color
+* result.prompt.color
+* vertex.color
+* edge.color
+* string.color
+* number.color
+* T.color (e.g. id, label)
+
+Prompts
+
+* input.prompt
+* result.prompt
+* empty.result.indicator
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
