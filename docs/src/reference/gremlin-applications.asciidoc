@@ -865,7 +865,6 @@ the `TraversalSource` be generated with `EmptyGraph` as follows:
 
 [gremlin-groovy]
 ----
-import org.apache.tinkerpop.gremlin.structure.util.empty.*
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
