@@ -18,8 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import static org.fusesource.jansi.Ansi.ansi
+
+import java.util.prefs.PreferenceChangeEvent
+import java.util.prefs.PreferenceChangeListener
+
 import jline.TerminalFactory
 import jline.console.history.FileHistory
+
 import org.apache.commons.cli.Option
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
@@ -30,7 +36,10 @@ import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.console.plugin.PluggedIn
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
+import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
+import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
 import org.codehaus.groovy.tools.shell.AnsiDetector
@@ -42,12 +51,7 @@ import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.codehaus.groovy.tools.shell.util.HelpFormatter
 import org.codehaus.groovy.tools.shell.util.Preferences
 import org.fusesource.jansi.Ansi
-import static org.fusesource.jansi.Ansi.ansi
-import org.fusesource.jansi.Ansi.Color
 import org.fusesource.jansi.AnsiConsole
-
-import java.util.prefs.PreferenceChangeEvent
-import java.util.prefs.PreferenceChangeListener
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -71,6 +75,12 @@ class Console {
     
 	public static final String PREF_GREMLIN_COLOR = "gremlin.color"
     def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "green") }
+	
+	public static final String PREF_VERTEX_COLOR = "vertex.color"
+	def vertexColor = { Preferences.get(PREF_GREMLIN_COLOR, "green") }
+	
+	public static final String PREF_EDGE_COLOR = "edge.color"
+	def edgeColor = { Preferences.get(PREF_GREMLIN_COLOR, "bg_blue,bold") }
 	
 	public static final String PREF_ERROR_COLOR = "error.color"
     def errorColor = { Preferences.get(PREF_ERROR_COLOR, "bold,red") }
@@ -117,9 +127,9 @@ class Console {
 
         if (!io.quiet) {
             io.out.println()
-            io.out.println(String.format("@|%s          \\,,,/|@", gremlinColor.call()))
-            io.out.println(String.format("@|%s          (o o)|@", gremlinColor.call()))
-            io.out.println(String.format("@|%s -----oOOo-(3)-oOOo-----|@", gremlinColor.call()))
+            io.out.println(ansiRender(gremlinColor, "         \\,,,/"))
+            io.out.println(ansiRender(gremlinColor, "         (o o)"))
+            io.out.println(ansiRender(gremlinColor, "-----oOOo-(3)-oOOo-----"))
         }
 
         maxIteration = Preferences.get(PREFERENCE_ITERATION_MAX, DEFAULT_ITERATION_MAX.toString()).toInteger()
@@ -163,7 +173,7 @@ class Console {
             groovy.setHistory(history)
             runner.setHistory(history)
         } catch (IOException ignored) {
-            io.err.println(String.format("@|%s Unable to create history file: %s |@ ", errorColor.call(), ConsoleFs.HISTORY_FILE))
+            io.err.println(ansiRender(errorColor, "Unable to create history file: " + ConsoleFs.HISTORY_FILE))
         }
 
         GremlinLoader.load()
@@ -179,7 +189,7 @@ class Console {
                     pluggedIn.activate()
 
                     if (!io.quiet)
-                        io.out.println(String.format("@|%s plugin activated: %s |@", infoColor.call(), plugin.getName()))
+                        io.out.println(ansiRender(infoColor, "plugin activated: " + plugin.getName()))
                 }
             }
         }
@@ -214,7 +224,7 @@ class Console {
             groovy.setResultHook(handleResultShowNothing)
     }
 
-    private def handlePrompt = { interactive ? Ansi.ansi().render(String.format("@|%s %s |@", inputPromptColor.call(), inputPrompt.call())) : "" }
+    private def handlePrompt = { interactive ? ansiRender(inputPromptColor, inputPrompt.call() + " ") : "" }
 
     private def handleResultShowNothing = { args -> null }
 
@@ -231,11 +241,31 @@ class Console {
                 int counter = 0;
                 while (this.tempIterator.hasNext() && (maxIteration == -1 || counter < maxIteration)) {
                     final Object object = this.tempIterator.next()
-                    io.out.println(String.format("@|%s %s|@", resultPromptColor.call(), (buildResultPrompt() + ((null == object) ? emptyResult.doCall() : object.toString()))))
+					String prompt = ansiRender(resultPromptColor, buildResultPrompt())
+					if (object instanceof Vertex) {
+						io.out.println(prompt + ansiRender(vertexColor, object.toString()))
+					} else if (object instanceof Edge) {
+						io.out.println(prompt + ansiRender(edgeColor, object.toString()))
+					} else if (object instanceof Path) {
+						List<String> buf = new ArrayList<>();
+						Path path = (Path) object
+						def pathIter = path.iterator()
+						while (pathIter.hasNext()) {
+							object = pathIter.next()
+							if (object instanceof Vertex) {
+								buf.add(ansiRender(vertexColor, object.toString()))
+							} else if (object instanceof Edge) {
+								buf.add(ansiRender(edgeColor, object.toString()))
+							}
+						}
+						io.out.println(prompt + "[" + buf.join(",") + "]")
+					} else {
+						io.out.println(ansiRender(resultPromptColor, (buildResultPrompt() + ((null == object) ? emptyResult.doCall() : object.toString()))))
+					}
                     counter++;
                 }
                 if (this.tempIterator.hasNext())
-                    io.out.println(String.format("@|%s %s|@", resultPromptColor.call(),ELLIPSIS));
+                    io.out.println(ansiRender(resultPromptColor,ELLIPSIS));
                 this.tempIterator = Collections.emptyIterator();
                 return null
             } else {
@@ -276,10 +306,10 @@ class Console {
                         }
                     } else if (result instanceof TraversalExplanation) {
                         final int width = TerminalFactory.get().getWidth();
-                        io.out.println(String.format("@|%s %s|@", resultPromptColor.call(),(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
+                        io.out.println(ansiRender(resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
-                        io.out.println(String.format("@|%s %s|@", resultPromptColor.call(),(buildResultPrompt() + ((null == result) ? emptyResult.doCall() : result.toString()))))
+                        io.out.println(ansiRender(resultPromptColor,(buildResultPrompt() + ((null == result) ? emptyResult.doCall() : result.toString()))))
                         return null
                     }
                 } catch (final Exception e) {
@@ -298,14 +328,14 @@ class Console {
                 String message = e.getMessage()
                 if (null != message) {
                     message = message.replace("startup failed:", "")
-                    io.err.println(String.format("@|%s %s |@", errorColor.call(), message.trim()))
+                    io.err.println(ansiRender(errorColor, message.trim()))
                 } else {
-                    io.err.println(String.format("@|%s %s |@", errorColor.call(),e))
+                    io.err.println(ansiRender(errorColor,e))
                 }
 
                 if (interactive) {
-                    io.err.println(String.format("@|%s %s |@", infoColor.call(),"Type ':help' or ':h' for help."))
-                    io.err.print(String.format("@|%s %s |@", errorColor.call(), "Display stack trace? [yN]"))
+                    io.err.println(ansiRender(infoColor,"Type ':help' or ':h' for help."))
+                    io.err.print(ansiRender(errorColor, "Display stack trace? [yN]"))
                     io.err.flush()
                     String line = new BufferedReader(io.in).readLine()
                     if (null == line)
@@ -320,11 +350,11 @@ class Console {
                     System.exit(1)
                 }
             } catch (Exception ignored) {
-                io.err.println(String.format("@|%s %s |@", errorColor.call(), "An undefined error has occurred: " + err))
+                io.err.println(ansiRender(errorColor, "An undefined error has occurred: " + err))
                 if (!interactive) System.exit(1)
             }
         } else {
-            io.err.println(String.format("@|%s %s |@", errorColor.call(), "An undefined error has occurred: " + err.toString()))
+            io.err.println(ansiRender(errorColor, "An undefined error has occurred: " + err.toString()))
             if (!interactive) System.exit(1)
         }
 
@@ -362,7 +392,7 @@ class Console {
                     lineNumber++
                     groovy.execute(line)
                 } catch (Exception ex) {
-                    io.err.println(String.format("@|%s %s |@", errorColor.call(), "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
+                    io.err.println(ansiRender(errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
                     if (interactive)
                         break
                     else {
@@ -375,13 +405,15 @@ class Console {
 
             if (!interactive) System.exit(0)
         } catch (FileNotFoundException ignored) {
-            io.err.println(String.format("@|%s %s |@", errorColor.call(), "Gremlin file not found at [$scriptFile]."))
+            io.err.println(ansiRender(errorColor, "Gremlin file not found at [$scriptFile]."))
             if (!interactive) System.exit(1)
         } catch (Exception ex) {
-            io.err.println(String.format("@|%s %s |@", errorColor.call(), "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
+            io.err.println(ansiRender(errorColor, "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
             if (!interactive) System.exit(1)
         }
     }
+	
+	def ansiRender = { color, text -> Ansi.ansi().render(String.format("@|%s %s|@", color.call(), text)) }
 
     public static void main(final String[] args) {
         // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
