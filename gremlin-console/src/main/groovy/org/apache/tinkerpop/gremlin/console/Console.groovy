@@ -77,10 +77,10 @@ class Console {
     def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
 	
 	public static final String PREF_VERTEX_COLOR = "vertex.color"
-	def vertexColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
+	def vertexColor = { Preferences.get(PREF_VERTEX_COLOR, "reset") }
 	
 	public static final String PREF_EDGE_COLOR = "edge.color"
-	def edgeColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
+	def edgeColor = { Preferences.get(PREF_EDGE_COLOR, "reset") }
 	
 	public static final String PREF_ERROR_COLOR = "error.color"
     def errorColor = { Preferences.get(PREF_ERROR_COLOR, "reset") }
@@ -103,8 +103,8 @@ class Console {
 	public static final String PREF_RESULT_PROMPT_COLOR = "result.prompt.color"
     def resultPromptColor = { Preferences.get(PREF_RESULT_PROMPT_COLOR, "reset") }
     
-	public static final String PREF_EMPTY_RESULT_COLOR = "empty.result.indicator"
-	def emptyResult = { Preferences.get(PREF_EMPTY_RESULT_COLOR, "null") }
+	public static final String PREF_EMPTY_RESULT_IND = "empty.result.indicator"
+	def emptyResult = { Preferences.get(PREF_EMPTY_RESULT_IND, "null") }
 	
 	public static final String PREF_INPUT_PROMPT = "input.prompt"
     def inputPrompt = { Preferences.get(PREF_INPUT_PROMPT, "gremlin>") }
