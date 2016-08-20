@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -84,7 +85,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
              gremlinExecutorService,
              scheduledExecutorService,
              scheduleExecutorServiceClass,
-             new GraphManager(settings));
+             null);
     }
     /**
      * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
@@ -94,8 +95,27 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
      */
     public ServerGremlinExecutor(final Settings settings, final ExecutorService gremlinExecutorService,
                                  final T scheduledExecutorService, final Class<T> scheduleExecutorServiceClass,
-                                 final GraphManager graphManager) {
+                                 GraphManager graphManager) {
         this.settings = settings;
+
+        if (null == graphManager) {
+          try {
+            final Class<?> clazz = Class.forName(settings.graphManager);
+            final Constructor c = clazz.getConstructor(Settings.class);
+            graphManager = (GraphManager) c.newInstance(settings);
+          } catch (ClassNotFoundException e) {
+            logger.error("Could not find GraphManager implementation "
+                         + "defined by the 'graphManager' setting as: {}",
+                         settings.graphManager);
+            throw new RuntimeException(e);
+          } catch (Exception e) {
+            logger.error("Could not invoke constructor on class {} (defined by "
+                         + "the 'graphManager' setting) with one argument of "
+                         + "class Settings",
+                         settings.graphManager);
+            throw new RuntimeException(e);
+          }
+        }
 
         if (null == gremlinExecutorService) {
             final ThreadFactory threadFactoryGremlin = ThreadFactoryUtil.create("exec-%d");
