@@ -16,8 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server.util;
 
+import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
@@ -34,12 +36,12 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphManagerTest {
+public class BasicGraphManagerTest {
 
     @Test
     public void shouldReturnGraphs() {
-        final Settings settings = Settings.read(GraphManagerTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
-        final GraphManager graphManager = new GraphManager(settings);
+        final Settings settings = Settings.read(BasicGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new BasicGraphManager(settings);
         final Map<String, Graph> m = graphManager.getGraphs();
 
         assertNotNull(m);
@@ -50,8 +52,8 @@ public class GraphManagerTest {
 
     @Test
     public void shouldGetAsBindings() {
-        final Settings settings = Settings.read(GraphManagerTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
-        final GraphManager graphManager = new GraphManager(settings);
+        final Settings settings = Settings.read(BasicGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new BasicGraphManager(settings);
         final Bindings bindings = graphManager.getAsBindings();
 
         assertNotNull(bindings);
