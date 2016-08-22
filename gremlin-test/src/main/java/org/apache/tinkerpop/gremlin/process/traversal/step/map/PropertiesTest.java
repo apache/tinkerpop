@@ -98,12 +98,14 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
             keys.add(vertexProperty.key());
             values.add(vertexProperty.value());
             ids.add(vertexProperty.id());
+            Object id = vertexProperty.id();
+            id = id instanceof Number ? ((Number) id).longValue() : id;
+            Object otherId = convertToVertex(graph, vertexProperty.value()).property("name").id();
+            otherId = otherId instanceof Number ? ((Number) otherId).longValue() : otherId;
+            assertEquals(otherId, id);
             assertEquals("name", vertexProperty.key());
             assertEquals(convertToVertex(graph, vertexProperty.value()).values("name").next(), vertexProperty.value());
             assertEquals(convertToVertex(graph, vertexProperty.value()).value("name"), vertexProperty.value());
-            assertEquals(convertToVertex(graph, vertexProperty.value()).properties("name").next().id(), vertexProperty.id());
-            assertEquals(convertToVertex(graph, vertexProperty.value()).property("name").id(), vertexProperty.id());
-            assertEquals(convertToVertexId(vertexProperty.value()), vertexProperty.element().id());
         }
         assertEquals(4, counter);
         assertEquals(1, keys.size());
@@ -114,7 +116,6 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         assertTrue(values.contains("josh"));
         assertTrue(values.contains("peter"));
         assertEquals(4, ids.size());
-
     }
 
     public static class Traversals extends PropertiesTest {
