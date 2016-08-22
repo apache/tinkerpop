@@ -72,7 +72,7 @@ class Console {
     public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
     private static final int DEFAULT_ITERATION_MAX = 100
     private static int maxIteration = DEFAULT_ITERATION_MAX
-    
+
     public static final String PREF_GREMLIN_COLOR = "gremlin.color"
     def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
 
@@ -102,13 +102,13 @@ class Console {
 
     public static final String PREF_RESULT_PROMPT_COLOR = "result.prompt.color"
     def resultPromptColor = { Preferences.get(PREF_RESULT_PROMPT_COLOR, "reset") }
-    
+
     public static final String PREF_EMPTY_RESULT_IND = "empty.result.indicator"
     def emptyResult = { Preferences.get(PREF_EMPTY_RESULT_IND, "null") }
 
     public static final String PREF_INPUT_PROMPT = "input.prompt"
     def inputPrompt = { Preferences.get(PREF_INPUT_PROMPT, "gremlin>") }
-    
+
     public static final String PREF_RESULT_PROMPT = "result.prompt"
     static def resultPrompt = { Preferences.get(PREF_RESULT_PROMPT, "==>") }
 
@@ -127,7 +127,7 @@ class Console {
      */
     @Deprecated
     public Console(final String initScriptFile) {
-        this(new IO(System.in, System.out, System.err), initScriptFile.size() != null ? [initScriptFile] : null, true)
+        this(new IO(System.in, System.out, System.err), initScriptFile.size() != null ? [initScriptFile]: null, true)
     }
 
     public Console(final IO io, final List<String> scriptAndArgs, final boolean interactive) {
@@ -143,12 +143,17 @@ class Console {
 
         maxIteration = Preferences.get(PREFERENCE_ITERATION_MAX, DEFAULT_ITERATION_MAX.toString()).toInteger()
         Preferences.addChangeListener(new PreferenceChangeListener() {
-            @Override
-            void preferenceChange(PreferenceChangeEvent evt) {
-                if (evt.key == PREFERENCE_ITERATION_MAX)
-                    maxIteration = Integer.parseInt(evt.newValue)
-            }
-        })
+                    @Override
+                    void preferenceChange(PreferenceChangeEvent evt) {
+                        if (evt.key == PREFERENCE_ITERATION_MAX && null != evt.newValue)
+                        try {
+                            maxIteration = Integer.parseInt(evt.newValue)
+                        } catch (NumberFormatException e) {
+                            io.out.println(ansiRender(errorColor,"Unable to convert '${evt.newValue}' to integer. Using default ${DEFAULT_ITERATION_MAX}"))
+                            maxIteration = DEFAULT_ITERATION_MAX
+                        }
+                    }
+                })
 
         final Mediator mediator = new Mediator(this)
 
@@ -310,10 +315,10 @@ class Console {
             }
         }
     }
-    
+
     def colorizeResult = { object ->
         if (object instanceof Vertex) {
-             return ansiRender(vertexColor, object.toString())
+            return ansiRender(vertexColor, object.toString())
         } else if (object instanceof Edge) {
             return ansiRender(edgeColor, object.toString())
         } else if (object instanceof Iterable) {
@@ -433,10 +438,14 @@ class Console {
             if (!interactive) System.exit(1)
         }
     }
-    
+
     def ansiRender = { color, text -> Ansi.ansi().render(String.format("@|%s %s|@", color.call(), text)).toString() }
 
     public static void main(final String[] args) {
+
+//        ExpandoMetaClass.enableGlobally()
+        org.apache.tinkerpop.gremlin.console.Preferences.expandoMagic()
+
         // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
         // feature can be removed. ultimately this should be removed when a breaking change can go in
         IO io = new IO(System.in, System.out, System.err)
