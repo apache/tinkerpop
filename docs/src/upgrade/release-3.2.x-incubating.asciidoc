@@ -32,6 +32,15 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.2/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+GraphSON 2.0
+^^^^^^^^^^^^
+
+GraphSON 2.0 has been introduced to improve and normalize the format of types embedded in GraphSON.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
+GraphSON 2.0].
+
 Log4j Dependencies
 ^^^^^^^^^^^^^^^^^^
 
@@ -83,6 +92,21 @@ dependending on `gremlin-test` (or `gremlin-groovy-test`) will need to explicitl
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1151[TINKERPOP-1151]
 
+Graph Drivers Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+GraphSON 2.0
+++++++++++++
+
+Drivers providers can exploit the new format of typed values JSON serialization offered by GraphSON 2.0. This format
+has been created to allow easy and agnostic parsing of a GraphSON payload without type loss. Drivers of non-Java
+languages can then implement their own mapping of the GraphSON's language agnostic type IDs (e.g. `UUID`, `LocalDate`)
+to the appropriate representation for the driver's language.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
+GraphSON 2.0].
+
 TinkerPop 3.2.1
 ---------------
 
@@ -92,13 +116,6 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.1/CHANGELOG.asc
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
-
-GraphSON 2.0
-^^^^^^^^^^^^
-
-GraphSON 2.0 has been introduced to improve and normalize the format of types embedding in GraphSON. Please see
-link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
-GraphSON 2.0] and link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274].
 
 Gephi Plugin
 ^^^^^^^^^^^^
@@ -274,19 +291,6 @@ VertexTest Signatures
 
 The method signatures of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` were changed
 to take arguments for the `Traversal` to be constructed by extending classes.
-
-Graph Drivers Providers
-^^^^^^^^^^^^^^^^^^^^^^
-
-GraphSON 2.0
-++++++++++++
-
-Drivers providers can exploit the new format of typed values JSON serialization offered by GraphSON 2.0. This format
-has been created to allow easy and agnostic parsing of a GraphSON payload without type loss. Drivers of non Java
-languages can then implement their own mapping of the GraphSON's language agnostic type IDs like `UUID`, `LocalDate` to
-the appropriate representation for the driver's language. A more detailed description of GraphSON 2.0 can be found
-there : link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation
-- GraphSON 2.0]
 
 TinkerPop 3.2.0
 ---------------
