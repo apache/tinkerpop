@@ -153,12 +153,13 @@ some other useful operations.  The following table outlines the most commonly us
 Console Preferences
 ~~~~~~~~~~~~~~~~~~~
 
-Preferences are set with `:set name value`.  Values can contain spaces when quoted. Preferences are removed by `:purge preferences`
+Preferences are set with `:set name value`.  Values can contain spaces when quoted. All preferences are reset by `:purge preferences`
 
 [width="100%",cols="3,^2,10",options="header"]
 |=========================================================
 |Preference |Type |Description
 |max-iteration | int | Controls the maximum number of results that the Console will display. Default: 100 results.
+|colors | bool | Enable ANSI color rendering. Default: true
 |gremlin.color | colors | Color of the ASCII art gremlin on startup.
 |info.color | colors | Color of "info" type messages.
 |error.color | colors | Color of "error" type messages.
