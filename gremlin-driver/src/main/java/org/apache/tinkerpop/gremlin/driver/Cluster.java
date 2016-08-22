@@ -266,6 +266,148 @@ public final class Cluster {
                 .collect(Collectors.toList()));
     }
 
+    /**
+     * Size of the pool for handling request/response operations.
+     */
+    public int getNioPoolSize() {
+        return manager.nioPoolSize;
+    }
+
+    /**
+     * Size of the pool for handling background work.
+     */
+    public int getWorkerPoolSize() {
+        return manager.workerPoolSize;
+    }
+
+    /**
+     * Get the {@link MessageSerializer} MIME types supported.
+     */
+    public String[] getSerializers() {
+        return getSerializer().mimeTypesSupported();
+    }
+
+    /**
+     * Determines if connectivity over SSL is enabled.
+     */
+    public boolean isSslEnabled() {
+        return manager.connectionPoolSettings.enableSsl;
+    }
+
+    /**
+     * Gets the minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
+     * for closing on return to the {@link ConnectionPool}.
+     */
+    public int getMinInProcessPerConnection() {
+        return manager.connectionPoolSettings.minInProcessPerConnection;
+    }
+
+    /**
+     * Gets the maximum number of in-flight requests that can occur on a {@link Connection}.
+     */
+    public int getMaxInProcessPerConnection() {
+        return manager.connectionPoolSettings.maxInProcessPerConnection;
+    }
+
+    /**
+     * Gets the maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
+     */
+    public int maxSimultaneousUsagePerConnection() {
+        return manager.connectionPoolSettings.maxSimultaneousUsagePerConnection;
+    }
+
+    /**
+     * Gets the minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
+     * under consideration for closing.
+     */
+    public int minSimultaneousUsagePerConnection() {
+        return manager.connectionPoolSettings.minSimultaneousUsagePerConnection;
+    }
+
+    /**
+     * Gets the maximum size that the {@link ConnectionPool} can grow.
+     */
+    public int maxConnectionPoolSize() {
+        return manager.connectionPoolSettings.maxSize;
+    }
+
+    /**
+     * Gets the minimum size of the {@link ConnectionPool}.
+     */
+    public int minConnectionPoolSize() {
+        return manager.connectionPoolSettings.minSize;
+    }
+
+    /**
+     * Gets the override for the server setting that determines how many results are returned per batch.
+     */
+    public int getResultIterationBatchSize() {
+        return manager.connectionPoolSettings.resultIterationBatchSize;
+    }
+
+    /**
+     * Gets the maximum amount of time to wait for a connection to be borrowed from the connection pool.
+     */
+    public int getMaxWaitForConnection() {
+        return manager.connectionPoolSettings.maxWaitForConnection;
+    }
+
+    /**
+     * Gets how long a session will stay open assuming the current connection actually is configured for their use.
+     */
+    public int getMaxWaitForSessionClose() {
+        return manager.connectionPoolSettings.maxWaitForSessionClose;
+    }
+
+    /**
+     * Gets the maximum size in bytes of any request sent to the server.
+     */
+    public int getMaxContentLength() {
+        return manager.connectionPoolSettings.maxContentLength;
+    }
+
+    /**
+     * Gets the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+     */
+    public String getChannelizer() {
+        return manager.connectionPoolSettings.channelizer;
+    }
+
+    /**
+     * Gets time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+     */
+    public int getReconnectIntialDelay() {
+        return manager.connectionPoolSettings.reconnectInitialDelay;
+    }
+
+    /**
+     * Gets time in milliseconds to wait between retries when attempting to reconnect to a dead host.
+     */
+    public int getReconnectInterval() {
+        return manager.connectionPoolSettings.reconnectInterval;
+    }
+
+    /**
+     * Specifies the load balancing strategy to use on the client side.
+     */
+    public Class<? extends LoadBalancingStrategy> getLoadBalancingStrategy() {
+        return manager.loadBalancingStrategy.getClass();
+    }
+
+    /**
+     * Gets the port that the Gremlin Servers will be listening on.
+     */
+    public int getPort() {
+        return manager.port;
+    }
+
+    /**
+     * Gets a list of all the configured hosts.
+     */
+    public Collection<Host> allHosts() {
+        return Collections.unmodifiableCollection(manager.allHosts());
+    }
+
     Factory getFactory() {
         return manager.factory;
     }
@@ -288,10 +430,6 @@ public final class Cluster {
 
     AuthProperties authProperties() {
         return manager.authProps;
-    }
-
-    Collection<Host> allHosts() {
-        return manager.allHosts();
     }
 
     SslContext createSSLContext() throws Exception  {
@@ -704,6 +842,10 @@ public final class Cluster {
 
         private final ScheduledExecutorService executor;
 
+        private final int nioPoolSize;
+        private final int workerPoolSize;
+        private final int port;
+
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
         private Manager(final Builder builder) {
@@ -732,6 +874,10 @@ public final class Cluster {
             connectionPoolSettings.channelizer = builder.channelizer;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
+
+            nioPoolSize = builder.nioPoolSize;
+            workerPoolSize = builder.workerPoolSize;
+            port = builder.port;
 
             this.factory = new Factory(builder.nioPoolSize);
             this.serializer = builder.serializer;

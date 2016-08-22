@@ -54,15 +54,9 @@ import java.util.UUID;
 public class Settings {
 
     public Settings() {
-        // setup some sensible defaults like gremlin-groovy and gryo serialization
+        // setup some sensible defaults like gremlin-groovy
         scriptEngines = new HashMap<>();
         scriptEngines.put("gremlin-groovy", new ScriptEngineSettings());
-
-        serializers = new ArrayList<>();
-        final SerializerSettings gryoSerializerSettings = new SerializerSettings();
-        gryoSerializerSettings.className = GryoMessageSerializerV1d0.class.getName();
-        gryoSerializerSettings.config = Collections.emptyMap();
-        serializers.add(gryoSerializerSettings);
     }
 
     /**
@@ -88,10 +82,10 @@ public class Settings {
 
     /**
      * Size of the Gremlin thread pool. This pool handles Gremlin script execution and other related "long-run"
-     * processing.  This setting should be sufficiently large to ensure that requests processed by the non-blocking
-     * worker threads are processed with limited queuing.  Defaults to 8.
+     * processing. Defaults to a setting of 0 which indicates the value should be set to
+     * {@code Runtime#availableProcessors()}.
      */
-    public int gremlinPool = 8;
+    public int gremlinPool = 0;
 
     /**
      * Size of the boss thread pool.  Defaults to 1 and should likely stay at 1.  The bossy thread accepts incoming
@@ -195,9 +189,10 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
-     * List of {@link MessageSerializer} to configure.
+     * List of {@link MessageSerializer} to configure. If no serializers are specified then default serializers for
+     * the most current versions of "application/json" and "application/vnd.gremlin-v1.0+gryo" are applied.
      */
-    public List<SerializerSettings> serializers;
+    public List<SerializerSettings> serializers = Collections.emptyList();
 
     /**
      * Configures settings for SSL.
@@ -348,6 +343,14 @@ public class Settings {
      * Settings for the {@link MessageSerializer} implementations.
      */
     public static class SerializerSettings {
+
+        public SerializerSettings() {}
+
+        SerializerSettings(final String className, final Map<String, Object> config) {
+            this.className = className;
+            this.config = config;
+        }
+
         /**
          * The fully qualified class name of the {@link MessageSerializer} implementation. This class name will be
          * used to load the implementation from the classpath.

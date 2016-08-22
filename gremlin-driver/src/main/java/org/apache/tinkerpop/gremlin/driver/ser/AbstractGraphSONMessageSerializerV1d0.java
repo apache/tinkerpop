@@ -55,7 +55,7 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMess
 
     protected ObjectMapper mapper;
 
-    protected static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
+    public static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
 
     protected final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };

@@ -18,21 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
@@ -40,10 +40,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -55,12 +55,13 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMessageSerializerGremlinV1d0Test {
-    private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
-    private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+public class GraphSONMessageSerializerGremlinTestV2d0 {
 
-    public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1d0();
+    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+
+    public final MessageSerializer serializer = new GraphSONMessageSerializerGremlinV2d0();
 
     @Test
     public void shouldSerializeIterable() throws Exception {
@@ -158,21 +159,24 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
-        final List<Map<String, Object>> edgeList = (List<Map<String, Object>>) response.getResult().getData();
+        final List<Edge> edgeList = (List<Edge>) response.getResult().getData();
         assertEquals(1, edgeList.size());
 
-        final Map<String, Object> deserializedEdge = edgeList.get(0);
-        assertEquals(e.id(), deserializedEdge.get(GraphSONTokens.ID));
-        assertEquals(v1.id(), deserializedEdge.get(GraphSONTokens.OUT));
-        assertEquals(v2.id(), deserializedEdge.get(GraphSONTokens.IN));
-        assertEquals(v1.label(), deserializedEdge.get(GraphSONTokens.OUT_LABEL));
-        assertEquals(v2.label(), deserializedEdge.get(GraphSONTokens.IN_LABEL));
-        assertEquals(e.label(), deserializedEdge.get(GraphSONTokens.LABEL));
-        assertEquals(GraphSONTokens.EDGE, deserializedEdge.get(GraphSONTokens.TYPE));
+        final Edge deserializedEdge = edgeList.get(0);
+        assertEquals(e.id(), deserializedEdge.id());
+        assertEquals(v1.id(), deserializedEdge.outVertex().id());
+        assertEquals(v2.id(), deserializedEdge.inVertex().id());
+        assertEquals(v1.label(), deserializedEdge.outVertex().label());
+        assertEquals(v2.label(), deserializedEdge.inVertex().label());
+        assertEquals(e.label(), deserializedEdge.label());
 
-        final Map<String, Object> properties = (Map<String, Object>) deserializedEdge.get(GraphSONTokens.PROPERTIES);
+        final List<Property> properties = new ArrayList<>();
+        deserializedEdge.properties().forEachRemaining(properties::add);
+        assertEquals(1, properties.size());
+
         assertNotNull(properties);
-        assertEquals(123, properties.get("abc"));
+        assertEquals("abc", properties.get(0).key());
+        assertEquals(123, properties.get(0).value());
 
     }
 
@@ -188,9 +192,9 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(iterable);
         assertCommon(response);
 
-        final List<Map<String, Object>> propertyList = (List<Map<String, Object>>) response.getResult().getData();
+        final List<Property> propertyList = (List<Property>) response.getResult().getData();
         assertEquals(1, propertyList.size());
-        assertEquals(123, propertyList.get(0).get("value"));
+        assertEquals(123, propertyList.get(0).value());
     }
 
     @Test
@@ -213,20 +217,20 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(list);
         assertCommon(response);
 
-        final List<Map<String, Object>> vertexList = (List<Map<String, Object>>) response.getResult().getData();
+        final List<Vertex> vertexList = (List<Vertex>) response.getResult().getData();
         assertEquals(1, vertexList.size());
 
-        final Map<String, Object> deserializedVertex = vertexList.get(0);
-        assertEquals(v.id(), deserializedVertex.get(GraphSONTokens.ID));
-        assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.get(GraphSONTokens.LABEL));
+        final Vertex deserializedVertex = vertexList.get(0);
+        assertEquals(v.id(), deserializedVertex.id());
+        assertEquals(Vertex.DEFAULT_LABEL, deserializedVertex.label());
 
-        final Map<String, Object> properties = ((Map<String, Object>) deserializedVertex.get(GraphSONTokens.PROPERTIES));
+        final List<VertexProperty> properties = new ArrayList<>();
+        deserializedVertex.properties().forEachRemaining(properties::add);
         assertEquals(1, properties.size());
 
-        final List<Map<String,Object>> friendsProperties = (List<Map<String,Object>>) properties.get("friends");
-        assertEquals(1, friendsProperties.size());
+        final VertexProperty friendsProperty = properties.get(0);
+        final List<Object> deserializedInnerList = (List<Object>) friendsProperty.value();
 
-        final List<Object> deserializedInnerList = (List<Object>) friendsProperties.get(0).get(GraphSONTokens.VALUE);
         assertEquals(3, deserializedInnerList.size());
         assertEquals("x", deserializedInnerList.get(0));
         assertEquals(5, deserializedInnerList.get(1));
@@ -256,7 +260,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void shouldSerializeToJsonTree() throws Exception {
+    public void shouldSerializeToTreeJson() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map t = g.V(1).out().properties("name").tree().next();
@@ -264,29 +268,32 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         final ResponseMessage response = convert(t);
         assertCommon(response);
 
-        final Map<String, Map<String, Map>> deserializedMap = (Map<String, Map<String, Map>>) response.getResult().getData();
-        
-        assertEquals(1, deserializedMap.size());
-        
-        //check the first object and it's properties
-        Map<String,Object> vertex = deserializedMap.get("1").get("key");
-        Map<String,List<Map>> vertexProperties = (Map<String, List<Map>>)vertex.get("properties");
-        assertEquals(1, (int)vertex.get("id"));
-        assertEquals("marko", vertexProperties.get("name").get(0).get("value"));
-        
-        //check objects tree structure
-        //check Vertex property
-        Map<String, Map<String, Map>> subTreeMap =  deserializedMap.get("1").get("value");
-        Map<String, Map<String, Map>> subTreeMap2 = subTreeMap.get("2").get("value");
-        Map<String, String> vertexPropertiesDeep = subTreeMap2.get("3").get("key");
-        assertEquals("vadas", vertexPropertiesDeep.get("value"));
-        assertEquals("name", vertexPropertiesDeep.get("label"));
-        
-        // check subitem
-        Map<String,Object> vertex2 = subTreeMap.get("3").get("key");
-        Map<String,List<Map>> vertexProperties2 = (Map<String, List<Map>>)vertex2.get("properties");
-        
-        assertEquals("lop", vertexProperties2.get("name").get(0).get("value"));
+        final Tree deserializedTree = (Tree)response.getResult().getData();
+
+        //check the first object and its key's properties
+        assertEquals(1, deserializedTree.size());
+        final Vertex v = ((Vertex) deserializedTree.keySet().iterator().next());
+        assertEquals(1, v.id());
+        assertEquals("marko", v.property("name").value());
+
+        final Tree firstTree = (Tree)deserializedTree.get(v);
+        assertEquals(3, firstTree.size());
+        Iterator<Vertex> vertexKeys = firstTree.keySet().iterator();
+
+        Tree t2 = (Tree)firstTree.get(vertexKeys.next());
+        VertexProperty vp = (VertexProperty)t2.keySet().iterator().next();
+        assertEquals(3, vp.id());
+        assertEquals("vadas", vp.value());
+
+        t2 = (Tree) firstTree.get(vertexKeys.next());
+        vp = (VertexProperty) t2.keySet().iterator().next();
+        assertEquals(5, vp.id());
+        assertEquals("lop", vp.value());
+
+        t2 = (Tree) firstTree.get(vertexKeys.next());
+        vp = (VertexProperty) t2.keySet().iterator().next();
+        assertEquals(7, vp.id());
+        assertEquals("josh", vp.value());
     }
 
     @Test

@@ -35,7 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONDeserializer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
@@ -169,14 +169,14 @@ public final class GraphSONReader implements GraphReader {
                              final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        final StarGraph starGraph = StarGraphGraphSONSerializer.readStarGraphVertex(vertexData);
+        final StarGraph starGraph = StarGraphGraphSONDeserializer.readStarGraphVertex(vertexData);
         if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 
         if (vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
-            StarGraphGraphSONSerializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
+            StarGraphGraphSONDeserializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
 
         if (vertexData.containsKey(GraphSONTokens.IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
-            StarGraphGraphSONSerializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
+            StarGraphGraphSONDeserializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
 
         return starGraph.getStarVertex();
     }

@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -28,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -52,6 +54,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -200,19 +203,18 @@ public final class GraphSONTraversalSerializers {
         @Override
         public void serialize(final Traverser traverserInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(traverserInstance, jsonGenerator, serializerProvider, null);
+            ser(traverserInstance, jsonGenerator);
         }
 
         @Override
-        public void serializeWithType(final Traverser traverserInstance, final JsonGenerator jsonGenerator,
+        public void serializeWithType(final Traverser traverser, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(traverserInstance, jsonGenerator, serializerProvider, typeSerializer);
+            ser(traverser, jsonGenerator);
         }
 
-        private static void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator,
-                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+        private void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator) throws IOException {
             jsonGenerator.writeStartObject();
-            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, Traverser.class.getName());
+            jsonGenerator.writeStringField("@type", "Traverser");
             jsonGenerator.writeObjectField("bulk", traverserInstance.bulk());
             jsonGenerator.writeObjectField("value", traverserInstance.get());
             jsonGenerator.writeEndObject();
@@ -405,5 +407,18 @@ public final class GraphSONTraversalSerializers {
         }
     }
 
+    static class TraverserJacksonDeserializer extends StdDeserializer<Traverser> {
 
+        public TraverserJacksonDeserializer() {
+            super(Traverser.class);
+        }
+
+        @Override
+        public Traverser deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            jsonParser.nextToken();
+            // This will automatically parse all typed stuff.
+            final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
+            return new DefaultRemoteTraverser<>(mapData.get("value"), (Long) mapData.get("bulk"));
+        }
+    }
 }

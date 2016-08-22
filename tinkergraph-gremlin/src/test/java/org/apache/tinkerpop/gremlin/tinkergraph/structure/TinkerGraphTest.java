@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
@@ -453,7 +454,8 @@ public class TinkerGraphTest {
 
         //Test write graph
         graph.close();
-        assertEquals(TestIoBuilder.calledRegistry, 1);
+        assertEquals(TestIoBuilder.calledRegistry, 0);
+        assertEquals(TestIoBuilder.calledOnMapper, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
 
@@ -465,7 +467,8 @@ public class TinkerGraphTest {
 
         //Test read graph
         final TinkerGraph readGraph = TinkerGraph.open(conf);
-        assertEquals(TestIoBuilder.calledRegistry, 1);
+        assertEquals(TestIoBuilder.calledRegistry, 0);
+        assertEquals(TestIoBuilder.calledOnMapper, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
     }
@@ -575,25 +578,32 @@ public class TinkerGraphTest {
         }
     }
 
-    public static class TestIoBuilder implements Io.Builder{
+    public static class TestIoBuilder implements Io.Builder {
 
-        static int calledRegistry, calledGraph, calledCreate;
+        static int calledRegistry, calledGraph, calledCreate, calledOnMapper;
 
         public TestIoBuilder(){
             //Looks awkward to reset static vars inside a constructor, but makes sense from testing perspective
-            calledRegistry=0;
-            calledGraph=0;
-            calledCreate=0;
+            calledRegistry = 0;
+            calledGraph = 0;
+            calledCreate = 0;
+            calledOnMapper = 0;
         }
 
         @Override
-        public Io.Builder<? extends Io> registry(IoRegistry registry) {
+        public Io.Builder<? extends Io> registry(final IoRegistry registry) {
             calledRegistry++;
             return this;
         }
 
         @Override
-        public Io.Builder<? extends Io> graph(Graph graph) {
+        public Io.Builder<? extends Io> onMapper(final Consumer onMapper) {
+            calledOnMapper++;
+            return this;
+        }
+
+        @Override
+        public Io.Builder<? extends Io> graph(final Graph graph) {
             calledGraph++;
             return this;
         }

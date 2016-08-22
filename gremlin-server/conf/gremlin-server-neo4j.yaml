@@ -27,8 +27,6 @@
 
 host: localhost
 port: 8182
-threadPoolWorker: 1
-gremlinPool: 8
 scriptEvaluationTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer
 graphs: {
@@ -45,6 +43,7 @@ serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0, config: { useMapperFromGraph: graph }}        # application/vnd.gremlin-v1.0+gryo-lite
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}        # application/vnd.gremlin-v1.0+gryo-stringd
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { useMapperFromGraph: graph }} # application/vnd.gremlin-v1.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0, config: { useMapperFromGraph: graph }} # application/vnd.gremlin-v2.0+json
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { useMapperFromGraph: graph }}        # application/json
 processors:
   - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
@@ -57,7 +56,6 @@ metrics: {
   gangliaReporter: {enabled: false, interval: 180000, addressingMode: MULTICAST},
   graphiteReporter: {enabled: false, interval: 180000}}
 strictTransactionManagement: false
-threadPoolBoss: 1
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

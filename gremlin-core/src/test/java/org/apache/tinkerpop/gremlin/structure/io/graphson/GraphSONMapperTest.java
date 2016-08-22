@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -36,14 +37,28 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.junit.Assert.assertEquals;
 
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+@RunWith(Parameterized.class)
 public class GraphSONMapperTest {
-    private final ObjectMapper mapper = GraphSONMapper.build().embedTypes(false).create().createMapper();
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {GraphSONMapper.build().version(GraphSONVersion.V1_0).embedTypes(false).create().createMapper()},
+                {GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
+        });
+    }
+
+    @Parameterized.Parameter
+    public ObjectMapper mapper;
+
 
     @Test
     public void shouldHandleTraversalExplanation() throws Exception {
@@ -141,14 +156,5 @@ public class GraphSONMapperTest {
         final ZoneOffset o = ZonedDateTime.now().getOffset();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
-    }
-
-    @Test
-    public void shouldHandleDefaultRemoteTraverser() throws Exception {
-        final DefaultRemoteTraverser<String> traverser = new DefaultRemoteTraverser<>("test", 100);
-        final String json = mapper.writeValueAsString(traverser);
-        final Map<String,Object> m = mapper.readValue(json, HashMap.class);
-        assertEquals("test", m.get("value"));
-        assertEquals(100, m.get("bulk"));
     }
 }

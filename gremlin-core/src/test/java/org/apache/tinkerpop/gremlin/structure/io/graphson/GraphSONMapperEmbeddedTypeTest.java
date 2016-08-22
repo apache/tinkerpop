@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,11 +39,27 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+@RunWith(Parameterized.class)
 public class GraphSONMapperEmbeddedTypeTest {
-    private final ObjectMapper mapper = GraphSONMapper.build().embedTypes(true).create().createMapper();
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {GraphSONMapper.build().version(GraphSONVersion.V1_0).embedTypes(true).create().createMapper()},
+                {GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()
+                        .createMapper()},
+        });
+    }
+
+    @Parameterized.Parameter
+    public ObjectMapper mapper;
 
     @Test
     public void shouldHandleDuration()throws Exception  {

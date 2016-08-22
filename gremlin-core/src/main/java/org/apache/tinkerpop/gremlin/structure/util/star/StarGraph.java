@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -319,14 +320,16 @@ public final class StarGraph implements Graph, Serializable {
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
             final Edge edge = this.addOutEdge(label, inVertex, keyValues);
             if (inVertex.equals(this)) {
-                if(null == this.inEdges)
-                    this.inEdges = new HashMap<>();
-                List<Edge> inE = this.inEdges.get(label);
-                if (null == inE) {
-                    inE = new ArrayList<>();
-                    this.inEdges.put(label, inE);
+                if (ElementHelper.getIdValue(keyValues).isPresent()) {
+                    // reuse edge ID from method params
+                    this.addInEdge(label, this, keyValues);
+                } else {
+                    // copy edge ID that we just allocated with addOutEdge
+                    final Object[] keyValuesWithId = Arrays.copyOf(keyValues, keyValues.length + 2);
+                    keyValuesWithId[keyValuesWithId.length - 2] = T.id;
+                    keyValuesWithId[keyValuesWithId.length - 1] = edge.id();
+                    this.addInEdge(label, this, keyValuesWithId);
                 }
-                inE.add(edge);
             }
             return edge;
         }

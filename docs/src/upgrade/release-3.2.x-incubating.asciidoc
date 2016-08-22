@@ -27,11 +27,85 @@ TinkerPop 3.2.2
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
+Please see the link:https://github.com/apache/tinkerpop/blob/3.2.2/CHANGELOG.asciidoc#release-3-2-2[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+GraphSON 2.0
+^^^^^^^^^^^^
+
+GraphSON 2.0 has been introduced to improve and normalize the format of types embedded in GraphSON.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
+GraphSON 2.0].
+
+Log4j Dependencies
+^^^^^^^^^^^^^^^^^^
+
+There were a number of changes to the Log4j dependencies in the various modules. Log4j was formerly included as part
+of the `slf4j-log4j12` in `gremlin-core`, however that "forced" use of Log4j as a logger implementation when that
+really wasn't necessary or desired. If a project depended on `gremlin-core` or other TinkerPop project to get its
+Log4j implementation then those applications will need to now include the dependency themselves directly.
+
+Note that Gremlin Server and Gremlin Console explicitly package Log4j in their respective binary distributions.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1151[TINKERPOP-1151]
+
+Default for gremlinPool
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The `gremlinPool` setting in Gremlin Server is now defaulted to zero. When set to zero, Gremlin Server will use the
+value provided by `Runtime.availableProcessors()` to set the pool size. Note that the packaged YAML files no longer
+contain the thread pool settings as all are now driven by sensible defaults. Obviously these values can be added
+and overridden as needed.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1373[TINKERPOP-1373]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Driver Providers
-^^^^^^^^^^^^^^^^
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecated Io.Builder.registry()
+++++++++++++++++++++++++++++++++
+
+The `Io.Builder.registry()` has been deprecated in favor of `Io.Builder.onMapper(Consumer<Mapper>)`. This change gives
+the `Graph` implementation greater flexibility over how to modify the `Mapper` implementation. In most cases, the
+implementation will simply add its `IoRegistry` to allow the `Mapper` access to custom serialization classes, but this
+approach makes it possible to also set other specific settings that aren't generalized across all IO implementations.
+A good example of this type of usage would be to provide a custom `ClassRessolver` implementation to a `GryoMapper`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1402[TINKERPOP-1402]
+
+Log4j Dependencies
+++++++++++++++++++
+
+There were a number of changes to the Log4j dependencies in the various modules. Log4j was formerly included as part
+of the `slf4j-log4j12` in `gremlin-core`, however that "forced" use of log4j as a logger implementation when that
+really wasn't necessary or desired. The `slf4j-log4j12` dependency is now in "test" scope for most of the modules. The
+exception to that rule is `gremlin-test` which prescribes it as "optional". That change means that developers
+dependending on `gremlin-test` (or `gremlin-groovy-test`) will need to explicitly specify it as a dependency in their
+`pom.xml` (or a different slf4j implementation if that better suits them).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1151[TINKERPOP-1151]
+
+Drivers Providers
+^^^^^^^^^^^^^^^^^
+
+GraphSON 2.0
+++++++++++++
+
+Drivers providers can exploit the new format of typed values JSON serialization offered by GraphSON 2.0. This format
+has been created to allow easy and agnostic parsing of a GraphSON payload without type loss. Drivers of non-Java
+languages can then implement their own mapping of the GraphSON's language agnostic type IDs (e.g. `UUID`, `LocalDate`)
+to the appropriate representation for the driver's language.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
+GraphSON 2.0].
 
 Traversal Serialization
 +++++++++++++++++++++++

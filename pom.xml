@@ -594,6 +594,11 @@ limitations under the License.
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.17</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -689,6 +694,28 @@ limitations under the License.
                         <artifactId>asciidoctor-maven-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
+                            <execution>
+                                <id>home</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>reference-book</id>
                                 <phase>generate-resources</phase>

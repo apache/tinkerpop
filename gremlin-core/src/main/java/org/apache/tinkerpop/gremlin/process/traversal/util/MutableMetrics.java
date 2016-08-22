@@ -31,7 +31,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
 
     // Note: if you add new members then you probably need to add them to the copy constructor;
 
-    private long tempTime = -1l;
+    private long tempTime = -1L;
 
     protected MutableMetrics() {
         // necessary for gryo serialization
@@ -40,6 +40,18 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     public MutableMetrics(final String id, final String name) {
         this.id = id;
         this.name = name;
+    }
+
+    /**
+     * Create a {@code MutableMetrics} from an immutable one.
+     */
+    public MutableMetrics(final Metrics other) {
+        this.id = other.getId();
+        this.name = other.getName();
+        this.annotations.putAll(other.getAnnotations());
+        this.durationNs = other.getDuration(TimeUnit.NANOSECONDS);
+        other.getCounts().forEach((key, count) -> this.counts.put(key, new AtomicLong(count)));
+        other.getNested().forEach(nested -> this.addNested(new MutableMetrics(nested)));
     }
 
     public void addNested(MutableMetrics metrics) {

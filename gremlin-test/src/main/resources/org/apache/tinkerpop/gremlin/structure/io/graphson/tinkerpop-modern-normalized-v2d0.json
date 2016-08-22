@@ -1,0 +1,6 @@
+{"id":1,"label":"person","outE":{"created":[{"id":9,"inV":3,"properties":{"weight":0.4}}],"knows":[{"id":7,"inV":2,"properties":{"weight":0.5}},{"id":8,"inV":4,"properties":{"weight":1.0}}]},"properties":{"age":[{"id":1,"value":29}],"name":[{"id":0,"value":"marko"}]}}
+{"id":2,"label":"person","inE":{"knows":[{"id":7,"outV":1,"properties":{"weight":0.5}}]},"properties":{"age":[{"id":3,"value":27}],"name":[{"id":2,"value":"vadas"}]}}
+{"id":3,"label":"software","inE":{"created":[{"id":11,"outV":4,"properties":{"weight":0.4}},{"id":12,"outV":6,"properties":{"weight":0.2}},{"id":9,"outV":1,"properties":{"weight":0.4}}]},"properties":{"lang":[{"id":5,"value":"java"}],"name":[{"id":4,"value":"lop"}]}}
+{"id":4,"label":"person","inE":{"knows":[{"id":8,"outV":1,"properties":{"weight":1.0}}]},"outE":{"created":[{"id":10,"inV":5,"properties":{"weight":1.0}},{"id":11,"inV":3,"properties":{"weight":0.4}}]},"properties":{"age":[{"id":7,"value":32}],"name":[{"id":6,"value":"josh"}]}}
+{"id":5,"label":"software","inE":{"created":[{"id":10,"outV":4,"properties":{"weight":1.0}}]},"properties":{"lang":[{"id":9,"value":"java"}],"name":[{"id":8,"value":"ripple"}]}}
+{"id":6,"label":"person","outE":{"created":[{"id":12,"inV":3,"properties":{"weight":0.2}}]},"properties":{"age":[{"id":11,"value":35}],"name":[{"id":10,"value":"peter"}]}}

@@ -39,7 +39,9 @@ import java.util.concurrent.TimeUnit;
  * @author Bob Briody (http://bobbriody.com)
  */
 public final class DefaultTraversalMetrics implements TraversalMetrics, Serializable {
-    // toString() specific headers
+    /**
+     * toString() specific headers
+     */
     private static final String[] HEADERS = {"Step", "Count", "Traversers", "Time (ms)", "% Dur"};
 
     private final Map<String, MutableMetrics> metrics = new HashMap<>();
@@ -52,6 +54,15 @@ public final class DefaultTraversalMetrics implements TraversalMetrics, Serializ
     private Map<String, ImmutableMetrics> computedMetrics;
 
     public DefaultTraversalMetrics() {
+    }
+
+    /**
+     * This is only a convenient constructor needed for GraphSON deserialization.
+     */
+    public DefaultTraversalMetrics(final long totalStepDurationNs, final List<MutableMetrics> metricsMap) {
+        this.totalStepDuration = totalStepDurationNs;
+        this.computedMetrics = new LinkedHashMap<>(metrics.size());
+        metricsMap.forEach(m -> computedMetrics.put(m.getId(), m.getImmutableClone()));
     }
 
     @Override
