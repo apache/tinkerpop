@@ -330,6 +330,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.4 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `PropertiesTest` which assumed long id values.
 * Fixed a bug in `StarGraph` around self-edges.
 * Fixed a potential leak of a `ReferenceCounted` resource in Gremlin Server.
 * Renamed distributions to make the prefix "apache-tinkerpop-" as opposed to just "apache-".

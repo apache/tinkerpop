@@ -100,8 +100,10 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
             ids.add(vertexProperty.id());
             assertEquals("name", vertexProperty.key());
             assertEquals(convertToVertex(graph, vertexProperty.value()).values("name").next(), vertexProperty.value());
-            // compare the ids as longs. assumes modern graph uses numeric ids only (long/integer).
-            assertEquals(Long.valueOf(convertToVertex(graph, vertexProperty.value()).properties("name").next().id().toString()), Long.valueOf(vertexProperty.id().toString()));
+            assertEquals(convertToVertex(graph, vertexProperty.value()).value("name"), vertexProperty.value());
+            assertEquals(convertToVertex(graph, vertexProperty.value()).properties("name").next().id(), vertexProperty.id());
+            assertEquals(convertToVertex(graph, vertexProperty.value()).property("name").id(), vertexProperty.id());
+            assertEquals(convertToVertexId(vertexProperty.value()), vertexProperty.element().id());
         }
         assertEquals(4, counter);
         assertEquals(1, keys.size());
