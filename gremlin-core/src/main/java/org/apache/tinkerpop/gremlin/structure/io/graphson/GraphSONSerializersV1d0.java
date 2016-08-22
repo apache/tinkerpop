@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -50,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 /**
  * GraphSON serializers for graph-based objects such as vertices, edges, properties, and paths. These serializers
@@ -58,9 +58,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class GraphSONSerializers {
+final class GraphSONSerializersV1d0 {
 
-    private GraphSONSerializers() {}
+    private GraphSONSerializersV1d0() {}
 
     final static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
 

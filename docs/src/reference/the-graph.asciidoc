@@ -499,7 +499,7 @@ graph.io(graphson()).writer().create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
 ----
 
-The following GraphSON example shows the output of `GraphSonWriter.writeVertex()` with associated edges:
+The following GraphSON example shows the output of `GraphSONWriter.writeVertex()` with associated edges:
 
 [source,json]
 ----
@@ -553,7 +553,18 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 The vertex properly serializes to valid JSON but note that a consuming application will not automatically know how to
 interpret the numeric values.  In coercing those Java values to JSON, such information is lost.
 
-With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided:
+[[graphson-types-embedding]]
+Types embedding
+^^^^^^^^^^^^^^^
+
+With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided.
+
+[[graphson-1.0-types]]
+Types with GraphSON 1.0.
+++++++++++++++++++++++++
+
+GraphSON 1.0 is the version enabled by default when creating a GraphSON Mapper. Here is how to enable types with GraphSON
+1.0:
 
 [gremlin-groovy]
 ----
@@ -651,6 +662,128 @@ exception of a small number of "natural" types (String, Boolean, Integer, and Do
 from JSON typing.  While the output is more verbose, it comes with the security of not losing type information.  While
 non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the
 values should be coerced back into the correct types in the target language.
+
+[[graphson-2.0-types]]
+GraphSON 2.0.
++++++++++++++
+
+GraphSON 2.0 has been introduced to improve the format of the typed values from GraphSON 1.0. It provides non-Java
+centric types information in a consistent format.
+
+With GraphSON 2.0, types are enabled by default.
+
+The type format is :
+
+* Non typed value : `value`
+* Typed value     : `{"@type":"typeID", "@value":value}`
+
+TypeIDs are composed of 2 parts, a namespace, and a type name, in the format `"namespace:typename"`.
+A namespace gives the possibility for TinkerPop implementors to categorize custom types they may implement
+and avoid collision with existing TinkerPop types. By default, TinkerPop types will have the
+namespace `g`.
+
+GraphSON 2.0 will provide type information for any value that is not String, Boolean, Map or Collection.
+This includes types for Graph objects as well. The current Graph object types provided by
+TinkerPop, and their respective typeIDs are :
+
+* Vertex -> "gremlin:vertex"
+* Edge -> "gremlin:edge"
+* VertexPropery -> "gremlin:vertexproperty"
+* Property -> "gremlin:property"
+* Path -> "gremlin:path"
+* Tree -> "gremlin:tree"
+* Graph -> "gremlin:graph"
+* Metrics -> "gremlin:metrics"
+* TraversalMetrics -> `gremlin:traversalmetrics"
+
+Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+g = graph.traversal()
+f = new FileOutputStream("vertex-graphson20.json")
+mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).create()
+v = g.V(1).next()
+v.property("uuid", UUID.randomUUID())
+graph.io(graphson()).writer().mapper(mapper).create().writeObject(f, v)
+f.close()
+----
+
+Creating a GraphSON 2.0 mapper is done by calling `.version(GraphSONVersion.V2_0)` on the mapper builder.
+Here's a sample output:
+
+[source,json]
+----
+{
+    "@type":"gremlin:vertex",
+    "@value":{
+        "id":{
+            "@type":"gremlin:int32",
+            "@value":1
+        },
+        "label":"person",
+        "properties":{
+            "name":[
+                {
+                    "@type":"gremlin:vertexproperty",
+                    "@value":{
+                        "id":{
+                            "@type":"gremlin:int64",
+                            "@value":0
+                        },
+                        "value":"marko",
+                        "label":"name"
+                    }
+                }
+            ],
+            "myUUIDprop":[
+                {
+                    "@type":"gremlin:vertexproperty",
+                    "@value":{
+                        "id":{
+                            "@type":"gremlin:int64",
+                            "@value":12
+                        },
+                        "value":{
+                            "@type":"gremlin:uuid",
+                            "@value":"02c1041b-c7ef-46ce-812e-3d7963ad50b3"
+                        },
+                        "label":"myUUIDprop"
+                    }
+                }
+            ],
+            "age":[
+                {
+                    "@type":"gremlin:vertexproperty",
+                    "@value":{
+                        "id":{
+                            "@type":"gremlin:int64",
+                            "@value":1
+                        },
+                        "value":{
+                            "@type":"gremlin:int32",
+                            "@value":29
+                        },
+                        "label":"age"
+                    }
+                }
+            ]
+        }
+    }
+}
+----
+
+Here's how to disable types when creating a GraphSON 2.0 `Mapper`:
+
+[gremlin-groovy]
+----
+mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).typeInfo(GraphSONMapper.TypeInfo.NO_TYPES).create()
+----
+
+By disabling types, the JSON payload produced will be the same than GraphSON 2.0, without the
+extra information that is written for types. Please note, disabling types can be unsafe with
+regards to the written data.
 
 [[gryo-reader-writer]]
 Gryo Reader/Writer

@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -30,9 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,11 +50,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
- * Serializer tests that cover non-lossy serialization/deserialization methods.
+ * Serializer tests that cover lossy serialization/deserialization methods.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMessageSerializerGremlinV1d0Test {
+public class GraphSONMessageSerializerGremlinTestV1d0 {
+
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
@@ -256,7 +256,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void shouldSerializeToJsonTree() throws Exception {
+    public void shouldSerializeToTreeJson() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map t = g.V(1).out().properties("name").tree().next();
@@ -265,15 +265,15 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         assertCommon(response);
 
         final Map<String, Map<String, Map>> deserializedMap = (Map<String, Map<String, Map>>) response.getResult().getData();
-        
+
         assertEquals(1, deserializedMap.size());
-        
+
         //check the first object and it's properties
         Map<String,Object> vertex = deserializedMap.get("1").get("key");
         Map<String,List<Map>> vertexProperties = (Map<String, List<Map>>)vertex.get("properties");
         assertEquals(1, (int)vertex.get("id"));
         assertEquals("marko", vertexProperties.get("name").get(0).get("value"));
-        
+
         //check objects tree structure
         //check Vertex property
         Map<String, Map<String, Map>> subTreeMap =  deserializedMap.get("1").get("value");
@@ -281,11 +281,11 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
         Map<String, String> vertexPropertiesDeep = subTreeMap2.get("3").get("key");
         assertEquals("vadas", vertexPropertiesDeep.get("value"));
         assertEquals("name", vertexPropertiesDeep.get("label"));
-        
+
         // check subitem
         Map<String,Object> vertex2 = subTreeMap.get("3").get("key");
         Map<String,List<Map>> vertexProperties2 = (Map<String, List<Map>>)vertex2.get("properties");
-        
+
         assertEquals("lop", vertexProperties2.get("name").get(0).get("value"));
     }
 

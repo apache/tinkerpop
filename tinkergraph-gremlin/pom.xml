@@ -76,7 +76,7 @@ limitations under the License.
             </activation>
 
             <properties>
-                <io.tmp.dir>${project.build.directory}/tinkerpop-io</io.tmp.dir>
+                <io.tmp.dir>${project.build.directory}/test-case-data/TinkerGraphTest/tinkerpop-io</io.tmp.dir>
             </properties>
 
             <build>
@@ -115,7 +115,7 @@ limitations under the License.
                                             <directory>${io.tmp.dir}</directory>
                                             <filtering>false</filtering>
                                             <excludes>
-                                                <exclude>**/*-normalized.json</exclude>
+                                                <exclude>**/*-normalized*.json</exclude>
                                                 <exclude>**/sample.kryo</exclude>
                                             </excludes>
                                         </resource>
