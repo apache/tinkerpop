@@ -48,7 +48,8 @@ public class GraphSONTypeSerializer extends TypeSerializer {
     private final TypeInfo typeInfo;
     private final String valuePropertyName;
 
-    GraphSONTypeSerializer(TypeIdResolver idRes, String propertyName, TypeInfo typeInfo, String valuePropertyName) {
+    GraphSONTypeSerializer(final TypeIdResolver idRes, final String propertyName, final TypeInfo typeInfo,
+                           final String valuePropertyName) {
         this.idRes = idRes;
         this.propertyName = propertyName;
         this.typeInfo = typeInfo;
@@ -56,7 +57,7 @@ public class GraphSONTypeSerializer extends TypeSerializer {
     }
 
     @Override
-    public TypeSerializer forProperty(BeanProperty beanProperty) {
+    public TypeSerializer forProperty(final BeanProperty beanProperty) {
         return this;
     }
 
@@ -76,77 +77,77 @@ public class GraphSONTypeSerializer extends TypeSerializer {
     }
 
     @Override
-    public void writeTypePrefixForScalar(Object o, JsonGenerator jsonGenerator) throws IOException {
+    public void writeTypePrefixForScalar(final Object o, final JsonGenerator jsonGenerator) throws IOException {
         if (canWriteTypeId()) {
             writeTypePrefix(jsonGenerator, getTypeIdResolver().idFromValueAndType(o, getClassFromObject(o)));
         }
     }
 
     @Override
-    public void writeTypePrefixForObject(Object o, JsonGenerator jsonGenerator) throws IOException {
+    public void writeTypePrefixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeStartObject();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(Map);
     }
 
     @Override
-    public void writeTypePrefixForArray(Object o, JsonGenerator jsonGenerator) throws IOException {
+    public void writeTypePrefixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeStartArray();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(List);
     }
 
     @Override
-    public void writeTypeSuffixForScalar(Object o, JsonGenerator jsonGenerator) throws IOException {
+    public void writeTypeSuffixForScalar(final Object o, final JsonGenerator jsonGenerator) throws IOException {
         if (canWriteTypeId()) {
             writeTypeSuffix(jsonGenerator);
         }
     }
 
     @Override
-    public void writeTypeSuffixForObject(Object o, JsonGenerator jsonGenerator) throws IOException {
+    public void writeTypeSuffixForObject(final Object o, final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeEndObject();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(Map);
     }
 
     @Override
-    public void writeTypeSuffixForArray(Object o, JsonGenerator jsonGenerator) throws IOException {
+    public void writeTypeSuffixForArray(final Object o, final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeEndArray();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(List);
     }
 
     @Override
-    public void writeCustomTypePrefixForScalar(Object o, JsonGenerator jsonGenerator, String s) throws IOException {
+    public void writeCustomTypePrefixForScalar(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
         if (canWriteTypeId()) {
             writeTypePrefix(jsonGenerator, s);
         }
     }
 
     @Override
-    public void writeCustomTypePrefixForObject(Object o, JsonGenerator jsonGenerator, String s) throws IOException {
+    public void writeCustomTypePrefixForObject(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
         jsonGenerator.writeStartObject();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(s);
     }
 
     @Override
-    public void writeCustomTypePrefixForArray(Object o, JsonGenerator jsonGenerator, String s) throws IOException {
+    public void writeCustomTypePrefixForArray(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
         jsonGenerator.writeStartArray();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypePrefix(s);
     }
 
     @Override
-    public void writeCustomTypeSuffixForScalar(Object o, JsonGenerator jsonGenerator, String s) throws IOException {
+    public void writeCustomTypeSuffixForScalar(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
         if (canWriteTypeId()) {
             writeTypeSuffix(jsonGenerator);
         }
     }
 
     @Override
-    public void writeCustomTypeSuffixForObject(Object o, JsonGenerator jsonGenerator, String s) throws IOException {
+    public void writeCustomTypeSuffixForObject(final Object o, final JsonGenerator jsonGenerator, final String s) throws IOException {
         jsonGenerator.writeEndObject();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(s);
     }
 
     @Override
-    public void writeCustomTypeSuffixForArray(Object o, JsonGenerator jsonGenerator, String s) throws IOException {
+    public void writeCustomTypeSuffixForArray(final Object o, final JsonGenerator jsonGenerator,final  String s) throws IOException {
         jsonGenerator.writeEndArray();
         // TODO: FULL_TYPES should be implemented here as : if (fullTypesModeEnabled()) writeTypeSuffix(s);
     }
@@ -156,13 +157,13 @@ public class GraphSONTypeSerializer extends TypeSerializer {
                 && typeInfo == TypeInfo.PARTIAL_TYPES;
     }
 
-    private void writeTypePrefix(JsonGenerator jsonGenerator, String s) throws IOException {
+    private void writeTypePrefix(final JsonGenerator jsonGenerator, final String s) throws IOException {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField(this.getPropertyName(), s);
         jsonGenerator.writeFieldName(this.valuePropertyName);
     }
 
-    private void writeTypeSuffix(JsonGenerator jsonGenerator) throws IOException {
+    private void writeTypeSuffix(final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeEndObject();
     }
 
@@ -172,9 +173,9 @@ public class GraphSONTypeSerializer extends TypeSerializer {
      **not** their implementations (TinkerGraph, DetachedVertex, TinkerEdge,
      etc..)
     */
-    private Class getClassFromObject(Object o) {
+    private Class getClassFromObject(final Object o) {
         // not the most efficient
-        Class c = o.getClass();
+        final  Class c = o.getClass();
         if (Vertex.class.isAssignableFrom(c)) {
             return Vertex.class;
         } else if (Edge.class.isAssignableFrom(c)) {

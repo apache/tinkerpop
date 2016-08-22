@@ -143,19 +143,19 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
     @Test
     // Trying to fail the TypeDeserializer type detection
     public void shouldSerializeDeserializeNestedCollectionsAndMapAndTypedValuesCorrectly() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        List myList = new ArrayList<>();
+        final UUID uuid = UUID.randomUUID();
+        final List myList = new ArrayList<>();
 
-        List myList2 = new ArrayList<>();
+        final List myList2 = new ArrayList<>();
         myList2.add(UUID.randomUUID());
         myList2.add(33L);
         myList2.add(84);
-        Map map2 = new HashMap<>();
+        final Map map2 = new HashMap<>();
         map2.put("eheh", UUID.randomUUID());
         map2.put("normal", "normal");
         myList2.add(map2);
 
-        Map<String, Object> map1 = new HashMap<>();
+        final Map<String, Object> map1 = new HashMap<>();
         map1.put("hello", "world");
         map1.put("test", uuid);
         map1.put("hehe", myList2);
@@ -265,25 +265,25 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
 
     @Test
     public void shouldLooseTypesInfoWithGraphSONNoType() throws Exception {
-        ObjectMapper mapper = GraphSONMapper.build()
+        final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
                 .typeInfo(TypeInfo.NO_TYPES)
                 .create()
                 .createMapper();
 
-        UUID uuid = UUID.randomUUID();
-        List myList = new ArrayList<>();
+        final UUID uuid = UUID.randomUUID();
+        final List myList = new ArrayList<>();
 
-        List myList2 = new ArrayList<>();
+        final List myList2 = new ArrayList<>();
         myList2.add(UUID.randomUUID());
         myList2.add(33L);
         myList2.add(84);
-        Map map2 = new HashMap<>();
+        final Map map2 = new HashMap<>();
         map2.put("eheh", UUID.randomUUID());
         map2.put("normal", "normal");
         myList2.add(map2);
 
-        Map<String, Object> map1 = new HashMap<>();
+        final Map<String, Object> map1 = new HashMap<>();
         map1.put("hello", "world");
         map1.put("test", uuid);
         map1.put("hehe", myList2);
@@ -292,8 +292,8 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
         myList.add("kjkj");
         myList.add(UUID.randomUUID());
 
-        String json = mapper.writeValueAsString(myList);
-        Object read = mapper.readValue(json, Object.class);
+        final String json = mapper.writeValueAsString(myList);
+        final Object read = mapper.readValue(json, Object.class);
 
         // Not equals because of type loss
         assertNotEquals(myList, read);

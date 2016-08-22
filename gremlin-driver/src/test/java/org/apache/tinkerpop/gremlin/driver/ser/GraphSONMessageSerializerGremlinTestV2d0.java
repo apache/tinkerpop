@@ -57,11 +57,11 @@ import static org.junit.Assert.fail;
  */
 public class GraphSONMessageSerializerGremlinTestV2d0 {
 
-    private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
-    private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV2d0();
+    public final MessageSerializer serializer = new GraphSONMessageSerializerGremlinV2d0();
 
     @Test
     public void shouldSerializeIterable() throws Exception {
@@ -272,11 +272,11 @@ public class GraphSONMessageSerializerGremlinTestV2d0 {
 
         //check the first object and its key's properties
         assertEquals(1, deserializedTree.size());
-        Vertex v = ((Vertex) deserializedTree.keySet().iterator().next());
+        final Vertex v = ((Vertex) deserializedTree.keySet().iterator().next());
         assertEquals(1, v.id());
         assertEquals("marko", v.property("name").value());
 
-        Tree firstTree = (Tree)deserializedTree.get(v);
+        final Tree firstTree = (Tree)deserializedTree.get(v);
         assertEquals(3, firstTree.size());
         Iterator<Vertex> vertexKeys = firstTree.keySet().iterator();
 

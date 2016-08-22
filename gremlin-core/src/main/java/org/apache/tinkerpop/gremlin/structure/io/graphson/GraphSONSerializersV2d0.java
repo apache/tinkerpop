@@ -159,9 +159,7 @@ public class GraphSONSerializersV2d0 {
                 jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
 
                 jsonGenerator.writeStartObject();
-                elementProperties.forEachRemaining(
-                        prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop)
-                );
+                elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop));
                 jsonGenerator.writeEndObject();
             }
         }
@@ -271,7 +269,7 @@ public class GraphSONSerializersV2d0 {
         @Override
         public void serialize(final Tree tree, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
             jsonGenerator.writeStartArray();
-            Set<Map.Entry<Element, Tree>> set = tree.entrySet();
+            final Set<Map.Entry<Element, Tree>> set = tree.entrySet();
             for (Map.Entry<Element, Tree> entry : set) {
                 jsonGenerator.writeStartObject();
                 jsonGenerator.writeObjectField(GraphSONTokens.KEY, entry.getKey());
@@ -326,7 +324,8 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public void serialize(Integer integer, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        public void serialize(final Integer integer, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeNumber(((Integer) integer).intValue());
         }
     }
@@ -337,7 +336,8 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public void serialize(Double doubleValue, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        public void serialize(final Double doubleValue, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeNumber(doubleValue);
         }
     }
@@ -367,7 +367,8 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public void serialize(Metrics metrics, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        public void serialize(final Metrics metrics, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, metrics.getId());
             m.put(GraphSONTokens.NAME, metrics.getName());
@@ -422,11 +423,11 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public T deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public T deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
 
             jsonParser.nextToken();
             // This will automatically parse all typed stuff.
-            Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
+            final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
 
             return createObject(mapData);
         }
@@ -442,7 +443,7 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Vertex createObject(Map<String, Object> vertexData) {
+        Vertex createObject(final Map<String, Object> vertexData) {
             return new DetachedVertex(
                     vertexData.get(GraphSONTokens.ID),
                     vertexData.get(GraphSONTokens.LABEL).toString(),
@@ -458,7 +459,7 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Edge createObject(Map<String, Object> edgeData) {
+        Edge createObject(final Map<String, Object> edgeData) {
             return new DetachedEdge(
                     edgeData.get(GraphSONTokens.ID),
                     edgeData.get(GraphSONTokens.LABEL).toString(),
@@ -476,7 +477,7 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Property createObject(Map<String, Object> propData) {
+        Property createObject(final Map<String, Object> propData) {
             return new DetachedProperty(
                     (String) propData.get(GraphSONTokens.KEY),
                     propData.get(GraphSONTokens.VALUE));
@@ -490,11 +491,11 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Path createObject(Map<String, Object> pathData) {
-            Path p = MutablePath.make();
+        Path createObject(final Map<String, Object> pathData) {
+            final Path p = MutablePath.make();
 
-            List labels = (List) pathData.get(GraphSONTokens.LABELS);
-            List objects = (List) pathData.get(GraphSONTokens.OBJECTS);
+            final List labels = (List) pathData.get(GraphSONTokens.LABELS);
+            final List objects = (List) pathData.get(GraphSONTokens.OBJECTS);
 
             for (int i = 0; i < objects.size(); i++) {
                 p.extend(objects.get(i), new HashSet((List) labels.get(i)));
@@ -510,7 +511,7 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        VertexProperty createObject(Map<String, Object> propData) {
+        VertexProperty createObject(final Map<String, Object> propData) {
             return new DetachedVertexProperty(
                     propData.get(GraphSONTokens.ID),
                     (String) propData.get(GraphSONTokens.LABEL),
@@ -526,8 +527,8 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Metrics createObject(Map<String, Object> metricsData) {
-            MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
+        Metrics createObject(final Map<String, Object> metricsData) {
+            final MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
 
             m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
             for (Map.Entry<String, Long> count : ((Map<String, Long>)metricsData.getOrDefault(GraphSONTokens.COUNTS, new HashMap<>(0))).entrySet()) {
@@ -550,7 +551,7 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        TraversalMetrics createObject(Map<String, Object> traversalMetricsData) {
+        TraversalMetrics createObject(final Map<String, Object> traversalMetricsData) {
             return new DefaultTraversalMetrics(
                     Math.round((Double) traversalMetricsData.get(GraphSONTokens.DURATION) * 1000000),
                     (List<MutableMetrics>) traversalMetricsData.get(GraphSONTokens.METRICS)
@@ -565,9 +566,9 @@ public class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public Tree deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            List<Map> data = deserializationContext.readValue(jsonParser, List.class);
-            Tree t = new Tree();
+        public Tree deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final List<Map> data = deserializationContext.readValue(jsonParser, List.class);
+            final Tree t = new Tree();
             for (Map<String, Object> entry : data) {
                 t.put(entry.get(GraphSONTokens.KEY), entry.get(GraphSONTokens.VALUE));
             }

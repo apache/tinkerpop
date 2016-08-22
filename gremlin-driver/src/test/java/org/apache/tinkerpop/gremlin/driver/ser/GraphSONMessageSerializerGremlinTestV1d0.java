@@ -269,22 +269,22 @@ public class GraphSONMessageSerializerGremlinTestV1d0 {
         assertEquals(1, deserializedMap.size());
 
         //check the first object and it's properties
-        Map<String,Object> vertex = deserializedMap.get("1").get("key");
-        Map<String,List<Map>> vertexProperties = (Map<String, List<Map>>)vertex.get("properties");
+        final Map<String,Object> vertex = deserializedMap.get("1").get("key");
+        final Map<String,List<Map>> vertexProperties = (Map<String, List<Map>>)vertex.get("properties");
         assertEquals(1, (int)vertex.get("id"));
         assertEquals("marko", vertexProperties.get("name").get(0).get("value"));
 
         //check objects tree structure
         //check Vertex property
-        Map<String, Map<String, Map>> subTreeMap =  deserializedMap.get("1").get("value");
-        Map<String, Map<String, Map>> subTreeMap2 = subTreeMap.get("2").get("value");
-        Map<String, String> vertexPropertiesDeep = subTreeMap2.get("3").get("key");
+        final Map<String, Map<String, Map>> subTreeMap =  deserializedMap.get("1").get("value");
+        final Map<String, Map<String, Map>> subTreeMap2 = subTreeMap.get("2").get("value");
+        final Map<String, String> vertexPropertiesDeep = subTreeMap2.get("3").get("key");
         assertEquals("vadas", vertexPropertiesDeep.get("value"));
         assertEquals("name", vertexPropertiesDeep.get("label"));
 
         // check subitem
-        Map<String,Object> vertex2 = subTreeMap.get("3").get("key");
-        Map<String,List<Map>> vertexProperties2 = (Map<String, List<Map>>)vertex2.get("properties");
+        final Map<String,Object> vertex2 = subTreeMap.get("3").get("key");
+        final Map<String,List<Map>> vertexProperties2 = (Map<String, List<Map>>)vertex2.get("properties");
 
         assertEquals("lop", vertexProperties2.get("name").get(0).get("value"));
     }

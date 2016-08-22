@@ -90,7 +90,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         final ObjectMapper om = new ObjectMapper();
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        GraphSONModule graphSONModule = version.getBuilder().create(normalize);
+        final GraphSONModule graphSONModule = version.getBuilder().create(normalize);
         om.registerModule(graphSONModule);
         customModules.forEach(om::registerModule);
 
@@ -110,37 +110,33 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             }
         } else if (version == GraphSONVersion.V2_0) {
             if (typeInfo != TypeInfo.NO_TYPES) {
-                GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
+                final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
                 final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder()
                         .typesEmbedding(getTypeInfo())
                         .valuePropertyName(GraphSONTokens.VALUEPROP)
                         .init(JsonTypeInfo.Id.CUSTOM, graphSONTypeIdResolver)
-                        .typeProperty(GraphSONTokens.VALUETYPE)
-                        ;
+                        .typeProperty(GraphSONTokens.VALUETYPE);
 
                 // Registers native Java types that are supported by Jackson
                 registerJavaBaseTypes(graphSONTypeIdResolver);
 
                 // Registers the GraphSON Module's types
-                graphSONModule.getTypeDefinitions()
-                        .forEach(
-                                (targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(String.format("%s:%s", graphSONModule.getTypeNamespace(), typeId), targetClass)
-                        );
-
+                graphSONModule.getTypeDefinitions().forEach(
+                        (targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(
+                                String.format("%s:%s", graphSONModule.getTypeNamespace(), typeId), targetClass));
 
                 // Register types to typeResolver for the Custom modules
                 customModules.forEach(e -> {
                     if (e instanceof TinkerPopJacksonModule) {
-                        TinkerPopJacksonModule mod = (TinkerPopJacksonModule) e;
-                        Map<Class, String> moduleTypeDefinitions = mod.getTypeDefinitions();
+                        final TinkerPopJacksonModule mod = (TinkerPopJacksonModule) e;
+                        final Map<Class, String> moduleTypeDefinitions = mod.getTypeDefinitions();
                         if (moduleTypeDefinitions != null) {
-                            if (mod.getTypeNamespace() == null || mod.getTypeNamespace().isEmpty()) {
+                            if (mod.getTypeNamespace() == null || mod.getTypeNamespace().isEmpty())
                                 throw new IllegalStateException("Cannot specify a module for GraphSON 2.0 with type definitions but without a type Domain. " +
                                         "If no specific type domain is required, use Gremlin's default domain, \"gremlin\" but there may be collisions.");
-                            }
-                            moduleTypeDefinitions.forEach(
-                                    (targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(String.format("%s:%s", mod.getTypeNamespace(), typeId), targetClass)
-                            );
+
+                            moduleTypeDefinitions.forEach((targetClass, typeId) -> graphSONTypeIdResolver.addCustomType(
+                                            String.format("%s:%s", mod.getTypeNamespace(), typeId), targetClass));
                         }
                     }
                 });
@@ -277,7 +273,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          * the value of {@link #embedTypes(boolean)} where {@link TypeInfo#PARTIAL_TYPES} will set it to true and
          * {@link TypeInfo#NO_TYPES} will set it to false.
          *
-         * The level can be NO_TYPES or PARTIAL_TYPES, and could be extended in the future.
+         * The level can be {@link TypeInfo#NO_TYPES} or {@link TypeInfo#PARTIAL_TYPES}, and could be extended in the
+         * future.
          */
         public Builder typeInfo(final TypeInfo typeInfo) {
             this.typeInfo = typeInfo;

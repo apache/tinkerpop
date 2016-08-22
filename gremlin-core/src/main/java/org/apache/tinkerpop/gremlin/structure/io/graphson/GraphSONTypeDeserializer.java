@@ -51,8 +51,8 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
     private static final JavaType arrayJavaType = TypeFactory.defaultInstance().constructType(List.class);
 
 
-    GraphSONTypeDeserializer(JavaType baseType, TypeIdResolver idRes, String typePropertyName,
-                             TypeInfo typeInfo, String valuePropertyName){
+    GraphSONTypeDeserializer(final JavaType baseType, final TypeIdResolver idRes, final String typePropertyName,
+                             final TypeInfo typeInfo, final String valuePropertyName){
         super(baseType, idRes, typePropertyName, false, null);
         this.baseType = baseType;
         this.idRes = idRes;
@@ -83,31 +83,31 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
     }
 
     @Override
-    public Object deserializeTypedFromObject(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public Object deserializeTypedFromObject(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
         return deserialize(jsonParser, deserializationContext);
     }
 
     @Override
-    public Object deserializeTypedFromArray(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public Object deserializeTypedFromArray(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
         return deserialize(jsonParser, deserializationContext);
     }
 
     @Override
-    public Object deserializeTypedFromScalar(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public Object deserializeTypedFromScalar(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
         return deserialize(jsonParser, deserializationContext);
     }
 
     @Override
-    public Object deserializeTypedFromAny(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public Object deserializeTypedFromAny(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
         return deserialize(jsonParser, deserializationContext);
     }
 
     /**
      * Main logic for the deserialization.
      */
-    private Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        TokenBuffer buf = new TokenBuffer(jsonParser.getCodec(), false);
-        TokenBuffer localCopy = new TokenBuffer(jsonParser.getCodec(), false);
+    private Object deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
+        final TokenBuffer buf = new TokenBuffer(jsonParser.getCodec(), false);
+        final TokenBuffer localCopy = new TokenBuffer(jsonParser.getCodec(), false);
 
         // Detect type
         try {
@@ -148,7 +148,7 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
 
                 if (typeName != null && valueCalled) {
                     // Type pattern detected.
-                    JavaType typeFromId = idRes.typeFromId(typeName);
+                    final JavaType typeFromId = idRes.typeFromId(typeName);
 
                     if (!baseType.isJavaLangObject() && baseType != typeFromId) {
                         throw new InstantiationException(
@@ -158,13 +158,13 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
                         );
                     }
 
-                    JsonDeserializer jsonDeserializer = deserializationContext.findContextualValueDeserializer(typeFromId, null);
+                    final JsonDeserializer jsonDeserializer = deserializationContext.findContextualValueDeserializer(typeFromId, null);
 
-                    JsonParser tokenParser = localCopy.asParser();
+                    final JsonParser tokenParser = localCopy.asParser();
                     tokenParser.nextToken();
-                    Object value = jsonDeserializer.deserialize(tokenParser, deserializationContext);
+                    final Object value = jsonDeserializer.deserialize(tokenParser, deserializationContext);
 
-                    JsonToken t = jsonParser.nextToken();
+                    final JsonToken t = jsonParser.nextToken();
                     if (t == JsonToken.END_OBJECT) {
                         // we're good to go
                         return value;
@@ -191,19 +191,17 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
 
         // Concatenate buf + localCopy + end of original content
 
-        JsonParser toUseParser;
-        JsonParser bufferParser = buf.asParser();
-        JsonParser localCopyParser = localCopy.asParser();
+        final JsonParser bufferParser = buf.asParser();
+        final JsonParser localCopyParser = localCopy.asParser();
 
+        final JsonParser[] array = {bufferParser, localCopyParser, jsonParser};
 
-        JsonParser[] array = {bufferParser, localCopyParser, jsonParser};
-
-        toUseParser = new JsonParserConcat(array);
+        final JsonParser toUseParser = new JsonParserConcat(array);
         toUseParser.nextToken();
 
         // If a type has been specified in parameter :
         if (!baseType.isJavaLangObject()) {
-            JsonDeserializer jsonDeserializer = deserializationContext.findContextualValueDeserializer(baseType, null);
+            final JsonDeserializer jsonDeserializer = deserializationContext.findContextualValueDeserializer(baseType, null);
             return jsonDeserializer.deserialize(toUseParser, deserializationContext);
         }
         // Otherwise, detect the current structure :
@@ -217,7 +215,7 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
                 // then consider it a simple type, even though we shouldn't be here if it was a simple type.
                 // TODO : maybe throw an error instead?
                 // throw deserializationContext.mappingException("Roger, we have a problem deserializing");
-                JsonDeserializer jsonDeserializer = deserializationContext.findContextualValueDeserializer(baseType, null);
+                final JsonDeserializer jsonDeserializer = deserializationContext.findContextualValueDeserializer(baseType, null);
                 return jsonDeserializer.deserialize(toUseParser, deserializationContext);
             }
         }

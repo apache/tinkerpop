@@ -48,7 +48,7 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     }
 
     // Override manually a type definition.
-    public GraphSONTypeIdResolver addCustomType(String name, Class clasz) {
+    public GraphSONTypeIdResolver addCustomType(final String name, final Class clasz) {
         // May override types already registered, that's wanted.
         getIdToType().put(name, TypeFactory.defaultInstance().constructType(clasz));
         getTypeToId().put(clasz, name);
@@ -56,16 +56,16 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     }
 
     @Override
-    public void init(JavaType javaType) {
+    public void init(final JavaType javaType) {
     }
 
     @Override
-    public String idFromValue(Object o) {
+    public String idFromValue(final Object o) {
         return idFromValueAndType(o, o.getClass());
     }
 
     @Override
-    public String idFromValueAndType(Object o, Class<?> aClass) {
+    public String idFromValueAndType(final Object o, final Class<?> aClass) {
         if (!getTypeToId().containsKey(aClass)) {
             // If one wants to serialize an object with a type, but hasn't registered
             // a typeID for that class, fail.
@@ -82,12 +82,12 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     }
 
     @Override
-    public JavaType typeFromId(String s) {
+    public JavaType typeFromId(final String s) {
         return typeFromId(null, s);
     }
 
     @Override
-    public JavaType typeFromId(DatabindContext databindContext, String s) {
+    public JavaType typeFromId(final DatabindContext databindContext, final String s) {
         // Get the type from the string from the stored Map. If not found, default to deserialize as a String.
         return getIdToType().containsKey(s)
                 ? getIdToType().get(s)

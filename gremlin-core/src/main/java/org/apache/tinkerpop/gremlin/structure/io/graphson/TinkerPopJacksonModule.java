@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public abstract class TinkerPopJacksonModule extends SimpleModule {
 
-    public TinkerPopJacksonModule(String name) {
+    public TinkerPopJacksonModule(final String name) {
         super(name);
     }
 

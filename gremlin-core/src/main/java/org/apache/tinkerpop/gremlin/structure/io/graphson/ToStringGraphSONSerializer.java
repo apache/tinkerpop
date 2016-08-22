@@ -34,7 +34,8 @@ import java.io.IOException;
  */
 public class ToStringGraphSONSerializer extends ToStringSerializer {
     @Override
-    public void serializeWithType(Object value, JsonGenerator gen, SerializerProvider provider, TypeSerializer typeSer) throws IOException {
+    public void serializeWithType(final Object value, final JsonGenerator gen, final SerializerProvider provider,
+                                  final TypeSerializer typeSer) throws IOException {
         this.serialize(value, gen, provider);
     }
 

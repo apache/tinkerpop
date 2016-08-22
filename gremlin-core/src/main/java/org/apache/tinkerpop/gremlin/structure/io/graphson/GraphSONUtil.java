@@ -56,21 +56,21 @@ public final class GraphSONUtil {
         }
     }
 
-    public static void writeStartObject(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+    public static void writeStartObject(final Object o, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer) throws IOException {
         if (typeSerializer != null)
             typeSerializer.writeTypePrefixForObject(o, jsonGenerator);
         else
             jsonGenerator.writeStartObject();
     }
 
-    public static void writeEndObject(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+    public static void writeEndObject(final Object o, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer) throws IOException {
         if (typeSerializer != null)
             typeSerializer.writeTypeSuffixForObject(o, jsonGenerator);
         else
             jsonGenerator.writeEndObject();
     }
 
-    public static void writeStartArray(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+    public static void writeStartArray(final Object o, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer) throws IOException {
         if (typeSerializer != null)
             typeSerializer.writeTypePrefixForArray(o, jsonGenerator);
         else
@@ -78,14 +78,14 @@ public final class GraphSONUtil {
     }
 
 
-    public static void writeEndArray(Object o, JsonGenerator jsonGenerator, TypeSerializer typeSerializer) throws IOException {
+    public static void writeEndArray(final Object o, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer) throws IOException {
         if (typeSerializer != null)
             typeSerializer.writeTypeSuffixForArray(o, jsonGenerator);
         else
             jsonGenerator.writeEndArray();
     }
 
-    static void safeWriteObjectField(JsonGenerator jsonGenerator, String key, Object value) {
+    static void safeWriteObjectField(final JsonGenerator jsonGenerator, final String key, final Object value) {
         try {
             jsonGenerator.writeObjectField(key, value);
         } catch (IOException e) {

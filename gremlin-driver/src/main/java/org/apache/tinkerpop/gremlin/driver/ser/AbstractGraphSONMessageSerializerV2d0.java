@@ -228,12 +228,9 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
 
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
 
-            if (null == responseMessage.getResult().getData())
-            {
+            if (null == responseMessage.getResult().getData()){
                 jsonGenerator.writeNullField(SerTokens.TOKEN_DATA);
-            }
-            else
-            {
+            } else {
                 jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
                 Object result = responseMessage.getResult().getData();
                 serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);

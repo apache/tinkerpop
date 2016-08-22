@@ -41,24 +41,26 @@ public class GraphSONTypeResolverBuilder extends StdTypeResolverBuilder {
     private String valuePropertyName;
 
     @Override
-    public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
-        TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, false, true);
+    public TypeDeserializer buildTypeDeserializer(final DeserializationConfig config, final JavaType baseType,
+                                                  final Collection<NamedType> subtypes) {
+        final TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, false, true);
         return new GraphSONTypeDeserializer(baseType, idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
     }
 
 
     @Override
-    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
-        TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, true, false);
+    public TypeSerializer buildTypeSerializer(final SerializationConfig config, final JavaType baseType,
+                                              final Collection<NamedType> subtypes) {
+        final TypeIdResolver idRes = this.idResolver(config, baseType, subtypes, true, false);
         return new GraphSONTypeSerializer(idRes, this.getTypeProperty(), typeInfo, valuePropertyName);
     }
 
-    public GraphSONTypeResolverBuilder valuePropertyName(String valuePropertyName) {
+    public GraphSONTypeResolverBuilder valuePropertyName(final String valuePropertyName) {
         this.valuePropertyName = valuePropertyName;
         return this;
     }
 
-    public GraphSONTypeResolverBuilder typesEmbedding(TypeInfo typeInfo) {
+    public GraphSONTypeResolverBuilder typesEmbedding(final TypeInfo typeInfo) {
         this.typeInfo = typeInfo;
         return this;
     }

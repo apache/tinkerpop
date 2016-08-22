@@ -37,15 +37,15 @@ import java.util.ArrayList;
  * @author Kevin Gallardo (https://kgdo.me)
  */
 public class JsonParserConcat extends JsonParserSequence {
-    protected JsonParserConcat(JsonParser[] parsers) {
+    protected JsonParserConcat(final JsonParser[] parsers) {
         super(parsers);
     }
 
-    public static JsonParserConcat createFlattened(JsonParser first, JsonParser second) {
+    public static JsonParserConcat createFlattened(final JsonParser first, final JsonParser second) {
         if (!(first instanceof JsonParserConcat) && !(second instanceof JsonParserConcat)) {
             return new JsonParserConcat(new JsonParser[]{first, second});
         } else {
-            ArrayList p = new ArrayList();
+            final ArrayList p = new ArrayList();
             if (first instanceof JsonParserConcat) {
                 ((JsonParserConcat) first).addFlattenedActiveParsers(p);
             } else {
