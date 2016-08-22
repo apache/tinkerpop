@@ -193,84 +193,44 @@ public class Preferences {
                     @Override
                     void preferenceChange(PreferenceChangeEvent evt) {
                         if (evt.key == PREF_GREMLIN_COLOR) {
-                            if (null == evt.newValue) {
-                                gremlinColor = STORE.get(PREF_GREMLIN_COLOR, PREF_GREMLIN_COLOR_DEFAULT)
-                            } else {
-                                gremlinColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_VERTEX_COLOR) {
-                            if (null == evt.newValue) {
-                                vertexColor =  STORE.get(PREF_VERTEX_COLOR, PREF_VERTEX_COLOR_DEFAULT)
-                            } else {
-                                vertexColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_EDGE_COLOR) {
-                            if (null == evt.newValue) {
-                                edgeColor =  STORE.get(PREF_EDGE_COLOR, PREF_EDGE_COLOR_DEFAULT)
-                            } else {
-                                edgeColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_ERROR_COLOR) {
-                            if (null == evt.newValue) {
-                                errorColor =  STORE.get(PREF_ERROR_COLOR, PREF_ERROR_COLOR_DEFAULT)
-                            } else {
-                                errorColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_INFO_COLOR) {
-                            if (null == evt.newValue) {
-                                infoColor =  STORE.get(PREF_INFO_COLOR, PREF_INFO_COLOR_DEFAULT)
-                            } else {
-                                infoColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_STRING_COLOR) {
-                            if (null == evt.newValue) {
-                                stringColor =  STORE.get(PREF_STRING_COLOR, PREF_STRING_COLOR_DEFAULT)
-                            } else {
-                                stringColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_NUMBER_COLOR) {
-                            if (null == evt.newValue) {
-                                numberColor =  STORE.get(PREF_NUMBER_COLOR, PREF_NUMBER_COLOR_DEFAULT)
-                            } else {
-                                numberColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_T_COLOR) {
-                            if (null == evt.newValue) {
-                                tColor =  STORE.get(PREF_T_COLOR, PREF_T_COLOR_DEFAULT)
-                            } else {
-                                tColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_INPUT_PROMPT_COLOR) {
-                            if (null == evt.newValue) {
-                                inputPromptColor =  STORE.get(PREF_INPUT_PROMPT_COLOR, PREF_INPUT_PROMPT_COLOR_DEFAULT)
-                            } else {
-                                inputPromptColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_RESULT_PROMPT_COLOR) {
-                            if (null == evt.newValue) {
-                                resultPromptColor =  STORE.get(PREF_RESULT_PROMPT_COLOR, PREF_RESULT_PROMPT_COLOR_DEFAULT)
-                            } else {
-                                resultPromptColor = evt.newValue
-                            }
-                        } else   if (evt.key == PREF_EMPTY_RESULT_IND) {
+                            gremlinColor = getValidColor(PREF_GREMLIN_COLOR, evt.newValue, PREF_GREMLIN_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_VERTEX_COLOR) {
+                            vertexColor =  getValidColor(PREF_VERTEX_COLOR, evt.newValue, PREF_VERTEX_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_EDGE_COLOR) {
+                            edgeColor =  getValidColor(PREF_EDGE_COLOR, evt.newValue, PREF_EDGE_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_ERROR_COLOR) {
+                            errorColor =  getValidColor(PREF_ERROR_COLOR, evt.newValue, PREF_ERROR_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_INFO_COLOR) {
+                            infoColor =  getValidColor(PREF_INFO_COLOR, evt.newValue, PREF_INFO_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_STRING_COLOR) {
+                            stringColor =  getValidColor(PREF_STRING_COLOR, evt.newValue, PREF_STRING_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_NUMBER_COLOR) {
+                            numberColor =  getValidColor(PREF_NUMBER_COLOR, evt.newValue, PREF_NUMBER_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_T_COLOR) {
+                            tColor =  getValidColor(PREF_T_COLOR, evt.newValue, PREF_T_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_INPUT_PROMPT_COLOR) {
+                            inputPromptColor =  getValidColor(PREF_INPUT_PROMPT_COLOR, evt.newValue, PREF_INPUT_PROMPT_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_RESULT_PROMPT_COLOR) {
+                            resultPromptColor =  getValidColor(PREF_RESULT_PROMPT_COLOR, evt.newValue, PREF_RESULT_PROMPT_COLOR_DEFAULT)
+                        } else if (evt.key == PREF_EMPTY_RESULT_IND) {
                             if (null == evt.newValue) {
                                 emptyResult =  STORE.get(PREF_EMPTY_RESULT_IND, PREF_EMPTY_RESULT_IND_DEFAULT)
                             } else {
                                 emptyResult = evt.newValue
                             }
-                        } else   if (evt.key == PREF_INPUT_PROMPT) {
+                        } else if (evt.key == PREF_INPUT_PROMPT) {
                             if (null == evt.newValue) {
                                 inputPrompt =  STORE.get(PREF_INPUT_PROMPT, PREF_INPUT_PROMPT_DEFAULT)
                             } else {
                                 inputPrompt = evt.newValue
                             }
-                        } else   if (evt.key == PREF_RESULT_PROMPT) {
+                        } else if (evt.key == PREF_RESULT_PROMPT) {
                             if (null == evt.newValue) {
                                 resultPrompt =  STORE.get(PREF_RESULT_PROMPT, PREF_RESULT_PROMPT_DEFAULT)
                             } else {
                                 resultPrompt = evt.newValue
                             }
-                        }  else   if (evt.key == PREF_COLORS) {
+                        }  else if (evt.key == PREF_COLORS) {
                             if (null == evt.newValue) {
                                 colors =  Boolean.valueOf(STORE.get(PREF_COLORS, PREF_COLORS_DEFAULT.toString()))
                             } else {
@@ -282,6 +242,20 @@ public class Preferences {
 
     }
 
+    private static String getValidColor(String key, Object desired, String defaultValue) {
+        String result = desired
+        if (null == result) {
+            result = STORE.get(key, defaultValue)
+        }
+        try {
+            Colorizer.render(result, "test")
+        } catch (Exception e) {
+            println(Colorizer.render(errorColor, "Invalid color option for ${key}: ${result}"))
+            result = defaultValue
+        }
+        return result
+    }
+
     private static loadDefaultValues() {
         try {
             maxIteration = STORE.get(PREFERENCE_ITERATION_MAX, DEFAULT_ITERATION_MAX.toString()).toInteger()
@@ -291,25 +265,25 @@ public class Preferences {
             maxIteration = DEFAULT_ITERATION_MAX
         }
 
-        gremlinColor = STORE.get(PREF_GREMLIN_COLOR, PREF_GREMLIN_COLOR_DEFAULT)
+        gremlinColor = getValidColor(PREF_GREMLIN_COLOR, null, PREF_GREMLIN_COLOR_DEFAULT)
 
-        vertexColor =  STORE.get(PREF_VERTEX_COLOR, PREF_VERTEX_COLOR_DEFAULT)
+        vertexColor =  getValidColor(PREF_VERTEX_COLOR, null, PREF_VERTEX_COLOR_DEFAULT)
 
-        edgeColor =  STORE.get(PREF_EDGE_COLOR, PREF_EDGE_COLOR_DEFAULT)
+        edgeColor =  getValidColor(PREF_EDGE_COLOR, null, PREF_EDGE_COLOR_DEFAULT)
 
-        errorColor =  STORE.get(PREF_ERROR_COLOR, PREF_ERROR_COLOR_DEFAULT)
+        errorColor =  getValidColor(PREF_ERROR_COLOR, null, PREF_ERROR_COLOR_DEFAULT)
 
-        infoColor =  STORE.get(PREF_INFO_COLOR, PREF_INFO_COLOR_DEFAULT)
+        infoColor =  getValidColor(PREF_INFO_COLOR, null, PREF_INFO_COLOR_DEFAULT)
 
-        stringColor =  STORE.get(PREF_STRING_COLOR, PREF_STRING_COLOR_DEFAULT)
+        stringColor =  getValidColor(PREF_STRING_COLOR, null, PREF_STRING_COLOR_DEFAULT)
 
-        numberColor =  STORE.get(PREF_NUMBER_COLOR, PREF_NUMBER_COLOR_DEFAULT)
+        numberColor =  getValidColor(PREF_NUMBER_COLOR, null, PREF_NUMBER_COLOR_DEFAULT)
 
-        tColor =  STORE.get(PREF_T_COLOR, PREF_T_COLOR_DEFAULT)
+        tColor =  getValidColor(PREF_T_COLOR, null, PREF_T_COLOR_DEFAULT)
 
-        inputPromptColor =  STORE.get(PREF_INPUT_PROMPT_COLOR, PREF_INPUT_PROMPT_COLOR_DEFAULT)
+        inputPromptColor =  getValidColor(PREF_INPUT_PROMPT_COLOR, null, PREF_INPUT_PROMPT_COLOR_DEFAULT)
 
-        resultPromptColor =  STORE.get(PREF_RESULT_PROMPT_COLOR, PREF_RESULT_PROMPT_COLOR_DEFAULT)
+        resultPromptColor =  getValidColor(PREF_RESULT_PROMPT_COLOR, null, PREF_RESULT_PROMPT_COLOR_DEFAULT)
 
         emptyResult =  STORE.get(PREF_EMPTY_RESULT_IND, PREF_EMPTY_RESULT_IND_DEFAULT)
 
