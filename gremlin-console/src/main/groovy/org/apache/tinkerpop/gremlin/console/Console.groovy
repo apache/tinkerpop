@@ -18,11 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import static org.fusesource.jansi.Ansi.ansi
-
-import java.util.prefs.PreferenceChangeEvent
-import java.util.prefs.PreferenceChangeListener
-
 import jline.TerminalFactory
 import jline.console.history.FileHistory
 
@@ -42,16 +37,13 @@ import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
-import org.codehaus.groovy.tools.shell.AnsiDetector
 import org.codehaus.groovy.tools.shell.ExitNotification
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.codehaus.groovy.tools.shell.util.HelpFormatter
-import org.codehaus.groovy.tools.shell.util.Preferences
 import org.fusesource.jansi.Ansi
-import org.fusesource.jansi.AnsiConsole
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -60,57 +52,8 @@ class Console {
     static {
         // this is necessary so that terminal doesn't lose focus to AWT
         System.setProperty("java.awt.headless", "true")
-        // must be called before IO(), since it modifies System.in
-        // Install the system adapters, replaces System.out and System.err
-        // Must be called before using IO(), because IO stores refs to System.out and System.err
-        AnsiConsole.systemInstall()
-        // Register jline ansi detector
-        Ansi.setDetector(new AnsiDetector())
-        Ansi.enabled = true
+        Colorizer.installAnsi()
     }
-
-    public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
-    private static final int DEFAULT_ITERATION_MAX = 100
-    private static int maxIteration = DEFAULT_ITERATION_MAX
-
-    public static final String PREF_GREMLIN_COLOR = "gremlin.color"
-    def gremlinColor = { Preferences.get(PREF_GREMLIN_COLOR, "reset") }
-
-    public static final String PREF_VERTEX_COLOR = "vertex.color"
-    def vertexColor = { Preferences.get(PREF_VERTEX_COLOR, "reset") }
-
-    public static final String PREF_EDGE_COLOR = "edge.color"
-    def edgeColor = { Preferences.get(PREF_EDGE_COLOR, "reset") }
-
-    public static final String PREF_ERROR_COLOR = "error.color"
-    def errorColor = { Preferences.get(PREF_ERROR_COLOR, "reset") }
-
-    public static final String PREF_INFO_COLOR = "info.color"
-    def infoColor = { Preferences.get(PREF_INFO_COLOR, "reset") }
-
-    public static final String PREF_STRING_COLOR = "string.color"
-    def stringColor = { Preferences.get(PREF_STRING_COLOR, "reset") }
-
-    public static final String PREF_NUMBER_COLOR = "number.color"
-    def numberColor = { Preferences.get(PREF_NUMBER_COLOR, "reset") }
-
-    public static final String PREF_T_COLOR = "T.color"
-    def tColor = { Preferences.get(PREF_T_COLOR, "reset") }
-
-    public static final String PREF_INPUT_PROMPT_COLOR = "input.prompt.color"
-    def inputPromptColor = { Preferences.get(PREF_INPUT_PROMPT_COLOR, "reset") }
-
-    public static final String PREF_RESULT_PROMPT_COLOR = "result.prompt.color"
-    def resultPromptColor = { Preferences.get(PREF_RESULT_PROMPT_COLOR, "reset") }
-
-    public static final String PREF_EMPTY_RESULT_IND = "empty.result.indicator"
-    def emptyResult = { Preferences.get(PREF_EMPTY_RESULT_IND, "null") }
-
-    public static final String PREF_INPUT_PROMPT = "input.prompt"
-    def inputPrompt = { Preferences.get(PREF_INPUT_PROMPT, "gremlin>") }
-
-    public static final String PREF_RESULT_PROMPT = "result.prompt"
-    static def resultPrompt = { Preferences.get(PREF_RESULT_PROMPT, "==>") }
 
     private static final String IMPORT_SPACE = "import "
     private static final String IMPORT_STATIC_SPACE = "import static "
@@ -136,24 +79,10 @@ class Console {
 
         if (!io.quiet) {
             io.out.println()
-            io.out.println("         " + ansiRender(gremlinColor, "\\,,,/"))
-            io.out.println("         " + ansiRender(gremlinColor, "(o o)"))
-            io.out.println("" + ansiRender(gremlinColor, "-----oOOo-(3)-oOOo-----"))
+            io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "\\,,,/"))
+            io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "(o o)"))
+            io.out.println("" + Colorizer.render(Preferences.gremlinColor, "-----oOOo-(3)-oOOo-----"))
         }
-
-        maxIteration = Preferences.get(PREFERENCE_ITERATION_MAX, DEFAULT_ITERATION_MAX.toString()).toInteger()
-        Preferences.addChangeListener(new PreferenceChangeListener() {
-                    @Override
-                    void preferenceChange(PreferenceChangeEvent evt) {
-                        if (evt.key == PREFERENCE_ITERATION_MAX && null != evt.newValue)
-                        try {
-                            maxIteration = Integer.parseInt(evt.newValue)
-                        } catch (NumberFormatException e) {
-                            io.out.println(ansiRender(errorColor,"Unable to convert '${evt.newValue}' to integer. Using default ${DEFAULT_ITERATION_MAX}"))
-                            maxIteration = DEFAULT_ITERATION_MAX
-                        }
-                    }
-                })
 
         final Mediator mediator = new Mediator(this)
 
@@ -187,7 +116,7 @@ class Console {
             groovy.setHistory(history)
             runner.setHistory(history)
         } catch (IOException ignored) {
-            io.err.println(ansiRender(errorColor, "Unable to create history file: " + ConsoleFs.HISTORY_FILE))
+            io.err.println(Colorizer.render(Preferences.errorColor, "Unable to create history file: " + ConsoleFs.HISTORY_FILE))
         }
 
         GremlinLoader.load()
@@ -203,7 +132,7 @@ class Console {
                     pluggedIn.activate()
 
                     if (!io.quiet)
-                        io.out.println(ansiRender(infoColor, "plugin activated: " + plugin.getName()))
+                        io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + plugin.getName()))
                 }
             }
         }
@@ -238,7 +167,7 @@ class Console {
             groovy.setResultHook(handleResultShowNothing)
     }
 
-    private def handlePrompt = { interactive ? ansiRender(inputPromptColor, inputPrompt.call() + " ") : "" }
+    private def handlePrompt = { interactive ? Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + " ") : "" }
 
     private def handleResultShowNothing = { args -> null }
 
@@ -253,15 +182,15 @@ class Console {
         while (true) {
             if (this.tempIterator.hasNext()) {
                 int counter = 0;
-                while (this.tempIterator.hasNext() && (maxIteration == -1 || counter < maxIteration)) {
+                while (this.tempIterator.hasNext() && (Preferences.maxIteration == -1 || counter < Preferences.maxIteration)) {
                     final Object object = this.tempIterator.next()
-                    String prompt = ansiRender(resultPromptColor, buildResultPrompt())
+                    String prompt = Colorizer.render(Preferences.resultPromptColor, buildResultPrompt())
                     String colorizedResult = colorizeResult(object)
-                    io.out.println(prompt + ((null == object) ? emptyResult.call() : colorizedResult))
+                    io.out.println(prompt + ((null == object) ? emptyResult : colorizedResult))
                     counter++;
                 }
                 if (this.tempIterator.hasNext())
-                    io.out.println(ansiRender(resultPromptColor,ELLIPSIS));
+                    io.out.println(Colorizer.render(Preferences.resultPromptColor,ELLIPSIS));
                 this.tempIterator = Collections.emptyIterator();
                 return null
             } else {
@@ -302,10 +231,10 @@ class Console {
                         }
                     } else if (result instanceof TraversalExplanation) {
                         final int width = TerminalFactory.get().getWidth();
-                        io.out.println(ansiRender(resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
+                        io.out.println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
-                        io.out.println(ansiRender(resultPromptColor,buildResultPrompt()).toString() + ((null == result) ? emptyResult.call() : colorizeResult(result)))
+                        io.out.println(Colorizer.render(Preferences.resultPromptColor,buildResultPrompt()).toString() + ((null == result) ? emptyResult : colorizeResult(result)))
                         return null
                     }
                 } catch (final Exception e) {
@@ -318,9 +247,9 @@ class Console {
 
     def colorizeResult = { object ->
         if (object instanceof Vertex) {
-            return ansiRender(vertexColor, object.toString())
+            return Colorizer.render(Preferences.vertexColor, object.toString())
         } else if (object instanceof Edge) {
-            return ansiRender(edgeColor, object.toString())
+            return Colorizer.render(Preferences.edgeColor, object.toString())
         } else if (object instanceof Iterable) {
             List<String> buf = new ArrayList<>();
             def pathIter = object.iterator()
@@ -336,11 +265,11 @@ class Console {
             }
             return ("[" + buf.join(",") + "]")
         } else if (object instanceof String) {
-            return ansiRender(stringColor, object)
+            return Colorizer.render(Preferences.stringColor, object)
         } else if (object instanceof Number) {
-            return ansiRender(numberColor, object)
+            return Colorizer.render(Preferences.numberColor, object)
         } else if (object instanceof T) {
-            return ansiRender(tColor, object)
+            return Colorizer.render(Preferences.tColor, object)
         } else {
             return object.toString()
         }
@@ -354,14 +283,14 @@ class Console {
                 String message = e.getMessage()
                 if (null != message) {
                     message = message.replace("startup failed:", "")
-                    io.err.println(ansiRender(errorColor, message.trim()))
+                    io.err.println(Colorizer.render(Preferences.errorColor, message.trim()))
                 } else {
-                    io.err.println(ansiRender(errorColor,e))
+                    io.err.println(Colorizer.render(Preferences.errorColor,e))
                 }
 
                 if (interactive) {
-                    io.err.println(ansiRender(infoColor,"Type ':help' or ':h' for help."))
-                    io.err.print(ansiRender(errorColor, "Display stack trace? [yN]"))
+                    io.err.println(Colorizer.render(Preferences.infoColor,"Type ':help' or ':h' for help."))
+                    io.err.print(Colorizer.render(Preferences.errorColor, "Display stack trace? [yN]"))
                     io.err.flush()
                     String line = new BufferedReader(io.in).readLine()
                     if (null == line)
@@ -376,11 +305,11 @@ class Console {
                     System.exit(1)
                 }
             } catch (Exception ignored) {
-                io.err.println(ansiRender(errorColor, "An undefined error has occurred: " + err))
+                io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err))
                 if (!interactive) System.exit(1)
             }
         } else {
-            io.err.println(ansiRender(errorColor, "An undefined error has occurred: " + err.toString()))
+            io.err.println(Colorizer.render(Preferences.errorColor, "An undefined error has occurred: " + err.toString()))
             if (!interactive) System.exit(1)
         }
 
@@ -396,7 +325,7 @@ class Console {
         if (groovyshellEnv != null)
             return groovyshellEnv
 
-        return resultPrompt.call()
+        return Preferences.resultPrompt
     }
 
     private void executeInShell(final List<String> scriptAndArgs) {
@@ -418,7 +347,7 @@ class Console {
                     lineNumber++
                     groovy.execute(line)
                 } catch (Exception ex) {
-                    io.err.println(ansiRender(errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
+                    io.err.println(Colorizer.render(Preferences.errorColor, "Error in $scriptFile at [$lineNumber: $line] - ${ex.message}"))
                     if (interactive)
                         break
                     else {
@@ -431,20 +360,17 @@ class Console {
 
             if (!interactive) System.exit(0)
         } catch (FileNotFoundException ignored) {
-            io.err.println(ansiRender(errorColor, "Gremlin file not found at [$scriptFile]."))
+            io.err.println(Colorizer.render(Preferences.errorColor, "Gremlin file not found at [$scriptFile]."))
             if (!interactive) System.exit(1)
         } catch (Exception ex) {
-            io.err.println(ansiRender(errorColor, "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
+            io.err.println(Colorizer.render(Preferences.errorColor, "Failure processing Gremlin script [$scriptFile] - ${ex.message}"))
             if (!interactive) System.exit(1)
         }
     }
 
-    def ansiRender = { color, text -> Ansi.ansi().render(String.format("@|%s %s|@", color.call(), text)).toString() }
-
     public static void main(final String[] args) {
 
-//        ExpandoMetaClass.enableGlobally()
-        org.apache.tinkerpop.gremlin.console.Preferences.expandoMagic()
+        Preferences.expandoMagic()
 
         // need to do some up front processing to try to support "bin/gremlin.sh init.groovy" until this deprecated
         // feature can be removed. ultimately this should be removed when a breaking change can go in
