@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -40,6 +41,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
@@ -50,7 +52,7 @@ public class WebSocketClient extends AbstractClient {
     private final Channel channel;
 
     public WebSocketClient() {
-        this(URI.create("ws://localhost:8182"));
+        this(URI.create("ws://localhost:8182/gremlin"));
     }
 
     public WebSocketClient(final URI uri) {
@@ -66,7 +68,7 @@ public class WebSocketClient extends AbstractClient {
             final WebSocketClientHandler wsHandler =
                     new WebSocketClientHandler(
                             WebSocketClientHandshakerFactory.newHandshaker(
-                                    uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()));
+                                    uri, WebSocketVersion.V13, null, false, HttpHeaders.EMPTY_HEADERS, 65536));
             final MessageSerializer serializer = new GryoMessageSerializerV1d0();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -75,7 +77,7 @@ public class WebSocketClient extends AbstractClient {
                             final ChannelPipeline p = ch.pipeline();
                             p.addLast(
                                     new HttpClientCodec(),
-                                    new HttpObjectAggregator(8192),
+                                    new HttpObjectAggregator(65536),
                                     wsHandler,
                                     new WebSocketGremlinRequestEncoder(true, serializer),
                                     new WebSocketGremlinResponseDecoder(serializer),
@@ -84,7 +86,7 @@ public class WebSocketClient extends AbstractClient {
                     });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-            wsHandler.handshakeFuture().sync();
+            wsHandler.handshakeFuture().get(10000, TimeUnit.MILLISECONDS);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
