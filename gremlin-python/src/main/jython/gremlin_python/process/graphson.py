@@ -60,15 +60,15 @@ class BytecodeSerializer(GraphSONSerializer):
         sources = []
         for instruction in bytecode.source_instructions:
             inst = []
-            inst.append(_SymbolHelper.toGremlin(instruction[0]))
-            for arg in instruction[1]:
+            inst.append(instruction[0])
+            for arg in instruction[1:]:
                 inst.append(GraphSONWriter._dictify(arg))
             sources.append(inst)
         steps = []
         for instruction in bytecode.step_instructions:
             inst = []
-            inst.append(_SymbolHelper.toGremlin(instruction[0]))
-            for arg in instruction[1]:
+            inst.append(instruction[0])
+            for arg in instruction[1:]:
                 inst.append(GraphSONWriter._dictify(arg))
             steps.append(inst)
         if len(sources) > 0:
@@ -90,7 +90,7 @@ class PSerializer(GraphSONSerializer):
     def _dictify(self, p):
         dict = {}
         dict["@type"] = "P"
-        dict["predicate"] = _SymbolHelper.toGremlin(p.operator)
+        dict["predicate"] = p.operator
         if p.other is None:
             dict["value"] = GraphSONWriter._dictify(p.value)
         else:

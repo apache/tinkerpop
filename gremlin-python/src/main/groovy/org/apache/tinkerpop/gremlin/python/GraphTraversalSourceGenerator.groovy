@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.python
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -76,46 +75,45 @@ under the License.
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
 """)
-        GraphTraversalSource.getMethods()
-                .findAll {
-            !it.name.equals("clone") &&
-                    !it.name.equals(TraversalSource.Symbols.withBindings) &&
-                    !it.name.equals(TraversalSource.Symbols.withRemote)
-        }
-                .collect { it.name }
-                .unique()
-                .sort { a, b -> a <=> b }
-                .each { method ->
-            final Class<?> returnType = (GraphTraversalSource.getMethods() as Set).findAll {
-                it.name.equals(method)
-            }.collect {
-                it.returnType
-            }[0]
-            if (null != returnType) {
-                if (Traversal.isAssignableFrom(returnType)) {
-                    pythonClass.append(
-                            """  def ${method}(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    traversal.bytecode.add_step("${method}", *args)
-    return traversal
-""")
-                } else if (TraversalSource.isAssignableFrom(returnType)) {
+        GraphTraversalSource.getMethods(). // SOURCE STEPS
+                findAll { GraphTraversalSource.class.equals(it.returnType) }.
+                findAll {
+                    !it.name.equals("clone") &&
+                            !it.name.equals(TraversalSource.Symbols.withBindings) &&
+                            !it.name.equals(TraversalSource.Symbols.withRemote)
+                }.
+                collect { SymbolHelper.toPython(it.name) }.
+                unique().
+                sort { a, b -> a <=> b }.
+                forEach { method ->
                     pythonClass.append(
                             """  def ${method}(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
-    source.bytecode.add_source("${method}", *args)
+    source.bytecode.add_source("${SymbolHelper.toJava(method)}", *args)
     return source
 """)
                 }
-            }
-        }
-        pythonClass.append("""  def withRemote(self, remote_connection):
+        pythonClass.append(
+                """  def withRemote(self, remote_connection):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
     return source
   def withBindings(self, bindings):
     return self
 """)
+        GraphTraversalSource.getMethods(). // SPAWN STEPS
+                findAll { GraphTraversal.class.equals(it.returnType) }.
+                collect { SymbolHelper.toPython(it.name) }.
+                unique().
+                sort { a, b -> a <=> b }.
+                forEach { method ->
+                    pythonClass.append(
+                            """  def ${method}(self, *args):
+    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal.bytecode.add_step("${SymbolHelper.toJava(method)}", *args)
+    return traversal
+""")
+                }
         pythonClass.append("\n\n")
 
 ////////////////////
@@ -125,7 +123,6 @@ under the License.
                 """class GraphTraversal(Traversal):
   def __init__(self, graph, traversal_strategies, bytecode):
     Traversal.__init__(self, graph, traversal_strategies, bytecode)
-
   def __getitem__(self, index):
     if isinstance(index, int):
         return self.range(index, index + 1)
@@ -133,58 +130,54 @@ under the License.
         return self.range(index.start, index.stop)
     else:
         raise TypeError("Index must be int or slice")
-
   def __getattr__(self, key):
     return self.values(key)
 """)
-        GraphTraversal.getMethods()
-                .findAll { !it.name.equals("clone") }
-                .collect { SymbolHelper.toPython(it.name) }
-                .unique()
-                .sort { a, b -> a <=> b }
-                .each { method ->
-            final Class<?> returnType = (GraphTraversal.getMethods() as Set).findAll {
-                it.name.equals(SymbolHelper.toJava(method))
-            }.collect { it.returnType }[0]
-            if (null != returnType && Traversal.isAssignableFrom(returnType)) {
-                pythonClass.append(
-                        """  def ${method}(self, *args):
-    self.bytecode.add_step("${method}", *args)
+        GraphTraversal.getMethods().
+                findAll { GraphTraversal.class.equals(it.returnType) }.
+                findAll { !it.name.equals("clone") }.
+                collect { SymbolHelper.toPython(it.name) }.
+                unique().
+                sort { a, b -> a <=> b }.
+                forEach { method ->
+                    pythonClass.append(
+                            """  def ${method}(self, *args):
+    self.bytecode.add_step("${SymbolHelper.toJava(method)}", *args)
     return self
 """)
-            }
-        };
+                };
         pythonClass.append("\n\n")
 
 ////////////////////////
 // AnonymousTraversal //
 ////////////////////////
         pythonClass.append("class __(object):\n");
-        __.getMethods()
-                .findAll { Traversal.isAssignableFrom(it.returnType) }
-                .collect { SymbolHelper.toPython(it.name) }
-                .unique()
-                .sort { a, b -> a <=> b }
-                .each { method ->
-            pythonClass.append(
-                    """  @staticmethod
+        __.class.getMethods().
+                findAll { GraphTraversal.class.equals(it.returnType) }.
+                findAll { Modifier.isStatic(it.getModifiers()) }.
+                collect { SymbolHelper.toPython(it.name) }.
+                unique().
+                sort { a, b -> a <=> b }.
+                forEach { method ->
+                    pythonClass.append(
+                            """  @staticmethod
   def ${method}(*args):
     return GraphTraversal(None, None, Bytecode()).${method}(*args)
 """)
-        };
+                };
         pythonClass.append("\n\n")
-
-        __.class.getMethods()
-                .findAll { Traversal.class.isAssignableFrom(it.getReturnType()) }
-                .findAll { Modifier.isStatic(it.getModifiers()) }
-                .findAll { !it.name.equals("__") }
-                .collect { SymbolHelper.toPython(it.name) }
-                .unique()
-                .sort { a, b -> a <=> b }
-                .forEach {
-            pythonClass.append("def ${it}(*args):\n").append("      return __.${it}(*args)\n\n")
-            pythonClass.append("statics.add_static('${it}', ${it})\n\n")
-        }
+        // add to gremlin.python.statics
+        __.class.getMethods().
+                findAll { GraphTraversal.class.equals(it.returnType) }.
+                findAll { Modifier.isStatic(it.getModifiers()) }.
+                findAll { !it.name.equals("__") }.
+                collect { SymbolHelper.toPython(it.name) }.
+                unique().
+                sort { a, b -> a <=> b }.
+                forEach {
+                    pythonClass.append("def ${it}(*args):\n").append("      return __.${it}(*args)\n\n")
+                    pythonClass.append("statics.add_static('${it}', ${it})\n\n")
+                }
         pythonClass.append("\n\n")
 
 // save to a python file

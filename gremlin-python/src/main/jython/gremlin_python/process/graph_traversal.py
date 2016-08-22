@@ -31,22 +31,6 @@ class GraphTraversalSource(object):
     self.bytecode = bytecode
   def __repr__(self):
     return "graphtraversalsource[" + str(self.graph) + "]"
-  def E(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    traversal.bytecode.add_step("E", *args)
-    return traversal
-  def V(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    traversal.bytecode.add_step("V", *args)
-    return traversal
-  def addV(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    traversal.bytecode.add_step("addV", *args)
-    return traversal
-  def inject(self, *args):
-    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
-    traversal.bytecode.add_step("inject", *args)
-    return traversal
   def withBulk(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
@@ -81,12 +65,27 @@ class GraphTraversalSource(object):
     return source
   def withBindings(self, bindings):
     return self
+  def E(self, *args):
+    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal.bytecode.add_step("E", *args)
+    return traversal
+  def V(self, *args):
+    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal.bytecode.add_step("V", *args)
+    return traversal
+  def addV(self, *args):
+    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal.bytecode.add_step("addV", *args)
+    return traversal
+  def inject(self, *args):
+    traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+    traversal.bytecode.add_step("inject", *args)
+    return traversal
 
 
 class GraphTraversal(Traversal):
   def __init__(self, graph, traversal_strategies, bytecode):
     Traversal.__init__(self, graph, traversal_strategies, bytecode)
-
   def __getitem__(self, index):
     if isinstance(index, int):
         return self.range(index, index + 1)
@@ -94,32 +93,31 @@ class GraphTraversal(Traversal):
         return self.range(index.start, index.stop)
     else:
         raise TypeError("Index must be int or slice")
-
   def __getattr__(self, key):
     return self.values(key)
   def V(self, *args):
     self.bytecode.add_step("V", *args)
     return self
   def _and(self, *args):
-    self.bytecode.add_step("_and", *args)
+    self.bytecode.add_step("and", *args)
     return self
   def _as(self, *args):
-    self.bytecode.add_step("_as", *args)
+    self.bytecode.add_step("as", *args)
     return self
   def _from(self, *args):
-    self.bytecode.add_step("_from", *args)
+    self.bytecode.add_step("from", *args)
     return self
   def _in(self, *args):
-    self.bytecode.add_step("_in", *args)
+    self.bytecode.add_step("in", *args)
     return self
   def _is(self, *args):
-    self.bytecode.add_step("_is", *args)
+    self.bytecode.add_step("is", *args)
     return self
   def _not(self, *args):
-    self.bytecode.add_step("_not", *args)
+    self.bytecode.add_step("not", *args)
     return self
   def _or(self, *args):
-    self.bytecode.add_step("_or", *args)
+    self.bytecode.add_step("or", *args)
     return self
   def addE(self, *args):
     self.bytecode.add_step("addE", *args)
@@ -135,9 +133,6 @@ class GraphTraversal(Traversal):
     return self
   def aggregate(self, *args):
     self.bytecode.add_step("aggregate", *args)
-    return self
-  def asAdmin(self, *args):
-    self.bytecode.add_step("asAdmin", *args)
     return self
   def barrier(self, *args):
     self.bytecode.add_step("barrier", *args)
