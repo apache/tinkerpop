@@ -403,7 +403,7 @@ final class GraphSONTraversalSerializersV2d0 {
         }
 
         @Override
-        Traverser createObject(final Map<String, Object> data) {
+        public Traverser createObject(final Map<String, Object> data) {
             return new DefaultRemoteTraverser<>(data.get(GraphSONTokens.VALUE), (Long) data.get(GraphSONTokens.BULK));
         }
     }

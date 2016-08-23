@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-abstract class AbstractObjectDeserializer<T> extends StdDeserializer<T> {
+public abstract class AbstractObjectDeserializer<T> extends StdDeserializer<T> {
 
     protected AbstractObjectDeserializer(final Class<T> clazz) {
         super(clazz);
@@ -47,5 +47,5 @@ abstract class AbstractObjectDeserializer<T> extends StdDeserializer<T> {
         return createObject(mapData);
     }
 
-    abstract T createObject(final Map<String, Object> data);
+    public abstract T createObject(final Map<String, Object> data);
 }

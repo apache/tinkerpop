@@ -40,6 +40,8 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONDeserializer;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV1d0;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV2d0;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -58,6 +60,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -82,42 +85,43 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
      */
     static final class GraphSONModuleV2d0 extends GraphSONModule {
 
-        private static final LinkedHashMap<Class, String> TYPE_DEFINITIONS = new LinkedHashMap<Class, String>() {{
-            // Those don't have deserializers because handled by Jackson,
-            // but we still want to rename them in GraphSON
-            put(ByteBuffer.class, "bytebuffer");
-            put(Short.class, "int16");
-            put(Integer.class, "int32");
-            put(Long.class, "int64");
-            put(Double.class, "double");
-            put(Float.class, "float");
+        private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
+                new LinkedHashMap<Class, String>() {{
+                    // Those don't have deserializers because handled by Jackson,
+                    // but we still want to rename them in GraphSON
+                    put(ByteBuffer.class, "bytebuffer");
+                    put(Short.class, "int16");
+                    put(Integer.class, "int32");
+                    put(Long.class, "int64");
+                    put(Double.class, "double");
+                    put(Float.class, "float");
 
-            // Time serializers/deserializers
-            put(Duration.class, "duration");
-            put(Instant.class, "instant");
-            put(LocalDate.class, "localdate");
-            put(LocalDateTime.class, "localdatetime");
-            put(LocalTime.class, "localtime");
-            put(MonthDay.class, "monthday");
-            put(OffsetDateTime.class, "offsetdatetime");
-            put(OffsetTime.class, "offsettime");
-            put(Period.class, "period");
-            put(Year.class, "year");
-            put(YearMonth.class, "yearmonth");
-            put(ZonedDateTime.class, "zoneddatetime");
-            put(ZoneOffset.class, "zoneoffset");
+                    // Time serializers/deserializers
+                    put(Duration.class, "duration");
+                    put(Instant.class, "instant");
+                    put(LocalDate.class, "localdate");
+                    put(LocalDateTime.class, "localdatetime");
+                    put(LocalTime.class, "localtime");
+                    put(MonthDay.class, "monthday");
+                    put(OffsetDateTime.class, "offsetdatetime");
+                    put(OffsetTime.class, "offsettime");
+                    put(Period.class, "period");
+                    put(Year.class, "year");
+                    put(YearMonth.class, "yearmonth");
+                    put(ZonedDateTime.class, "zoneddatetime");
+                    put(ZoneOffset.class, "zoneoffset");
 
-            // Tinkerpop Graph objects
-            put(Vertex.class, "vertex");
-            put(Edge.class, "edge");
-            put(Property.class, "property");
-            put(Path.class, "path");
-            put(VertexProperty.class, "vertexproperty");
-            put(Metrics.class, "metrics");
-            put(TraversalMetrics.class, "traversalmetrics");
-            put(Traverser.class, "traverser");
-            put(Tree.class, "tree");
-        }};
+                    // Tinkerpop Graph objects
+                    put(Vertex.class, "vertex");
+                    put(Edge.class, "edge");
+                    put(Property.class, "property");
+                    put(Path.class, "path");
+                    put(VertexProperty.class, "vertexproperty");
+                    put(Metrics.class, "metrics");
+                    put(TraversalMetrics.class, "traversalmetrics");
+                    put(Traverser.class, "traverser");
+                    put(Tree.class, "tree");
+                }});
 
         /**
          * Constructs a new object.

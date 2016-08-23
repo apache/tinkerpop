@@ -384,7 +384,7 @@ public class IoTest {
             graph.addVertex(T.id, new CustomId("vertex", id));
 
             final SimpleModule module = new SimpleModule();
-            module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
+            module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1d0());
             final GraphWriter writer = graph.io(graphson).writer().mapper(
                     graph.io(graphson).mapper().addCustomModule(module).embedTypes(true).create()).create();
 

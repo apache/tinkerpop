@@ -424,7 +424,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Vertex createObject(final Map<String, Object> vertexData) {
+        public Vertex createObject(final Map<String, Object> vertexData) {
             return new DetachedVertex(
                     vertexData.get(GraphSONTokens.ID),
                     vertexData.get(GraphSONTokens.LABEL).toString(),
@@ -440,7 +440,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Edge createObject(final Map<String, Object> edgeData) {
+        public Edge createObject(final Map<String, Object> edgeData) {
             return new DetachedEdge(
                     edgeData.get(GraphSONTokens.ID),
                     edgeData.get(GraphSONTokens.LABEL).toString(),
@@ -458,7 +458,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Property createObject(final Map<String, Object> propData) {
+        public Property createObject(final Map<String, Object> propData) {
             return new DetachedProperty(
                     (String) propData.get(GraphSONTokens.KEY),
                     propData.get(GraphSONTokens.VALUE));
@@ -472,7 +472,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Path createObject(final Map<String, Object> pathData) {
+        public Path createObject(final Map<String, Object> pathData) {
             final Path p = MutablePath.make();
 
             final List labels = (List) pathData.get(GraphSONTokens.LABELS);
@@ -492,7 +492,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        VertexProperty createObject(final Map<String, Object> propData) {
+        public VertexProperty createObject(final Map<String, Object> propData) {
             return new DetachedVertexProperty(
                     propData.get(GraphSONTokens.ID),
                     (String) propData.get(GraphSONTokens.LABEL),
@@ -508,7 +508,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        Metrics createObject(final Map<String, Object> metricsData) {
+        public Metrics createObject(final Map<String, Object> metricsData) {
             final MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
 
             m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
@@ -532,7 +532,7 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        TraversalMetrics createObject(final Map<String, Object> traversalMetricsData) {
+        public TraversalMetrics createObject(final Map<String, Object> traversalMetricsData) {
             return new DefaultTraversalMetrics(
                     Math.round((Double) traversalMetricsData.get(GraphSONTokens.DURATION) * 1000000),
                     (List<MutableMetrics>) traversalMetricsData.get(GraphSONTokens.METRICS)
