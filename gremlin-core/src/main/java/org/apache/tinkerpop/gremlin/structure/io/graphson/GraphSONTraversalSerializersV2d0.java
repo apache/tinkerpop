@@ -241,14 +241,16 @@ final class GraphSONTraversalSerializersV2d0 {
 
     final static class EnumJacksonDeserializer<A extends Enum> extends StdDeserializer<A> {
 
+        private final A enumInstance;
 
         public EnumJacksonDeserializer(final A enumInstance) {
-            super(enumInstance.getDeclaringClass());
+            super(enumInstance.getClass());
+            this.enumInstance = enumInstance;
         }
 
         @Override
         public A deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Class<A> enumClass = (Class<A>) this._valueClass;
+            final Class<A> enumClass = (Class<A>) this.enumInstance.getDeclaringClass();
             final String enumName = jsonParser.getText();
             for (final Enum a : enumClass.getEnumConstants()) {
                 if (a.name().equals(enumName))
@@ -256,8 +258,6 @@ final class GraphSONTraversalSerializersV2d0 {
             }
             throw new IOException("Unknown enum type: " + enumClass);
         }
-
-
     }
 
     final static class PJacksonDeserializer extends AbstractObjectDeserializer<P> {

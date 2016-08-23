@@ -129,7 +129,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     VertexProperty.Cardinality.values(),
                     Column.values(),
                     Direction.values(),
-                    // Operator.values(),
+                    //Operator.values(),
                     Order.values(),
                     Pop.values(),
                     SackFunctions.Barrier.values(),
@@ -183,15 +183,15 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             // TODO: review (added for integration with new GraphSON model for GLV bytecode)
             addSerializer(Traversal.class, new GraphSONTraversalSerializersV2d0.TraversalJacksonSerializer());
             addSerializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonSerializer());
-            Stream.of(VertexProperty.Cardinality.values(),
-                    Column.values(),
-                    //Operator.values(),
-                    Direction.values(),
-                    Order.values(),
-                    Pop.values(),
-                    SackFunctions.Barrier.values(),
-                    Scope.values(),
-                    T.values()).flatMap(Stream::of).forEach(e -> addSerializer(e.getClass(), new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer()));
+            Stream.of(VertexProperty.Cardinality.class,
+                    Column.class,
+                    Direction.class,
+                    Operator.class,
+                    Order.class,
+                    Pop.class,
+                    SackFunctions.Barrier.class,
+                    Scope.class,
+                    T.class).forEach(e -> addSerializer(e, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer()));
             addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
             addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
             addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
@@ -230,7 +230,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             Stream.of(VertexProperty.Cardinality.values(),
                     Column.values(),
                     Direction.values(),
-                    //Operator.values(),
+                    Operator.values(),
                     Order.values(),
                     Pop.values(),
                     SackFunctions.Barrier.values(),
