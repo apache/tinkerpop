@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
@@ -39,7 +41,7 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
 
     private final PythonTranslator pythonTranslator;
     private final JavaTranslator<S, T> javaTranslator;
-    private final GraphSONReader reader = GraphSONReader.build().create();
+    private final GraphSONReader reader = GraphSONReader.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create();
 
     public PythonGraphSONJavaTranslator(final PythonTranslator pythonTranslator, final JavaTranslator<S, T> javaTranslator) {
         this.pythonTranslator = pythonTranslator;
@@ -65,6 +67,7 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
             bindings.put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("Graph().traversal()"));
             bindings.putAll(bytecode.getBindings());
             final String graphsonBytecode = jythonEngine.eval("GraphSONWriter.writeObject(" + this.pythonTranslator.translate(bytecode) + ")", bindings).toString();
+            // System.out.println(graphsonBytecode);
             return this.javaTranslator.translate(this.reader.readObject(new ByteArrayInputStream(graphsonBytecode.getBytes()), Bytecode.class));
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
