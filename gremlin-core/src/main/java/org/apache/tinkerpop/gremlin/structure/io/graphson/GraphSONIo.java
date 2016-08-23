@@ -40,12 +40,14 @@ import java.util.function.Consumer;
 public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Builder, GraphSONMapper.Builder> {
     private final IoRegistry registry;
     private final Graph graph;
-    private Optional<Consumer<Mapper.Builder>> onMapper;
+    private final Optional<Consumer<Mapper.Builder>> onMapper;
+    private final GraphSONVersion version;
 
     private GraphSONIo(final Builder builder) {
         this.registry = builder.registry;
         this.graph = builder.graph;
         this.onMapper = Optional.ofNullable(builder.onMapper);
+        this.version = builder.version;
     }
 
     /**
@@ -69,7 +71,8 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
      */
     @Override
     public GraphSONMapper.Builder mapper() {
-        final GraphSONMapper.Builder builder = (null == this.registry) ? GraphSONMapper.build() : GraphSONMapper.build().addRegistry(this.registry);
+        final GraphSONMapper.Builder builder = (null == this.registry) ?
+                GraphSONMapper.build().version(version) : GraphSONMapper.build().version(version).addRegistry(this.registry);
         onMapper.ifPresent(c -> c.accept(builder));
         return builder;
     }
@@ -94,8 +97,18 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
         }
     }
 
+    /**
+     * Create a new builder using the default version of GraphSON.
+     */
     public static Io.Builder<GraphSONIo> build() {
-        return new Builder();
+        return build(GraphSONVersion.V1_0);
+    }
+
+    /**
+     * Create a new builder using the specified version of GraphSON.
+     */
+    public static Io.Builder<GraphSONIo> build(final GraphSONVersion version) {
+        return new Builder(version);
     }
 
     public final static class Builder implements Io.Builder<GraphSONIo> {
@@ -103,6 +116,11 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
         private IoRegistry registry = null;
         private Graph graph;
         private Consumer<Mapper.Builder> onMapper = null;
+        private final GraphSONVersion version;
+
+        Builder(final GraphSONVersion version) {
+            this.version = version;
+        }
 
         /**
          * @deprecated As of release 3.2.2, replaced by {@link #onMapper(Consumer)}.
