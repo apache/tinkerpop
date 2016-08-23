@@ -28,6 +28,12 @@ from .traversal import P
 from .traversal import Traversal
 from .. import statics
 
+'''
+Symbol Table
+'''
+
+_TYPE = "@type"
+_VALUE = "@value"
 
 class GraphSONWriter(object):
     @staticmethod
@@ -56,7 +62,6 @@ class GraphSONSerializer(object):
 class BytecodeSerializer(GraphSONSerializer):
     def _dictify(self, bytecode):
         dict = {}
-        dict["@type"] = "Bytecode"
         sources = []
         for instruction in bytecode.source_instructions:
             inst = []
@@ -75,43 +80,40 @@ class BytecodeSerializer(GraphSONSerializer):
             dict["source"] = sources
         if len(steps) > 0:
             dict["step"] = steps
-        return dict
+        return {_TYPE: "bytecode", _VALUE: dict}
 
 
 class EnumSerializer(GraphSONSerializer):
     def _dictify(self, enum):
         dict = {}
-        dict["@type"] = _SymbolHelper.toGremlin(type(enum).__name__)
-        dict["value"] = _SymbolHelper.toGremlin(str(enum.name))
+        dict[_TYPE] = _SymbolHelper.toGremlin(type(enum).__name__)
+        dict[_VALUE] = _SymbolHelper.toGremlin(str(enum.name))
         return dict
 
 
 class PSerializer(GraphSONSerializer):
     def _dictify(self, p):
         dict = {}
-        dict["@type"] = "P"
         dict["predicate"] = p.operator
         if p.other is None:
             dict["value"] = GraphSONWriter._dictify(p.value)
         else:
             dict["value"] = [GraphSONWriter._dictify(p.value), GraphSONWriter._dictify(p.other)]
-        return dict
+        return {_TYPE: "P", _VALUE: dict}
 
 
 class BindingSerializer(GraphSONSerializer):
     def _dictify(self, binding):
         dict = {}
-        dict["@type"] = "Binding"
-        dict["variable"] = binding.variable
+        dict["key"] = binding.variable
         dict["value"] = GraphSONWriter._dictify(binding.value)
-        return dict
+        return {_TYPE: "binding", _VALUE: dict}
 
 
 class LambdaSerializer(GraphSONSerializer):
     def _dictify(self, lambdaObject):
         lambdaResult = lambdaObject()
         dict = {}
-        dict["@type"] = "Lambda"
         script = lambdaResult if isinstance(lambdaResult, str) else lambdaResult[0]
         language = statics.default_lambda_language if isinstance(lambdaResult, str) else lambdaResult[1]
         dict["value"] = script
@@ -123,7 +125,7 @@ class LambdaSerializer(GraphSONSerializer):
             dict["arguments"] = eval(dict["value"]).func_code.co_argcount
         else:
             dict["arguments"] = -1
-        return dict
+        return {_TYPE: "lambda", _VALUE: dict}
 
 
 class TraversalSerializer(BytecodeSerializer):
