@@ -135,7 +135,7 @@ under the License.
 """)
         GraphTraversal.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
-                findAll { !it.name.equals("clone") }.
+                findAll { !it.name.equals("clone") && !it.name.equals("iterate") }.
                 collect { SymbolHelper.toPython(it.name) }.
                 unique().
                 sort { a, b -> a <=> b }.

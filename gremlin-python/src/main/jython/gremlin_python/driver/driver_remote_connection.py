@@ -33,7 +33,11 @@ class GremlinServerError(Exception):
 
 
 def parse_traverser(result):
-    return Traverser(result["@value"], result["@value"]["bulk"]["@value"])
+    return Traverser(result["@value"]["value"], result["@value"]["bulk"]["@value"])
+
+
+def parse_side_effect(result):
+    return result
 
 
 class DriverRemoteConnection(RemoteConnection):
@@ -84,7 +88,7 @@ class DriverRemoteConnection(RemoteConnection):
     @gen.coroutine
     def submit_gather(self, request_id, key):
         message = self._get_gather_message(request_id, key)
-        side_effects = yield self._execute_message(message, parse_traverser)
+        side_effects = yield self._execute_message(message, parse_side_effect)
         raise gen.Return(side_effects)
 
     @gen.coroutine
@@ -130,10 +134,10 @@ class DriverRemoteConnection(RemoteConnection):
             "op": "keys",
             "processor": "traversal",
             "args": {
-        		"sideEffect": {
-        			"@type": "gremlin:uuid",
-        			"@value": request_id
-        		}
+                "sideEffect": {
+                    "@type": "gremlin:uuid",
+                    "@value": request_id
+                }
             }
         }
         message = self._finalize_message(message)
@@ -148,10 +152,10 @@ class DriverRemoteConnection(RemoteConnection):
             "op": "gather",
             "processor": "traversal",
             "args": {
-        		"sideEffect": {
-        			"@type": "gremlin:uuid",
-        			"@value": request_id
-        		},
+                "sideEffect": {
+                    "@type": "gremlin:uuid",
+                    "@value": request_id
+                },
                 "sideEffectKey": key,
                 "aliases": {"g": self.traversal_source}
             }
@@ -221,7 +225,6 @@ class Response:
 
 
 class SideEffectManager(object):
-
     def __init__(self, remote_connection, request_id):
         self._remote_connection = remote_connection
         self._request_id = request_id
@@ -237,3 +240,9 @@ class SideEffectManager(object):
             lambda: self._remote_connection.submit_gather(self._request_id, key)
         )
         return side_effects
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __repr__(self):
+        return "sideEffects[size:" + str(len(self.keys())) + "]"

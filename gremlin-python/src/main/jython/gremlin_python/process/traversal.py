@@ -51,6 +51,10 @@ class Traversal(object):
         return list(iter(self))
     def toSet(self):
         return set(iter(self))
+    def iterate(self):
+        while True:
+            try: self.__next__()
+            except StopIteration: return self
     def nextTraverser(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)

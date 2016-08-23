@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.server.util.SideEffectIterator;
 import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ import static com.codahale.metrics.MetricRegistry.name;
  */
 public class TraversalOpProcessor extends AbstractOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(TraversalOpProcessor.class);
-    private static final ObjectMapper mapper = GraphSONMapper.build().create().createMapper();
+    private static final ObjectMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V2_0).create().createMapper();
     public static final String OP_PROCESSOR_NAME = "traversal";
     public static final Timer traversalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "traversal"));
 
@@ -323,7 +324,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         // deserialized Bytecode object.
         final Object bytecodeObj = msg.getArgs().get(Tokens.ARGS_GREMLIN);
         final Bytecode bytecode = bytecodeObj instanceof Bytecode ? (Bytecode) bytecodeObj :
-            mapper.readValue(bytecodeObj.toString(), Bytecode.class);
+                mapper.readValue(bytecodeObj.toString(), Bytecode.class);
 
         // earlier validation in selection of this op method should free us to cast this without worry
         final Map<String, String> aliases = (Map<String, String>) msg.optionalArgs(Tokens.ARGS_ALIASES).get();

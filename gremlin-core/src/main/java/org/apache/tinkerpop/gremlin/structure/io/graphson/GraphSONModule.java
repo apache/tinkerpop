@@ -184,7 +184,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(ZoneOffset.class, new JavaTimeSerializersV2d0.ZoneOffsetJacksonSerializer());
 
             // traversal
-            // TODO: review (added for integration with new GraphSON model for GLV bytecode)
             addSerializer(Traversal.class, new GraphSONTraversalSerializersV2d0.TraversalJacksonSerializer());
             addSerializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,

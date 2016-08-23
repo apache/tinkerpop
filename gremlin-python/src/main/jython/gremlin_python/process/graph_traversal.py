@@ -233,9 +233,6 @@ class GraphTraversal(Traversal):
   def inject(self, *args):
     self.bytecode.add_step("inject", *args)
     return self
-  def iterate(self, *args):
-    self.bytecode.add_step("iterate", *args)
-    return self
   def key(self, *args):
     self.bytecode.add_step("key", *args)
     return self
