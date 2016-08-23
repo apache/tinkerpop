@@ -70,7 +70,6 @@ class DriverRemoteConnection(RemoteConnection):
 
         :returns: :py:class:`Response` object
         """
-        print(request_id)
         message = self._get_bytecode_message(bytecode, request_id)
         traversers = yield self._execute_message(message, parse_traverser)
         raise gen.Return(traversers)
