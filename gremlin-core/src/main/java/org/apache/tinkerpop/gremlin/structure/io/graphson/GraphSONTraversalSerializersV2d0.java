@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -92,7 +91,7 @@ final class GraphSONTraversalSerializersV2d0 {
         public void serialize(final Bytecode bytecode, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@type", "Bytecode");
+            jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "Bytecode");
             if (bytecode.getSourceInstructions().iterator().hasNext()) {
                 jsonGenerator.writeArrayFieldStart("source");
                 for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
@@ -132,8 +131,8 @@ final class GraphSONTraversalSerializersV2d0 {
         public void serialize(final Enum enumInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField("@type", enumInstance.getDeclaringClass().getSimpleName());
-            jsonGenerator.writeObjectField("value", enumInstance.name());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUETYPE, enumInstance.getDeclaringClass().getSimpleName());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, enumInstance.name());
             jsonGenerator.writeEndObject();
         }
 
@@ -149,9 +148,9 @@ final class GraphSONTraversalSerializersV2d0 {
         public void serialize(final P p, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@type", "P");
+            jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "P");
             jsonGenerator.writeStringField("predicate", p instanceof ConnectiveP ? p instanceof AndP ? "and" : "or" : p.getBiPredicate().toString());
-            jsonGenerator.writeObjectField("value", p instanceof ConnectiveP ? ((ConnectiveP) p).getPredicates() : p.getValue());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p instanceof ConnectiveP ? ((ConnectiveP) p).getPredicates() : p.getValue());
             jsonGenerator.writeEndObject();
         }
 
@@ -167,8 +166,8 @@ final class GraphSONTraversalSerializersV2d0 {
         public void serialize(final Lambda lambda, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@type", "Lambda");
-            jsonGenerator.writeStringField("value", lambda.getLambdaScript());
+            jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "Lambda");
+            jsonGenerator.writeStringField(GraphSONTokens.VALUE, lambda.getLambdaScript());
             jsonGenerator.writeStringField("language", lambda.getLambdaLanguage());
             jsonGenerator.writeNumberField("arguments", lambda.getLambdaArguments());
             jsonGenerator.writeEndObject();
@@ -186,9 +185,9 @@ final class GraphSONTraversalSerializersV2d0 {
         public void serialize(final Bytecode.Binding binding, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@type", "Binding");
+            jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "Binding");
             jsonGenerator.writeStringField("variable", binding.variable());
-            jsonGenerator.writeObjectField("value", binding.value());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, binding.value());
             jsonGenerator.writeEndObject();
         }
 
@@ -214,9 +213,9 @@ final class GraphSONTraversalSerializersV2d0 {
 
         private void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator) throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@type", "Traverser");
+            jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "Traverser");
             jsonGenerator.writeObjectField("bulk", traverserInstance.bulk());
-            jsonGenerator.writeObjectField("value", traverserInstance.get());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, traverserInstance.get());
             jsonGenerator.writeEndObject();
         }
     }
@@ -237,8 +236,8 @@ final class GraphSONTraversalSerializersV2d0 {
             for (int j = 1; j < instruction.size(); j++) {
                 final JsonNode argument = instruction.get(j);
                 if (argument.getNodeType().equals(JsonNodeType.OBJECT)) {
-                    if (argument.has("@type")) {
-                        final String type = argument.get("@type").textValue();
+                    if (argument.has(GraphSONTokens.VALUETYPE)) {
+                        final String type = argument.get(GraphSONTokens.VALUETYPE).textValue();
                         if (type.equals("Bytecode"))
                             arguments.add(oc.readValue(argument.traverse(oc), Bytecode.class));
                         else if (type.equals("Binding"))
@@ -280,7 +279,7 @@ final class GraphSONTraversalSerializersV2d0 {
             final Bytecode bytecode = new Bytecode();
             final ObjectCodec oc = jsonParser.getCodec();
             final JsonNode node = oc.readTree(jsonParser);
-            assert node.get("@type").textValue().equals("Bytecode");
+            assert node.get(GraphSONTokens.VALUETYPE).textValue().equals("Bytecode");
             if (node.has("source")) {
                 final JsonNode source = node.get("source");
                 for (int i = 0; i < source.size(); i++) {
@@ -309,25 +308,25 @@ final class GraphSONTraversalSerializersV2d0 {
 
             final ObjectCodec oc = jsonParser.getCodec();
             final JsonNode node = oc.readTree(jsonParser);
-            final String type = node.get("@type").textValue();
+            final String type = node.get(GraphSONTokens.VALUETYPE).textValue();
             if (type.equals("Cardinality"))
-                return VertexProperty.Cardinality.valueOf(node.get("value").textValue());
+                return VertexProperty.Cardinality.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Column"))
-                return Column.valueOf(node.get("value").textValue());
+                return Column.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Direction"))
-                return Direction.valueOf(node.get("value").textValue());
+                return Direction.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Barrier"))
-                return SackFunctions.Barrier.valueOf(node.get("value").textValue());
+                return SackFunctions.Barrier.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Operator"))
-                return Operator.valueOf(node.get("value").textValue());
+                return Operator.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Order"))
-                return Order.valueOf(node.get("value").textValue());
+                return Order.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Pop"))
-                return Pop.valueOf(node.get("value").textValue());
+                return Pop.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("Scope"))
-                return Scope.valueOf(node.get("value").textValue());
+                return Scope.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else if (type.equals("T"))
-                return T.valueOf(node.get("value").textValue());
+                return T.valueOf(node.get(GraphSONTokens.VALUE).textValue());
             else
                 throw new IOException("Unknown enum type: " + type);
 
@@ -345,17 +344,17 @@ final class GraphSONTraversalSerializersV2d0 {
 
             final ObjectCodec oc = jsonParser.getCodec();
             final JsonNode node = oc.readTree(jsonParser);
-            assert node.get("@type").textValue().equals("P");
+            assert node.get(GraphSONTokens.VALUETYPE).textValue().equals("P");
             final JsonNode predicate = node.get("predicate");
             if (predicate.textValue().equals("and") || predicate.textValue().equals("or")) {
                 final List<P<?>> arguments = new ArrayList<>();
-                for (int i = 0; i < node.get("value").size(); i++) {
-                    arguments.add(oc.readValue(node.get("value").get(i).traverse(oc), P.class));
+                for (int i = 0; i < node.get(GraphSONTokens.VALUE).size(); i++) {
+                    arguments.add(oc.readValue(node.get(GraphSONTokens.VALUE).get(i).traverse(oc), P.class));
                 }
                 return predicate.textValue().equals("and") ? new AndP(arguments) : new OrP(arguments);
             } else {
                 try {
-                    final Object argument = oc.readValue(node.get("value").traverse(oc), Object.class);
+                    final Object argument = oc.readValue(node.get(GraphSONTokens.VALUE).traverse(oc), Object.class);
                     return (P) P.class.getMethod(predicate.textValue(), argument instanceof Collection ? Collection.class : Object.class).invoke(null, argument); // TODO: number stuff, eh?
                 } catch (final Exception e) {
                     throw new IOException(e.getMessage(), e);
@@ -375,8 +374,8 @@ final class GraphSONTraversalSerializersV2d0 {
 
             final ObjectCodec oc = jsonParser.getCodec();
             final JsonNode node = oc.readTree(jsonParser);
-            assert node.get("@type").textValue().equals("Lambda");
-            final String lambdaScript = node.get("value").textValue();
+            assert node.get(GraphSONTokens.VALUETYPE).textValue().equals("Lambda");
+            final String lambdaScript = node.get(GraphSONTokens.VALUE).textValue();
             final String lambdaLanguage = node.get("language").textValue();
             final int lambdaArguments = node.get("arguments").intValue();
             if (-1 == lambdaArguments || lambdaArguments > 2)
@@ -400,9 +399,9 @@ final class GraphSONTraversalSerializersV2d0 {
         public Bytecode.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final ObjectCodec oc = jsonParser.getCodec();
             final JsonNode node = oc.readTree(jsonParser);
-            assert node.get("@type").textValue().equals("Binding");
+            assert node.get(GraphSONTokens.VALUETYPE).textValue().equals("Binding");
             final String variable = node.get("variable").textValue();
-            final Object value = oc.readValue(node.get("value").traverse(oc), Object.class);
+            final Object value = oc.readValue(node.get(GraphSONTokens.VALUE).traverse(oc), Object.class);
             return new Bytecode.Binding<>(variable, value);
         }
     }
@@ -418,7 +417,7 @@ final class GraphSONTraversalSerializersV2d0 {
             jsonParser.nextToken();
             // This will automatically parse all typed stuff.
             final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
-            return new DefaultRemoteTraverser<>(mapData.get("value"), (Long) mapData.get("bulk"));
+            return new DefaultRemoteTraverser<>(mapData.get(GraphSONTokens.VALUE), (Long) mapData.get("bulk"));
         }
     }
 }

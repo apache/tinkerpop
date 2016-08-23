@@ -53,8 +53,7 @@ public class GraphSONMapperEmbeddedTypeTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {GraphSONMapper.build().version(GraphSONVersion.V1_0).embedTypes(true).create().createMapper()},
-                {GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()
-                        .createMapper()},
+                {GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
         });
     }
 
