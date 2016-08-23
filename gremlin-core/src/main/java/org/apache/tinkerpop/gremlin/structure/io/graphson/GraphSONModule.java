@@ -81,6 +81,44 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
      * Version 2.0 of GraphSON.
      */
     static final class GraphSONModuleV2d0 extends GraphSONModule {
+
+        private static final LinkedHashMap<Class, String> TYPE_DEFINITIONS = new LinkedHashMap<Class, String>() {{
+            // Those don't have deserializers because handled by Jackson,
+            // but we still want to rename them in GraphSON
+            put(ByteBuffer.class, "bytebuffer");
+            put(Short.class, "int16");
+            put(Integer.class, "int32");
+            put(Long.class, "int64");
+            put(Double.class, "double");
+            put(Float.class, "float");
+
+            // Time serializers/deserializers
+            put(Duration.class, "duration");
+            put(Instant.class, "instant");
+            put(LocalDate.class, "localdate");
+            put(LocalDateTime.class, "localdatetime");
+            put(LocalTime.class, "localtime");
+            put(MonthDay.class, "monthday");
+            put(OffsetDateTime.class, "offsetdatetime");
+            put(OffsetTime.class, "offsettime");
+            put(Period.class, "period");
+            put(Year.class, "year");
+            put(YearMonth.class, "yearmonth");
+            put(ZonedDateTime.class, "zoneddatetime");
+            put(ZoneOffset.class, "zoneoffset");
+
+            // Tinkerpop Graph objects
+            put(Vertex.class, "vertex");
+            put(Edge.class, "edge");
+            put(Property.class, "property");
+            put(Path.class, "path");
+            put(VertexProperty.class, "vertexproperty");
+            put(Metrics.class, "metrics");
+            put(TraversalMetrics.class, "traversalmetrics");
+            put(Traverser.class, "traverser");
+            put(Tree.class, "tree");
+        }};
+
         /**
          * Constructs a new object.
          */
@@ -183,42 +221,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
         @Override
         public Map<Class, String> getTypeDefinitions() {
-            return new LinkedHashMap<Class, String>(){{
-                // Those don't have deserializers because handled by Jackson,
-                // but we still want to rename them in GraphSON
-                put(ByteBuffer.class, "bytebuffer");
-                put(Short.class, "int16");
-                put(Integer.class, "int32");
-                put(Long.class, "int64");
-                put(Double.class, "double");
-                put(Float.class, "float");
-
-                // Time serializers/deserializers
-                put(Duration.class, "duration");
-                put(Instant.class, "instant");
-                put(LocalDate.class, "localdate");
-                put(LocalDateTime.class, "localdatetime");
-                put(LocalTime.class, "localtime");
-                put(MonthDay.class, "monthday");
-                put(OffsetDateTime.class, "offsetdatetime");
-                put(OffsetTime.class, "offsettime");
-                put(Period.class, "period");
-                put(Year.class, "year");
-                put(YearMonth.class, "yearmonth");
-                put(ZonedDateTime.class, "zoneddatetime");
-                put(ZoneOffset.class, "zoneoffset");
-
-                // Tinkerpop Graph objects
-                put(Vertex.class, "vertex");
-                put(Edge.class, "edge");
-                put(Property.class, "property");
-                put(Path.class, "path");
-                put(VertexProperty.class, "vertexproperty");
-                put(Metrics.class, "metrics");
-                put(TraversalMetrics.class, "traversalmetrics");
-                put(Traverser.class, "traverser");
-                put(Tree.class, "tree");
-            }};
+            return TYPE_DEFINITIONS;
         }
 
         @Override
