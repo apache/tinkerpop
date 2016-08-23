@@ -125,21 +125,21 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // traversal
             // TODO: review (added for integration with new GraphSON model for GLV bytecode)
-            addSerializer(Traversal.class, new GraphSONTraversalSerializers.TraversalJacksonSerializer());
-            addSerializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonSerializer());
-            addSerializer(VertexProperty.Cardinality.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Column.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Direction.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(SackFunctions.Barrier.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Operator.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Order.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Pop.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Scope.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(T.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(P.class, new GraphSONTraversalSerializers.PJacksonSerializer());
-            addSerializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonSerializer());
-            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonSerializer());
-            addSerializer(Traverser.class, new GraphSONTraversalSerializers.TraverserSerializer());
+            addSerializer(Traversal.class, new GraphSONTraversalSerializersV2d0.TraversalJacksonSerializer());
+            addSerializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonSerializer());
+            addSerializer(VertexProperty.Cardinality.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Column.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Direction.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(SackFunctions.Barrier.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Operator.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Order.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Pop.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Scope.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(T.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
+            addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
+            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
+            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
 
@@ -169,12 +169,12 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(ZoneOffset.class, new JavaTimeSerializersV2d0.ZoneOffsetJacksonDeserializer());
 
             // traversal
-            addDeserializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonDeserializer());
-            addDeserializer(Enum.class, new GraphSONTraversalSerializers.EnumJacksonDeserializer());
-            addDeserializer(P.class, new GraphSONTraversalSerializers.PJacksonDeserializer());
-            addDeserializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonDeserializer());
-            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonDeserializer());
-            addDeserializer(Traverser.class, new GraphSONTraversalSerializers.TraverserJacksonDeserializer());
+            addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
+            addDeserializer(Enum.class, new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer());
+            addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
+            addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
+            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonDeserializer());
+            addDeserializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonDeserializer());
         }
 
         public static Builder build() {
@@ -293,27 +293,27 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // traversal
             // TODO: review (added for integration with new GraphSON model for GLV bytecode)
-            addSerializer(Traversal.class, new GraphSONTraversalSerializers.TraversalJacksonSerializer());
-            addSerializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonSerializer());
-            addSerializer(VertexProperty.Cardinality.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Column.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Direction.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(SackFunctions.Barrier.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Operator.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Order.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Pop.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(Scope.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(T.class, new GraphSONTraversalSerializers.EnumJacksonSerializer());
-            addSerializer(P.class, new GraphSONTraversalSerializers.PJacksonSerializer());
-            addSerializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonSerializer());
-            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonSerializer());
-            addSerializer(Traverser.class, new GraphSONTraversalSerializers.TraverserSerializer());
+            addSerializer(Traversal.class, new GraphSONTraversalSerializersV2d0.TraversalJacksonSerializer());
+            addSerializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonSerializer());
+            addSerializer(VertexProperty.Cardinality.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Column.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Direction.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(SackFunctions.Barrier.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Operator.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Order.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Pop.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(Scope.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(T.class, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer());
+            addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
+            addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
+            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
+            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserSerializer());
             // -- deserializers for traversal
-            addDeserializer(Bytecode.class, new GraphSONTraversalSerializers.BytecodeJacksonDeserializer());
-            addDeserializer(Enum.class, new GraphSONTraversalSerializers.EnumJacksonDeserializer());
-            addDeserializer(P.class, new GraphSONTraversalSerializers.PJacksonDeserializer());
-            addDeserializer(Lambda.class, new GraphSONTraversalSerializers.LambdaJacksonDeserializer());
-            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializers.BindingJacksonDeserializer());
+            addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
+            addDeserializer(Enum.class, new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer());
+            addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
+            addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
+            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonDeserializer());
 
         }
 

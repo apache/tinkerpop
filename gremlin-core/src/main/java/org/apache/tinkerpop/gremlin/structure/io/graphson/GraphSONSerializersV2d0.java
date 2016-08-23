@@ -71,7 +71,7 @@ import static org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil.sa
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONSerializersV2d0 {
+class GraphSONSerializersV2d0 {
 
     private GraphSONSerializersV2d0() {
     }
