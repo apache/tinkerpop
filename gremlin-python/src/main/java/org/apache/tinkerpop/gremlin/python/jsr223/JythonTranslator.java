@@ -46,12 +46,12 @@ public final class JythonTranslator extends PythonTranslator {
                 lambdaString :
                 "lambda " + lambdaString;
         if (0 == lambda.getLambdaArguments())
-            return "JythonZeroArgLambda(" + lambdaString + ")";
+            return "JythonZeroArgLambda(" + lambdaString + ", \"" + lambdaString.replaceAll("\"","\\\\\"") + "\")";
         else if (1 == lambda.getLambdaArguments())
-            return "JythonOneArgLambda(" + lambdaString + ")";
+            return "JythonOneArgLambda(" + lambdaString + ", \"" + lambdaString.replaceAll("\"","\\\\\"") + "\")";
         else if (2 == lambda.getLambdaArguments())
-            return "JythonTwoArgLambda(" + lambdaString + ")";
+            return "JythonTwoArgLambda(" + lambdaString + ", \"" + lambdaString.replaceAll("\"","\\\\\"") + "\")";
         else
-            return "JythonUnknownArgLambda(" + lambdaString + ")";
+            return "JythonUnknownArgLambda(" + lambdaString + ", \"" + lambdaString.replaceAll("\"","\\\\\"") + "\")";
     }
 }

@@ -126,7 +126,9 @@ class LambdaSerializer(GraphSONSerializer):
 
 class NumberSerializer(GraphSONSerializer):
     def _dictify(self, number):
-        if isinstance(number, long):
+        if isinstance(number, bool): # python thinks that 0/1 integers are booleans
+            return number
+        elif isinstance(number, long):
             return _SymbolHelper.objectify("int64", number)
         elif isinstance(number, int):
             return _SymbolHelper.objectify("int32", number)

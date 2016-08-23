@@ -150,7 +150,7 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
                     // Type pattern detected.
                     final JavaType typeFromId = idRes.typeFromId(typeName);
 
-                    if (!baseType.isJavaLangObject() && baseType != typeFromId) {
+                    if (!baseType.isJavaLangObject() && !baseType.equals(typeFromId)) {
                         throw new InstantiationException(
                                 String.format("Cannot deserialize the value with the detected type contained in the JSON ('%s') " +
                                         "to the type specified in parameter to the object mapper (%s). " +

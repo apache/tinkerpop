@@ -78,27 +78,27 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
                     "from org.apache.tinkerpop.gremlin.util.function.Lambda import TwoArgLambda\n\n" +
 
                     "class JythonUnknownArgLambda(UnknownArgLambda):\n" +
-                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
-                    "    UnknownArgLambda.__init__(self, 'nothing', lang, -1)\n" +
+                    "  def __init__(self,func,script,lang='gremlin-jython'):\n" +
+                    "    UnknownArgLambda.__init__(self, script, lang, -1)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
-                    "    return 'JythonUnknownArgLambda'\n\n" +
+                    "    return self.getLambdaScript()\n\n" +
 
                     "class JythonZeroArgLambda(ZeroArgLambda):\n" +
-                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
-                    "    ZeroArgLambda.__init__(self, 'nothing', lang)\n" +
+                    "  def __init__(self,func,script,lang='gremlin-jython'):\n" +
+                    "    ZeroArgLambda.__init__(self, script, lang)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
-                    "    return 'JythonZeroArgLambda'\n" +
+                    "    return self.getLambdaScript()\n" +
                     "  def get(self):\n" +
                     "    return self.func()\n\n" +
 
                     "class JythonOneArgLambda(OneArgLambda):\n" +
-                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
-                    "    OneArgLambda.__init__(self, 'nothing', lang)\n" +
+                    "  def __init__(self,func,script,lang='gremlin-jython'):\n" +
+                    "    OneArgLambda.__init__(self, script, lang)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
-                    "    return 'JythonOneArgLambda'\n" +
+                    "    return self.getLambdaScript()\n" +
                     "  def test(self,a):\n" +
                     "    return self.func(a)\n" +
                     "  def apply(self,a):\n" +
@@ -109,11 +109,11 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
                     "    return self.func(a,b)\n\n" +
 
                     "class JythonTwoArgLambda(TwoArgLambda):\n" +
-                    "  def __init__(self,func,lang='gremlin-jython'):\n" +
-                    "    TwoArgLambda.__init__(self, 'nothing', lang)\n" +
+                    "  def __init__(self,func,script,lang='gremlin-jython'):\n" +
+                    "    TwoArgLambda.__init__(self, script, lang)\n" +
                     "    self.func = func\n" +
                     "  def __repr__(self):\n" +
-                    "    return 'JythonTwoArgLambda'\n" +
+                    "    return self.getLambdaScript()\n" +
                     "  def apply(self,a,b):\n" +
                     "    return self.func(a,b)\n" +
                     "  def compare(self,a,b):\n" +

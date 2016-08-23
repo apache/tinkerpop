@@ -133,7 +133,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             VertexProperty.Cardinality.values(),
                             Column.values(),
                             Direction.values(),
-                            //Operator.values(),
+                            Operator.values(),
                             Order.values(),
                             Pop.values(),
                             SackFunctions.Barrier.values(),
@@ -239,7 +239,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Pop.values(),
                     SackFunctions.Barrier.values(),
                     Scope.values(),
-                    T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer(e)));
+                    T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer(e.getDeclaringClass())));
             addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
             addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
             addDeserializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonDeserializer());
