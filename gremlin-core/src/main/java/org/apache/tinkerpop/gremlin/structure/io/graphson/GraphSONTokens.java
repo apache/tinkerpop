@@ -23,7 +23,8 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
  */
 public final class GraphSONTokens {
 
-    private GraphSONTokens() {}
+    private GraphSONTokens() {
+    }
 
     public static final String CLASS = "@class";
     public static final String VALUETYPE = "@type";
@@ -64,4 +65,13 @@ public final class GraphSONTokens {
     public static final String ANNOTATIONS = "annotations";
 
     public static final String BULK = "bulk";
+
+    public static final String SCRIPT = "script";
+    public static final String LANGUAGE = "language";
+    public static final String ARGUMENTS = "arguments";
+    public static final String PREDICATE = "predicate";
+    public static final String AND = "and";
+    public static final String OR = "or";
+    public static final String SOURCE = "source";
+    public static final String STEP = "step";
 }
