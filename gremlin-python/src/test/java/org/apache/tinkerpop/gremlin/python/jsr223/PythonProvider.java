@@ -73,8 +73,6 @@ public class PythonProvider extends AbstractGraphProvider {
             "g_VXlistXv1_v2_v3XX_name",
             "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
             "g_VXv1X_hasXage_gt_30X",
-            "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
-            "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
             //
             PageRankTest.Traversals.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),

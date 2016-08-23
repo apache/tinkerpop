@@ -21,12 +21,15 @@ import json
 from abc import abstractmethod
 from aenum import Enum
 from types import FunctionType
+from types import LongType
+from types import IntType
 
 from .traversal import Binding
 from .traversal import Bytecode
 from .traversal import P
 from .traversal import Traversal
 from .. import statics
+
 
 class GraphSONWriter(object):
     @staticmethod
@@ -121,6 +124,16 @@ class LambdaSerializer(GraphSONSerializer):
         return {_SymbolHelper._TYPE: _SymbolHelper.prefix("lambda"), _SymbolHelper._VALUE: dict}
 
 
+class NumberSerializer(GraphSONSerializer):
+    def _dictify(self, number):
+        if isinstance(number, long):
+            return {_SymbolHelper._TYPE: _SymbolHelper.prefix("int64"), _SymbolHelper._VALUE: number}
+        elif isinstance(number, int):
+            return {_SymbolHelper._TYPE: _SymbolHelper.prefix("int32"), _SymbolHelper._VALUE: number}
+        else:
+            return number
+
+
 class TraversalSerializer(BytecodeSerializer):
     def _dictify(self, traversal):
         return BytecodeSerializer._dictify(self, traversal.bytecode)
@@ -148,5 +161,7 @@ serializers = {
     P: PSerializer(),
     Enum: EnumSerializer(),
     FunctionType: LambdaSerializer(),
-    Traversal: TraversalSerializer()
+    Traversal: TraversalSerializer(),
+    LongType: NumberSerializer(),
+    IntType: NumberSerializer()
 }
