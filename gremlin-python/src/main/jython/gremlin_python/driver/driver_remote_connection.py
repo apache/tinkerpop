@@ -59,7 +59,7 @@ class DriverRemoteConnection(RemoteConnection):
         traversers = self._loop.run_sync(lambda: self.submit_bytecode(
             bytecode, request_id))
         return RemoteTraversal(iter(traversers),
-                               SideEffectManager(self, request_id))
+                               TraversalSideEffects(self, request_id))
 
     @gen.coroutine
     def submit_bytecode(self, bytecode, request_id):
@@ -224,7 +224,7 @@ class Response:
         raise gen.Return(results)
 
 
-class SideEffectManager(object):
+class TraversalSideEffects(object):
     def __init__(self, remote_connection, request_id):
         self._remote_connection = remote_connection
         self._request_id = request_id
