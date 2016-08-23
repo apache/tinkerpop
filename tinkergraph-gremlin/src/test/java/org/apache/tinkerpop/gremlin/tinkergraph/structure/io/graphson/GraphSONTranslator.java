@@ -25,7 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 
 import java.io.ByteArrayInputStream;
@@ -37,8 +39,8 @@ import java.io.ByteArrayOutputStream;
 final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
 
     private final JavaTranslator<S, T> wrappedTranslator;
-    private final GraphSONWriter writer = GraphSONWriter.build().create();
-    private final GraphSONReader reader = GraphSONReader.build().create();
+    private final GraphSONWriter writer = GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create();
+    private final GraphSONReader reader = GraphSONReader.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create();
 
     public GraphSONTranslator(final JavaTranslator<S, T> wrappedTranslator) {
         this.wrappedTranslator = wrappedTranslator;

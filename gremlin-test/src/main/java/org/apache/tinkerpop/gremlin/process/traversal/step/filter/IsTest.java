@@ -77,7 +77,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
+    public void g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
@@ -87,7 +87,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
+    public void g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
