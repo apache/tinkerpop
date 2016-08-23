@@ -63,5 +63,5 @@ public final class GraphSONTokens {
     public static final String COUNTS = "counts";
     public static final String ANNOTATIONS = "annotations";
 
-    public static final String BULK = "Bulk";
+    public static final String BULK = "bulk";
 }

@@ -276,7 +276,6 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             mapper.writeValue(stream, o);
-            final String s=mapper.writeValueAsString(o);
             try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
                 return mapper.readValue(inputStream, clazz);
             }

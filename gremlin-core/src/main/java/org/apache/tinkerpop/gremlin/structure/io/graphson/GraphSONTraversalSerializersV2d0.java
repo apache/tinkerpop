@@ -47,6 +47,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeType;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
@@ -193,7 +194,7 @@ final class GraphSONTraversalSerializersV2d0 {
 
     }
 
-    final static class TraverserSerializer extends StdSerializer<Traverser> {
+    final static class TraverserSerializer extends StdScalarSerializer<Traverser> {
 
         public TraverserSerializer() {
             super(Traverser.class);
@@ -202,16 +203,6 @@ final class GraphSONTraversalSerializersV2d0 {
         @Override
         public void serialize(final Traverser traverserInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(traverserInstance, jsonGenerator);
-        }
-
-        @Override
-        public void serializeWithType(final Traverser traverser, final JsonGenerator jsonGenerator,
-                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(traverser, jsonGenerator);
-        }
-
-        private void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator) throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField(GraphSONTokens.BULK, traverserInstance.bulk());
             jsonGenerator.writeObjectField(GraphSONTokens.VALUE, traverserInstance.get());
