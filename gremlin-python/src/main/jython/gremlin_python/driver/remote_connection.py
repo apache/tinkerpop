@@ -61,4 +61,3 @@ class RemoteStrategy(TraversalStrategy):
             remote_traversal = self.remote_connection.submit(traversal.bytecode)
             traversal.side_effects = remote_traversal.side_effects
             traversal.traversers = remote_traversal.traversers
-        return

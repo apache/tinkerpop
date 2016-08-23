@@ -43,6 +43,10 @@ class Traversal(object):
         if self.last_traverser.bulk <= 0:
             self.last_traverser = None
         return object
+    def sideEffects(self):
+        if self.traversers is None:
+            self.traversal_strategies.apply_strategies(self)
+        return self.side_effects
     def toList(self):
         return list(iter(self))
     def toSet(self):
