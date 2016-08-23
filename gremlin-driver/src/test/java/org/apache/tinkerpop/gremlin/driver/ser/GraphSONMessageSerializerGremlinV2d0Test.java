@@ -55,7 +55,7 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMessageSerializerGremlinTestV2d0 {
+public class GraphSONMessageSerializerGremlinV2d0Test {
 
     private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
