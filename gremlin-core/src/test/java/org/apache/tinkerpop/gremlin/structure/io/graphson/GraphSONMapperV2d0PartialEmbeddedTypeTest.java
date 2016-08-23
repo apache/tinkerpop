@@ -46,7 +46,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests automatic typed serialization/deserialization for GraphSON 2.0.
  */
-public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
+public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONTest {
 
     private final ObjectMapper mapper = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
@@ -77,7 +77,7 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
 
         myList.add("kjkj");
         myList.add(UUID.randomUUID());
-        assertEquals(myList, serializeDeserializeAuto(myList));
+        assertEquals(myList, serializeDeserializeAuto(mapper, myList));
 
         // no "@value" property
         String s = "{\""+GraphSONTokens.VALUETYPE+"\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":uuid\", \"test\":2}";
@@ -139,8 +139,8 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
     public void shouldHandleRawPOJOs() throws Exception {
         final FunObject funObject = new FunObject();
         funObject.setVal("test");
-        assertEquals(funObject.toString(), serializeDeserialize(funObject, FunObject.class).toString());
-        assertEquals(funObject.getClass(), serializeDeserialize(funObject, FunObject.class).getClass());
+        assertEquals(funObject.toString(), serializeDeserialize(mapper, funObject, FunObject.class).toString());
+        assertEquals(funObject.getClass(), serializeDeserialize(mapper, funObject, FunObject.class).getClass());
     }
 
     @Test
@@ -250,7 +250,7 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
     @Test
     public void shouldHandleDefaultRemoteTraverser() throws Exception {
         final DefaultRemoteTraverser<String> o = new DefaultRemoteTraverser<>("test", 100);
-        assertEquals(o, serializeDeserialize(o, Traverser.class));
+        assertEquals(o, serializeDeserialize(mapper, o, Traverser.class));
     }
 
     // Class needs to be defined as statics as it's a nested class.
@@ -273,24 +273,5 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
         }
     }
 
-    public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
-        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            mapper.writeValue(stream, o);
-            try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
-                return mapper.readValue(inputStream, clazz);
-            }
-        }
-    }
-
-    public <T> T serializeDeserializeAuto(final Object o) throws Exception {
-        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            mapper.writeValue(stream, o);
-
-            try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
-                // Object.class is the wildcard that triggers the auto discovery.
-                return (T)mapper.readValue(inputStream, Object.class);
-            }
-        }
-    }
 
 }

@@ -23,9 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -47,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Parameterized.class)
-public class GraphSONMapperEmbeddedTypeTest {
+public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -63,87 +60,77 @@ public class GraphSONMapperEmbeddedTypeTest {
     @Test
     public void shouldHandleDuration()throws Exception  {
         final Duration o = Duration.ZERO;
-        assertEquals(o, serializeDeserialize(o, Duration.class));
+        assertEquals(o, serializeDeserialize(mapper, o, Duration.class));
     }
     @Test
     public void shouldHandleInstant()throws Exception  {
         final Instant o = Instant.ofEpochMilli(System.currentTimeMillis());
-        assertEquals(o, serializeDeserialize(o, Instant.class));
+        assertEquals(o, serializeDeserialize(mapper, o, Instant.class));
     }
 
     @Test
     public void shouldHandleLocalDate()throws Exception  {
         final LocalDate o = LocalDate.now();
-        assertEquals(o, serializeDeserialize(o, LocalDate.class));
+        assertEquals(o, serializeDeserialize(mapper, o, LocalDate.class));
     }
 
     @Test
     public void shouldHandleLocalDateTime()throws Exception  {
         final LocalDateTime o = LocalDateTime.now();
-        assertEquals(o, serializeDeserialize(o, LocalDateTime.class));
+        assertEquals(o, serializeDeserialize(mapper, o, LocalDateTime.class));
     }
 
     @Test
     public void shouldHandleLocalTime()throws Exception  {
         final LocalTime o = LocalTime.now();
-        assertEquals(o, serializeDeserialize(o, LocalTime.class));
+        assertEquals(o, serializeDeserialize(mapper, o, LocalTime.class));
     }
 
     @Test
     public void shouldHandleMonthDay()throws Exception  {
         final MonthDay o = MonthDay.now();
-        assertEquals(o, serializeDeserialize(o, MonthDay.class));
+        assertEquals(o, serializeDeserialize(mapper, o, MonthDay.class));
     }
 
     @Test
     public void shouldHandleOffsetDateTime()throws Exception  {
         final OffsetDateTime o = OffsetDateTime.now();
-        assertEquals(o, serializeDeserialize(o, OffsetDateTime.class));
+        assertEquals(o, serializeDeserialize(mapper, o, OffsetDateTime.class));
     }
 
     @Test
     public void shouldHandleOffsetTime()throws Exception  {
         final OffsetTime o = OffsetTime.now();
-        assertEquals(o, serializeDeserialize(o, OffsetTime.class));
+        assertEquals(o, serializeDeserialize(mapper, o, OffsetTime.class));
     }
 
     @Test
     public void shouldHandlePeriod()throws Exception  {
         final Period o = Period.ofDays(3);
-        assertEquals(o, serializeDeserialize(o, Period.class));
+        assertEquals(o, serializeDeserialize(mapper, o, Period.class));
     }
 
     @Test
     public void shouldHandleYear()throws Exception  {
         final Year o = Year.now();
-        assertEquals(o, serializeDeserialize(o, Year.class));
+        assertEquals(o, serializeDeserialize(mapper, o, Year.class));
     }
 
     @Test
     public void shouldHandleYearMonth()throws Exception  {
         final YearMonth o = YearMonth.now();
-        assertEquals(o, serializeDeserialize(o, YearMonth.class));
+        assertEquals(o, serializeDeserialize(mapper, o, YearMonth.class));
     }
 
     @Test
     public void shouldHandleZonedDateTime()throws Exception  {
         final ZonedDateTime o = ZonedDateTime.now();
-        assertEquals(o, serializeDeserialize(o, ZonedDateTime.class));
+        assertEquals(o, serializeDeserialize(mapper, o, ZonedDateTime.class));
     }
 
     @Test
     public void shouldHandleZonedOffset()throws Exception  {
         final ZoneOffset o  = ZonedDateTime.now().getOffset();
-        assertEquals(o, serializeDeserialize(o, ZoneOffset.class));
-    }
-
-    public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
-        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            mapper.writeValue(stream, o);
-
-            try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
-                return mapper.readValue(inputStream, clazz);
-            }
-        }
+        assertEquals(o, serializeDeserialize(mapper, o, ZoneOffset.class));
     }
 }
