@@ -213,8 +213,7 @@ final class GraphSONTraversalSerializersV2d0 {
 
         private void ser(final Traverser traverserInstance, final JsonGenerator jsonGenerator) throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField(GraphSONTokens.VALUETYPE, "Traverser");
-            jsonGenerator.writeObjectField("bulk", traverserInstance.bulk());
+            jsonGenerator.writeObjectField(GraphSONTokens.BULK, traverserInstance.bulk());
             jsonGenerator.writeObjectField(GraphSONTokens.VALUE, traverserInstance.get());
             jsonGenerator.writeEndObject();
         }
@@ -417,7 +416,7 @@ final class GraphSONTraversalSerializersV2d0 {
             jsonParser.nextToken();
             // This will automatically parse all typed stuff.
             final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
-            return new DefaultRemoteTraverser<>(mapData.get(GraphSONTokens.VALUE), (Long) mapData.get("bulk"));
+            return new DefaultRemoteTraverser<>(mapData.get(GraphSONTokens.VALUE), (Long) mapData.get(GraphSONTokens.BULK));
         }
     }
 }
