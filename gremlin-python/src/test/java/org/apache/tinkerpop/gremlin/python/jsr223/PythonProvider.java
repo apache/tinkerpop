@@ -27,10 +27,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionCompu
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PageRankTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -69,19 +70,15 @@ public class PythonProvider extends AbstractGraphProvider {
             "g_VX1X_out_injectXv2X_name",
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
+            "shouldHidePartitionKeyForValues",
             //
-            "g_VXlistXv1_v2_v3XX_name",
-            "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
-            "g_VXv1X_hasXage_gt_30X",
-            "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
-            "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
-            //
+            PeerPressureTest.Traversals.class.getCanonicalName(),
+            ProfileTest.Traversals.class.getCanonicalName(), // only fails in OLAP
             PageRankTest.Traversals.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
-            PartitionStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{

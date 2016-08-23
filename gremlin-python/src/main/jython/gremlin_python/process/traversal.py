@@ -302,13 +302,13 @@ BINDINGS
 '''
 
 class Bindings(object):
-    def of(self,variable,value):
-        if not isinstance(variable, str):
-            raise TypeError("Variable must be str")
-        return (variable,value)
+    def of(self,key,value):
+        if not isinstance(key, str):
+            raise TypeError("Key must be str")
+        return (key,value)
 
 class Binding(object):
-    def __init__(self,variable,value):
-        self.variable = variable
+    def __init__(self,key,value):
+        self.key = key
         self.value = value
 

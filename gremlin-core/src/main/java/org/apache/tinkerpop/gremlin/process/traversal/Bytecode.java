@@ -121,7 +121,7 @@ public final class Bytecode implements Cloneable, Serializable {
     private static final void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
         for (final Object argument : instruction.getArguments()) {
             if (argument instanceof Binding)
-                bindingsMap.put(((Binding) argument).variable, ((Binding) argument).value);
+                bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
             else if (argument instanceof Bytecode)
                 bindingsMap.putAll(((Bytecode) argument).getBindings());
         }
@@ -197,16 +197,16 @@ public final class Bytecode implements Cloneable, Serializable {
 
     public static class Binding<V> implements Serializable {
 
-        private final String variable;
+        private final String key;
         private final V value;
 
-        public Binding(final String variable, final V value) {
-            this.variable = variable;
+        public Binding(final String key, final V value) {
+            this.key = key;
             this.value = value;
         }
 
         public String variable() {
-            return this.variable;
+            return this.key;
         }
 
         public V value() {
@@ -215,19 +215,19 @@ public final class Bytecode implements Cloneable, Serializable {
 
         @Override
         public String toString() {
-            return "binding[" + this.variable + "=" + this.value + "]";
+            return "binding[" + this.key + "=" + this.value + "]";
         }
 
         @Override
         public boolean equals(final Object object) {
             return object instanceof Binding &&
-                    this.variable.equals(((Binding) object).variable) &&
+                    this.key.equals(((Binding) object).key) &&
                     this.value.equals(((Binding) object).value);
         }
 
         @Override
         public int hashCode() {
-            return this.variable.hashCode() + this.value.hashCode();
+            return this.key.hashCode() + this.value.hashCode();
         }
     }
 

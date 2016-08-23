@@ -21,12 +21,15 @@ import json
 from abc import abstractmethod
 from aenum import Enum
 from types import FunctionType
+from types import IntType
+from types import LongType
 
 from .traversal import Binding
 from .traversal import Bytecode
 from .traversal import P
 from .traversal import Traversal
 from .. import statics
+
 
 class GraphSONWriter(object):
     @staticmethod
@@ -54,6 +57,8 @@ class GraphSONSerializer(object):
 
 class BytecodeSerializer(GraphSONSerializer):
     def _dictify(self, bytecode):
+        if isinstance(bytecode, Traversal):
+            bytecode = bytecode.bytecode
         dict = {}
         sources = []
         for instruction in bytecode.source_instructions:
@@ -73,15 +78,13 @@ class BytecodeSerializer(GraphSONSerializer):
             dict["source"] = sources
         if len(steps) > 0:
             dict["step"] = steps
-        return {_SymbolHelper._TYPE: _SymbolHelper.prefix("bytecode"), _SymbolHelper._VALUE: dict}
+        return _SymbolHelper.objectify("bytecode", dict)
 
 
 class EnumSerializer(GraphSONSerializer):
     def _dictify(self, enum):
-        dict = {}
-        dict[_SymbolHelper._TYPE] = _SymbolHelper.prefix(_SymbolHelper.toGremlin(type(enum).__name__))
-        dict[_SymbolHelper._VALUE] = _SymbolHelper.toGremlin(str(enum.name))
-        return dict
+        return _SymbolHelper.objectify(_SymbolHelper.toGremlin(type(enum).__name__),
+                                       _SymbolHelper.toGremlin(str(enum.name)))
 
 
 class PSerializer(GraphSONSerializer):
@@ -92,15 +95,15 @@ class PSerializer(GraphSONSerializer):
             dict["value"] = GraphSONWriter._dictify(p.value)
         else:
             dict["value"] = [GraphSONWriter._dictify(p.value), GraphSONWriter._dictify(p.other)]
-        return {_SymbolHelper._TYPE: _SymbolHelper.prefix("P"), _SymbolHelper._VALUE: dict}
+        return _SymbolHelper.objectify("P", dict)
 
 
 class BindingSerializer(GraphSONSerializer):
     def _dictify(self, binding):
         dict = {}
-        dict["key"] = binding.variable
+        dict["key"] = binding.key
         dict["value"] = GraphSONWriter._dictify(binding.value)
-        return {_SymbolHelper._TYPE: _SymbolHelper.prefix("binding"), _SymbolHelper._VALUE: dict}
+        return _SymbolHelper.objectify("binding", dict)
 
 
 class LambdaSerializer(GraphSONSerializer):
@@ -118,12 +121,17 @@ class LambdaSerializer(GraphSONSerializer):
             dict["arguments"] = eval(dict["value"]).func_code.co_argcount
         else:
             dict["arguments"] = -1
-        return {_SymbolHelper._TYPE: _SymbolHelper.prefix("lambda"), _SymbolHelper._VALUE: dict}
+        return _SymbolHelper.objectify("lambda", dict)
 
 
-class TraversalSerializer(BytecodeSerializer):
-    def _dictify(self, traversal):
-        return BytecodeSerializer._dictify(self, traversal.bytecode)
+class NumberSerializer(GraphSONSerializer):
+    def _dictify(self, number):
+        if isinstance(number, long):
+            return _SymbolHelper.objectify("int64", number)
+        elif isinstance(number, int):
+            return _SymbolHelper.objectify("int32", number)
+        else:
+            return number
 
 
 class _SymbolHelper(object):
@@ -138,15 +146,17 @@ class _SymbolHelper(object):
         return _SymbolHelper.symbolMap[symbol] if symbol in _SymbolHelper.symbolMap else symbol
 
     @staticmethod
-    def prefix(type, prefix="gremlin"):
-        return prefix + ":" + type
+    def objectify(type, value, prefix="gremlin"):
+        return {_SymbolHelper._TYPE: prefix + ":" + type, _SymbolHelper._VALUE: value}
 
 
 serializers = {
+    Traversal: BytecodeSerializer(),
     Bytecode: BytecodeSerializer(),
     Binding: BindingSerializer(),
     P: PSerializer(),
     Enum: EnumSerializer(),
     FunctionType: LambdaSerializer(),
-    Traversal: TraversalSerializer()
+    LongType: NumberSerializer(),
+    IntType: NumberSerializer()
 }
