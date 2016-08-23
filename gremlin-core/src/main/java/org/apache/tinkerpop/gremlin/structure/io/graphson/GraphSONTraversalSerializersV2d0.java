@@ -396,18 +396,15 @@ final class GraphSONTraversalSerializersV2d0 {
         }
     }
 
-    static class TraverserJacksonDeserializer extends StdDeserializer<Traverser> {
+    static class TraverserJacksonDeserializer extends AbstractObjectDeserializer<Traverser> {
 
         public TraverserJacksonDeserializer() {
             super(Traverser.class);
         }
 
         @Override
-        public Traverser deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            jsonParser.nextToken();
-            // This will automatically parse all typed stuff.
-            final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
-            return new DefaultRemoteTraverser<>(mapData.get(GraphSONTokens.VALUE), (Long) mapData.get(GraphSONTokens.BULK));
+        Traverser createObject(final Map<String, Object> data) {
+            return new DefaultRemoteTraverser<>(data.get(GraphSONTokens.VALUE), (Long) data.get(GraphSONTokens.BULK));
         }
     }
 }

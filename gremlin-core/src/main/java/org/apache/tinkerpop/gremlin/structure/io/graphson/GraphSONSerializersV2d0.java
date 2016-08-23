@@ -416,27 +416,8 @@ class GraphSONSerializersV2d0 {
 
     //////////////////////////// DESERIALIZERS ///////////////////////////
 
-    abstract static class AbstractGraphObjectDeserializer<T> extends StdDeserializer<T> {
 
-        protected AbstractGraphObjectDeserializer(Class<T> clazz) {
-            super(clazz);
-        }
-
-        @Override
-        public T deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-
-            jsonParser.nextToken();
-            // This will automatically parse all typed stuff.
-            final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
-
-            return createObject(mapData);
-        }
-
-        abstract T createObject(Map<String, Object> data);
-    }
-
-
-    static class VertexJacksonDeserializer extends AbstractGraphObjectDeserializer<Vertex> {
+    static class VertexJacksonDeserializer extends AbstractObjectDeserializer<Vertex> {
 
         public VertexJacksonDeserializer() {
             super(Vertex.class);
@@ -452,7 +433,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class EdgeJacksonDeserializer extends AbstractGraphObjectDeserializer<Edge> {
+    static class EdgeJacksonDeserializer extends AbstractObjectDeserializer<Edge> {
 
         public EdgeJacksonDeserializer() {
             super(Edge.class);
@@ -470,7 +451,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class PropertyJacksonDeserializer extends AbstractGraphObjectDeserializer<Property> {
+    static class PropertyJacksonDeserializer extends AbstractObjectDeserializer<Property> {
 
         public PropertyJacksonDeserializer() {
             super(Property.class);
@@ -484,7 +465,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class PathJacksonDeserializer extends AbstractGraphObjectDeserializer<Path> {
+    static class PathJacksonDeserializer extends AbstractObjectDeserializer<Path> {
 
         public PathJacksonDeserializer() {
             super(Path.class);
@@ -504,7 +485,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class VertexPropertyJacksonDeserializer extends AbstractGraphObjectDeserializer<VertexProperty> {
+    static class VertexPropertyJacksonDeserializer extends AbstractObjectDeserializer<VertexProperty> {
 
         protected VertexPropertyJacksonDeserializer() {
             super(VertexProperty.class);
@@ -521,7 +502,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class MetricsJacksonDeserializer extends AbstractGraphObjectDeserializer<Metrics> {
+    static class MetricsJacksonDeserializer extends AbstractObjectDeserializer<Metrics> {
         public MetricsJacksonDeserializer() {
             super(Metrics.class);
         }
@@ -544,7 +525,7 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class TraversalMetricsJacksonDeserializer extends AbstractGraphObjectDeserializer<TraversalMetrics> {
+    static class TraversalMetricsJacksonDeserializer extends AbstractObjectDeserializer<TraversalMetrics> {
 
         public TraversalMetricsJacksonDeserializer() {
             super(TraversalMetrics.class);
