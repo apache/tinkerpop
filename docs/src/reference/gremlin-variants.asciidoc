@@ -48,7 +48,7 @@ link:https://en.wikipedia.org/wiki/CPython[CPython] machine. Python's syntax has
 namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java will immediately be able to work
 with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
-CAUTION: In Python, `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` are reserved words. Gremlin-Python simply
+WARNING: In Python, `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` are reserved words. Gremlin-Python simply
 prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
 
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
@@ -72,8 +72,10 @@ is provided with Apache TinkerPop's Gremlin-Python distribution.
 IMPORTANT: For developers wishing to provide another *driver implementation*, be sure to extend `RemoteConnection` in
 `gremlin_python.driver` so it can then be used by Gremlin-Python's `GraphTraversal`.
 
-When GremlinServer is running, Gremlin-Python can communicate with GremlinServer. The `conf/gremlin-server-modern-py.yaml`
+When Gremlin Server is running, Gremlin-Python can communicate with Gremlin Server. The `conf/gremlin-server-modern-py.yaml`
 configuration maintains a `GremlinJythonScriptEngine` as well as the appropriate serializers for communicating `Bytecode`.
+
+IMPORTANT: Gremlin-Python is compatible with GraphSON 2.0 only, so this serializer must be configured in Gremlin Server.
 
 [source,bash]
 ----
@@ -85,16 +87,36 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 ---oOOo-(3)-oOOo---
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern-py.yaml
+[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
 [INFO] GraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] Logger - 51 attributes loaded from 40 stream(s) in 16ms, 51 saved, 614 ignored: ["Ant-Version", "Archiver-Version", "Bnd-LastModified", "Boot-Class-Path", "Build-Jdk", "Build-Version", "Built-By", "Bundle-ClassPath", "Bundle-Description", "Bundle-DocURL", "Bundle-License", "Bundle-ManifestVersion", "Bundle-Name", "Bundle-RequiredExecutionEnvironment", "Bundle-SymbolicName", "Bundle-Vendor", "Bundle-Version", "Can-Redefine-Classes", "Created-By", "DynamicImport-Package", "Eclipse-BuddyPolicy", "Export-Package", "Extension-Name", "Extension-name", "Fragment-Host", "Ignore-Package", "Implementation-Build", "Implementation-Title", "Implementation-URL", "Implementation-Vendor", "Implementation-Vendor-Id", "Implementation-Version", "Import-Package", "Include-Resource", "JCabi-Build", "JCabi-Date", "JCabi-Version", "Main-Class", "Main-class", "Manifest-Version", "Originally-Created-By", "Private-Package", "Require-Capability", "Specification-Title", "Specification-Vendor", "Specification-Version", "Tool", "X-Compile-Source-JDK", "X-Compile-Target-JDK", "hash", "version"]
 [INFO] ScriptEngines - Loaded gremlin-jython ScriptEngine
+[INFO] ScriptEngines - Loaded gremlin-python ScriptEngine
 [INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
+[INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
 [INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
 [INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] OpLoader - Adding the standard OpProcessor.
+[INFO] OpLoader - Adding the control OpProcessor.
+[INFO] OpLoader - Adding the session OpProcessor.
+[INFO] OpLoader - Adding the traversal OpProcessor.
 [INFO] TraversalOpProcessor - Initialized cache for TraversalOpProcessor with size 1000 and expiration time of 600000 ms
+[INFO] GremlinServer - Executing start up LifeCycleHook
+[INFO] Logger$info - Loading 'modern' graph data.
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-lite with org.apache.tinkerpop.gremlin.driver.ser.GryoLiteMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v2.0+json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV2d0
 [INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
+
 ----
+
+NOTE: The command to use `-i` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
+path. Future starts of Gremlin Server will not require that command.
 
 Within the CPython console, it is possible to evaluate the following.
 
@@ -105,7 +127,7 @@ Within the CPython console, it is possible to evaluate the following.
 When a traversal spawned from the `GraphTraversalSource` above is iterated, the traveral's `Bytecode` is sent over the wire
 via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
 Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
-does not contain lambdas, the remote location (e.g. GremlinServer) will typically
+does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
 use Gremlin-Java. If it has lambdas written in Groovy, it will use Gremlin-Groovy (e.g. `GremlinGroovyScriptEngine`).
 Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e.g. `GremlinJythonScriptEngine`).
 
@@ -172,7 +194,7 @@ g.V().repeat(out()).times(2).name.fold().toList()
 Bindings
 ~~~~~~~~
 
-When a traversal bytecode is sent over a `RemoteConnection` (e.g. GremlinServer), it will be translated, compiled, and then executed.
+When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, and then executed.
 If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
 Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
 from `g.V(4).out('created').name'` as they are different "string" scripts. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and

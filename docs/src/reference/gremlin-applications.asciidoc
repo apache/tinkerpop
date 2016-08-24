@@ -852,6 +852,9 @@ connecting to Gremlin Server. Please see the <<connecting-via-java, "Connecting 
 information on those classes and their usage. Finally, the `gremlin.remote.driver.sourceName` setting tells the
 `DriverRemoteConnection` the name of the `TraversalSource` in Gremlin Server to connect to.
 
+IMPORTANT: Gremlin Server supports configurable serialization options. The `withRemote()` feature works best with
+Gryo serialization. While it is compatible with GraphSON, unknown incompatibilities may arise
+
 Gremlin Server needs to be running for this example to work. Use the following configuration:
 
 [source,bourne]
