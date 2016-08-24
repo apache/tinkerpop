@@ -113,6 +113,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(ZoneOffset.class, "zoneoffset");
 
                     // Tinkerpop Graph objects
+                    put(Lambda.class, "lambda");
                     put(Vertex.class, "vertex");
                     put(Edge.class, "edge");
                     put(Property.class, "property");

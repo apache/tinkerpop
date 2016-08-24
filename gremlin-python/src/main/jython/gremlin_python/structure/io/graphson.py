@@ -20,6 +20,7 @@ under the License.
 import json
 from abc import abstractmethod
 from aenum import Enum
+from types import FloatType
 from types import FunctionType
 from types import IntType
 from types import LongType
@@ -42,11 +43,23 @@ class GraphSONWriter(object):
         for key in serializers:
             if isinstance(object, key):
                 return serializers[key]._dictify(object)
-        return object
+        # list and map are treated as normal json objects (could be isolated serializers)
+        if isinstance(object, list):
+            newList = []
+            for item in object:
+                newList.append(GraphSONWriter._dictify(item))
+            return newList
+        elif isinstance(object, dict):
+            newDict = {}
+            for key in object:
+                newDict[GraphSONWriter._dictify(key)] = GraphSONWriter._dictify(object[key])
+            return newDict
+        else:
+            return object
 
     @staticmethod
-    def writeObject(object):
-        return json.dumps(GraphSONWriter._dictify(object))
+    def writeObject(objectData):
+        return json.dumps(GraphSONWriter._dictify(objectData))
 
 
 class GraphSONReader(object):
@@ -57,6 +70,7 @@ class GraphSONReader(object):
                 type = object[_SymbolHelper._TYPE]
                 if type in deserializers:
                     return deserializers[type]._objectify(object)
+        # list and map are treated as normal json objects (could be isolated deserializers)
             newDict = {}
             for key in object:
                 newDict[GraphSONReader._objectify(key)] = GraphSONReader._objectify(object[key])
@@ -70,8 +84,8 @@ class GraphSONReader(object):
             return object
 
     @staticmethod
-    def readObject(data):
-        return GraphSONReader._objectify(json.loads(data))
+    def readObject(jsonData):
+        return GraphSONReader._objectify(json.loads(jsonData))
 
 
 '''
@@ -109,6 +123,12 @@ class BytecodeSerializer(GraphSONSerializer):
         if len(steps) > 0:
             dict["step"] = steps
         return _SymbolHelper.objectify("bytecode", dict)
+
+
+class TraverserSerializer(GraphSONSerializer):
+    def _dictify(self, traverser):
+        return _SymbolHelper.objectify("traverser", {"value": GraphSONWriter._dictify(traverser.object),
+                                                     "bulk": GraphSONWriter._dictify(traverser.bulk)})
 
 
 class EnumSerializer(GraphSONSerializer):
@@ -162,6 +182,8 @@ class NumberSerializer(GraphSONSerializer):
             return _SymbolHelper.objectify("int64", number)
         elif isinstance(number, int):
             return _SymbolHelper.objectify("int32", number)
+        elif isinstance(number, float):
+            return _SymbolHelper.objectify("float", number)
         else:
             return number
 
@@ -241,13 +263,15 @@ class _SymbolHelper(object):
 
 serializers = {
     Traversal: BytecodeSerializer(),
+    Traverser: TraverserSerializer(),
     Bytecode: BytecodeSerializer(),
     Binding: BindingSerializer(),
     P: PSerializer(),
     Enum: EnumSerializer(),
     FunctionType: LambdaSerializer(),
     LongType: NumberSerializer(),
-    IntType: NumberSerializer()
+    IntType: NumberSerializer(),
+    FloatType: NumberSerializer()
 }
 
 deserializers = {

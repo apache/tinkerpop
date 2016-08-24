@@ -39,10 +39,12 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -278,7 +280,17 @@ final class GraphSONTraversalSerializersV2d0 {
                 return predicate.equals(GraphSONTokens.AND) ? new AndP((List<P>) value) : new OrP((List<P>) value);
             } else {
                 try {
-                    return (P) P.class.getMethod(predicate, value instanceof Collection ? Collection.class : Object.class).invoke(null, value); // TODO: number stuff, eh?
+                    if (value instanceof Collection) {
+                        final Optional<Method> method = Arrays.stream(P.class.getMethods()).filter(m -> m.getName().equals(predicate)).findAny();
+                        if (method.isPresent()) {
+                            if (!Collection.class.isAssignableFrom(method.get().getParameterTypes()[0]))
+                                return (P) method.get().invoke(null, ((Collection) value).toArray());
+                            else
+                                return (P) method.get().invoke(null, value);
+                        } else
+                            throw new IllegalStateException("No such P method: " + predicate);
+                    }
+                    return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
                 } catch (final Exception e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
