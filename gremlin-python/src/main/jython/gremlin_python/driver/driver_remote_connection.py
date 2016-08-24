@@ -81,22 +81,23 @@ class DriverRemoteConnection(RemoteConnection):
             msg = yield resp.receive()
             if msg is None:
                 break
+            # on first message, get the right result data structure
             if None == results:
-                aggregateTo = msg[0]
-                if "list" == aggregateTo:
+                if "list" == msg[0]:
                     results = []
-                elif "set" == aggregateTo:
+                elif "set" == msg[0]:
                     results = set()
-                elif "map" == aggregateTo:
+                elif "map" == msg[0]:
                     results = {}
                 else:
                     results = []
+            # updating a map is different than a list or a set
             if isinstance(results, dict):
                 for item in msg[1]:
                     results.update(item)
             else:
                 results += msg[1]
-        raise gen.Return(results)
+        raise gen.Return([] if None == results else results)
 
     def close(self):
         self._ws.close()
@@ -193,7 +194,7 @@ class Response:
         data = message["result"]["data"]
         msg = message["status"]["message"]
         meta = message["result"]["meta"]
-        aggregateTo = None if "aggregateTo" not in meta else meta["aggregateTo"]
+        aggregateTo = "list" if "aggregateTo" not in meta else meta["aggregateTo"]
 
         if status_code == 407:
             self._authenticate(self._username, self._password, self._processor)
