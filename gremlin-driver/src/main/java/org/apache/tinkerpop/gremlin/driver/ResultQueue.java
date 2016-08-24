@@ -96,14 +96,20 @@ final class ResultQueue {
                 list.add(sideEffectValue);
                 break;
             case Tokens.VAL_AGGREGATE_TO_MAP:
-                if (!(sideEffectValue instanceof Map.Entry))
+                if (!(sideEffectValue instanceof Map.Entry) && !(sideEffectValue instanceof Map))
                     throw new IllegalStateException(String.format("Side-effect value %s is a %s which does not aggregate to %s",
+                            sideEffectValue, sideEffectValue.getClass().getSimpleName(), aggregateTo));
+
+                // some serialization formats (e.g. graphson) may deserialize a Map.Entry to a Map with a single entry
+                if (sideEffectValue instanceof Map && ((Map) sideEffectValue).size() != 1)
+                    throw new IllegalStateException(String.format("Side-effect value %s is a %s which does not aggregate to %s as it is a Map that does not have one entry",
                             sideEffectValue, sideEffectValue.getClass().getSimpleName(), aggregateTo));
 
                 if (null == aggregatedResult) aggregatedResult =  new HashMap();
 
                 final Map<Object,Object > m = validate(aggregateTo, Map.class);
-                final Map.Entry entry = (Map.Entry) sideEffectValue;
+                final Map.Entry entry = sideEffectValue instanceof Map.Entry ?
+                        (Map.Entry) sideEffectValue : (Map.Entry) ((Map) sideEffectValue).entrySet().iterator().next();
                 m.put(entry.getKey(), entry.getValue());
                 break;
             case Tokens.VAL_AGGREGATE_TO_NONE:

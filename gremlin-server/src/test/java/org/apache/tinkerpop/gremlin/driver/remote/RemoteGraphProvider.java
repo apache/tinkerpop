@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -48,6 +49,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     private static GremlinServer server;
     private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
     private final Cluster cluster = Cluster.open();
+    //private final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V2D0).create();
     private final Client client = cluster.connect();
 
     static {
