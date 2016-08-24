@@ -74,10 +74,14 @@ with the next steps for establishing you as a committer.
 ----
 
 Assuming the iCLA included items from step 3, the secretary will handle account creation, otherwise it will be up to
-the PMC chair to link:http://www.apache.org/dev/pmc.html#newcommitter[handle such things].
+the PMC chair to link:http://www.apache.org/dev/pmc.html#newcommitter[handle such things]. Once the account is
+established the PMC chair will then need to:
 
-Upon confirming with the new committer that their account is established, send an announcement email to the
-developer and user mailing lists:
+1. Validate that the iCLA is on file either through link:https://svn.apache.org/repos/private/foundation/officers/[svn]
+or through link:http://people.apache.org/committer-index.html[people.apache.org].
+2. Once verified, provide the new committer access to the repository, which is most easily done through
+link:https://whimsy.apache.org/roster/committee/[Whimsy].
+3. Send an announcement email to the developer and user mailing lists with the template below.
 
 [source,text]
 ----
@@ -96,7 +100,7 @@ productivity.
 
 Finally, new committers should be sent an email that covers some of the administrative elements of their new role:
 
-* link:http://www.apache.org/dev/committers.html[Apache Committer Gu]ide]
+* link:http://www.apache.org/dev/committers.html[Apache Committer Guide]
 * link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
 * link:http://tinkerpop.apache.org/docs/current/dev/developer/[TinkerPop Developer Documentation]
 ** Bring specific attention to the "committer" section which describes our general policies.
@@ -125,4 +129,4 @@ If the candidate does not (yet) have an Apache account, then please note that fa
 the board 72 hours to respond with objection before extending the invite to the new PMC member. Once that time has
 elapsed, the invite may be sent to the new PMC member. If they accept, then the PMC chair should refer to the
 link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for ho to
-complete the process.
+complete the process. Use link:https://whimsy.apache.org/roster/committee/[Whimsy] to update PMC membership.
