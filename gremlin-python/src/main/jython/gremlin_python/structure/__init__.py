@@ -17,5 +17,9 @@ specific language governing permissions and limitations
 under the License.
 '''
 from .graph import Graph
+from .graph import Vertex
+from .graph import Edge
+from .graph import VertexProperty
+from .graph import Property
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

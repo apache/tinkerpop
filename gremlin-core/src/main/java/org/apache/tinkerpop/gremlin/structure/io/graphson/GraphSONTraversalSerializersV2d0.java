@@ -34,6 +34,7 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
@@ -65,6 +66,12 @@ final class GraphSONTraversalSerializersV2d0 {
         public void serialize(final Traversal traversal, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeObject(traversal.asAdmin().getBytecode());
+        }
+
+        @Override
+        public void serializeWithType(final Traversal traversal, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
+                throws IOException {
+            serialize(traversal, jsonGenerator, serializerProvider);
         }
 
     }
@@ -194,9 +201,9 @@ final class GraphSONTraversalSerializersV2d0 {
 
     }
 
-    final static class TraverserSerializer extends StdScalarSerializer<Traverser> {
+    final static class TraverserJacksonSerializer extends StdScalarSerializer<Traverser> {
 
-        public TraverserSerializer() {
+        public TraverserJacksonSerializer() {
             super(Traverser.class);
         }
 

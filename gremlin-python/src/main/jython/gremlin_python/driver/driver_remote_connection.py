@@ -22,19 +22,23 @@ from tornado import gen
 from tornado import ioloop
 from tornado import websocket
 
+from gremlin_python.structure.io.graphson import GraphSONWriter
+from gremlin_python.structure.io.graphson import TraverserDeserializer
 from .remote_connection import RemoteConnection
 from .remote_connection import RemoteTraversal
 from .remote_connection import RemoteTraversalSideEffects
-from ..process.graphson import GraphSONWriter
-from ..process.traversal import Traverser
 
 
 class GremlinServerError(Exception):
     pass
 
 
-def parse_traverser(result):
-    return Traverser(result["@value"]["value"], result["@value"]["bulk"]["@value"])
+# when the object is known to be a traverser, just use a direct call to the deserializer
+__traverserDeserializer = TraverserDeserializer()
+
+
+def parse_traverser(traverser_dict):
+    return __traverserDeserializer._objectify(traverser_dict)
 
 
 def parse_side_effect(result):

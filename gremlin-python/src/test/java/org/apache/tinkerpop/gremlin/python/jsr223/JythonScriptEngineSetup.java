@@ -46,7 +46,7 @@ public class JythonScriptEngineSetup {
             // jythonEngine.eval("from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection");
             jythonEngine.eval("from gremlin_python.process.traversal import Bytecode");
             jythonEngine.eval("from gremlin_python.structure.graph import Graph");
-            jythonEngine.eval("from gremlin_python.process.graphson import GraphSONWriter");
+            jythonEngine.eval("from gremlin_python.structure.io.graphson import GraphSONWriter");
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

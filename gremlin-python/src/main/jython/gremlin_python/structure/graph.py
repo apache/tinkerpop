@@ -33,3 +33,42 @@ class Graph(object):
 
     def __repr__(self):
         return "graph[]"
+
+
+class Element(object):
+    def __init__(self, id, label):
+        self.id = id
+        self.label = label
+
+
+class Vertex(Element):
+    def __repr__(self):
+        return "v[" + str(self.id) + "]"
+
+
+class Edge(Element):
+    def __init__(self, id, outV, label, inV):
+        Element.__init__(self, id, label)
+        self.outV = outV
+        self.inV = inV
+
+    def __repr__(self):
+        return "e[" + str(self.id) + "][" + str(self.outV.id) + "-" + self.label + "->" + str(self.inV.id) + "]"
+
+
+class VertexProperty(Element):
+    def __init__(self, id, label, value):
+        Element.__init__(self, id, label)
+        self.value = value
+
+    def __repr__(self):
+        return "vp[" + str(self.label) + "->" + str(self.value)[0:20] + "]"
+
+
+class Property(object):
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+    def __repr__(self):
+        return "p[" + str(self.key) + "->" + str(self.value)[0:20] + "]"
