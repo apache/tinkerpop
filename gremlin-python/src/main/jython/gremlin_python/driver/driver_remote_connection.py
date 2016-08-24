@@ -55,33 +55,47 @@ class DriverRemoteConnection(RemoteConnection):
     @gen.coroutine
     def submit_traversal_bytecode(self, bytecode, request_id):
         message = self._get_traversal_bytecode_message(bytecode, request_id)
-        traversers = yield self._execute_message(message, lambda result: GraphSONReader._objectify(result))
+        traversers = yield self._execute_message(message)
         raise gen.Return(traversers)
 
     @gen.coroutine
     def submit_sideEffect_keys(self, request_id):
         message = self._get_sideEffect_keys_message(request_id)
-        keys = yield self._execute_message(message, lambda result: GraphSONReader._objectify(result))
+        keys = yield self._execute_message(message)
         raise gen.Return(set(keys))
 
     @gen.coroutine
     def submit_sideEffect_value(self, request_id, key):
         message = self._get_sideEffect_value_message(request_id, key)
-        side_effects = yield self._execute_message(message, lambda result: GraphSONReader._objectify(result))
-        raise gen.Return(side_effects[0])  # don't get it wrapped in a list
+        side_effects = yield self._execute_message(message)
+        raise gen.Return(side_effects)
 
     @gen.coroutine
-    def _execute_message(self, message, resp_parser):
+    def _execute_message(self, message):
         if self._ws.protocol is None:
             self._ws = yield websocket.websocket_connect(self.url)
         self._ws.write_message(message, binary=True)
-        resp = Response(self._ws, self._username, self._password, resp_parser)
-        results = []
+        resp = Response(self._ws, self._username, self._password)
+        results = None
         while True:
             msg = yield resp.receive()
             if msg is None:
                 break
-            results.append(msg)
+            if None == results:
+                aggregateTo = msg[0]
+                if "list" == aggregateTo:
+                    results = []
+                elif "set" == aggregateTo:
+                    results = set()
+                elif "map" == aggregateTo:
+                    results = {}
+                else:
+                    results = []
+            if isinstance(results, dict):
+                for item in msg[1]:
+                    results.update(item)
+            else:
+                results += msg[1]
         raise gen.Return(results)
 
     def close(self):
@@ -90,7 +104,7 @@ class DriverRemoteConnection(RemoteConnection):
     def _get_traversal_bytecode_message(self, bytecode, request_id):
         message = {
             "requestId": {
-                "@type": "gremlin:uuid",
+                "@type": "g:UUID",
                 "@value": request_id
             },
             "op": "bytecode",
@@ -106,14 +120,14 @@ class DriverRemoteConnection(RemoteConnection):
     def _get_sideEffect_keys_message(self, request_id):
         message = {
             "requestId": {
-                "@type": "gremlin:uuid",
+                "@type": "g:UUID",
                 "@value": str(uuid.uuid4())
             },
             "op": "keys",
             "processor": "traversal",
             "args": {
                 "sideEffect": {
-                    "@type": "gremlin:uuid",
+                    "@type": "g:UUID",
                     "@value": request_id
                 }
             }
@@ -124,14 +138,14 @@ class DriverRemoteConnection(RemoteConnection):
     def _get_sideEffect_value_message(self, request_id, key):
         message = {
             "requestId": {
-                "@type": "gremlin:uuid",
+                "@type": "g:UUID",
                 "@value": str(uuid.uuid4())
             },
             "op": "gather",
             "processor": "traversal",
             "args": {
                 "sideEffect": {
-                    "@type": "gremlin:uuid",
+                    "@type": "g:UUID",
                     "@value": request_id
                 },
                 "sideEffectKey": key,
@@ -157,22 +171,17 @@ class DriverRemoteConnection(RemoteConnection):
 
     def _finalize_message(self, message):
         message = json.dumps(message)
-        return self._set_message_header(message)
-
-    @staticmethod
-    def _set_message_header(message):
         mime_type = b"application/vnd.gremlin-v2.0+json"
         mime_len = b"\x21"
         return b"".join([mime_len, mime_type, message.encode("utf-8")])
 
 
 class Response:
-    def __init__(self, ws, username, password, resp_parser):
+    def __init__(self, ws, username, password):
         self._ws = ws
         self._closed = False
         self._username = username
         self._password = password
-        self._resp_parser = resp_parser
 
     @gen.coroutine
     def receive(self):
@@ -193,27 +202,12 @@ class Response:
             self._closed = True
             return
         elif status_code in [200, 206]:
-            # todo: bulk
-            if "list" == aggregateTo:
-                results = []
-                for item in data:
-                    results.append(self._resp_parser(item))
-            elif "set" == aggregateTo:
-                results = set()
-                for item in data:
-                    results.add(self._resp_parser(item))
-            elif "map" == aggregateTo:
-                results = {}
-                for item in data:
-                    m = self._resp_parser(item)
-                    results[m.keys()[0]] = m[m.keys()[0]]
-            else:
-                results = []
-                for item in data:
-                    results.append(self._resp_parser(item))
+            results = []
+            for item in data:
+                results.append(GraphSONReader._objectify(item))
             if status_code == 200:
                 self._closed = True
-            raise gen.Return(results)
+            raise gen.Return((aggregateTo, results))
         else:
             self._closed = True
             raise GremlinServerError(
