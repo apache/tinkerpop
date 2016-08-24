@@ -38,7 +38,7 @@ GraphSON 2.0
 GraphSON 2.0 has been introduced to improve and normalize the format of types embedded in GraphSON.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
-link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
+link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2-0-types[Reference Documentation -
 GraphSON 2.0].
 
 Log4j Dependencies
