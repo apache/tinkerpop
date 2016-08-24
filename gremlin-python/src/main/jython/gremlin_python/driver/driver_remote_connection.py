@@ -115,8 +115,7 @@ class DriverRemoteConnection(RemoteConnection):
                 "aliases": {"g": self.traversal_source}
             }
         }
-        message = self._finalize_message(message)
-        return message
+        return DriverRemoteConnection._finalize_message(message)
 
     def _get_sideEffect_keys_message(self, request_id):
         message = {
@@ -133,8 +132,7 @@ class DriverRemoteConnection(RemoteConnection):
                 }
             }
         }
-        message = self._finalize_message(message)
-        return message
+        return DriverRemoteConnection._finalize_message(message)
 
     def _get_sideEffect_value_message(self, request_id, key):
         message = {
@@ -153,24 +151,10 @@ class DriverRemoteConnection(RemoteConnection):
                 "aliases": {"g": self.traversal_source}
             }
         }
-        message = self._finalize_message(message)
-        return message
+        return DriverRemoteConnection._finalize_message(message)
 
-    def _authenticate(self, username, password, processor):
-        auth = b"".join([b"\x00", username.encode("utf-8"),
-                         b"\x00", password.encode("utf-8")])
-        message = {
-            "requestId": str(uuid.uuid4()),
-            "op": "authentication",
-            "processor": "",
-            "args": {
-                "sasl": base64.b64encode(auth).decode()
-            }
-        }
-        message = self._finalize_message(message)
-        self._ws.send_message(message, binary=True)
-
-    def _finalize_message(self, message):
+    @staticmethod
+    def _finalize_message(message):
         message = json.dumps(message)
         mime_type = b"application/vnd.gremlin-v2.0+json"
         mime_len = b"\x21"
@@ -183,6 +167,19 @@ class Response:
         self._closed = False
         self._username = username
         self._password = password
+
+    def _authenticate(self, username, password):
+        auth = b"".join([b"\x00", username.encode("utf-8"),
+                         b"\x00", password.encode("utf-8")])
+        message = {
+            "requestId": str(uuid.uuid4()),
+            "op": "authentication",
+            "processor": "traversal",
+            "args": {
+                "sasl": base64.b64encode(auth).decode()
+            }
+        }
+        self._ws.send_message(DriverRemoteConnection._finalize_message(message), binary=True)
 
     @gen.coroutine
     def receive(self):
@@ -197,7 +194,7 @@ class Response:
         aggregateTo = "list" if "aggregateTo" not in meta else meta["aggregateTo"]
 
         if status_code == 407:
-            self._authenticate(self._username, self._password, self._processor)
+            self._authenticate(self._username, self._password)
             yield self.receive()
         elif status_code == 204:
             self._closed = True
