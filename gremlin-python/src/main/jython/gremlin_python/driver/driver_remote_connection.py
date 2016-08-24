@@ -22,8 +22,8 @@ from tornado import gen
 from tornado import ioloop
 from tornado import websocket
 
+from gremlin_python.structure.io.graphson import GraphSONReader
 from gremlin_python.structure.io.graphson import GraphSONWriter
-from gremlin_python.structure.io.graphson import TraverserDeserializer
 from .remote_connection import RemoteConnection
 from .remote_connection import RemoteTraversal
 from .remote_connection import RemoteTraversalSideEffects
@@ -33,21 +33,7 @@ class GremlinServerError(Exception):
     pass
 
 
-# when the object is known to be a traverser, just use a direct call to the deserializer
-__traverserDeserializer = TraverserDeserializer()
-
-
-def parse_traverser(traverser_dict):
-    return __traverserDeserializer._objectify(traverser_dict)
-
-
-def parse_side_effect(result):
-    return result
-
-
 class DriverRemoteConnection(RemoteConnection):
-    """Remote connection to the Gremlin Server"""
-
     def __init__(self, url, traversal_source, loop=None, username="", password=""):
         super(DriverRemoteConnection, self).__init__(url, traversal_source)
         if loop is None:
@@ -68,33 +54,21 @@ class DriverRemoteConnection(RemoteConnection):
 
     @gen.coroutine
     def submit_traversal_bytecode(self, bytecode, request_id):
-        """
-        Submit bytecode to Gremlin Server
-
-        :param str gremlin: Gremlin script to submit to server.
-        :param str lang: Language of scripts submitted to the server.
-            "gremlin-groovy" by default
-        :param str op: Gremlin Server op argument. "eval" by default.
-        :param str processor: Gremlin Server processor argument. "" by default.
-
-        :returns: :py:class:`Response` object
-        """
         message = self._get_traversal_bytecode_message(bytecode, request_id)
-        traversers = yield self._execute_message(message, parse_traverser)
+        traversers = yield self._execute_message(message, lambda result: GraphSONReader._objectify(result))
         raise gen.Return(traversers)
 
     @gen.coroutine
     def submit_sideEffect_keys(self, request_id):
         message = self._get_sideEffect_keys_message(request_id)
-        resp_parser = lambda result: result
-        keys = yield self._execute_message(message, resp_parser)
-        raise gen.Return(keys)
+        keys = yield self._execute_message(message, lambda result: GraphSONReader._objectify(result))
+        raise gen.Return(set(keys))
 
     @gen.coroutine
     def submit_sideEffect_value(self, request_id, key):
         message = self._get_sideEffect_value_message(request_id, key)
-        side_effects = yield self._execute_message(message, parse_side_effect)
-        raise gen.Return(side_effects)
+        side_effects = yield self._execute_message(message, lambda result: GraphSONReader._objectify(result))
+        raise gen.Return(side_effects[0])  # don't get it wrapped in a list
 
     @gen.coroutine
     def _execute_message(self, message, resp_parser):
@@ -107,11 +81,10 @@ class DriverRemoteConnection(RemoteConnection):
             msg = yield resp.receive()
             if msg is None:
                 break
-            results += msg
+            results.append(msg)
         raise gen.Return(results)
 
     def close(self):
-        """Close underlying connection and mark as closed."""
         self._ws.close()
 
     def _get_traversal_bytecode_message(self, bytecode, request_id):
@@ -210,20 +183,38 @@ class Response:
         status_code = message["status"]["code"]
         data = message["result"]["data"]
         msg = message["status"]["message"]
+        meta = message["result"]["meta"]
+        aggregateTo = None if "aggregateTo" not in meta else meta["aggregateTo"]
+
         if status_code == 407:
             self._authenticate(self._username, self._password, self._processor)
-            traversers = yield self.receive()
+            yield self.receive()
         elif status_code == 204:
             self._closed = True
             return
         elif status_code in [200, 206]:
-            results = []
-            for result in data:
-                results.append(self._resp_parser(result))
+            # todo: bulk
+            if "list" == aggregateTo:
+                results = []
+                for item in data:
+                    results.append(self._resp_parser(item))
+            elif "set" == aggregateTo:
+                results = set()
+                for item in data:
+                    results.add(self._resp_parser(item))
+            elif "map" == aggregateTo:
+                results = {}
+                for item in data:
+                    m = self._resp_parser(item)
+                    results[m.keys()[0]] = m[m.keys()[0]]
+            else:
+                results = []
+                for item in data:
+                    results.append(self._resp_parser(item))
             if status_code == 200:
                 self._closed = True
+            raise gen.Return(results)
         else:
             self._closed = True
             raise GremlinServerError(
                 "{0}: {1}".format(status_code, msg))
-        raise gen.Return(results)
