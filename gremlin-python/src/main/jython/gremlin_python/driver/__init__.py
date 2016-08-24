@@ -19,6 +19,7 @@ under the License.
 from .remote_connection import RemoteConnection
 from .remote_connection import RemoteStrategy
 from .remote_connection import RemoteTraversal
+from .remote_connection import RemoteTraversalSideEffects
 
 try:
     from .driver_remote_connection import DriverRemoteConnection

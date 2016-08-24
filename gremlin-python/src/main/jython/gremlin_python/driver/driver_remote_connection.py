@@ -24,6 +24,7 @@ from tornado import websocket
 
 from .remote_connection import RemoteConnection
 from .remote_connection import RemoteTraversal
+from .remote_connection import RemoteTraversalSideEffects
 from ..process.graphson import GraphSONWriter
 from ..process.traversal import Traverser
 
@@ -56,13 +57,13 @@ class DriverRemoteConnection(RemoteConnection):
                op="bytecode",
                processor="traversal"):
         request_id = str(uuid.uuid4())
-        traversers = self._loop.run_sync(lambda: self.submit_bytecode(
-            bytecode, request_id))
-        return RemoteTraversal(iter(traversers),
-                               TraversalSideEffects(self, request_id))
+        traversers = self._loop.run_sync(lambda: self.submit_traversal_bytecode(bytecode, request_id))
+        keys_lambda = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_keys(request_id))
+        value_lambda = lambda key: self._loop.run_sync(lambda: self.submit_sideEffect_value(request_id, key))
+        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(keys_lambda, value_lambda))
 
     @gen.coroutine
-    def submit_bytecode(self, bytecode, request_id):
+    def submit_traversal_bytecode(self, bytecode, request_id):
         """
         Submit bytecode to Gremlin Server
 
@@ -74,20 +75,20 @@ class DriverRemoteConnection(RemoteConnection):
 
         :returns: :py:class:`Response` object
         """
-        message = self._get_bytecode_message(bytecode, request_id)
+        message = self._get_traversal_bytecode_message(bytecode, request_id)
         traversers = yield self._execute_message(message, parse_traverser)
         raise gen.Return(traversers)
 
     @gen.coroutine
-    def submit_keys(self, request_id):
-        message = self._get_keys_message(request_id)
+    def submit_sideEffect_keys(self, request_id):
+        message = self._get_sideEffect_keys_message(request_id)
         resp_parser = lambda result: result
         keys = yield self._execute_message(message, resp_parser)
         raise gen.Return(keys)
 
     @gen.coroutine
-    def submit_gather(self, request_id, key):
-        message = self._get_gather_message(request_id, key)
+    def submit_sideEffect_value(self, request_id, key):
+        message = self._get_sideEffect_value_message(request_id, key)
         side_effects = yield self._execute_message(message, parse_side_effect)
         raise gen.Return(side_effects)
 
@@ -109,7 +110,7 @@ class DriverRemoteConnection(RemoteConnection):
         """Close underlying connection and mark as closed."""
         self._ws.close()
 
-    def _get_bytecode_message(self, bytecode, request_id):
+    def _get_traversal_bytecode_message(self, bytecode, request_id):
         message = {
             "requestId": {
                 "@type": "gremlin:uuid",
@@ -125,7 +126,7 @@ class DriverRemoteConnection(RemoteConnection):
         message = self._finalize_message(message)
         return message
 
-    def _get_keys_message(self, request_id):
+    def _get_sideEffect_keys_message(self, request_id):
         message = {
             "requestId": {
                 "@type": "gremlin:uuid",
@@ -143,7 +144,7 @@ class DriverRemoteConnection(RemoteConnection):
         message = self._finalize_message(message)
         return message
 
-    def _get_gather_message(self, request_id, key):
+    def _get_sideEffect_value_message(self, request_id, key):
         message = {
             "requestId": {
                 "@type": "gremlin:uuid",
@@ -222,27 +223,3 @@ class Response:
             raise GremlinServerError(
                 "{0}: {1}".format(status_code, msg))
         raise gen.Return(results)
-
-
-class TraversalSideEffects(object):
-    def __init__(self, remote_connection, request_id):
-        self._remote_connection = remote_connection
-        self._request_id = request_id
-        self._loop = self._remote_connection._loop
-
-    def keys(self):
-        keys = self._loop.run_sync(
-            lambda: self._remote_connection.submit_keys(self._request_id))
-        return keys
-
-    def get(self, key):
-        side_effects = self._loop.run_sync(
-            lambda: self._remote_connection.submit_gather(self._request_id, key)
-        )
-        return side_effects
-
-    def __getitem__(self, key):
-        return self.get(key)
-
-    def __repr__(self):
-        return "sideEffects[size:" + str(len(self.keys())) + "]"

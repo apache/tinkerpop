@@ -52,6 +52,24 @@ class RemoteTraversal(Traversal):
         self.side_effects = side_effects
 
 
+class RemoteTraversalSideEffects(object):
+    def __init__(self, keys_lambda, value_lambda):
+        self.keys_lambda = keys_lambda
+        self.value_lambda = value_lambda
+
+    def keys(self):
+        return self.keys_lambda()
+
+    def get(self, key):
+        return self.value_lambda(key)
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __repr__(self):
+        return "sideEffects[size:" + str(len(self.keys())) + "]"
+
+
 class RemoteStrategy(TraversalStrategy):
     def __init__(self, remote_connection):
         self.remote_connection = remote_connection
