@@ -42,8 +42,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONDeserializer;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV1d0;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV2d0;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -198,7 +196,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
             addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
             addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
-            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserSerializer());
+            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
 
@@ -340,7 +338,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
             addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
             addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
-            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserSerializer());*/
+            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonSerializer());*/
             // -- deserializers for traversal
             addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
             //addDeserializer(Enum.class, new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer());
