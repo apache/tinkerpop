@@ -185,7 +185,7 @@ public class ScriptEngines implements AutoCloseable {
                 scriptEngines.remove(language);
 
             final GremlinScriptEngine scriptEngine = createScriptEngine(language, imports, staticImports, config)
-                    .orElseThrow(() -> new IllegalArgumentException("Language [%s] not supported"));
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("Language [%s] not supported", language)));
             scriptEngines.put(language, scriptEngine);
 
             logger.info("Loaded {} ScriptEngine", language);
