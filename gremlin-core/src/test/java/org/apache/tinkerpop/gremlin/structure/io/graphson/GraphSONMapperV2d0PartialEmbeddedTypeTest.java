@@ -80,21 +80,21 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONT
         assertEquals(myList, serializeDeserializeAuto(mapper, myList));
 
         // no "@value" property
-        String s = "{\""+GraphSONTokens.VALUETYPE+"\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":uuid\", \"test\":2}";
+        String s = "{\""+GraphSONTokens.VALUETYPE+"\":\"" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":UUID\", \"test\":2}";
         Map<String,Object> map = new LinkedHashMap<>();
-        map.put(GraphSONTokens.VALUETYPE, "gremlin:uuid");
+        map.put(GraphSONTokens.VALUETYPE, GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":UUID");
         map.put("test", 2);
         Object res = mapper.readValue(s, Object.class);
         assertEquals(map, res);
 
         // "@value" and "@type" property reversed
-        s = "{\""+GraphSONTokens.VALUEPROP+"\":2, \""+ GraphSONTokens.VALUETYPE+"\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":int64\"}";
+        s = "{\""+GraphSONTokens.VALUEPROP+"\":2, \"" + GraphSONTokens.VALUETYPE + "\":\"" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":Int64\"}";
         res = mapper.readValue(s, Object.class);
         assertEquals(res, 2L);
         assertEquals(res.getClass(), Long.class);
 
         // no "@type" property.
-        s = "{\""+GraphSONTokens.VALUEPROP+"\":2, \"id\":2}";
+        s = "{\""+GraphSONTokens.VALUEPROP + "\":2, \"id\":2}";
         map = new LinkedHashMap<>();
         map.put(GraphSONTokens.VALUEPROP, 2);
         map.put("id", 2);
@@ -104,14 +104,14 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONT
 
     @Test
     public void shouldFailIfMoreThanTwoPropertiesInATypePattern() {
-        String s = "{\"" + GraphSONTokens.VALUEPROP + "\":2, \"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":int64\", \"hello\": \"world\"}";
+        String s = "{\"" + GraphSONTokens.VALUEPROP + "\":2, \"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":Int64\", \"hello\": \"world\"}";
         try {
             mapper.readValue(s, Object.class);
             fail("Should have failed deserializing because there's more than properties in the type.");
         } catch (IOException e) {
             assertThat(e.getMessage(), containsString("Detected the type pattern in the JSON payload but the map containing the types and values contains other fields. This is not allowed by the deserializer."));
         }
-        s = "{\"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":int64\",\"" + GraphSONTokens.VALUEPROP + "\":2, \"hello\": \"world\"}";
+        s = "{\"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":Int64\",\"" + GraphSONTokens.VALUEPROP + "\":2, \"hello\": \"world\"}";
         try {
             mapper.readValue(s, Object.class);
             fail("Should have failed deserializing because there's more than properties in the type.");
@@ -131,7 +131,7 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONT
             mapper.readValue(inputStream, Instant.class);
             fail("Should have failed decoding the value");
         } catch (Exception e) {
-            assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('"+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":zoneoffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+            assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":ZoneOffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
         }
     }
 

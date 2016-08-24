@@ -188,7 +188,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                 AtomicBoolean.class,
                 AtomicReference.class,
                 TokenBuffer.class
-        ).forEach(e -> graphSONTypeIdResolver.addCustomType(String.format("%s:%s", GraphSONTokens.GREMLIN_TYPE_NAMESPACE, e.getSimpleName().toLowerCase()), e));
+        ).forEach(e -> graphSONTypeIdResolver.addCustomType(String.format("%s:%s", GraphSONTokens.GREMLIN_TYPE_NAMESPACE, e.getSimpleName()), e));
     }
 
     public static class Builder implements Mapper.Builder<Builder> {

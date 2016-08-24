@@ -90,41 +90,41 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                 new LinkedHashMap<Class, String>() {{
                     // Those don't have deserializers because handled by Jackson,
                     // but we still want to rename them in GraphSON
-                    put(ByteBuffer.class, "bytebuffer");
-                    put(Short.class, "int16");
-                    put(Integer.class, "int32");
-                    put(Long.class, "int64");
-                    put(Double.class, "double");
-                    put(Float.class, "float");
+                    put(ByteBuffer.class, "ByteBuffer");
+                    put(Short.class, "Int16");
+                    put(Integer.class, "Int32");
+                    put(Long.class, "Int64");
+                    put(Double.class, "Double");
+                    put(Float.class, "Float");
 
                     // Time serializers/deserializers
-                    put(Duration.class, "duration");
-                    put(Instant.class, "instant");
-                    put(LocalDate.class, "localdate");
-                    put(LocalDateTime.class, "localdatetime");
-                    put(LocalTime.class, "localtime");
-                    put(MonthDay.class, "monthday");
-                    put(OffsetDateTime.class, "offsetdatetime");
-                    put(OffsetTime.class, "offsettime");
-                    put(Period.class, "period");
-                    put(Year.class, "year");
-                    put(YearMonth.class, "yearmonth");
-                    put(ZonedDateTime.class, "zoneddatetime");
-                    put(ZoneOffset.class, "zoneoffset");
+                    put(Duration.class, "Duration");
+                    put(Instant.class, "Instant");
+                    put(LocalDate.class, "LocalDate");
+                    put(LocalDateTime.class, "LocalDateTime");
+                    put(LocalTime.class, "LocalTime");
+                    put(MonthDay.class, "MonthDay");
+                    put(OffsetDateTime.class, "OffsetDateTime");
+                    put(OffsetTime.class, "OffsetTime");
+                    put(Period.class, "Period");
+                    put(Year.class, "Year");
+                    put(YearMonth.class, "YearMonth");
+                    put(ZonedDateTime.class, "ZonedDateTime");
+                    put(ZoneOffset.class, "ZoneOffset");
 
                     // Tinkerpop Graph objects
-                    put(Lambda.class, "lambda");
-                    put(Vertex.class, "vertex");
-                    put(Edge.class, "edge");
-                    put(Property.class, "property");
-                    put(Path.class, "path");
-                    put(VertexProperty.class, "vertexproperty");
+                    put(Lambda.class, "Lambda");
+                    put(Vertex.class, "Vertex");
+                    put(Edge.class, "Edge");
+                    put(Property.class, "Property");
+                    put(Path.class, "Path");
+                    put(VertexProperty.class, "VertexProperty");
                     put(Metrics.class, "metrics");
-                    put(TraversalMetrics.class, "traversalmetrics");
-                    put(Traverser.class, "traverser");
-                    put(Tree.class, "tree");
-                    put(Bytecode.class, "bytecode");
-                    put(Bytecode.Binding.class, "binding");
+                    put(TraversalMetrics.class, "TraversalMetrics");
+                    put(Traverser.class, "Traverser");
+                    put(Tree.class, "Tree");
+                    put(Bytecode.class, "Bytecode");
+                    put(Bytecode.Binding.class, "Binding");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
@@ -341,11 +341,11 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
             addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonSerializer());*/
             // -- deserializers for traversal
-            addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
+            //addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
             //addDeserializer(Enum.class, new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer());
-            addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
-            addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
-            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonDeserializer());
+            //addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
+            //addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
+            //addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonDeserializer());
 
         }
 

@@ -122,12 +122,12 @@ class BytecodeSerializer(GraphSONSerializer):
             dict["source"] = sources
         if len(steps) > 0:
             dict["step"] = steps
-        return _SymbolHelper.objectify("bytecode", dict)
+        return _SymbolHelper.objectify("Bytecode", dict)
 
 
 class TraverserSerializer(GraphSONSerializer):
     def _dictify(self, traverser):
-        return _SymbolHelper.objectify("traverser", {"value": GraphSONWriter._dictify(traverser.object),
+        return _SymbolHelper.objectify("Traverser", {"value": GraphSONWriter._dictify(traverser.object),
                                                      "bulk": GraphSONWriter._dictify(traverser.bulk)})
 
 
@@ -153,7 +153,7 @@ class BindingSerializer(GraphSONSerializer):
         dict = {}
         dict["key"] = binding.key
         dict["value"] = GraphSONWriter._dictify(binding.value)
-        return _SymbolHelper.objectify("binding", dict)
+        return _SymbolHelper.objectify("Binding", dict)
 
 
 class LambdaSerializer(GraphSONSerializer):
@@ -171,7 +171,7 @@ class LambdaSerializer(GraphSONSerializer):
             dict["arguments"] = eval(dict["script"]).func_code.co_argcount
         else:
             dict["arguments"] = -1
-        return _SymbolHelper.objectify("lambda", dict)
+        return _SymbolHelper.objectify("Lambda", dict)
 
 
 class NumberSerializer(GraphSONSerializer):
@@ -179,11 +179,11 @@ class NumberSerializer(GraphSONSerializer):
         if isinstance(number, bool):  # python thinks that 0/1 integers are booleans
             return number
         elif isinstance(number, long):
-            return _SymbolHelper.objectify("int64", number)
+            return _SymbolHelper.objectify("Int64", number)
         elif isinstance(number, int):
-            return _SymbolHelper.objectify("int32", number)
+            return _SymbolHelper.objectify("Int32", number)
         elif isinstance(number, float):
-            return _SymbolHelper.objectify("float", number)
+            return _SymbolHelper.objectify("Float", number)
         else:
             return number
 
@@ -209,9 +209,9 @@ class NumberDeserializer(GraphSONDeserializer):
     def _objectify(self, dict):
         type = dict[_SymbolHelper._TYPE]
         value = dict[_SymbolHelper._VALUE]
-        if type == "gremlin:int32":
+        if type == "g:Int32":
             return int(value)
-        elif type == "gremlin:int64":
+        elif type == "g:Int64":
             return long(value)
         else:
             return float(value)
@@ -257,7 +257,7 @@ class _SymbolHelper(object):
         return _SymbolHelper.symbolMap[symbol] if symbol in _SymbolHelper.symbolMap else symbol
 
     @staticmethod
-    def objectify(type, value, prefix="gremlin"):
+    def objectify(type, value, prefix="g"):
         return {_SymbolHelper._TYPE: prefix + ":" + type, _SymbolHelper._VALUE: value}
 
 
@@ -275,13 +275,13 @@ serializers = {
 }
 
 deserializers = {
-    "gremlin:traverser": TraverserDeserializer(),
-    "gremlin:int32": NumberDeserializer(),
-    "gremlin:int64": NumberDeserializer(),
-    "gremlin:float": NumberDeserializer(),
-    "gremlin:double": NumberDeserializer(),
-    "gremlin:vertex": VertexDeserializer(),
-    "gremlin:edge": EdgeDeserializer(),
-    "gremlin:vertexproperty": VertexPropertyDeserializer(),
-    "gremlin:property": PropertyDeserializer()
+    "g:Traverser": TraverserDeserializer(),
+    "g:Int32": NumberDeserializer(),
+    "g:Int64": NumberDeserializer(),
+    "g:Float": NumberDeserializer(),
+    "g:Double": NumberDeserializer(),
+    "g:Vertex": VertexDeserializer(),
+    "g:Edge": EdgeDeserializer(),
+    "g:VertexProperty": VertexPropertyDeserializer(),
+    "g:Property": PropertyDeserializer()
 }

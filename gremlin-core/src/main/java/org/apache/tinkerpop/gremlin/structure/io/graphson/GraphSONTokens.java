@@ -47,7 +47,7 @@ public final class GraphSONTokens {
     public static final String OBJECTS = "objects";
     public static final String IN_LABEL = "inVLabel";
     public static final String OUT_LABEL = "outVLabel";
-    public static final String GREMLIN_TYPE_NAMESPACE = "gremlin";
+    public static final String GREMLIN_TYPE_NAMESPACE = "g";
 
     // TraversalExplanation Tokens
     public static final String ORIGINAL = "original";
