@@ -17,21 +17,9 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-from .graph_traversal import GraphTraversal
-from .graph_traversal import GraphTraversalSource
-from .graph_traversal import __
-from .traversal import Barrier
-from .traversal import Bindings
-from .traversal import Bytecode
-from .traversal import Cardinality
-from .traversal import Column
-from .traversal import Direction
-from .traversal import Operator
-from .traversal import Order
-from .traversal import P
-from .traversal import Pop
-from .traversal import Scope
-from .traversal import T
-from .traversal import Traversal
+from .graphson import GraphSONReader
+from .graphson import GraphSONWriter
+from .graphson import deserializers
+from .graphson import serializers
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

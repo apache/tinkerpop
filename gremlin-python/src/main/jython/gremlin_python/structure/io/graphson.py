@@ -24,11 +24,16 @@ from types import FunctionType
 from types import IntType
 from types import LongType
 
-from .traversal import Binding
-from .traversal import Bytecode
-from .traversal import P
-from .traversal import Traversal
-from .. import statics
+from gremlin_python import statics
+from gremlin_python.process.traversal import Binding
+from gremlin_python.process.traversal import Bytecode
+from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import Traversal
+from gremlin_python.process.traversal import Traverser
+from gremlin_python.structure.graph import Edge
+from gremlin_python.structure.graph import Property
+from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import VertexProperty
 
 
 class GraphSONWriter(object):
@@ -44,8 +49,33 @@ class GraphSONWriter(object):
         return json.dumps(GraphSONWriter._dictify(object))
 
 
+class GraphSONReader(object):
+    @staticmethod
+    def _objectify(object):
+        if isinstance(object, dict):
+            if _SymbolHelper._TYPE in object:
+                type = object[_SymbolHelper._TYPE]
+                if type in deserializers:
+                    return deserializers[type]._objectify(object)
+            newDict = {}
+            for key in object:
+                newDict[GraphSONReader._objectify(key)] = GraphSONReader._objectify(object[key])
+            return newDict
+        elif isinstance(object, list):
+            newList = []
+            for item in object:
+                newList.append(GraphSONReader._objectify(item))
+            return newList
+        else:
+            return object
+
+    @staticmethod
+    def readObject(data):
+        return GraphSONReader._objectify(json.loads(data))
+
+
 '''
-Serializers
+SERIALIZERS
 '''
 
 
@@ -117,8 +147,8 @@ class LambdaSerializer(GraphSONSerializer):
         if language == "gremlin-jython" or language == "gremlin-python":
             if not script.strip().startswith("lambda"):
                 script = "lambda " + script
-                dict["value"] = script
-            dict["arguments"] = eval(dict["value"]).func_code.co_argcount
+                dict["script"] = script
+            dict["arguments"] = eval(dict["script"]).func_code.co_argcount
         else:
             dict["arguments"] = -1
         return _SymbolHelper.objectify("lambda", dict)
@@ -126,7 +156,7 @@ class LambdaSerializer(GraphSONSerializer):
 
 class NumberSerializer(GraphSONSerializer):
     def _dictify(self, number):
-        if isinstance(number, bool): # python thinks that 0/1 integers are booleans
+        if isinstance(number, bool):  # python thinks that 0/1 integers are booleans
             return number
         elif isinstance(number, long):
             return _SymbolHelper.objectify("int64", number)
@@ -134,6 +164,63 @@ class NumberSerializer(GraphSONSerializer):
             return _SymbolHelper.objectify("int32", number)
         else:
             return number
+
+
+'''
+DESERIALIZERS
+'''
+
+
+class GraphSONDeserializer(object):
+    @abstractmethod
+    def _objectify(self, dict):
+        return dict
+
+
+class TraverserDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        return Traverser(GraphSONReader._objectify(dict[_SymbolHelper._VALUE]["value"]),
+                         GraphSONReader._objectify(dict[_SymbolHelper._VALUE]["bulk"]))
+
+
+class NumberDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        type = dict[_SymbolHelper._TYPE]
+        value = dict[_SymbolHelper._VALUE]
+        if type == "gremlin:int32":
+            return int(value)
+        elif type == "gremlin:int64":
+            return long(value)
+        else:
+            return float(value)
+
+
+class VertexDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        value = dict[_SymbolHelper._VALUE]
+        return Vertex(GraphSONReader._objectify(value["id"]), value["label"] if "label" in value else "")
+
+
+class EdgeDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        value = dict[_SymbolHelper._VALUE]
+        return Edge(GraphSONReader._objectify(value["id"]),
+                    Vertex(GraphSONReader._objectify(value["outV"]), ""),
+                    value["label"] if "label" in value else "vertex",
+                    Vertex(GraphSONReader._objectify(value["inV"]), ""))
+
+
+class VertexPropertyDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        value = dict[_SymbolHelper._VALUE]
+        return VertexProperty(GraphSONReader._objectify(value["id"]), value["label"],
+                              GraphSONReader._objectify(value["value"]))
+
+
+class PropertyDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        value = dict[_SymbolHelper._VALUE]
+        return Property(value["key"], GraphSONReader._objectify(value["value"]))
 
 
 class _SymbolHelper(object):
@@ -161,4 +248,16 @@ serializers = {
     FunctionType: LambdaSerializer(),
     LongType: NumberSerializer(),
     IntType: NumberSerializer()
+}
+
+deserializers = {
+    "gremlin:traverser": TraverserDeserializer(),
+    "gremlin:int32": NumberDeserializer(),
+    "gremlin:int64": NumberDeserializer(),
+    "gremlin:float": NumberDeserializer(),
+    "gremlin:double": NumberDeserializer(),
+    "gremlin:vertex": VertexDeserializer(),
+    "gremlin:edge": EdgeDeserializer(),
+    "gremlin:vertexproperty": VertexPropertyDeserializer(),
+    "gremlin:property": PropertyDeserializer()
 }
