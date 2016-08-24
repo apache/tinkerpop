@@ -32,7 +32,7 @@ class Graph(object):
         return GraphTraversalSource(self, TraversalStrategies.global_cache[self.__class__])
 
     def __repr__(self):
-        return "graph[]"
+        return "graph[empty]"
 
 
 class Element(object):
@@ -42,6 +42,9 @@ class Element(object):
 
 
 class Vertex(Element):
+    def __init__(self, id, label="vertex"):
+        Element.__init__(self, id, label)
+
     def __repr__(self):
         return "v[" + str(self.id) + "]"
 

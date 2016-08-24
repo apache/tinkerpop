@@ -20,8 +20,8 @@
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
+import org.python.jsr223.PyScriptEngine;
 
-import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 /**
@@ -33,12 +33,11 @@ public class JythonScriptEngineSetup {
     }
 
     public static void setup() {
+        setup((PyScriptEngine) ScriptEngineCache.get("jython"));
+    }
+
+    public static PyScriptEngine setup(final PyScriptEngine jythonEngine) {
         try {
-            final ScriptEngine jythonEngine = ScriptEngineCache.get("jython");
-            if (null != System.getenv("PYTHONPATH")) {
-                jythonEngine.eval("import sys");
-                jythonEngine.eval("sys.path.append('" + System.getenv("PYTHONPATH") + "')");
-            }
             jythonEngine.eval("import gremlin_python.statics");
             jythonEngine.eval("from gremlin_python.process.traversal import *");
             jythonEngine.eval("from gremlin_python.process.graph_traversal import *");
@@ -46,7 +45,13 @@ public class JythonScriptEngineSetup {
             // jythonEngine.eval("from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection");
             jythonEngine.eval("from gremlin_python.process.traversal import Bytecode");
             jythonEngine.eval("from gremlin_python.structure.graph import Graph");
+            jythonEngine.eval("from gremlin_python.structure.graph import Vertex");
+            jythonEngine.eval("from gremlin_python.structure.graph import Edge");
+            jythonEngine.eval("from gremlin_python.structure.graph import VertexProperty");
+            jythonEngine.eval("from gremlin_python.structure.graph import Property");
             jythonEngine.eval("from gremlin_python.structure.io.graphson import GraphSONWriter");
+            jythonEngine.eval("from gremlin_python.structure.io.graphson import GraphSONReader");
+            return jythonEngine;
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
