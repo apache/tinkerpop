@@ -20,18 +20,21 @@
 package org.apache.tinkerpop.gremlin.python.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.python.jsr223.PyScriptEngine;
-import org.python.jsr223.PyScriptEngineFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -84,11 +87,25 @@ public class GraphSONWriterTest {
         assertEquals("hello", mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Traverser('hello',3L))").toString(), Traverser.class).get());
     }
 
-    /*@Test
+    @Test
     public void shouldSerializeBytecode() throws Exception {
         assertEquals(P.eq(7L), mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L))").toString(), Object.class));
         // TODO: assertEquals(mapper.writeValueAsString(P.between(1, 2).and(P.eq(7L))), jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L)._and(P.between(1,2)))").toString().replace(" ",""));
         assertEquals(AndP.class, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L)._and(P.between(1,2)))").toString(), Object.class).getClass());
+        //
+        assertEquals(new Bytecode.Binding<>("a", 5L), mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Binding('a',5L))").toString(), Object.class));
+        //
+        for (final Column t : Column.values()) {
+            assertEquals(t, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Column." + t.name() + ")").toString(), Object.class));
+        }
+        for (final T t : T.values()) {
+            assertEquals(t, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(T." + t.name() + ")").toString(), Object.class));
+        }
+        for (final Pop t : Pop.values()) {
+            assertEquals(t, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Pop." + t.name() + ")").toString(), Object.class));
+        }
+        assertEquals(Scope.global, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Scope._global)").toString(), Object.class));
+        assertEquals(Scope.local, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Scope.local)").toString(), Object.class));
     }
 
     @Test
@@ -108,6 +125,6 @@ public class GraphSONWriterTest {
         assertEquals(
                 Lambda.biFunction("lambda z,y : z - y + 2", "gremlin-python"),
                 mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(lambda : 'lambda z,y : z - y + 2')").toString(), Object.class));
-    }*/
+    }
 
 }

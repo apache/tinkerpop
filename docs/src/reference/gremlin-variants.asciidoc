@@ -54,7 +54,7 @@ prefixes `_` in front of these terms for their use with graph traversal. For ins
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
 [source,bash]
-pip install gremlin_python
+pip install gremlinpython
 
 Gremlin-Python users will typically make use of the following classes.
 
@@ -133,6 +133,18 @@ Likewise, if it has lambdas represented in Python, it will use Gremlin-Python (e
 
 IMPORTANT: Gremlin-Python's `Traversal` class supports the standard Gremlin methods such as `next()`, `nextTraverser()`,
 `toSet()`, `toList()`, etc. Such "terminal" methods trigger the evaluation of the traversal.
+
+RemoteConnection Submission
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are various ways to submit a traversal to a `RemoteConnection`. Just as in Gremlin-Java, there are various
+"action methods" off of `Traversal`.
+
+* `Traversal.next()`
+* `Traversal.nextTraverser()`
+* `Traversal.toList()`
+* `Traversal.toSet()`
+* `Traversal.iterate()`
 
 Gremlin-Python Sugar
 ~~~~~~~~~~~~~~~~~~~~

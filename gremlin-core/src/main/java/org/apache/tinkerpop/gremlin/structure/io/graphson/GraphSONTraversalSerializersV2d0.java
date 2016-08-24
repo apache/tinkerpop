@@ -39,12 +39,10 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -281,16 +279,20 @@ final class GraphSONTraversalSerializersV2d0 {
             } else {
                 try {
                     if (value instanceof Collection) {
-                        final Optional<Method> method = Arrays.stream(P.class.getMethods()).filter(m -> m.getName().equals(predicate)).findAny();
-                        if (method.isPresent()) {
-                            if (!Collection.class.isAssignableFrom(method.get().getParameterTypes()[0]))
-                                return (P) method.get().invoke(null, ((Collection) value).toArray());
-                            else
-                                return (P) method.get().invoke(null, value);
-                        } else
-                            throw new IllegalStateException("No such P method: " + predicate);
-                    }
-                    return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+                        if (predicate.equals("between"))
+                            return P.between(((List) value).get(0), ((List) value).get(1));
+                        else if (predicate.equals("inside"))
+                            return P.between(((List) value).get(0), ((List) value).get(1));
+                        else if (predicate.equals("outside"))
+                            return P.outside(((List) value).get(0), ((List) value).get(1));
+                        else if (predicate.equals("within"))
+                            return P.within((Collection) value);
+                        else if (predicate.equals("without"))
+                            return P.without((Collection) value);
+                        else
+                            return (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
+                    } else
+                        return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
                 } catch (final Exception e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
