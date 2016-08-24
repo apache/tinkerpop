@@ -172,7 +172,10 @@ class Response:
         auth = b"".join([b"\x00", username.encode("utf-8"),
                          b"\x00", password.encode("utf-8")])
         message = {
-            "requestId": str(uuid.uuid4()),
+            "requestId": {
+                "@type": "g:UUID",
+                "@value": str(uuid.uuid4())
+            },
             "op": "authentication",
             "processor": "traversal",
             "args": {
