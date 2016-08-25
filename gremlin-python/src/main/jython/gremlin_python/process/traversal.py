@@ -26,7 +26,7 @@ class Traversal(object):
         self.graph = graph
         self.traversal_strategies = traversal_strategies
         self.bytecode = bytecode
-        self.side_effects = {}
+        self.side_effects = TraversalSideEffects()
         self.traversers = None
         self.last_traverser = None
     def __repr__(self):
@@ -243,6 +243,20 @@ class Traverser(object):
         self.bulk = bulk
     def __repr__(self):
         return str(self.object)
+
+'''
+TRAVERSAL SIDE-EFFECTS
+'''
+
+class TraversalSideEffects(object):
+    def keys(self):
+        return set()
+    def get(self, key):
+        raise KeyError(key)
+    def __getitem__(self, key):
+        return self.get(key)
+    def __repr__(self):
+        return "sideEffects[size:" + str(len(self.keys())) + "]"
 
 '''
 TRAVERSAL STRATEGIES

@@ -21,6 +21,7 @@ import six
 
 from ..process.traversal import Traversal
 from ..process.traversal import TraversalStrategy
+from ..process.traversal import TraversalSideEffects
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
@@ -52,7 +53,7 @@ class RemoteTraversal(Traversal):
         self.side_effects = side_effects
 
 
-class RemoteTraversalSideEffects(object):
+class RemoteTraversalSideEffects(TraversalSideEffects):
     def __init__(self, keys_lambda, value_lambda):
         self.keys_lambda = keys_lambda
         self.value_lambda = value_lambda
@@ -62,12 +63,6 @@ class RemoteTraversalSideEffects(object):
 
     def get(self, key):
         return self.value_lambda(key)
-
-    def __getitem__(self, key):
-        return self.get(key)
-
-    def __repr__(self):
-        return "sideEffects[size:" + str(len(self.keys())) + "]"
 
 
 class RemoteStrategy(TraversalStrategy):
