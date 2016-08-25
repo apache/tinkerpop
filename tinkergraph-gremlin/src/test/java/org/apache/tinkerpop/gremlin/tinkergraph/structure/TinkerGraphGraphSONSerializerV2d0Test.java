@@ -469,30 +469,23 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
     }
 
     @Test
-    public void deserializersTree() {
+    public void deserializersTestsTree() {
         final TinkerGraph tg = TinkerFactory.createModern();
 
-        final GraphWriter writer = getWriter(noTypesMapperV2d0);
-        final GraphReader reader = getReader(noTypesMapperV2d0);
+        final GraphWriter writer = getWriter(defaultMapperV2d0);
+        final GraphReader reader = getReader(defaultMapperV2d0);
 
         final Tree t = tg.traversal().V().out().out().tree().next();
 
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            final Vertex v = tg.traversal().V(1).next();
-                     v.property("myUUIDprop", UUID.randomUUID());
-            writer.writeObject(out, v);
-
-
-//            writer.writeObject(out, t);
+            writer.writeObject(out, t);
             final String json = out.toString();
 
-            //System.out.println("json = " + json);
-
-//            Tree treeRead = (Tree)reader.readObject(new ByteArrayInputStream(json.getBytes()), Object.class);
+            Tree treeRead = (Tree)reader.readObject(new ByteArrayInputStream(json.getBytes()), Object.class);
             //Map's equals should check each component of the tree recursively
             //on each it will call "equals()" which for Vertices will compare ids, which
             //is ok. Complete vertex deser is checked elsewhere.
-//            assertEquals(t, treeRead);
+            assertEquals(t, treeRead);
 
         } catch (IOException e) {
             e.printStackTrace();
