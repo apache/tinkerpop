@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Host;
 import org.apache.tinkerpop.gremlin.driver.Result;
@@ -25,6 +26,7 @@ import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -82,7 +84,11 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
             try {
                 keys = client.submitAsync(msg).get().all().get().stream().map(r -> r.getString()).collect(Collectors.toSet());
             } catch (Exception ex) {
-                throw new RuntimeException("Could not get keys", ex);
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
+                    keys = Collections.emptySet();
+                else
+                    throw new RuntimeException("Could not get keys", root);
             }
         }
 
