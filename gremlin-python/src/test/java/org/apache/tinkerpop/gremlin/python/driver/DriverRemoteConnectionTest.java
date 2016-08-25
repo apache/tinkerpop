@@ -52,7 +52,7 @@ public class DriverRemoteConnectionTest {
             PYTHON_EXISTS = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("python --version").getErrorStream())).lines().filter(line -> line.trim().startsWith("Python ")).findAny().isPresent();
             System.out.println("Python exists: " + PYTHON_EXISTS);
             if (PYTHON_EXISTS)
-                new GremlinServer(Settings.read(DriverRemoteConnectionTest.class.getResourceAsStream("gremlin-server-modern-py.yaml"))).start().join();
+                new GremlinServer(Settings.read(DriverRemoteConnectionTest.class.getResourceAsStream("gremlin-server-modern-secure-py.yaml"))).start().join();
         } catch (final Exception ex) {
             ex.printStackTrace();
         }
