@@ -86,7 +86,10 @@ class DriverRemoteConnection(RemoteConnection):
                 }
             }
         }
-        keys = yield self._execute_message(message)
+        try:
+            keys = yield self._execute_message(message)
+        except:
+            keys = []
         raise gen.Return(set(keys))
 
     @gen.coroutine
@@ -107,7 +110,10 @@ class DriverRemoteConnection(RemoteConnection):
                 "aliases": {"g": self.traversal_source}
             }
         }
-        value = yield self._execute_message(message)
+        try:
+            value = yield self._execute_message(message)
+        except:
+            raise KeyError(key)
         raise gen.Return(value)
 
     @gen.coroutine

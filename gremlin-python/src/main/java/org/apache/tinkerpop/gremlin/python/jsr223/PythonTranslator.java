@@ -146,9 +146,9 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Class)
             return ((Class) object).getCanonicalName();
         else if (object instanceof VertexProperty.Cardinality)
-            return "Cardinality." + object.toString();
+            return "Cardinality." + SymbolHelper.toPython(object.toString());
         else if (object instanceof SackFunctions.Barrier)
-            return "Barrier." + object.toString();
+            return "Barrier." + SymbolHelper.toPython(object.toString());
         else if (object instanceof Enum)
             return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
         else if (object instanceof P)

@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.python.driver;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.junit.BeforeClass;
@@ -63,30 +64,36 @@ public class DriverRemoteConnectionTest {
         }
     }
 
-    private static List<String> submit(final String traversal) throws IOException {
-        final StringBuilder script = new StringBuilder();
-        script.append("from gremlin_python import statics\n");
-        script.append("from gremlin_python.structure.graph import Graph\n");
-        script.append("from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection\n");
-        script.append("from gremlin_python.structure.io.graphson import GraphSONWriter\n\n");
-        script.append("statics.load_statics(globals())\n");
-        script.append("graph = Graph()\n");
-        script.append("g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g',username='stephen', password='password'))\n");
-        script.append("results = " + traversal + ".toList()\n");
-        script.append("print results\n\n");
+    private static List<String> submit(final String... scriptLines) throws IOException {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("from gremlin_python import statics\n");
+        builder.append("from gremlin_python.structure.graph import Graph\n");
+        builder.append("from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection\n");
+        builder.append("from gremlin_python.structure.io.graphson import GraphSONWriter\n\n");
+        builder.append("statics.load_statics(globals())\n");
+        builder.append("graph = Graph()\n");
+        builder.append("g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g',username='stephen', password='password'))\n");
+        for (int i = 0; i < scriptLines.length - 1; i++) {
+            builder.append(scriptLines[i] + "\n");
+        }
+        builder.append("final = " + scriptLines[scriptLines.length - 1] + "\n");
+        builder.append("if isinstance(final,dict):\n");
+        builder.append("  for key in final.keys():\n");
+        builder.append("    print (str(key),str(final[key]))\n");
+        builder.append("elif isinstance(final,str):\n");
+        builder.append("  print final\n");
+        builder.append("else:\n");
+        builder.append("  for result in final:\n");
+        builder.append("    print result\n\n");
 
         File file = TestHelper.generateTempFile(DriverRemoteConnectionTest.class, "temp", "py");
         final Writer writer = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
-        writer.write(script.toString());
+        writer.write(builder.toString());
         writer.flush();
         writer.close();
 
         final BufferedReader reader = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("python " + file.getAbsolutePath()).getInputStream()));
-        final List<String> lines = reader.lines()
-                .map(line -> line.substring(1, line.length() - 1))
-                .flatMap(line -> Arrays.stream(line.split(",")))
-                .map(String::trim)
-                .collect(Collectors.toList());
+        final List<String> lines = reader.lines().map(String::trim).collect(Collectors.toList());
         reader.close();
         file.delete();
         return lines;
@@ -99,27 +106,47 @@ public class DriverRemoteConnectionTest {
 
         List<String> result = DriverRemoteConnectionTest.submit("g.V().count()");
         assertEquals(1, result.size());
-        assertEquals("6L", result.get(0));
+        assertEquals("6", result.get(0));
         //
         result = DriverRemoteConnectionTest.submit("g.V(1).out('created').name");
         assertEquals(1, result.size());
-        assertEquals("u'lop'", result.get(0));
+        assertEquals("lop", result.get(0));
         //
         result = DriverRemoteConnectionTest.submit("g.V(1).out()");
         assertEquals(3, result.size());
         assertTrue(result.contains("v[4]"));
         assertTrue(result.contains("v[2]"));
         assertTrue(result.contains("v[3]"));
+        //
+        result = DriverRemoteConnectionTest.submit("g.V().repeat(out()).times(2).name");
+        assertEquals(2, result.size());
+        assertTrue(result.contains("lop"));
+        assertTrue(result.contains("ripple"));
     }
 
     @Test
-    public void testAnonymousTraversals() throws Exception {
+    public void testSideEffects() throws Exception {
         if (!PYTHON_EXISTS) return;
 
-        List<String> result = DriverRemoteConnectionTest.submit("g.V().repeat(out()).times(2).name");
+        List<String> result = DriverRemoteConnectionTest.submit(
+                "t = g.V().out().iterate()",
+                "str(t.side_effects)");
+        assertEquals(1, result.size());
+        assertEquals(new DefaultTraversalSideEffects().toString(), result.get(0));
+        //
+        result = DriverRemoteConnectionTest.submit(
+                "t = g.V().out('created').groupCount('m').by('name').iterate()",
+                "t.side_effects['m']");
         assertEquals(2, result.size());
-        assertTrue(result.contains("u'lop'"));
-        assertTrue(result.contains("u'ripple'"));
+        assertTrue(result.contains("('ripple', '1')"));
+        assertTrue(result.contains("('lop', '3')"));
+        //
+        result = DriverRemoteConnectionTest.submit(
+                "t = g.V().out('created').groupCount('m').by('name').aggregate('n').iterate()",
+                "t.side_effects.keys()");
+        assertEquals(2, result.size());
+        assertTrue(result.contains("m"));
+        assertTrue(result.contains("n"));
     }
 
 }

@@ -70,7 +70,7 @@ class GraphSONReader(object):
                 type = object[_SymbolHelper._TYPE]
                 if type in deserializers:
                     return deserializers[type]._objectify(object)
-        # list and map are treated as normal json objects (could be isolated deserializers)
+                    # list and map are treated as normal json objects (could be isolated deserializers)
             newDict = {}
             for key in object:
                 newDict[GraphSONReader._objectify(key)] = GraphSONReader._objectify(object[key])
@@ -247,7 +247,8 @@ class PropertyDeserializer(GraphSONDeserializer):
 
 class _SymbolHelper(object):
     symbolMap = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
-                 "_or": "or", "_is": "is", "_not": "not", "_from": "from"}
+                 "_or": "or", "_is": "is", "_not": "not", "_from": "from",
+                 "_set": "set", "_list": "list", "_all": "all"}
 
     _TYPE = "@type"
     _VALUE = "@value"

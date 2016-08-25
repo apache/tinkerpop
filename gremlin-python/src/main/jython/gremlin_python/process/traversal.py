@@ -77,10 +77,10 @@ class Traversal(object):
 Barrier = Enum('Barrier', 'normSack')
 statics.add_static('normSack', Barrier.normSack)
 
-Cardinality = Enum('Cardinality', 'list set single')
+Cardinality = Enum('Cardinality', '_list _set single')
 statics.add_static('single', Cardinality.single)
-statics.add_static('list', Cardinality.list)
-statics.add_static('set', Cardinality.set)
+statics.add_static('_list', Cardinality._list)
+statics.add_static('_set', Cardinality._set)
 
 Column = Enum('Column', 'keys values')
 statics.add_static('keys', Column.keys)
@@ -113,10 +113,10 @@ statics.add_static('keyDecr', Order.keyDecr)
 statics.add_static('valueDecr', Order.valueDecr)
 statics.add_static('shuffle', Order.shuffle)
 
-Pop = Enum('Pop', 'all first last')
+Pop = Enum('Pop', '_all first last')
 statics.add_static('first', Pop.first)
 statics.add_static('last', Pop.last)
-statics.add_static('all', Pop.all)
+statics.add_static('_all', Pop._all)
 
 Scope = Enum('Scope', '_global local')
 statics.add_static('_global', Scope._global)
