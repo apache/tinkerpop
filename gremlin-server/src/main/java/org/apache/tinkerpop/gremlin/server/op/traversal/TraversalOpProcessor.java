@@ -345,6 +345,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 traversal = engines.eval(bytecode, b, lambdaLanguage.get());
             }
         } catch (Exception ex) {
+            logger.error("Could not deserialize the Traversal instance", context);
             throw new OpProcessorException("Could not deserialize the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage(ex.getMessage()).create());
