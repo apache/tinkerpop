@@ -26,7 +26,7 @@ limitations under the License.
     <artifactId>gremlin-driver</artifactId>
     <name>Apache TinkerPop :: Gremlin Driver</name>
     <properties>
-        <netty.version>4.0.34.Final</netty.version>
+        <netty.version>4.0.40.Final</netty.version>
     </properties>
     <dependencies>
         <dependency>
