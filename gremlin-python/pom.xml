@@ -71,6 +71,11 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <properties>
+        <!-- provide a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
+        <maven.test.skip>false</maven.test.skip>
+        <skipTests>${maven.test.skip}</skipTests>
+    </properties>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
@@ -87,13 +92,33 @@
             </testResource>
         </testResources>
         <plugins>
+            <!-- need to create python-reports directory at this point or else pytest can't write the report to it -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>createThriftDir</id>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <tasks>
+                                <delete dir="${build.directory}/python-reports"/>
+                                <mkdir dir="${build.directory}/python-reports"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <executions>
                     <execution>
-                        <id>generatePython</id>
+                        <id>generate-python</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>java</goal>
@@ -107,17 +132,54 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>buildPython</id>
+                        <id>build-python</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>python</executable>
-                            <async>true</async>
-                            <workingDirectory>${basedir}/src/main/jython</workingDirectory>
+                            <workingDirectory>${basedir}/target/python</workingDirectory>
                             <commandlineArgs>setup.py build --build-lib ${project.build.testOutputDirectory}/Lib
                             </commandlineArgs>
+                        </configuration>
+                    </execution>
+                    <!-- use pytest to execute native python tests - output of xunit output is configured in setup.cfg -->
+                    <execution>
+                        <id>test-python</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${basedir}/target/python</workingDirectory>
+                            <skip>${skipTests}</skip>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>test</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-py-files-to-target</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/python</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/jython</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>

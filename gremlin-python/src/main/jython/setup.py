@@ -19,7 +19,7 @@ under the License.
 import codecs
 import os
 import time
-from setuptools import setup
+from setuptools import setup, Command
 
 # Folder containing the setup.py
 root = os.path.dirname(os.path.abspath(__file__))
@@ -43,14 +43,27 @@ import __version__
 
 version = __version__.version
 
+class PyTest(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        import sys,subprocess
+        errno = subprocess.call([sys.executable, 'runtest.py'])
+        raise SystemExit(errno)
+
 setup(
     name='gremlinpython',
     version=version,
-    packages=['gremlin_python', 'gremlin_python.driver', 'gremlin_python.process', 'gremlin_python.structure', 'gremlin_python.structure.io'],
+    packages=['gremlin_python', 'gremlin_python.driver', 'gremlin_python.process', 'gremlin_python.structure', 'gremlin_python.structure.io', 'tests'],
     license='Apache 2',
     url='http://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
     long_description=open("README").read(),
+    test_suite="tests",
+    cmdclass = {'test': PyTest},
     install_requires=[
         'aenum',
         'requests',
