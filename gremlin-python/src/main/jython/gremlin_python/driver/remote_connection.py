@@ -43,7 +43,7 @@ class RemoteConnection(object):
     @abc.abstractmethod
     def submit(self, bytecode):
         print "sending " + bytecode + " to GremlinServer..."
-        return RemoteTraversal(iter([]), {})
+        return RemoteTraversal(iter([]), TraversalSideEffects())
 
 
 class RemoteTraversal(Traversal):
