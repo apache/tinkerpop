@@ -132,7 +132,12 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                         boolean found = true;
                         for (int i = 0; i < parameters.length; i++) {
                             if (parameters[i].isVarArgs()) {
-                                Object[] varArgs = (Object[]) Array.newInstance(parameters[i].getType().getComponentType(), arguments.length - i);
+                                final Class<?> parameterClass = parameters[i].getType().getComponentType();
+                                if (arguments.length > i && !parameterClass.isAssignableFrom(arguments[i].getClass())) {
+                                    found = false;
+                                    break;
+                                }
+                                Object[] varArgs = (Object[]) Array.newInstance(parameterClass, arguments.length - i);
                                 int counter = 0;
                                 for (int j = i; j < arguments.length; j++) {
                                     varArgs[counter++] = arguments[j];
