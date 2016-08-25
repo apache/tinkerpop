@@ -19,18 +19,22 @@
 
 package org.apache.tinkerpop.gremlin.python.driver;
 
-import org.apache.tinkerpop.gremlin.python.jsr223.JythonScriptEngineSetup;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,82 +44,77 @@ import static org.junit.Assert.assertTrue;
  */
 public class DriverRemoteConnectionTest {
 
-    private static final ScriptEngine jython = ScriptEngineCache.get("jython");
-
-    private final List<String> aliases = Arrays.asList("g", "j");
+    private static boolean PYTHON_EXISTS = false;
 
     @BeforeClass
     public static void setup() {
         try {
-            JythonScriptEngineSetup.setup();
-            jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("g", jython.eval("Graph().traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g'))"));
-            jython.getContext().getBindings(ScriptContext.ENGINE_SCOPE)
-                    .put("j", jython.eval("Graph().traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g'))"));
-            new GremlinServer(Settings.read(DriverRemoteConnectionTest.class.getResourceAsStream("gremlin-server-rest-modern.yaml"))).start().join();
+            PYTHON_EXISTS = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("python --version").getErrorStream())).lines().filter(line -> line.trim().startsWith("Python ")).findAny().isPresent();
+            System.out.println("Python exists: " + PYTHON_EXISTS);
+            if (PYTHON_EXISTS)
+                new GremlinServer(Settings.read(DriverRemoteConnectionTest.class.getResourceAsStream("gremlin-server-modern-py.yaml"))).start().join();
         } catch (final Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    @Test
-    @org.junit.Ignore
-    public void testGraphTraversalNext() throws Exception {
-        for (final String alias : this.aliases) {
-            final String result = (String) jython.eval(alias + ".V().repeat(__.out()).times(2).name.next()");
-            assertTrue(result.equals("lop") || result.equals("ripple"));
-        }
+    private static List<String> submit(final String traversal) throws IOException {
+        final StringBuilder script = new StringBuilder();
+        script.append("from gremlin_python import statics\n");
+        script.append("from gremlin_python.structure.graph import Graph\n");
+        script.append("from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection\n");
+        script.append("from gremlin_python.structure.io.graphson import GraphSONWriter\n\n");
+        script.append("statics.load_statics(globals())\n");
+        script.append("graph = Graph()\n");
+        script.append("g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g',username='stephen', password='password'))\n");
+        script.append("results = " + traversal + ".toList()\n");
+        script.append("print results\n\n");
+
+        File file = TestHelper.generateTempFile(DriverRemoteConnectionTest.class, "temp", "py");
+        final Writer writer = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
+        writer.write(script.toString());
+        writer.flush();
+        writer.close();
+
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("python " + file.getAbsolutePath()).getInputStream()));
+        final List<String> lines = reader.lines()
+                .map(line -> line.substring(1, line.length() - 1))
+                .flatMap(line -> Arrays.stream(line.split(",")))
+                .map(String::trim)
+                .collect(Collectors.toList());
+        reader.close();
+        file.delete();
+        return lines;
+
     }
 
     @Test
-    @org.junit.Ignore
-    public void testGraphTraversalToList() throws Exception {
-        for (final String alias : this.aliases) {
-            final List<String> results = (List) jython.eval(alias + ".V().repeat(__.out()).times(2).name.toList()");
-            assertEquals(2, results.size());
-            assertTrue(results.contains("lop"));
-            assertTrue(results.contains("ripple"));
-        }
+    public void testTraversals() throws Exception {
+        if (!PYTHON_EXISTS) return;
+
+        List<String> result = DriverRemoteConnectionTest.submit("g.V().count()");
+        assertEquals(1, result.size());
+        assertEquals("6L", result.get(0));
+        //
+        result = DriverRemoteConnectionTest.submit("g.V(1).out('created').name");
+        assertEquals(1, result.size());
+        assertEquals("u'lop'", result.get(0));
+        //
+        result = DriverRemoteConnectionTest.submit("g.V(1).out()");
+        assertEquals(3, result.size());
+        assertTrue(result.contains("v[4]"));
+        assertTrue(result.contains("v[2]"));
+        assertTrue(result.contains("v[3]"));
     }
 
     @Test
-    @org.junit.Ignore
-    public void testGraphTraversalToSet() throws Exception {
-        for (final String alias : this.aliases) {
-            final Set<String> results = (Set) jython.eval(alias + ".V().repeat(__.both()).times(4).hasLabel('software').name.toSet()");
-            assertEquals(2, results.size());
-            assertTrue(results.contains("lop"));
-            assertTrue(results.contains("ripple"));
-        }
+    public void testAnonymousTraversals() throws Exception {
+        if (!PYTHON_EXISTS) return;
+
+        List<String> result = DriverRemoteConnectionTest.submit("g.V().repeat(out()).times(2).name");
+        assertEquals(2, result.size());
+        assertTrue(result.contains("u'lop'"));
+        assertTrue(result.contains("u'ripple'"));
     }
 
-    @Test
-    @org.junit.Ignore
-    public void testGraphTraversalNextAmount() throws Exception {
-        for (final String alias : this.aliases) {
-            List<String> results = (List) jython.eval(alias + ".V().repeat(__.out()).times(2).name.next(2)");
-            assertEquals(2, results.size());
-            assertTrue(results.contains("lop"));
-            assertTrue(results.contains("ripple"));
-            //
-            results = (List) jython.eval(alias + ".V().repeat(__.out()).times(2).name.next(4)");
-            assertEquals(2, results.size());
-            assertTrue(results.contains("lop"));
-            assertTrue(results.contains("ripple"));
-        }
-    }
-
-    @Test
-    @org.junit.Ignore
-    public void testRemoteConnectionBindings() throws Exception {
-        for (final String alias : this.aliases) {
-            final String traversalScript = jython.eval(alias + ".V().out(('a','knows'),'created')").toString();
-            assertEquals(traversalScript, "g.V().out(a, \"created\")"); // ensure the traversal string is binding based
-            final List<String> results = (List) jython.eval(alias + ".V().out(('a','knows')).out('created').name.next(2)");
-            assertEquals(2, results.size());
-            assertTrue(results.contains("lop"));
-            assertTrue(results.contains("ripple"));
-
-        }
-    }
 }
