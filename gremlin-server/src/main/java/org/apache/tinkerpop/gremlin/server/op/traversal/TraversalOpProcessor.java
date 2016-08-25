@@ -279,7 +279,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         if (null == sideEffects) {
                             final String errorMessage = String.format("Could not find side-effects for %s.", sideEffect.get());
                             logger.warn(errorMessage);
-                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
                             onError(graph, context);
                             return;
                         }
@@ -319,8 +319,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final RequestMessage msg = context.getRequestMessage();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
-        // TODO: Look to polish this up in GraphSON 2.0 when we don't have type lossiness anymore
-        // right now the TraversalOpPorcessor can take a direct GraphSON representation of Bytecode or directly take
+        // right now the TraversalOpProcessor can take a direct GraphSON representation of Bytecode or directly take
         // deserialized Bytecode object.
         final Object bytecodeObj = msg.getArgs().get(Tokens.ARGS_GREMLIN);
         final Bytecode bytecode = bytecodeObj instanceof Bytecode ? (Bytecode) bytecodeObj :
