@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -64,6 +65,8 @@ public class SideEffectIterator implements Iterator<Object> {
     private String getAggregatorType(final Object o) {
         if (o instanceof BulkSet)
             return Tokens.VAL_AGGREGATE_TO_BULKSET;
+        else if (o instanceof Set)
+            return Tokens.VAL_AGGREGATE_TO_SET;
         else if (o instanceof Iterable || o instanceof Iterator)
             return Tokens.VAL_AGGREGATE_TO_LIST;
         else if (o instanceof Map)

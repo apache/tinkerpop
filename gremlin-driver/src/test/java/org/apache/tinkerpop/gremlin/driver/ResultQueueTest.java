@@ -25,8 +25,10 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -336,6 +338,29 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         assertEquals("stephen", list.get(0));
         assertEquals("daniel", list.get(1));
         assertEquals("dave", list.get(2));
+    }
+
+    @Test
+    public void shouldHandleSetSideEffects() throws Exception {
+        final CompletableFuture<List<Result>> o = resultQueue.await(1);
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "stephen");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "daniel");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.addSideEffect(Tokens.VAL_AGGREGATE_TO_SET, "dave");
+        assertThat(o.isDone(), is(false));
+
+        resultQueue.markComplete();
+
+        assertThat(o.isDone(), is(true));
+        final Set<String> set = o.get().get(0).get(HashSet.class);
+        assertThat(set.contains("stephen"), is(true));
+        assertThat(set.contains("daniel"), is(true));
+        assertThat(set.contains("dave"), is(true));
     }
 
     @Test

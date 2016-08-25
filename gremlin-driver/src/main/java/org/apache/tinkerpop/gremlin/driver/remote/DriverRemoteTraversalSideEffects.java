@@ -65,7 +65,11 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 final Result result = client.submitAsync(msg).get().one();
                 sideEffects.put(key, null == result ? null : result.getObject());
             } catch (Exception ex) {
-                throw new RuntimeException("Could not get cache value", ex);
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
+                    sideEffects.put(key, null);
+                else
+                    throw new RuntimeException("Could not get keys", root);
             }
         }
 

@@ -27,9 +27,11 @@ import org.javatuples.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -94,6 +96,11 @@ final class ResultQueue {
                 if (null == aggregatedResult) aggregatedResult = new ArrayList();
                 final List<Object> list = validate(aggregateTo, List.class);
                 list.add(sideEffectValue);
+                break;
+            case Tokens.VAL_AGGREGATE_TO_SET:
+                if (null == aggregatedResult) aggregatedResult = new HashSet();
+                final Set<Object> set = validate(aggregateTo, Set.class);
+                set.add(sideEffectValue);
                 break;
             case Tokens.VAL_AGGREGATE_TO_MAP:
                 if (!(sideEffectValue instanceof Map.Entry) && !(sideEffectValue instanceof Map))

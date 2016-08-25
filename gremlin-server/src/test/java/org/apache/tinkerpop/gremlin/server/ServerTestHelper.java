@@ -45,8 +45,5 @@ public class ServerTestHelper {
                     kv.setValue(homeDir + File.separator + kv.getValue());
                     return kv;
                 }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        overridenSettings.maxContentLength = 1024000;
-        overridenSettings.maxChunkSize =1024000;
     }
 }

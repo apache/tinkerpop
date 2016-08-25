@@ -1013,7 +1013,7 @@ When using "gather" it is important to note the metadata that is returned on the
 "sideEffectKey" that was requested as well as a value keyed as "aggregateTo". The "aggregateTo" field describes how the
 streamed side-effect data should be treated on the client. It provides a hint as to whether or not the data should be
 rolled back up into a single object or simply left as-is. There are four values for "aggregateTo": `bulkset`, `list`,
-`map` and `none`.
+`map`, `set` and `none`.
 
 '`keys` operation arguments'
 [width="100%",cols="2,2,9",options="header"]

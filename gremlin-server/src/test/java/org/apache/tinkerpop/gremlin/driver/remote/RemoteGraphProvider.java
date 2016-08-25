@@ -114,6 +114,10 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
         final InputStream stream = RemoteGraphProvider.class.getResourceAsStream("gremlin-server-integration.yaml");
         final Settings settings = Settings.read(stream);
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
+
+        settings.maxContentLength = 1024000;
+        settings.maxChunkSize =1024000;
+
         server = new GremlinServer(settings);
 
         server.start().join();
