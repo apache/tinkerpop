@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
+import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
 import org.apache.tinkerpop.shaded.jackson.databind.DatabindContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
@@ -49,8 +52,15 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
 
     // Override manually a type definition.
     public GraphSONTypeIdResolver addCustomType(final String name, final Class clasz) {
-        // May override types already registered, that's wanted.
-        getIdToType().put(name, TypeFactory.defaultInstance().constructType(clasz));
+        if (Tree.class.isAssignableFrom(clasz)) {
+            // there is a special case for Tree which extends a Map, but has only 1 parametrized type,
+            // and for which creating a default type is failing because it may fall into a
+            // a self-referencing never-ending loop. Temporarily we force Tree<Element>
+            // which should cover all the usage TinkerPop would do of the Trees anyway.
+            getIdToType().put(name, TypeFactory.defaultInstance().constructType(new TypeReference<Tree<? extends Element>>() {}));
+        } else {
+            getIdToType().put(name, TypeFactory.defaultInstance().constructType(clasz));
+        }
         getTypeToId().put(clasz, name);
         return this;
     }
