@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
