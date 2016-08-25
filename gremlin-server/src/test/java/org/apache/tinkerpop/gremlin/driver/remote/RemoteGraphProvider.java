@@ -49,7 +49,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     private static GremlinServer server;
     private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
     private final Cluster cluster = Cluster.open();
-    //private final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V2D0).create();
+    //private final Cluster cluster = Cluster.build().maxContentLength(1024000).serializer(Serializers.GRAPHSON_V2D0).create();
     private final Client client = cluster.connect();
 
     static {
