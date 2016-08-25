@@ -34,6 +34,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -49,8 +50,12 @@ public class DriverRemoteConnectionTest {
     @BeforeClass
     public static void setup() {
         try {
-            PYTHON_EXISTS = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("python --version").getErrorStream())).lines().filter(line -> line.trim().startsWith("Python ")).findAny().isPresent();
-            System.out.println("Python exists: " + PYTHON_EXISTS);
+            final Optional<String> pythonVersion = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("python --version").getErrorStream()))
+                    .lines()
+                    .filter(line -> line.trim().startsWith("Python "))
+                    .findAny();
+            PYTHON_EXISTS = pythonVersion.isPresent();
+            System.out.println("Python virtual machine: " + pythonVersion.orElse("None"));
             if (PYTHON_EXISTS)
                 new GremlinServer(Settings.read(DriverRemoteConnectionTest.class.getResourceAsStream("gremlin-server-modern-secure-py.yaml"))).start().join();
         } catch (final Exception ex) {
