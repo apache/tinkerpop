@@ -16,9 +16,5 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from .remote_connection import RemoteConnection
-from .remote_connection import RemoteStrategy
-from .remote_connection import RemoteTraversal
-from .remote_connection import RemoteTraversalSideEffects
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

@@ -240,11 +240,13 @@ TRAVERSER
 '''
 
 class Traverser(object):
-    def __init__(self, object, bulk):
+    def __init__(self, object, bulk=1L):
         self.object = object
         self.bulk = bulk
     def __repr__(self):
         return str(self.object)
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.object == other.object
 
 '''
 TRAVERSAL SIDE-EFFECTS

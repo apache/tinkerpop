@@ -16,6 +16,5 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-from . import statics
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
