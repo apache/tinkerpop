@@ -64,9 +64,12 @@ setup(
     long_description=open("README").read(),
     test_suite="tests",
     cmdclass = {'test': PyTest},
+    tests_require=[
+        'pytest'
+    ],
     install_requires=[
         'aenum',
         'requests',
-        'tornado',
+        'tornado'
     ]
 )
