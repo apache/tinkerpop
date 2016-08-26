@@ -44,6 +44,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@org.junit.Ignore
 public class DriverRemoteConnectionTest {
 
     private static boolean PYTHON_EXISTS = false;
