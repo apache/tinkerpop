@@ -108,6 +108,7 @@ class TestDriverRemoteConnection(TestCase):
             raise Exception("Accessing a non-existent key should throw an error")
         except KeyError:
             pass
+        connection.close()
 
 
 if __name__ == '__main__':
