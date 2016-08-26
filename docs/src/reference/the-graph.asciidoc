@@ -695,6 +695,15 @@ TinkerPop includes types for graph elements:
 * Metrics -> "g:Metrics"
 * TraversalMetrics -> `g:TraversalMetrics"
 
+GraphSON 2.0 can also be configured with "extended" types that build on top of the core types in the "g" namespace.
+The extended types are in the "gx" namespace as exposed by `GraphSONXModuleV2d0` and includes additional types like
+mappings to Java's `java.time.*` classes, `BigInteger`, `BigDecimal` and others. This module can be added when building
+a `GraphSONMapper` by calling the `addCustomModule()` method on the `Builder`.
+
+IMPORTANT: When using the extended type system in Gremlin Server, support for these types when used in the context of
+Gremlin Language Variants is dependent on the programming language, the driver and its serializers. These
+implementations are only required to support the core types and not the extended ones.
+
 Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
 
 [gremlin-groovy]

@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.junit.Test;
 
@@ -62,11 +63,13 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
     // As of TinkerPop 3.2.1 default for GraphSON 2.0 means types enabled.
     private final Mapper defaultMapperV2d0 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
+            .addCustomModule(GraphSONXModuleV2d0.build().create(false))
             .addRegistry(TinkerIoRegistryV2d0.getInstance())
             .create();
 
     private final Mapper noTypesMapperV2d0 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
+            .addCustomModule(GraphSONXModuleV2d0.build().create(false))
             .typeInfo(TypeInfo.NO_TYPES)
             .addRegistry(TinkerIoRegistryV2d0.getInstance())
             .create();

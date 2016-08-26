@@ -29,13 +29,8 @@ import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.DefaultSerializerProvider;
-import org.apache.tinkerpop.shaded.jackson.databind.util.TokenBuffer;
 import org.javatuples.Pair;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An extension to the standard Jackson {@code ObjectMapper} which automatically registers the standard
@@ -171,23 +164,14 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     }
 
 
-    private void registerJavaBaseTypes(GraphSONTypeIdResolver graphSONTypeIdResolver) {
+    private void registerJavaBaseTypes(final GraphSONTypeIdResolver graphSONTypeIdResolver) {
         Arrays.asList(
-                BigInteger.class,
-                BigDecimal.class,
-                Byte.class,
-                Character.class,
                 UUID.class,
-                InetAddress.class,
-                InetSocketAddress.class,
                 Class.class,
                 Calendar.class,
                 Date.class,
                 TimeZone.class,
-                Timestamp.class,
-                AtomicBoolean.class,
-                AtomicReference.class,
-                TokenBuffer.class
+                Timestamp.class
         ).forEach(e -> graphSONTypeIdResolver.addCustomType(String.format("%s:%s", GraphSONTokens.GREMLIN_TYPE_NAMESPACE, e.getSimpleName()), e));
     }
 
