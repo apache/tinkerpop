@@ -21,7 +21,10 @@ Development Environment
 Building and Testing
 --------------------
 
-TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+TinkerPop requires `Java 1.8.0_40+` for standard building and operations. In addition, it optionally requires Python
+2.x to work with the `gremlin-python` module. If Python is not installed, TinkerPop will still build with Maven, but
+native Python tests and Java tests that require Python code will be skipped. It will also not be possible to do
+deployments.
 
 * Build Project: `mvn clean install`
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
@@ -34,6 +37,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 ** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
+** Build the `gremlin-python` module with native Python tests (which require that Python be installed on the system): `mvn clean install -DglvPython`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
