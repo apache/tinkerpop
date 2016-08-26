@@ -21,9 +21,4 @@ from .remote_connection import RemoteStrategy
 from .remote_connection import RemoteTraversal
 from .remote_connection import RemoteTraversalSideEffects
 
-try:
-    from .driver_remote_connection import DriverRemoteConnection
-except ImportError:
-    pass
-
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'

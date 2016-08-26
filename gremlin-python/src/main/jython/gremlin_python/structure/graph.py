@@ -40,6 +40,9 @@ class Element(object):
         self.id = id
         self.label = label
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.id == other.id
+
 
 class Vertex(Element):
     def __init__(self, id, label="vertex"):
@@ -63,6 +66,7 @@ class VertexProperty(Element):
     def __init__(self, id, label, value):
         Element.__init__(self, id, label)
         self.value = value
+        self.key = self.label
 
     def __repr__(self):
         return "vp[" + str(self.label) + "->" + str(self.value)[0:20] + "]"
@@ -75,3 +79,6 @@ class Property(object):
 
     def __repr__(self):
         return "p[" + str(self.key) + "->" + str(self.value)[0:20] + "]"
+
+        def __eq__(self, other):
+            return isinstance(other, self.__class__) and self.key == other.key and self.value == other.value

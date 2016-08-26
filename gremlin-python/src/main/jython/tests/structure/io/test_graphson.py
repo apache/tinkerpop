@@ -19,8 +19,8 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import unittest
 import json
+import unittest
 from unittest import TestCase
 
 from gremlin_python.structure.io.graphson import GraphSONReader
