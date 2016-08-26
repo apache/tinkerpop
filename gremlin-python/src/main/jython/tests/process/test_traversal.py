@@ -22,7 +22,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 import unittest
 from unittest import TestCase
 
-from gremlin_python.structure import Graph
+from gremlin_python.structure.graph import Graph
 
 
 class TestTraversal(TestCase):

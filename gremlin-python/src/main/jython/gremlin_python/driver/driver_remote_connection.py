@@ -37,6 +37,7 @@ class GremlinServerError(Exception):
 class DriverRemoteConnection(RemoteConnection):
     def __init__(self, url, traversal_source, username="", password="", loop=None):
         super(DriverRemoteConnection, self).__init__(url, traversal_source)
+        self._url = url
         self._username = username
         self._password = password
         if loop is None: self._loop = ioloop.IOLoop.current()
@@ -158,7 +159,6 @@ class DriverRemoteConnection(RemoteConnection):
 
     def close(self):
         self._websocket.close()
-
 
 class Response:
     def __init__(self, websocket, username, password):

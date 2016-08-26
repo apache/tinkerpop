@@ -45,6 +45,9 @@ class RemoteConnection(object):
         print "sending " + bytecode + " to GremlinServer..."
         return RemoteTraversal(iter([]), TraversalSideEffects())
 
+    def __repr__(self):
+        return "remoteconnection[" + self._url + "," + self._traversal_source + "]"
+
 
 class RemoteTraversal(Traversal):
     def __init__(self, traversers, side_effects):
