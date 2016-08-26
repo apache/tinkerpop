@@ -67,6 +67,7 @@ class TestGraph(TestCase):
                     assert i != j
                 else:
                     assert i == j
+                    assert i.__hash__() == hash(i)
 
 
 if __name__ == '__main__':

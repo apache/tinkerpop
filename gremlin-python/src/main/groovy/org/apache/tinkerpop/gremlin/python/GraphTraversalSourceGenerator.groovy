@@ -55,6 +55,7 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
+        pythonClass.append("import sys\n")
         pythonClass.append("from .traversal import Traversal\n")
         pythonClass.append("from .traversal import TraversalStrategies\n")
         pythonClass.append("from .traversal import Bytecode\n")
@@ -127,7 +128,7 @@ under the License.
     if isinstance(index, int):
         return self.range(index, index + 1)
     elif isinstance(index, slice):
-        return self.range(index.start, index.stop)
+        return self.range(0 if index.start is None else index.start, sys.maxint if index.stop is None else index.stop)
     else:
         raise TypeError("Index must be int or slice")
   def __getattr__(self, key):

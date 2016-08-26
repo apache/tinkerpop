@@ -43,6 +43,9 @@ class Element(object):
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.id == other.id
 
+    def __hash__(self):
+        return hash(self.id)
+
 
 class Vertex(Element):
     def __init__(self, id, label="vertex"):
@@ -82,3 +85,6 @@ class Property(object):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.key == other.key and self.value == other.value
+
+    def __hash__(self):
+        return hash(self.key) + hash(self.value)

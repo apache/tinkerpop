@@ -131,16 +131,16 @@ class DriverRemoteConnection(RemoteConnection):
             recv_message = yield response.receive()
             if recv_message is None:
                 break
-
+            aggregateTo = recv_message[0]
             # on first message, get the right result data structure
             if None == results:
-                if "list" == recv_message[0]:
+                if "list" == aggregateTo:
                     results = []
-                elif "set" == recv_message[0]:
+                elif "set" == aggregateTo:
                     results = set()
-                elif "map" == recv_message[0]:
+                elif aggregateTo in ["map", "bulkset"]:
                     results = {}
-                elif "none" == recv_message[0]:
+                elif "none" == aggregateTo:
                     results = None
                 else:
                     results = []
@@ -150,8 +150,12 @@ class DriverRemoteConnection(RemoteConnection):
                 results = recv_message[1][0]
             # updating a map is different than a list or a set
             elif isinstance(results, dict):
-                for item in recv_message[1]:
-                    results.update(item)
+                if "map" == aggregateTo:
+                    for item in recv_message[1]:
+                        results.update(item)
+                else:
+                    for item in recv_message[1]:
+                        results[item.object] = item.bulk
             # flat add list to result list
             else:
                 results += recv_message[1]
@@ -159,6 +163,7 @@ class DriverRemoteConnection(RemoteConnection):
 
     def close(self):
         self._websocket.close()
+
 
 class Response:
     def __init__(self, websocket, username, password):

@@ -37,6 +37,8 @@ class TestDriverRemoteConnection(TestCase):
         #
         g = Graph().traversal().withRemote(connection)
         #
+        assert 6L == g.V().count().toList()[0]
+        #
         assert Vertex(1) == g.V(1).next()
         assert 1 == g.V(1).id().next()
         assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
@@ -48,7 +50,59 @@ class TestDriverRemoteConnection(TestCase):
         assert "lop" in results
         assert "ripple" in results
         #
+        assert 10 == g.V().repeat(both()).times(5)[0:10].count().next()
+        assert 1 == g.V().repeat(both()).times(5)[0].count().next()
+        assert 0 == g.V().repeat(both()).times(5)[0:0].count().next()
+        assert 4 == g.V()[2:].count().next()
+        assert 2 == g.V()[:2].count().next()
+        # todo: need a traversal metrics deserializer
+        g.V().out().profile().next()
         connection.close()
+
+    def test_side_effects(self):
+        statics.load_statics(globals())
+        connection = DriverRemoteConnection('ws://localhost:8182', 'g')
+        #
+        g = Graph().traversal().withRemote(connection)
+        ###
+        t = g.V().hasLabel("project").name.iterate()
+        assert 0 == len(t.side_effects.keys())
+        try:
+            m = t.side_effects["m"]
+            raise Exception("Accessing a non-existent key should throw an error")
+        except KeyError:
+            pass
+        ###
+        t = g.V().out("created").groupCount("m").by("name")
+        results = t.toSet()
+        assert 2 == len(results)
+        assert Vertex(3) in results
+        assert Vertex(5) in results
+        assert 1 == len(t.side_effects.keys())
+        assert "m" in t.side_effects.keys()
+        m = t.side_effects["m"]
+        assert isinstance(m, dict)
+        assert 2 == len(m)
+        assert 3 == m["lop"]
+        assert 1 == m["ripple"]
+        assert isinstance(m["lop"], long)
+        assert isinstance(m["ripple"], long)
+        ###
+        t = g.V().out("created").groupCount("m").by("name").name.aggregate("n")
+        results = t.toSet()
+        assert 2 == len(results)
+        assert "lop" in results
+        assert "ripple" in results
+        assert 2 == len(t.side_effects.keys())
+        assert "m" in t.side_effects.keys()
+        assert "n" in t.side_effects.keys()
+        n = t.side_effects.get("n")
+        assert isinstance(n, dict)
+        assert 2 == len(n)
+        assert "lop" in n.keys()
+        assert "ripple" in n.keys()
+        assert 3 == n["lop"]
+        assert 1 == n["ripple"]
 
 
 if __name__ == '__main__':

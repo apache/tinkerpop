@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+import sys
 from .traversal import Traversal
 from .traversal import TraversalStrategies
 from .traversal import Bytecode
@@ -90,7 +91,7 @@ class GraphTraversal(Traversal):
     if isinstance(index, int):
         return self.range(index, index + 1)
     elif isinstance(index, slice):
-        return self.range(index.start, index.stop)
+        return self.range(0 if index.start is None else index.start, sys.maxint if index.stop is None else index.stop)
     else:
         raise TypeError("Index must be int or slice")
   def __getattr__(self, key):
