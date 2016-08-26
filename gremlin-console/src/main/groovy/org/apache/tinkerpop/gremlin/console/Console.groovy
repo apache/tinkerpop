@@ -171,14 +171,14 @@ class Console {
         if (interactive) {
             int lineNo = groovy.buffers.current().size() 
             if (lineNo > 0 ) {
-                String lineStr = lineNo.toString() + "> "
-                int pad = Preferences.inputPrompt.length() - lineStr.length()
+                String lineStr = lineNo.toString() + ">"
+                int pad = Preferences.inputPrompt.length() - lineStr.length() + 2
                 if (pad < 0) {
                     pad = 0
                 }
-                return Colorizer.render(Preferences.inputPromptColor, lineNo.toString().padLeft(pad, '.'))
+                return Colorizer.render(Preferences.inputPromptColor, lineStr.toString().padLeft(pad, '.') + ' ')
             } else {
-                return Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + " ")
+                return Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ')
             }
         } else {
             return ""
