@@ -17,6 +17,9 @@ specific language governing permissions and limitations
 under the License.
 '''
 
+__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+
+
 import json
 from abc import abstractmethod
 from aenum import Enum

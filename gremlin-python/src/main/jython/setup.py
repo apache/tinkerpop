@@ -67,6 +67,6 @@ setup(
     install_requires=[
         'aenum',
         'requests',
-        'tornado'
+        'tornado',
     ]
 )

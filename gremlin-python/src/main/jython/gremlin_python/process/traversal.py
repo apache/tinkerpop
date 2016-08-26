@@ -176,6 +176,8 @@ class P(object):
       return P("and", arg, self)
    def _or(self, arg):
       return P("or", arg, self)
+   def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
    def __repr__(self):
       return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
 

@@ -16,10 +16,31 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+
+__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+
 import unittest
+from unittest import TestCase
 
-def fun(x):
-    return x + 1
+from gremlin_python import statics
+from gremlin_python.process.traversal import Cardinality
+from gremlin_python.process.traversal import P
+from gremlin_python.process.traversal import Pop
 
-def test_answer():
-    assert fun(3) == 4
+
+class TestStatics(TestCase):
+    def test_enums(self):
+        assert isinstance(_list, Cardinality)
+        assert _list is Cardinality._list
+        #
+        assert isinstance(eq(2), P)
+        assert eq(2) == P.eq(2)
+        #
+        assert isinstance(first, Pop)
+        assert first == Pop.first
+
+
+if __name__ == '__main__':
+    statics.load_statics(globals())
+    unittest.main()
+    statics.unload_statics(globals())
