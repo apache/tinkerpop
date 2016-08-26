@@ -102,7 +102,7 @@ public final class EmptyGraph implements Graph {
 
     @Override
     public String toString() {
-        return StringFactory.graphString(this, "vertices: 0 edges: 0");
+        return StringFactory.graphString(this, "empty");
     }
 
     /**

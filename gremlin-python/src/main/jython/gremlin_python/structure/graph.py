@@ -80,5 +80,5 @@ class Property(object):
     def __repr__(self):
         return "p[" + str(self.key) + "->" + str(self.value)[0:20] + "]"
 
-        def __eq__(self, other):
-            return isinstance(other, self.__class__) and self.key == other.key and self.value == other.value
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.key == other.key and self.value == other.value

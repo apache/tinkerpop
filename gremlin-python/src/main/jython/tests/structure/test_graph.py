@@ -23,6 +23,7 @@ import unittest
 from unittest import TestCase
 
 from gremlin_python.structure import Edge
+from gremlin_python.structure import Property
 from gremlin_python.structure import Vertex
 from gremlin_python.structure import VertexProperty
 
@@ -41,15 +42,31 @@ class TestGraph(TestCase):
         assert Vertex("hello") == edge.inV
         assert "said" == edge.label
         assert "phrase" == edge.inV.label
+        assert edge.inV != edge.outV
         #
-        vp = VertexProperty(24L, "name", "marko")
-        assert "vp[name->marko]" == str(vp)
-        assert "name" == vp.label
-        assert "name" == vp.key
-        assert "marko" == vp.value
-        assert 24L == vp.id
-        assert isinstance(vp.id, long)
-        assert vp == VertexProperty(24L, "name", "marko")
+        vertex_property = VertexProperty(24L, "name", "marko")
+        assert "vp[name->marko]" == str(vertex_property)
+        assert "name" == vertex_property.label
+        assert "name" == vertex_property.key
+        assert "marko" == vertex_property.value
+        assert 24L == vertex_property.id
+        assert isinstance(vertex_property.id, long)
+        assert vertex_property == VertexProperty(24L, "name", "marko")
+        #
+        property = Property("age", 29)
+        assert "p[age->29]" == str(property)
+        assert "age" == property.key
+        assert 29 == property.value
+        assert isinstance(property.value, int)
+        assert property == Property("age", 29)
+        assert property != Property("age", 29L)
+        #
+        for i in [vertex, edge, vertex_property, property]:
+            for j in [vertex, edge, vertex_property, property]:
+                if type(i) != type(j):
+                    assert i != j
+                else:
+                    assert i == j
 
 
 if __name__ == '__main__':

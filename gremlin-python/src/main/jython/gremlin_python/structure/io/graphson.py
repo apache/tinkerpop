@@ -19,7 +19,6 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-
 import json
 from abc import abstractmethod
 from aenum import Enum
@@ -62,7 +61,7 @@ class GraphSONWriter(object):
 
     @staticmethod
     def writeObject(objectData):
-        return json.dumps(GraphSONWriter._dictify(objectData))
+        return json.dumps(GraphSONWriter._dictify(objectData), separators=(',', ':'))
 
 
 class GraphSONReader(object):

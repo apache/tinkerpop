@@ -120,7 +120,7 @@ class DriverRemoteConnection(RemoteConnection):
     def _execute_message(self, send_message):
         send_message = b"".join([b"\x21",
                                  b"application/vnd.gremlin-v2.0+json",
-                                 json.dumps(send_message).encode("utf-8")])
+                                 json.dumps(send_message, separators=(',', ':')).encode("utf-8")])
         if self._websocket.protocol is None:
             self._websocket = yield websocket.websocket_connect(self.url)
         self._websocket.write_message(send_message, binary=True)
@@ -193,7 +193,7 @@ class Response:
                                       b"".join([b"\x00", self._username.encode("utf-8"),
                                                 b"\x00", self._password.encode("utf-8")])).decode()
                               }
-                          }).encode("utf-8")]), binary=True)
+                          }, separators=(',', ':')).encode("utf-8")]), binary=True)
             results = yield self.receive()
             raise gen.Return(results)
         elif status_code == 204:
