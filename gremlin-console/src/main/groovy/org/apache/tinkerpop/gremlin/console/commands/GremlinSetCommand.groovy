@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
-import org.apache.tinkerpop.gremlin.console.Console
 import jline.console.completer.Completer
+
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.codehaus.groovy.tools.shell.util.PackageHelper
@@ -60,11 +60,27 @@ class GremlinSetCommand extends SetCommand {
             set << PackageHelper.IMPORT_COMPLETION_PREFERENCE_KEY
 
             // add Gremlin Console specific preferences here
-            set << Console.PREFERENCE_ITERATION_MAX
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREFERENCE_ITERATION_MAX
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_GREMLIN_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_ERROR_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_INFO_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_INPUT_PROMPT_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_RESULT_PROMPT_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_EMPTY_RESULT_IND
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_INPUT_PROMPT
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_RESULT_PROMPT
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_EDGE_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_VERTEX_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_STRING_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_NUMBER_COLOR
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_T_COLOR
 
             return set.toList()
         }
 
-        return [new SimpleCompletor(loader),null]
+        return [
+            new SimpleCompletor(loader),
+            null
+        ]
     }
 }
