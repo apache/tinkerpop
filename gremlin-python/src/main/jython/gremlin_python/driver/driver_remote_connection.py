@@ -87,10 +87,7 @@ class DriverRemoteConnection(RemoteConnection):
                 }
             }
         }
-        try:
-            keys = yield self._execute_message(message)
-        except:
-            keys = []
+        keys = yield self._execute_message(message)
         raise gen.Return(set(keys))
 
     @gen.coroutine

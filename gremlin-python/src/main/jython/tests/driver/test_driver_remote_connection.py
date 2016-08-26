@@ -103,6 +103,11 @@ class TestDriverRemoteConnection(TestCase):
         assert "ripple" in n.keys()
         assert 3 == n["lop"]
         assert 1 == n["ripple"]
+        try:
+            x = t.side_effects["x"]
+            raise Exception("Accessing a non-existent key should throw an error")
+        except KeyError:
+            pass
 
 
 if __name__ == '__main__':
