@@ -180,12 +180,10 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
                     final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
 
-                    if (null == sideEffects) {
-                        final String msgDefault = String.format("Could not find side-effects for %s.", sideEffect.get());
-                        throw new OpProcessorException(msgDefault, ResponseMessage.build(message).code(ResponseStatusCode.SERVER_ERROR).statusMessage(msgDefault).create());
-                    }
+                    if (null == sideEffects)
+                        logger.warn("Request for side-effect keys on %s returned no side-effects in the cache", sideEffect.get());
 
-                    handleIterator(context, sideEffects.keys().iterator());
+                    handleIterator(context, null == sideEffects ? Collections.emptyIterator() : sideEffects.keys().iterator());
                 };
 
                 break;
@@ -278,6 +276,14 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                         if (null == sideEffects) {
                             final String errorMessage = String.format("Could not find side-effects for %s.", sideEffect.get());
+                            logger.warn(errorMessage);
+                            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
+                            onError(graph, context);
+                            return;
+                        }
+
+                        if (!sideEffects.exists(sideEffectKey.get())) {
+                            final String errorMessage = String.format("Could not find side-effect key for %s in %s.", sideEffectKey.get(), sideEffect.get());
                             logger.warn(errorMessage);
                             ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(errorMessage).create());
                             onError(graph, context);
