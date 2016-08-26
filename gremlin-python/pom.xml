@@ -98,17 +98,37 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>createThriftDir</id>
+                        <id>create-python-reports-directory</id>
                         <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                         <configuration>
                             <tasks>
                                 <delete dir="${build.directory}/python-reports"/>
                                 <mkdir dir="${build.directory}/python-reports"/>
                             </tasks>
                         </configuration>
+                    </execution>
+                    <!--
+                    use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
+                    had to use the ant plugin - maven-exec-plugin
+                    -->
+                    <execution>
+                        <phase>integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <target>
+                                <exec executable="python"
+                                      dir="${basedir}/target/python">
+                                    <arg value="setup.py"/>
+                                    <arg value="test"/>
+                                </exec>
+                            </target>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -142,23 +162,6 @@
                             <workingDirectory>${basedir}/target/python</workingDirectory>
                             <commandlineArgs>setup.py build --build-lib ${project.build.testOutputDirectory}/Lib
                             </commandlineArgs>
-                        </configuration>
-                    </execution>
-                    <!-- use pytest to execute native python tests - output of xunit output is configured in setup.cfg -->
-                    <execution>
-                        <id>test-python</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>python</executable>
-                            <workingDirectory>${basedir}/target/python</workingDirectory>
-                            <skip>${skipTests}</skip>
-                            <arguments>
-                                <argument>setup.py</argument>
-                                <argument>test</argument>
-                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
