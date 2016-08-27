@@ -181,7 +181,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
 
                     if (null == sideEffects)
-                        logger.warn("Request for side-effect keys on %s returned no side-effects in the cache", sideEffect.get());
+                        logger.warn("Request for side-effect keys on {} returned no side-effects in the cache", sideEffect.get());
 
                     handleIterator(context, null == sideEffects ? Collections.emptyIterator() : sideEffects.keys().iterator());
                 };
