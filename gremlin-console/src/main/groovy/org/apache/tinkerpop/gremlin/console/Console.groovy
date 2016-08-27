@@ -167,7 +167,23 @@ class Console {
             groovy.setResultHook(handleResultShowNothing)
     }
 
-    private def handlePrompt = { interactive ? Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + " ") : "" }
+    private def handlePrompt = { 
+        if (interactive) {
+            int lineNo = groovy.buffers.current().size() 
+            if (lineNo > 0 ) {
+                String lineStr = lineNo.toString() + ">"
+                int pad = Preferences.inputPrompt.length() - lineStr.length() + 2
+                if (pad < 0) {
+                    pad = 0
+                }
+                return Colorizer.render(Preferences.inputPromptColor, lineStr.toString().padLeft(pad, '.') + ' ')
+            } else {
+                return Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ')
+            }
+        } else {
+            return ""
+        }
+    }
 
     private def handleResultShowNothing = { args -> null }
 

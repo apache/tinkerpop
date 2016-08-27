@@ -85,6 +85,14 @@ Prompts
 * result.prompt
 * empty.result.indicator
 
+See: https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037]
+
+
+Added multi-line indicator.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1285]
+
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -58,6 +58,7 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 * Fixed a small bug in `StandardVerificationStrategy` that caused verification to fail when `withPath` was used in conjunction with `ProfileStep`.
 * Added color preferences
 * Added input, result prompt preferences
+* Added multi-line indicator in Gremlin Console
 
 [[release-3-2-1]]
 TinkerPop 3.2.1 (Release Date: July 18, 2016)
