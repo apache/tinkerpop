@@ -95,6 +95,7 @@ final class GraphSONSerializersV1d0 {
                 throws IOException {
             ser(property, jsonGenerator, serializerProvider, null);
         }
+
         @Override
         public void serializeWithType(final Property property, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {

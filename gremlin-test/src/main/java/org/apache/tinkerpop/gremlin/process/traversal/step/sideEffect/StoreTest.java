@@ -47,7 +47,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id);
 
-    public abstract Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX();
+    public abstract Traversal<Vertex, Set<String>> get_g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX();
 
     public abstract Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX();
 
@@ -83,8 +83,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
-        final Traversal<Vertex, Set<String>> traversal = get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX();
+    public void g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX() {
+        final Traversal<Vertex, Set<String>> traversal = get_g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX();
         printTraversalForm(traversal);
         final Set<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -126,7 +126,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
+        public Traversal<Vertex, Set<String>> get_g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX() {
             return g.withSideEffect("a", HashSetSupplier.instance()).V().both().<String>values("name").store("a").cap("a");
         }
 

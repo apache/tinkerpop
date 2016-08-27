@@ -42,7 +42,9 @@ import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
  */
+@Deprecated
 public class ControlOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ControlOpProcessor.class);
     private static final Meter controlOpMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "op", "control"));

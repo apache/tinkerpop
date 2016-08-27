@@ -18,20 +18,34 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV1d0;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV2d0;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -45,8 +59,10 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
@@ -68,6 +84,44 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
      * Version 2.0 of GraphSON.
      */
     static final class GraphSONModuleV2d0 extends GraphSONModule {
+
+        private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
+                new LinkedHashMap<Class, String>() {{
+                    // Those don't have deserializers because handled by Jackson,
+                    // but we still want to rename them in GraphSON
+                    put(Integer.class, "Int32");
+                    put(Long.class, "Int64");
+                    put(Double.class, "Double");
+                    put(Float.class, "Float");
+
+                    // Tinkerpop Graph objects
+                    put(Lambda.class, "Lambda");
+                    put(Vertex.class, "Vertex");
+                    put(Edge.class, "Edge");
+                    put(Property.class, "Property");
+                    put(Path.class, "Path");
+                    put(VertexProperty.class, "VertexProperty");
+                    put(Metrics.class, "metrics");
+                    put(TraversalMetrics.class, "TraversalMetrics");
+                    put(Traverser.class, "Traverser");
+                    put(Tree.class, "Tree");
+                    put(Bytecode.class, "Bytecode");
+                    put(Bytecode.Binding.class, "Binding");
+                    put(AndP.class, "P");
+                    put(OrP.class, "P");
+                    put(P.class, "P");
+                    Stream.of(
+                            VertexProperty.Cardinality.values(),
+                            Column.values(),
+                            Direction.values(),
+                            Operator.values(),
+                            Order.values(),
+                            Pop.values(),
+                            SackFunctions.Barrier.values(),
+                            Scope.values(),
+                            T.values()).flatMap(Stream::of).forEach(e -> put(e.getClass(), e.getDeclaringClass().getSimpleName()));
+                }});
+
         /**
          * Constructs a new object.
          */
@@ -95,20 +149,22 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Integer.class, new GraphSONSerializersV2d0.IntegerGraphSONSerializer());
             addSerializer(Double.class, new GraphSONSerializersV2d0.DoubleGraphSONSerializer());
 
-            // java.time
-            addSerializer(Duration.class, new JavaTimeSerializersV2d0.DurationJacksonSerializer());
-            addSerializer(Instant.class, new JavaTimeSerializersV2d0.InstantJacksonSerializer());
-            addSerializer(LocalDate.class, new JavaTimeSerializersV2d0.LocalDateJacksonSerializer());
-            addSerializer(LocalDateTime.class, new JavaTimeSerializersV2d0.LocalDateTimeJacksonSerializer());
-            addSerializer(LocalTime.class, new JavaTimeSerializersV2d0.LocalTimeJacksonSerializer());
-            addSerializer(MonthDay.class, new JavaTimeSerializersV2d0.MonthDayJacksonSerializer());
-            addSerializer(OffsetDateTime.class, new JavaTimeSerializersV2d0.OffsetDateTimeJacksonSerializer());
-            addSerializer(OffsetTime.class, new JavaTimeSerializersV2d0.OffsetTimeJacksonSerializer());
-            addSerializer(Period.class, new JavaTimeSerializersV2d0.PeriodJacksonSerializer());
-            addSerializer(Year.class, new JavaTimeSerializersV2d0.YearJacksonSerializer());
-            addSerializer(YearMonth.class, new JavaTimeSerializersV2d0.YearMonthJacksonSerializer());
-            addSerializer(ZonedDateTime.class, new JavaTimeSerializersV2d0.ZonedDateTimeJacksonSerializer());
-            addSerializer(ZoneOffset.class, new JavaTimeSerializersV2d0.ZoneOffsetJacksonSerializer());
+            // traversal
+            addSerializer(Traversal.class, new GraphSONTraversalSerializersV2d0.TraversalJacksonSerializer());
+            addSerializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonSerializer());
+            Stream.of(VertexProperty.Cardinality.class,
+                    Column.class,
+                    Direction.class,
+                    Operator.class,
+                    Order.class,
+                    Pop.class,
+                    SackFunctions.Barrier.class,
+                    Scope.class,
+                    T.class).forEach(e -> addSerializer(e, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer()));
+            addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
+            addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
+            addSerializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonSerializer());
+            addSerializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
 
@@ -122,20 +178,21 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV2d0.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV2d0.TreeJacksonDeserializer());
 
-            // java.time
-            addDeserializer(Duration.class, new JavaTimeSerializersV2d0.DurationJacksonDeserializer());
-            addDeserializer(Instant.class, new JavaTimeSerializersV2d0.InstantJacksonDeserializer());
-            addDeserializer(LocalDate.class, new JavaTimeSerializersV2d0.LocalDateJacksonDeserializer());
-            addDeserializer(LocalDateTime.class, new JavaTimeSerializersV2d0.LocalDateTimeJacksonDeserializer());
-            addDeserializer(LocalTime.class, new JavaTimeSerializersV2d0.LocalTimeJacksonDeserializer());
-            addDeserializer(MonthDay.class, new JavaTimeSerializersV2d0.MonthDayJacksonDeserializer());
-            addDeserializer(OffsetDateTime.class, new JavaTimeSerializersV2d0.OffsetDateTimeJacksonDeserializer());
-            addDeserializer(OffsetTime.class, new JavaTimeSerializersV2d0.OffsetTimeJacksonDeserializer());
-            addDeserializer(Period.class, new JavaTimeSerializersV2d0.PeriodJacksonDeserializer());
-            addDeserializer(Year.class, new JavaTimeSerializersV2d0.YearJacksonDeserializer());
-            addDeserializer(YearMonth.class, new JavaTimeSerializersV2d0.YearMonthJacksonDeserializer());
-            addDeserializer(ZonedDateTime.class, new JavaTimeSerializersV2d0.ZonedDateTimeJacksonDeserializer());
-            addDeserializer(ZoneOffset.class, new JavaTimeSerializersV2d0.ZoneOffsetJacksonDeserializer());
+            // traversal
+            addDeserializer(Bytecode.class, new GraphSONTraversalSerializersV2d0.BytecodeJacksonDeserializer());
+            addDeserializer(Bytecode.Binding.class, new GraphSONTraversalSerializersV2d0.BindingJacksonDeserializer());
+            Stream.of(VertexProperty.Cardinality.values(),
+                    Column.values(),
+                    Direction.values(),
+                    Operator.values(),
+                    Order.values(),
+                    Pop.values(),
+                    SackFunctions.Barrier.values(),
+                    Scope.values(),
+                    T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer(e.getDeclaringClass())));
+            addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
+            addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
+            addDeserializer(Traverser.class, new GraphSONTraversalSerializersV2d0.TraverserJacksonDeserializer());
         }
 
         public static Builder build() {
@@ -144,41 +201,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
         @Override
         public Map<Class, String> getTypeDefinitions() {
-            return new LinkedHashMap<Class, String>(){{
-                // Those don't have deserializers because handled by Jackson,
-                // but we still want to rename them in GraphSON
-                put(ByteBuffer.class, "bytebuffer");
-                put(Short.class, "int16");
-                put(Integer.class, "int32");
-                put(Long.class, "int64");
-                put(Double.class, "double");
-                put(Float.class, "float");
-
-                // Time serializers/deserializers
-                put(Duration.class, "duration");
-                put(Instant.class, "instant");
-                put(LocalDate.class, "localdate");
-                put(LocalDateTime.class, "localdatetime");
-                put(LocalTime.class, "localtime");
-                put(MonthDay.class, "monthday");
-                put(OffsetDateTime.class, "offsetdatetime");
-                put(OffsetTime.class, "offsettime");
-                put(Period.class, "period");
-                put(Year.class, "year");
-                put(YearMonth.class, "yearmonth");
-                put(ZonedDateTime.class, "zoneddatetime");
-                put(ZoneOffset.class, "zoneoffset");
-
-                // Tinkerpop Graph objects
-                put(Vertex.class, "vertex");
-                put(Edge.class, "edge");
-                put(Property.class, "property");
-                put(Path.class, "path");
-                put(VertexProperty.class, "vertexproperty");
-                put(Metrics.class, "metrics");
-                put(TraversalMetrics.class, "traversalmetrics");
-                put(Tree.class, "tree");
-            }};
+            return TYPE_DEFINITIONS;
         }
 
         @Override
@@ -188,7 +211,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
         static final class Builder implements GraphSONModuleBuilder {
 
-            private Builder() {}
+            private Builder() {
+            }
 
             @Override
             public GraphSONModule create(final boolean normalize) {
@@ -218,7 +242,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Path.class, new GraphSONSerializersV1d0.PathJacksonSerializer());
             addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV1d0(normalize));
             addSerializer(Tree.class, new GraphSONSerializersV1d0.TreeJacksonSerializer());
-           
+
             // java.util
             addSerializer(Map.Entry.class, new JavaUtilSerializersV1d0.MapEntryJacksonSerializer());
 
@@ -270,7 +294,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
         static final class Builder implements GraphSONModuleBuilder {
 
-            private Builder() {}
+            private Builder() {
+            }
 
             @Override
             public GraphSONModule create(final boolean normalize) {

@@ -53,8 +53,6 @@ public class __ {
     protected __() {
     }
 
-    //////////////////////////////////////////////////////////////////////
-
     public static <A> GraphTraversal<A, A> start() {
         return new DefaultGraphTraversal<>();
     }
@@ -986,7 +984,7 @@ public class __ {
     /**
      * @see GraphTraversal#optional(Traversal)
      */
-    public static <A, B> GraphTraversal<A, B> optional(final Traversal<?, B> optionalTraversal) {
+    public static <A> GraphTraversal<A, A> optional(final Traversal<?, A> optionalTraversal) {
         return __.<A>start().optional(optionalTraversal);
     }
 

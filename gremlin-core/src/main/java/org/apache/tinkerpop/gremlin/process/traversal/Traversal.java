@@ -59,6 +59,14 @@ import java.util.stream.StreamSupport;
  */
 public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
+    public static class Symbols {
+        private Symbols() {
+            // static fields only
+        }
+
+        public static final String profile = "profile";
+    }
+
     /**
      * Get access to administrative methods of the traversal via its accompanying {@link Traversal.Admin}.
      *
@@ -177,6 +185,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
      * @return the updated traversal with respective {@link ProfileSideEffectStep}.
      */
     public default Traversal<S, TraversalMetrics> profile() {
+        this.asAdmin().getBytecode().addStep(Symbols.profile);
         return this.asAdmin()
                 .addStep(new ProfileSideEffectStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY))
                 .addStep(new SideEffectCapStep<Object, TraversalMetrics>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
@@ -237,6 +246,13 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
     }
 
     public interface Admin<S, E> extends Traversal<S, E> {
+
+        /**
+         * Get the {@link Bytecode} associated with the construction of this traversal.
+         *
+         * @return the byte code representation of the traversal
+         */
+        public Bytecode getBytecode();
 
         /**
          * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal.
@@ -443,6 +459,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
             }
             return false;
         }
+
+        public default Traverser.Admin<E> nextTraverser() {
+            return this.getEndStep().next();
+        }
+
     }
 
 }

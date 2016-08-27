@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.junit.Test;
 
@@ -62,11 +63,13 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
     // As of TinkerPop 3.2.1 default for GraphSON 2.0 means types enabled.
     private final Mapper defaultMapperV2d0 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
+            .addCustomModule(GraphSONXModuleV2d0.build().create(false))
             .addRegistry(TinkerIoRegistryV2d0.getInstance())
             .create();
 
     private final Mapper noTypesMapperV2d0 = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
+            .addCustomModule(GraphSONXModuleV2d0.build().create(false))
             .typeInfo(TypeInfo.NO_TYPES)
             .addRegistry(TinkerIoRegistryV2d0.getInstance())
             .create();
@@ -469,30 +472,23 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
     }
 
     @Test
-    public void deserializersTree() {
+    public void deserializersTestsTree() {
         final TinkerGraph tg = TinkerFactory.createModern();
 
-        final GraphWriter writer = getWriter(noTypesMapperV2d0);
-        final GraphReader reader = getReader(noTypesMapperV2d0);
+        final GraphWriter writer = getWriter(defaultMapperV2d0);
+        final GraphReader reader = getReader(defaultMapperV2d0);
 
         final Tree t = tg.traversal().V().out().out().tree().next();
 
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            final Vertex v = tg.traversal().V(1).next();
-                     v.property("myUUIDprop", UUID.randomUUID());
-            writer.writeObject(out, v);
-
-
-//            writer.writeObject(out, t);
+            writer.writeObject(out, t);
             final String json = out.toString();
 
-            //System.out.println("json = " + json);
-
-//            Tree treeRead = (Tree)reader.readObject(new ByteArrayInputStream(json.getBytes()), Object.class);
+            Tree treeRead = (Tree)reader.readObject(new ByteArrayInputStream(json.getBytes()), Object.class);
             //Map's equals should check each component of the tree recursively
             //on each it will call "equals()" which for Vertices will compare ids, which
             //is ok. Complete vertex deser is checked elsewhere.
-//            assertEquals(t, treeRead);
+            assertEquals(t, treeRead);
 
         } catch (IOException e) {
             e.printStackTrace();

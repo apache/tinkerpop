@@ -27,7 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * bindings are required for the {@code ScriptEngine}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.2.2, replaced by {@link org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings}.
  */
+@Deprecated
 public class ConcurrentBindings extends SimpleBindings {
 
     public ConcurrentBindings() {

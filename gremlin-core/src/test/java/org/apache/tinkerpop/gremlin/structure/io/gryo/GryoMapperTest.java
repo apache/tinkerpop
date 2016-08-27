@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
@@ -239,6 +241,14 @@ public class GryoMapperTest {
     }
 
     @Test
+    public void shouldHandleDefaultRemoteTraverser() throws Exception  {
+        final DefaultRemoteTraverser<Integer> br = new DefaultRemoteTraverser<>(123, 1000);
+        final DefaultRemoteTraverser inOut = serializeDeserialize(br, DefaultRemoteTraverser.class);
+        assertEquals(br.bulk(), inOut.bulk());
+        assertEquals(br.get(), inOut.get());
+    }
+
+    @Test
     public void shouldHandleDuration() throws Exception  {
         final Duration o = Duration.ZERO;
         assertEquals(o, serializeDeserialize(o, Duration.class));
@@ -320,6 +330,12 @@ public class GryoMapperTest {
     public void shouldHandleTraversalExplanation() throws Exception  {
         final TraversalExplanation te = __().out().outV().outE().explain();
         assertEquals(te.toString(), serializeDeserialize(te, TraversalExplanation.class).toString());
+    }
+
+    @Test
+    public void shouldHandleBytecode() throws Exception {
+        final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
+        assertEquals(bytecode.toString(), serializeDeserialize(bytecode, Bytecode.class).toString());
     }
 
     public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {

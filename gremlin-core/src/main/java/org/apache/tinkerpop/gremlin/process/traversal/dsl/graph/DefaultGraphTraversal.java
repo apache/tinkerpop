@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -29,6 +28,10 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
 
     public DefaultGraphTraversal() {
         super();
+    }
+
+    public DefaultGraphTraversal(final GraphTraversalSource graphTraversalSource) {
+        super(graphTraversalSource);
     }
 
     public DefaultGraphTraversal(final Graph graph) {

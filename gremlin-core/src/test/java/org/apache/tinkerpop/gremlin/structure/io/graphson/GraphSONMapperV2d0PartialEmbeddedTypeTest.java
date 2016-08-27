@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
@@ -25,17 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.MonthDay;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.Year;
-import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -54,103 +46,26 @@ import static org.junit.Assert.fail;
 /**
  * Tests automatic typed serialization/deserialization for GraphSON 2.0.
  */
-public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
+public class GraphSONMapperV2d0PartialEmbeddedTypeTest extends AbstractGraphSONTest {
 
     private final ObjectMapper mapper = GraphSONMapper.build()
             .version(GraphSONVersion.V2_0)
+            .addCustomModule(GraphSONXModuleV2d0.build().create(false))
             .typeInfo(TypeInfo.PARTIAL_TYPES)
             .create()
             .createMapper();
 
     @Test
-    public void shouldHandleDurationAuto() throws Exception {
-        final Duration o = Duration.ZERO;
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleInstantAuto() throws Exception {
-        final Instant o = Instant.ofEpochMilli(System.currentTimeMillis());
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleLocalDateAuto() throws Exception {
-        final LocalDate o = LocalDate.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleLocalDateTimeAuto() throws Exception {
-        final LocalDateTime o = LocalDateTime.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleLocalTimeAuto() throws Exception {
-        final LocalTime o = LocalTime.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleMonthDayAuto() throws Exception {
-        final MonthDay o = MonthDay.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleOffsetDateTimeAuto() throws Exception {
-        final OffsetDateTime o = OffsetDateTime.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleOffsetTimeAuto() throws Exception {
-        final OffsetTime o = OffsetTime.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandlePeriodAuto() throws Exception {
-        final Period o = Period.ofDays(3);
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleYearAuto() throws Exception {
-        final Year o = Year.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleYearMonthAuto() throws Exception {
-        final YearMonth o = YearMonth.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleZonedDateTimeAuto() throws Exception {
-        final ZonedDateTime o = ZonedDateTime.now();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    public void shouldHandleZonedOffsetAuto() throws Exception {
-        final ZoneOffset o = ZonedDateTime.now().getOffset();
-        assertEquals(o, serializeDeserializeAuto(o));
-    }
-
-    @Test
-    // Trying to fail the TypeDeserializer type detection
     public void shouldSerializeDeserializeNestedCollectionsAndMapAndTypedValuesCorrectly() throws Exception {
+        // Trying to fail the TypeDeserializer type detection
         final UUID uuid = UUID.randomUUID();
-        final List myList = new ArrayList<>();
+        final List<Object> myList = new ArrayList<>();
 
-        final List myList2 = new ArrayList<>();
+        final List<Object> myList2 = new ArrayList<>();
         myList2.add(UUID.randomUUID());
         myList2.add(33L);
         myList2.add(84);
-        final Map map2 = new HashMap<>();
+        final Map<String,Object> map2 = new HashMap<>();
         map2.put("eheh", UUID.randomUUID());
         map2.put("normal", "normal");
         myList2.add(map2);
@@ -163,24 +78,24 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
 
         myList.add("kjkj");
         myList.add(UUID.randomUUID());
-        assertEquals(myList, serializeDeserializeAuto(myList));
+        assertEquals(myList, serializeDeserializeAuto(mapper, myList));
 
         // no "@value" property
-        String s = "{\""+GraphSONTokens.VALUETYPE+"\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":uuid\", \"test\":2}";
-        Map map = new LinkedHashMap<>();
-        map.put(GraphSONTokens.VALUETYPE, "gremlin:uuid");
+        String s = "{\""+GraphSONTokens.VALUETYPE+"\":\"" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":UUID\", \"test\":2}";
+        Map<String,Object> map = new LinkedHashMap<>();
+        map.put(GraphSONTokens.VALUETYPE, GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":UUID");
         map.put("test", 2);
         Object res = mapper.readValue(s, Object.class);
         assertEquals(map, res);
 
         // "@value" and "@type" property reversed
-        s = "{\""+GraphSONTokens.VALUEPROP+"\":2, \""+ GraphSONTokens.VALUETYPE+"\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":int64\"}";
+        s = "{\""+GraphSONTokens.VALUEPROP+"\":2, \"" + GraphSONTokens.VALUETYPE + "\":\"" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":Int64\"}";
         res = mapper.readValue(s, Object.class);
         assertEquals(res, 2L);
         assertEquals(res.getClass(), Long.class);
 
         // no "@type" property.
-        s = "{\""+GraphSONTokens.VALUEPROP+"\":2, \"id\":2}";
+        s = "{\""+GraphSONTokens.VALUEPROP + "\":2, \"id\":2}";
         map = new LinkedHashMap<>();
         map.put(GraphSONTokens.VALUEPROP, 2);
         map.put("id", 2);
@@ -190,14 +105,14 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
 
     @Test
     public void shouldFailIfMoreThanTwoPropertiesInATypePattern() {
-        String s = "{\"" + GraphSONTokens.VALUEPROP + "\":2, \"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":int64\", \"hello\": \"world\"}";
+        String s = "{\"" + GraphSONTokens.VALUEPROP + "\":2, \"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":Int64\", \"hello\": \"world\"}";
         try {
             mapper.readValue(s, Object.class);
             fail("Should have failed deserializing because there's more than properties in the type.");
         } catch (IOException e) {
             assertThat(e.getMessage(), containsString("Detected the type pattern in the JSON payload but the map containing the types and values contains other fields. This is not allowed by the deserializer."));
         }
-        s = "{\"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":int64\",\"" + GraphSONTokens.VALUEPROP + "\":2, \"hello\": \"world\"}";
+        s = "{\"" + GraphSONTokens.VALUETYPE + "\":\""+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":Int64\",\"" + GraphSONTokens.VALUEPROP + "\":2, \"hello\": \"world\"}";
         try {
             mapper.readValue(s, Object.class);
             fail("Should have failed deserializing because there's more than properties in the type.");
@@ -217,7 +132,7 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
             mapper.readValue(inputStream, Instant.class);
             fail("Should have failed decoding the value");
         } catch (Exception e) {
-            assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('"+GraphSONTokens.GREMLIN_TYPE_NAMESPACE +":zoneoffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+            assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLINX_TYPE_NAMESPACE + ":ZoneOffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
         }
     }
 
@@ -225,12 +140,12 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
     public void shouldHandleRawPOJOs() throws Exception {
         final FunObject funObject = new FunObject();
         funObject.setVal("test");
-        assertEquals(funObject.toString(), serializeDeserialize(funObject, FunObject.class).toString());
-        assertEquals(funObject.getClass(), serializeDeserialize(funObject, FunObject.class).getClass());
+        assertEquals(funObject.toString(), serializeDeserialize(mapper, funObject, FunObject.class).toString());
+        assertEquals(funObject.getClass(), serializeDeserialize(mapper, funObject, FunObject.class).getClass());
     }
 
     @Test
-    public void shouldHandleMapWithTypesUsingEmbedTypeSetting() throws Exception {
+    public void shouldHandleMapWithTypesUsingEmbedTypeSettingV2d0() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
                 .embedTypes(true)
@@ -247,10 +162,44 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
     }
 
     @Test
-    public void shouldNotHandleMapWithTypesUsingEmbedTypeSetting() throws Exception {
+    public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV2d0() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
                 .embedTypes(false)
+                .create()
+                .createMapper();
+
+        final Map<String,Object> m = new HashMap<>();
+        m.put("test", 100L);
+
+        final String json = mapper.writeValueAsString(m);
+        final Map read = mapper.readValue(json, HashMap.class);
+
+        assertEquals(100, read.get("test"));
+    }
+
+    @Test
+    public void shouldHandleMapWithTypesUsingEmbedTypeSettingV1d0() throws Exception {
+        final ObjectMapper mapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V1_0)
+                .typeInfo(TypeInfo.PARTIAL_TYPES)
+                .create()
+                .createMapper();
+
+        final Map<String,Object> m = new HashMap<>();
+        m.put("test", 100L);
+
+        final String json = mapper.writeValueAsString(m);
+        final Map read = mapper.readValue(json, HashMap.class);
+
+        assertEquals(100L, read.get("test"));
+    }
+
+    @Test
+    public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV1d0() throws Exception {
+        final ObjectMapper mapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V1_0)
+                .typeInfo(TypeInfo.NO_TYPES)
                 .create()
                 .createMapper();
 
@@ -272,13 +221,13 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
                 .createMapper();
 
         final UUID uuid = UUID.randomUUID();
-        final List myList = new ArrayList<>();
+        final List<Object> myList = new ArrayList<>();
 
-        final List myList2 = new ArrayList<>();
+        final List<Object> myList2 = new ArrayList<>();
         myList2.add(UUID.randomUUID());
         myList2.add(33L);
         myList2.add(84);
-        final Map map2 = new HashMap<>();
+        final Map<String,Object> map2 = new HashMap<>();
         map2.put("eheh", UUID.randomUUID());
         map2.put("normal", "normal");
         myList2.add(map2);
@@ -299,6 +248,11 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
         assertNotEquals(myList, read);
     }
 
+    @Test
+    public void shouldHandleDefaultRemoteTraverser() throws Exception {
+        final DefaultRemoteTraverser<String> o = new DefaultRemoteTraverser<>("test", 100);
+        assertEquals(o, serializeDeserialize(mapper, o, Traverser.class));
+    }
 
     // Class needs to be defined as statics as it's a nested class.
     public static class FunObject {
@@ -320,25 +274,5 @@ public class GraphSONMapperV2d0PartialEmbeddedTypeTest {
         }
     }
 
-    public <T> T serializeDeserialize(final Object o, final Class<T> clazz) throws Exception {
-        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            mapper.writeValue(stream, o);
-
-            try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
-                return mapper.readValue(inputStream, clazz);
-            }
-        }
-    }
-
-    public <T> T serializeDeserializeAuto(final Object o) throws Exception {
-        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            mapper.writeValue(stream, o);
-
-            try (final InputStream inputStream = new ByteArrayInputStream(stream.toByteArray())) {
-                // Object.class is the wildcard that triggers the auto discovery.
-                return (T)mapper.readValue(inputStream, Object.class);
-            }
-        }
-    }
 
 }

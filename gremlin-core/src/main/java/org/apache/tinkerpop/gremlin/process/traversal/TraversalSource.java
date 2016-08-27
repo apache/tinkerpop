@@ -18,16 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -49,6 +55,9 @@ import java.util.function.UnaryOperator;
  */
 public interface TraversalSource extends Cloneable {
 
+    public static final String GREMLIN_REMOTE = "gremlin.remote.";
+    public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
+
     /**
      * Get the {@link TraversalStrategies} associated with this traversal source.
      *
@@ -63,6 +72,30 @@ public interface TraversalSource extends Cloneable {
      */
     public Graph getGraph();
 
+    /**
+     * Get the {@link Bytecode} associated with the current state of this traversal source.
+     *
+     * @return the traversal source byte code
+     */
+    public Bytecode getBytecode();
+
+    /////////////////////////////
+
+    public static class Symbols {
+
+        private Symbols() {
+            // static fields only
+        }
+
+        public static final String withBindings = "withBindings";
+        public static final String withSack = "withSack";
+        public static final String withStrategies = "withStrategies";
+        public static final String withoutStrategies = "withoutStrategies";
+        public static final String withComputer = "withComputer";
+        public static final String withSideEffect = "withSideEffect";
+        public static final String withRemote = "withRemote";
+    }
+
     /////////////////////////////
 
     /**
@@ -74,6 +107,7 @@ public interface TraversalSource extends Cloneable {
     public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         return clone;
     }
 
@@ -87,6 +121,20 @@ public interface TraversalSource extends Cloneable {
     public default TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().removeStrategies(traversalStrategyClasses);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
+        return clone;
+    }
+
+    /**
+     * Using the provided {@link Bindings} to create {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding}.
+     * The bindings serve as a relay for ensure bound arguments are encoded as {@link org.apache.tinkerpop.gremlin.process.traversal.Bytecode.Binding} in {@link Bytecode}.
+     *
+     * @param bindings the bindings instance to use
+     * @return a new traversal source with set bindings
+     */
+    public default TraversalSource withBindings(final Bindings bindings) {
+        final TraversalSource clone = this.clone();
+        clone.getBytecode().addSource(Symbols.withBindings, bindings);
         return clone;
     }
 
@@ -110,7 +158,11 @@ public interface TraversalSource extends Cloneable {
         for (int i = 0; i < graphComputerStrategies.size(); i++) {
             traversalStrategies[i + 1] = graphComputerStrategies.get(i);
         }
-        return this.withStrategies(traversalStrategies);
+        ///
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, computer);
+        return clone;
     }
 
     /**
@@ -121,7 +173,17 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        return this.withComputer(Computer.compute(graphComputerClass));
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
+        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
+        traversalStrategies[0] = new VertexProgramStrategy(Computer.compute(graphComputerClass));
+        for (int i = 0; i < graphComputerStrategies.size(); i++) {
+            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
+        }
+        ///
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, graphComputerClass);
+        return clone;
     }
 
     /**
@@ -131,7 +193,24 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer() {
-        return this.withComputer(Computer.compute());
+        final Computer computer = Computer.compute();
+        Class<? extends GraphComputer> graphComputerClass;
+        try {
+            graphComputerClass = computer.apply(this.getGraph()).getClass();
+        } catch (final Exception e) {
+            graphComputerClass = computer.getGraphComputerClass();
+        }
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
+        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
+        traversalStrategies[0] = new VertexProgramStrategy(computer);
+        for (int i = 0; i < graphComputerStrategies.size(); i++) {
+            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
+        }
+        ///
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer);
+        return clone;
     }
 
     /**
@@ -146,6 +225,7 @@ public interface TraversalSource extends Cloneable {
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, reducer);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -159,7 +239,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
-        return this.withSideEffect(key, initialValue instanceof Supplier ? (Supplier) initialValue : new ConstantSupplier<>(initialValue), reducer);
+        final TraversalSource clone = this.clone();
+        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, reducer);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
+        return clone;
     }
 
     /**
@@ -171,7 +254,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
-        return this.withSideEffect(key, initialValue, (BinaryOperator<A>) null);
+        final TraversalSource clone = this.clone();
+        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, null);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
+        return clone;
     }
 
     /**
@@ -183,7 +269,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue) {
-        return this.withSideEffect(key, initialValue instanceof Supplier ? (Supplier) initialValue : new ConstantSupplier<>(initialValue));
+        final TraversalSource clone = this.clone();
+        SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, null);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
+        return clone;
     }
 
     /**
@@ -196,7 +285,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        return this.withStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
+        return clone;
     }
 
     /**
@@ -209,7 +301,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(new ConstantSupplier<>(initialValue), splitOperator, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
+        return clone;
     }
 
     /**
@@ -220,7 +315,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue) {
-        return this.withSack(initialValue, null, null);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue);
+        return clone;
     }
 
     /**
@@ -231,7 +329,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue) {
-        return this.withSack(initialValue, (UnaryOperator<A>) null, null);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue);
+        return clone;
     }
 
     /**
@@ -243,7 +344,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        return this.withSack(initialValue, splitOperator, null);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
+        return clone;
     }
 
     /**
@@ -255,7 +359,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-        return this.withSack(initialValue, splitOperator, null);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
+        return clone;
     }
 
     /**
@@ -267,7 +374,10 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(initialValue, null, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).mergeOperator(mergeOperator).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        return clone;
     }
 
     /**
@@ -279,13 +389,61 @@ public interface TraversalSource extends Cloneable {
      * @return a new traversal source with updated strategies
      */
     public default <A> TraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
-        return this.withSack(initialValue, null, mergeOperator);
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
+        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        return clone;
     }
 
     /**
-     * The clone-method should be used to create immutable traversal sources with each call to a configuration method.
-     * The clone-method should clone the internal {@link TraversalStrategies}, mutate the cloned strategies accordingly,
-     * and then return the cloned traversal source.
+     * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     * Expects key for {@link #GREMLIN_REMOTE_CONNECTION_CLASS} as well as any configuration required by
+     * the underlying {@link RemoteConnection} which will be instantiated. Note that the {@code Configuration} object
+     * is passed down without change to the creation of the {@link RemoteConnection} instance.
+     */
+    public default TraversalSource withRemote(final Configuration conf) {
+        if (!conf.containsKey(GREMLIN_REMOTE_CONNECTION_CLASS))
+            throw new IllegalArgumentException("Configuration must contain the '" + GREMLIN_REMOTE_CONNECTION_CLASS + "' key");
+
+        final RemoteConnection remoteConnection;
+        try {
+            final Class<? extends RemoteConnection> clazz = Class.forName(conf.getString(GREMLIN_REMOTE_CONNECTION_CLASS)).asSubclass(RemoteConnection.class);
+            final Constructor<? extends RemoteConnection> ctor = clazz.getConstructor(Configuration.class);
+            remoteConnection = ctor.newInstance(conf);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        return withRemote(remoteConnection);
+    }
+
+    /**
+     * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     * Calls {@link #withRemote(Configuration)} after reading the properties file specified.
+     */
+    public default TraversalSource withRemote(final String configFile) throws Exception {
+        return withRemote(new PropertiesConfiguration(configFile));
+    }
+
+    /**
+     * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     *
+     * @param connection the {@link RemoteConnection} instance to use to submit the {@link Traversal}.
+     */
+    public default TraversalSource withRemote(final RemoteConnection connection) {
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
+        return clone;
+    }
+
+    public default Optional<Class> getAnonymousTraversalClass() {
+        return Optional.empty();
+    }
+
+    /**
+     * The clone-method should be used to create immutable traversal sources with each call to a configuration "withXXX"-method.
+     * The clone-method should clone the {@link Bytecode}, {@link TraversalStrategies}, mutate the cloned strategies accordingly,
+     * and then return the cloned traversal source leaving the original unaltered.
      *
      * @return the cloned traversal source
      */

@@ -18,13 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * A cache of standard {@code ScriptEngine} instances, instantiated by the standard {@code ScriptEngineManager}.
+ * These instances are not "Gremlin-enabled". See {@link SingleGremlinScriptEngineManager} for the analogous class
+ * that loads {@link GremlinScriptEngine} instances.
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ScriptEngineCache {
 

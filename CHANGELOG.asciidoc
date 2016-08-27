@@ -27,6 +27,22 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Included GraphSON as a default serializer (in addition to Gryo, which was already present) in Gremlin Server if none are defined.
+* Added `gremlin-python` package as a Gremlin language variant in Python.
+* Added `Bytecode` which specifies the instructions and arguments used to construct a traversal.
+* Created an experimental GraphSON representation of `Bytecode` that will be considered unstable until 3.3.0.
+* Added `Translator` which allows from the translation of `Bytecode` into some other form (e.g. script, `Traversal`, etc.).
+* Added `JavaTranslator`, `GroovyTranslator`, `PythonTranslator`, and `JythonTranslator` for translating `Bytecode` accordingly.
+* Added `TranslationStrategy` to `gremlin-test` so translators can be tested against the the process test suite.
+* Added `Traversal.Admin.nextTraverser()` to get the next result in bulk-form (w/ default implementation).
+* Added `TraversalSource.getAnonymousTraversalClass()` (w/ default implementation).
+* Added `GremlinScriptEngine` interface which specifies a `eval(Bytecode, Bindings)` method.
+* Deprecated `RemoteGraph` in favor of `TraversalSource.withRemote()` as it is more technically correct to tie a remote traversal to the `TraversalSource` than a `Graph` instance.
+* `GremlinGroovyScriptEngine` implements `GremlinScriptEngine`.
+* Added `GremlinJythonScriptEngine` which implements `GremlinScriptEngine`.
+* Removed support for submitting a Java serialized `Traversal` to Gremlin Server.
+* Removed a largely internal feature that supported automatic unrolling of traversers in the Gremlin Driver.
+* Made it possible to directly initialize `OpProcessor` implementations with server `Settings`.
+* Included GraphSON as a default serializer (in addition to Gryo, which was already present) in Gremlin Server if none are defined
 * Introduced GraphSON 2.0.
 * Deprecated `embedTypes` on the builder for `GraphSONMapper`.
 * Bumped to Netty 4.0.40.final.

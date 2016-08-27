@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -38,7 +39,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
+public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final EmptyTraversal INSTANCE = new EmptyTraversal();
     private static final TraversalSideEffects SIDE_EFFECTS = EmptyTraversalSideEffects.instance();
@@ -50,6 +51,10 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     protected EmptyTraversal() {
 
+    }
+
+    public Bytecode getBytecode() {
+        return new Bytecode();
     }
 
     @Override

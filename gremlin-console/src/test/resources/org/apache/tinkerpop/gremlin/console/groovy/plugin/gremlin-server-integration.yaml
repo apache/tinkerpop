@@ -28,10 +28,7 @@ plugins:
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
-    staticImports: [java.lang.Math.PI]},
-  nashorn: {
-      imports: [java.lang.Math],
-      staticImports: [java.lang.Math.PI]}}
+    staticImports: [java.lang.Math.PI]}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { custom: [groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer]}}
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true}}

@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -562,5 +564,11 @@ public final class TraversalHelper {
             traversal = traversal.getParent().asStep().getTraversal();
         }
         return false;
+    }
+
+    public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
+        while (!traversal.getSteps().isEmpty()) {
+            traversal.removeStep(0);
+        }
     }
 }

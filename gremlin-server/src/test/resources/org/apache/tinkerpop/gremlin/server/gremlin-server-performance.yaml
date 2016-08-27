@@ -26,10 +26,7 @@ scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
     staticImports: [java.lang.Math.PI],
-    scripts: [scripts/load-sample.groovy]},
-  nashorn: {
-      imports: [java.lang.Math],
-      staticImports: [java.lang.Math.PI]}}
+    scripts: [scripts/load-sample.groovy]}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { useMapperFromGraph: graph }}
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0 }

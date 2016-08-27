@@ -37,6 +37,8 @@ include::implementations-tinkergraph.asciidoc[]
 include::implementations-neo4j.asciidoc[]
 include::implementations-hadoop.asciidoc[]
 
+include::gremlin-variants.asciidoc[]
+
 include::conclusion.asciidoc[]
 
 include::acknowledgements.asciidoc[]

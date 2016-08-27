@@ -64,13 +64,23 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
                 removed = true;
             }
         }
-        if (removed) this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
+        if (removed)
+            this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
     }
 
     @Override
     public List<TraversalStrategy<?>> toList() {
         return Collections.unmodifiableList(this.traversalStrategies);
+    }
+
+    @Override
+    public <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
+        for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
+            if (traversalStrategyClass.isAssignableFrom(traversalStrategy.getClass()))
+                return (Optional) Optional.of(traversalStrategy);
+        }
+        return Optional.empty();
     }
 
     @Override

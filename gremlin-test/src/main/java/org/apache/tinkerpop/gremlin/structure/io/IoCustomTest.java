@@ -25,6 +25,9 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
@@ -52,13 +55,18 @@ public class IoCustomTest extends AbstractGremlinTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        final SimpleModule module = new SimpleModule();
-        module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
+        final SimpleModule moduleV1d0 = new SimpleModule();
+        moduleV1d0.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1d0());
+
+        final SimpleModule moduleV2d0 = new CustomId.CustomIdTinkerPopJacksonModule();
 
         return Arrays.asList(new Object[][]{
-                {"graphson-embedded", true,
-                        (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(IoCore.graphson()).mapper().addCustomModule(module).embedTypes(true).create()).create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(IoCore.graphson()).mapper().addCustomModule(module).embedTypes(true).create()).create()},
+                {"graphson-v1-embedded", true,
+                        (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1d0).embedTypes(true).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1d0).embedTypes(true).create()).create()},
+                {"graphson-v2-embedded", true,
+                        (Function<Graph, GraphReader>) g -> g.io(IoCore.graphson()).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(IoCore.graphson()).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
                 {"gryo", true,
                         (Function<Graph, GraphReader>) g -> g.io(IoCore.gryo()).reader().mapper(g.io(IoCore.gryo()).mapper().addCustom(CustomId.class).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(IoCore.gryo()).writer().mapper(g.io(IoCore.gryo()).mapper().addCustom(CustomId.class).create()).create()}
@@ -76,7 +84,6 @@ public class IoCustomTest extends AbstractGremlinTest {
 
     @Parameterized.Parameter(value = 3)
     public Function<Graph, GraphWriter> writerMaker;
-
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)

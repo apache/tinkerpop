@@ -66,7 +66,7 @@ public abstract class GroovyRepeatTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).emit(has(T.label, 'person')).repeat(__.out).name", "v1Id", v1Id)
         }
 

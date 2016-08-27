@@ -23,6 +23,7 @@ import groovy.json.JsonBuilder;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.bulkdumping.BulkDumperVertexProgram;
@@ -63,6 +64,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -92,6 +94,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
         imports.add(DetachedElement.class.getPackage().getName() + DOT_STAR);
         imports.add(RemoteGraph.class.getPackage().getName() + DOT_STAR);
+        imports.add(EmptyGraph.class.getPackage().getName() + DOT_STAR);
         staticImports.add(T.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
         staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);
@@ -108,6 +111,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(VertexProgramStrategy.class.getPackage().getName() + DOT_STAR);   // computer decoration strategies
         imports.add(GraphFilterStrategy.class.getPackage().getName() + DOT_STAR);     // computer optimization strategies
         imports.add(Event.class.getPackage().getName() + DOT_STAR);                   // eventing
+        imports.add(GroovyTranslator.class.getPackage().getName() + DOT_STAR);        // groovy translator
 
         staticImports.add(P.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);

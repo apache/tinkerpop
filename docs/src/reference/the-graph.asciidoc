@@ -559,9 +559,9 @@ Types embedding
 
 With a minor change to the construction of the `GraphSONWriter` the lossy nature of GraphSON can be avoided.
 
-[[graphson-1.0-types]]
-Types with GraphSON 1.0.
-++++++++++++++++++++++++
+[[graphson-1-0-types]]
+Types with GraphSON 1.0
++++++++++++++++++++++++
 
 GraphSON 1.0 is the version enabled by default when creating a GraphSON Mapper. Here is how to enable types with GraphSON
 1.0:
@@ -663,9 +663,9 @@ from JSON typing.  While the output is more verbose, it comes with the security 
 non-JVM languages won't be able to consume this information automatically, at least there is a hint as to how the
 values should be coerced back into the correct types in the target language.
 
-[[graphson-2.0-types]]
-GraphSON 2.0.
-+++++++++++++
+[[graphson-2-0-types]]
+GraphSON 2.0
+++++++++++++
 
 GraphSON 2.0 has been introduced to improve the format of the typed values from GraphSON 1.0. It provides non-Java
 centric types information in a consistent format.
@@ -682,19 +682,27 @@ A namespace gives the possibility for TinkerPop implementors to categorize custo
 and avoid collision with existing TinkerPop types. By default, TinkerPop types will have the
 namespace `g`.
 
-GraphSON 2.0 will provide type information for any value that is not String, Boolean, Map or Collection.
-This includes types for Graph objects as well. The current Graph object types provided by
-TinkerPop, and their respective typeIDs are :
+GraphSON 2.0 will provide type information for any value that is not `String`, `Boolean`, `Map` or `Collection`.
+TinkerPop includes types for graph elements:
 
-* Vertex -> "gremlin:vertex"
-* Edge -> "gremlin:edge"
-* VertexPropery -> "gremlin:vertexproperty"
-* Property -> "gremlin:property"
-* Path -> "gremlin:path"
-* Tree -> "gremlin:tree"
-* Graph -> "gremlin:graph"
-* Metrics -> "gremlin:metrics"
-* TraversalMetrics -> `gremlin:traversalmetrics"
+* Vertex -> "g:Vertex"
+* Edge -> "g:Edge"
+* VertexPropery -> "g:VertexProperty"
+* Property -> "g:Property"
+* Path -> "g:Path"
+* Tree -> "g:Tree"
+* Graph -> "g:Graph"
+* Metrics -> "g:Metrics"
+* TraversalMetrics -> `g:TraversalMetrics"
+
+GraphSON 2.0 can also be configured with "extended" types that build on top of the core types in the "g" namespace.
+The extended types are in the "gx" namespace as exposed by `GraphSONXModuleV2d0` and includes additional types like
+mappings to Java's `java.time.*` classes, `BigInteger`, `BigDecimal` and others. This module can be added when building
+a `GraphSONMapper` by calling the `addCustomModule()` method on the `Builder`.
+
+IMPORTANT: When using the extended type system in Gremlin Server, support for these types when used in the context of
+Gremlin Language Variants is dependent on the programming language, the driver and its serializers. These
+implementations are only required to support the core types and not the extended ones.
 
 Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
 
@@ -716,74 +724,69 @@ Here's a sample output:
 [source,json]
 ----
 {
-    "@type":"gremlin:vertex",
-    "@value":{
-        "id":{
-            "@type":"gremlin:int32",
-            "@value":1
-        },
-        "label":"person",
-        "properties":{
-            "name":[
-                {
-                    "@type":"gremlin:vertexproperty",
-                    "@value":{
-                        "id":{
-                            "@type":"gremlin:int64",
-                            "@value":0
-                        },
-                        "value":"marko",
-                        "label":"name"
-                    }
-                }
-            ],
-            "myUUIDprop":[
-                {
-                    "@type":"gremlin:vertexproperty",
-                    "@value":{
-                        "id":{
-                            "@type":"gremlin:int64",
-                            "@value":12
-                        },
-                        "value":{
-                            "@type":"gremlin:uuid",
-                            "@value":"02c1041b-c7ef-46ce-812e-3d7963ad50b3"
-                        },
-                        "label":"myUUIDprop"
-                    }
-                }
-            ],
-            "age":[
-                {
-                    "@type":"gremlin:vertexproperty",
-                    "@value":{
-                        "id":{
-                            "@type":"gremlin:int64",
-                            "@value":1
-                        },
-                        "value":{
-                            "@type":"gremlin:int32",
-                            "@value":29
-                        },
-                        "label":"age"
-                    }
-                }
-            ]
-        }
-    }
+	"@type": "g:Vertex",
+	"@value": {
+		"id": {
+			"@type": "g:Int32",
+			"@value": 1
+		},
+		"label": "person",
+		"properties": {
+			"name": [{
+				"@type": "g:VertexProperty",
+				"@value": {
+					"id": {
+						"@type": "g:Int64",
+						"@value": 0
+					},
+					"value": "marko",
+					"label": "name"
+				}
+			}],
+			"uuid": [{
+				"@type": "g:VertexProperty",
+				"@value": {
+					"id": {
+						"@type": "g:Int64",
+						"@value": 12
+					},
+					"value": {
+						"@type": "g:UUID",
+						"@value": "829c7ddb-3831-4687-a872-e25201230cd3"
+					},
+					"label": "uuid"
+				}
+			}],
+			"age": [{
+				"@type": "g:VertexProperty",
+				"@value": {
+					"id": {
+						"@type": "g:Int64",
+						"@value": 1
+					},
+					"value": {
+						"@type": "g:Int32",
+						"@value": 29
+					},
+					"label": "age"
+				}
+			}]
+		}
+	}
 }
 ----
 
-Here's how to disable types when creating a GraphSON 2.0 `Mapper`:
+Types can be disabled when creating a GraphSON 2.0 `Mapper` with:
 
-[gremlin-groovy]
+[source,groovy]
 ----
-mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).typeInfo(GraphSONMapper.TypeInfo.NO_TYPES).create()
+graph.io(graphson()).mapper().
+      version(GraphSONVersion.V2_0).
+      typeInfo(GraphSONMapper.TypeInfo.NO_TYPES).create()
 ----
 
-By disabling types, the JSON payload produced will be the same than GraphSON 2.0, without the
-extra information that is written for types. Please note, disabling types can be unsafe with
-regards to the written data.
+By disabling types, the JSON payload produced will lack the extra information that is written for types. Please note,
+disabling types can be unsafe with regards to the written data in that types can be lost.
 
 [[gryo-reader-writer]]
 Gryo Reader/Writer

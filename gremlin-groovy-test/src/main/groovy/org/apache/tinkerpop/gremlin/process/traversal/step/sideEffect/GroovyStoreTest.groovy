@@ -41,7 +41,7 @@ public abstract class GroovyStoreTest {
         }
 
         @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
+        public Traversal<Vertex, Set<String>> get_g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.withSideEffect('a'){[] as Set}.V.both.name.store('a').cap('a')");
         }
 

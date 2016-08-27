@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@org.junit.Ignore
 public class ScriptEngineLambdaTest {
 
     @Test

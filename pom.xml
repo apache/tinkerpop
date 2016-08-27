@@ -117,6 +117,7 @@ limitations under the License.
         <module>gremlin-groovy</module>
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
+        <module>gremlin-python</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
         <module>giraph-gremlin</module>
@@ -288,6 +289,7 @@ limitations under the License.
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
+                        <exclude>**/src/test/resources/META-INF/services/**</exclude>
                         <exclude>**/src/main/ext/**</exclude>
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
@@ -336,7 +338,8 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
+                            -Dis.testing=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
@@ -362,7 +365,7 @@ limitations under the License.
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
                                     -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
                                     -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
-                                    -Dbuild.dir=${project.build.directory}  -Dis.testing=true
+                                    -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
                             </configuration>
@@ -847,7 +850,8 @@ limitations under the License.
                                 <configuration>
                                     <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -867,9 +871,11 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console
+                                    </sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/the-gremlin-console
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -889,9 +895,11 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlin-language-variants</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlin-language-variants
+                                    </sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/gremlin-language-variants</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/gremlin-language-variants
+                                    </outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
@@ -1084,7 +1092,8 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                            <argLine>-Dlog4j.configuration=${log4j-silent.properties}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
@@ -1132,7 +1141,7 @@ limitations under the License.
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <os>
-                <family>windows</family>
+                    <family>windows</family>
                 </os>
             </activation>
             <build>
@@ -1160,7 +1169,10 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dhadoop.home.dir=${project.build.directory}/hadoop_home -Dis.testing=true</argLine>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties}
+                                -Dbuild.dir=${project.build.directory}
+                                -Dhadoop.home.dir=${project.build.directory}/hadoop_home -Dis.testing=true
+                            </argLine>
                         </configuration>
                     </plugin>
                 </plugins>

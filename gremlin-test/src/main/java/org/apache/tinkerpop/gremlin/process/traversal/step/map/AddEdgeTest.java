@@ -121,7 +121,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2.0d, edge.<Double>value("weight").doubleValue(),0.00001d);
+            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(), 0.00001d);
             assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 
@@ -142,7 +142,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2.0d, edge.<Double>value("weight").doubleValue(),0.00001d);
+            assertEquals(2.0d, edge.<Number>value("weight").doubleValue(), 0.00001d);
             assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 

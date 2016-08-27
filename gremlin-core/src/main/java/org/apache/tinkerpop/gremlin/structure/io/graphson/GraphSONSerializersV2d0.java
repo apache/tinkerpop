@@ -71,7 +71,7 @@ import static org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil.sa
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONSerializersV2d0 {
+class GraphSONSerializersV2d0 {
 
     private GraphSONSerializersV2d0() {
     }
@@ -416,34 +416,15 @@ public class GraphSONSerializersV2d0 {
 
     //////////////////////////// DESERIALIZERS ///////////////////////////
 
-    abstract static class AbstractGraphObjectDeserializer<T> extends StdDeserializer<T> {
 
-        protected AbstractGraphObjectDeserializer(Class<T> clazz) {
-            super(clazz);
-        }
-
-        @Override
-        public T deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-
-            jsonParser.nextToken();
-            // This will automatically parse all typed stuff.
-            final Map<String, Object> mapData = deserializationContext.readValue(jsonParser, Map.class);
-
-            return createObject(mapData);
-        }
-
-        abstract T createObject(Map<String, Object> data);
-    }
-
-
-    static class VertexJacksonDeserializer extends AbstractGraphObjectDeserializer<Vertex> {
+    static class VertexJacksonDeserializer extends AbstractObjectDeserializer<Vertex> {
 
         public VertexJacksonDeserializer() {
             super(Vertex.class);
         }
 
         @Override
-        Vertex createObject(final Map<String, Object> vertexData) {
+        public Vertex createObject(final Map<String, Object> vertexData) {
             return new DetachedVertex(
                     vertexData.get(GraphSONTokens.ID),
                     vertexData.get(GraphSONTokens.LABEL).toString(),
@@ -452,14 +433,14 @@ public class GraphSONSerializersV2d0 {
         }
     }
 
-    static class EdgeJacksonDeserializer extends AbstractGraphObjectDeserializer<Edge> {
+    static class EdgeJacksonDeserializer extends AbstractObjectDeserializer<Edge> {
 
         public EdgeJacksonDeserializer() {
             super(Edge.class);
         }
 
         @Override
-        Edge createObject(final Map<String, Object> edgeData) {
+        public Edge createObject(final Map<String, Object> edgeData) {
             return new DetachedEdge(
                     edgeData.get(GraphSONTokens.ID),
                     edgeData.get(GraphSONTokens.LABEL).toString(),
@@ -470,28 +451,28 @@ public class GraphSONSerializersV2d0 {
         }
     }
 
-    static class PropertyJacksonDeserializer extends AbstractGraphObjectDeserializer<Property> {
+    static class PropertyJacksonDeserializer extends AbstractObjectDeserializer<Property> {
 
         public PropertyJacksonDeserializer() {
             super(Property.class);
         }
 
         @Override
-        Property createObject(final Map<String, Object> propData) {
+        public Property createObject(final Map<String, Object> propData) {
             return new DetachedProperty(
                     (String) propData.get(GraphSONTokens.KEY),
                     propData.get(GraphSONTokens.VALUE));
         }
     }
 
-    static class PathJacksonDeserializer extends AbstractGraphObjectDeserializer<Path> {
+    static class PathJacksonDeserializer extends AbstractObjectDeserializer<Path> {
 
         public PathJacksonDeserializer() {
             super(Path.class);
         }
 
         @Override
-        Path createObject(final Map<String, Object> pathData) {
+        public Path createObject(final Map<String, Object> pathData) {
             final Path p = MutablePath.make();
 
             final List labels = (List) pathData.get(GraphSONTokens.LABELS);
@@ -504,14 +485,14 @@ public class GraphSONSerializersV2d0 {
         }
     }
 
-    static class VertexPropertyJacksonDeserializer extends AbstractGraphObjectDeserializer<VertexProperty> {
+    static class VertexPropertyJacksonDeserializer extends AbstractObjectDeserializer<VertexProperty> {
 
         protected VertexPropertyJacksonDeserializer() {
             super(VertexProperty.class);
         }
 
         @Override
-        VertexProperty createObject(final Map<String, Object> propData) {
+        public VertexProperty createObject(final Map<String, Object> propData) {
             return new DetachedVertexProperty(
                     propData.get(GraphSONTokens.ID),
                     (String) propData.get(GraphSONTokens.LABEL),
@@ -521,13 +502,13 @@ public class GraphSONSerializersV2d0 {
         }
     }
 
-    static class MetricsJacksonDeserializer extends AbstractGraphObjectDeserializer<Metrics> {
+    static class MetricsJacksonDeserializer extends AbstractObjectDeserializer<Metrics> {
         public MetricsJacksonDeserializer() {
             super(Metrics.class);
         }
 
         @Override
-        Metrics createObject(final Map<String, Object> metricsData) {
+        public Metrics createObject(final Map<String, Object> metricsData) {
             final MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
 
             m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
@@ -544,14 +525,14 @@ public class GraphSONSerializersV2d0 {
         }
     }
 
-    static class TraversalMetricsJacksonDeserializer extends AbstractGraphObjectDeserializer<TraversalMetrics> {
+    static class TraversalMetricsJacksonDeserializer extends AbstractObjectDeserializer<TraversalMetrics> {
 
         public TraversalMetricsJacksonDeserializer() {
             super(TraversalMetrics.class);
         }
 
         @Override
-        TraversalMetrics createObject(final Map<String, Object> traversalMetricsData) {
+        public TraversalMetrics createObject(final Map<String, Object> traversalMetricsData) {
             return new DefaultTraversalMetrics(
                     Math.round((Double) traversalMetricsData.get(GraphSONTokens.DURATION) * 1000000),
                     (List<MutableMetrics>) traversalMetricsData.get(GraphSONTokens.METRICS)

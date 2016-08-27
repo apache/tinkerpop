@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -117,6 +121,41 @@ public final class GryoSerializers {
         @Override
         public <I extends InputShim> Path read(final KryoShim<I, ?> kryo, final I input, final Class<Path> pathClass) {
             return (Path) kryo.readClassAndObject(input);
+        }
+    }
+
+    public final static class BytecodeSerializer implements SerializerShim<Bytecode> {
+        private static final GraphSONMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V2_0).create();
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
+            try {
+                output.writeString(mapper.createMapper().writeValueAsString(bytecode));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        @Override
+        public <I extends InputShim> Bytecode read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode> clazz) {
+            try {
+                return mapper.createMapper().readValue(input.readString(), Bytecode.class);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    public final static class DefaultRemoteTraverserSerializer implements SerializerShim<DefaultRemoteTraverser> {
+        @Override
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final DefaultRemoteTraverser remoteTraverser) {
+            kryo.writeClassAndObject(output, remoteTraverser.get());
+            output.writeLong(remoteTraverser.bulk());
+        }
+
+        @Override
+        public <I extends InputShim> DefaultRemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<DefaultRemoteTraverser> remoteTraverserClass) {
+            final Object o = kryo.readClassAndObject(input);
+            return new DefaultRemoteTraverser<>(o, input.readLong());
         }
     }
 }

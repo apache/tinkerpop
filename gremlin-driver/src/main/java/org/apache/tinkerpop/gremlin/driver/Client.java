@@ -20,12 +20,11 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.Serializer;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +146,26 @@ public abstract class Client {
      * An asynchronous version of {@link #submit(Traversal)}.
      */
     public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+    }
+
+    /**
+     * Submit a {@link Bytecode} to the server for remote execution.
+     */
+    public ResultSet submit(final Bytecode bytecode) {
+        try {
+            return submitAsync(bytecode).get();
+        } catch (UnsupportedOperationException uoe) {
+            throw uoe;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * An asynchronous version of {@link #submit(Traversal)}.
+     */
+    public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
     }
 
@@ -453,7 +472,15 @@ public abstract class Client {
          */
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
-            final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
+            final Iterator<Host> possibleHosts;
+            if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
+                // TODO: not sure what should be done if unavailable - select new host and re-submit traversal?
+                final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
+                msg.getArgs().remove(Tokens.ARGS_HOST);
+                possibleHosts = IteratorUtils.of(host);
+            } else {
+                possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
+            }
 
             // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
             // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
@@ -526,20 +553,27 @@ public abstract class Client {
         }
 
         @Override
-        public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-            final byte[] serializedTraversal;
+        public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
             try {
-                serializedTraversal = Serializer.serializeObject(traversal);
+                return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_BYTECODE)
+                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, bytecode)).create());
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
+        }
 
-            try {
-                return submitAsync(buildMessage(RequestMessage.build(Tokens.OPS_TRAVERSE)
-                        .processor("traversal").addArg(Tokens.ARGS_GREMLIN, serializedTraversal)).create());
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
+        @Override
+        public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+            final RequestMessage.Builder builder = RequestMessage.from(msg);
+            if (!aliases.isEmpty())
+                builder.addArg(Tokens.ARGS_ALIASES, aliases);
+
+            return super.submitAsync(builder.create());
+        }
+
+        @Override
+        public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
+            return submitAsync(traversal.asAdmin().getBytecode());
         }
 
         @Override
@@ -671,27 +705,14 @@ public abstract class Client {
      * Settings given to {@link Cluster#connect(Settings)} that configures how a {@link Client} will behave.
      */
     public static class Settings {
-        private final boolean unrollTraversers;
         private final Optional<SessionSettings> session;
 
         private Settings(final Builder builder) {
-            this.unrollTraversers = builder.unrollTraversers;
             this.session = builder.session;
         }
 
         public static Builder build() {
             return new Builder();
-        }
-
-        /**
-         * A request to Gremlin Server may return a {@link Traverser}. By default a {@link Traverser} is "unrolled"
-         * into an actual result on the client side. So, if the {@link Traverser} contained a {@link Vertex} then
-         * the {@link Vertex} would be extracted out of that {@link Traverser} for purposes of the result.  If this
-         * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
-         * and it will be up to the user to work with that component directly.
-         */
-        public boolean unrollTraversers() {
-            return unrollTraversers;
         }
 
         /**
@@ -703,22 +724,9 @@ public abstract class Client {
         }
 
         public static class Builder {
-            private boolean unrollTraversers = true;
             private Optional<SessionSettings> session = Optional.empty();
 
             private Builder() {}
-
-            /**
-             * A request to Gremlin Server may return a {@link Traverser}. By default a {@link Traverser} is "unrolled"
-             * into an actual result on the client side. So, if the {@link Traverser} contained a {@link Vertex} then
-             * the {@link Vertex} would be extracted out of that {@link Traverser} for purposes of the result.  If this
-             * values is instead set to {@code false} then the {@link ResultSet} will simply contain a {@link Traverser}
-             * and it will be up to the user to work with that component directly.
-             */
-            public Builder unrollTraversers(final boolean unrollTraversers) {
-                this.unrollTraversers = unrollTraversers;
-                return this;
-            }
 
             /**
              * Enables a session. By default this will create a random session name and configure transactions to be

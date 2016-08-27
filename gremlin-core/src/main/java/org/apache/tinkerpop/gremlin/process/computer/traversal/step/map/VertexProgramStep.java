@@ -64,7 +64,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
                 final Graph graph = this.getTraversal().getGraph().get();
-                future = this.generateComputer(graph).program(this.generateProgram(graph, EmptyMemory.instance())).submit();
+                future = this.getComputer().apply(graph).program(this.generateProgram(graph, EmptyMemory.instance())).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);

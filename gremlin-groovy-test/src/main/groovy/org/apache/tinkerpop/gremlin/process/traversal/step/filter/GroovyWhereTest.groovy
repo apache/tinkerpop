@@ -82,7 +82,7 @@ public abstract class GroovyWhereTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(final Object v1Id) {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out.aggregate('x').out.where(not(within('x')))", "v1Id", v1Id)
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).out.aggregate('x').out.where(P.not(within('x')))", "v1Id", v1Id)
         }
 
         @Override
@@ -108,7 +108,7 @@ public abstract class GroovyWhereTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(not(eq(0)))))).select('a','b')")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(P.not(eq(0)))))).select('a','b')")
         }
 
         @Override
@@ -124,7 +124,7 @@ public abstract class GroovyWhereTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').as('b').in('created').as('c').both('knows').both('knows').as('d').where('c',not(eq('a').or(eq('d')))).select('a','b','c','d')")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').as('b').in('created').as('c').both('knows').both('knows').as('d').where('c',P.not(eq('a').or(eq('d')))).select('a','b','c','d')")
         }
 
         @Override

@@ -30,7 +30,7 @@ public abstract class GroovySackTest {
     public static class Traversals extends SackTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_withSackXhellowX_V_outE_sackXassignX_byXlabelX_inV_sack() {
+        public Traversal<Vertex, String> get_g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack('hello').V.outE.sack(assign).by(label).inV.sack")
         }
 

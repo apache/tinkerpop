@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,17 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
      */
     public List<TraversalStrategy<?>> toList();
+
+    /**
+     * Return the {@link TraversalStrategy} instance associated with the provided class.
+     *
+     * @param traversalStrategyClass the class of the strategy to get
+     * @param <T>                    the strategy class type
+     * @return an optional containing the strategy instance or not
+     */
+    public default <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
+        return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
+    }
 
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.

@@ -107,6 +107,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX1_2X(final Object v1Id, final Object v2Id);
 
+    public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
@@ -404,6 +406,14 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("peter", "vadas"), traversal);
+    }
+
     private void assert_g_EX11X(final Object edgeId, final Traversal<Edge, Edge> traversal) {
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
@@ -536,6 +546,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasIdX1_2X(final Object v1Id, final Object v2Id) {
             return g.V().hasId(v1Id, v2Id);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name() {
+            return g.V().hasLabel("person").has("age", P.not(P.lte(10).and(P.not(P.between(11, 20)))).and(P.lt(29).or(P.eq(35)))).values("name");
         }
     }
 }

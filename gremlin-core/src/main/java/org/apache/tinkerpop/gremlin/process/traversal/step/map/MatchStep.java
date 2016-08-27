@@ -368,7 +368,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 boolean stop = false;
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     while (matchTraversal.hasNext()) { // TODO: perhaps make MatchStep a LocalBarrierStep ??
-                        this.standardAlgorithmBarrier.add(matchTraversal.getEndStep().next());
+                        this.standardAlgorithmBarrier.add(matchTraversal.nextTraverser());
                         if (null == this.keepLabels || this.standardAlgorithmBarrier.size() >= PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE) {
                             stop = true;
                             break;

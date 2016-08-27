@@ -42,11 +42,11 @@ public class RemoteGraphComputerProvider extends RemoteGraphProvider {
         final int state = RANDOM.nextInt(3);
         switch (state) {
             case 0:
-                return graph.traversal().withComputer();
+                return super.traversal(graph).withComputer();
             case 1:
-                return graph.traversal().withComputer(Computer.compute(TinkerGraphComputer.class));
+                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class));
             case 2:
-                return graph.traversal().withComputer(Computer.compute(TinkerGraphComputer.class).workers(1));
+                return super.traversal(graph).withComputer(Computer.compute(TinkerGraphComputer.class).workers(1));
             default:
                 throw new IllegalStateException("This state should not have occurred: " + state);
         }

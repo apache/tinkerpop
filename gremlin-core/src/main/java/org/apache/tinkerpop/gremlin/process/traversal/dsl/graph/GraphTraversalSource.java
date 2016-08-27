@@ -18,8 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -28,16 +33,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -51,8 +61,29 @@ import java.util.function.UnaryOperator;
  */
 public class GraphTraversalSource implements TraversalSource {
 
-    private final Graph graph;
-    private TraversalStrategies strategies;
+    protected final Graph graph;
+    protected TraversalStrategies strategies;
+    protected Bytecode bytecode = new Bytecode();
+
+    ////////////////
+
+    public static final class Symbols {
+
+        private Symbols() {
+            // static fields only
+        }
+
+        public static final String withBulk = "withBulk";
+        public static final String withPath = "withPath";
+
+    }
+
+    ////////////////
+
+    @Override
+    public Optional<Class> getAnonymousTraversalClass() {
+        return Optional.of(__.class);
+    }
 
     public GraphTraversalSource(final Graph graph, final TraversalStrategies traversalStrategies) {
         this.graph = graph;
@@ -61,12 +92,6 @@ public class GraphTraversalSource implements TraversalSource {
 
     public GraphTraversalSource(final Graph graph) {
         this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()));
-    }
-
-    private <S> GraphTraversal.Admin<S, S> generateTraversal() {
-        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(this.graph);
-        traversal.setStrategies(this.strategies);
-        return traversal;
     }
 
     @Override
@@ -79,11 +104,17 @@ public class GraphTraversalSource implements TraversalSource {
         return this.graph;
     }
 
+    @Override
+    public Bytecode getBytecode() {
+        return this.bytecode;
+    }
+
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public GraphTraversalSource clone() {
         try {
             final GraphTraversalSource clone = (GraphTraversalSource) super.clone();
             clone.strategies = this.strategies.clone();
+            clone.bytecode = this.bytecode.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -91,6 +122,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     //// CONFIGURATIONS
+
+    @Override
+    public GraphTraversalSource withBindings(final Bindings bindings) {
+        return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
+    }
 
     @Override
     public GraphTraversalSource withComputer(final Computer computer) {
@@ -179,19 +215,34 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     public GraphTraversalSource withBulk(final boolean useBulk) {
-        if (!useBulk) {
-            final GraphTraversalSource clone = this.clone();
-            RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.ONE_BULK);
-            return clone;
-        } else {
+        if (useBulk)
             return this;
-        }
+        final GraphTraversalSource clone = this.clone();
+        RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.ONE_BULK);
+        clone.bytecode.addSource(Symbols.withBulk, useBulk);
+        return clone;
     }
 
     public GraphTraversalSource withPath() {
         final GraphTraversalSource clone = this.clone();
-        RequirementsStrategy.addRequirements(clone.strategies, TraverserRequirement.PATH);
+        RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.PATH);
+        clone.bytecode.addSource(Symbols.withPath);
         return clone;
+    }
+
+    @Override
+    public GraphTraversalSource withRemote(final Configuration conf) {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(conf);
+    }
+
+    @Override
+    public GraphTraversalSource withRemote(final String configFile) throws Exception {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(configFile);
+    }
+
+    @Override
+    public GraphTraversalSource withRemote(final RemoteConnection connection) {
+        return (GraphTraversalSource) TraversalSource.super.withRemote(connection);
     }
 
     //// SPAWNS
@@ -201,33 +252,55 @@ public class GraphTraversalSource implements TraversalSource {
      */
     @Deprecated
     public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
-        traversal.addStep(new AddVertexStartStep(traversal, null));
-        ((AddVertexStartStep) traversal.getEndStep()).addPropertyMutations(keyValues);
-        return traversal;
+        if (keyValues.length != 0 && keyValues[0].equals(T.label)) {
+            final GraphTraversal<Vertex, Vertex> traversal = this.addV(keyValues[1].toString());
+            this.addV(keyValues[1].toString());
+            for (int i = 2; i < keyValues.length; i = i + 2) {
+                traversal.property(keyValues[i], keyValues[i + 1]);
+            }
+            return traversal;
+        } else {
+            final GraphTraversal<Vertex, Vertex> traversal = this.addV();
+            this.addV(keyValues[1].toString());
+            for (int i = 0; i < keyValues.length; i = i + 2) {
+                traversal.property(keyValues[i], keyValues[i + 1]);
+            }
+            return traversal;
+        }
     }
 
     public GraphTraversal<Vertex, Vertex> addV(final String label) {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.addV, label);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, label));
     }
 
     public GraphTraversal<Vertex, Vertex> addV() {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.addV);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, null));
     }
 
     public <S> GraphTraversal<S, S> inject(S... starts) {
-        return (GraphTraversal<S, S>) this.generateTraversal().inject(starts);
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.inject, starts);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new InjectStep<S>(traversal, starts));
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.V, vertexIds);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
     }
 
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
-        final GraphTraversal.Admin<Edge, Edge> traversal = this.generateTraversal();
+        final GraphTraversalSource clone = this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.E, edgesIds);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
     }
 

@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.util;
 
+import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -27,6 +29,10 @@ import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -60,8 +66,8 @@ public class CustomId {
         return cluster + ":" + elementId;
     }
 
-    public static class CustomIdJacksonSerializer extends StdSerializer<CustomId> {
-        public CustomIdJacksonSerializer() {
+    public static class CustomIdJacksonSerializerV1d0 extends StdSerializer<CustomId> {
+        public CustomIdJacksonSerializerV1d0() {
             super(CustomId.class);
         }
 
@@ -86,6 +92,71 @@ public class CustomId {
             jsonGenerator.writeStringField("cluster", customId.getCluster());
             jsonGenerator.writeObjectField("elementId", customId.getElementId());
             jsonGenerator.writeEndObject();
+        }
+    }
+
+    public static class CustomIdJacksonSerializerV2d0 extends StdSerializer<CustomId> {
+        public CustomIdJacksonSerializerV2d0() {
+            super(CustomId.class);
+        }
+
+        @Override
+        public void serialize(final CustomId customId, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException, JsonGenerationException {
+            // when types are not embedded, stringify or resort to JSON primitive representations of the
+            // type so that non-jvm languages can better interoperate with the TinkerPop stack.
+            jsonGenerator.writeString(customId.toString());
+        }
+
+        @Override
+        public void serializeWithType(final CustomId customId, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+            // when the type is included add "class" as a key and then try to utilize as much of the
+            // default serialization provided by jackson data-bind as possible.  for example, write
+            // the uuid as an object so that when jackson serializes it, it uses the uuid serializer
+            // to write it out with the type.  in this way, data-bind should be able to deserialize
+            // it back when types are embedded.
+            typeSerializer.writeTypePrefixForScalar(customId, jsonGenerator);
+            final Map<String, Object> m = new HashMap<>();
+            m.put("cluster", customId.getCluster());
+            m.put("elementId", customId.getElementId());
+            jsonGenerator.writeObject(m);
+            typeSerializer.writeTypeSuffixForScalar(customId, jsonGenerator);
+        }
+    }
+
+    public static class CustomIdJacksonDeserializerV2d0 extends AbstractObjectDeserializer<CustomId> {
+        public CustomIdJacksonDeserializerV2d0() {
+            super(CustomId.class);
+        }
+
+        @Override
+        public CustomId createObject(final Map data) {
+            return new CustomId((String) data.get("cluster"), (UUID) data.get("elementId"));
+        }
+    }
+
+    public static class CustomIdTinkerPopJacksonModule extends TinkerPopJacksonModule {
+
+        private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
+                new LinkedHashMap<Class, String>() {{
+                    put(CustomId.class, "id");
+                }});
+
+        public CustomIdTinkerPopJacksonModule() {
+            super("custom");
+            addSerializer(CustomId.class, new CustomIdJacksonSerializerV2d0());
+            addDeserializer(CustomId.class, new CustomIdJacksonDeserializerV2d0());
+        }
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            return TYPE_DEFINITIONS;
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            return "simple";
         }
     }
 }

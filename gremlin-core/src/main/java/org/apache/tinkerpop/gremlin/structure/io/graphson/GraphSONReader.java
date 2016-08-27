@@ -71,6 +71,7 @@ import java.util.stream.Stream;
 public final class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
+    private final GraphSONVersion version;
     private boolean unwrapAdjacencyList = false;
 
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
@@ -80,6 +81,7 @@ public final class GraphSONReader implements GraphReader {
         mapper = builder.mapper.createMapper();
         batchSize = builder.batchSize;
         unwrapAdjacencyList = builder.unwrapAdjacencyList;
+        version = ((GraphSONMapper)builder.mapper).getVersion();
     }
 
     /**
@@ -191,17 +193,21 @@ public final class GraphSONReader implements GraphReader {
      */
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
-        final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
+        if (version == GraphSONVersion.V1_0) {
+            final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
 
-        final Map<String,Object> edgeProperties = edgeData.containsKey(GraphSONTokens.PROPERTIES) ?
-                (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES) : Collections.EMPTY_MAP;
-        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
-                edgeData.get(GraphSONTokens.LABEL).toString(),
-                edgeProperties,
-                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
+            final Map<String, Object> edgeProperties = edgeData.containsKey(GraphSONTokens.PROPERTIES) ?
+                    (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES) : Collections.EMPTY_MAP;
+            final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
+                    edgeData.get(GraphSONTokens.LABEL).toString(),
+                    edgeProperties,
+                    Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
+                    Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
-        return edgeAttachMethod.apply(edge);
+            return edgeAttachMethod.apply(edge);
+        } else {
+            return edgeAttachMethod.apply((DetachedEdge) mapper.readValue(inputStream, Edge.class));
+        }
     }
 
     /**
@@ -217,12 +223,16 @@ public final class GraphSONReader implements GraphReader {
     @Override
     public VertexProperty readVertexProperty(final InputStream inputStream,
                                              final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
-        final Map<String, Object> vpData = mapper.readValue(inputStream, mapTypeReference);
-        final Map<String, Object> metaProperties = (Map<String, Object>) vpData.get(GraphSONTokens.PROPERTIES);
-        final DetachedVertexProperty vp = new DetachedVertexProperty(vpData.get(GraphSONTokens.ID),
-                vpData.get(GraphSONTokens.LABEL).toString(),
-                vpData.get(GraphSONTokens.VALUE), metaProperties);
-        return vertexPropertyAttachMethod.apply(vp);
+        if (version == GraphSONVersion.V1_0) {
+            final Map<String, Object> vpData = mapper.readValue(inputStream, mapTypeReference);
+            final Map<String, Object> metaProperties = (Map<String, Object>) vpData.get(GraphSONTokens.PROPERTIES);
+            final DetachedVertexProperty vp = new DetachedVertexProperty(vpData.get(GraphSONTokens.ID),
+                    vpData.get(GraphSONTokens.LABEL).toString(),
+                    vpData.get(GraphSONTokens.VALUE), metaProperties);
+            return vertexPropertyAttachMethod.apply(vp);
+        } else {
+            return vertexPropertyAttachMethod.apply((DetachedVertexProperty) mapper.readValue(inputStream, VertexProperty.class));
+        }
     }
 
     /**
@@ -236,9 +246,13 @@ public final class GraphSONReader implements GraphReader {
     @Override
     public Property readProperty(final InputStream inputStream,
                                  final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
-        final Map<String, Object> propertyData = mapper.readValue(inputStream, mapTypeReference);
-        final DetachedProperty p = new DetachedProperty(propertyData.get(GraphSONTokens.KEY).toString(), propertyData.get(GraphSONTokens.VALUE));
-        return propertyAttachMethod.apply(p);
+        if (version == GraphSONVersion.V1_0) {
+            final Map<String, Object> propertyData = mapper.readValue(inputStream, mapTypeReference);
+            final DetachedProperty p = new DetachedProperty(propertyData.get(GraphSONTokens.KEY).toString(), propertyData.get(GraphSONTokens.VALUE));
+            return propertyAttachMethod.apply(p);
+        } else {
+            return propertyAttachMethod.apply((DetachedProperty) mapper.readValue(inputStream, Property.class));
+        }
     }
 
     /**

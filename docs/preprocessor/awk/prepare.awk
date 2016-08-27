@@ -32,11 +32,11 @@ function print_string(string) {
 }
 
 function transform_callouts(code) {
-  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, " //// \\1", "", code)
+  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, " //// \\1", "g", code)
 }
 
 function remove_callouts(code) {
-  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, "", "", code)
+  return gensub(/\s*((<[0-9]+>\s*)*<[0-9]+>)\s*$/, "", "g", code)
 }
 
 /^----$/ {

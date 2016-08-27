@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
+import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -43,7 +43,7 @@ public final class ScriptEngineLambda implements Function, Supplier, Consumer, P
     protected final String script;
 
     public ScriptEngineLambda(final String engineName, final String script) {
-        this.engine = ScriptEngineCache.get(engineName);
+        this.engine = SingleGremlinScriptEngineManager.get(engineName);
         this.script = script;
     }
 

@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -45,8 +47,9 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     }};
 
     private static GremlinServer server;
-    private final Map<String,RemoteGraph> remoteCache = new HashMap<>();
+    private final Map<String, RemoteGraph> remoteCache = new HashMap<>();
     private final Cluster cluster = Cluster.open();
+    //private final Cluster cluster = Cluster.build().maxContentLength(1024000).serializer(Serializers.GRAPHSON_V2D0).create();
     private final Client client = cluster.connect();
 
     static {
@@ -59,7 +62,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
 
     @Override
     public Graph openTestGraph(final Configuration config) {
-        final String serverGraphName = config.getString(DriverRemoteConnection.GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME);
+        final String serverGraphName = config.getString(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME);
         return remoteCache.computeIfAbsent(serverGraphName,
                 k -> RemoteGraph.open(new DriverRemoteConnection(cluster, config)));
     }
@@ -73,7 +76,7 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, RemoteGraph.class.getName());
             put(RemoteGraph.GREMLIN_REMOTE_GRAPH_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
-            put(DriverRemoteConnection.GREMLIN_REMOTE_GRAPH_DRIVER_GRAPHNAME, serverGraphName);
+            put(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g" + serverGraphName);
             put("hidden.for.testing.only", graphGetter);
         }};
     }
@@ -82,9 +85,9 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         // doesn't bother to clear grateful because i don't believe that ever gets mutated - read-only
         client.submit("classic.clear();modern.clear();crew.clear();graph.clear();" +
-                    "TinkerFactory.generateClassic(classic);" +
-                    "TinkerFactory.generateModern(modern);" +
-                    "TinkerFactory.generateTheCrew(crew);null").all().get();
+                "TinkerFactory.generateClassic(classic);" +
+                "TinkerFactory.generateModern(modern);" +
+                "TinkerFactory.generateTheCrew(crew);null").all().get();
     }
 
     @Override
@@ -97,10 +100,24 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
         return IMPLEMENTATION;
     }
 
+    @Override
+    public GraphTraversalSource traversal(final Graph graph) {
+        // ensure that traversal is created using withRemote() rather than just using RemoteGraph. withRemote() is
+        // the appropriate way for users to create a remote traversal. RemoteGraph has been deprecated for users
+        // concerns and will be likely relegated to the test module so that OptOut can continue to work and we can
+        // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
+        // moved with breaking change.
+        return super.traversal(graph).withRemote(((RemoteGraph) graph).getConnection());
+    }
+
     public static void startServer() throws Exception {
         final InputStream stream = RemoteGraphProvider.class.getResourceAsStream("gremlin-server-integration.yaml");
         final Settings settings = Settings.read(stream);
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
+
+        settings.maxContentLength = 1024000;
+        settings.maxChunkSize =1024000;
+
         server = new GremlinServer(settings);
 
         server.start().join();

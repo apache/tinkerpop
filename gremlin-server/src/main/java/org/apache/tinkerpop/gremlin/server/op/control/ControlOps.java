@@ -37,7 +37,9 @@ import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As for release 3.2.2, not replaced as this feature was never really published as official.
  */
+@Deprecated
 class ControlOps {
     private static final Logger logger = LoggerFactory.getLogger(ControlOps.class);
 

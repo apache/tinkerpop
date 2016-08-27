@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,19 @@ public final class OpLoader {
 
             processors.put(name, op);
         });
+    }
+
+    private static volatile boolean initialized = false;
+
+    /**
+     * Initialize the {@code OpLoader} with server settings. This method should only be called once at startup but is
+     * designed to be idempotent.
+     */
+    public static synchronized void init(final Settings settings) {
+        if (!initialized) {
+            processors.values().forEach(processor -> processor.init(settings));
+            initialized = true;
+        }
     }
 
     /**

@@ -614,7 +614,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXa_bX_out_asXcX_selectXkeysX() {
+    public void g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
         final Traversal<Vertex, Collection<Set<String>>> traversal = get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
         int counter = 0;
         while (traversal.hasNext()) {

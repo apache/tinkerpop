@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public final class OrP<V> extends ConnectiveP<V> {
 
     @Override
     public String toString() {
-        return "or(" + this.predicates + ")";
+        return "or(" + StringFactory.removeEndBrackets(this.predicates) + ")";
     }
 
     @Override

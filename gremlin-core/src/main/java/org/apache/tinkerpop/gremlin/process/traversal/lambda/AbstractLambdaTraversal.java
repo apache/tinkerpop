@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -46,6 +47,10 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     public List<Step> getSteps() {
         return Collections.emptyList();
+    }
+
+    public Bytecode getBytecode() {
+        return new Bytecode();
     }
 
     @Override

@@ -24,13 +24,14 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -177,6 +178,10 @@ public final class StringFactory {
         return traversalStrategy.getClass().getSimpleName();
     }
 
+    public static String translatorString(final Translator translator) {
+        return "translator[" + translator.getTraversalSource() + ":" + translator.getTargetLanguage() + "]";
+    }
+
     public static String vertexProgramString(final VertexProgram vertexProgram, final String internalString) {
         return vertexProgram.getClass().getSimpleName() + L_BRACKET + internalString + R_BRACKET;
     }
@@ -238,6 +243,11 @@ public final class StringFactory {
 
     public static String storageString(final String internalString) {
         return STORAGE + L_BRACKET + internalString + R_BRACKET;
+    }
+
+    public static String removeEndBrackets(final Collection collection) {
+        final String string = collection.toString();
+        return string.substring(1, string.length() - 1);
     }
 
 }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -192,6 +193,8 @@ public class GraphSONTypeSerializer extends TypeSerializer {
             return Property.class;
         } else if (ByteBuffer.class.isAssignableFrom(c)) {
             return ByteBuffer.class;
+        } else if (Traverser.class.isAssignableFrom(c)) {
+            return Traverser.class;
         }
         return c;
     }
