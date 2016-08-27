@@ -202,7 +202,7 @@ class Console {
                     final Object object = this.tempIterator.next()
                     String prompt = Colorizer.render(Preferences.resultPromptColor, buildResultPrompt())
                     String colorizedResult = colorizeResult(object)
-                    io.out.println(prompt + ((null == object) ? emptyResult : colorizedResult))
+                    io.out.println(prompt + ((null == object) ? Preferences.emptyResult : colorizedResult))
                     counter++;
                 }
                 if (this.tempIterator.hasNext())
@@ -250,7 +250,7 @@ class Console {
                         io.out.println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
-                        io.out.println(Colorizer.render(Preferences.resultPromptColor,buildResultPrompt()).toString() + ((null == result) ? emptyResult : colorizeResult(result)))
+                        io.out.println(Colorizer.render(Preferences.resultPromptColor,buildResultPrompt()).toString() + ((null == result) ? Preferences.emptyResult : colorizeResult(result)))
                         return null
                     }
                 } catch (final Exception e) {
