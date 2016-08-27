@@ -38,7 +38,7 @@ GraphSON 2.0
 GraphSON 2.0 has been introduced to improve and normalize the format of types embedded in GraphSON.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
-link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2-0-types[Reference Documentation -
+link:http://tinkerpop.apache.org/docs/3.2.2/reference/#graphson-2-0-types[Reference Documentation -
 GraphSON 2.0].
 
 Log4j Dependencies
@@ -63,35 +63,36 @@ and overridden as needed.
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-1373[TINKERPOP-1373]
 
-New Console Preferences
-^^^^^^^^^^^^^^^^^^^^^^^
+New Console Features
+^^^^^^^^^^^^^^^^^^^^
 
-Colors
+The Gremlin Console can now have its text colorized. For example, you can set the color of the Gremlin ascii art to
+the more natural color of green by using the `:set` command:
 
-* gremlin.color
-* info.color
-* error.color
-* input.prompt.color
-* result.prompt.color
-* vertex.color
-* edge.color
-* string.color
-* number.color
-* T.color (e.g. id, label)
+[source,text]
+gremlin> :set gremlin.color green
 
-Prompts
+It is also possible to colorize results, like vertices, edges, and other common returns. Please see the
+link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[reference documentation] for more details
+on all the settings.
 
-* input.prompt
-* result.prompt
-* empty.result.indicator
+The console also now includes better multi-line support:
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037]
+[source,text]
+----
+gremlin> g.V().out().
+......1>       has('name','josh').
+......2>       out('created')
+==>v[5]
+==>v[3]
+----
 
+This is a nice feature in that it can help you understand if a line is incomplete and unevaluated.
 
-Added multi-line indicator.
-
-See: https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1285]
-
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1285],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037],
+link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[Reference Documentation -
+Console Preferences]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -134,7 +135,7 @@ languages can then implement their own mapping of the GraphSON's language agnost
 to the appropriate representation for the driver's language.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1274[TINKERPOP-1274],
-link:http://tinkerpop.apache.org/docs/3.2.1-incubating/reference/#graphson-2.0-types[Reference Documentation -
+link:http://tinkerpop.apache.org/docs/3.2.2/reference/#graphson-2.0-types[Reference Documentation -
 GraphSON 2.0].
 
 Traversal Serialization

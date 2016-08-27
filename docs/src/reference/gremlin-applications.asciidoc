@@ -150,6 +150,7 @@ some other useful operations.  The following table outlines the most commonly us
 |:submit |:> |Submit Gremlin to the currently active context defined by `:remote`.
 |=========================================================
 
+[[console-preferences]]
 Console Preferences
 ~~~~~~~~~~~~~~~~~~~
 
