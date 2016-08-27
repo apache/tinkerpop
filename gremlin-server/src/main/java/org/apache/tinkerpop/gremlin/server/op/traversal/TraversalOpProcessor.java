@@ -175,8 +175,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                 op = context -> {
                     final RequestMessage msg = context.getRequestMessage();
-                    logger.debug("Close request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
-
                     final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
                     final TraversalSideEffects sideEffects = cache.getIfPresent(sideEffect.get());
 
