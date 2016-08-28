@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
@@ -41,7 +42,9 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
 
     private final PythonTranslator pythonTranslator;
     private final JavaTranslator<S, T> javaTranslator;
-    private final GraphSONReader reader = GraphSONReader.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).create()).create();
+    private final GraphSONReader reader = GraphSONReader.build().mapper(
+            GraphSONMapper.build().addCustomModule(GraphSONXModuleV2d0.build().create(false))
+                                  .version(GraphSONVersion.V2_0).create()).create();
 
     public PythonGraphSONJavaTranslator(final PythonTranslator pythonTranslator, final JavaTranslator<S, T> javaTranslator) {
         this.pythonTranslator = pythonTranslator;
