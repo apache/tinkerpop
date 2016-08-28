@@ -107,7 +107,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     private static Cache<UUID, TraversalSideEffects> cache = null;
 
     public TraversalOpProcessor() {
-        super(true);
+        super(false);
     }
 
     @Override
@@ -367,9 +367,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         // compile the traversal - without it getEndStep() has nothing in it
                         traversal.applyStrategies();
                         handleIterator(context, new TraversalIterator(traversal));
-
-                        if (!traversal.getSideEffects().isEmpty())
-                            cache.put(msg.getRequestId(), traversal.getSideEffects());
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
@@ -398,6 +395,13 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException("Could not iterate the Traversal instance",
                     ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
         }
+    }
+
+    @Override
+    protected void iterateComplete(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
+        final Traversal.Admin traversal = ((TraversalIterator) itty).getTraversal();
+        if (!traversal.getSideEffects().isEmpty())
+            cache.put(msg.getRequestId(), traversal.getSideEffects());
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {

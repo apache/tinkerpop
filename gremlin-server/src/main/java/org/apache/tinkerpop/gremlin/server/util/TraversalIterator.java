@@ -30,15 +30,21 @@ import java.util.Iterator;
  */
 public class TraversalIterator implements Iterator<Object> {
 
+    private final Traversal.Admin traversal;
     private final Iterator<Object> traversalIterator;
     private final HaltedTraverserStrategy haltedTraverserStrategy;
 
     public TraversalIterator(final Traversal.Admin traversal) {
+        this.traversal = traversal;
         this.traversalIterator = traversal.getEndStep();
         this.haltedTraverserStrategy = traversal.getStrategies().getStrategy(HaltedTraverserStrategy.class).orElse(
                 Boolean.valueOf(System.getProperty("is.testing", "false")) ?
                         HaltedTraverserStrategy.detached() :
                         HaltedTraverserStrategy.reference());
+    }
+
+    public Traversal.Admin getTraversal() {
+        return traversal;
     }
 
     @Override

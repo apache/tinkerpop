@@ -179,6 +179,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                         throw ex;
                     }
 
+                    iterateComplete(ctx, msg, itty);
+
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
                     // required then it will be 100% complete before the client receives it. the "frame" at this point
                     // should have completely detached objects from the transaction (i.e. serialization has occurred)
@@ -208,6 +210,15 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         }
 
         stopWatch.stop();
+    }
+
+    /**
+     * Called when iteration within {@link #handleIterator(Context, Iterator)} is on its final pass and the final
+     * frame is about to be sent back to the client. This method only gets called on successful iteration of the
+     * entire result.
+     */
+    protected void iterateComplete(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
+        // do nothing by default
     }
 
     /**
