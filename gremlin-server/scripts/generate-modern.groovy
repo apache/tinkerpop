@@ -25,7 +25,7 @@ def globals = [:]
 globals << [hook : [
   onStartUp: { ctx ->
     ctx.logger.info("Loading 'modern' graph data.")
-    TinkerFactory.generateModern(graph)
+      org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.generateModern(graph)
   }
 ] as LifeCycleHook]
 

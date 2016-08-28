@@ -247,6 +247,7 @@
                 </property>
             </activation>
             <build>
+
                 <!-- don't exclude any tests as python is assumed to be installed on this system -->
                 <plugins>
                     <plugin>
@@ -366,6 +367,90 @@
                                             <arg value="test"/>
                                         </exec>
                                     </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <version>1.2</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>${groovy.version}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>log4j</groupId>
+                                <artifactId>log4j</artifactId>
+                                <version>1.2.17</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>gremlin-server-start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+import org.apache.tinkerpop.gremlin.server.Settings
+import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
+
+log.info("Starting Gremlin Server instances for native testing of gremlin-python")
+def settings = Settings.read("${project.parent.basedir}/gremlin-server/conf/gremlin-server-modern-py.yaml")
+settings.graphs.graph = "${project.parent.basedir}/gremlin-server/conf/tinkergraph-empty.properties"
+settings.scriptEngines["gremlin-groovy"].scripts = ["${project.parent.basedir}/gremlin-server/scripts/generate-modern.groovy"]
+
+def server = new GremlinServer(settings)
+server.start().join()
+
+project.setContextValue("gremlin.py.server", server)
+log.info("Gremlin Server with no authentication started on port 8182")
+
+def settingsSecure = Settings.read("${project.parent.basedir}/gremlin-server/conf/gremlin-server-modern-py.yaml")
+settingsSecure.graphs.graph = "${project.parent.basedir}/gremlin-server/conf/tinkergraph-empty.properties"
+settingsSecure.scriptEngines["gremlin-groovy"].scripts = ["${project.parent.basedir}/gremlin-server/scripts/generate-modern.groovy"]
+settingsSecure.port = 8183
+settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
+settingsSecure.authentication.config = [credentialsDb: "${project.parent.basedir}/gremlin-server/conf/tinkergraph-credentials.properties"]
+
+def serverSecure = new GremlinServer(settingsSecure)
+serverSecure.start().join()
+
+project.setContextValue("gremlin.py.server.secure", serverSecure)
+log.info("Gremlin Server with authentication started on port 8183")
+]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>gremlin-server-stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+import org.apache.tinkerpop.gremlin.server.GremlinServer
+
+log.info("Tests for native gremlin-python complete - shutting down Gremlin Server")
+project.getContextValue("gremlin.py.server").stop().join()
+project.getContextValue("gremlin.py.server.secure").stop().join()
+log.info("Gremlin Server shutdown")
+]]>
+                                        </script>
+                                    </scripts>
                                 </configuration>
                             </execution>
                         </executions>
