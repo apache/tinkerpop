@@ -399,9 +399,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     @Override
     protected void iterateComplete(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
-        final Traversal.Admin traversal = ((TraversalIterator) itty).getTraversal();
-        if (!traversal.getSideEffects().isEmpty())
-            cache.put(msg.getRequestId(), traversal.getSideEffects());
+        if (itty instanceof TraversalIterator) {
+            final Traversal.Admin traversal = ((TraversalIterator) itty).getTraversal();
+            if (!traversal.getSideEffects().isEmpty()) {
+                cache.put(msg.getRequestId(), traversal.getSideEffects());
+            }
+        }
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {
