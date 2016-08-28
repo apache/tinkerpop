@@ -72,6 +72,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,10 +81,12 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeat
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -232,6 +235,8 @@ public class IoTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
         public void shouldProperlyEncodeWithGraphML() throws Exception {
+            assumeThat("GraphML web site is down so XSD cannot be retrieved", is(isGraphMLXSDPresent()));
+
             final Vertex v = graph.addVertex(T.id, "1");
             v.property(VertexProperty.Cardinality.single, "text", "\u00E9");
 
@@ -285,6 +290,17 @@ public class IoTest {
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
             assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
+        }
+
+        private boolean isGraphMLXSDPresent() {
+            // when the graphml website goes down then tests won't pass - this allows the tests that rely on this
+            // resource to conditionally run
+            try {
+                new URL("http://graphml.graphdrawing.org/xmlns/1.1/graphml-structure.xsd").openConnection().connect();
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
         }
     }
 
