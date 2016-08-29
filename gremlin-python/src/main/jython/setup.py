@@ -43,17 +43,6 @@ import __version__
 
 version = __version__.version
 
-class PyTest(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
-    def run(self):
-        import sys,subprocess
-        errno = subprocess.call([sys.executable, 'runtest.py'])
-        raise SystemExit(errno)
-
 setup(
     name='gremlinpython',
     version=version,
@@ -63,7 +52,6 @@ setup(
     description='Gremlin-Python for Apache TinkerPop',
     long_description=open("README").read(),
     test_suite="tests",
-    cmdclass = {'test': PyTest},
     setup_requires=[
         'pytest-runner',
     ],
