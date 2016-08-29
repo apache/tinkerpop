@@ -108,7 +108,8 @@
                             <mainClass>org.apache.tinkerpop.gremlin.python.GenerateGremlinPython</mainClass>
                             <arguments>
                                 <argument>${basedir}/src/main/jython/gremlin_python/process/traversal.py</argument>
-                                <argument>${basedir}/src/main/jython/gremlin_python/process/graph_traversal.py</argument>
+                                <argument>${basedir}/src/main/jython/gremlin_python/process/graph_traversal.py
+                                </argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -149,6 +150,7 @@
                 </executions>
                 <configuration>
                     <filesets>
+                        <!-- SOURCE DIRECTORIES -->
                         <fileset>
                             <directory>${basedir}/src/main/jython/gremlin_python</directory>
                             <includes>
@@ -195,6 +197,62 @@
                         </fileset>
                         <fileset>
                             <directory>${basedir}/src/main/jython/gremlin_python/structure/io</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <!-- TEST DIRECTORIES -->
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/driver</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/process</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/structure</directory>
+                            <includes>
+                                <include>**/*.pyc</include>
+                                <include>**/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*.py</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/src/main/jython/tests/structure/io</directory>
                             <includes>
                                 <include>**/*.pyc</include>
                                 <include>**/*.class</include>
