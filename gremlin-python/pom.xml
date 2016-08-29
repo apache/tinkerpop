@@ -75,6 +75,7 @@
         <!-- provide a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
+        <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -405,9 +406,9 @@ import org.apache.tinkerpop.gremlin.server.Settings
 import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
 
 log.info("Starting Gremlin Server instances for native testing of gremlin-python")
-def settings = Settings.read("${project.parent.basedir}/gremlin-server/conf/gremlin-server-modern-py.yaml")
-settings.graphs.graph = "${project.parent.basedir}/gremlin-server/conf/tinkergraph-empty.properties"
-settings.scriptEngines["gremlin-groovy"].scripts = ["${project.parent.basedir}/gremlin-server/scripts/generate-modern.groovy"]
+def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
+settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settings.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
 
 def server = new GremlinServer(settings)
 server.start().join()
@@ -415,12 +416,12 @@ server.start().join()
 project.setContextValue("gremlin.py.server", server)
 log.info("Gremlin Server with no authentication started on port 8182")
 
-def settingsSecure = Settings.read("${project.parent.basedir}/gremlin-server/conf/gremlin-server-modern-py.yaml")
-settingsSecure.graphs.graph = "${project.parent.basedir}/gremlin-server/conf/tinkergraph-empty.properties"
-settingsSecure.scriptEngines["gremlin-groovy"].scripts = ["${project.parent.basedir}/gremlin-server/scripts/generate-modern.groovy"]
+def settingsSecure = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
+settingsSecure.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
+settingsSecure.scriptEngines["gremlin-groovy"].scripts = ["${gremlin.server.dir}/scripts/generate-modern.groovy"]
 settingsSecure.port = 8183
 settingsSecure.authentication.className = "org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator"
-settingsSecure.authentication.config = [credentialsDb: "${project.parent.basedir}/gremlin-server/conf/tinkergraph-credentials.properties"]
+settingsSecure.authentication.config = [credentialsDb: "${gremlin.server.dir}/conf/tinkergraph-credentials.properties"]
 
 def serverSecure = new GremlinServer(settingsSecure)
 serverSecure.start().join()
