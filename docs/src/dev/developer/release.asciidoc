@@ -54,8 +54,8 @@ during this period.
 ... All tickets categorized by having a "Component" assigned.
 ... All tickets are either of type "Bug" or "Enhancement".
 ... All tickets where work was completed are "Closed"
-.... Search for "closed the pull request" in comments for hints on possible tickets that were left open by mistake).
-.... Look for tickets marked as "Resolved" (some users might not have rights to mark as "Closed" - convert these to "Closed".
+.... Search for "closed the pull request" in comments for hints on possible tickets that were left open by mistake.
+.... Look for tickets marked as "Resolved" as some users might not have rights to mark as "Closed" - convert these to "Closed".
 ... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).

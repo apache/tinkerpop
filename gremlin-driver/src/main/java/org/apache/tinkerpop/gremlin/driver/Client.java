@@ -687,6 +687,7 @@ public abstract class Client {
             // chooses an available host at random
             final List<Host> hosts = cluster.allHosts()
                     .stream().filter(Host::isAvailable).collect(Collectors.toList());
+            if (hosts.isEmpty()) throw new IllegalStateException("No available host in the cluster");
             Collections.shuffle(hosts);
             final Host host = hosts.get(0);
             connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
