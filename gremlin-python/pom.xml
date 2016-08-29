@@ -323,9 +323,8 @@
                                 <configuration>
                                     <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                                     <libraries>
-                                        <param>aenum</param>
-                                        <param>requests</param>
-                                        <param>tornado</param>
+                                        <param>aenum==1.4.5</param>
+                                        <param>tornado==4.4.1</param>
                                     </libraries>
                                 </configuration>
                             </execution>
