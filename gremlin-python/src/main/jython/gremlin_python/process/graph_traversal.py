@@ -89,9 +89,9 @@ class GraphTraversal(Traversal):
     Traversal.__init__(self, graph, traversal_strategies, bytecode)
   def __getitem__(self, index):
     if isinstance(index, int):
-        return self.range(index, index + 1)
+        return self.range(long(index), long(index + 1))
     elif isinstance(index, slice):
-        return self.range(0 if index.start is None else index.start, sys.maxint if index.stop is None else index.stop)
+        return self.range(0L if index.start is None else long(index.start), long(sys.maxint) if index.stop is None else long(index.stop))
     else:
         raise TypeError("Index must be int or slice")
   def __getattr__(self, key):

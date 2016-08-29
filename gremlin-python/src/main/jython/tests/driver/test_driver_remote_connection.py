@@ -53,14 +53,7 @@ class TestDriverRemoteConnection(TestCase):
         assert 10 == g.V().repeat(both()).times(5)[0:10].count().next()
         assert 1 == g.V().repeat(both()).times(5)[0].count().next()
         assert 0 == g.V().repeat(both()).times(5)[0:0].count().next()
-
-        #
-        # Fails because max long is typed to Int32:
-        #   {"@type":"g:Bytecode","@value":{"step":[["V"],["range",{"@type":"g:Int32","@value":2},{"@type":"g:Int32","@value":9223372036854775807}],["count"]]}}
-        #
-        # assert 4 == g.V()[2:].count().next()
-        #
-
+        assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
         # todo: need a traversal metrics deserializer
         g.V().out().profile().next()
@@ -110,6 +103,13 @@ class TestDriverRemoteConnection(TestCase):
         assert "ripple" in n.keys()
         assert 3 == n["lop"]
         assert 1 == n["ripple"]
+        #
+        t = g.withSideEffect('m',32).V().map(lambda: "x: x.sideEffects('m')")
+        results = t.toSet()
+        assert 1 == len(results)
+        assert 32 == list(results)[0]
+        assert 32 == t.side_effects['m']
+        assert 1 == len(t.side_effects.keys())
         try:
             x = t.side_effects["x"]
             raise Exception("Accessing a non-existent key should throw an error")
