@@ -41,6 +41,7 @@ limitations under the License.
             <outputDirectory>data</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone/scripts</directory>
             <directory>scripts</directory>
         </fileSet>
         <fileSet>
