@@ -385,7 +385,9 @@
                                              the jython plugin, /python-packaged for distribution tasks. some of the
                                              problem seems to stem from the python lifecycle not binding perfectly well
                                              to the maven lifecycle (integration tests seems to cause troubles
-                                             specifically) -->
+                                             specifically). note that the commands to install wheel are largely for
+                                             safety in case someone is using an older version of virtualenv (which
+                                             doesn't install wheel by default) -->
                                         <copy todir="${project.build.directory}/python">
                                             <fileset dir="src/main/jython"/>
                                         </copy>
@@ -396,9 +398,17 @@
                                               failonerror="true">
                                             <arg value="env"/>
                                         </exec>
+                                        <exec dir="${project.build.directory}/python" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
                                             <arg value="env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
                                         </exec>
                                         <copy todir="${project.build.directory}/jython">
                                             <fileset dir="src/main/jython"/>
