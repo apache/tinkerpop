@@ -359,11 +359,8 @@
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <delete dir="${build.directory}/python-reports"/>
-                                        <mkdir dir="${build.directory}/python-reports"/>
-                                        <delete dir="${build.directory}/python"/>
+                                        <mkdir dir="${project.build.directory}/python-reports"/>
                                         <mkdir dir="${project.build.directory}/python/env"/>
-                                        <delete dir="${build.directory}/python-packaged"/>
                                         <mkdir dir="${project.build.directory}/python-packaged/env"/>
                                     </tasks>
                                 </configuration>
@@ -396,7 +393,7 @@
                                         </copy>
                                         <exec dir="${project.build.directory}/python" executable="virtualenv"
                                               failonerror="true">
-                                            <arg value="env"/>
+                                            <arg line="--python=python2 env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python" executable="env/bin/pip"
                                               failonerror="true">
@@ -404,7 +401,7 @@
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
-                                            <arg value="env"/>
+                                            <arg line="--python=python2 env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
@@ -515,6 +512,8 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer
 import org.apache.tinkerpop.gremlin.server.Settings
 import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
 
+if (${skipTests}) return
+
 log.info("Starting Gremlin Server instances for native testing of gremlin-python")
 def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
 settings.graphs.graph = "${gremlin.server.dir}/conf/tinkergraph-empty.properties"
@@ -555,6 +554,8 @@ log.info("Gremlin Server with authentication started on port 8183")
                                             <![CDATA[
 import org.apache.tinkerpop.gremlin.server.GremlinServer
 
+if (${skipTests}) return
+
 log.info("Tests for native gremlin-python complete - shutting down Gremlin Server")
 project.getContextValue("gremlin.py.server").stop().join()
 project.getContextValue("gremlin.py.server.secure").stop().join()
@@ -570,17 +571,17 @@ log.info("Gremlin Server shutdown")
             </build>
         </profile>
         <!--
-        Provides a way to deploy the gremlinpython GLV to pypi. Requires installation of pip/virtualenv. See the
-        developer docs for more information on how to configure these settings to get this profile to work. The profile
-        largely uses antrun to execute raw pip/twine/python commands against a copy of what's in the jython directory
-        which is copied to target/py.
+        Provides a way to deploy the gremlinpython GLV to pypi. This cannot be part of the standard maven execution
+        because pypi does not have a staging environment like sonatype for releases. As soon as the release is
+        published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
+        make this stuff public until the vote is over.
         -->
         <profile>
             <id>glv-python-deploy</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>glvPythonDeploy</name>
+                    <name>pypi</name>
                 </property>
             </activation>
             <build>
@@ -604,7 +605,7 @@ log.info("Gremlin Server shutdown")
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
-                                            <arg line="upload dist/* -r pypitest"/>
+                                            <arg line="upload dist/* -r pypitest -s"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
