@@ -30,14 +30,14 @@ Gremlin-Python implements Gremlin within the Python language and can be used on 
 the popular CPython machine. Python’s syntax has the same constructs as Java including "dot notation" for function
 chaining ``(a.b.c)``, round bracket function arguments ``(a(b,c))```, and support for global namespaces
 ``(a(b()) vs a(__.b()))```. As such, anyone familiar with Gremlin-Java will immediately be able to work with
-Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
+Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct._::
 
-| >>> g.V().both()[1:3].toList()
-| [v[2], v[4]]
-| >>> g.V().both()[1].toList()
-| [v[2]]
-| >>> g.V().both().name.toList()
-| [lop, vadas, josh, marko, marko, josh, peter, ripple, lop, marko, josh, lop]
+    >>> g.V().both()[1:3].toList()
+    [v[2], v[4]]
+    >>> g.V().both()[1].toList()
+    [v[2]]
+    >>> g.V().both().name.toList()
+    [lop, vadas, josh, marko, marko, josh, peter, ripple, lop, marko, josh, lop]
 
 Please see the `reference documentation <http://tinkerpop.apache.org/docs/current/reference/#gremlin-python>`_
 at Apache TinkerPop for more information on usage.
