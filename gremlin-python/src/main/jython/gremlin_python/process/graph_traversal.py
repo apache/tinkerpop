@@ -99,27 +99,6 @@ class GraphTraversal(Traversal):
   def V(self, *args):
     self.bytecode.add_step("V", *args)
     return self
-  def _and(self, *args):
-    self.bytecode.add_step("and", *args)
-    return self
-  def _as(self, *args):
-    self.bytecode.add_step("as", *args)
-    return self
-  def _from(self, *args):
-    self.bytecode.add_step("from", *args)
-    return self
-  def _in(self, *args):
-    self.bytecode.add_step("in", *args)
-    return self
-  def _is(self, *args):
-    self.bytecode.add_step("is", *args)
-    return self
-  def _not(self, *args):
-    self.bytecode.add_step("not", *args)
-    return self
-  def _or(self, *args):
-    self.bytecode.add_step("or", *args)
-    return self
   def addE(self, *args):
     self.bytecode.add_step("addE", *args)
     return self
@@ -134,6 +113,12 @@ class GraphTraversal(Traversal):
     return self
   def aggregate(self, *args):
     self.bytecode.add_step("aggregate", *args)
+    return self
+  def and_(self, *args):
+    self.bytecode.add_step("and", *args)
+    return self
+  def as_(self, *args):
+    self.bytecode.add_step("as", *args)
     return self
   def barrier(self, *args):
     self.bytecode.add_step("barrier", *args)
@@ -192,6 +177,9 @@ class GraphTraversal(Traversal):
   def fold(self, *args):
     self.bytecode.add_step("fold", *args)
     return self
+  def from_(self, *args):
+    self.bytecode.add_step("from", *args)
+    return self
   def group(self, *args):
     self.bytecode.add_step("group", *args)
     return self
@@ -231,8 +219,14 @@ class GraphTraversal(Traversal):
   def inV(self, *args):
     self.bytecode.add_step("inV", *args)
     return self
+  def in_(self, *args):
+    self.bytecode.add_step("in", *args)
+    return self
   def inject(self, *args):
     self.bytecode.add_step("inject", *args)
+    return self
+  def is_(self, *args):
+    self.bytecode.add_step("is", *args)
     return self
   def key(self, *args):
     self.bytecode.add_step("key", *args)
@@ -270,11 +264,17 @@ class GraphTraversal(Traversal):
   def min(self, *args):
     self.bytecode.add_step("min", *args)
     return self
+  def not_(self, *args):
+    self.bytecode.add_step("not", *args)
+    return self
   def option(self, *args):
     self.bytecode.add_step("option", *args)
     return self
   def optional(self, *args):
     self.bytecode.add_step("optional", *args)
+    return self
+  def or_(self, *args):
+    self.bytecode.add_step("or", *args)
     return self
   def order(self, *args):
     self.bytecode.add_step("order", *args)
@@ -400,24 +400,6 @@ class __(object):
   def __(*args):
     return GraphTraversal(None, None, Bytecode()).__(*args)
   @staticmethod
-  def _and(*args):
-    return GraphTraversal(None, None, Bytecode())._and(*args)
-  @staticmethod
-  def _as(*args):
-    return GraphTraversal(None, None, Bytecode())._as(*args)
-  @staticmethod
-  def _in(*args):
-    return GraphTraversal(None, None, Bytecode())._in(*args)
-  @staticmethod
-  def _is(*args):
-    return GraphTraversal(None, None, Bytecode())._is(*args)
-  @staticmethod
-  def _not(*args):
-    return GraphTraversal(None, None, Bytecode())._not(*args)
-  @staticmethod
-  def _or(*args):
-    return GraphTraversal(None, None, Bytecode())._or(*args)
-  @staticmethod
   def addE(*args):
     return GraphTraversal(None, None, Bytecode()).addE(*args)
   @staticmethod
@@ -432,6 +414,12 @@ class __(object):
   @staticmethod
   def aggregate(*args):
     return GraphTraversal(None, None, Bytecode()).aggregate(*args)
+  @staticmethod
+  def and_(*args):
+    return GraphTraversal(None, None, Bytecode()).and_(*args)
+  @staticmethod
+  def as_(*args):
+    return GraphTraversal(None, None, Bytecode()).as_(*args)
   @staticmethod
   def barrier(*args):
     return GraphTraversal(None, None, Bytecode()).barrier(*args)
@@ -526,8 +514,14 @@ class __(object):
   def inV(*args):
     return GraphTraversal(None, None, Bytecode()).inV(*args)
   @staticmethod
+  def in_(*args):
+    return GraphTraversal(None, None, Bytecode()).in_(*args)
+  @staticmethod
   def inject(*args):
     return GraphTraversal(None, None, Bytecode()).inject(*args)
+  @staticmethod
+  def is_(*args):
+    return GraphTraversal(None, None, Bytecode()).is_(*args)
   @staticmethod
   def key(*args):
     return GraphTraversal(None, None, Bytecode()).key(*args)
@@ -565,8 +559,14 @@ class __(object):
   def min(*args):
     return GraphTraversal(None, None, Bytecode()).min(*args)
   @staticmethod
+  def not_(*args):
+    return GraphTraversal(None, None, Bytecode()).not_(*args)
+  @staticmethod
   def optional(*args):
     return GraphTraversal(None, None, Bytecode()).optional(*args)
+  @staticmethod
+  def or_(*args):
+    return GraphTraversal(None, None, Bytecode()).or_(*args)
   @staticmethod
   def order(*args):
     return GraphTraversal(None, None, Bytecode()).order(*args)
@@ -679,36 +679,6 @@ def V(*args):
 
 statics.add_static('V', V)
 
-def _and(*args):
-      return __._and(*args)
-
-statics.add_static('_and', _and)
-
-def _as(*args):
-      return __._as(*args)
-
-statics.add_static('_as', _as)
-
-def _in(*args):
-      return __._in(*args)
-
-statics.add_static('_in', _in)
-
-def _is(*args):
-      return __._is(*args)
-
-statics.add_static('_is', _is)
-
-def _not(*args):
-      return __._not(*args)
-
-statics.add_static('_not', _not)
-
-def _or(*args):
-      return __._or(*args)
-
-statics.add_static('_or', _or)
-
 def addE(*args):
       return __.addE(*args)
 
@@ -733,6 +703,16 @@ def aggregate(*args):
       return __.aggregate(*args)
 
 statics.add_static('aggregate', aggregate)
+
+def and_(*args):
+      return __.and_(*args)
+
+statics.add_static('and_', and_)
+
+def as_(*args):
+      return __.as_(*args)
+
+statics.add_static('as_', as_)
 
 def barrier(*args):
       return __.barrier(*args)
@@ -889,10 +869,20 @@ def inV(*args):
 
 statics.add_static('inV', inV)
 
+def in_(*args):
+      return __.in_(*args)
+
+statics.add_static('in_', in_)
+
 def inject(*args):
       return __.inject(*args)
 
 statics.add_static('inject', inject)
+
+def is_(*args):
+      return __.is_(*args)
+
+statics.add_static('is_', is_)
 
 def key(*args):
       return __.key(*args)
@@ -954,10 +944,20 @@ def min(*args):
 
 statics.add_static('min', min)
 
+def not_(*args):
+      return __.not_(*args)
+
+statics.add_static('not_', not_)
+
 def optional(*args):
       return __.optional(*args)
 
 statics.add_static('optional', optional)
+
+def or_(*args):
+      return __.or_(*args)
+
+statics.add_static('or_', or_)
 
 def order(*args):
       return __.order(*args)

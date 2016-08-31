@@ -103,8 +103,8 @@ public class GraphSONWriterTest {
         }
         assertEquals(Pop.first, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Pop.first)").toString(), Object.class));
         assertEquals(Pop.last, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Pop.last)").toString(), Object.class));
-        assertEquals(Pop.all, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Pop._all)").toString(), Object.class));
-        assertEquals(Scope.global, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Scope._global)").toString(), Object.class));
+        assertEquals(Pop.all, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Pop.all_)").toString(), Object.class));
+        assertEquals(Scope.global, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Scope.global_)").toString(), Object.class));
         assertEquals(Scope.local, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Scope.local)").toString(), Object.class));
     }
 

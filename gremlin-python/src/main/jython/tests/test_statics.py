@@ -31,8 +31,8 @@ from gremlin_python.process.traversal import Pop
 class TestStatics(TestCase):
     def test_enums(self):
         statics.load_statics(globals())
-        assert isinstance(_list, Cardinality)
-        assert _list is Cardinality._list
+        assert isinstance(list_, Cardinality)
+        assert list_ is Cardinality.list_
         #
         assert isinstance(eq(2), P)
         assert eq(2) == P.eq(2)

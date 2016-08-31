@@ -77,10 +77,10 @@ class Traversal(object):
 Barrier = Enum('Barrier', 'normSack')
 statics.add_static('normSack', Barrier.normSack)
 
-Cardinality = Enum('Cardinality', '_list _set single')
+Cardinality = Enum('Cardinality', 'list_ set_ single')
 statics.add_static('single', Cardinality.single)
-statics.add_static('_list', Cardinality._list)
-statics.add_static('_set', Cardinality._set)
+statics.add_static('list_', Cardinality.list_)
+statics.add_static('set_', Cardinality.set_)
 
 Column = Enum('Column', 'keys values')
 statics.add_static('keys', Column.keys)
@@ -91,7 +91,7 @@ statics.add_static('OUT', Direction.OUT)
 statics.add_static('IN', Direction.IN)
 statics.add_static('BOTH', Direction.BOTH)
 
-Operator = Enum('Operator', 'addAll _and assign div max min minus mult _or sum sumLong')
+Operator = Enum('Operator', 'addAll and_ assign div max min minus mult or_ sum sumLong')
 statics.add_static('sum', Operator.sum)
 statics.add_static('minus', Operator.minus)
 statics.add_static('mult', Operator.mult)
@@ -99,8 +99,8 @@ statics.add_static('div', Operator.div)
 statics.add_static('min', Operator.min)
 statics.add_static('max', Operator.max)
 statics.add_static('assign', Operator.assign)
-statics.add_static('_and', Operator._and)
-statics.add_static('_or', Operator._or)
+statics.add_static('and_', Operator.and_)
+statics.add_static('or_', Operator.or_)
 statics.add_static('addAll', Operator.addAll)
 statics.add_static('sumLong', Operator.sumLong)
 
@@ -113,13 +113,13 @@ statics.add_static('keyDecr', Order.keyDecr)
 statics.add_static('valueDecr', Order.valueDecr)
 statics.add_static('shuffle', Order.shuffle)
 
-Pop = Enum('Pop', '_all first last')
+Pop = Enum('Pop', 'all_ first last')
 statics.add_static('first', Pop.first)
 statics.add_static('last', Pop.last)
-statics.add_static('_all', Pop._all)
+statics.add_static('all_', Pop.all_)
 
-Scope = Enum('Scope', '_global local')
-statics.add_static('_global', Scope._global)
+Scope = Enum('Scope', 'global_ local')
+statics.add_static('global_', Scope.global_)
 statics.add_static('local', Scope.local)
 
 T = Enum('T', 'id key label value')
@@ -133,9 +133,6 @@ class P(object):
       self.operator = operator
       self.value = value
       self.other = other
-   @staticmethod
-   def _not(*args):
-      return P("not", *args)
    @staticmethod
    def between(*args):
       return P("between", *args)
@@ -161,6 +158,9 @@ class P(object):
    def neq(*args):
       return P("neq", *args)
    @staticmethod
+   def not_(*args):
+      return P("not", *args)
+   @staticmethod
    def outside(*args):
       return P("outside", *args)
    @staticmethod
@@ -180,10 +180,6 @@ class P(object):
         return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
    def __repr__(self):
       return self.operator + "(" + str(self.value) + ")" if self.other is None else self.operator + "(" + str(self.value) + "," + str(self.other) + ")"
-
-def _not(*args):
-      return P._not(*args)
-statics.add_static('_not',_not)
 
 def between(*args):
       return P.between(*args)
@@ -216,6 +212,10 @@ statics.add_static('lte',lte)
 def neq(*args):
       return P.neq(*args)
 statics.add_static('neq',neq)
+
+def not_(*args):
+      return P.not_(*args)
+statics.add_static('not_',not_)
 
 def outside(*args):
       return P.outside(*args)

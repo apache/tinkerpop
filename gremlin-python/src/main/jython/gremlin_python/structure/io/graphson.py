@@ -248,9 +248,9 @@ class PropertyDeserializer(GraphSONDeserializer):
 
 
 class _SymbolHelper(object):
-    symbolMap = {"_global": "global", "_as": "as", "_in": "in", "_and": "and",
-                 "_or": "or", "_is": "is", "_not": "not", "_from": "from",
-                 "_set": "set", "_list": "list", "_all": "all"}
+    symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
+                 "or_": "or", "is_": "is", "not_": "not", "from_": "from",
+                 "set_": "set", "list_": "list", "all_": "all"}
 
     _TYPE = "@type"
     _VALUE = "@value"

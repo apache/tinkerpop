@@ -31,17 +31,17 @@ public final class SymbolHelper {
     private final static Map<String, String> FROM_PYTHON_MAP = new HashMap<>();
 
     static {
-        TO_PYTHON_MAP.put("global", "_global");
-        TO_PYTHON_MAP.put("as", "_as");
-        TO_PYTHON_MAP.put("in", "_in");
-        TO_PYTHON_MAP.put("and", "_and");
-        TO_PYTHON_MAP.put("or", "_or");
-        TO_PYTHON_MAP.put("is", "_is");
-        TO_PYTHON_MAP.put("not", "_not");
-        TO_PYTHON_MAP.put("from", "_from");
-        TO_PYTHON_MAP.put("list", "_list");
-        TO_PYTHON_MAP.put("set", "_set");
-        TO_PYTHON_MAP.put("all", "_all");
+        TO_PYTHON_MAP.put("global", "global_");
+        TO_PYTHON_MAP.put("as", "as_");
+        TO_PYTHON_MAP.put("in", "in_");
+        TO_PYTHON_MAP.put("and", "and_");
+        TO_PYTHON_MAP.put("or", "or_");
+        TO_PYTHON_MAP.put("is", "is_");
+        TO_PYTHON_MAP.put("not", "not_");
+        TO_PYTHON_MAP.put("from", "from_");
+        TO_PYTHON_MAP.put("list", "list_");
+        TO_PYTHON_MAP.put("set", "set_");
+        TO_PYTHON_MAP.put("all", "all_");
         //
         TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
     }

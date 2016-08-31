@@ -560,11 +560,11 @@ Type "help", "copyright", "credits" or "license" for more information.
 [u'peter', u'peter']
 # a complex, nested multi-line traversal
 >>> g.V().match( \
-...     _as("a").out("created")._as("b"), \
-...     _as("b")._in("created")._as("c"), \
-...     _as("a").out("knows")._as("c")). \
+...     as_("a").out("created").as_("b"), \
+...     as_("b").in_("created").as_("c"), \
+...     as_("a").out("knows").as_("c")). \
 ...   select("c"). \
-...   union(_in("knows"),out("created")). \
+...   union(in_("knows"),out("created")). \
 ...   name.toList()
 [u'ripple', u'marko', u'lop']
 >>>

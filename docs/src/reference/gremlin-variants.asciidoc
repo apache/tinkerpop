@@ -49,7 +49,7 @@ namespaces (`a(b())` vs `a(__.b())`). As such, anyone familiar with Gremlin-Java
 with Gremlin-Python. Moreover, there are a few added constructs to Gremlin-Python that make traversals a bit more succinct.
 
 WARNING: In Python, `as`, `in`, `and`, `or`, `is`, `not`, `from`, and `global` are reserved words. Gremlin-Python simply
-prefixes `_` in front of these terms for their use with graph traversal. For instance: `g.V()._as('a')._in()._as('b').select('a','b')`.
+postfixes `_` to the end of these terms for their use with graph traversal. For instance: `g.V().as_('a').in_().as_('b').select('a','b')`.
 
 To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(package_manager)[pip] package manager.
 
