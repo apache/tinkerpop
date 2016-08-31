@@ -192,8 +192,11 @@ Colors can contain a comma-separated combination of 1 each of foreground, backgr
 |=========================================================
 
 Example:
-```:set gremlin.color bg_black,green,bold```
 
+[source,text]
+----
+:set gremlin.color bg_black,green,bold
+----
 
 Dependencies and Plugin Usage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

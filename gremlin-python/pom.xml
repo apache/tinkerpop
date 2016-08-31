@@ -318,49 +318,7 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-                    <!-- get a clean copy of the python files for native processing -->
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-py-files-to-target</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${basedir}/target/python</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${basedir}/src/main/jython</directory>
-                                            <filtering>true</filtering>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>build-python</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>python</executable>
-                                    <workingDirectory>${basedir}/target/python</workingDirectory>
-                                    <commandlineArgs>setup.py build --build-lib ${project.build.testOutputDirectory}/Lib
-                                    </commandlineArgs>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- required for the jython tests -->
+                    <!-- required for the jython tests  -->
                     <plugin>
                         <groupId>net.sf.mavenjython</groupId>
                         <artifactId>jython-compile-maven-plugin</artifactId>
@@ -381,9 +339,8 @@
                                 <configuration>
                                     <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                                     <libraries>
-                                        <param>aenum</param>
-                                        <param>requests</param>
-                                        <param>tornado</param>
+                                        <param>aenum==1.4.5</param>
+                                        <param>tornado==4.4.1</param>
                                     </libraries>
                                 </configuration>
                             </execution>
@@ -396,22 +353,116 @@
                         <executions>
                             <execution>
                                 <id>create-python-reports-directory</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <mkdir dir="${project.build.directory}/python-reports"/>
+                                        <mkdir dir="${project.build.directory}/python/env"/>
+                                        <mkdir dir="${project.build.directory}/python-packaged/env"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <!-- copy files in jython directory to target/py and run virtual env to sandbox python.
+                                 there is no need to "activate" the virtualenv because all calls to python occur
+                                 directly from bin/ -->
+                            <execution>
+                                <id>setup-py-env</id>
                                 <phase>process-resources</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <delete dir="${build.directory}/python-reports"/>
-                                        <mkdir dir="${build.directory}/python-reports"/>
+                                        <!-- seems like we need a few different copies of the same source. all the
+                                             different python/jython stuff doesn't seem to want to share. we use
+                                             /python for basic tests and stuff, /jython for jython compilation with
+                                             the jython plugin, /python-packaged for distribution tasks. some of the
+                                             problem seems to stem from the python lifecycle not binding perfectly well
+                                             to the maven lifecycle (integration tests seems to cause troubles
+                                             specifically). note that the commands to install wheel are largely for
+                                             safety in case someone is using an older version of virtualenv (which
+                                             doesn't install wheel by default) -->
+                                        <copy todir="${project.build.directory}/python">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <copy todir="${project.build.directory}/python-packaged">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
+                                        <exec dir="${project.build.directory}/python" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python2 env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python2 env"/>
+                                        </exec>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install wheel"/>
+                                        </exec>
+                                        <copy todir="${project.build.directory}/jython">
+                                            <fileset dir="src/main/jython"/>
+                                        </copy>
                                     </tasks>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>native-python-build</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python"
+                                              failonerror="true">
+                                            <arg line="setup.py build --build-lib ${project.build.testOutputDirectory}/Lib"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                            <!--
+                            build/package python source distribution and wheel archive. the version is bound to an
+                            environment variable that gets used in setup.py to dynamically construct a module
+                            __version__file
+                             -->
+                            <execution>
+                                <id>package-py</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
+                                              failonerror="true">
+                                            <env key="VERSION" value="${project.version}"/>
+                                            <arg line="setup.py sdist"/>
+                                        </exec>
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
+                                              failonerror="true">
+                                            <env key="VERSION" value="${project.version}"/>
+                                            <arg line="setup.py bdist_wheel"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+
                             <!--
                             use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
                             had to use the ant plugin - maven-exec-plugin
                             -->
                             <execution>
+                                <id>native-python-test</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -419,11 +470,9 @@
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
-                                        <exec executable="python"
-                                              dir="${basedir}/target/python"
+                                        <exec executable="env/bin/python" dir="${project.build.directory}/python"
                                               failonerror="true">
-                                            <arg value="setup.py"/>
-                                            <arg value="test"/>
+                                            <arg line="setup.py test"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -462,6 +511,8 @@
 import org.apache.tinkerpop.gremlin.server.GremlinServer
 import org.apache.tinkerpop.gremlin.server.Settings
 import org.apache.tinkerpop.gremlin.server.Settings.ScriptEngineSettings
+
+if (${skipTests}) return
 
 log.info("Starting Gremlin Server instances for native testing of gremlin-python")
 def settings = Settings.read("${gremlin.server.dir}/conf/gremlin-server-modern-py.yaml")
@@ -503,6 +554,8 @@ log.info("Gremlin Server with authentication started on port 8183")
                                             <![CDATA[
 import org.apache.tinkerpop.gremlin.server.GremlinServer
 
+if (${skipTests}) return
+
 log.info("Tests for native gremlin-python complete - shutting down Gremlin Server")
 project.getContextValue("gremlin.py.server").stop().join()
 project.getContextValue("gremlin.py.server.secure").stop().join()
@@ -518,17 +571,17 @@ log.info("Gremlin Server shutdown")
             </build>
         </profile>
         <!--
-        Provides a way to deploy the gremlinpython GLV to pypi. Requires installation of pip/virtualenv. See the
-        developer docs for more information on how to configure these settings to get this profile to work. The profile
-        largely uses antrun to execute raw pip/twine/python commands against a copy of what's in the jython directory
-        which is copied to target/py.
+        Provides a way to deploy the gremlinpython GLV to pypi. This cannot be part of the standard maven execution
+        because pypi does not have a staging environment like sonatype for releases. As soon as the release is
+        published it is public. In our release workflow, deploy occurs prior to vote on the release and we can't
+        make this stuff public until the vote is over.
         -->
         <profile>
             <id>glv-python-deploy</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>glvPythonDeploy</name>
+                    <name>pypi</name>
                 </property>
             </activation>
             <build>
@@ -537,52 +590,6 @@ log.info("Gremlin Server shutdown")
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
-                            <!-- copy files in jython directory to target/py and run virtual env to sandbox python -->
-                            <execution>
-                                <id>setup-py-env</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <tasks>
-                                        <mkdir dir="${project.build.directory}/py/env"/>
-                                        <copy todir="${project.build.directory}/py">
-                                            <fileset dir="src/main/jython"/>
-                                        </copy>
-                                        <exec dir="${project.build.directory}/py" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="env"/>
-                                        </exec>
-                                    </tasks>
-                                </configuration>
-                            </execution>
-                            <!--
-                            build/package python source distribution and wheel archive. the version is bound to an
-                            environment variable that gets used in setup.py to dynamically construct a module
-                            __version__file
-                             -->
-                            <execution>
-                                <id>package-py</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <tasks>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/python"
-                                              failonerror="true">
-                                            <env key="VERSION" value="${project.version}"/>
-                                            <arg line="setup.py sdist"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/python"
-                                              failonerror="true">
-                                            <env key="VERSION" value="${project.version}"/>
-                                            <arg line="setup.py bdist_wheel"/>
-                                        </exec>
-                                    </tasks>
-                                </configuration>
-                            </execution>
                             <!-- deploy to pypi. assumes that ~/.pypirc is configured appropriately -->
                             <execution>
                                 <id>deploy-py</id>
@@ -592,13 +599,13 @@ log.info("Gremlin Server shutdown")
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/pip"
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
                                             <arg line="install twine"/>
                                         </exec>
-                                        <exec dir="${project.build.directory}/py" executable="env/bin/twine"
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
-                                            <arg line="upload dist/* -r pypitest"/>
+                                            <arg line="upload dist/* -r pypitest -s"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
