@@ -78,7 +78,7 @@ limitations under the License.
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <build>
