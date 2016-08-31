@@ -581,7 +581,7 @@ conventions of the host language and ensuring consistency with Gremlin-Java. A c
 this dual-language bridge are provided.
 
 * If camelCase is not an accepted method naming convention in the host language, then the host language's convention can be used instead. For instance, in a Gremlin-Ruby implementation, `outE("created")` may be `out_e("created")`.
-* If Gremlin-Java step names conflict with the host language's reserved words, then a consistent amelioration should be used. For instance, in Python `as` is a reserved word, thus, Gremlin-Python uses `_as`.
+* If Gremlin-Java step names conflict with the host language's reserved words, then a consistent amelioration should be used. For instance, in Python `as` is a reserved word, thus, Gremlin-Python uses `as_`.
 * If the host language does not use dot-notion for method chaining, then its method chaining convention should be used instead of going the route of operator overloading. For instance, a Gremlin-PHP implementation should do `$g->V()->out()`.
 * If a programming language does not support method overloading, then varargs and type introspection should be used. In Gremlin-Python, `*args` does just that.
 
