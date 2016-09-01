@@ -30,8 +30,8 @@ reference guide. Other documentation tends to fall into one of these other categ
 
 1. <<tutorials,Tutorials>> - Brief but detailed explanations of specific technologies, patterns, use cases or best practices related
 to TinkerPop.
-1. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
-1. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement TinkerPop's
+2. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
+3. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement TinkerPop's
 interfaces).
 
 NOTE: Some of the documentation listed here leads to third-party web sites. Such documentation is supplemental to
