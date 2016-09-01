@@ -33,34 +33,24 @@ echo
 SVN_CMD="svn --no-auth-cache --username=${USERNAME} --password=${PASSWORD}"
 VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
 
-rm -rf target/svn
-
-bin/process-docs.sh || exit 1
-mvn process-resources -Djavadoc
-
 mkdir -p target/svn
+rm -rf target/svn/*
+
 ${SVN_CMD} co --depth immediates https://svn.apache.org/repos/asf/tinkerpop/site target/svn
 
 pushd target/svn
-${SVN_CMD} update --depth empty "docs/${VERSION}"
-${SVN_CMD} update --depth empty "javadocs/${VERSION}"
-${SVN_CMD} rm "docs/${VERSION}"
-${SVN_CMD} rm "javadocs/${VERSION}"
-${SVN_CMD} commit . -m "Docs for TinkerPop ${VERSION} are being replaced."
-popd
 
-mkdir -p "target/svn/docs/${VERSION}"
-mkdir -p "target/svn/javadocs/${VERSION}/core"
-mkdir -p "target/svn/javadocs/${VERSION}/full"
+for dir in "docs" "javadocs"
+do
+  CURRENT=$((${SVN_CMD} list "${dir}" ; ls "${dir}") | tr -d '/' | grep -v SNAPSHOT | grep -Fv current | sort -rV | head -n1)
 
-cp -R target/docs/htmlsingle/.   "target/svn/docs/${VERSION}"
-cp -R target/site/apidocs/core/. "target/svn/javadocs/${VERSION}/core"
-cp -R target/site/apidocs/full/. "target/svn/javadocs/${VERSION}/full"
+  ${SVN_CMD} update --depth empty "${dir}/current"
+  ${SVN_CMD} rm "${dir}/current"
 
-pushd target/svn
-rm "docs/${VERSION}/images/tinkerpop3.graffle"
-${SVN_CMD} update --depth empty "docs/${VERSION}"
-${SVN_CMD} update --depth empty "javadocs/${VERSION}"
+  ${SVN_CMD} update --depth empty "${dir}/${CURRENT}"
+  ln -s "${CURRENT}" "${dir}/current"
+  ${SVN_CMD} update --depth empty "${dir}/current"
+done
 
 ${SVN_CMD} add * --force
 ${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
