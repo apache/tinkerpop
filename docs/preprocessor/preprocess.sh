@@ -66,6 +66,7 @@ function directory {
 }
 
 mkdir -p target/postprocess-asciidoc/tmp
+mkdir -p target/postprocess-asciidoc/logs
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
 TP_HOME=`pwd`
@@ -80,7 +81,7 @@ HISTORY_FILE=".gremlin_groovy_history"
 [ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} ${TMP_DIR}
 
 pushd gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone > /dev/null
-bin/gremlin-server.sh conf/gremlin-server-modern.yaml > /dev/null 2> /dev/null &
+bin/gremlin-server.sh conf/gremlin-server-modern.yaml > ${TP_HOME}/target/postprocess-asciidoc/logs/gremlin-server.log 2>&1 &
 GREMLIN_SERVER_PID=$!
 popd > /dev/null
 
