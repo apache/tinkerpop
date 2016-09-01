@@ -59,7 +59,7 @@ unpackage it and start it:
 [source,text]
 ----
 $ unzip apache-tinkerpop-gremlin-console-x.y.z-bin.zip
-$ cd apache-tinkerpop-gremlin-console-x.y.z-bin.zip
+$ cd apache-tinkerpop-gremlin-console-x.y.z
 $ bin/gremlin.sh
 
          \,,,/
@@ -536,7 +536,7 @@ containing a Gremlin script to be processed with results returned.
 ----
 $ curl -L -O https://www.apache.org/dist/tinkerpop/x.y.z/apache-tinkerpop-gremlin-server-x.y.z-bin.zip
 $ unzip apache-tinkerpop-gremlin-server-x.y.z-bin.zip
-$ cd apache-tinkerpop-gremlin-server-x.y.z-bin.zip
+$ cd apache-tinkerpop-gremlin-server-x.y.z
 $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] GremlinServer -
          \,,,/

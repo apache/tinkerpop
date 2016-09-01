@@ -360,6 +360,23 @@ TinkerPop 3.1.4 (NOT OFFICIALLY RELEASED YET)
 * Fixed a problem (previously thought resolved on 3.1.3) causing Gremlin Server to lock up when parallel requests were submitted on the same session if those parallel requests included a script that blocked indefinitely.
 * Fixed bug in `TailGlobalStep` where excess bulk was not accounted for correctly.
 
+Bugs
+^^^^
+
+* TINKERPOP-1350 Server locks when submitting parallel requests on session
+* TINKERPOP-1375 Possible ByteBuf leak for certain transactional scenarios
+* TINKERPOP-1377 Closing a remote in "console mode" has bad message
+* TINKERPOP-1379 unaccounted excess in TailGlobalStep
+* TINKERPOP-1397 StarVertex self edge has buggy interaction with graph filters
+* TINKERPOP-1419 Wrong exception when a SessionedClient is initialized with no available host
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-989 Default documentation should be reference/index.html
+* TINKERPOP-1376 Rename TinkerPop artifacts
+* TINKERPOP-1413 PropertiesTest#g_V_hasXageX_propertiesXnameX assumes that ids are longs
+
 [[release-3-1-3]]
 TinkerPop 3.1.3 (Release Date: July 18, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
