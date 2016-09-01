@@ -50,6 +50,7 @@ Improvements
 * TINKERPOP-989 Default documentation should be reference/index.html
 * TINKERPOP-1376 Rename TinkerPop artifacts
 * TINKERPOP-1413 PropertiesTest#g_V_hasXageX_propertiesXnameX assumes that ids are longs
+* TINKERPOP-1416 Write Gremlin Server log files somewhere during doc generation
 
 [[release-3-1-3]]
 TinkerPop 3.1.3 (Release Date: July 18, 2016)
