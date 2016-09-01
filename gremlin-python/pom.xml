@@ -399,7 +399,7 @@
                                         </copy>
                                         <exec dir="${project.build.directory}/python" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python2 env"/>
+                                            <arg line="--python=python env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python" executable="env/bin/pip"
                                               failonerror="true">
@@ -407,7 +407,7 @@
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
                                               failonerror="true">
-                                            <arg line="--python=python2 env"/>
+                                            <arg line="--python=python env"/>
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
@@ -430,6 +430,7 @@
                                     <target>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python"
                                               failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py build --build-lib ${project.build.testOutputDirectory}/Lib"/>
                                         </exec>
                                     </target>
@@ -452,11 +453,13 @@
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
                                               failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
+                                            <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py sdist"/>
                                         </exec>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
                                               failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
+                                            <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py bdist_wheel"/>
                                         </exec>
                                     </target>
@@ -478,6 +481,7 @@
                                     <target>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python"
                                               failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
                                             <arg line="setup.py test"/>
                                         </exec>
                                     </target>
