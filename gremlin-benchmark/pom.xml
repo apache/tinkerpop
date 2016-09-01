@@ -66,6 +66,12 @@ limitations under the License.
             <version>${jmh.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
