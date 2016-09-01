@@ -130,7 +130,7 @@ echo "============================"
 ec=0
 for subdir in $(find "${TP_HOME}/docs/src/" -name index.asciidoc | xargs -n1 dirname)
 do
-  find "${subdir}" -name "*.asciidoc" |
+  find "${subdir}" -maxdepth 1 -name "*.asciidoc" |
        xargs -n1 basename |
        xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${subdir}/index.asciidoc || echo 0) | head -n1 | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
        xargs -n1 -I {} echo "${subdir}/{}" |
