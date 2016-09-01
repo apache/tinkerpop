@@ -552,7 +552,9 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1_2_3_4X_name() {
-        final Traversal<Vertex, String> traversal = get_g_VX1_2_3_4X_name(convertToVertexId("marko"), convertToVertexId("vadas"), convertToVertexId("lop"), convertToVertexId("josh"));
+        final Object vLop = convertToVertexId("lop");
+        g.V(vLop).drop().iterate();
+        final Traversal<Vertex, String> traversal = get_g_VX1_2_3_4X_name(convertToVertexId("marko"), convertToVertexId("vadas"), vLop, convertToVertexId("josh"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "vadas", "josh"), traversal);
         assertFalse(traversal.hasNext());
@@ -697,7 +699,6 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1_2_3_4X_name(final Object v1Id, final Object v2Id, final Object v3Id, final Object v4Id) {
-            g.V(v3Id).drop().iterate();
             return g.V(v1Id, v2Id, v3Id, v4Id).values("name");
         }
 
