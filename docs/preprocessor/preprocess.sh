@@ -66,6 +66,7 @@ function directory {
 }
 
 mkdir -p target/postprocess-asciidoc/tmp
+mkdir -p target/postprocess-asciidoc/logs
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
 TP_HOME=`pwd`
@@ -80,7 +81,7 @@ HISTORY_FILE=".gremlin_groovy_history"
 [ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} ${TMP_DIR}
 
 pushd gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone > /dev/null
-bin/gremlin-server.sh conf/gremlin-server-modern.yaml > /dev/null 2> /dev/null &
+bin/gremlin-server.sh conf/gremlin-server-modern.yaml > ${TP_HOME}/target/postprocess-asciidoc/logs/gremlin-server.log 2>&1 &
 GREMLIN_SERVER_PID=$!
 popd > /dev/null
 
@@ -130,7 +131,7 @@ echo "============================"
 ec=0
 for subdir in $(find "${TP_HOME}/docs/src/" -name index.asciidoc | xargs -n1 dirname)
 do
-  find "${subdir}" -name "*.asciidoc" |
+  find "${subdir}" -maxdepth 1 -name "*.asciidoc" |
        xargs -n1 basename |
        xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${subdir}/index.asciidoc || echo 0) | head -n1 | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
        xargs -n1 -I {} echo "${subdir}/{}" |
