@@ -46,7 +46,7 @@ and communicating with other members of the community.
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
 . At some point during the week:
-.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
+.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j -DglvPython`
 .. Deploy a final SNAPSHOT to the snapshot repository.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
@@ -70,7 +70,7 @@ A release candidate is an unofficial release that is represented by a tagged ver
 offered in cases where there is significant change in a particular version and the potential for upgrades and problems
 might be high.
 
-. `mvn clean install -DincludeNeo4j`
+. `mvn clean install -DincludeNeo4j -DglvPython`
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
 .. `mvn verify -DskipPerformanceTests=false`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
@@ -145,6 +145,8 @@ Release & Promote
 -----------------
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
+. Deploy to link:https://pypi.python.org/pypi[pypi] with `mvn clean install -DskipTests -DglvPython -Dpypi`. It is likely necessary
+that this build will occur from the tag for the release, so be sure to checkout the tag first before executing this step.
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
