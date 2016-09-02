@@ -48,24 +48,32 @@ import scala.Tuple3;
 import scala.collection.mutable.WrappedArray;
 import scala.runtime.BoxedUnit;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GryoSerializer extends Serializer {
+public final class GryoSerializer extends Serializer implements Serializable {
 
     //private final Option<String> userRegistrator;
     private final int bufferSize;
     private final int maxBufferSize;
+    private final int poolSize;
+    private final ArrayList<String> ioRegList = new ArrayList<>();
+    private final boolean referenceTracking;
+    private final boolean registrationRequired;
 
-    private final GryoPool gryoPool;
+
+    private transient GryoPool gryoPool;
 
     public GryoSerializer(final SparkConf sparkConfiguration) {
         final long bufferSizeKb = sparkConfiguration.getSizeAsKb("spark.kryoserializer.buffer", "64k");
         final long maxBufferSizeMb = sparkConfiguration.getSizeAsMb("spark.kryoserializer.buffer.max", "64m");
-        final boolean referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
-        final boolean registrationRequired = sparkConfiguration.getBoolean("spark.kryo.registrationRequired", false);
+        referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
+        registrationRequired = sparkConfiguration.getBoolean("spark.kryo.registrationRequired", false);
         if (bufferSizeKb >= ByteUnit.GiB.toKiB(2L)) {
             throw new IllegalArgumentException("spark.kryoserializer.buffer must be less than 2048 mb, got: " + bufferSizeKb + " mb.");
         } else {
@@ -77,9 +85,19 @@ public final class GryoSerializer extends Serializer {
                 //this.userRegistrator = sparkConfiguration.getOption("spark.kryo.registrator");
             }
         }
-        this.gryoPool = GryoPool.build().
-                poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT)).
-                ioRegistries(makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
+        poolSize = sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
+        List<Object> list = makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList());
+        list.forEach(c -> {
+                    ioRegList.add(c.toString());
+                }
+        );
+    }
+
+    private GryoPool createPool(){
+        List<Object> list = new ArrayList<>(ioRegList);
+        return GryoPool.build().
+                poolSize(poolSize).
+                ioRegistries(list).
                 initializeMapper(builder -> {
                     try {
                         builder.addCustom(Tuple2.class, new Tuple2Serializer())
@@ -118,6 +136,13 @@ public final class GryoSerializer extends Serializer {
     }
 
     public GryoPool getGryoPool() {
+        if (gryoPool == null) {
+            synchronized (this) {
+                if (gryoPool == null) {
+                    gryoPool = createPool();
+                }
+            }
+        }
         return this.gryoPool;
     }
 
