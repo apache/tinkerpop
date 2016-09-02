@@ -171,14 +171,15 @@ public interface Graph extends AutoCloseable, Host {
     }
 
     /**
-     * Get the {@link Vertex} objects in this graph with the provided vertex ids. If no ids are provided, get all
-     * vertices.  Note that a vertex identifier does not need to correspond to the actual id used in the graph.  It
-     * needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support, multiple
-     * arguments might be applicable here.
+     * Get the {@link Vertex} objects in this graph with the provided vertex ids or {@link Vertex} objects themselves.
+     * If no ids are provided, get all vertices.  Note that a vertex identifier does not need to correspond to the
+     * actual id used in the graph.  It needs to be a bit more flexible than that in that given the
+     * {@link Graph.Features} around id support, multiple arguments might be applicable here.
      * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsNumericIds()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.vertices(v)</li>
      * <li>g.vertices(v.id())</li>
      * <li>g.vertices(1)</li>
      * <li>g.vertices(1L)</li>
@@ -190,6 +191,7 @@ public interface Graph extends AutoCloseable, Host {
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsCustomIds()} ()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.vertices(v)</li>
      * <li>g.vertices(v.id())</li>
      * <li>g.vertices(v.id().toString())</li>
      * </ul>
@@ -197,6 +199,7 @@ public interface Graph extends AutoCloseable, Host {
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsAnyIds()} ()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.vertices(v)</li>
      * <li>g.vertices(v.id())</li>
      * </ul>
      * <p/>                                                                                                         
@@ -211,6 +214,7 @@ public interface Graph extends AutoCloseable, Host {
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.vertices(v)</li>
      * <li>g.vertices(v.id().toString())</li>
      * <li>g.vertices("id")</li>
      * </ul>
@@ -221,14 +225,15 @@ public interface Graph extends AutoCloseable, Host {
     public Iterator<Vertex> vertices(final Object... vertexIds);
 
     /**
-     * Get the {@link Edge} objects in this graph with the provided edge ids. If no ids are provided, get all edges.
-     * Note that an edge identifier does not need to correspond to the actual id used in the graph.  It
-     * needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support, multiple
-     * arguments might be applicable here.
+     * Get the {@link Edge} objects in this graph with the provided edge ids or {@link Edge} objects. If no ids are
+     * provided, get all edges. Note that an edge identifier does not need to correspond to the actual id used in the
+     * graph.  It needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support,
+     * multiple arguments might be applicable here.
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsNumericIds()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.edges(e)</li>
      * <li>g.edges(e.id())</li>
      * <li>g.edges(1)</li>
      * <li>g.edges(1L)</li>
@@ -239,7 +244,8 @@ public interface Graph extends AutoCloseable, Host {
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsCustomIds()} ()} then it should support
      * filters as with:
-     * <ul>\
+     * <ul>
+     * <li>g.edges(e)</li>
      * <li>g.edges(e.id())</li>
      * <li>g.edges(e.id().toString())</li>
      * </ul>
@@ -247,12 +253,14 @@ public interface Graph extends AutoCloseable, Host {
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsAnyIds()} ()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.edges(e)</li>
      * <li>g.edges(e.id())</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
+     * <li>g.edges(e)</li>
      * <li>g.edges(e.id().toString())</li>
      * <li>g.edges("id")</li>
      * </ul>
