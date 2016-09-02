@@ -380,6 +380,8 @@ and link:http://mrhaki.blogspot.de/2009/08/groovy-goodness-turn-methods-into.htm
 <4> Groovy is lenient on object typing and Java is not. When the parameter type of the lambda is not known,
 typecasting is required.
 
+Please see the <<gremlin-variants, Gremlin Variants>> section for more information on this topic.
+
 Graph System Integration
 ------------------------
 
