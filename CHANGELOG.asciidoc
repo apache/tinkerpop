@@ -59,6 +59,7 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 * Added color preferences
 * Added input, result prompt preferences
 * Added multi-line indicator in Gremlin Console
+* Replaced term `REST` with `HTTP` to remove any confusion as to the design of the API
 
 [[release-3-2-1]]
 TinkerPop 3.2.1 (Release Date: July 18, 2016)

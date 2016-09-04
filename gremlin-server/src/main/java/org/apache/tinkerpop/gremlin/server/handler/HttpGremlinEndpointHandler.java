@@ -93,7 +93,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * Handler that processes HTTP requests to the REST Gremlin endpoint.
+ * Handler that processes HTTP requests to the HTTP Gremlin endpoint.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

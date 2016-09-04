@@ -94,6 +94,11 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037],
 link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[Reference Documentation -
 Console Preferences]
 
+REST API Renamed to HTTP API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is only a rename to clarify the design of the API. There is no change to the API itself.
+
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -522,7 +527,7 @@ RemoteGraph
 `RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
 remote execution. It is an interesting alternative to the other methods for connecting to Gremlin Server in that all
 other methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
-to Gremlin Server (via driver or REST).
+to Gremlin Server (via driver or HTTP).
 
 [source,groovy]
 ----
