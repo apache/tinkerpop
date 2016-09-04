@@ -528,7 +528,7 @@ Gremlin Server
 
 image:gremlin-server-protocol.png[width=325,float=right] link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
 provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it. It does
-this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_rest[REST]
+this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_http[HTTP]
 and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[websockets], which allow a request
 containing a Gremlin script to be processed with results returned.
 

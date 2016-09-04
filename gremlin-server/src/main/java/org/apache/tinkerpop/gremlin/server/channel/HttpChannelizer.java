@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Constructs a {@link Channelizer} that exposes an HTTP/REST endpoint in Gremlin Server.
+ * Constructs a {@link Channelizer} that exposes an HTTP endpoint in Gremlin Server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

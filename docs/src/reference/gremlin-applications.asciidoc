@@ -764,17 +764,17 @@ The above code demonstrates using the `TitanIoRegistry` which is an `IoRegistry`
 what classes (from Titan in this case) to auto-register during serialization.  Gremlin Server roughly uses this same
 approach when it configures it's serializers, so using this same model will ensure compatibility when making requests.
 
-Connecting via REST
+Connecting via HTTP
 ~~~~~~~~~~~~~~~~~~~
 
 image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a
-WebSockets-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].
-The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of
-programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started
+WebSockets-based connection, it can also be configured to support plain HTTP web service.
+The HTTP endpoint provides for a communication protocol familiar to most developers, with a wide support of
+programming languages, tools and libraries for accessing it.  As a result, HTTP provides a fast way to get started
 with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
 as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
-Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
+Gremlin Server provides for a single HTTP endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
 script as a request.  For each request, it returns a response containing the serialized results of that script.
 To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default
 `WebSocketChannelizer`, in the configuration file:
@@ -841,7 +841,7 @@ curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bind
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
 string argument with by setting the `language` key.
 
-WARNING: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
+WARNING: Consider the size of the result of a submitted script being returned from the HTTP endpoint.  A script
 that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.
@@ -862,7 +862,7 @@ Connecting via withRemote
 image:remote-graph.png[width=145,float=left] A `TraversalSource` has several `withRemote()` methods which provide an
 interesting alternative to the other methods for connecting to Gremlin Server. It is interesting in that all other
 methods involve construction of a `String` representation of the `Traversal` which is then submitted as a script
-to Gremlin Server (via driver or REST). This approach is quite akin to SQL, where query strings are embedded into code
+to Gremlin Server (via driver or HTTP). This approach is quite akin to SQL, where query strings are embedded into code
 and submitted to a database server. While there are patterns for taking this approach that can lead to maintainable
 application code, using `withRemote()` could be a better method as it brings some good benefits with it:
 
@@ -1148,7 +1148,7 @@ If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote s
 `conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
 password as well as enablement of SSL from the client side.
 
-Similarly, Gremlin Server can be configured for REST and security.
+Similarly, Gremlin Server can be configured for HTTP and security.
 
 [source,text]
 ----
@@ -1668,7 +1668,7 @@ will simply have Gremlin Server close transactions on all graphs for every reque
 Considering State
 ^^^^^^^^^^^^^^^^^
 
-With REST and any sessionless requests, there is no variable state maintained between requests.  Therefore,
+With HTTP and any sessionless requests, there is no variable state maintained between requests.  Therefore,
 when <<connecting-via-console,connecting with the console>>, for example, it is not possible to create a variable in
 one command and then expect to access it in the next:
 
@@ -1683,7 +1683,7 @@ No such property: x for class: Script4
 Display stack trace? [yN] n
 ----
 
-The same behavior would be seen with REST or when using sessionless requests through one of the Gremlin Server drivers.
+The same behavior would be seen with HTTP or when using sessionless requests through one of the Gremlin Server drivers.
 If having this behavior is desireable, then <<sessions,consider sessions>>.
 
 There is an exception to this notion of state not existing between requests and that is globally defined functions.
@@ -1722,7 +1722,7 @@ $ curl -X POST -d "{\"gremlin\":\"divideIt(8, 2)\"}" "http://localhost:8182"
 {"message":"Error encountered evaluating script: divideIt(8, 2)"}
 ----
 
-In the above REST-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
+In the above HTTP-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
 immediately forget the script after execution. In this way, the function does not end up being globally available.
 
 [[gremlin-plugins]]
