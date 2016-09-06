@@ -615,7 +615,7 @@ log.info("Gremlin Server shutdown")
                                         </exec>
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
-                                            <arg line="upload dist/* -r pypitest -s"/>
+                                            <arg line="upload dist/* -r pypi -s"/>
                                         </exec>
                                     </tasks>
                                 </configuration>
