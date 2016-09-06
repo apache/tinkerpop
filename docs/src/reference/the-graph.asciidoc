@@ -494,7 +494,7 @@ demonstrated in the following example where a single `Vertex` is written to Grap
 ----
 graph = TinkerFactory.createModern()
 g = graph.traversal()
-f = new FileOutputStream("vertex-1.json")
+f = new ByteArrayOutputStream()
 graph.io(graphson()).writer().create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
 ----
@@ -563,14 +563,14 @@ With a minor change to the construction of the `GraphSONWriter` the lossy nature
 Types with GraphSON 1.0
 +++++++++++++++++++++++
 
-GraphSON 1.0 is the version enabled by default when creating a GraphSON Mapper. Here is how to enable types with GraphSON
-1.0:
+GraphSON 1.0 is the version enabled by default when creating a GraphSON Mapper. Here is how to enable types with
+GraphSON 1.0:
 
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
 g = graph.traversal()
-f = new FileOutputStream("vertex-1.json")
+f = new ByteArrayOutputStream()
 mapper = graph.io(graphson()).mapper().embedTypes(true).create()
 graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
@@ -672,10 +672,10 @@ centric types information in a consistent format.
 
 With GraphSON 2.0, types are enabled by default.
 
-The type format is :
+The type format is:
 
-* Non typed value : `value`
-* Typed value     : `{"@type":"typeID", "@value":value}`
+* Non typed value - `value`
+* Typed value     - `{"@type":"typeID", "@value":value}`
 
 TypeIDs are composed of 2 parts, a namespace, and a type name, in the format `"namespace:typename"`.
 A namespace gives the possibility for TinkerPop implementors to categorize custom types they may implement
@@ -685,15 +685,15 @@ namespace `g`.
 GraphSON 2.0 will provide type information for any value that is not `String`, `Boolean`, `Map` or `Collection`.
 TinkerPop includes types for graph elements:
 
-* Vertex -> "g:Vertex"
-* Edge -> "g:Edge"
-* VertexPropery -> "g:VertexProperty"
-* Property -> "g:Property"
-* Path -> "g:Path"
-* Tree -> "g:Tree"
-* Graph -> "g:Graph"
-* Metrics -> "g:Metrics"
-* TraversalMetrics -> `g:TraversalMetrics"
+* Vertex - `g:Vertex`
+* Edge - `g:Edge`
+* VertexPropery - `g:VertexProperty`
+* Property - `g:Property`
+* Path - `g:Path`
+* Tree - `g:Tree`
+* Graph - `g:Graph`
+* Metrics - `g:Metrics`
+* TraversalMetrics - `g:TraversalMetrics`
 
 GraphSON 2.0 can also be configured with "extended" types that build on top of the core types in the "g" namespace.
 The extended types are in the "gx" namespace as exposed by `GraphSONXModuleV2d0` and includes additional types like
@@ -710,18 +710,17 @@ Here's the same previous example of GraphSON 1.0, but with GraphSON 2.0:
 ----
 graph = TinkerFactory.createModern()
 g = graph.traversal()
-f = new FileOutputStream("vertex-graphson20.json")
+f = new ByteArrayOutputStream()
 mapper = graph.io(graphson()).mapper().version(GraphSONVersion.V2_0).create()
-v = g.V(1).next()
-v.property("uuid", UUID.randomUUID())
-graph.io(graphson()).writer().mapper(mapper).create().writeObject(f, v)
+graph.io(graphson()).writer().mapper(mapper).create().writeVertex(f, g.V(1).next(), BOTH)
 f.close()
 ----
 
-Creating a GraphSON 2.0 mapper is done by calling `.version(GraphSONVersion.V2_0)` on the mapper builder.
-Here's a sample output:
+////
+Creating a GraphSON 2.0 mapper is done by calling `.version(GraphSONVersion.V2_0)` on the mapper builder. Here's is the
+example output from the code above:
 
-[source,json]
+[source, json]
 ----
 {
 	"@type": "g:Vertex",
@@ -775,6 +774,7 @@ Here's a sample output:
 	}
 }
 ----
+////
 
 Types can be disabled when creating a GraphSON 2.0 `Mapper` with:
 
