@@ -1129,7 +1129,7 @@ This works for `Collection` and `Number`-type objects. For any other object, a m
 
 [[option-step]]
 Option Step
-~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
 
