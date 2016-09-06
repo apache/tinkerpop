@@ -23,8 +23,10 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-2]]
-TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.2.2 (Release Date: September 9, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This release also includes changes from <<release-3-1-4, 3.1.4>>.
 
 * Included GraphSON as a default serializer (in addition to Gryo, which was already present) in Gremlin Server if none are defined.
 * Added `gremlin-python` package as a Gremlin language variant in Python.
@@ -60,6 +62,35 @@ TinkerPop 3.2.2 (NOT OFFICIALLY RELEASED YET)
 * Added input, result prompt preferences
 * Added multi-line indicator in Gremlin Console
 
+Bugs
+^^^^
+
+* TINKERPOP-1151 slf4j-log4j12 / log4j is only required for testing *(breaking)*
+* TINKERPOP-1383 publish-docs.sh might publish to current too early
+* TINKERPOP-1390 IdentityRemoveStrategyTest fails randomly
+* TINKERPOP-1400 SubgraphStrategy introduces infinite recursion if filter has Vertex/Edge steps.
+* TINKERPOP-1405 profile() doesn't like withPath()
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-1037 Gremlin shell output coloring
+* TINKERPOP-1226 Gremlin Console should :clear automagically after "Display stack trace."
+* TINKERPOP-1230 Serialising lambdas for RemoteGraph
+* TINKERPOP-1274 GraphSON Version 2.0
+* TINKERPOP-1278 Implement Gremlin-Python and general purpose language variant test infrastructure
+* TINKERPOP-1285 Gremline console does not differentiate between multi-line and single-line input
+* TINKERPOP-1334 Provide a way to pull gremlin.driver.Cluster connection settings.
+* TINKERPOP-1347 RemoteConnection needs to provide TraversalSideEffects. *(breaking)*
+* TINKERPOP-1373 Default gremlinPool to number of cores
+* TINKERPOP-1386 Bump to Netty 4.0.40.Final
+* TINKERPOP-1392 Remove support for java serialized Traversal *(breaking)*
+* TINKERPOP-1394 Fix links in Recipes doc
+* TINKERPOP-1396 Traversal Induced Values Recipe
+* TINKERPOP-1402 Impossible for graph implementations to provide a class resolver for Gryo IO
+* TINKERPOP-1407 Default serializers for Gremlin Server
+* TINKERPOP-1425 Use trailing underscores in gremlin-python
+
 [[release-3-2-1]]
 TinkerPop 3.2.1 (Release Date: July 18, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,7 +117,7 @@ This release also includes changes from <<release-3-1-3, 3.1.3>>.
 * Ensure a separation of `GraphComputer` and `VertexProgram` configurations in `SparkGraphComputer` and `GiraphGraphComputer`.
 * `PeerPressureVertexProgram` now supports dynamic initial vote strength calculations.
 * Added `EmptyMemory` for ease of use when no memory exists.
-* Updated `VertexComputing.generateProgram()` API to include `Memory`. (*breaking*)
+* Updated `VertexComputing.generateProgram()` API to include `Memory`. *(breaking)*
 * `ImmutablePath.TailPath` is now serializable like `ImmutablePath`.
 * Added `ConfigurationCompilerProvider` which allows fine-grained control of some of the internal `GremlinGroovyScriptEngine` settings at the Groovy compilation level.
 * Intoduced the `application/vnd.gremlin-v1.0+gryo-lite` serialization type to Gremlin Server which users "reference" elements rather than "detached".
@@ -176,7 +207,7 @@ TinkerPop 3.2.0 (Release Date: April 8, 2016)
 This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incubating>>.
 
 * Bumped to Neo4j 2.3.3.
-* Renamed variable `local` to `fs` in `HadoopGremlinPlugin` to avoid a naming conflict with `Scope.local`. (*breaking*)
+* Renamed variable `local` to `fs` in `HadoopGremlinPlugin` to avoid a naming conflict with `Scope.local`. *(breaking)*
 * Added `GraphTraversal.optional()` which will use the inner traversal if it returns results, else it won't.
 * `GroupStep` and `GroupSideEffectStep` make use of mid-traversal reducers to limit memory consumption in OLAP.
 * Added `GraphTraversal.program(VertexProgram)` to allow arbitrary user vertex programs in OLAP.
@@ -188,7 +219,7 @@ This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incuba
 * `DedupGlobalStep` can now handle star-bound `by()`-modulators and scoped keys on `GraphComputer`.
 * Added `Computer` which is a builder for `GraphComputers` that is serializable.
 * `PersistedOutputRDD` now implements `PersistResultGraphAware` and thus, no more unneeded warnings when using it.
-* Renamed `StandardTraversalMetrics` to `DefaultTraversalMetrics` given the `DefaultXXX`-convention throughout. (*breaking*)
+* Renamed `StandardTraversalMetrics` to `DefaultTraversalMetrics` given the `DefaultXXX`-convention throughout. *(breaking)*
 * Bumped to Apache Hadoop 2.7.2.
 * Fixed a bug around profiling and nested traversals.
 * Added `gremlin.hadoop.defaultGraphComputer` so users can use `graph.compute()` with `HadoopGraph`.
@@ -199,15 +230,15 @@ This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incuba
 * Added validation to `GryoMapper` Kryo identifiers before construction to prevent accidental duplicates.
 * Added `GraphStep.addIds()` which is useful for `HasContainer` "fold ins."
 * Added a static `GraphStep.processHashContainerIds()` helper for handling id-based `HasContainers`.
-* `GraphStep` implementations should have `g.V().hasId(x)` and `g.V(x)` compile equivalently. (*breaking*)
+* `GraphStep` implementations should have `g.V().hasId(x)` and `g.V(x)` compile equivalently. *(breaking)*
 * Optimized `ExpandableStepIterator` with simpler logic and increased the likelihood of bulking.
 * Optimized `TraverserRequirement` calculations.
-* `Step.addStart()` and `Step.addStarts()` now take `Traverser.Admin<S>` and `Traverser.Admin<S>`, respectively. (*breaking*)
-* `Step.processNextStart()` and `Step.next()` now return `Traverser.Admin<E>`. (*breaking*)
-* `Traversal.addTraverserRequirement()` method removed. (*breaking*)
+* `Step.addStart()` and `Step.addStarts()` now take `Traverser.Admin<S>` and `Traverser.Admin<S>`, respectively. *(breaking)*
+* `Step.processNextStart()` and `Step.next()` now return `Traverser.Admin<E>`. *(breaking)*
+* `Traversal.addTraverserRequirement()` method removed. *(breaking)*
 * Fixed a `hashCode()` bug in `OrderGlobalStep` and `OrderLocalStep`.
 * Added `OrderLimitStrategy` which will ensure that partitions are limited before being merged in OLAP.
-* `ComparatorHolder` now separates the traversal from the comparator. (*breaking*)
+* `ComparatorHolder` now separates the traversal from the comparator. *(breaking)*
 * Bumped to Apache Spark 1.6.1.
 * If no Spark serializer is provided then `GryoSerializer` is the default, not `JavaSerializer`.
 * Added `Operator.sumLong` as a optimized binary operator intended to be used by `Memory` reducers that know they are dealing with longs.
@@ -217,30 +248,30 @@ This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incuba
 * `TraversalSideEffects` remain consistent and usable across multiple chained OLAP jobs.
 * Added `MemoryTraversalSideEffects` which wraps `Memory` in a `TraversalSideEffects` for use in OLAP.
 * `TraversalSideEffects` are now fully functional in OLAP save that an accurate global view is possible at the start of an iteration (not during).
-* Updated the `TraversalSideEffects` API to support registered reducers and updated `get()`-semantics. (*breaking*)
+* Updated the `TraversalSideEffects` API to support registered reducers and updated `get()`-semantics. *(breaking)*
 * Split existing `profile()` into `ProfileStep` and `ProfileSideEffectStep`.
-* The `profile()`-step acts like a reducing barrier and emits `TraversalMetrics` without the need for `cap()`. (*breaking*)
+* The `profile()`-step acts like a reducing barrier and emits `TraversalMetrics` without the need for `cap()`. *(breaking)*
 * Added `LocalBarrier` interface to allow traversers to remain distributed during an iteration so as to reduce cluster traffic.
 * Added `NoOpBarrierStep` as a `LocalBarrier` implementation of `LambdaCollectingBarrierStep(noOp)`.
 * `AggregateStep` implements `LocalBarrier` and thus, doesn't needlessly communicate its barrier traversers.
 * Fixed an OLAP-based `Barrier` synchronization bug.
-* Fixed a semantic bug in `BranchStep` (and inheriting steps) where barriers reacted locally. (*breaking*)
-* Added `MemoryComputeKey` for specification of `Memory` keys in `VertexProgram`. (*breaking*)
-* Added `VertexComputeKey` for specification of vertex compute properties in `VertexProgram`. (*breaking*)
+* Fixed a semantic bug in `BranchStep` (and inheriting steps) where barriers reacted locally. *(breaking)*
+* Added `MemoryComputeKey` for specification of `Memory` keys in `VertexProgram`. *(breaking)*
+* Added `VertexComputeKey` for specification of vertex compute properties in `VertexProgram`. *(breaking)*
 * Added `and`, `or`, and `addAll` to `Operator`.
-* `Memory` API changed to support setting and adding values for reduction. (*breaking*)
+* `Memory` API changed to support setting and adding values for reduction. *(breaking)*
 * `Memory` keys can be marked as broadcast and only those values are sent to workers on each iterator.
 * `Memory` keys can be marked transient and thus deleted at the end of the OLAP job.
 * Vertex compute keys can be marked transient and thus deleted at the end of the OLAP job.
-* `VertexProgram` API changed to support `MemoryComputeKey` and `VertexComputeKey`. (*breaking*)
+* `VertexProgram` API changed to support `MemoryComputeKey` and `VertexComputeKey`. *(breaking)*
 * `TraversalVertexProgram` able to execute OLAP and OLTP traversal sections dynamically within the same job.
-* Removed `FinalGet` interface as all post processing of reductions should be handled by the reducing step explicitly. (*breaking*)
+* Removed `FinalGet` interface as all post processing of reductions should be handled by the reducing step explicitly. *(breaking)*
 * Simplified all `SupplyingBarrierStep` implementations as they no longer require `MapReduce` in OLAP.
 * Simplified all `CollectingBarrierStep` implementations as they no longer require `MapReduce` in OLAP.
 * Simplified all `ReducingBarrierStep` implementations as they no longer require `MapReduce` in OLAP.
 * All steps in OLAP that used `MapReduce` now use `Memory` to do their reductions which expands the list of legal traversals.
 * `GroupStep` simplified with `GroupHelper.GroupMap` no longer being needed. Related to the removal of `FinalGet`.
-* OLAP side-effects that are no longer generated by `MapReduce` are simply stored in `ComputerResult.Memory` w/ no disk persistence needed. (*breaking*)
+* OLAP side-effects that are no longer generated by `MapReduce` are simply stored in `ComputerResult.Memory` w/ no disk persistence needed. *(breaking)*
 * Added `Generate` step interface which states that there could be a final generating phase to a side-effect or reduction (e.g. `GroupStep`).
 * `Barrier` step interface is now the means by which non-parallel steps communicate with their counterparts in OLAP.
 * Added `MemoryComputing` step interface which states that the step uses `MemoryComputeKeys` for its computation in OLAP.
@@ -250,14 +281,14 @@ This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incuba
 * Simplified `VertexProgram` implementations with a `PureTraversal`-model and deprecated `ConfigurationTraversal`.
 * Simplified script-based `Traversals` via `ScriptTraversal` and deprecated `TraversalScriptFunction` and `TraversalScriptHelper`.
 * Added `TimesModulating` interface which allows the `Step` to decide how a `times()`-modulation should be handled.
-* Added `ByModulating` interface which allows the `Step` to decide how a `by()`-modulation should be handled. (*breaking*)
+* Added `ByModulating` interface which allows the `Step` to decide how a `by()`-modulation should be handled. *(breaking)*
 * Simplified the `by()`-modulation patterns of `OrderGlobalStep` and `OrderLocalStep`.
-* Added `GraphComputerTest.shouldSupportPreExistingComputeKeys()` to ensure existing compute keys are "revived." (*breaking*)
-* Added `GraphComputerTest.shouldSupportJobChaining()` to ensure OLAP jobs can be linearly chained. (*breaking*)
+* Added `GraphComputerTest.shouldSupportPreExistingComputeKeys()` to ensure existing compute keys are "revived." *(breaking)*
+* Added `GraphComputerTest.shouldSupportJobChaining()` to ensure OLAP jobs can be linearly chained. *(breaking)*
 * Fixed a bug in both `SparkGraphComputer` and `GiraphGraphComputer` regarding source data access in job chains.
 * Expanded job chaining test coverage for `GraphComputer` providers.
 * Added `TraversalHelper.onGraphComputer(traversal)`.
-* `MapReduce.map()` no longer has a default implementation. This method must be implemented. (*breaking*)
+* `MapReduce.map()` no longer has a default implementation. This method must be implemented. *(breaking)*
 * `TraversalVertexProgram` can work without a `GraphStep` start.
 * Added `PageRankVertexProgramStep` and `GraphTraversal.pageRank()`.
 * Added `TraversalVertexProgramStep` to support OLAP traversal job chaining.
@@ -265,15 +296,15 @@ This release also includes changes from <<release-3-1-2-incubating, 3.1.2-incuba
 * Simplified the comparator model in `OrderGlobalStep` and `OrderLocalStep`.
 * Refactored `TraversalSource` model to allow fluent-method construction of `TraversalSources`.
 * Deprecated the concept of a `TraversalSource.Builder`.
-* Removed the concept of a `TraversalEngine`. All `Traversal` modulations are now mediated by `TraversalStrategies`. (*breaking*)
+* Removed the concept of a `TraversalEngine`. All `Traversal` modulations are now mediated by `TraversalStrategies`. *(breaking)*
 * Added `SideEffectStrategy` for registering sideEffects in a spawned `Traversal`.
 * Added `SackStrategy` for registering a sack for a spawned `Traversal`.
 * Added `RequirementsStrategy` and `RequirementsStep` for adding dynamic `TraverserRequirements` to a `Traversal`.
 * Removed `EngineDependentStrategy`.
-* Renamed step interface `EngineDependent` to `GraphComputing` with method `onGraphComputer()`. (*breaking*)
+* Renamed step interface `EngineDependent` to `GraphComputing` with method `onGraphComputer()`. *(breaking)*
 * Cleaned up various `TraversalStrategy` tests now that `TraversalEngine` no longer exists.
 * Added `GraphFilter` to support filtering out vertices and edges that won't be touched by an OLAP job.
-* Added `GraphComputer.vertices()` and `GraphComputer.edges()` for `GraphFilter` construction. (*breaking*)
+* Added `GraphComputer.vertices()` and `GraphComputer.edges()` for `GraphFilter` construction. *(breaking)*
 * `SparkGraphComputer`, `GiraphGraphComputer`, and `TinkerGraphComputer` all support `GraphFilter`.
 * Added `GraphComputerTest.shouldSupportGraphFilter()` which verifies all filtered graphs have the same topology.
 * Added `GraphFilterAware` interface to `hadoop-gremlin/` which tells the OLAP engine that the `InputFormat` handles filtering.
