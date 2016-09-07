@@ -53,7 +53,7 @@ A gentle introduction to TinkerPop and the Gremlin traversal language that is di
 Provides a detailed look at The Gremlin Console and how it can be used when working with TinkerPop.
 ^|image:gremlin-chef.png[width=125] |link:http://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes]
 A collection of best practices and common traversal patterns for Gremlin.
-^|image:gremlin-house-of-mirrors-cropped.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/gremlin-language-variants/[Gremlin Language Variants]
+^|image:gremlin-house-of-mirrors-cropped.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/tutorials/gremlin-language-variants/[Gremlin Language Variants]
 Instructs developers on the approach to building a Gremlin variant in their native programming language.
 |image:gremlin-lab-coat.png[width=200] |link:http://sql2gremlin.com/[Sql2Gremlin] +
 Learn Gremlin using typical patterns found when querying data with SQL. (*external*)
