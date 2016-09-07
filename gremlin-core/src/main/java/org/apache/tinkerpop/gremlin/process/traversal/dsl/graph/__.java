@@ -661,31 +661,31 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#hasLabel(String...)
+     * @see GraphTraversal#hasLabel(Object, Object...)
      */
-    public static <A> GraphTraversal<A, A> hasLabel(final String... labels) {
-        return __.<A>start().hasLabel(labels);
+    public static <A> GraphTraversal<A, A> hasLabel(final Object value, Object... values) {
+        return __.<A>start().hasLabel(value, values);
     }
 
     /**
-     * @see GraphTraversal#hasId(Object...)
+     * @see GraphTraversal#hasId(Object, Object...)
      */
-    public static <A> GraphTraversal<A, A> hasId(final Object... ids) {
-        return __.<A>start().hasId(ids);
+    public static <A> GraphTraversal<A, A> hasId(final Object value, Object... values) {
+        return __.<A>start().hasId(value, values);
     }
 
     /**
-     * @see GraphTraversal#hasKey(String...)
+     * @see GraphTraversal#hasKey(Object, Object...)
      */
-    public static <A> GraphTraversal<A, A> hasKey(final String... keys) {
-        return __.<A>start().hasKey(keys);
+    public static <A> GraphTraversal<A, A> hasKey(final Object value, Object... values) {
+        return __.<A>start().hasKey(value, values);
     }
 
     /**
-     * @see GraphTraversal#hasValue(Object...)
+     * @see GraphTraversal#hasValue(Object, Object...)
      */
-    public static <A> GraphTraversal<A, A> hasValue(final Object... values) {
-        return __.<A>start().hasValue(values);
+    public static <A> GraphTraversal<A, A> hasValue(final Object value, Object... values) {
+        return __.<A>start().hasValue(value, values);
     }
 
     /**
