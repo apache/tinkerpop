@@ -131,7 +131,8 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
     mv .ext/plugins.txt ext/
   fi
 
-  awk -f ${AWK_SCRIPTS}/prepare.awk ${input} |
+  sed 's/\t/    /g' ${input} |
+  awk -f ${AWK_SCRIPTS}/prepare.awk |
   awk -f ${AWK_SCRIPTS}/init-code-blocks.awk -v TP_HOME="${TP_HOME}" PYTHONPATH="." |
   awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template |
   HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
