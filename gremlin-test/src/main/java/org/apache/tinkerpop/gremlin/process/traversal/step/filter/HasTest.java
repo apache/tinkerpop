@@ -107,6 +107,10 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasIdX1_2X(final Object v1Id, final Object v2Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasIdXwithinX1_2XX(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_in_hasIdXneqX1XX(final Object v1Id);
+
     public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
 
     @Test
@@ -386,6 +390,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversala2 = get_g_V_hasIdX1X(convertToVertexId("marko"));
         final Traversal<Vertex, Vertex> traversalb1 = get_g_VX1_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         final Traversal<Vertex, Vertex> traversalb2 = get_g_V_hasIdX1_2X(convertToVertexId("marko"), convertToVertexId("vadas"));
+        final Traversal<Vertex, Vertex> traversalb3 = get_g_V_hasIdXwithinX1_2XX(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversala1);
         printTraversalForm(traversala2);
         printTraversalForm(traversalb1);
@@ -394,11 +399,13 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         checkResults(Collections.singletonList(convertToVertex(graph, "marko")), traversala2);
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb1);
         checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb2);
+        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas")), traversalb3);
         // if providers don't have their own custom GraphStep, then ignore validating compilation equality
         if ((traversala1.asAdmin().getStartStep() instanceof GraphStep) &&
                 !traversala1.asAdmin().getStartStep().getClass().equals(GraphStep.class)) {
             assertEquals(traversala1, traversala2);
             assertEquals(traversalb1, traversalb2);
+            assertEquals(traversalb1, traversalb3);
             assertNotEquals(traversala1, traversalb1);
             assertNotEquals(traversala1, traversalb2);
             assertNotEquals(traversala2, traversalb1);
@@ -412,6 +419,20 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_hasXage_notXlteX10X_andXnotXbetweenX11_20XXXX_andXltX29X_orXeqX35XXXX_name();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("peter", "vadas"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_in_hasIdXneqX1XX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_in_hasIdXneqX1XX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            Vertex vertex = traversal.next();
+            assertTrue(vertex.value("name").equals("josh") || vertex.value("name").equals("peter"));
+            count++;
+        }
+        assertEquals(3, count);
     }
 
     private void assert_g_EX11X(final Object edgeId, final Traversal<Edge, Edge> traversal) {
@@ -546,6 +567,16 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasIdX1_2X(final Object v1Id, final Object v2Id) {
             return g.V().hasId(v1Id, v2Id);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasIdXwithinX1_2XX(final Object v1Id, final Object v2Id) {
+            return g.V().hasId(P.within(v1Id, v2Id));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_in_hasIdXneqX1XX(final Object v1Id) {
+            return g.V().in().hasId(P.neq(v1Id));
         }
 
         @Override
