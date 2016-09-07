@@ -661,6 +661,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#has(T, Object, Object...)
+     */
+    public static <A> GraphTraversal<A, A> has(final T accessor, final Object value, Object... values) {
+        return __.<A>start().has(accessor, value, values);
+    }
+
+    /**
      * @see GraphTraversal#hasLabel(Object, Object...)
      */
     public static <A> GraphTraversal<A, A> hasLabel(final Object value, Object... values) {
