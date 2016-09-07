@@ -32,6 +32,7 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
     protected transient TraversalSideEffects sideEffects;
     protected String future = HALT;
+    protected long bulk = 1L;
 
     protected O_OB_S_SE_SL_Traverser() {
     }
@@ -44,6 +45,16 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> {
     }
 
     /////////////////
+
+    @Override
+    public void setBulk(final long count) {
+        this.bulk = count > 0 ? 1L : 0L;
+    }
+
+    @Override
+    public long bulk() {
+        return this.bulk;
+    }
 
     @Override
     public <S> S sack() {

@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -32,10 +31,13 @@ import org.junit.runner.RunWith;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
+import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
@@ -65,6 +67,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id);
 
     public abstract Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack();
+
+    public abstract Traversal<Vertex, Double> get_g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack(final Object v1Id);
 
     public abstract Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
 
@@ -145,6 +149,14 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack() {
+        final Traversal<Vertex, Double> traversal = get_g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList(1.0d), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
         final Traversal<Vertex, BigDecimal> traversal = get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
         printTraversalForm(traversal);
@@ -165,22 +177,22 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum() {
-            return g.withSack(0.0f).V().outE().sack(Operator.sum).by("weight").inV().sack().sum();
+            return g.withSack(0.0f).V().outE().sack(sum).by("weight").inV().sack().sum();
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
-            return g.withSack(0.0f).V().repeat(outE().sack(Operator.sum).by("weight").inV()).times(2).sack();
+            return g.withSack(0.0f).V().repeat(outE().sack(sum).by("weight").inV()).times(2).sack();
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
-            return g.withSack(0.0f).V().outE().sack(Operator.sum, "weight").inV().sack().sum();
+            return g.withSack(0.0f).V().outE().sack(sum, "weight").inV().sack().sum();
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            return g.withSack(0.0f).V().repeat(outE().sack(Operator.sum, "weight").inV()).times(2).sack();
+            return g.withSack(0.0f).V().repeat(outE().sack(sum, "weight").inV()).times(2).sack();
         }
 
         @Override
@@ -193,17 +205,22 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id) {
-            return g.withSack(1.0d, Operator.sum).V(v1Id).local(out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack();
+            return g.withSack(1.0d, sum).V(v1Id).local(out("knows").barrier(normSack)).in("knows").barrier().sack();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack() {
-            return g.withBulk(false).withSack(1, Operator.sum).V().out().barrier().sack();
+            return g.withBulk(false).withSack(1, sum).V().out().barrier().sack();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack(final Object v1Id) {
+            return g.withBulk(false).withSack(1.0d, sum).V(v1Id).local(outE("knows").barrier(normSack).inV()).in("knows").barrier().sack();
         }
 
         @Override
         public Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
-            return g.withSack(BigInteger.TEN.pow(1000), Operator.assign).V().local(out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack();
+            return g.withSack(BigInteger.TEN.pow(1000), Operator.assign).V().local(out("knows").barrier(normSack)).in("knows").barrier().sack();
         }
     }
 }
