@@ -122,7 +122,7 @@ Within the CPython console, it is possible to evaluate the following.
 
 [source,python]
 >>> graph = Graph()
->>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g'))
+>>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
 When a traversal spawned from the `GraphTraversalSource` above is iterated, the traveral's `Bytecode` is sent over the wire
 via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.

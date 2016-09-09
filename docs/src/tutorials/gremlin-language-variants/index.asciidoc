@@ -551,7 +551,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 # loading statics enables __.out() to be out() and P.gt() to be gt()
 >>> statics.load_statics(globals())
 >>> graph = Graph()
->>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182','g'))
+>>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 # nested traversal with Python slicing and attribute interception extensions
 >>> g.V().hasLabel("person").repeat(both()).times(2).name[0:2].toList()
 [u'marko', u'marko']
