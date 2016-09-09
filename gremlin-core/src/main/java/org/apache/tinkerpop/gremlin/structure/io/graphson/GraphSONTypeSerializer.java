@@ -33,6 +33,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 /**
@@ -193,6 +194,8 @@ public class GraphSONTypeSerializer extends TypeSerializer {
             return Property.class;
         } else if (ByteBuffer.class.isAssignableFrom(c)) {
             return ByteBuffer.class;
+        } else if (InetAddress.class.isAssignableFrom(c)) {
+            return InetAddress.class;
         } else if (Traverser.class.isAssignableFrom(c)) {
             return Traverser.class;
         }

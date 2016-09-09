@@ -24,6 +24,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
@@ -55,6 +56,7 @@ public final class GraphSONXModuleV2d0 extends GraphSONModule {
                 put(BigDecimal.class, "BigDecimal");
                 put(Byte.class, "Byte");
                 put(Character.class, "Char");
+                put(InetAddress.class, "InetAddress");
 
                 // Time serializers/deserializers
                 put(Duration.class, "Duration");

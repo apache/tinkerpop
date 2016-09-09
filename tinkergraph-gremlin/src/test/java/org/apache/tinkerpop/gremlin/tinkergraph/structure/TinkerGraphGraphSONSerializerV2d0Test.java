@@ -44,6 +44,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -227,6 +228,7 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
         final Duration durationProp = Duration.ofHours(3);
         final Long longProp = 2L;
         final ByteBuffer byteBufferProp = ByteBuffer.wrap("testbb".getBytes());
+        final InetAddress inetAddressProp = InetAddress.getByName("10.10.10.10");
 
         // One Java util type natively supported by Jackson
         v.property("uuid", uuidProp);
@@ -236,6 +238,8 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
         v.property("long", longProp);
         // One Java util type added by GraphSON
         v.property("bytebuffer", byteBufferProp);
+        v.property("inetaddress", inetAddressProp);
+
 
         final GraphWriter writer = getWriter(defaultMapperV2d0);
         final GraphReader reader = getReader(defaultMapperV2d0);
@@ -249,6 +253,7 @@ public class TinkerGraphGraphSONSerializerV2d0Test {
             assertEquals(vRead.property("duration").value(), durationProp);
             assertEquals(vRead.property("long").value(), longProp);
             assertEquals(vRead.property("bytebuffer").value(), byteBufferProp);
+            assertEquals(vRead.property("inetaddress").value(), inetAddressProp);
         }
     }
 
