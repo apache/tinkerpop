@@ -162,7 +162,8 @@ Email Templates
 Release VOTE
 ~~~~~~~~~~~~
 
-```
+[source,text]
+----
 Subject: [VOTE] TinkerPop xx.yy.zz Release
 
 Hello,
@@ -200,12 +201,13 @@ My vote is +1.
 
 Thank you very much,
 <TinkerPop Committer Name>
-```
+----
 
 Dev Release RESULT VOTE
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-```
+[source,text]
+----
 Subject: [RESULT][VOTE] TinkerPop xx.yy.zz Release
 
 This vote is now closed with a total of X +1s, no +0s and no -1s. The results are:
@@ -224,11 +226,17 @@ NON-BINDING VOTES:
 
 Thank you very much,
 <TinkerPop Committer Name>
-```
+----
 
 General Release Announcement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The template below refers to the "name of release line" and the "release line logo". Every release line has a name
+and logo. For example, 3.1.x had the name, "A 187 On The Undercover Gremlinz" and the logo shown
+link:http://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
+
+[source,text]
+----
 Subject: TinkerPop xx.yy.zz Released: [name of release line]
 
 Hello,
@@ -257,4 +265,5 @@ The Central Maven repo has sync'd as well:
 
 https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
 
-[include the release line logo]
+[include the release line logo image]
+----
