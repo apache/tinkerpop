@@ -132,5 +132,43 @@ elapsed, the invite may be sent to the new PMC member. If they accept, then the 
 link:http://www.apache.org/dev/pmc.html#newpmc[How to Add a New PMC Member] section in the Apache docs for ho to
 complete the process. Use link:https://whimsy.apache.org/roster/committee/[Whimsy] to update PMC membership.
 
+Board Reports
+-------------
 
+The PMC Chair is responsible for submitting a link:http://www.apache.org/foundation/board/reporting[report to the board]
+on a quarterly basis. TinkerPop reports on the following months: January, April, July, October. The report has the
+following format:
+
+[source,text]
+----
+## Description:
+ Apache TinkerPop is a graph computing framework for both graph databases
+ (OLTP) and graph analytic systems (OLAP).
+
+## Activity:
+ <discuss general project health, project direction, community growth/activity, etc.>
+
+## Issues:
+ There are no issues requiring board attention at this time.
+
+## Releases:
+ - x.y.z (<month> <day>, <year>)
+ - x.y.z (<month> <day>, <year>)
+
+## PMC/Committer:
+
+ - Last PMC addition was <name> - <month> <year>
+ - Last committer addition was <name> - <month> <year>
+
+## Links
+
+[1] <hyperlink to external reference, if a reference was made in the report>
+----
+
+A draft of the report should be sent to the TinkerPop developer mailing list for review at least three days prior to
+submitting to the board. The final report should be sent in plain-text format to `board@apache.org` and should be
+committed to the appropriate meeting agenda in SVN at:
+
+[source,text]
+https://svn.apache.org/repos/private/foundation/board
 
