@@ -23,7 +23,7 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-2]]
-TinkerPop 3.2.2 (Release Date: September 9, 2016)
+TinkerPop 3.2.2 (Release Date: September 6, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This release also includes changes from <<release-3-1-4, 3.1.4>>.
