@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.2</version>
+        <version>3.2.3-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
