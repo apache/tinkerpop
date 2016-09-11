@@ -52,6 +52,7 @@ setup(
     description='Gremlin-Python for Apache TinkerPop',
     long_description=open("README").read(),
     test_suite="tests",
+    data_files=[("", ["LICENSE", "NOTICE"])],
     setup_requires=[
         'pytest-runner',
     ],
