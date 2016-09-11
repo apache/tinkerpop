@@ -94,34 +94,36 @@ are additional tests to perform that the release manager feels are relevant, the
 words, there is no need to rebuild the `SNAPSHOT` yet another time unless there are circumstances that would call its
 validity into question.
 . Update `CHANGELOG.asciidoc`:
-.. Update the release date
+.. Update the release date - the release date is the date of the vote.
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
-= 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0)`.
-... Consider use of an "Excel" export to organize, sort (by type and then id) and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
+= 3.2.0 AND fixVersion not in (3.1.3, 3.1.2, 3.1.1, 3.1.0) ORDER BY type, Id ASC`.
+... Consider use of an "Excel" export to organize and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
 .. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . Update "upgrade documentation":
 .. Update the release date.
-.. Update the link to CHANGELOG.asciidoc
+.. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 . `bin/process-docs.sh` and validate the generated documentation locally (don't rely on "SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly)
-. `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step.
-handled document generation and this step now merely needs to upload what was generated.
-. `mvn deploy -Papache-release -DcreateChecksum=true -DskipTests` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well).
-. Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote. Do NOT "release" the repository at this time.
-. Upload artifacts to `https://dist.apache.org/repos/dist/dev//tinkerpop` for `[VOTE]` review.
-.. `svn co --depth empty https://dist.apache.org/repos/dist/dev//tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
+. `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step handled
+document generation and this step now merely needs to upload what was generated. Note that this step will be responsible
+for generating javadoc and without that the binary distributions won't contain that documentation.
+. `mvn deploy -Papache-release -DcreateChecksum=true -DskipTests` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus].
+. Review generated artifacts to be sure they have both javadocs and asciidocs present (request another committer to review as well) then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote. Do NOT "release" the repository at this time.
+. Upload artifacts to `https://dist.apache.org/repos/dist/dev/tinkerpop` for `[VOTE]` review.
+.. Use `svn rm` to delete past versions that were up for review in the same line of code. In other words, if uploading 3.2.3 then remove instances of 3.2.2 or any other past 3.2.x releases.
+.. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop/ dev` and `mkdir dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/xx.yy.zz/gremlin-console-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/xx.yy.zz/gremlin-server-xx.yy.zz-distribution.zip* dev/xx.yy.zz`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/xx.yy.zz/tinkerpop-xx.yy.zz-source-release.zip* dev/xx.yy.zz`
 .. `cd dev/xx.yy.zz`
-.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
+.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-tinkerpop-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e 's/tinkerpop-tinkerpop/tinkerpop/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
@@ -160,7 +162,8 @@ Email Templates
 Release VOTE
 ~~~~~~~~~~~~
 
-```
+[source,text]
+----
 Subject: [VOTE] TinkerPop xx.yy.zz Release
 
 Hello,
@@ -181,7 +184,7 @@ The GPG key used to sign the release artifacts is available at:
     https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS
 
 The online docs can be found here:
-	http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
+	http://tinkerpop.apache.org/docs/xx.yy.zz/ (user docs)
 	http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/ (upgrade docs)
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 	http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
@@ -198,12 +201,13 @@ My vote is +1.
 
 Thank you very much,
 <TinkerPop Committer Name>
-```
+----
 
 Dev Release RESULT VOTE
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-```
+[source,text]
+----
 Subject: [RESULT][VOTE] TinkerPop xx.yy.zz Release
 
 This vote is now closed with a total of X +1s, no +0s and no -1s. The results are:
@@ -222,11 +226,17 @@ NON-BINDING VOTES:
 
 Thank you very much,
 <TinkerPop Committer Name>
-```
+----
 
 General Release Announcement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The template below refers to the "name of release line" and the "release line logo". Every release line has a name
+and logo. For example, 3.1.x had the name, "A 187 On The Undercover Gremlinz" and the logo shown
+link:http://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
+
+[source,text]
+----
 Subject: TinkerPop xx.yy.zz Released: [name of release line]
 
 Hello,
@@ -255,4 +265,5 @@ The Central Maven repo has sync'd as well:
 
 https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
 
-[include the release line logo]
+[include the release line logo image]
+----
