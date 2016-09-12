@@ -204,7 +204,7 @@ on the Apache TinkerPop repository.
 .. Include a rough synopsis of how the changes were tested. This might be as simple as "Ran mvn clean install to
 success and performed manual testing in the Gremlin Console".
 .. Include other descriptive elements about the change if they are not already included in the JIRA ticket.
-.. Automated builds will occur with Travis and AppVeyor. Please be sure that the pull request passes those builds and
+.. Automated builds will occur with Travis. Please be sure that the pull request passes those builds and
 correct them if there are problems.
 
 Once the pull request has been placed it will go into *review*:

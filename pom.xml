@@ -273,7 +273,6 @@ limitations under the License.
                     <excludes>
                         <exclude>.travis.yml</exclude>
                         <exclude>.dockerignore</exclude>
-                        <exclude>appveyor.yml</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
