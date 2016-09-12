@@ -52,6 +52,11 @@ public final class HadoopPools {
         HadoopPools.initialize(ConfUtil.makeApacheConfiguration(configuration));
     }
 
+    public synchronized static void initialize(final GryoPool gryoPool) {
+        GRYO_POOL = gryoPool;
+        INITIALIZED = true;
+    }
+
     public static GryoPool getGryoPool() {
         if (!INITIALIZED) {
             HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");     // TODO: this is necessary because we can't get the pool intialized in the Merger code of the Hadoop process.
