@@ -31,7 +31,7 @@ read -s -p "Password for SVN user ${USERNAME}: " PASSWORD
 echo
 
 SVN_CMD="svn --no-auth-cache --username=${USERNAME} --password=${PASSWORD}"
-VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
+CURRENT=""
 
 mkdir -p target/svn
 rm -rf target/svn/*
@@ -53,5 +53,5 @@ do
 done
 
 ${SVN_CMD} add * --force
-${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
+${SVN_CMD} commit -m "Deploy docs for TinkerPop ${CURRENT}"
 popd
