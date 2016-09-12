@@ -436,6 +436,11 @@ NOTE: A custom `BulkLoader` implementation for incremental loading should use `G
 elements (e.g. `g.addV()` instead of `graph.addVertex()`). This way the `BulkLoaderVertexProgram` is able to efficiently
 track changes in the underlying graph and can apply several optimization techniques.
 
+WARNING: Edges in the input graph must be present in both directions, e.g. from the source vertex to the target vertex
+as an out-edge and from the target vertex to the source vertex as an in-edge. This is especially important if the input
+graph is a `HadoopGraph`. `BulkLoaderVertexProgram` will likely fail with a `FastNoSuchElementException` if one of the
+edges is missing.
+
 [[traversalvertexprogram]]
 TraversalVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~
