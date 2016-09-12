@@ -518,7 +518,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         });
 
         // countdown should have reached zero as results should have eventually been all returned and processed
-        assertTrue(latch.await(20, TimeUnit.SECONDS));
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
         IntStream.range(0, requests).forEach(r ->
