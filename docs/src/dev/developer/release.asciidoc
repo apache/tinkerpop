@@ -153,6 +153,8 @@ that this build will occur from the tag for the release, so be sure to checkout 
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
+. Deploy `gremlin-python` to pypi with `mvn deploy -pl gremlin-python -Dpypi -DskipTests` (note that `gremlin-python`
+should be built with `-DglvPython` first without skipping tests so that the distribution will be present)
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
