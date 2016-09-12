@@ -122,15 +122,10 @@ be adjusted accordingly to not auto-wildcard the imports.
 Build Server
 ------------
 
-TinkerPop uses both link:https://travis-ci.com/[Travis] and link:https://www.appveyor.com/[AppVeyor] for
-link:https://en.wikipedia.org/wiki/Continuous_integration[CI] services. Travis validates builds on Ubuntu, while
-AppVeyor validates builds on Windows.  The build statuses can be found here:
-
-* link:https://travis-ci.org/apache/tinkerpop[Travis Build Status]
-* link:https://ci.appveyor.com/project/ApacheSoftwareFoundation/tinkerpop[AppVeyor Build Status]
-
-Note that the CI process does not run integration tests or include Neo4j-related tests as those tests would likely
-exceed the allowable times for builds on these servers.
+TinkerPop uses link:https://travis-ci.com/[Travis] for link:https://en.wikipedia.org/wiki/Continuous_integration[CI]
+services. The build status can be found link:https://travis-ci.org/apache/tinkerpop[here].  Note that the CI process
+does not run integration tests or include Neo4j-related tests as those tests would likely exceed the allowable times
+for builds on these servers.
 
 Deprecation
 -----------
