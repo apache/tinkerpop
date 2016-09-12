@@ -37,6 +37,7 @@ from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import VertexProperty
+from gremlin_python.structure.graph import Path
 
 
 class GraphSONWriter(object):
@@ -247,6 +248,18 @@ class PropertyDeserializer(GraphSONDeserializer):
         return Property(value["key"], GraphSONReader._objectify(value["value"]))
 
 
+class PathDeserializer(GraphSONDeserializer):
+    def _objectify(self, dict):
+        value = dict[_SymbolHelper._VALUE]
+        labels = []
+        objects = []
+        for label in value["labels"]:
+            labels.append(set(label))
+        for object in value["objects"]:
+            objects.append(GraphSONReader._objectify(object))
+        return Path(labels, objects)
+
+
 class _SymbolHelper(object):
     symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
                  "or_": "or", "is_": "is", "not_": "not", "from_": "from",
@@ -286,5 +299,6 @@ deserializers = {
     "g:Vertex": VertexDeserializer(),
     "g:Edge": EdgeDeserializer(),
     "g:VertexProperty": VertexPropertyDeserializer(),
-    "g:Property": PropertyDeserializer()
+    "g:Property": PropertyDeserializer(),
+    "g:Path": PathDeserializer()
 }

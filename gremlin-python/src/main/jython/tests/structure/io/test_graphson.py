@@ -24,6 +24,7 @@ import unittest
 from unittest import TestCase
 
 from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONReader
 from gremlin_python.structure.io.graphson import GraphSONWriter
 
@@ -66,6 +67,18 @@ class TestGraphSONReader(TestCase):
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+
+    def test_path(self):
+        path = GraphSONReader.readObject(
+            """{"@type":"g:Path","@value":{"labels":[["a"],["b","c"],[]],"objects":[{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},"value":"marko","label":"name"}}],"age":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29},"label":"age"}}]}}},{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":3},"label":"software","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":4},"value":"lop","label":"name"}}],"lang":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":5},"value":"java","label":"lang"}}]}}},"lop"]}}"""
+        )
+        assert isinstance(path, Path)
+        assert "[v[1], v[3], u'lop']" == str(path)
+        assert Vertex(1) == path[0]
+        assert Vertex(1) == path["a"]
+        assert "lop" == path[2]
+        assert 3 == len(path)
+
 
 class TestGraphSONWriter(TestCase):
     def test_numbers(self):
