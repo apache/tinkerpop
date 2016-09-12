@@ -596,6 +596,19 @@ log.info("Gremlin Server shutdown")
             </activation>
             <build>
                 <plugins>
+                    <!--
+                    pypi doesn't have a staging area like sonatype so the deploy to pypi is done out of the normal
+                    release band. it is performed after successful VOTE in which case, the maven artifacts should
+                    not be deployed again - hence the plugin is disabled. deployment to pypi uses the antrun plugin
+                    below with twine so disabling the plugin has no effect on the pypi deployment.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
@@ -613,9 +626,10 @@ log.info("Gremlin Server shutdown")
                                               failonerror="true">
                                             <arg line="install twine"/>
                                         </exec>
+                                        <!-- to use the pypi test environment add: -r pypitest -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
-                                            <arg line="upload dist/* -r pypi -s"/>
+                                            <arg line="upload dist/* -r pypi -s "/>
                                         </exec>
                                     </tasks>
                                 </configuration>
