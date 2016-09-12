@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,6 +42,7 @@ public final class ProgramVertexProgramStep extends VertexProgramStep {
 
     private final Map<String, Object> configuration;
     private final String toStringOfVertexProgram;
+    private final Set<TraverserRequirement> traverserRequirements;
 
     public ProgramVertexProgramStep(final Traversal.Admin traversal, final VertexProgram vertexProgram) {
         super(traversal);
@@ -48,6 +51,7 @@ public final class ProgramVertexProgramStep extends VertexProgramStep {
         base.setDelimiterParsingDisabled(true);
         vertexProgram.storeState(base);
         this.toStringOfVertexProgram = vertexProgram.toString();
+        this.traverserRequirements = vertexProgram.getTraverserRequirements();
     }
 
     @Override
@@ -59,6 +63,11 @@ public final class ProgramVertexProgramStep extends VertexProgramStep {
         if (memory.exists(TraversalVertexProgram.HALTED_TRAVERSERS))
             TraversalVertexProgram.storeHaltedTraversers(base, memory.get(TraversalVertexProgram.HALTED_TRAVERSERS));
         return VertexProgram.createVertexProgram(graph, base);
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.traverserRequirements;
     }
 
     @Override
