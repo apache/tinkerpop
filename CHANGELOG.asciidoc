@@ -22,6 +22,12 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
+[[release-3-2-3]]
+TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Added missing `InetAddress` to GraphSON extension module.
+
 [[release-3-2-2]]
 TinkerPop 3.2.2 (Release Date: September 6, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
