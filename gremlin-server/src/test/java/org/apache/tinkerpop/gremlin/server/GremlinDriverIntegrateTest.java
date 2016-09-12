@@ -33,16 +33,19 @@ import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -607,7 +610,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONSerialization() throws Exception {
+    public void shouldWorkWithGraphSONV1Serialization() throws Exception {
         final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
@@ -638,6 +641,40 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(2, ageProperties.size());
         assertEquals(1l, ageProperties.get("id"));
         assertEquals(29, ageProperties.get("value"));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONV2Serialization() throws Exception {
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V2D0).create();
+        final Client client = cluster.connect();
+
+        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+        assertEquals(1, r.size());
+
+        final Vertex v = r.get(0).get(DetachedVertex.class);
+        assertEquals(1, v.id());
+        assertEquals("person", v.label());
+
+        assertEquals(2, IteratorUtils.count(v.properties()));
+        assertEquals("marko", v.value("name"));
+        assertEquals(29, Integer.parseInt(v.value("age").toString()));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONExtendedV2Serialization() throws Exception {
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V2D0).create();
+        final Client client = cluster.connect();
+
+        final Instant now = Instant.now();
+        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+        assertEquals(1, r.size());
+
+        final Instant then = r.get(0).get(Instant.class);
+        assertEquals(now, then);
 
         cluster.close();
     }
