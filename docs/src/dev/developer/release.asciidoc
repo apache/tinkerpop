@@ -133,10 +133,10 @@ for generating javadoc and without that the binary distributions won't contain t
 . Prepare Git administration tasks. Note that this work can be performed at the release manager's discretion. It may be wise to wait until a successful VOTE is eminent before reopening development. Apply the following steps as needed per release branch:
 .. Make the appropriate branching changes as required by the release and bump the version to `SNAPSHOT` with
 `mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false`.
+.. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version.
 .. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 .. `mvn deploy` - deploy the new `SNAPSHOT`
-.. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
-.. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
+.. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`
 .. Commit and push the `SNAPSHOT` changes to git
 .. Send email to advise that code freeze is lifted.
 .. Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
@@ -152,7 +152,8 @@ Release & Promote
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
-. Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
+. Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
+. Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
