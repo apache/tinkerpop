@@ -71,6 +71,9 @@ prior to starting work on it, as the community might provide insight on the appr
 It is preferable that a link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA issue] be opened that describes the nature
 of the recipe so that the eventual pull request can be bound to that issue.
 
+IMPORTANT: Please read TinkerPop's link:http://tinkerpop.apache.org/docs/x.y.z/dev/developer/#_contributing[policy on contributing]
+prior to submitting a recipe.
+
 To contribute a recipe, first clone the repository:
 
 [source, shell]

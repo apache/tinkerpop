@@ -65,6 +65,7 @@ This release also includes changes from <<release-3-1-4, 3.1.4>>.
 Bugs
 ^^^^
 
+* TINKERPOP-810 store not visible
 * TINKERPOP-1151 slf4j-log4j12 / log4j is only required for testing *(breaking)*
 * TINKERPOP-1383 publish-docs.sh might publish to current too early
 * TINKERPOP-1390 IdentityRemoveStrategyTest fails randomly
