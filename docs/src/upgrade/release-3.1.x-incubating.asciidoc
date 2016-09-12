@@ -22,7 +22,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *A 187 On The Undercover Gremlinz*
 
-TinkerPop 3.1.4
+TinkerPop 3.1.5
 ---------------
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
