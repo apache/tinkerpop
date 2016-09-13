@@ -972,6 +972,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (value instanceof Object[]) {
             final Object[] arr = (Object[]) value;
             if (values.length == 0) {
+                if (arr.length == 1) {
+                    return has(accessor, P.eq(arr));
+                }
                 objects = arr;
             } else {
                 objects = new Object[arr.length + values.length];
@@ -979,6 +982,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 System.arraycopy(values, 0, objects, arr.length, values.length);
             }
         } else {
+            if (values.length == 0) {
+                return has(accessor, value instanceof P ? (P) value : P.eq(value));
+            }
             objects = new Object[values.length + 1];
             objects[0] = value;
             System.arraycopy(values, 0, objects, 1, values.length);
