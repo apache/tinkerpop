@@ -38,6 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -52,6 +53,7 @@ public class Session {
     private final ScheduledExecutorService scheduledExecutorService;
     private final long configuredSessionTimeout;
 
+    private AtomicBoolean killing = new AtomicBoolean(false);
     private AtomicReference<ScheduledFuture> kill = new AtomicReference<>();
 
     /**
@@ -104,6 +106,10 @@ public class Session {
         return session;
     }
 
+    public boolean acceptingRequests() {
+        return !killing.get();
+    }
+
     public void touch() {
         // if the task of killing is cancelled successfully then reset the session monitor. otherwise this session
         // has already been killed and there's nothing left to do with this session.
@@ -134,6 +140,8 @@ public class Session {
      * Kills the session and rollback any uncommitted changes on transactional graphs.
      */
     public synchronized void kill() {
+        killing.set(true);
+
         // if the session has already been removed then there's no need to do this process again.  it's possible that
         // the manuallKill and the kill future could have both called kill at roughly the same time. this prevents
         // kill() from being called more than once
@@ -157,6 +165,10 @@ public class Session {
                 }
             }
         });
+
+        // prevent any additional requests from processing now that the mass rollback has been completed
+        executor.shutdownNow();
+
         sessions.remove(session);
         logger.info("Session {} closed", session);
     }

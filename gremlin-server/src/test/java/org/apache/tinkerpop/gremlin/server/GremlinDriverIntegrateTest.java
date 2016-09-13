@@ -1258,7 +1258,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms for request"));
+            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms"));
         }
     }
 }

@@ -147,6 +147,15 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         final RequestMessage msg = context.getRequestMessage();
         final Session session = getSession(context, msg);
 
+        // check if the session is still accepting requests - if not block further requests
+        if (!session.acceptingRequests()) {
+            final String sessionClosedMessage = String.format("Session %s is no longer accepting requests as it has been closed",
+                    session.getSessionId());
+            final ResponseMessage response = ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
+                    .statusMessage(sessionClosedMessage).create();
+            throw new OpProcessorException(sessionClosedMessage, response);
+        }
+
         // place the session on the channel context so that it can be used during serialization.  in this way
         // the serialization can occur on the same thread used to execute the gremlin within the session.  this
         // is important given the threadlocal nature of Graph implementation transactions.
