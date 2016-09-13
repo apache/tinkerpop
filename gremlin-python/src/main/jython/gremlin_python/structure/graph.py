@@ -88,3 +88,35 @@ class Property(object):
 
     def __hash__(self):
         return hash(self.key) + hash(self.value)
+
+
+class Path(object):
+    def __init__(self, labels, objects):
+        self.labels = labels
+        self.objects = objects
+
+    def __repr__(self):
+        return str(self.objects)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.objects == other.objects and self.labels == other.labels
+
+    def __hash__(self):
+        return hash(str(self.objects)) + hash(str(self.labels))
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            objects = []
+            for i, labels in enumerate(self.labels):
+                if key in labels:
+                    objects.append(self.objects[i])
+            if 0 == len(objects):
+                raise KeyError("The step with label " + key + " does not exist")
+            return objects if len(objects) > 1 else objects[0]
+        elif isinstance(key, int):
+            return self.objects[key]
+        else:
+            raise TypeError("The path access key must be either a string label or integer index")
+
+    def __len__(self):
+        return len(self.objects)
