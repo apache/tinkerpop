@@ -254,7 +254,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.2
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:${hadoop.version}
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>

@@ -434,7 +434,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.3
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:${hadoop.version}
                             </Gremlin-Plugin-Dependencies>
                             <!-- deletes the servlet-api jar from the path after install - causes conflicts -->
                             <Gremlin-Plugin-Paths>servlet-api-2.5.jar=</Gremlin-Plugin-Paths>

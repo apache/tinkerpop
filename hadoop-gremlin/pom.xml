@@ -25,20 +25,16 @@ limitations under the License.
     </parent>
     <artifactId>hadoop-gremlin</artifactId>
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
-	<dependencyManagement>
-		<dependencies>
+    <dependencyManagement>
+        <dependencies>
             <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
-                <version>4.0.29.Final</version>
-            </dependency>
-            <dependency>
+                <!-- see: https://github.com/apache/hadoop/pull/84 -->
                 <groupId>io.netty</groupId>
                 <artifactId>netty</artifactId>
-                <version>3.8.0.Final</version>
+                <version>3.7.1.Final</version>
             </dependency>
-		</dependencies>
-	</dependencyManagement>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -181,7 +177,7 @@ limitations under the License.
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.2
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:${hadoop.version}
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>
