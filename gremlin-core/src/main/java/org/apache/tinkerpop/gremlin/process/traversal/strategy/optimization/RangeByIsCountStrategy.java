@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -130,12 +131,25 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             traversal.asAdmin().removeStep(next); // IsStep
                             traversal.asAdmin().removeStep(curr); // CountStep
                             size -= 2;
+                            final Traversal.Admin inner;
                             if (prev != null) {
-                                final Traversal.Admin inner = __.start().asAdmin();
-                                TraversalHelper.insertAfterStep(prev, inner.getStartStep(), inner);
+                                inner = __.start().asAdmin();
+                                for (; ; ) {
+                                    final Step pp = prev.getPreviousStep();
+                                    inner.addStep(0, prev);
+                                    if (pp instanceof EmptyStep || pp instanceof GraphStep ||
+                                            !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
+                                    traversal.removeStep(prev);
+                                    prev = pp;
+                                    size--;
+                                }
+                            } else {
+                                inner = __.identity().asAdmin();
+                            }
+                            if (prev != null) {
                                 TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
                             } else {
-                                traversal.asAdmin().addStep(new NotStep<>(traversal, __.identity()));
+                                traversal.asAdmin().addStep(new NotStep<>(traversal, inner));
                             }
                         } else {
                             TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);

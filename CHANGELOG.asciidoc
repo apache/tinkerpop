@@ -390,7 +390,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+ Removed the `appveyor.yml` file as the AppVeyor build is no longer enabled by Apache Infrastructure.
+* Removed the `appveyor.yml` file as the AppVeyor build is no longer enabled by Apache Infrastructure.
+* Fixed a bug in `RangeByIsCountStrategy` which didn't use the `NotStep` properly.
 
 [[release-3-1-4]]
 TinkerPop 3.1.4 (Release Date: September 6, 2016)
