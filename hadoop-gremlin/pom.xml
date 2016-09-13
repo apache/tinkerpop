@@ -27,12 +27,16 @@ limitations under the License.
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<!-- see: https://github.com/apache/hadoop/pull/84 -->
-				<groupId>io.netty</groupId>
-				<artifactId>netty</artifactId>
-				<version>3.7.1.Final</version>
-			</dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>4.0.29.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>3.8.0.Final</version>
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
     <dependencies>
