@@ -42,8 +42,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private final S traversalSource;
     private final Class anonymousTraversal;
-    private static final Map<Class<? extends TraversalSource>, Map<String, List<Method>>> TRAVERSAL_SOURCE_METHOD_CACHE = new ConcurrentHashMap<>();
-    private static final Map<Class<? extends Traversal>, Map<String, List<Method>>> TRAVERSAL_METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Map<String, List<Method>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
+
 
     private JavaTranslator(final S traversalSource) {
         this.traversalSource = traversalSource;
@@ -105,9 +105,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         //////////////////////////
         //////////////////////////
         // populate method cache for fast access to methods in subsequent calls
-        final Map<String, List<Method>> methodCache = delegate instanceof TraversalSource ?
-                TRAVERSAL_SOURCE_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>()) :
-                TRAVERSAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
+        final Map<String, List<Method>> methodCache = GLOBAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
                 if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
@@ -119,10 +117,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                     list.add(method);
                 }
             }
-            if (delegate instanceof TraversalSource)
-                TRAVERSAL_SOURCE_METHOD_CACHE.put((Class<TraversalSource>) delegate.getClass(), methodCache);
-            else
-                TRAVERSAL_METHOD_CACHE.put((Class<Traversal>) delegate.getClass(), methodCache);
+            GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
         }
         //////////////////////////
         //////////////////////////
@@ -133,7 +128,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             if (arguments[i] instanceof Bytecode.Binding)
                 argumentsCopy[i] = ((Bytecode.Binding) arguments[i]).value();
             else if (arguments[i] instanceof Bytecode)
-                argumentsCopy[i] = translateFromAnonymous((Bytecode) arguments[i]);
+                argumentsCopy[i] = this.translateFromAnonymous((Bytecode) arguments[i]);
             else
                 argumentsCopy[i] = arguments[i];
         }
