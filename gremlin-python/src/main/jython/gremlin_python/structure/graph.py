@@ -111,12 +111,12 @@ class Path(object):
                 if key in labels:
                     objects.append(self.objects[i])
             if 0 == len(objects):
-                raise Error("The step with label " + key + " does not exist")
+                raise KeyError("The step with label " + key + " does not exist")
             return objects if len(objects) > 1 else objects[0]
         elif isinstance(key, int):
             return self.objects[key]
         else:
-            raise Error("The step with label " + key + " does not exist")
+            raise TypeError("The path access key must be either a string label or integer index")
 
     def __len__(self):
         return len(self.objects)

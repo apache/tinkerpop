@@ -80,10 +80,27 @@ class TestGraph(TestCase):
         assert path[1] == Vertex(1)
         assert path[2] == "hello"
         assert 3 == len(path)
+        assert "hello" in path
+        assert "goodbye" not in path
+        assert Vertex(1) in path
+        assert Vertex(123) not in path
+        #
         try:
             temp = path[3]
-            raise Exception("Accessing beyond the list index should throw an error")
+            raise Exception("Accessing beyond the list index should throw an index error")
         except IndexError:
+            pass
+        #
+        try:
+            temp = path["zz"]
+            raise Exception("Accessing nothing should throw a key error")
+        except KeyError:
+            pass
+        #
+        try:
+            temp = path[1:2]
+            raise Exception("Accessing using slices should throw a type error")
+        except TypeError:
             pass
         #
         assert path == path

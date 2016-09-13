@@ -118,13 +118,13 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 NOTE: The command to use `-i` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
 path. Future starts of Gremlin Server will not require that command.
 
-Within the CPython console, it is possible to evaluate the following.
+Within the CPython console, an empty `Graph` is created and a traversal source is spawned with `RemoteStrategy`.
 
 [source,python]
 >>> graph = Graph()
 >>> g = graph.traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 
-When a traversal spawned from the `GraphTraversalSource` above is iterated, the traveral's `Bytecode` is sent over the wire
+When a traversal from the `GraphTraversalSource` is iterated, the traversal's `Bytecode` is sent over the wire
 via the registered `RemoteConnection`. The bytecode is used to construct the equivalent traversal at the remote traversal source.
 Moreover, typically the bytecode is analyzed to determine which language the bytecode should be translated to. If the traversal
 does not contain lambdas, the remote location (e.g. Gremlin Server) will typically
@@ -138,7 +138,7 @@ RemoteConnection Submission
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are various ways to submit a traversal to a `RemoteConnection`. Just as in Gremlin-Java, there are various
-"action methods" off of `Traversal`.
+"terminal/action methods" off of `Traversal`.
 
 * `Traversal.next()`
 * `Traversal.nextTraverser()`
@@ -183,7 +183,7 @@ These can be used analogously to how they are used in Gremlin-Java.
 g.V().hasLabel('person').has('age',P.gt(30)).order().by('age',Order.decr).toList()
 ----
 
-Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be removed.
+Moreover, by importing the `statics` of Gremlin-Python, the class prefixes can be ommitted.
 
 [source,python]
 >>> statics.load_statics(globals())
@@ -209,7 +209,7 @@ Bindings
 When a traversal bytecode is sent over a `RemoteConnection` (e.g. Gremlin Server), it will be translated, compiled, and then executed.
 If the same traversal is sent again, translation and compilation can be skipped as the previously compiled version should be cached.
 Many traversals are unique up to some parameterization. For instance, `g.V(1).out('created').name` is considered different
-from `g.V(4).out('created').name'` as they are different "string" scripts. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
+from `g.V(4).out('created').name'` as they have different script "string" representations. However, `g.V(x).out('created').name` with bindings of `{x : 1}` and
 `{x : 4}` are considered the same. If a traversal is going to be executed repeatedly, but with different parameters, then bindings should be used.
 In Gremlin-Python, bindings are 2-tuples and used as follows.
 
@@ -219,7 +219,7 @@ g.V(('id',1)).out('created').name.toList()
 g.V(('id',4)).out('created').name.toList()
 ----
 
-NOTE: The Gremlin `withBindings()` traversal source step is not needed. This is only required
+NOTE: The Gremlin `withBindings()` traversal source step is not needed. Typically `withBindings()` is only required
 in statically typed languages where bindings need to have the same typing as the `Traversal` API. However, if desired,
 it is possible to use the `withBindings()`-model as Gremlin-Python's `Bindings.of()` simply returns a 2-tuple of `(str,object)`
 (see <<connecting-via-remotegraph,`Bindings`>>).
