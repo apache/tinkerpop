@@ -968,10 +968,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value, final Object... values) {
-        if (values.length == 0) return has(accessor, value);
-        final Object[] objects = new Object[values.length + 1];
-        objects[0] = value;
-        System.arraycopy(values, 0, objects, 1, values.length);
+        final Object[] objects;
+        if (value instanceof Object[]) {
+            final Object[] arr = (Object[]) value;
+            if (values.length == 0) {
+                objects = arr;
+            } else {
+                objects = new Object[arr.length + values.length];
+                System.arraycopy(arr, 0, objects, 0, arr.length);
+                System.arraycopy(values, 0, objects, arr.length, values.length);
+            }
+        } else {
+            objects = new Object[values.length + 1];
+            objects[0] = value;
+            System.arraycopy(values, 0, objects, 1, values.length);
+        }
         return has(accessor, P.within(objects));
     }
 
