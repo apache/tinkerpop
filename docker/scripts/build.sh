@@ -63,6 +63,8 @@ if [ -d "/usr/src/tinkermem" ]; then
   cd /usr/src/tinkermem
 fi
 
+touch gremlin-python/.glv
+
 mvn clean install process-resources ${TINKERPOP_BUILD_OPTIONS} || exit 1
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
