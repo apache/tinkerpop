@@ -106,8 +106,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         //////////////////////////
         // populate method cache for fast access to methods in subsequent calls
         final Map<String, List<Method>> methodCache = delegate instanceof TraversalSource ?
-                this.TRAVERSAL_SOURCE_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>()) :
-                this.TRAVERSAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
+                TRAVERSAL_SOURCE_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>()) :
+                TRAVERSAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
                 if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
