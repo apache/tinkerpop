@@ -116,43 +116,46 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 }
             }
         }
-        ///
+        // create a copy of the argument array so as not to mutate the original bytecode
+        final Object[] argumentsCopy = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i] instanceof Bytecode.Binding)
-                arguments[i] = ((Bytecode.Binding) arguments[i]).value();
+                argumentsCopy[i] = ((Bytecode.Binding) arguments[i]).value();
             else if (arguments[i] instanceof Bytecode)
-                arguments[i] = translateFromAnonymous((Bytecode) arguments[i]);
+                argumentsCopy[i] = translateFromAnonymous((Bytecode) arguments[i]);
+            else
+                argumentsCopy[i] = arguments[i];
         }
         try {
             for (final Method method : methodCache.get(methodName)) {
                 if (returnType.isAssignableFrom(method.getReturnType())) {
-                    if (method.getParameterCount() == arguments.length || (method.getParameterCount() > 0 && method.getParameters()[method.getParameters().length - 1].isVarArgs())) {
+                    if (method.getParameterCount() == argumentsCopy.length || (method.getParameterCount() > 0 && method.getParameters()[method.getParameters().length - 1].isVarArgs())) {
                         final Parameter[] parameters = method.getParameters();
                         final Object[] newArguments = new Object[parameters.length];
                         boolean found = true;
                         for (int i = 0; i < parameters.length; i++) {
                             if (parameters[i].isVarArgs()) {
                                 final Class<?> parameterClass = parameters[i].getType().getComponentType();
-                                if (arguments.length > i && !parameterClass.isAssignableFrom(arguments[i].getClass())) {
+                                if (argumentsCopy.length > i && !parameterClass.isAssignableFrom(argumentsCopy[i].getClass())) {
                                     found = false;
                                     break;
                                 }
-                                Object[] varArgs = (Object[]) Array.newInstance(parameterClass, arguments.length - i);
+                                Object[] varArgs = (Object[]) Array.newInstance(parameterClass, argumentsCopy.length - i);
                                 int counter = 0;
-                                for (int j = i; j < arguments.length; j++) {
-                                    varArgs[counter++] = arguments[j];
+                                for (int j = i; j < argumentsCopy.length; j++) {
+                                    varArgs[counter++] = argumentsCopy[j];
                                 }
                                 newArguments[i] = varArgs;
                                 break;
                             } else {
-                                if (i < arguments.length &&
-                                        (parameters[i].getType().isAssignableFrom(arguments[i].getClass()) ||
+                                if (i < argumentsCopy.length &&
+                                        (parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
                                                 (parameters[i].getType().isPrimitive() &&
-                                                        (Number.class.isAssignableFrom(arguments[i].getClass()) ||
-                                                                arguments[i].getClass().equals(Boolean.class) ||
-                                                                arguments[i].getClass().equals(Byte.class) ||
-                                                                arguments[i].getClass().equals(Character.class))))) {
-                                    newArguments[i] = arguments[i];
+                                                        (Number.class.isAssignableFrom(argumentsCopy[i].getClass()) ||
+                                                                argumentsCopy[i].getClass().equals(Boolean.class) ||
+                                                                argumentsCopy[i].getClass().equals(Byte.class) ||
+                                                                argumentsCopy[i].getClass().equals(Character.class))))) {
+                                    newArguments[i] = argumentsCopy[i];
                                 } else {
                                     found = false;
                                     break;
@@ -166,8 +169,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 }
             }
         } catch (final Throwable e) {
-            throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(arguments) + ")", e);
+            throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(argumentsCopy) + ")", e);
         }
-        throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(arguments) + ")");
+        throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
     }
 }
