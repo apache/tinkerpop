@@ -124,24 +124,6 @@
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>addSources</goal>
-                            <goal>addTestSources</goal>
-                            <goal>generateStubs</goal>
-                            <goal>compile</goal>
-                            <goal>testGenerateStubs</goal>
-                            <goal>testCompile</goal>
-                            <goal>removeStubs</goal>
-                            <goal>removeTestStubs</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <invokeDynamic>true</invokeDynamic>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -458,7 +440,8 @@
 
                             <!--
                             use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
-                            had to use the ant plugin - maven-exec-plugin
+                            this has to be an integration-test because we need gremlin-server running and the standard
+                            test phase doesn't have a pre/post event like integration-test does.
                             -->
                             <execution>
                                 <id>native-python-test</id>
@@ -482,7 +465,6 @@
                     <plugin>
                         <groupId>org.codehaus.gmavenplus</groupId>
                         <artifactId>gmavenplus-plugin</artifactId>
-                        <version>1.2</version>
                         <dependencies>
                             <dependency>
                                 <groupId>org.codehaus.groovy</groupId>

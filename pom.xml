@@ -293,7 +293,7 @@ limitations under the License.
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
-                        <exclude>.glv</exclude>
+                        <exclude>**/.glv</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -432,6 +432,29 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>1.5</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>addSources</goal>
+                                <goal>addTestSources</goal>
+                                <goal>generateStubs</goal>
+                                <goal>compile</goal>
+                                <goal>testGenerateStubs</goal>
+                                <goal>testCompile</goal>
+                                <goal>removeStubs</goal>
+                                <goal>removeTestStubs</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <targetBytecode>1.8</targetBytecode>
+                        <invokeDynamic>true</invokeDynamic>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
