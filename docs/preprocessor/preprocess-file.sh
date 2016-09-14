@@ -133,7 +133,7 @@ if [ ! ${SKIP} ] && [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
 
   sed 's/\t/    /g' ${input} |
   awk -f ${AWK_SCRIPTS}/prepare.awk |
-  awk -f ${AWK_SCRIPTS}/init-code-blocks.awk -v TP_HOME="${TP_HOME}" -v PYTHONPATH="./gremlin-python/target/classes/Lib" |
+  awk -f ${AWK_SCRIPTS}/init-code-blocks.awk -v TP_HOME="${TP_HOME}" -v PYTHONPATH="${TP_HOME}/gremlin-python/target/classes/Lib" |
   awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template |
   HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
   ${lb} awk -f ${AWK_SCRIPTS}/ignore.awk   |
