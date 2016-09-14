@@ -78,7 +78,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <!-- provide a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
+        <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
@@ -285,13 +285,13 @@
             <build>
                 <plugins>
                     <!-- excludes python related tests that require python itself installed on the system - run with the
-                         python profile if python is present -->
+                         python profile if glVPython is present -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <python.home>${project.build.testOutputDirectory}</python.home>
+                                <python.home>${project.build.outputDirectory}</python.home>
                             </systemPropertyVariables>
                             <excludes>
                                 <exclude>**/jsr223/Python*Test.java</exclude>
@@ -320,7 +320,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <python.home>${project.build.testOutputDirectory}</python.home>
+                                <python.home>${project.build.outputDirectory}</python.home>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
@@ -331,19 +331,11 @@
                         <version>1.4</version>
                         <executions>
                             <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jython</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>pythonDependencies</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>compile</phase>
                                 <goals>
                                     <goal>jython</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                                     <libraries>
                                         <param>aenum==1.4.5</param>
                                         <param>tornado==4.4.1</param>
@@ -431,7 +423,7 @@
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py build --build-lib ${project.build.testOutputDirectory}/Lib"/>
+                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
                                         </exec>
                                     </target>
                                 </configuration>
