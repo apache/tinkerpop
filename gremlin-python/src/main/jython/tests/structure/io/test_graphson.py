@@ -25,7 +25,7 @@ from unittest import TestCase
 
 import six
 
-from gremlin_python.compat import long
+from gremlin_python.statics import long
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONReader

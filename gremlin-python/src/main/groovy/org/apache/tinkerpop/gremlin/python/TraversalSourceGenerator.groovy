@@ -57,7 +57,7 @@ under the License.
         pythonClass.append("import six\n")
         pythonClass.append("from aenum import Enum\n")
         pythonClass.append("from .. import statics\n")
-        pythonClass.append("from ..compat import long\n\n")
+        pythonClass.append("from ..statics import long\n\n")
 
         pythonClass.append("""
 class Traversal(object):

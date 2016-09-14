@@ -20,7 +20,7 @@ import abc
 import six
 from aenum import Enum
 from .. import statics
-from ..compat import long
+from ..statics import long
 
 
 class Traversal(object):

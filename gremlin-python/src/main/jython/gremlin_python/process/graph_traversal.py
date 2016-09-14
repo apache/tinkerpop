@@ -22,7 +22,7 @@ from .traversal import TraversalStrategies
 from .traversal import Bytecode
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
-from ..compat import long
+from ..statics import long
 
 class GraphTraversalSource(object):
   def __init__(self, graph, traversal_strategies, bytecode=None):

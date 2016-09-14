@@ -61,7 +61,7 @@ under the License.
         pythonClass.append("from .traversal import Bytecode\n")
         pythonClass.append("from ..driver.remote_connection import RemoteStrategy\n")
         pythonClass.append("from .. import statics\n")
-        pythonClass.append("from ..compat import long\n\n")
+        pythonClass.append("from ..statics import long\n\n")
 
 //////////////////////////
 // GraphTraversalSource //

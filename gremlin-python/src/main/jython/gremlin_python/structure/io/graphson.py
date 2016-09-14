@@ -26,7 +26,7 @@ from aenum import Enum
 import six
 
 from gremlin_python import statics
-from gremlin_python.compat import (
+from gremlin_python.statics import (
     FloatType, FunctionType, IntType, LongType, long)
 from gremlin_python.process.traversal import Binding
 from gremlin_python.process.traversal import Bytecode

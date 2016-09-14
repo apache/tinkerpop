@@ -24,7 +24,7 @@ from unittest import TestCase
 
 import six
 
-from gremlin_python.compat import long
+from gremlin_python.statics import long
 from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex

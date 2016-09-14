@@ -23,7 +23,7 @@ import unittest
 from unittest import TestCase
 
 from gremlin_python import statics
-from gremlin_python.compat import long
+from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.structure.graph import Graph
