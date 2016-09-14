@@ -58,6 +58,7 @@ import org.apache.tinkerpop.gremlin.driver.remote.*
 import org.apache.tinkerpop.gremlin.driver.*
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.*
+import java.security.SecureRandom
 
 
 graph = TinkerGraph.open()
@@ -102,9 +103,10 @@ replaceNounWithGremlin = { title, nouns ->
   }
   return results;
 }
-  
 
-g.V().hasLabel("song").has('title', textContainsList(numbers)).values('title').map({it -> replaceNounWithGremlin(it.get(), words)}).unfold().coin(0.5).coin(0.1).limit(1).each({ it ->
-println it
-})
+seed = new SecureRandom().generateSeed(3)
+  
+gremlins = g.V().hasLabel("song").has('title', textContainsList(numbers)).values('title').map({it -> replaceNounWithGremlin(it.get(), words)}).unfold().dedup().toList()
+Collections.shuffle(gremlins, new SecureRandom(seed))
+println gremlins.first()
 
