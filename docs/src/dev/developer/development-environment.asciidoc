@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+[[development-environment]]
 Development Environment
 =======================
 
@@ -21,6 +22,7 @@ TinkerPop is fairly large body of code spread across many modules and covering m
 this complexity, it remains relatively straightforward a project to build. This following subsections explain how to
 configure a development environment for TinkerPop.
 
+[[system-configuration]]
 System Configuration
 --------------------
 
