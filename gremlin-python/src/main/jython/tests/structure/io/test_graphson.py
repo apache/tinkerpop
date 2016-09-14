@@ -27,6 +27,7 @@ from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONReader
 from gremlin_python.structure.io.graphson import GraphSONWriter
+from gremlin_python.process.traversal import P
 
 
 class TestGraphSONReader(TestCase):
@@ -86,6 +87,10 @@ class TestGraphSONWriter(TestCase):
         assert """{"@type":"g:Int64","@value":2}""" == GraphSONWriter.writeObject(2L)
         assert """{"@type":"g:Float","@value":3.2}""" == GraphSONWriter.writeObject(3.2)
         assert """true""" == GraphSONWriter.writeObject(True)
+
+    def test_P(self):
+        assert """{"@type":"g:P","@value":{"predicate":"and","value":[{"@type":"g:P","@value":{"predicate":"or","value":[{"@type":"g:P","@value":{"predicate":"lt","value":"b"}},{"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},{"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}}""" == GraphSONWriter.writeObject(
+            P.lt("b").or_(P.gt("c")).and_(P.neq("d")))
 
 
 if __name__ == '__main__':

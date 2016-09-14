@@ -175,7 +175,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             for (int i = 0; i < list.size(); i++) {
                 convertPToString(list.get(i), current);
                 if (i < list.size() - 1)
-                    current.append(p instanceof OrP ? "._or(" : "._and(");
+                    current.append(p instanceof OrP ? ".or_(" : ".and_(");
             }
             current.append(")");
         } else

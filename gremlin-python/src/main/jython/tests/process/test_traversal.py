@@ -23,6 +23,7 @@ import unittest
 from unittest import TestCase
 
 from gremlin_python.structure.graph import Graph
+from gremlin_python.process.traversal import P
 
 
 class TestTraversal(TestCase):
@@ -51,6 +52,13 @@ class TestTraversal(TestCase):
         assert 1 == len(bytecode.step_instructions[0])
         assert 1 == len(bytecode.step_instructions[1])
         assert 2 == len(bytecode.step_instructions[2])
+
+    def test_P(self):
+        # verify that the order of operations is respected
+        assert "and(eq(a),lt(b))" == str(P.eq("a").and_(P.lt("b")))
+        assert "and(or(lt(b),gt(c)),neq(d))" == str(P.lt("b").or_(P.gt("c")).and_(P.neq("d")))
+        assert "and(or(lt(b),gt(c)),or(neq(d),gte(e)))" == str(
+            P.lt("b").or_(P.gt("c")).and_(P.neq("d").or_(P.gte("e"))))
 
 
 if __name__ == '__main__':
