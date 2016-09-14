@@ -19,9 +19,11 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+import sys
 import unittest
 from unittest import TestCase
 
+from gremlin_python.compat import long
 from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex
@@ -45,14 +47,14 @@ class TestGraph(TestCase):
         assert "phrase" == edge.inV.label
         assert edge.inV != edge.outV
         #
-        vertex_property = VertexProperty(24L, "name", "marko")
+        vertex_property = VertexProperty(long(24), "name", "marko")
         assert "vp[name->marko]" == str(vertex_property)
         assert "name" == vertex_property.label
         assert "name" == vertex_property.key
         assert "marko" == vertex_property.value
-        assert 24L == vertex_property.id
+        assert long(24) == vertex_property.id
         assert isinstance(vertex_property.id, long)
-        assert vertex_property == VertexProperty(24L, "name", "marko")
+        assert vertex_property == VertexProperty(long(24), "name", "marko")
         #
         property = Property("age", 29)
         assert "p[age->29]" == str(property)
@@ -60,7 +62,8 @@ class TestGraph(TestCase):
         assert 29 == property.value
         assert isinstance(property.value, int)
         assert property == Property("age", 29)
-        assert property != Property("age", 29L)
+        if not sys.version_info > (3,):
+            assert property != Property("age", long(29))
         #
         for i in [vertex, edge, vertex_property, property]:
             for j in [vertex, edge, vertex_property, property]:

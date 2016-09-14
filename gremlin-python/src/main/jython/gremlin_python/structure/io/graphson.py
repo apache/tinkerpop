@@ -22,12 +22,12 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 import json
 from abc import abstractmethod
 from aenum import Enum
-from types import FloatType
-from types import FunctionType
-from types import IntType
-from types import LongType
+
+import six
 
 from gremlin_python import statics
+from gremlin_python.compat import (
+    FloatType, FunctionType, IntType, LongType, long)
 from gremlin_python.process.traversal import Binding
 from gremlin_python.process.traversal import Bytecode
 from gremlin_python.process.traversal import P
@@ -171,7 +171,7 @@ class LambdaSerializer(GraphSONSerializer):
             if not script.strip().startswith("lambda"):
                 script = "lambda " + script
                 dict["script"] = script
-            dict["arguments"] = eval(dict["script"]).func_code.co_argcount
+            dict["arguments"] = six.get_function_code(eval(dict["script"])).co_argcount
         else:
             dict["arguments"] = -1
         return _SymbolHelper.objectify("Lambda", dict)

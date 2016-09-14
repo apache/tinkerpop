@@ -174,7 +174,7 @@ class Response:
         if self._closed:
             return
         recv_message = yield self._websocket.read_message()
-        recv_message = json.loads(recv_message)
+        recv_message = json.loads(recv_message.decode('utf-8'))
         status_code = recv_message["status"]["code"]
         aggregateTo = recv_message["result"]["meta"].get("aggregateTo", "list")
 

@@ -20,6 +20,8 @@ import abc
 import six
 from aenum import Enum
 from .. import statics
+from ..compat import long
+
 
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
@@ -240,7 +242,9 @@ TRAVERSER
 '''
 
 class Traverser(object):
-    def __init__(self, object, bulk=1L):
+    def __init__(self, object, bulk=None):
+        if bulk is None:
+            bulk = long(1)
         self.object = object
         self.bulk = bulk
     def __repr__(self):
