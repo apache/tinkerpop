@@ -19,7 +19,6 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import pytest
 import unittest
 from unittest import TestCase
 

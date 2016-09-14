@@ -19,9 +19,10 @@ under the License.
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-import sys
 import unittest
 from unittest import TestCase
+
+import six
 
 from gremlin_python.compat import long
 from gremlin_python.structure.graph import Edge
@@ -62,7 +63,7 @@ class TestGraph(TestCase):
         assert 29 == property.value
         assert isinstance(property.value, int)
         assert property == Property("age", 29)
-        if not sys.version_info > (3,):
+        if not six.PY3:
             assert property != Property("age", long(29))
         #
         for i in [vertex, edge, vertex_property, property]:
