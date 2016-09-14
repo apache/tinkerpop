@@ -275,7 +275,7 @@
     </build>
 
     <profiles>
-        <!-- This default profile works around the issue where the glvPython profile which is expected to run all tests
+        <!-- This default profile works around the issue where the glv-python profile which is expected to run all tests
              can't override the exclusions defined below. -->
         <profile>
             <id>glv-python-standard</id>
@@ -307,9 +307,9 @@
             <id>glv-python</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>glvPython</name>
-                </property>
+                <file>
+                    <exists>.glv</exists>
+                </file>
             </activation>
             <build>
 

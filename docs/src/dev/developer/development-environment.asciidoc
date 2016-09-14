@@ -65,6 +65,16 @@ As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org
 Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
 and link:https://virtualenv.pypa.io/en/stable/[virtualenv].
 
+Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It can be
+done manually from the command line with:
+
+[source,text]
+mvn clean install -Pglv-python
+
+which enables the "glv-python" Maven profile or in a more automated fashion simply add a `.glv` file to the root of the
+`gremlin-python` module which will signify to Maven that the environment is Python-ready. The `.glv` file need not have
+any contents and is ignored by Git. A standard `mvn clean install` will then build `gremlin-python` in full.
+
 [[release-environment]]
 Release Environment
 ~~~~~~~~~~~~~~~~~~~
@@ -117,7 +127,6 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 ** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
-** Build and execute with native Python tests (see <<python-environment,Python Environment>>: `mvn clean install -DglvPython`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
