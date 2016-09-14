@@ -28,6 +28,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Fixed a `JavaTranslator` bug where `Bytecode` instructions were being mutated during translation.
 * Added `Path` to Gremlin-Python with respective GraphSON 2.0 deserializer.
+* New build options for `gremlin-python` where `-DglvPython` is no longer required.
 * Added missing `InetAddress` to GraphSON extension module.
 
 [[release-3-2-2]]
