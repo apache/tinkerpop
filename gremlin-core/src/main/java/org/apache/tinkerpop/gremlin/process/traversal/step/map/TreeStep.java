@@ -73,7 +73,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
         Tree depth = topTree;
         final Path path = traverser.path();
         for (int i = 0; i < path.size(); i++) {
-            final Object object = TraversalUtil.apply(path.<Object>get(i), this.traversalRing.next());
+            final Object object = TraversalUtil.applyNullable(path.<Object>get(i), this.traversalRing.next());
             if (!depth.containsKey(object))
                 depth.put(object, new Tree<>());
             depth = (Tree) depth.get(object);
