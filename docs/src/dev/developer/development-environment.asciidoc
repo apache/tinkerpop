@@ -106,7 +106,7 @@ Building and Testing
 The following commands are a mix of Maven flags and shell scripts that handle different build operations
 
 * Build project: `mvn clean install`
-* Build a specific module (e.g. `gremlin-python`) within the project: `mvn clean install -pl gremlin-python`
+** Build a specific module (e.g. `gremlin-server`) within the project: `mvn clean install -pl gremlin-server`
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
 Maven project list argument, e.g.:
 +
@@ -117,7 +117,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 ** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
-** Build the `gremlin-python` module with native Python tests (which require that Python be installed on the system): `mvn clean install -DglvPython`
+** Build and execute with native Python tests (see <<python-environment,Python Environment>>: `mvn clean install -DglvPython`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
@@ -135,7 +135,6 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Execute with the `-DuseEpoll` option to try to use Netty native transport (works on Linux, but will fallback to Java NIO on other OS).
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Benchmarks: `mvn verify -DskipBenchmarks=false`
-* Build and execute with native Python tests (see <<python-environment,Python Environment>>: `mvn clean install -DglvPython`
 
 [[docker-integration]]
 Docker Integration
