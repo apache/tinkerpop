@@ -324,14 +324,13 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-                    <!-- required for the jython tests  -->
                     <plugin>
                         <groupId>net.sf.mavenjython</groupId>
                         <artifactId>jython-compile-maven-plugin</artifactId>
                         <version>1.4</version>
                         <executions>
                             <execution>
-                                <phase>compile</phase>
+                                <phase>process-resources</phase>
                                 <goals>
                                     <goal>jython</goal>
                                 </goals>
@@ -413,12 +412,11 @@
                             </execution>
                             <execution>
                                 <id>native-python-build</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>compile</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <skip>${skipTests}</skip>
                                     <target>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python"
                                               failonerror="true">
