@@ -40,37 +40,21 @@ g.V(marko).out('knows').has('age', gt(marko.value('age'))).values('name')
 
 The downside to this approach is that it takes two separate traversals to answer the question. Ideally, there should
 be a single traversal, that can query "marko" once, determine his `age` and then use that for the value supplied to
-filter the people he knows. In this way the _value_ for the `age` filter is _induced_ from the `Traversal` itself.
+filter the people he knows. In this way the _value_ for the `age` in the `has()`-filter is _induced_ from the `Traversal`
+itself.
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').as('marko').         <1>
-  out('knows').as('friend').                   <2>
-  filter(select('marko','friend').by('age').   <3>
-         where('friend', gt('marko'))).        <4>
+g.V().has('name','marko').as('marko').      <1>
+  out('knows').as('friend').                <2>
+    where('friend', gt('marko')).by('age'). <3>
   values('name')
 ----
 
 <1> Find the "marko" `Vertex` and label it as "marko".
-<2> Traverse out on the "knows" edges to the adjacent `Vertex` and label it as "person".
-<3> Filter the incoming "person" vertices. It is within this filter, that the traversal induced values are utilized.
-The inner `select` grabs the "marko" vertex and the current "friend". The `by` modulator extracts the "age" from both
-of those vertices which yields a `Map` with two keys, "marko" and "friend", where the value of each is the "age".
-<4> The `Map` produced in the previous step can then be filtered with `where` to only return a result if the "friend"
-age is greater than the "marko" age. If this is successful, then the `filter` step from the previous line will succeed
-and allow the "friend" vertex to pass through.
-
-This traversal could also be written declaratively with `match` step as follows:
-
-[gremlin-groovy,modern]
-----
-g.V().has('name','marko').match(
-    __.as('marko').values('age').as('a'),
-    __.as('marko').out('knows').as('friend'),
-    __.as('friend').values('age').as('b')
-  ).where('b', gt('a')).select('friend').
-  values('name')
-----
+<2> Traverse out on the "knows" edges to the adjacent `Vertex` and label it as "friend".
+<3> Continue to traverser only if Marko's current friend is older than him.
+<4> Get the name of Marko's older friend.
 
 Traversal induced values are not just for filtering. They can also be used when writing the values of the properties
 of one `Vertex` to another:
