@@ -66,7 +66,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         for (final String selectKey : this.selectKeys) {
             final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
             if (null != end)
-                bindings.put(selectKey, TraversalUtil.apply(end, this.traversalRing.next()));
+                bindings.put(selectKey, TraversalUtil.applyNullable(end, this.traversalRing.next()));
             else {
                 this.traversalRing.reset();
                 return null;

@@ -22,25 +22,38 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor {
+public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent {
 
     protected String startKey;
     protected List<String> selectKeys;
     protected P<Object> predicate;
     protected final Set<String> scopeKeys = new HashSet<>();
     protected Set<String> keepLabels;
+
+    protected TraversalRing<S, ?> traversalRing = new TraversalRing<>();
 
     public WherePredicateStep(final Traversal.Admin traversal, final Optional<String> startKey, final P<String> predicate) {
         super(traversal);
@@ -66,7 +79,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         if (predicate instanceof ConnectiveP)
             ((ConnectiveP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
         else
-            predicate.setValue(this.getScopeValue(Pop.last, selectKeysIterator.next(), traverser));
+            predicate.setValue(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next()));
     }
 
     public Optional<P<?>> getPredicate() {
@@ -84,14 +97,18 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        final Object value = null == this.startKey ?
+                TraversalUtil.applyNullable(traverser, this.traversalRing.next()) :
+                TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
         this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
-        return this.predicate.test(null == this.startKey ? traverser.get() : this.getScopeValue(Pop.last, this.startKey, traverser));
+        this.traversalRing.reset();
+        return this.predicate.test(value);
     }
 
     @Override
     public String toString() {
         // TODO: revert the predicates to their string form?
-        return StringFactory.stepString(this, this.startKey, this.predicate);
+        return StringFactory.stepString(this, this.startKey, this.predicate, this.traversalRing);
     }
 
     @Override
@@ -103,19 +120,33 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     public WherePredicateStep<S> clone() {
         final WherePredicateStep<S> clone = (WherePredicateStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
+        clone.traversalRing = this.traversalRing.clone();
         return clone;
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.traversalRing.getTraversals().forEach(this::integrateChild);
+    }
+
+    @Override
     public int hashCode() {
-        return super.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode()) ^ this.predicate.hashCode();
+        return super.hashCode() ^ this.traversalRing.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode()) ^ this.predicate.hashCode();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
-                TYPICAL_GLOBAL_REQUIREMENTS :
-                TYPICAL_LOCAL_REQUIREMENTS;
+        final Set<TraverserRequirement> requirements =
+                TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
+                        TYPICAL_GLOBAL_REQUIREMENTS :
+                        TYPICAL_LOCAL_REQUIREMENTS;
+        return this.getSelfAndChildRequirements(requirements.toArray(new TraverserRequirement[requirements.size()]));
+    }
+
+    @Override
+    public List<Traversal.Admin<S, ?>> getLocalChildren() {
+        return (List) this.traversalRing.getTraversals();
     }
 
     @Override
@@ -131,5 +162,10 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     @Override
     public Set<String> getKeepLabels() {
         return this.keepLabels;
+    }
+
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> traversal) throws UnsupportedOperationException {
+        this.traversalRing.addTraversal(this.integrateChild(traversal));
     }
 }

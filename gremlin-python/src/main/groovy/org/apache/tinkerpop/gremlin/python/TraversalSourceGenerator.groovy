@@ -152,10 +152,10 @@ class Traversal(object):
       return P("${SymbolHelper.toJava(method)}", *args)
 """)
                 };
-        pythonClass.append("""   def _and(self, arg):
-      return P("and", arg, self)
-   def _or(self, arg):
-      return P("or", arg, self)
+        pythonClass.append("""   def and_(self, arg):
+      return P("and", self, arg)
+   def or_(self, arg):
+      return P("or", self, arg)
    def __eq__(self, other):
         return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
    def __repr__(self):

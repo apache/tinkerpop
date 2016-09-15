@@ -91,7 +91,7 @@ public class GraphSONWriterTest {
     public void shouldSerializeBytecode() throws Exception {
         assertEquals(P.eq(7L), mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L))").toString(), Object.class));
         // TODO: assertEquals(mapper.writeValueAsString(P.between(1, 2).and(P.eq(7L))), jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L)._and(P.between(1,2)))").toString().replace(" ",""));
-        assertEquals(AndP.class, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L)._and(P.between(1,2)))").toString(), Object.class).getClass());
+        assertEquals(AndP.class, mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(P.eq(7L).and_(P.between(1,2)))").toString(), Object.class).getClass());
         //
         assertEquals(new Bytecode.Binding<>("a", 5L), mapper.readValue(jythonEngine.eval("GraphSONWriter.writeObject(Binding('a',5L))").toString(), Object.class));
         //

@@ -43,7 +43,11 @@ public class WhereStepTest extends StepTest {
                 as("a").out().as("b").where(as("a").out()),
                 as("a").out().as("b").where(as("a").out().as("b")),
                 as("a").out().as("b").where("a", P.neq("b")),
-                as("a").out().as("b").where("a", P.neq("c"))
+                as("a").out().as("b").where("a", P.neq("c")),
+                as("a").out().as("b").where("a", P.neq("b")).by("name"),
+                as("a").out().as("b").where("a", P.neq("b")).by("name").by("age"),
+                as("a").out().as("b").where("a", P.neq("b")).by("age"),
+                as("a").out().as("b").where("a", P.neq("b").and(P.neq("a"))).by("age")
         );
     }
 

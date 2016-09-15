@@ -2190,6 +2190,18 @@ g.V().where(out('created').count().is(gte(2))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
 g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
 g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
+g.V().as('a').out('knows').as('b').
+  where('a',gt('b')).
+    by('age').
+  select('a','b').
+    by('name') <7>
+g.V().as('a').out('knows').as('b').
+  where('a',gt('b').or(eq('b'))).
+    by('age').
+    by('age').
+    by(__.in('knows').values('age')).
+  select('a','b').
+    by('name') <8>
 ----
 
 <1> What are the names of the people who have created a project?
@@ -2198,6 +2210,8 @@ g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 <4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
 <5> What are the names of the people who have not created anything, but are known by someone?
 <6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
+<7> Marko knows josh and vadas but is only older than vadas.
+<8> Marko is younger than josh, but josh knows someone equal in age to marko (which is marko).
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
