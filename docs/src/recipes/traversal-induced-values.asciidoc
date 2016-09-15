@@ -48,7 +48,7 @@ itself.
 g.V().has('name','marko').as('marko').      <1>
   out('knows').as('friend').                <2>
     where('friend', gt('marko')).by('age'). <3>
-  values('name')
+  values('name')                            <4>
 ----
 
 <1> Find the "marko" `Vertex` and label it as "marko".
