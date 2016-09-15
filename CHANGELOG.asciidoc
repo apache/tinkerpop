@@ -29,7 +29,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a bug in Gremlin-Python `P` where predicates reversed the order of the predicates.
 * Fixed a naming bug in Gremlin-Python where `P._and` and `P._or` should be `P.and_` and `P.or_`. (*breaking*)
 * `where()` predicate-based steps now support `by()`-modulation.
-* `TraversalRing` returns an null if it does not contain traversals (previously `IdentityTraversal`).
+* `TraversalRing` returns a `null` if it does not contain traversals (previously `IdentityTraversal`).
 * Fixed a `JavaTranslator` bug where `Bytecode` instructions were being mutated during translation.
 * Added `Path` to Gremlin-Python with respective GraphSON 2.0 deserializer.
 * VertexPrograms can now declare traverser requirements, e.g. to have access to the path when used with `.program()`.
