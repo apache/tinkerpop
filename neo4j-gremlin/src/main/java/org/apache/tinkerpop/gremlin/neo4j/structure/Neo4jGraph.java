@@ -270,7 +270,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     }
 
     /**
-     * This implementation of {@code close} will also close the current transaction on the the thread, but it
+     * This implementation of {@code close} will also close the current transaction on the thread, but it
      * is up to the caller to deal with dangling transactions in other threads prior to calling this method.
      */
     @Override

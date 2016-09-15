@@ -40,7 +40,7 @@ public interface LoadBalancingStrategy extends Host.Listener {
     public void initialize(final Cluster cluster, final Collection<Host> hosts);
 
     /**
-     * Provide an ordered list of hosts to send the the given {@link RequestMessage} to.
+     * Provide an ordered list of hosts to send the given {@link RequestMessage} to.
      */
     public Iterator<Host> select(final RequestMessage msg);
 

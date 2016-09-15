@@ -95,7 +95,7 @@ Implementing GraphComputer
 
 image:furnace-character-3.png[width=150,float=right] The most complex method in GraphComputer is the `submit()`-method. The method must do the following:
 
-. Ensure the the GraphComputer has not already been executed.
+. Ensure the GraphComputer has not already been executed.
 . Ensure that at least there is a VertexProgram or 1 MapReduce job.
 . If there is a VertexProgram, validate that it can execute on the GraphComputer given the respectively defined features.
 . Create the Memory to be used for the computation.
@@ -266,7 +266,7 @@ for (final MapReduce mapReduce : mapReducers) {
 
 <1> Note that the final results of the reducer are provided to the Memory as specified by the application developer's
 `MapReduce.addResultToMemory()` implementation.
-<2> If there is no reduce stage, the the map-stage results are inserted into Memory as specified by the application
+<2> If there is no reduce stage, the map-stage results are inserted into Memory as specified by the application
 developer's `MapReduce.addResultToMemory()` implementation.
 
 [[io-implementations]]
@@ -627,7 +627,7 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
 |gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
 |gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a
-value is specified here, the the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
+value is specified here, the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
 included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
 |gremlin.tinkergraph.graphFormat |The format to use to serialize the graph which may be one of the following:
 `graphml`, `graphson`, `gryo`, or a fully qualified class name that implements Io.Builder interface (which allows for
