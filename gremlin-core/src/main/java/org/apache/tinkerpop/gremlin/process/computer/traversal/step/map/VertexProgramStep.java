@@ -79,7 +79,7 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
             }
         } catch (final InterruptedException ie) {
             // the thread running the traversal took an interruption while waiting on the call the future.get().
-            // the future should then be cancelled with interruption so that the the GraphComputer that created
+            // the future should then be cancelled with interruption so that the GraphComputer that created
             // the future knows we don't care about it anymore. The GraphComputer should attempt to respect this
             // cancellation request.
             if (future != null) future.cancel(true);

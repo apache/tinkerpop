@@ -39,7 +39,7 @@ public final class ComputerSubmissionHelper {
      * <p>
      * This is intended to serve as an alternative to {@link ForkJoinPool#commonPool()},
      * which is used by {@link CompletableFuture#supplyAsync(Supplier)} (among other methods).
-     * The the single threaded executor created by this method contains a thread
+     * The single threaded executor created by this method contains a thread
      * with the same context classloader and thread group as the thread that called
      * this method.  Threads created in this method also have predictable behavior when
      * {@link Thread#setContextClassLoader(ClassLoader)} is invoked; threads in the

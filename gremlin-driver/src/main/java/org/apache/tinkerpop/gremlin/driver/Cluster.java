@@ -254,7 +254,7 @@ public final class Cluster {
 
     /**
      * Gets the list of hosts that the {@code Cluster} was able to connect to.  A {@link Host} is assumed unavailable
-     * until a connection to it is proven to be present.  This will not happen until the the {@link Client} submits
+     * until a connection to it is proven to be present.  This will not happen until the {@link Client} submits
      * requests that succeed in reaching a server at the {@link Host} or {@link Client#init()} is called which
      * initializes the {@link ConnectionPool} for the {@link Client} itself.  The number of available hosts returned
      * from this method will change as different servers come on and offline.

@@ -27,7 +27,7 @@ Ways to Contribute
 image:gremlin-apache.png[width=250,float=left] While the concept of an open source contribution can refer to doing
 development work on the code base, there are many other ways outside of coding to contribute to Apache TinkerPop.
 Participating on the various mailing lists, offering ideas, reporting bugs, writing documentation are all welcome
-contributions to the project that help improve the The TinkerPop. This section of the document is designed to help
+contributions to the project that help improve the TinkerPop. This section of the document is designed to help
 provide some structure for potential contributors and to give them ideas for how they could get started becoming more
 involved in the TinkerPop community.
 
@@ -112,7 +112,7 @@ Before proceeding, contributors should evaluate if the proposed change is likely
 
 * Is it clear that code must change? Proposing a JIRA issue and pull request is appropriate only when a clear problem
 or change has been identified. When in doubt, email dev@tinkerpop.apache.org first about the possible change.
-* Search the the mailing list archives for related discussions. Often, the problem has been discussed before, with
+* Search the mailing list archives for related discussions. Often, the problem has been discussed before, with
 a resolution that doesn't require a code change, or recording what kinds of changes will not be accepted as a
 resolution.
 * Search link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] for existing issues.

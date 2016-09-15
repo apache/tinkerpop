@@ -43,7 +43,7 @@ This release also includes changes from <<release-3-1-4, 3.1.4>>.
 * Created an experimental GraphSON representation of `Bytecode` that will be considered unstable until 3.3.0.
 * Added `Translator` which allows from the translation of `Bytecode` into some other form (e.g. script, `Traversal`, etc.).
 * Added `JavaTranslator`, `GroovyTranslator`, `PythonTranslator`, and `JythonTranslator` for translating `Bytecode` accordingly.
-* Added `TranslationStrategy` to `gremlin-test` so translators can be tested against the the process test suite.
+* Added `TranslationStrategy` to `gremlin-test` so translators can be tested against the process test suite.
 * Added `Traversal.Admin.nextTraverser()` to get the next result in bulk-form (w/ default implementation).
 * Added `TraversalSource.getAnonymousTraversalClass()` (w/ default implementation).
 * Added `GremlinScriptEngine` interface which specifies a `eval(Bytecode, Bindings)` method.
@@ -667,7 +667,7 @@ TinkerPop 3.1.1 (Release Date: February 8, 2016)
 * Added `Spark` static object to allow "file system" control of persisted RDDs in Spark.
 * Added a Spark "job server" to ensure that persisted RDDs are not garbage collected by Spark.
 * Improved logging control during builds with Maven.
-* Fixed settings that weren't being passed to the the Gremlin Driver `Cluster` through configuration file.
+* Fixed settings that weren't being passed to the Gremlin Driver `Cluster` through configuration file.
 * `Column` now implements `Function`. The modulator `by(valueDecr)` can be replaced by `by(values,decr)` and thus, projection and order are separated.
 * Added `InputRDDFormat` which wraps an `InputRDD` to make it accessible to Hadoop and not just Spark.
 * Added `AbstractSparkTest` which handles closing `SparkContext` instances between tests now that we support persisted contexts.
