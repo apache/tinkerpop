@@ -102,25 +102,9 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     }
 
     private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
-        //////////////////////////
-        //////////////////////////
         // populate method cache for fast access to methods in subsequent calls
         final Map<String, List<Method>> methodCache = GLOBAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
-        if (methodCache.isEmpty()) {
-            for (final Method method : delegate.getClass().getMethods()) {
-                if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
-                    List<Method> list = methodCache.get(method.getName());
-                    if (null == list) {
-                        list = new ArrayList<>();
-                        methodCache.put(method.getName(), list);
-                    }
-                    list.add(method);
-                }
-            }
-            GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
-        }
-        //////////////////////////
-        //////////////////////////
+        if (methodCache.isEmpty()) buildMethodCache(delegate, methodCache);
 
         // create a copy of the argument array so as not to mutate the original bytecode
         final Object[] argumentsCopy = new Object[arguments.length];
@@ -178,5 +162,21 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(argumentsCopy) + ")", e);
         }
         throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
+    }
+
+    private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<Method>> methodCache) {
+        if (methodCache.isEmpty()) {
+            for (final Method method : delegate.getClass().getMethods()) {
+                if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
+                    List<Method> list = methodCache.get(method.getName());
+                    if (null == list) {
+                        list = new ArrayList<>();
+                        methodCache.put(method.getName(), list);
+                    }
+                    list.add(method);
+                }
+            }
+            GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
+        }
     }
 }
