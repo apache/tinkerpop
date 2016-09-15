@@ -199,10 +199,7 @@ class Console {
             if (this.tempIterator.hasNext()) {
                 int counter = 0;
                 while (this.tempIterator.hasNext() && (Preferences.maxIteration == -1 || counter < Preferences.maxIteration)) {
-                    final Object object = this.tempIterator.next()
-                    String prompt = Colorizer.render(Preferences.resultPromptColor, buildResultPrompt())
-                    String colorizedResult = colorizeResult(object)
-                    io.out.println(prompt + ((null == object) ? Preferences.emptyResult : colorizedResult))
+                    printResult(tempIterator.next())
                     counter++;
                 }
                 if (this.tempIterator.hasNext())
@@ -250,13 +247,25 @@ class Console {
                         io.out.println(Colorizer.render(Preferences.resultPromptColor,(buildResultPrompt() + result.prettyPrint(width < 20 ? 80 : width))))
                         return null
                     } else {
-                        io.out.println(Colorizer.render(Preferences.resultPromptColor,buildResultPrompt()).toString() + ((null == result) ? Preferences.emptyResult : colorizeResult(result)))
+                        printResult(result)
                         return null
                     }
                 } catch (final Exception e) {
                     this.tempIterator = Collections.emptyIterator()
                     throw e
                 }
+            }
+        }
+    }
+
+    def printResult(def object) {
+        final String prompt = Colorizer.render(Preferences.resultPromptColor, buildResultPrompt())
+        // if preference is set to empty string then don't print any result
+        if (object != null) {
+            io.out.println(prompt + colorizeResult(object))
+        } else {
+            if (!Preferences.emptyResult.isEmpty()) {
+                io.out.println(prompt + Preferences.emptyResult)
             }
         }
     }
