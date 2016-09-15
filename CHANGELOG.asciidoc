@@ -32,6 +32,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `TraversalRing` returns a `null` if it does not contain traversals (previously `IdentityTraversal`).
 * Fixed a `JavaTranslator` bug where `Bytecode` instructions were being mutated during translation.
 * Added `Path` to Gremlin-Python with respective GraphSON 2.0 deserializer.
+* If `empty.result.indicator` is set to an empty string, then no "result line" is printed in the console.
 * VertexPrograms can now declare traverser requirements, e.g. to have access to the path when used with `.program()`.
 * New build options for `gremlin-python` where `-DglvPython` is no longer required.
 * Added missing `InetAddress` to GraphSON extension module.
