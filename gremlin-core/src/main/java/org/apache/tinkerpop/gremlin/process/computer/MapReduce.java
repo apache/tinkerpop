@@ -33,7 +33,7 @@ import java.util.Optional;
  * The map() stage processes the vertices of the {@link org.apache.tinkerpop.gremlin.structure.Graph} in a logically parallel manner.
  * The combine() stage aggregates the values of a particular map emitted key prior to sending across the cluster.
  * The reduce() stage aggregates the values of the combine/map emitted keys for the keys that hash to the current machine in the cluster.
- * The interface presented here is nearly identical to the interface popularized by Hadoop save the the map() is over the vertices of the graph.
+ * The interface presented here is nearly identical to the interface popularized by Hadoop save the map() is over the vertices of the graph.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

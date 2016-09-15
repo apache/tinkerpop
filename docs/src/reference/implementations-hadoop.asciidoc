@@ -280,7 +280,7 @@ specified in `HADOOP_GREMLIN_LIBS`.
 export HADOOP_GREMLIN_LIBS=$HADOOP_GREMLIN_LIBS:/usr/local/gremlin-console/ext/spark-gremlin/lib
 
 Furthermore the `lib/` directory should be distributed across all machines in the SparkServer cluster. For this purpose TinkerPop
-provides a helper script, which takes the Spark installation directory and the the Spark machines as input:
+provides a helper script, which takes the Spark installation directory and the Spark machines as input:
 
 [source,shell]
 bin/hadoop/init-tp-spark.sh /usr/local/spark spark@10.0.0.1 spark@10.0.0.2 spark@10.0.0.3

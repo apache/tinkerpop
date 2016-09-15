@@ -307,7 +307,7 @@ g.V().hasLabel('software').as('a','b','c').
 Barrier Step
 ~~~~~~~~~~~~
 
-The `barrier()`-step (*barrier*) turns the the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
+The `barrier()`-step (*barrier*) turns the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
 useful in the following situations:
 
   * When everything prior to `barrier()` needs to be executed before moving onto the steps after the `barrier()` (i.e. ordering).
@@ -742,7 +742,7 @@ g.V().has('name',not(within('josh','marko'))).valueMap() <5>
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
-<3> Find all vertices whose names are exact matches to any names in the the collection `[josh,marko]`, display all
+<3> Find all vertices whose names are exact matches to any names in the collection `[josh,marko]`, display all
 the key,value pairs for those verticies.
 <4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
 <5> Same as the prior example save using `not` on `within` to yield `without`.
@@ -851,7 +851,7 @@ in a object-local traversal. As such, the `order().by()` and the `limit()` refer
 stream as a whole.
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit
-of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
+of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[match-step]]
@@ -1430,7 +1430,7 @@ g.V(1).repeat(out()).until(outE().count().is(0)).path().by('name') <3>
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
 
 WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) process their current objects "locally."
-In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the
+In OLAP, where the atomic unit of computing is the vertex and its local "star graph," it is important that the
 anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to
 an adjacent vertex's properties or edges.
 
@@ -2002,7 +2002,7 @@ g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 <6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
-of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
+of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
 edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop3 (see
 link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
