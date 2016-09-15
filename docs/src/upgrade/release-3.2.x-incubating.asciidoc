@@ -353,7 +353,7 @@ Hadoop FileSystem Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `HadoopGremlinPlugin` defines two variables: `hdfs` and `fs`. The first is a reference to the HDFS `FileSystemStorage`
-and the latter is a reference to the the local `FileSystemStorage`. Prior to 3.2.x, `fs` was called `local`. However,
+and the latter is a reference to the local `FileSystemStorage`. Prior to 3.2.x, `fs` was called `local`. However,
 there was a variable name conflict with `Scope.local`. As such `local` is now `fs`. This issue existed prior to 3.2.x,
 but was not realized until this release. Finally, this only effects Gremlin Console users.
 
