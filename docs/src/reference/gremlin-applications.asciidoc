@@ -173,7 +173,7 @@ Preferences are set with `:set name value`.  Values can contain spaces when quot
 |result.prompt.color | colors | Color of the result prompt.
 |input.prompt | string | Text of the input prompt.
 |result.prompt | string | Text of the result prompt.
-|empty.result.indicator | string | Text of the void/no results indicator - setting to empty string (i.e. "" at the
+|result.indicator.null | string | Text of the void/no results indicator - setting to empty string (i.e. "" at the
 command line) will print no result line in these cases.
 |=========================================================
 

@@ -32,6 +32,33 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.2.3/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Renamed Null Result Preference
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In 3.2.2, the Gremlin Console introduced a setting called `empty.result.indicator`, which controlled the output that
+was presented when no result was returned. For consistency, this setting has been renamed to `result.indicator.null`
+and can be set as follows:
+
+[source,text]
+----
+gremlin> graph = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> graph.close()
+==>null
+gremlin> :set result.indicator.null nil
+gremlin> graph = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> graph.close()
+==>nil
+gremlin> :set result.indicator.null ""
+gremlin> graph = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> graph.close()
+gremlin>
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1409[TINKERPOP-1409]
+
 Where Step Supports By-Modulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
