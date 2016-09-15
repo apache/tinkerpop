@@ -405,7 +405,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl
     private void internalReset() {
         createClassLoader();
 
-        // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
+        // must clear the local cache here because the classloader has been reset.  therefore, classes previously
         // referenced before that might not have evaluated might cleanly evaluate now.
         classMap.clear();
         globalClosures.clear();

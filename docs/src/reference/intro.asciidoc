@@ -298,7 +298,7 @@ g.V(marko).out('knows') <2>
 g.V(marko).out('knows').values('name') <3>
 ----
 
-<1> Set the variable `marko` to the the vertex in the graph `g` named "marko".
+<1> Set the variable `marko` to the vertex in the graph `g` named "marko".
 <2> Get the vertices that are outgoing adjacent to the marko-vertex via knows-edges.
 <3> Get the names of the marko-vertex's friends.
 
