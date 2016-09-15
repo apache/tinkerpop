@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,12 +42,11 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private final S traversalSource;
     private final Class anonymousTraversal;
-    private final Map<String, List<Method>> traversalSourceMethodCache = new HashMap<>();
-    private final Map<String, List<Method>> traversalMethodCache = new HashMap<>();
+    private static final Map<Class<?>, Map<String, List<Method>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
+
 
     private JavaTranslator(final S traversalSource) {
         this.traversalSource = traversalSource;
-        // todo: could produce an NPE later on. need a good model for when a traversal species doesn't support nesting.
         this.anonymousTraversal = traversalSource.getAnonymousTraversalClass().orElse(null);
     }
 
@@ -103,26 +103,16 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
         // populate method cache for fast access to methods in subsequent calls
-        final Map<String, List<Method>> methodCache = delegate instanceof TraversalSource ? this.traversalSourceMethodCache : this.traversalMethodCache;
-        if (methodCache.isEmpty()) {
-            for (final Method method : delegate.getClass().getMethods()) {
-                if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
-                    List<Method> list = methodCache.get(method.getName());
-                    if (null == list) {
-                        list = new ArrayList<>();
-                        methodCache.put(method.getName(), list);
-                    }
-                    list.add(method);
-                }
-            }
-        }
+        final Map<String, List<Method>> methodCache = GLOBAL_METHOD_CACHE.getOrDefault(delegate.getClass(), new HashMap<>());
+        if (methodCache.isEmpty()) buildMethodCache(delegate, methodCache);
+
         // create a copy of the argument array so as not to mutate the original bytecode
         final Object[] argumentsCopy = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i] instanceof Bytecode.Binding)
                 argumentsCopy[i] = ((Bytecode.Binding) arguments[i]).value();
             else if (arguments[i] instanceof Bytecode)
-                argumentsCopy[i] = translateFromAnonymous((Bytecode) arguments[i]);
+                argumentsCopy[i] = this.translateFromAnonymous((Bytecode) arguments[i]);
             else
                 argumentsCopy[i] = arguments[i];
         }
@@ -172,5 +162,21 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             throw new IllegalStateException(e.getMessage() + ":" + methodName + "(" + Arrays.toString(argumentsCopy) + ")", e);
         }
         throw new IllegalStateException("Could not locate method: " + delegate.getClass().getSimpleName() + "." + methodName + "(" + Arrays.toString(argumentsCopy) + ")");
+    }
+
+    private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<Method>> methodCache) {
+        if (methodCache.isEmpty()) {
+            for (final Method method : delegate.getClass().getMethods()) {
+                if (!(method.getName().equals("addV") && method.getParameterCount() == 1 && method.getParameters()[0].getType().equals(Object[].class))) { // hack cause its hard to tell Object[] vs. String :|
+                    List<Method> list = methodCache.get(method.getName());
+                    if (null == list) {
+                        list = new ArrayList<>();
+                        methodCache.put(method.getName(), list);
+                    }
+                    list.add(method);
+                }
+            }
+            GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
+        }
     }
 }

@@ -77,7 +77,7 @@ public class TinkerGraphPlayTest {
 
         final Traversal<?, ?> traversal = g.V().repeat(out()).times(2).groupCount().by("name").select(Column.keys).order().by(Order.decr);
         final Bytecode bytecode = traversal.asAdmin().getBytecode();
-
+        //final JavaTranslator translator = JavaTranslator.of(g);
         final Map<Bytecode, Traversal.Admin<?, ?>> cache = new HashMap<>();
         cache.put(bytecode, traversal.asAdmin());
         final HashSet<?> result = new LinkedHashSet<>(Arrays.asList("ripple", "lop"));
