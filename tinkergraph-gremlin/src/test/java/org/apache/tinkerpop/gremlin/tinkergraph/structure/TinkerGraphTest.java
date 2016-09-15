@@ -440,6 +440,28 @@ public class TinkerGraphTest {
     }
 
     @Test
+    public void shouldPersistWithRelativePath() {
+        final String graphLocation = "shouldPersistToGryoRelative.kryo";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        try {
+            final Configuration conf = new BaseConfiguration();
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
+            final TinkerGraph graph = TinkerGraph.open(conf);
+            TinkerFactory.generateModern(graph);
+            graph.close();
+
+            final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+            IoTest.assertModernGraph(reloadedGraph, true, false);
+            reloadedGraph.close();
+        } catch (Exception ex) {
+            if (f.exists() && f.isFile()) f.delete();
+        }
+    }
+
+    @Test
     public void shouldPersistToAnyGraphFormat() {
         final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToAnyGraphFormat.dat";
         final File f = new File(graphLocation);
