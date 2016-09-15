@@ -23,6 +23,9 @@ import json
 import unittest
 from unittest import TestCase
 
+import six
+
+from gremlin_python.statics import long
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONReader
@@ -44,7 +47,7 @@ class TestGraphSONReader(TestCase):
             "@value": 31
         }))
         assert isinstance(x, long)
-        assert 31L == x
+        assert long(31) == x
         ##
         x = GraphSONReader.readObject(json.dumps({
             "@type": "g:Float",
@@ -74,7 +77,10 @@ class TestGraphSONReader(TestCase):
             """{"@type":"g:Path","@value":{"labels":[["a"],["b","c"],[]],"objects":[{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},"value":"marko","label":"name"}}],"age":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29},"label":"age"}}]}}},{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":3},"label":"software","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":4},"value":"lop","label":"name"}}],"lang":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":5},"value":"java","label":"lang"}}]}}},"lop"]}}"""
         )
         assert isinstance(path, Path)
-        assert "[v[1], v[3], u'lop']" == str(path)
+        if six.PY3:
+            assert "[v[1], v[3], 'lop']" == str(path)
+        else:
+            assert "[v[1], v[3], u'lop']" == str(path)
         assert Vertex(1) == path[0]
         assert Vertex(1) == path["a"]
         assert "lop" == path[2]
@@ -83,9 +89,9 @@ class TestGraphSONReader(TestCase):
 
 class TestGraphSONWriter(TestCase):
     def test_numbers(self):
-        assert """{"@type":"g:Int32","@value":1}""" == GraphSONWriter.writeObject(1)
-        assert """{"@type":"g:Int64","@value":2}""" == GraphSONWriter.writeObject(2L)
-        assert """{"@type":"g:Float","@value":3.2}""" == GraphSONWriter.writeObject(3.2)
+        assert {"@type":"g:Int64","@value":2} == json.loads(GraphSONWriter.writeObject(long(2)))
+        assert {"@type":"g:Int32","@value":1} == json.loads(GraphSONWriter.writeObject(1))
+        assert {"@type":"g:Float","@value":3.2} == json.loads(GraphSONWriter.writeObject(3.2))
         assert """true""" == GraphSONWriter.writeObject(True)
 
     def test_P(self):

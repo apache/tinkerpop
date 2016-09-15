@@ -22,6 +22,7 @@ from .traversal import TraversalStrategies
 from .traversal import Bytecode
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
+from ..statics import long
 
 class GraphTraversalSource(object):
   def __init__(self, graph, traversal_strategies, bytecode=None):
@@ -91,7 +92,7 @@ class GraphTraversal(Traversal):
     if isinstance(index, int):
         return self.range(long(index), long(index + 1))
     elif isinstance(index, slice):
-        return self.range(0L if index.start is None else long(index.start), long(sys.maxint) if index.stop is None else long(index.stop))
+        return self.range(long(0) if index.start is None else long(index.start), long(sys.maxsize) if index.stop is None else long(index.stop))
     else:
         raise TypeError("Index must be int or slice")
   def __getattr__(self, key):

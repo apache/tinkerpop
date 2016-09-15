@@ -23,6 +23,7 @@ import unittest
 from unittest import TestCase
 
 from gremlin_python import statics
+from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.structure.graph import Graph
@@ -34,18 +35,17 @@ class TestDriverRemoteConnection(TestCase):
         statics.load_statics(globals())
         connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
         assert "remoteconnection[ws://localhost:8182/gremlin,g]" == str(connection)
-        #
         g = Graph().traversal().withRemote(connection)
-        #
-        assert 6L == g.V().count().toList()[0]
+
+        assert long(6) == g.V().count().toList()[0]
         #
         assert Vertex(1) == g.V(1).next()
         assert 1 == g.V(1).id().next()
         assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
         assert 1 == len(g.V(1).toList())
         assert isinstance(g.V(1).toList(), list)
-        #
-        results = g.V().repeat(out()).times(2).name.toList()
+        results = g.V().repeat(out()).times(2).name
+        results = results.toList()
         assert 2 == len(results)
         assert "lop" in results
         assert "ripple" in results
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         test = True
         connection.close()
     except:
-        print "GremlinServer is not running and this test case will not execute: " + __file__
+        print("GremlinServer is not running and this test case will not execute: " + __file__)
 
     if test:
         unittest.main()

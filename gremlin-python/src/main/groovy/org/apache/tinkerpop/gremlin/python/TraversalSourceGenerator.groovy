@@ -57,6 +57,7 @@ under the License.
         pythonClass.append("import six\n")
         pythonClass.append("from aenum import Enum\n")
         pythonClass.append("from .. import statics\n")
+        pythonClass.append("from ..statics import long\n\n")
 
         pythonClass.append("""
 class Traversal(object):
@@ -182,7 +183,9 @@ TRAVERSER
 '''
 
 class Traverser(object):
-    def __init__(self, object, bulk=1L):
+    def __init__(self, object, bulk=None):
+        if bulk is None:
+            bulk = long(1)
         self.object = object
         self.bulk = bulk
     def __repr__(self):
