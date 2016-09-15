@@ -19,3 +19,4 @@ benchmarks/
 __pycache__/
 *.py[cdo]
 __version__.py
+.glv

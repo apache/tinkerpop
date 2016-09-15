@@ -32,6 +32,10 @@ from a previous version or from recent `SNAPSHOT`. When using one generated for 
 commands end up being set to the version that is being released, making cut and paste of those commands less labor
 intensive and error prone.
 
+IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment> is setup
+properly for release and includes a `.glv` file in `gremlin-python` as described in the <<python-environment,Python Environment>>
+section, so that the `gremlin-python` module builds in full.
+
 Pre-flight Check
 ----------------
 
@@ -46,7 +50,7 @@ and communicating with other members of the community.
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
 . At some point during the week:
-.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j -DglvPython`
+.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
 .. Deploy a final SNAPSHOT to the snapshot repository.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
@@ -70,7 +74,7 @@ A release candidate is an unofficial release that is represented by a tagged ver
 offered in cases where there is significant change in a particular version and the potential for upgrades and problems
 might be high.
 
-. `mvn clean install -DincludeNeo4j -DglvPython`
+. `mvn clean install -DincludeNeo4j`
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
 .. `mvn verify -DskipPerformanceTests=false`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
@@ -147,14 +151,14 @@ Release & Promote
 -----------------
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
-. Deploy to link:https://pypi.python.org/pypi[pypi] with `mvn clean install -DskipTests -DglvPython -Dpypi`. It is likely necessary
-that this build will occur from the tag for the release, so be sure to checkout the tag first before executing this step.
+. Deploy to link:https://pypi.python.org/pypi[pypi]
+.. This build will likely occur from the tag for the release, so be sure to checkout the tag first before executing this step.
+.. `mvn clean install -DskipTests`
+.. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
-. Deploy `gremlin-python` to pypi with `mvn deploy -pl gremlin-python -Dpypi -DskipTests` (note that `gremlin-python`
-should be built with `-DglvPython` first without skipping tests so that the distribution will be present)
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
