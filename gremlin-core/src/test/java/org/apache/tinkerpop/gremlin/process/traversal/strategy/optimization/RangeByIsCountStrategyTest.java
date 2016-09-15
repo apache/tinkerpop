@@ -93,6 +93,8 @@ public class RangeByIsCountStrategyTest {
                 {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
                 {__.repeat(__.out()).until(__.outE().count().is(0)), __.repeat(__.out()).until(__.not(__.outE()))},
                 {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
+                {__.where(__.outE().hasLabel("created").count().is(0)), __.where(__.not(__.outE().hasLabel("created")))},
+                {__.where(__.out().outE().hasLabel("created").count().is(0)), __.where(__.out().not(__.outE().hasLabel("created")))},
         });
     }
 }
