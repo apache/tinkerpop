@@ -29,6 +29,33 @@ TinkerPop 3.2.3
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.3/CHANGELOG.asciidoc#release-3-2-3[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Where Step Supports By-Modulation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is now possible to use `by()` with `where()` predicate-based steps. Previously, without using `match()`, if you wanted
+to know who was older than their friend, the following traversal would be used.
+
+[source,text]
+----
+gremlin> g.V().as('a').out('knows').as('b').
+......1>   filter(select('a','b').by('age').where('a', lt('b')))
+==>v[4]
+----
+
+Now, with `where().by()` support, the above traversal can be expressed more succinctly and more naturally as follows.
+
+[source,text]
+----
+gremlin> g.V().as('a').out('knows').as('b').
+......1>   where('a', lt('b')).by('age')
+==>v[4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
+
 TinkerPop 3.2.2
 ---------------
 
