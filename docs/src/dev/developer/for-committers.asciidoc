@@ -60,13 +60,18 @@ change.
 Changes that break the public APIs should be marked with a "breaking" label and should be
 distinguished from other changes in the release notes.
 
+[[branches]]
 Branches
 --------
 
-The "master" branch is used for the main line of development and release branches are constructed as needed
-for ongoing maintenance work. If new to the project or are returning to it after some time away, it may be good
-to send an email to the developer mailing list (or ask on HipChat) to find out what the current operating branches
-are.
+TinkerPop has several release branches:
+
+* `tp30` - 3.0.x (no longer maintained)
+* `tp31` - 3.1.x (bug fixes and documentation updates only)
+* `master` - 3.2.x
+
+Changes to `tp31` should merge to `master`. Please read more about this process in the <<pull-requests, Pull Requests>>
+section.
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -230,8 +235,8 @@ Review then Commit
 ------------------
 
 Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-committ] (RTC)
-process before being merged into a release branch. All committers should follow the pattern below, where "you" refers to the
-committer wanting to put code into a release branch.
+process before being merged into a release branch. All committers should follow the pattern below, where "you" refers
+to the committer wanting to put code into a release branch.
 
 * Make a JIRA ticket for the software problem you want to solve (i.e. a fix).
 * Fork the release branch that the fix will be put into.
@@ -240,7 +245,7 @@ committer wanting to put code into a release branch.
 * When your fix is complete and ready to merge, issue a link:https://git-scm.com/docs/git-request-pull[pull request].
 ** Be certain that the test suite is passing.
 ** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
-* Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes].
+* Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes] from other committers.
 ** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
 * Votes are issued by TinkerPop committers as comments to the pull request.
 * Once 3 +1 votes are received, you are responsible for merging to the release branch and handling any merge conflicts.
@@ -266,10 +271,11 @@ When the committer chooses CTR, it is considered good form to include something 
 that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as this change encompasses minor
 adjustments to text formatting."
 
-Pull Request Format
-~~~~~~~~~~~~~~~~~~~
+[[pull-requests]]
+Pull Requests
+~~~~~~~~~~~~~
 
-When you submit a pull request, be sure it uses the following style.
+When submitting a pull request to one of the <<branches, release branches>>, be sure it uses the following style:
 
 * The title of the pull request is the JIRA ticket number + "colon" + the title of the JIRA ticket.
 * The first line of the pull request message should contain a link to the JIRA ticket.
@@ -283,6 +289,63 @@ When you submit a pull request, be sure it uses the following style.
 * Notes about what you will do when you merge to the respective release branch (e.g. update CHANGELOG).
 ** These types of "on merge tweaks" are typically done to extremely dynamic files to combat and merge conflicts.
 * If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
+
+A pull request will typically be made to a target <<branches, branch>>. Assuming that branch is upstream of other
+release branches (e.g. a pull request made to for the branch containing 3.1.x must merge to the branch that releases
+3.2.x), it is important to be sure that those changes are merged to the downstream release branches. Typicaly,
+this process is best handled by multiple pull requests: one to each release branch.
+
+As an example, consider a situation where there is a feature branch named "TINKERPOP-1234" that contains a fix for
+the `tp31` branch:
+
+[source,bash]
+----
+`git checkout -b TINKERPOP-1234 tp31`
+// do a bunch of stuff to implement TINKERPOP-1234 and commit/push
+git checkout -b <TINKERPOP-1234-master> master
+git merge TINKERPOP-1234
+----
+
+At this point, there are two branches, with the same set of commits going to `tp31` and `master`. Voting will occur
+on both pull requests. After a successful vote, it is time to merge. If there are no conflicts, then simply `git merge`
+both pull requests to their respective branches. If there are conflicts, then there is some added work to do - time to
+rebase:
+
+[source,bash]
+----
+git checkout TINKERPOP-1234
+git rebase origin/tp31
+----
+
+Depending on the conflict, it might be a good idea to re-test before going any further, otherwise:
+
+[source,bash]
+----
+git push origin TINKERPOP-1234 --force
+----
+
+Now, `git rebase` has re-written the commit history, which makes a mess of the other pull request to master. This
+problem is rectified by essentially re-issuing the PR:
+
+[source,bash]
+----
+git checkout TINKERPOP-1234-master
+git reset --hard origin/master
+git merge TINKERPOP-1234
+----
+
+Again, depending on the changes, it may make sense to re-test at this point, otherwise:
+
+[source,bash]
+----
+git push origin TINKERPOP-1234-master --force
+----
+
+It should not be safe to merge both pull requests to their release branches.
+
+IMPORTANT: Always take a moment to review the commits in a particular pull request. Be sure that they are *all* related
+to the work that was done and that no extraneous commits are present that cannot be explained. Ensuring a pull request
+only contains the expected commits is the responsibility of the committer as well as the reviewer.
 
 [[dependencies]]
 Dependencies

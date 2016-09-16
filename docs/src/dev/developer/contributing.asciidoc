@@ -179,9 +179,9 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 . Make changes in the fork
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
-.. Consider which branch to create the branch from in the first place. In other words, is the change to be targetted
-at a specific TinkerPop version (e.g. a patch to an older version)? When in doubt, please ask on
-dev@tinkerpop.apache.org.
+.. Consider which release branch (e.g. `master`, `tp31` etc) to create the development branch from in the first place.
+In other words, is the change to be targetted at a specific TinkerPop version (e.g. a patch to an older version)? When
+in doubt, please ask on dev@tinkerpop.apache.org.
 . Build the project and run tests.
 .. A simple build can be accomplished with maven: `mvn clean install`.
 .. Often, a "simple build" isn't sufficient and integration tests are required:
