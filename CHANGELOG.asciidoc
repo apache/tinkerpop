@@ -400,6 +400,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Improved session cleanup when a close is triggered by the client.
 * Removed the `appveyor.yml` file as the AppVeyor build is no longer enabled by Apache Infrastructure.
 * Fixed a bug in `RangeByIsCountStrategy` which didn't use the `NotStep` properly.
 
