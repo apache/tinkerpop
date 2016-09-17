@@ -33,11 +33,11 @@ public abstract class GroovyDedupTest {
     public static class Traversals extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
-            return new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.in.values('name').fold.dedup(Scope.local).unfold;");
+            return new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.in.values('name').fold.dedup(Scope.local).unfold");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_out_in_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
             return new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.as('x').in.as('y').select('x','y').by('name').fold.dedup(Scope.local,'x','y').unfold");
         }
 

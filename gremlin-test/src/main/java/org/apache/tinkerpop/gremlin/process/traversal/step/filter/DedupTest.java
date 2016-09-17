@@ -79,36 +79,28 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_out_in_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold();
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
         final Traversal<Vertex, String> traversal = get_g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold();
-        final List<String> names = traversal.toList();
-        assertEquals(3, names.size());
-        assertThat(names, containsInAnyOrder("marko", "josh", "peter"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "josh", "peter"), traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_out_in_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_out_in_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold();
-        final List<Map<String,String>> names = traversal.toList();
-        assertEquals(6, names.size());
-        for (final Map<String, String> m : names) {
-            if (m.get("x").equals("lop")) {
-                assertThat(m.get("y"), isIn(Arrays.asList("marko", "josh", "peter")));
-            } else if (m.get("x").equals("vadas")) {
-                assertEquals("marko", m.get("y"));
-            } else if (m.get("x").equals("josh")) {
-                assertEquals("marko", m.get("y"));
-            } else if (m.get("x").equals("ripple")) {
-                assertEquals("josh", m.get("y"));
-            } else {
-                fail("A value was returned that was not expected in the result: " + m.get("x"));
-            }
-        }
+    public void g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "x", "lop", "y", "marko",
+                "x", "lop", "y", "josh",
+                "x", "lop", "y", "peter",
+                "x", "vadas", "y", "marko",
+                "x", "josh", "y", "marko",
+                "x", "ripple", "y", "josh"), traversal);
     }
 
     @Test
@@ -284,7 +276,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_out_in_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
             return g.V().out().as("x").in().as("y").select("x","y").by("name").fold().dedup(Scope.local,"x","y").unfold();
         }
 
