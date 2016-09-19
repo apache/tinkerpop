@@ -1159,47 +1159,5 @@ limitations under the License.
             </build>
         </profile>
 
-        <profile>
-            <id>windows</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>download-hadoop-winutils</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>download-single</goal>
-                                </goals>
-                                <configuration>
-                                    <url>http://public-repo-1.hortonworks.com/</url>
-                                    <fromFile>hdp-win-alpha/winutils.exe</fromFile>
-                                    <toDir>${project.build.directory}/hadoop_home/bin</toDir>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties}
-                                -Dbuild.dir=${project.build.directory}
-                                -Dhadoop.home.dir=${project.build.directory}/hadoop_home -Dis.testing=true
-                            </argLine>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 </project>
