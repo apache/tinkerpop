@@ -21,10 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -36,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
@@ -365,6 +364,28 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();
     }
+
+    @Test
+    @LoadGraphWith(CREW)
+    public void shouldFilterVertexProperties() throws Exception {
+        GraphTraversalSource sg = create(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
+        checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
+        checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
+        // check to make sure edge properties are not analyzed
+        sg = create(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
+        checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().as("a").properties("location").as("b").select("a").outE().properties().select("b").value().dedup());
+        checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().as("a").values("location").as("b").select("a").outE().properties().select("b").dedup());
+        //
+        //
+        sg = create(SubgraphStrategy.build().vertices(has("name", P.neq("stephen"))).vertexProperties(has("startTime", P.gt(2005))).create());
+        checkResults(Arrays.asList("baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
+        checkResults(Arrays.asList("baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
+        //
+        sg = create(SubgraphStrategy.build().vertices(has("name", P.not(P.within("stephen", "daniel")))).vertexProperties(has("startTime", P.gt(2005))).create());
+        checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().properties("location").value());
+        checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().values("location"));
+    }
+
 
     private GraphTraversalSource create(final SubgraphStrategy strategy) {
         return graphProvider.traversal(graph, strategy);
