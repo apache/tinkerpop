@@ -28,6 +28,7 @@ TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Improved session cleanup when a close is triggered by the client.
 * Removed the `appveyor.yml` file as the AppVeyor build is no longer enabled by Apache Infrastructure.
+* Fixed TinkerGraph which was not saving on `close()` if the path only consisted of the file name.
 * Fixed a bug in `RangeByIsCountStrategy` which didn't use the `NotStep` properly.
 
 [[release-3-1-4]]
