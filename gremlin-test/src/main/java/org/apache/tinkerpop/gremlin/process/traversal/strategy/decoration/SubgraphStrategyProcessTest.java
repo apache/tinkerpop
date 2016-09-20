@@ -26,9 +26,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,6 +48,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -374,11 +376,12 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         GraphTraversalSource sg = create(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
+        assertFalse(TraversalHelper.hasStepOfAssignableClassRecursively(TraversalFilterStep.class, sg.V().properties("location").value().iterate().asAdmin()));
         // check to make sure edge properties are not analyzed
         sg = create(SubgraphStrategy.build().vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().as("a").properties("location").as("b").select("a").outE().properties().select("b").value().dedup());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().as("a").values("location").as("b").select("a").outE().properties().select("b").dedup());
-        //
+        assertFalse(TraversalHelper.hasStepOfAssignableClassRecursively(TraversalFilterStep.class, sg.V().as("a").values("location").as("b").select("a").outE().properties().select("b").dedup().iterate().asAdmin()));
         //
         sg = create(SubgraphStrategy.build().vertices(has("name", P.neq("stephen"))).vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
@@ -389,7 +392,6 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().values("location"));
         //
         sg = create(SubgraphStrategy.build().vertices(has("name", P.eq("matthias"))).vertexProperties(has("startTime", P.gte(2014))).create());
-        System.out.println(sg.V().groupCount().by("location").explain());
         checkResults(makeMapList(1, "seattle", 1L), sg.V().groupCount().by("location"));
         //
         sg = create(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
