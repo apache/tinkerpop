@@ -83,6 +83,31 @@ gremlin> g.V().as('a').out('knows').as('b').
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
 
+Change In has() Method Signatures
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TinkerPop 3.2.2 release unintentionally intoduced a breaking change for some `has()` method overloads. In particular the
+behavior for single item array arguments was changed:
+
+[source,text]
+----
+gremlin> g.V().hasLabel(["software"] as String[]).count()
+==>0
+----
+
+Prior this change single item arrays were treated like there was only that single item:
+
+[source,text]
+----
+gremlin> g.V().hasLabel(["software"] as String[]).count()
+==>2
+gremlin> g.V().hasLabel("software").count()
+==>2
+----
+
+TinkerPop 3.2.3 fixes this misbehavior and all `has()` method overloads behave like before, except that they no longer
+support no arguments.
+
 TinkerPop 3.2.2
 ---------------
 
