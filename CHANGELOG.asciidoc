@@ -29,6 +29,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a bug in `TraversalVertexProgram` (OLAP) around ordering and connectives (i.e. `and()` and `or()`).
 * Added `AbstractGremlinProcessTest.checkOrderedResults()` to make testing ordered results easier.
 * `AbstractLambdaTraversal` now supports a `bypassTraversal` and thus, it is possible for strategies to redefine such lambda traversals.
+* `SubgraphStrategy` no longer `filter()`-wraps if the criteria is a chain of filters or connectives.
 * `SubgraphStrategy` now supports vertex property filtering.
 * Fixed a bug in Gremlin-Python `P` where predicates reversed the order of the predicates.
 * Added tests to `DedupTest` for the `dedup(Scope, String...)` overload.
