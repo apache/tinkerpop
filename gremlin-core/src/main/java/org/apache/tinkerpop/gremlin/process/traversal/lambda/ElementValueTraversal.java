@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
 /**
@@ -39,8 +40,13 @@ public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Elem
     }
 
     @Override
+    public boolean hasNext() {
+        return true;
+    }
+
+    @Override
     public void addStart(final Traverser.Admin<Element> start) {
-        this.value = start.get().value(this.propertyKey);
+        this.value = null == this.bypassTraversal ? start.get().value(this.propertyKey) : TraversalUtil.apply(start, this.bypassTraversal);
     }
 
     public String getPropertyKey() {
@@ -49,11 +55,11 @@ public final class ElementValueTraversal<V> extends AbstractLambdaTraversal<Elem
 
     @Override
     public String toString() {
-        return "value(" + this.propertyKey + ')';
+        return "value(" + (null == this.bypassTraversal ? this.propertyKey : this.bypassTraversal) + ')';
     }
 
     @Override
     public int hashCode() {
-        return this.getClass().hashCode() ^ this.propertyKey.hashCode();
+        return super.hashCode() ^ this.propertyKey.hashCode();
     }
 }

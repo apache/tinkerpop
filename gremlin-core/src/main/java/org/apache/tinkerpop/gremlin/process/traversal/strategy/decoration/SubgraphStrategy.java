@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This {@link TraversalStrategy} provides a way to limit the view of a {@link Traversal}.  By providing
@@ -168,6 +170,20 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             final OrStep<Object> wrappedCriterion = new OrStep<>(traversal,
                     new DefaultTraversal<>().addStep(new LambdaFilterStep<>(traversal, t -> !(t.get() instanceof VertexProperty))),
                     new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone())));
+            // turn all ElementValueTraversals into filters
+            for (final Step<?, ?> step : traversal.getSteps()) {
+                // gremlin> g.V().local(properties('name','stateOfMind').group().by(key()).by(value().fold()))
+                if (step instanceof TraversalParent) {
+                    Stream.concat(((TraversalParent) step).getGlobalChildren().stream(), ((TraversalParent) step).getLocalChildren().stream())
+                            .filter(t -> t instanceof ElementValueTraversal)
+                            .forEach(t -> {
+                                final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
+                                temp.addStep(new PropertiesStep<>(temp, PropertyType.VALUE, ((ElementValueTraversal) t).getPropertyKey()));
+                                temp.setParent((TraversalParent)step);
+                                ((ElementValueTraversal) t).setBypassTraversal(temp);
+                            });
+                }
+            }
             for (final PropertiesStep<?> step : TraversalHelper.getStepsOfAssignableClass(PropertiesStep.class, traversal)) {
                 if (PropertyType.PROPERTY.equals(step.getReturnType())) {
                     // if the property step returns a property, then simply append the criterion

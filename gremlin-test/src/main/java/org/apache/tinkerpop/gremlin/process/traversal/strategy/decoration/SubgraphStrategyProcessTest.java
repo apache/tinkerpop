@@ -21,12 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,6 +41,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasNot;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -384,6 +387,13 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         sg = create(SubgraphStrategy.build().vertices(has("name", P.not(P.within("stephen", "daniel")))).vertexProperties(has("startTime", P.gt(2005))).create());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().properties("location").value());
         checkResults(Arrays.asList("baltimore", "oakland", "seattle"), sg.V().values("location"));
+        //
+        sg = create(SubgraphStrategy.build().vertices(has("name", P.eq("matthias"))).vertexProperties(has("startTime", P.gte(2014))).create());
+        System.out.println(sg.V().groupCount().by("location").explain());
+        checkResults(makeMapList(1, "seattle", 1L), sg.V().groupCount().by("location"));
+        //
+        sg = create(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
+        checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.incr).values("location"));
     }
 
 
