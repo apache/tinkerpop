@@ -27,6 +27,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug in Gremlin-Python `P` where predicates reversed the order of the predicates.
+* Added tests to `DedupTest` for the `dedup(Scope, String...)` overload.
 * Fixed a naming bug in Gremlin-Python where `P._and` and `P._or` should be `P.and_` and `P.or_`. (*breaking*)
 * `where()` predicate-based steps now support `by()`-modulation.
 * `TraversalRing` returns a `null` if it does not contain traversals (previously `IdentityTraversal`).
