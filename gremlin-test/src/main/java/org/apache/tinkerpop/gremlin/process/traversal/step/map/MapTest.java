@@ -87,7 +87,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_asXaX_out_mapXa_nameX() {
+    public void g_withPath_V_asXaX_out_mapXa_nameX() {
         int marko = 0;
         int peter = 0;
         int josh = 0;
@@ -111,7 +111,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_asXaX_out_out_mapXa_name_it_nameX() {
+    public void g_withPath_V_asXaX_out_out_mapXa_name_it_nameX() {
         final Traversal<Vertex, String> traversal = get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX();
         int counter = 0;
         while (traversal.hasNext()) {

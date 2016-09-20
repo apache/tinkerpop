@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Corrected naming of `g_withPath_V_asXaX_out_out_mapXa_name_it_nameX` and `g_withPath_V_asXaX_out_mapXa_nameX` in `MapTest`.
 * Improved session cleanup when a close is triggered by the client.
 * Removed the `appveyor.yml` file as the AppVeyor build is no longer enabled by Apache Infrastructure.
 * Fixed TinkerGraph which was not saving on `close()` if the path only consisted of the file name.
