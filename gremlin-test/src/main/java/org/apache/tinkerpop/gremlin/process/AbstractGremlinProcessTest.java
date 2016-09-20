@@ -102,6 +102,19 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
     }
 
+    public static <T> void checkOrderedResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
+        final List<T> results = traversal.toList();
+        assertFalse(traversal.hasNext());
+        if (expectedResults.size() != results.size()) {
+            logger.error("Expected results: " + expectedResults);
+            logger.error("Actual results:   " + results);
+            assertEquals("Checking result size", expectedResults.size(), results.size());
+        }
+        for (int i = 0; i < expectedResults.size(); i++) {
+            assertEquals(expectedResults.get(i), results.get(i));
+        }
+    }
+
     public static <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
         final List<T> results = traversal.toList();
         assertFalse(traversal.hasNext());

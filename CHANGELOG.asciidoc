@@ -26,6 +26,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `TraversalVertexProgram` (OLAP) around ordering and connectives (i.e. `and()` and `or()`).
+* Added `AbstractGremlinProcessTest.checkOrderedResults()` to make testing ordered results easier.
+* `AbstractLambdaTraversal` now supports a `bypassTraversal` and thus, it is possible for strategies to redefine such lambda traversals.
+* `SubgraphStrategy` now supports vertex property filtering.
 * Fixed a bug in Gremlin-Python `P` where predicates reversed the order of the predicates.
 * Fixed a naming bug in Gremlin-Python where `P._and` and `P._or` should be `P.and_` and `P.or_`. (*breaking*)
 * `where()` predicate-based steps now support `by()`-modulation.
