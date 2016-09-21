@@ -318,10 +318,10 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                     }
                 }
             }
-            // when there is no filter()-wrap, the marked steps exist at the same traversal level
-            for (final Step step : traversal.getSteps()) {
-                step.removeLabel(MARKER);
-            }
+        }
+        // when there is no filter()-wrap, the marked steps exist at the same traversal level
+        for (final Step step : traversal.getSteps()) {
+            step.removeLabel(MARKER);
         }
     }
 
