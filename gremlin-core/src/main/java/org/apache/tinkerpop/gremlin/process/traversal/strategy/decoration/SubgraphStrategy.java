@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -147,6 +148,24 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
     }
 
+    private static final char processesPropertyType(Step step) {
+        while (!(step instanceof EmptyStep)) {
+            if (step instanceof FilterStep || step instanceof ConnectiveStep)
+                step = step.getPreviousStep();
+            else if (step instanceof GraphStep && ((GraphStep) step).returnsVertex())
+                return 'v';
+            else if (step instanceof EdgeVertexStep)
+                return 'v';
+            else if (step instanceof VertexStep)
+                return ((VertexStep) step).returnsVertex() ? 'v' : 'p';
+            else if (step instanceof PropertyMapStep || step instanceof PropertiesStep)
+                return 'p';
+            else
+                return 'x';
+        }
+        return 'x';
+    }
+
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // do not apply subgraph strategy to already created subgraph filter branches (or else you get infinite recursion)
@@ -214,62 +233,95 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         // turn g.V().properties() to g.V().properties().xxx
-        // turn g.V().values() to g.V().properties().xxx.value()\
+        // turn g.V().values() to g.V().properties().xxx.value()
         if (null != this.vertexPropertyCriterion) {
-            final OrStep<Object> wrappedCriterion = new OrStep(traversal,
+            final OrStep<Object> checkPropertyCriterion = new OrStep(traversal,
                     new DefaultTraversal<>().addStep(new ClassFilterStep<>(traversal, VertexProperty.class, false)),
                     this.vertexPropertyCriterionIsAllFilter ?
                             this.vertexPropertyCriterion.clone() :
                             new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone())));
+            final Traversal.Admin nonCheckPropertyCriterion = this.vertexPropertyCriterionIsAllFilter ?
+                    this.vertexPropertyCriterion.clone() :
+                    new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone()));
+
             // turn all ElementValueTraversals into filters
             for (final Step<?, ?> step : traversal.getSteps()) {
                 if (step instanceof TraversalParent) {
                     if (step instanceof PropertyMapStep) {
-                        final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
-                        temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((PropertyMapStep) step).getPropertyKeys()));
-                        temp.addStep(wrappedCriterion.clone());
-                        ((PropertyMapStep) step).setPropertyTraversal(temp);
+                        final char propertyType = processesPropertyType(step.getPreviousStep());
+                        if ('p' != propertyType) {
+                            final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
+                            temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((PropertyMapStep) step).getPropertyKeys()));
+                            if ('v' == propertyType)
+                                TraversalHelper.insertTraversal(0, nonCheckPropertyCriterion.clone(), temp);
+                            else
+                                temp.addStep(checkPropertyCriterion.clone());
+                            ((PropertyMapStep) step).setPropertyTraversal(temp);
+                        }
                     } else {
                         Stream.concat(((TraversalParent) step).getGlobalChildren().stream(), ((TraversalParent) step).getLocalChildren().stream())
                                 .filter(t -> t instanceof ElementValueTraversal)
                                 .forEach(t -> {
-                                    final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
-                                    temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((ElementValueTraversal) t).getPropertyKey()));
-                                    temp.addStep(wrappedCriterion.clone());
-                                    temp.addStep(new PropertyValueStep<>(temp));
-                                    temp.setParent((TraversalParent) step);
-                                    ((ElementValueTraversal) t).setBypassTraversal(temp);
+                                    final char propertyType = processesPropertyType(step.getPreviousStep());
+                                    if ('p' != propertyType) {
+                                        final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
+                                        temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((ElementValueTraversal) t).getPropertyKey()));
+                                        if ('v' == propertyType)
+                                            TraversalHelper.insertTraversal(0, nonCheckPropertyCriterion.clone(), temp);
+                                        else
+                                            temp.addStep(checkPropertyCriterion.clone());
+                                        temp.addStep(new PropertyValueStep<>(temp));
+                                        temp.setParent((TraversalParent) step);
+                                        ((ElementValueTraversal) t).setBypassTraversal(temp);
+                                    }
                                 });
                     }
                 }
             }
             for (final PropertiesStep<?> step : TraversalHelper.getStepsOfAssignableClass(PropertiesStep.class, traversal)) {
-                if (PropertyType.PROPERTY.equals(step.getReturnType())) {
-                    // if the property step returns a property, then simply append the criterion
-                    final OrStep<Object> clonedWrappedCriterion = (OrStep) wrappedCriterion.clone();
-                    TraversalHelper.insertAfterStep(clonedWrappedCriterion, (Step) step, traversal);
-                    for (final String label : step.getLabels()) {
-                        step.removeLabel(label);
-                        clonedWrappedCriterion.addLabel(label);
-                    }
-                } else {
-                    // if the property step returns value, then replace it with a property step, append criterion, then append a value() step
-                    final Step propertiesStep = new PropertiesStep(traversal, PropertyType.PROPERTY, step.getPropertyKeys());
-                    TraversalHelper.replaceStep(step, propertiesStep, traversal);
-                    final Step filterStep = wrappedCriterion.clone();
-                    TraversalHelper.insertAfterStep(filterStep, propertiesStep, traversal);
-                    final Step propertyValueStep = new PropertyValueStep(traversal);
-                    TraversalHelper.insertAfterStep(propertyValueStep, filterStep, traversal);
-                    // add labels to the value step after the filter has been applied
-                    for (final String label : step.getLabels()) {
-                        propertyValueStep.addLabel(label);
+                final char propertyType = processesPropertyType(step.getPreviousStep());
+                if ('p' != propertyType) {
+                    if (PropertyType.PROPERTY == ((PropertiesStep) step).getReturnType()) {
+                        // if the property step returns a property, then simply append the criterion
+                        if ('v' == propertyType) {
+                            final Traversal.Admin<?, ?> temp = nonCheckPropertyCriterion.clone();
+                            TraversalHelper.insertTraversal((Step) step, temp, traversal);
+                            for (final String label : step.getLabels()) {
+                                step.removeLabel(label);
+                                temp.getEndStep().addLabel(label);
+                            }
+                        } else {
+                            final Step<?, ?> temp = checkPropertyCriterion.clone();
+                            TraversalHelper.insertAfterStep(temp, (Step) step, traversal);
+                            for (final String label : step.getLabels()) {
+                                step.removeLabel(label);
+                                temp.addLabel(label);
+                            }
+                        }
+                    } else {
+                        // if the property step returns value, then replace it with a property step, append criterion, then append a value() step
+                        final Step propertiesStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ((PropertiesStep) step).getPropertyKeys());
+                        TraversalHelper.replaceStep(step, propertiesStep, traversal);
+                        final Step propertyValueStep = new PropertyValueStep(traversal);
+                        for (final String label : step.getLabels()) {
+                            propertyValueStep.addLabel(label);
+                        }
+                        if ('v' == propertyType) {
+                            final Traversal.Admin<?, ?> temp = nonCheckPropertyCriterion.clone();
+                            TraversalHelper.insertAfterStep(propertyValueStep, propertiesStep, traversal);
+                            TraversalHelper.insertTraversal(propertiesStep, temp, traversal);
+                        } else {
+                            final Step filterStep = checkPropertyCriterion.clone();
+                            TraversalHelper.insertAfterStep(filterStep, propertiesStep, traversal);
+                            TraversalHelper.insertAfterStep(propertyValueStep, filterStep, traversal);
+                        }
                     }
                 }
             }
-        }
-        // when there is no filter()-wrap, the marked steps exist at the same traversal level
-        for (final Step step : traversal.getSteps()) {
-            step.removeLabel(MARKER);
+            // when there is no filter()-wrap, the marked steps exist at the same traversal level
+            for (final Step step : traversal.getSteps()) {
+                step.removeLabel(MARKER);
+            }
         }
     }
 
