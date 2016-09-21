@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -216,24 +217,30 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         // turn g.V().values() to g.V().properties().xxx.value()\
         if (null != this.vertexPropertyCriterion) {
             final OrStep<Object> wrappedCriterion = new OrStep(traversal,
-                    new DefaultTraversal<>().addStep(new ClassFilterStep<>(traversal, VertexProperty.class, true)),
+                    new DefaultTraversal<>().addStep(new ClassFilterStep<>(traversal, VertexProperty.class, false)),
                     this.vertexPropertyCriterionIsAllFilter ?
                             this.vertexPropertyCriterion.clone() :
                             new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone())));
             // turn all ElementValueTraversals into filters
             for (final Step<?, ?> step : traversal.getSteps()) {
                 if (step instanceof TraversalParent) {
-                    Stream.concat(((TraversalParent) step).getGlobalChildren().stream(), ((TraversalParent) step).getLocalChildren().stream())
-                            .filter(t -> t instanceof ElementValueTraversal)
-                            .forEach(t -> {
-                                final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
-                                temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((ElementValueTraversal) t).getPropertyKey()));
-                                temp.addStep(wrappedCriterion.clone());
-                                temp.addStep(new PropertyValueStep<>(temp));
-                                temp.setParent((TraversalParent) step);
-                                ((ElementValueTraversal) t).setBypassTraversal(temp);
-                                ((TraversalParent) step).integrateChild(temp);
-                            });
+                    if (step instanceof PropertyMapStep) {
+                        final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
+                        temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((PropertyMapStep) step).getPropertyKeys()));
+                        temp.addStep(wrappedCriterion.clone());
+                        ((PropertyMapStep) step).setPropertyTraversal(temp);
+                    } else {
+                        Stream.concat(((TraversalParent) step).getGlobalChildren().stream(), ((TraversalParent) step).getLocalChildren().stream())
+                                .filter(t -> t instanceof ElementValueTraversal)
+                                .forEach(t -> {
+                                    final Traversal.Admin<?, ?> temp = new DefaultTraversal<>();
+                                    temp.addStep(new PropertiesStep<>(temp, PropertyType.PROPERTY, ((ElementValueTraversal) t).getPropertyKey()));
+                                    temp.addStep(wrappedCriterion.clone());
+                                    temp.addStep(new PropertyValueStep<>(temp));
+                                    temp.setParent((TraversalParent) step);
+                                    ((ElementValueTraversal) t).setBypassTraversal(temp);
+                                });
+                    }
                 }
             }
             for (final PropertiesStep<?> step : TraversalHelper.getStepsOfAssignableClass(PropertiesStep.class, traversal)) {

@@ -29,26 +29,23 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 public final class ClassFilterStep<S, T> extends FilterStep<S> {
 
     private final Class<T> classFilter;
-    private final boolean isInstanceCheck;
+    private final boolean allowClasses;
 
-    public ClassFilterStep(final Traversal.Admin traversal, final Class<T> classFilter, final boolean isInstanceCheck) {
+    public ClassFilterStep(final Traversal.Admin traversal, final Class<T> classFilter, final boolean allowClasses) {
         super(traversal);
         this.classFilter = classFilter;
-        this.isInstanceCheck = isInstanceCheck;
+        this.allowClasses = allowClasses;
     }
 
     public boolean filter(final Traverser.Admin<S> traverser) {
-        return !(this.isInstanceCheck ?
-                this.classFilter.isInstance(traverser.get()) :
-                this.classFilter.equals(traverser.get().getClass()));
-
+        return this.allowClasses == this.classFilter.isInstance(traverser.get());
     }
 
     public int hashCode() {
-        return super.hashCode() ^ this.classFilter.hashCode() + Boolean.valueOf(this.isInstanceCheck).hashCode();
+        return super.hashCode() ^ this.classFilter.hashCode() ^ Boolean.hashCode(this.allowClasses);
     }
 
     public String toString() {
-        return StringFactory.stepString(this, this.classFilter);
+        return StringFactory.stepString(this, this.classFilter.getSimpleName());
     }
 }
