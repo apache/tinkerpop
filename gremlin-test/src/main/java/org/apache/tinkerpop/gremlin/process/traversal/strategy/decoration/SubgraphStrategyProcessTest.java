@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -396,6 +397,14 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         //
         sg = create(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
         checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.incr).values("location"));
+        //
+        sg = create(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
+        checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().valueMap("location").select(Column.values).unfold().unfold());
+        checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().propertyMap("location").select(Column.values).unfold().unfold().value());
+        //
+        sg = create(SubgraphStrategy.build().edges(__.<Edge>hasLabel("uses").has("skill", 5)).create());
+        checkResults(Arrays.asList(5, 5, 5), sg.V().outE().valueMap().select(Column.values).unfold());
+        checkResults(Arrays.asList(5, 5, 5), sg.V().outE().propertyMap().select(Column.values).unfold().value());
     }
 
 

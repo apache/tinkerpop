@@ -113,8 +113,10 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void setParent(final TraversalParent step) {
-        if (null != this.bypassTraversal)
+        if (null != this.bypassTraversal) {
             this.bypassTraversal.setParent(step);
+            step.integrateChild(this.bypassTraversal);
+        }
     }
 
     @Override
