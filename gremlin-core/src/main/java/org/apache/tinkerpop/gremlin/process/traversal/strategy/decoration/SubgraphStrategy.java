@@ -24,9 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
@@ -216,13 +216,12 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         // turn g.V().values() to g.V().properties().xxx.value()\
         if (null != this.vertexPropertyCriterion) {
             final OrStep<Object> wrappedCriterion = new OrStep(traversal,
-                    new DefaultTraversal<>().addStep(new LambdaFilterStep<>(traversal, t -> !(t.get() instanceof VertexProperty))),
+                    new DefaultTraversal<>().addStep(new ClassFilterStep<>(traversal, VertexProperty.class, true)),
                     this.vertexPropertyCriterionIsAllFilter ?
                             this.vertexPropertyCriterion.clone() :
                             new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone())));
             // turn all ElementValueTraversals into filters
             for (final Step<?, ?> step : traversal.getSteps()) {
-                // gremlin> g.V().local(properties('name','stateOfMind').group().by(key()).by(value().fold()))
                 if (step instanceof TraversalParent) {
                     Stream.concat(((TraversalParent) step).getGlobalChildren().stream(), ((TraversalParent) step).getLocalChildren().stream())
                             .filter(t -> t instanceof ElementValueTraversal)
