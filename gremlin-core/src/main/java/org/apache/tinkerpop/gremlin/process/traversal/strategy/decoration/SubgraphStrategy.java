@@ -307,13 +307,11 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                             propertyValueStep.addLabel(label);
                         }
                         if ('v' == propertyType) {
-                            final Traversal.Admin<?, ?> temp = nonCheckPropertyCriterion.clone();
                             TraversalHelper.insertAfterStep(propertyValueStep, propertiesStep, traversal);
-                            TraversalHelper.insertTraversal(propertiesStep, temp, traversal);
+                            TraversalHelper.insertTraversal(propertiesStep, nonCheckPropertyCriterion.clone(), traversal);
                         } else {
-                            final Step filterStep = checkPropertyCriterion.clone();
-                            TraversalHelper.insertAfterStep(filterStep, propertiesStep, traversal);
-                            TraversalHelper.insertAfterStep(propertyValueStep, filterStep, traversal);
+                            TraversalHelper.insertAfterStep(propertyValueStep, propertiesStep, traversal);
+                            TraversalHelper.insertAfterStep(checkPropertyCriterion.clone(), propertiesStep, traversal);
                         }
                     }
                 }

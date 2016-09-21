@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilte
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -405,6 +406,11 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         sg = create(SubgraphStrategy.build().edges(__.<Edge>hasLabel("uses").has("skill", 5)).create());
         checkResults(Arrays.asList(5, 5, 5), sg.V().outE().valueMap().select(Column.values).unfold());
         checkResults(Arrays.asList(5, 5, 5), sg.V().outE().propertyMap().select(Column.values).unfold().value());
+        //
+        sg = create(SubgraphStrategy.build().vertexProperties(__.hasNot("skill")).create());
+        checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().outE("uses").values("skill"));
+        checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().values("skill"));
+        checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").outE().properties("skill").as("b").dedup().select("b").by(__.value()));
     }
 
 
