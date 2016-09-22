@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
+import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import io.netty.channel.ChannelHandler;
@@ -47,10 +48,12 @@ public final class WebSocketGremlinResponseDecoder extends MessageToMessageDecod
             if (webSocketFrame instanceof BinaryWebSocketFrame) {
                 final BinaryWebSocketFrame tf = (BinaryWebSocketFrame) webSocketFrame;
                 objects.add(serializer.deserializeResponse(tf.content()));
-            } else {
+            } else if (webSocketFrame instanceof TextWebSocketFrame){
                 final TextWebSocketFrame tf = (TextWebSocketFrame) webSocketFrame;
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                 objects.add(textSerializer.deserializeResponse(tf.text()));
+            } else {
+                throw new RuntimeException(String.format("WebSocket channel does not handle this type of message: %s", webSocketFrame.getClass().getName()));
             }
         } finally {
             ReferenceCountUtil.release(webSocketFrame);

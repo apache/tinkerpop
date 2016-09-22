@@ -687,6 +687,7 @@ The following table describes the various configuration options for the Gremlin 
 |Key |Description |Default
 |connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |1800000
 |connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
 |connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
 |connectionPool.keyPassword |The password of the `keyFile` if it's not password-protected |_none_

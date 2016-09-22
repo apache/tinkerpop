@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,6 +56,7 @@ final class Connection {
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
+    private final long keepAliveInterval;
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
@@ -64,6 +66,7 @@ final class Connection {
     public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
+    public static final long KEEP_ALIVE_INTERVAL = 1800000;
 
     /**
      * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of
@@ -82,6 +85,7 @@ final class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
+    private final AtomicReference<ScheduledFuture> keepAliveFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
@@ -89,6 +93,7 @@ final class Connection {
         this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
+        this.keepAliveInterval = pool.settings().keepAliveInterval;
 
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
@@ -153,6 +158,10 @@ final class Connection {
         if (!closeFuture.compareAndSet(null, future))
             return closeFuture.get();
 
+        // stop any pings being sent at the server for keep-alive
+        final ScheduledFuture keepAlive = keepAliveFuture.get();
+        if (keepAlive != null) keepAlive.cancel(true);
+
         // make sure all requests in the queue are fully processed before killing.  if they are then shutdown
         // can be immediate.  if not this method will signal the readCompleted future defined in the write()
         // operation to check if it can close.  in this way the connection no longer receives writes, but
@@ -181,7 +190,8 @@ final class Connection {
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
-        final ChannelPromise promise = channel.newPromise()
+
+        final ChannelPromise requestPromise = channel.newPromise()
                 .addListener(f -> {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
@@ -234,9 +244,29 @@ final class Connection {
                                 requestMessage, pool.host));
                     }
                 });
-        channel.writeAndFlush(requestMessage, promise);
+        channel.writeAndFlush(requestMessage, requestPromise);
 
-        return promise;
+        // try to keep the connection alive if the channel allows such things - websockets will
+        if (channelizer.supportsKeepAlive() && keepAliveInterval > 0) {
+
+            final ScheduledFuture oldKeepAliveFuture = keepAliveFuture.getAndSet(cluster.executor().scheduleAtFixedRate(() -> {
+                logger.debug("Request sent to server to keep {} alive", thisConnection);
+                try {
+                    channel.writeAndFlush(channelizer.createKeepAliveMessage());
+                } catch (Exception ex) {
+                    // will just log this for now - a future real request can be responsible for the failure that
+                    // marks the host as dead. this also may not mean the host is actually dead. more robust handling
+                    // is in play for real requests, not this simple ping
+                    logger.warn(String.format("Keep-alive did not succeed on %s", thisConnection), ex);
+                }
+            }, keepAliveInterval, keepAliveInterval, TimeUnit.MILLISECONDS));
+
+            // try to cancel the old future if it's still un-executed - no need to ping since a new write has come
+            // through on the connection
+            if (oldKeepAliveFuture != null) oldKeepAliveFuture.cancel(true);
+        }
+
+        return requestPromise;
     }
 
     public void returnToPool() {

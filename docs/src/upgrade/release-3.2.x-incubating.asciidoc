@@ -59,6 +59,16 @@ gremlin>
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1409[TINKERPOP-1409]
 
+Java Driver Keep-Alive
+^^^^^^^^^^^^^^^^^^^^^^
+
+The Java Driver now has a `keepAliveInterval` setting, which controls the amount of time in milliseconds it should wait
+on an inactive connection before it sends a message to the server to keep the connection maintained. This should help
+environments that use a load balancer in front of Gremlin Server by ensuring connections are actively maintained even
+during periods of inactivity.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1249[TINKERPOP-1249]
+
 Where Step Supports By-Modulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
