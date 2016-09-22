@@ -198,6 +198,9 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                     final Optional<UUID> sideEffect = msg.optionalArgs(Tokens.ARGS_SIDE_EFFECT);
                     cache.invalidate(sideEffect.get());
+
+                    final String successMessage = String.format("Successfully cleared side effect cache for [%s].", Tokens.ARGS_SIDE_EFFECT);
+                    ctx.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(message).code(ResponseStatusCode.NO_CONTENT).statusMessage(successMessage).create());
                 };
 
                 break;

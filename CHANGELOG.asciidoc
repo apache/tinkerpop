@@ -77,6 +77,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * VertexPrograms can now declare traverser requirements, e.g. to have access to the path when used with `.program()`.
 * New build options for `gremlin-python` where `-DglvPython` is no longer required.
 * Added missing `InetAddress` to GraphSON extension module.
+* Gremlin Server `TraversalOpProcessor` now returns confirmation upon `Op` `close`.
 
 [[release-3-2-2]]
 TinkerPop 3.2.2 (Release Date: September 6, 2016)
