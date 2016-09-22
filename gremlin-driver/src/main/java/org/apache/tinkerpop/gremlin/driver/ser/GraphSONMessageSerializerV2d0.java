@@ -65,10 +65,8 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        return builder.version(GraphSONVersion.V2_0)
-                .addCustomModule(GraphSONXModuleV2d0.build().create(false))
-                .addCustomModule(new GremlinServerModule())
-                .typeInfo(TypeInfo.PARTIAL_TYPES);
+        // already set to 2.0 in AbstractGraphSONMessageSerializerV2d0
+        return builder.typeInfo(TypeInfo.PARTIAL_TYPES);
     }
 
     @Override

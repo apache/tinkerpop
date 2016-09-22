@@ -1387,7 +1387,10 @@ trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support
 programming languages and can be consumed by a wide variety of tools.
 
 [source,yaml]
+----
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0 }
+----
 
 The above configuration represents the default serialization under the `application/json` MIME type and produces JSON
 consistent with standard JSON data types.  It has the following configuration option:

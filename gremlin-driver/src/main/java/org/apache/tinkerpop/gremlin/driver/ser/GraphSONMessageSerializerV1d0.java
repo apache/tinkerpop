@@ -63,8 +63,8 @@ public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessage
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        return builder.version(GraphSONVersion.V1_0)
-                .addCustomModule(new GremlinServerModule())
+        // already set to 1.0 in AbstractGraphSONMessageSerializerV1d0
+        return builder.addCustomModule(new GremlinServerModule())
                 .embedTypes(false);
     }
 
