@@ -426,13 +426,7 @@
                                               failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py sdist"/>
-                                        </exec>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
-                                              failonerror="true">
-                                            <env key="VERSION" value="${project.version}"/>
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py bdist_wheel"/>
+                                            <arg line="setup.py sdist bdist_wheel"/>
                                         </exec>
                                     </target>
                                 </configuration>
