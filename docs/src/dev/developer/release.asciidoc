@@ -32,9 +32,39 @@ from a previous version or from recent `SNAPSHOT`. When using one generated for 
 commands end up being set to the version that is being released, making cut and paste of those commands less labor
 intensive and error prone.
 
-IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment> is setup
+IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment>> is setup
 properly for release and includes a `.glv` file in `gremlin-python` as described in the <<python-environment,Python Environment>>
 section, so that the `gremlin-python` module builds in full.
+
+Development Versions
+~~~~~~~~~~~~~~~~~~~~
+
+A "development version" or snapshot (in Java parlance) is not an "official" release. Artifacts produced for a
+snapshot are solely for the convenience of providers and other developers who want to use the latest releases of
+TinkerPop. These releases do not require a VOTE and do not require a "release manager". Any PMC member can deploy them.
+It is important to note that these releases cannot be promoted outside of the developer mailing list and should not be
+recommended for use beyond the purpose of evaluation and testing.
+
+IMPORTANT: A development release must contain the suffix "-SNAPSHOT" in the `pom.xml`.
+
+For JVM-based artifacts, simply use the following command:
+
+[source,text]
+mvn clean deploy
+
+and artifacts will be pushed to the link:http://repository.apache.org/snapshots/[Apache Snapshot Repository]. Python
+development artifacts must be deployed separately with a separate command:
+
+[source,text]
+mvn clean deploy -pl gremlin-python -Dpypi
+
+Python does not use the snapshot model that the JVM does, however, the build is smart in that it will dynamically
+generate a development version number for the Python artifacts when "-SNAPSHOT" is in the `pom.xml`. The previous
+command will push the development version to link:https://pypi.python.org/pypi/gremlinpython/[pypi] for distribution.
+
+IMPORTANT: The `clean` in the above commands is more important to the pypi deployment because the process will deploy
+anything found in the `target/python-packaged/dist` directory. Since the names of the artifacts are based on
+timestamps, they will not overwrite one another and multiple artifacts will get uploaded.
 
 Pre-flight Check
 ----------------
