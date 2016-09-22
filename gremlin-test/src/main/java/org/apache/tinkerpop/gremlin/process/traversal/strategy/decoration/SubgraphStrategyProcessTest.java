@@ -410,7 +410,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         sg = create(SubgraphStrategy.build().vertexProperties(__.hasNot("skill")).create());
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().outE("uses").values("skill"));
         checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().values("skill"));
-        checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").outE().properties("skill").as("b").dedup().select("b").by(__.value()));
+        checkResults(Arrays.asList(3, 3, 3, 4, 4, 5, 5, 5), sg.V().as("a").properties().select("a").dedup().outE().properties("skill").as("b").identity().select("b").by(__.value()));
     }
 
 
