@@ -64,7 +64,7 @@ public final class NotStep<S> extends FilterStep<S> implements TraversalParent {
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, "!" + this.notTraversal);
+        return StringFactory.stepString(this, this.notTraversal);
     }
 
     @Override
