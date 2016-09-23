@@ -181,7 +181,7 @@ class NumberSerializer(GraphSONSerializer):
     def _dictify(self, number):
         if isinstance(number, bool):  # python thinks that 0/1 integers are booleans
             return number
-        elif isinstance(number, long):
+        elif isinstance(number, long) or (abs(number) > 2147483647): # in python all numbers are int unless specified otherwise
             return _SymbolHelper.objectify("Int64", number)
         elif isinstance(number, int):
             return _SymbolHelper.objectify("Int32", number)
