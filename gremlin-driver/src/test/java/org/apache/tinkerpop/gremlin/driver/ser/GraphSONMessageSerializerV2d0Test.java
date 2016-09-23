@@ -29,8 +29,12 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -46,6 +50,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.awt.Color;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -465,6 +470,25 @@ public class GraphSONMessageSerializerV2d0Test {
                 .get("name")
                 .get(0).get(GraphSONTokens.VALUEPROP)
                 .get(GraphSONTokens.VALUE).asText());
+    }
+
+    @Test
+    public void shouldToStringUnknownObjects() {
+        GraphSONMapper gm20 = GraphSONMapper.build().version(GraphSONVersion.V2_0).create();
+        GraphSONMapper gm10 = GraphSONMapper.build().version(GraphSONVersion.V1_0).create();
+
+        GraphWriter writer = GraphSONWriter.build().mapper(gm20).create();
+        // subsequent creations of GraphWriters and GraphSONMappers should not affect
+        // each other.
+        GraphWriter writer2 = GraphSONWriter.build().mapper(gm10).create();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            writer.writeObject(baos, new FunObject("value"));
+            assertEquals(baos.toString(), "\"value\"");
+        } catch (Exception e) {
+            fail("should have succeeded serializing the unknown object to a string");
+        }
     }
 
     private class FunObject {
