@@ -56,7 +56,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 final Traversal.Admin<?, ?> childTraversal = step.getLocalChildren().get(0);
                 if (TraversalHelper.allStepsInstanceOf(childTraversal, FilterStep.class, true)) {
                     changed = true;
-                    TraversalHelper.applySingleLevelStrategies(childTraversal, traversal.getStrategies(), InlineFilterStrategy.class);
+                    TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
                     final Step<?, ?> finalStep = childTraversal.getEndStep();
                     TraversalHelper.insertTraversal((Step) step, childTraversal, traversal);
                     traversal.removeStep(step);
@@ -72,7 +72,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                     Step<?, ?> finalStep = null;
                     for (int i = childTraversals.size() - 1; i >= 0; i--) {
                         final Traversal.Admin<?, ?> childTraversal = childTraversals.get(i);
-                        TraversalHelper.applySingleLevelStrategies(childTraversal, traversal.getStrategies(), InlineFilterStrategy.class);
+                        TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
                         if (null == finalStep)
                             finalStep = childTraversal.getEndStep();
                         TraversalHelper.insertTraversal((Step) step, childTraversals.get(i), traversal);
