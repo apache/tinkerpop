@@ -16,9 +16,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
-
 import json
 from abc import abstractmethod
 from aenum import Enum
@@ -41,25 +38,22 @@ from gremlin_python.structure.graph import VertexProperty
 from gremlin_python.structure.graph import Path
 
 
+__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+
+
 class GraphSONWriter(object):
     @staticmethod
-    def _dictify(object):
+    def _dictify(obj):
         for key in serializers:
-            if isinstance(object, key):
-                return serializers[key]._dictify(object)
-        # list and map are treated as normal json objects (could be isolated serializers)
-        if isinstance(object, list) or isinstance(object, set):
-            newList = []
-            for item in object:
-                newList.append(GraphSONWriter._dictify(item))
-            return newList
-        elif isinstance(object, dict):
-            newDict = {}
-            for key in object:
-                newDict[GraphSONWriter._dictify(key)] = GraphSONWriter._dictify(object[key])
-            return newDict
+            if isinstance(obj, key):
+                return serializers[key]._dictify(obj)
+        # list and map are treated as normal json objs (could be isolated serializers)
+        if isinstance(obj, (list, set)):
+            return [GraphSONWriter._dictify(o) for o in obj]
+        elif isinstance(obj, dict):
+            return dict((GraphSONWriter._dictify(k), GraphSONWriter._dictify(v)) for k, v in obj.items())
         else:
-            return object
+            return obj
 
     @staticmethod
     def writeObject(objectData):
@@ -68,24 +62,18 @@ class GraphSONWriter(object):
 
 class GraphSONReader(object):
     @staticmethod
-    def _objectify(object):
-        if isinstance(object, dict):
-            if _SymbolHelper._TYPE in object:
-                type = object[_SymbolHelper._TYPE]
+    def _objectify(obj):
+        if isinstance(obj, dict):
+            if _SymbolHelper._TYPE in obj:
+                type = obj[_SymbolHelper._TYPE]
                 if type in deserializers:
-                    return deserializers[type]._objectify(object)
-                    # list and map are treated as normal json objects (could be isolated deserializers)
-            newDict = {}
-            for key in object:
-                newDict[GraphSONReader._objectify(key)] = GraphSONReader._objectify(object[key])
-            return newDict
-        elif isinstance(object, list):
-            newList = []
-            for item in object:
-                newList.append(GraphSONReader._objectify(item))
-            return newList
+                    return deserializers[type]._objectify(obj)
+            # list and map are treated as normal json objs (could be isolated deserializers)
+            return dict((GraphSONReader._objectify(k), GraphSONReader._objectify(v)) for k, v in obj.items())
+        elif isinstance(obj, list):
+            return [GraphSONReader._objectify(o) for o in obj]
         else:
-            return object
+            return obj
 
     @staticmethod
     def readObject(jsonData):
@@ -167,10 +155,10 @@ class BindingSerializer(GraphSONSerializer):
 
 class LambdaSerializer(GraphSONSerializer):
     def _dictify(self, lambdaObject):
-        lambdaResult = lambdaObject()
+        lambda_result = lambdaObject()
         dict = {}
-        script = lambdaResult if isinstance(lambdaResult, str) else lambdaResult[0]
-        language = statics.default_lambda_language if isinstance(lambdaResult, str) else lambdaResult[1]
+        script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
+        language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
         dict["script"] = script
         dict["language"] = language
         if language == "gremlin-jython" or language == "gremlin-python":
