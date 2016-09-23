@@ -2610,17 +2610,25 @@ ReadOnlyStrategy
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
 
-`SubgraphStrategy` is quite similar to `PartitionStrategy` in that it restrains a `Traversal` to certain vertices
-and edges as determined by a `Traversal` criterion defined individually for each.
+`SubgraphStrategy` is similar to `PartitionStrategy` in that it constrains a `Traversal` to certain vertices, edges,
+ and vertex properties as determined by a `Traversal`-based criterion defined individually for each.
 
 [gremlin-groovy]
 ----
-graph = TinkerFactory.createModern()
-strategy = SubgraphStrategy.build().edgeCriterion(hasId(8,9,10)).create()
-g = graph.traversal().withStrategies(strategy)
-g.V() // shows all vertices as no filter for vertices was specified
-g.E() // shows only the edges defined in the edgeCriterion
+graph = TinkerFactory.createTheCrew()
+g = graph.traversal()
+g.V().as('a').values('location').as('b').  <1>
+  select('a','b').by('name').by()
+g = g.withStrategies(SubgraphStrategy.build().vertexProperties(hasNot('endTime')).create()) <2>
+g.V().as('a').values('location').as('b').  <3>
+  select('a','b').by('name').by()
+g.V().as('a').values('location').as('b').
+  select('a','b').by('name').by().explain()
 ----
 
 This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the `vertexCriterion`
 (if present) in order for the `Edge` to be considered a part of the subgraph.
+
+<1> Get all vertices and their vertex property locations.
+<2> Create a `SubgraphStrategy` where vertex properties must not have an `endTime`-property (thus, the current location).
+<3> Get all vertices and their current vertex property locations.
