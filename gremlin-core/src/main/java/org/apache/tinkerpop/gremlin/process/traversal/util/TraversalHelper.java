@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
@@ -581,9 +580,12 @@ public final class TraversalHelper {
         return true;
     }
 
-    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> traversal, final TraversalStrategies traversalStrategies, final Class<? extends TraversalStrategy> stopAfterStrategy) {
-        for (final TraversalStrategy<?> strategy : traversalStrategies.toList()) {
-            strategy.apply(traversal);
+    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> parentTraversal, final Traversal.Admin<?, ?> childTraversal, final Class<? extends TraversalStrategy> stopAfterStrategy) {
+        childTraversal.setStrategies(parentTraversal.getStrategies());
+        childTraversal.setSideEffects(parentTraversal.getSideEffects());
+        parentTraversal.getGraph().ifPresent(childTraversal::setGraph);
+        for (final TraversalStrategy<?> strategy : parentTraversal.getStrategies().toList()) {
+            strategy.apply(childTraversal);
             if (null != stopAfterStrategy && stopAfterStrategy.isInstance(strategy))
                 break;
         }
