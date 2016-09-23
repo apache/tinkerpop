@@ -2621,3 +2621,22 @@ This strategy is implemented such that the vertices attached to an `Edge` must b
 <1> Get all vertices and their vertex property locations.
 <2> Create a `SubgraphStrategy` where vertex properties must not have an `endTime`-property (thus, the current location).
 <3> Get all vertices and their current vertex property locations.
+
+The example below uses all three filters: vertex, edge, and vertex property. People vertices must have lived in more than three places,
+edges must be labeled "develops," and vertex properties must be the persons current location or a non-location property.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createTheCrew()
+g = graph.traversal().withStrategies(SubgraphStrategy.build().
+  vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
+  edges(hasLabel('develops')).
+  vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())
+g.V().valueMap(true)
+g.E().valueMap(true)
+g.V().outE().inV().
+  path().
+    by('name').
+    by().
+    by('name')
+----

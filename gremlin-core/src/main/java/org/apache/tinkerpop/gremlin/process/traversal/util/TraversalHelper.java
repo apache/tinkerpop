@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
@@ -30,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -571,11 +572,20 @@ public final class TraversalHelper {
         }
     }
 
-    public static boolean filterOnlyTraversal(final Traversal.Admin<?, ?> traversal) {
+    public static boolean allStepsInstanceOf(final Traversal.Admin<?, ?> traversal, final Class<?> classToCheck, boolean checkIsInstanceOf) {
         for (final Step step : traversal.getSteps()) {
-            if (!(step instanceof FilterStep) && !(step instanceof ConnectiveStep))
+            boolean isInstance = classToCheck.isInstance(step);
+            if ((isInstance && !checkIsInstanceOf) || (!isInstance && checkIsInstanceOf))
                 return false;
         }
         return true;
+    }
+
+    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> traversal, final TraversalStrategies traversalStrategies, final Class<? extends TraversalStrategy> stopAfterStrategy) {
+        for (final TraversalStrategy<?> strategy : traversalStrategies.toList()) {
+            strategy.apply(traversal);
+            if (null != stopAfterStrategy && stopAfterStrategy.isInstance(strategy))
+                break;
+        }
     }
 }

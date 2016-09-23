@@ -104,14 +104,9 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
             }
             processConnectiveMarker(leftTraversal);
 
-            if (connectiveStep instanceof AndStep) {
-                if (TraversalHelper.filterOnlyTraversal(leftTraversal) && TraversalHelper.filterOnlyTraversal(rightTraversal)) {
-                    TraversalHelper.insertTraversal((Step) connectiveStep, rightTraversal, traversal);
-                    TraversalHelper.insertTraversal((Step) connectiveStep, leftTraversal, traversal);
-                } else
-                    TraversalHelper.replaceStep((Step) connectiveStep, new AndStep(traversal, leftTraversal, rightTraversal), traversal);
-
-            } else
+            if (connectiveStep instanceof AndStep)
+                TraversalHelper.replaceStep((Step) connectiveStep, new AndStep(traversal, leftTraversal, rightTraversal), traversal);
+            else
                 TraversalHelper.replaceStep((Step) connectiveStep, new OrStep(traversal, leftTraversal, rightTraversal), traversal);
         });
     }
