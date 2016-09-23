@@ -87,15 +87,15 @@ SERIALIZERS
 
 class GraphSONSerializer(object):
     @abstractmethod
-    def _dictify(self, object):
-        return object
+    def _dictify(self, obj):
+        return obj
 
 
 class BytecodeSerializer(GraphSONSerializer):
     def _dictify(self, bytecode):
         if isinstance(bytecode, Traversal):
             bytecode = bytecode.bytecode
-        dict = {}
+        out = {}
         sources = []
         for instruction in bytecode.source_instructions:
             inst = []
@@ -111,10 +111,10 @@ class BytecodeSerializer(GraphSONSerializer):
                 inst.append(GraphSONWriter._dictify(arg))
             steps.append(inst)
         if len(sources) > 0:
-            dict["source"] = sources
+            out["source"] = sources
         if len(steps) > 0:
-            dict["step"] = steps
-        return _SymbolHelper.objectify("Bytecode", dict)
+            out["step"] = steps
+        return _SymbolHelper.objectify("Bytecode", out)
 
 
 class TraversalStrategySerializer(GraphSONSerializer):
@@ -136,39 +136,39 @@ class EnumSerializer(GraphSONSerializer):
 
 class PSerializer(GraphSONSerializer):
     def _dictify(self, p):
-        dict = {}
-        dict["predicate"] = p.operator
+        out = {}
+        out["predicate"] = p.operator
         if p.other is None:
-            dict["value"] = GraphSONWriter._dictify(p.value)
+            out["value"] = GraphSONWriter._dictify(p.value)
         else:
-            dict["value"] = [GraphSONWriter._dictify(p.value), GraphSONWriter._dictify(p.other)]
-        return _SymbolHelper.objectify("P", dict)
+            out["value"] = [GraphSONWriter._dictify(p.value), GraphSONWriter._dictify(p.other)]
+        return _SymbolHelper.objectify("P", out)
 
 
 class BindingSerializer(GraphSONSerializer):
     def _dictify(self, binding):
-        dict = {}
-        dict["key"] = binding.key
-        dict["value"] = GraphSONWriter._dictify(binding.value)
-        return _SymbolHelper.objectify("Binding", dict)
+        out = {}
+        out["key"] = binding.key
+        out["value"] = GraphSONWriter._dictify(binding.value)
+        return _SymbolHelper.objectify("Binding", out)
 
 
 class LambdaSerializer(GraphSONSerializer):
-    def _dictify(self, lambdaObject):
-        lambda_result = lambdaObject()
-        dict = {}
+    def _dictify(self, lambda_object):
+        lambda_result = lambda_object()
+        out = {}
         script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
         language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
-        dict["script"] = script
-        dict["language"] = language
+        out["script"] = script
+        out["language"] = language
         if language == "gremlin-jython" or language == "gremlin-python":
             if not script.strip().startswith("lambda"):
                 script = "lambda " + script
-                dict["script"] = script
-            dict["arguments"] = six.get_function_code(eval(dict["script"])).co_argcount
+                out["script"] = script
+            out["arguments"] = six.get_function_code(eval(out["script"])).co_argcount
         else:
-            dict["arguments"] = -1
-        return _SymbolHelper.objectify("Lambda", dict)
+            out["arguments"] = -1
+        return _SymbolHelper.objectify("Lambda", out)
 
 
 class TypeSerializer(GraphSONSerializer):
@@ -198,20 +198,20 @@ DESERIALIZERS
 
 class GraphSONDeserializer(object):
     @abstractmethod
-    def _objectify(self, dict):
-        return dict
+    def _objectify(self, d):
+        return d
 
 
 class TraverserDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        return Traverser(GraphSONReader._objectify(dict[_SymbolHelper._VALUE]["value"]),
-                         GraphSONReader._objectify(dict[_SymbolHelper._VALUE]["bulk"]))
+    def _objectify(self, d):
+        return Traverser(GraphSONReader._objectify(d[_SymbolHelper._VALUE]["value"]),
+                         GraphSONReader._objectify(d[_SymbolHelper._VALUE]["bulk"]))
 
 
 class NumberDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        type = dict[_SymbolHelper._TYPE]
-        value = dict[_SymbolHelper._VALUE]
+    def _objectify(self, d):
+        type = d[_SymbolHelper._TYPE]
+        value = d[_SymbolHelper._VALUE]
         if type == "g:Int32":
             return int(value)
         elif type == "g:Int64":
@@ -221,14 +221,14 @@ class NumberDeserializer(GraphSONDeserializer):
 
 
 class VertexDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        value = dict[_SymbolHelper._VALUE]
+    def _objectify(self, d):
+        value = d[_SymbolHelper._VALUE]
         return Vertex(GraphSONReader._objectify(value["id"]), value["label"] if "label" in value else "")
 
 
 class EdgeDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        value = dict[_SymbolHelper._VALUE]
+    def _objectify(self, d):
+        value = d[_SymbolHelper._VALUE]
         return Edge(GraphSONReader._objectify(value["id"]),
                     Vertex(GraphSONReader._objectify(value["outV"]), ""),
                     value["label"] if "label" in value else "vertex",
@@ -236,21 +236,21 @@ class EdgeDeserializer(GraphSONDeserializer):
 
 
 class VertexPropertyDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        value = dict[_SymbolHelper._VALUE]
+    def _objectify(self, d):
+        value = d[_SymbolHelper._VALUE]
         return VertexProperty(GraphSONReader._objectify(value["id"]), value["label"],
                               GraphSONReader._objectify(value["value"]))
 
 
 class PropertyDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        value = dict[_SymbolHelper._VALUE]
+    def _objectify(self, d):
+        value = d[_SymbolHelper._VALUE]
         return Property(value["key"], GraphSONReader._objectify(value["value"]))
 
 
 class PathDeserializer(GraphSONDeserializer):
-    def _objectify(self, dict):
-        value = dict[_SymbolHelper._VALUE]
+    def _objectify(self, d):
+        value = d[_SymbolHelper._VALUE]
         labels = []
         objects = []
         for label in value["labels"]:
