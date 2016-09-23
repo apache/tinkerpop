@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -125,7 +126,11 @@ public final class GryoSerializers {
     }
 
     public final static class BytecodeSerializer implements SerializerShim<Bytecode> {
-        private static final GraphSONMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V2_0).create();
+        private static final GraphSONMapper mapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V2_0)
+                .addCustomModule(GraphSONXModuleV2d0.build().create(false))
+                .create();
+
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
             try {

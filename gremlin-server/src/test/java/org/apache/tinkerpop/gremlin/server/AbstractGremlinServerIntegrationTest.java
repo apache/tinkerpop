@@ -37,7 +37,7 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinServerIntegrationTest {
-    private GremlinServer server;
+    protected GremlinServer server;
     private final static String epollOption = "gremlin.server.epoll";
     private static final boolean GREMLIN_SERVER_EPOLL = "true".equalsIgnoreCase(System.getProperty(epollOption));
     private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
