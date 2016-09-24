@@ -26,7 +26,12 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -47,10 +52,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.LP_O_OB_S_SE_SL_
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_OB_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -74,6 +82,8 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
+import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
@@ -177,7 +187,7 @@ public final class GryoMapper implements Mapper<Kryo> {
     @Override
     public Kryo createMapper() {
         final Kryo kryo = new Kryo(classResolver.get(), new MapReferenceResolver(), new DefaultStreamFactory());
-        kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
+        kryo.addDefaultSerializer(Map.Entry.class, new UtilSerializers.EntrySerializer());
         kryo.setRegistrationRequired(registrationRequired);
         kryo.setReferences(referenceTracking);
         for (TypeRegistration tr : typeRegistrations)
@@ -224,6 +234,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             put("junk", "dummy");
         }};
 
+        private static final Class ARRAYS_AS_LIST = Arrays.asList("dummy").getClass();
+
         private static final Class LINKED_HASH_MAP_ENTRY_CLASS = m.entrySet().iterator().next().getClass();
 
         /**
@@ -257,6 +269,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(String[].class, 32));
             add(GryoTypeReg.of(Object[].class, 33));
             add(GryoTypeReg.of(ArrayList.class, 10));
+            add(GryoTypeReg.of(ARRAYS_AS_LIST, 134, new UtilSerializers.ArraysAsListSerializer()));
             add(GryoTypeReg.of(BigInteger.class, 34));
             add(GryoTypeReg.of(BigDecimal.class, 35));
             add(GryoTypeReg.of(Calendar.class, 39));
@@ -294,8 +307,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(TimeZone.class, 42));
             add(GryoTypeReg.of(TreeMap.class, 45));
             add(GryoTypeReg.of(TreeSet.class, 50));
-            add(GryoTypeReg.of(UUID.class, 17, new UUIDSerializer()));
-            add(GryoTypeReg.of(URI.class, 72, new URISerializer()));
+            add(GryoTypeReg.of(UUID.class, 17, new UtilSerializers.UUIDSerializer()));
+            add(GryoTypeReg.of(URI.class, 72, new UtilSerializers.URISerializer()));
             add(GryoTypeReg.of(VertexTerminator.class, 13));
             add(GryoTypeReg.of(AbstractMap.SimpleEntry.class, 120));
             add(GryoTypeReg.of(AbstractMap.SimpleImmutableEntry.class, 121));
@@ -322,9 +335,21 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(O_OB_S_SE_SL_Traverser.class, 89));
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
-            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializers.DefaultRemoteTraverserSerializer()));  // ***LAST ID***
+            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializers.DefaultRemoteTraverserSerializer()));
 
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializers.BytecodeSerializer()));
+            add(GryoTypeReg.of(P.class, 124, new GryoSerializers.PSerializer()));
+            add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializers.LambdaSerializer()));
+            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializers.BindingSerializer()));
+            add(GryoTypeReg.of(Order.class, 127));
+            add(GryoTypeReg.of(Scope.class, 128));
+            add(GryoTypeReg.of(AndP.class, 129, new GryoSerializers.AndPSerializer()));
+            add(GryoTypeReg.of(OrP.class, 130, new GryoSerializers.OrPSerializer()));
+            add(GryoTypeReg.of(VertexProperty.Cardinality.class, 131));
+            add(GryoTypeReg.of(Column.class, 132));
+            add(GryoTypeReg.of(Pop.class, 133));
+            add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
+            add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer())); // ***LAST ID***
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));
@@ -336,7 +361,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(MapMemory.class, 73));
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
-            add(GryoTypeReg.of(Pair.class, 88, new PairSerializer()));
+            add(GryoTypeReg.of(Pair.class, 88, new UtilSerializers.PairSerializer()));
             add(GryoTypeReg.of(TraversalExplanation.class, 106, new JavaSerializer()));
 
             add(GryoTypeReg.of(Duration.class, 93, new JavaTimeSerializers.DurationSerializer()));

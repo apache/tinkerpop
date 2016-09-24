@@ -31,6 +31,8 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a bug in serialization of `Lambda` instances in GraphSON, which prevented their use in remote traversals.
 * Fixed a naming bug in Gremlin-Python where `P._and` and `P._or` should be `P.and_` and `P.or_`. (*breaking*)
 * `where()` predicate-based steps now support `by()`-modulation.
+* Added Gryo serialization for `Bytecode`.
+* Moved utility-based serializers to `UtilSerializers` for Gryo - these classes were private and hence this change is non-breaking.
 * `TraversalRing` returns a `null` if it does not contain traversals (previously `IdentityTraversal`).
 * Fixed a `JavaTranslator` bug where `Bytecode` instructions were being mutated during translation.
 * Added `Path` to Gremlin-Python with respective GraphSON 2.0 deserializer.
