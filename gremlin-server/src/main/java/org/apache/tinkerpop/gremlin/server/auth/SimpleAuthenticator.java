@@ -114,7 +114,6 @@ public class SimpleAuthenticator implements Authenticator {
     public SaslNegotiator newSaslNegotiator() {
         // While this method is deprecated, it remains here to ensure backward compatibility with the old method. In
         // this way the integration tests can continue to execute here
-        // todo: remove this method on a future version and implement the new one
         return new PlainTextSaslAuthenticator();
     }
 
