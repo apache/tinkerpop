@@ -20,9 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
@@ -39,10 +37,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -70,6 +65,21 @@ public interface Channelizer extends ChannelHandler {
     public void close(final Channel channel);
 
     /**
+     * Create a message for the driver to use as a "keep-alive" for the connection. This method will only be used if
+     * {@link #supportsKeepAlive()} is {@code true}.
+     */
+    public default Object createKeepAliveMessage() {
+        return null;
+    }
+
+    /**
+     * Determines if the channelizer supports a method for keeping the connection to the server alive.
+     */
+    public default boolean supportsKeepAlive() {
+        return false;
+    }
+
+    /**
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
      */
@@ -80,8 +90,6 @@ public interface Channelizer extends ChannelHandler {
      * Base implementation of the client side {@link Channelizer}.
      */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
-        private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
-
         protected Connection connection;
         protected Cluster cluster;
         private ConcurrentMap<UUID, ResultQueue> pending;
@@ -149,6 +157,21 @@ public interface Channelizer extends ChannelHandler {
             super.init(connection);
             webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
             webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
+        }
+
+        /**
+         * Keep-alive is supported through the ping/pong websocket protocol.
+         *
+         * @see <a href=https://tools.ietf.org/html/rfc6455#section-5.5.2>IETF RFC 6455</a>
+         */
+        @Override
+        public boolean supportsKeepAlive() {
+            return true;
+        }
+
+        @Override
+        public Object createKeepAliveMessage() {
+            return new PingWebSocketFrame();
         }
 
         /**

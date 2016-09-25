@@ -163,6 +163,7 @@ public final class Cluster {
                 .port(settings.port)
                 .enableSsl(settings.connectionPool.enableSsl)
                 .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
+                .keepAliveInterval(settings.connectionPool.keepAliveInterval)
                 .keyCertChainFile(settings.connectionPool.keyCertChainFile)
                 .keyFile(settings.connectionPool.keyFile)
                 .keyPassword(settings.connectionPool.keyPassword)
@@ -388,6 +389,14 @@ public final class Cluster {
     }
 
     /**
+     * Gets time in milliseconds to wait after the last message is sent over a connection before sending a keep-alive
+     * message to the server.
+     */
+    public long getKeepAliveInterval() {
+        return manager.connectionPoolSettings.keepAliveInterval;
+    }
+
+    /**
      * Specifies the load balancing strategy to use on the client side.
      */
     public Class<? extends LoadBalancingStrategy> getLoadBalancingStrategy() {
@@ -478,6 +487,7 @@ public final class Cluster {
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String trustCertChainFile = null;
@@ -569,6 +579,16 @@ public final class Cluster {
          */
         public Builder trustCertificateChainFile(final String certificateChainFile) {
             this.trustCertChainFile = certificateChainFile;
+            return this;
+        }
+
+        /**
+         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
+         * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
+         * {@link Channelizer#supportsKeepAlive()}.  Set to zero to disable this feature.
+         */
+        public Builder keepAliveInterval(final long keepAliveInterval) {
+            this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -871,6 +891,7 @@ public final class Cluster {
             connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
             connectionPoolSettings.keyFile = builder.keyFile;
             connectionPoolSettings.keyPassword = builder.keyPassword;
+            connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);

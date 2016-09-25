@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
@@ -35,11 +37,14 @@ import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +73,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -83,6 +91,37 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
+
+    private Log4jRecordingAppender recordingAppender = null;
+    private Level previousLogLevel;
+
+    @Before
+    public void setupForEachTest() {
+        recordingAppender = new Log4jRecordingAppender();
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(Level.DEBUG);
+        }
+
+        rootLogger.addAppender(recordingAppender);
+    }
+
+    @After
+    public void teardownForEachTest() {
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(previousLogLevel);
+        }
+
+        rootLogger.removeAppender(recordingAppender);
+    }
+
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -134,6 +173,36 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldKeepAliveForWebSockets() throws Exception {
+        // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
+        // complicate the assertion logic
+        final Cluster cluster = Cluster.build().
+                minConnectionPoolSize(1).
+                maxConnectionPoolSize(1).
+                keepAliveInterval(1000).create();
+        final Client client = cluster.connect();
+
+        // fire up lots of requests so as to schedule/deschedule lots of ping jobs
+        for (int ix = 0; ix < 500; ix++) {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        }
+
+        // don't send any messages for a bit so that the driver pings in the background
+        Thread.sleep(3000);
+
+        // make sure no bonus messages sorta fire off once we get back to sending requests
+        for (int ix = 0; ix < 500; ix++) {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        }
+
+        // there really shouldn't be more than 3 of these sent. should definitely be at least one though
+        final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Received response from keep-alive request")).count();
+        assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
+
+        cluster.close();
     }
 
     @Test
