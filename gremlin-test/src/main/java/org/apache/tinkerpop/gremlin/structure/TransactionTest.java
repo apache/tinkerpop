@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -413,7 +414,7 @@ public class TransactionTest extends AbstractGremlinTest {
             graph.vertices(oid.get()).next();
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
-            validateException(Graph.Exceptions.elementNotFound(Vertex.class, oid), ex);
+            assertThat(ex, instanceOf(NoSuchElementException.class));
         }
     }
 

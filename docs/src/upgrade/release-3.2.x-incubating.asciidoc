@@ -121,8 +121,24 @@ support no arguments.
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecated elementNotFound
+++++++++++++++++++++++++++
+
+Both `Graph.Exceptions.elementNotFound()` methods have been deprecated. These exceptions were being asserted in the
+test suite but were not being used anywhere in `gremlin-core` itself. The assertions have been modified to simply
+assert that `NoSuchElementException` was thrown, which is precisely the behavior that was being indirected asserted
+when `Graph.Exceptions.elementNotFound()` were being used.
+
+Providers should not need to take any action in this case for their tests to pass, however, it would be wise to remove
+uses of these exception builders as they will be removed in the future.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-944[TINKERPOP-944]
+
 PropertyMapStep with Selection Traversal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++++++++++++++++++++++
 
 `PropertyMapStep` now supports selection of properties via child property traversal. If a provider was relying solely
 on the provided property keys in a `ProviderOptimizationStrategy`, they will need to check if there is a child traversal

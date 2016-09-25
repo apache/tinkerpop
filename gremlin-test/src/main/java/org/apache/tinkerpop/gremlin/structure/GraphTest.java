@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -37,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -99,7 +101,7 @@ public class GraphTest extends AbstractGremlinTest {
             graph.vertices(graphProvider.convertId(10000l, Vertex.class)).next();
             fail("Call to g.vertices(10000l) should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, graphProvider.convertId(10000l, Vertex.class)).getClass()));
+            assertThat(ex, IsInstanceOf.instanceOf(NoSuchElementException.class));
         }
     }
 
@@ -109,7 +111,7 @@ public class GraphTest extends AbstractGremlinTest {
             graph.edges(graphProvider.convertId(10000l, Edge.class)).next();
             fail("Call to g.edges(10000l) should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, graphProvider.convertId(10000l, Edge.class)).getClass()));
+            assertThat(ex, IsInstanceOf.instanceOf(NoSuchElementException.class));
         }
     }
 
