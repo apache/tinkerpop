@@ -285,6 +285,7 @@ limitations under the License.
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
+                        <exclude>**/.glv</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
