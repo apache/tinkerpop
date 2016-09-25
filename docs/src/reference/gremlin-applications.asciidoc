@@ -907,7 +907,12 @@ the `TraversalSource` be generated with `EmptyGraph` as follows:
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
+g.close()
 ----
+
+Note the call to `close()` above. The call to `withRemote()` internally instantiates a `Client` instance that can only
+be released by "closing" the `GraphTraversalSource`. It is important to take that step to release resources created
+in that step.
 
 If working with multiple remote `TraversalSource` instances it is more efficient to construct a `Cluster` object and
 then re-use it.
@@ -918,11 +923,14 @@ cluster = Cluster.open('conf/remote-objects.yaml')
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V().valueMap(true)
+g.close()
 cluster.close()
 ----
 
 If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
-the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
+"g".  Closing "g" will only close the `Client` instance associated with that `TraversalSource`. In this case, the
+`Cluster` must also be closed explicitly. Closing "g" and the "cluster" aren't actually both necessary - the close of
+a `Cluster` will close all `Client` instance spawned by the `Cluster`.
 
 IMPORTANT: `RemoteGraph` uses the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable the
 retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling eviction

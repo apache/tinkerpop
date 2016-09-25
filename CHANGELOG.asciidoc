@@ -52,6 +52,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Deprecated `Graph.Exceptions.elementNotFoundException()` as it was not used in the code base outside of the test suite.
 * Fixed a `JavaTranslator` bug where `Bytecode` instructions were being mutated during translation.
 * Added `Path` to Gremlin-Python with respective GraphSON 2.0 deserializer.
+* `Traversal` and `TraversalSource` now implement `AutoCloseable`.
 * Added "keep-alive" functionality to the Java driver, which will send a heartbeat to the server when normal request activity on a connection stops for a period of time.
 * Renamed the `empty.result.indicator` preference to `result.indicator.null` in Gremlin Console
 * If `result.indicator.null` is set to an empty string, then no "result line" is printed in Gremlin Console.

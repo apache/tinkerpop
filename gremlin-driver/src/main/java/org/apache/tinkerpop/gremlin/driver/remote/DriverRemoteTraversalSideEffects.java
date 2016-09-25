@@ -98,4 +98,11 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
         return keys;
     }
+
+    @Override
+    public void close() throws Exception {
+        // todo: need to add a call to "close" the side effects on the server - probably should ensure request only sends once
+
+        // leave the client open as it is owned by the DriverRemoteConnection not the traversal or side-effects
+    }
 }

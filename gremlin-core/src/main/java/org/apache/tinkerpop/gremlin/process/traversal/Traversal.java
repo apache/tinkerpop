@@ -57,7 +57,7 @@ import java.util.stream.StreamSupport;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
+public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, AutoCloseable {
 
     public static class Symbols {
         private Symbols() {
@@ -229,6 +229,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         } catch (final NoSuchElementException ignore) {
 
         }
+    }
+
+    @Override
+    public default void close() throws Exception {
+        // do nothing by default
     }
 
     /**

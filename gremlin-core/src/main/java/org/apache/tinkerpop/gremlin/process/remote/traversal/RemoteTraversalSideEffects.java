@@ -23,5 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface RemoteTraversalSideEffects extends TraversalSideEffects {
+public interface RemoteTraversalSideEffects extends TraversalSideEffects, AutoCloseable {
+    @Override
+    public default void close() throws Exception {
+        //  do nothing
+    }
 }
