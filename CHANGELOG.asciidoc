@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `RepeatUnrollStrategy` where inlined traversal did not have strategies applied to it.
 * `TinkerGraphStepStrategy` is now smart about non-`HasContainer` filter steps.
 * Added `TraversalHelper.copyLabels()` for copying (or moving) labels form one step to another.
 * Added `TraversalHelper.applySingleLevelStrategies()` which will apply a subset of strategies but not walk the child tree.
