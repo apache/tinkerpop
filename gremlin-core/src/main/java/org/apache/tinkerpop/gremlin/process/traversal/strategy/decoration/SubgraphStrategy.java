@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
@@ -141,8 +140,10 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // do not apply subgraph strategy to already created subgraph filter branches (or else you get infinite recursion)
-        if (traversal.getStartStep().getLabels().contains(MARKER))
+        if (traversal.getStartStep().getLabels().contains(MARKER)) {
+            traversal.getStartStep().removeLabel(MARKER);
             return;
+        }
         //
         final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
         final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);
@@ -178,18 +179,12 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
                 TraversalHelper.replaceStep((Step<Vertex, Edge>) step, someEStep, traversal);
                 TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);
-                // if step was labeled then propagate those labels to the new step that will return the vertex
-                for (final String label : step.getLabels()) {
-                    step.removeLabel(label);
-                    someVStep.addLabel(label);
-                }
+                TraversalHelper.copyLabels(step, someVStep, true);
 
                 if (null != this.edgeCriterion)
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.edgeCriterion.clone()), someEStep, traversal);
                 if (null != this.vertexCriterion)
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.vertexCriterion.clone()), someVStep, traversal);
-
-
             }
         }
 
@@ -243,26 +238,18 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                         if ('v' == propertyType) {
                             final Traversal.Admin<?, ?> temp = nonCheckPropertyCriterion.clone();
                             TraversalHelper.insertTraversal((Step) step, temp, traversal);
-                            for (final String label : step.getLabels()) {
-                                step.removeLabel(label);
-                                temp.getEndStep().addLabel(label);
-                            }
+                            TraversalHelper.copyLabels(step, temp.getEndStep(), true);
                         } else {
                             final Step<?, ?> temp = checkPropertyCriterion.clone();
                             TraversalHelper.insertAfterStep(temp, (Step) step, traversal);
-                            for (final String label : step.getLabels()) {
-                                step.removeLabel(label);
-                                temp.addLabel(label);
-                            }
+                            TraversalHelper.copyLabels(step, temp, true);
                         }
                     } else {
                         // if the property step returns value, then replace it with a property step, append criterion, then append a value() step
                         final Step propertiesStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ((PropertiesStep) step).getPropertyKeys());
                         TraversalHelper.replaceStep(step, propertiesStep, traversal);
                         final Step propertyValueStep = new PropertyValueStep(traversal);
-                        for (final String label : step.getLabels()) {
-                            propertyValueStep.addLabel(label);
-                        }
+                        TraversalHelper.copyLabels(step, propertyValueStep, false);
                         if ('v' == propertyType) {
                             TraversalHelper.insertAfterStep(propertyValueStep, propertiesStep, traversal);
                             TraversalHelper.insertTraversal(propertiesStep, nonCheckPropertyCriterion.clone(), traversal);
@@ -303,11 +290,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         for (final Step<?, ?> step : stepsToApplyCriterionAfter) {
             // re-assign the step label to the criterion because the label should apply seamlessly after the filter
             final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
-            for (final String label : step.getLabels()) {
-                step.removeLabel(label);
-                filter.addLabel(label);
-            }
             TraversalHelper.insertAfterStep(filter, step, traversal);
+            TraversalHelper.copyLabels(step, filter, true);
         }
     }
 

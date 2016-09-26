@@ -113,7 +113,9 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> impleme
     }
 
     public String toString() {
-        return StringFactory.stepString(this, Arrays.asList(this.propertyKeys), this.returnType.name().toLowerCase());
+        return null != this.propertyTraversal ?
+                StringFactory.stepString(this, this.propertyTraversal, this.returnType.name().toLowerCase()) :
+                StringFactory.stepString(this, Arrays.asList(this.propertyKeys), this.returnType.name().toLowerCase());
     }
 
     @Override

@@ -571,6 +571,14 @@ public final class TraversalHelper {
         }
     }
 
+    public static void copyLabels(final Step<?, ?> fromStep, final Step<?, ?> toStep, final boolean moveLabels) {
+        for (final String label : fromStep.getLabels()) {
+            toStep.addLabel(label);
+            if (moveLabels)
+                fromStep.removeLabel(label);
+        }
+    }
+
     public static boolean allStepsInstanceOf(final Traversal.Admin<?, ?> traversal, final Class<?> classToCheck, boolean checkIsInstanceOf) {
         for (final Step step : traversal.getSteps()) {
             boolean isInstance = classToCheck.isInstance(step);

@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
@@ -45,14 +47,18 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
             final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
+            Step<?, ?> lastNonHolderStep = tinkerGraphStep;
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (currentStep instanceof HasContainerHolder) {
-                ((HasContainerHolder) currentStep).getHasContainers().forEach(hasContainer -> {
-                    if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
-                        tinkerGraphStep.addHasContainer(hasContainer);
-                });
-                currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
-                traversal.removeStep(currentStep);
+            while (currentStep instanceof HasContainerHolder || currentStep instanceof FilterStep) {
+                if (currentStep instanceof HasContainerHolder) {
+                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                        if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+                            tinkerGraphStep.addHasContainer(hasContainer);
+                    }
+                    TraversalHelper.copyLabels(currentStep, lastNonHolderStep, false);
+                    traversal.removeStep(currentStep);
+                } else
+                    lastNonHolderStep = currentStep;
                 currentStep = currentStep.getNextStep();
             }
         });
