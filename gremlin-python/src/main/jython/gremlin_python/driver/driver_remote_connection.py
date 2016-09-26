@@ -52,7 +52,8 @@ class DriverRemoteConnection(RemoteConnection):
         traversers = self._loop.run_sync(lambda: self.submit_traversal_bytecode(request_id, bytecode))
         side_effect_keys = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_keys(request_id))
         side_effect_value = lambda key: self._loop.run_sync(lambda: self.submit_sideEffect_value(request_id, key))
-        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(side_effect_keys, side_effect_value))
+        side_effect_close = lambda: self._loop.run_sync(lambda: self.submit_sideEffect_close(request_id))
+        return RemoteTraversal(iter(traversers), RemoteTraversalSideEffects(side_effect_keys, side_effect_value, side_effect_close))
 
     @gen.coroutine
     def submit_traversal_bytecode(self, request_id, bytecode):
@@ -113,6 +114,25 @@ class DriverRemoteConnection(RemoteConnection):
         except:
             raise KeyError(key)
         raise gen.Return(value)
+
+    @gen.coroutine
+    def submit_sideEffect_close(self, request_id):
+        message = {
+            "requestId": {
+                "@type": "g:UUID",
+                "@value": str(uuid.uuid4())
+            },
+            "op": "close",
+            "processor": "traversal",
+            "args": {
+                "sideEffect": {
+                    "@type": "g:UUID",
+                    "@value": request_id
+                }
+            }
+        }
+        result = yield self._execute_message(message)
+        raise gen.Return(result)
 
     @gen.coroutine
     def _execute_message(self, send_message):

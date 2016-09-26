@@ -22,6 +22,8 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 import unittest
 from unittest import TestCase
 
+import pytest
+
 from gremlin_python import statics
 from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -136,7 +138,7 @@ class TestDriverRemoteConnection(TestCase):
         assert "ripple" in n.keys()
         assert 3 == n["lop"]
         assert 1 == n["ripple"]
-        #
+
         t = g.withSideEffect('m', 32).V().map(lambda: "x: x.sideEffects('m')")
         results = t.toSet()
         assert 1 == len(results)
@@ -148,6 +150,10 @@ class TestDriverRemoteConnection(TestCase):
             raise Exception("Accessing a non-existent key should throw an error")
         except KeyError:
             pass
+        result = t.side_effects.close()
+        assert not result
+        with pytest.raises(KeyError):
+            x = t.side_effects['m']
         connection.close()
 
 
