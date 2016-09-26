@@ -102,20 +102,30 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin();
 
         if (null != this.vertexCriterion)
-            this.metadataLabelStartStep(this.vertexCriterion);
+            this.addLabelMarker(this.vertexCriterion);
         if (null != this.edgeCriterion)
-            this.metadataLabelStartStep(this.edgeCriterion);
+            this.addLabelMarker(this.edgeCriterion);
         if (null != this.vertexPropertyCriterion)
-            this.metadataLabelStartStep(this.vertexPropertyCriterion);
+            this.addLabelMarker(this.vertexPropertyCriterion);
     }
 
-    private final void metadataLabelStartStep(final Traversal.Admin<?, ?> traversal) {
+    private final void addLabelMarker(final Traversal.Admin<?, ?> traversal) {
         traversal.getStartStep().addLabel(MARKER);
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getLocalChildren().forEach(this::metadataLabelStartStep);
-                ((TraversalParent) step).getGlobalChildren().forEach(this::metadataLabelStartStep);
+                ((TraversalParent) step).getLocalChildren().forEach(this::addLabelMarker);
+                ((TraversalParent) step).getGlobalChildren().forEach(this::addLabelMarker);
             }
+        }
+    }
+
+    private static void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
+                                final Traversal.Admin<? extends Element, ?> criterion) {
+        for (final Step<?, ?> step : stepsToApplyCriterionAfter) {
+            // re-assign the step label to the criterion because the label should apply seamlessly after the filter
+            final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
+            TraversalHelper.insertAfterStep(filter, step, traversal);
+            TraversalHelper.copyLabels(step, filter, true);
         }
     }
 
@@ -280,19 +290,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         return this.vertexPropertyCriterion;
     }
 
-
     public static Builder build() {
         return new Builder();
-    }
-
-    private void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
-                                final Traversal.Admin<? extends Element, ?> criterion) {
-        for (final Step<?, ?> step : stepsToApplyCriterionAfter) {
-            // re-assign the step label to the criterion because the label should apply seamlessly after the filter
-            final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
-            TraversalHelper.insertAfterStep(filter, step, traversal);
-            TraversalHelper.copyLabels(step, filter, true);
-        }
     }
 
     public final static class Builder {
