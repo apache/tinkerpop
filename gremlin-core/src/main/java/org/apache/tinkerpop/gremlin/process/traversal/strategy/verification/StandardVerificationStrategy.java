@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -53,13 +52,9 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            final Set<String> hiddenLabels = new HashSet<>();
             for (String label : step.getLabels()) {
                 if (Graph.Hidden.isHidden(label))
-                   hiddenLabels.add(label);
-            }
-            for(final String label : hiddenLabels) {
-                step.removeLabel(label);
+                    step.removeLabel(label);
             }
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
                 throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);
