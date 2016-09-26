@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
@@ -61,11 +60,8 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                             traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal, 5000));
                     }
                     // label last step if repeat() was labeled
-                    if (!repeatStep.getLabels().isEmpty()) {
-                        final Step<?, ?> lastStep = traversal.getSteps().get(insertIndex);
-                        repeatStep.getLabels().forEach(lastStep::addLabel);
-                    }
-
+                    if (!repeatStep.getLabels().isEmpty())
+                        TraversalHelper.copyLabels(repeatStep, traversal.getSteps().get(insertIndex), false);
                     traversal.removeStep(i); // remove the RepeatStep
                 }
             }
