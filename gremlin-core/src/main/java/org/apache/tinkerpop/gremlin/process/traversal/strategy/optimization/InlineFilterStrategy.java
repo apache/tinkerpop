@@ -35,7 +35,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * InlineFilterStrategy analyzes filter-steps with child traversals that themselves are pure filters.
+ * If the child traversals are pure filters then the wrapping parent filter is not needed and thus, the
+ * children can be "inlined."
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.filter(has("name","marko"))                                // is replaced by __.has("name","marko")
+ * __.and(has("name"),has("age"))                                // is replaced by __.has("name").has("age")
+ * __.and(filter(has("name","marko").has("age")),hasNot("blah")) // is replaced by __.has("name","marko").has("age").hasNot("blah")
+ * </pre>
  */
 public final class InlineFilterStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
@@ -59,10 +69,8 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                     TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
                     final Step<?, ?> finalStep = childTraversal.getEndStep();
                     TraversalHelper.insertTraversal((Step) step, childTraversal, traversal);
+                    TraversalHelper.copyLabels(step, finalStep, false);
                     traversal.removeStep(step);
-                    for (final String label : step.getLabels()) {
-                        finalStep.addLabel(label);
-                    }
                 }
             }
             for (final AndStep<?> step : TraversalHelper.getStepsOfAssignableClass(AndStep.class, traversal)) {
@@ -78,12 +86,8 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         TraversalHelper.insertTraversal((Step) step, childTraversals.get(i), traversal);
 
                     }
+                    if (null != finalStep) TraversalHelper.copyLabels(step, finalStep, false);
                     traversal.removeStep(step);
-                    if (null != finalStep) {
-                        for (final String label : step.getLabels()) {
-                            finalStep.addLabel(label);
-                        }
-                    }
                 }
             }
         }
