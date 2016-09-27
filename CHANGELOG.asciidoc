@@ -42,7 +42,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `AbstractLambdaTraversal` now supports a `bypassTraversal` where it is possible for strategies to redefine such lambda traversals.
 * Added an internal utility `ClassFilterStep` which determines if the traverser object's class is an instance of the provided class.
 * `ConnectiveStep` extends `FilterStep` and thus, is more appropriately categorized in the step hierarchy.
-* `PropertyMapStep` supports a provided traversal for accessing the properties of the element.
+* `PropertyMapStep` supports a provided traversal for accessing the properties of the element. (*breaking*)
 * `SubgraphStrategy` now supports vertex property filtering.
 * Fixed a bug in Gremlin-Python `P` where predicates reversed the order of the predicates.
 * Added tests to `DedupTest` for the `dedup(Scope, String...)` overload.

@@ -118,6 +118,20 @@ gremlin> g.V().hasLabel("software").count()
 TinkerPop 3.2.3 fixes this misbehavior and all `has()` method overloads behave like before, except that they no longer
 support no arguments.
 
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+PropertyMapStep with Selection Traversal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`PropertyMapStep` now supports selection of properties via child property traversal. If a provider was relying solely
+on the provided property keys in a `ProviderOptimizationStrategy`, they will need to check if there is a child traversal
+and if so, use that in their introspection for respective strategies. This model was created to support `SubgraphStrategy.vertexProperties()` filtering.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1456[TINKERPOP-1456],
+link:https://issues.apache.org/jira/browse/TINKERPOP-844[TINKERPOP-844]
+
+
 TinkerPop 3.2.2
 ---------------
 
