@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -72,7 +74,9 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                     (nextStep instanceof SelectOneStep && ((SelectOneStep) nextStep).getLocalChildren().isEmpty())) {
                 if (nextStep instanceof WherePredicateStep || nextStep instanceof WhereTraversalStep) {
                     traversal.removeStep(nextStep);
-                    matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));
+                    matchStep.addGlobalChild(traversal instanceof GraphTraversal ?
+                            new DefaultGraphTraversal<>().addStep(nextStep) :
+                            new DefaultTraversal<>().addStep(nextStep));
                     nextStep = matchStep.getNextStep();
                 } else if (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty() && ((DedupGlobalStep) nextStep).getLocalChildren().isEmpty() && !TraversalHelper.onGraphComputer(traversal)) {
                     traversal.removeStep(nextStep);
