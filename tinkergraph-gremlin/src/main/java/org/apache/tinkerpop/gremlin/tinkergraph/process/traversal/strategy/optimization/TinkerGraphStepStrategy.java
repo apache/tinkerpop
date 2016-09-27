@@ -22,11 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -48,28 +43,20 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
-        TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
+        for (final GraphStep originalGraphStep : TraversalHelper.getStepsOfClass(GraphStep.class, traversal)) {
             final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
-            Step<?, ?> lastNonHolderStep = tinkerGraphStep;
+            TraversalHelper.replaceStep(originalGraphStep, tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (currentStep instanceof FilterStep &&
-                    !(currentStep instanceof DedupGlobalStep) &&
-                    !(currentStep instanceof RangeGlobalStep) &&
-                    !(currentStep instanceof DropStep) &&
-                    !(currentStep instanceof LambdaHolder)) {
-                if (currentStep instanceof HasContainerHolder) {
-                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
-                        if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
-                            tinkerGraphStep.addHasContainer(hasContainer);
-                    }
-                    TraversalHelper.copyLabels(currentStep, lastNonHolderStep, false);
-                    traversal.removeStep(currentStep);
-                } else
-                    lastNonHolderStep = currentStep;
+            while (currentStep instanceof HasContainerHolder) {
+                for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                    if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+                        tinkerGraphStep.addHasContainer(hasContainer);
+                }
+                TraversalHelper.copyLabels(currentStep, tinkerGraphStep, false);
+                traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
-        });
+        }
     }
 
     public static TinkerGraphStepStrategy instance() {

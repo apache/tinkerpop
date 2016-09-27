@@ -23,7 +23,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -110,39 +120,41 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
      * Ranks the given step. Steps with lower ranks can be moved in front of steps with higher ranks. 0 means that
      * the step has no rank and thus is not exchangeable with its neighbors.
      *
-     * @param step
+     * @param step the step to get a ranking for
      * @return The rank of the given step.
      */
     private static int getStepRank(final Step step) {
-        if (step instanceof IsStep) {
+        if (!(step instanceof FilterStep || step instanceof OrderGlobalStep))
+            return 0;
+        else if (step instanceof IsStep)
             return 1;
-        } else if (step instanceof HasStep) {
+        else if (step instanceof HasStep)
             return 2;
-        } else if (step instanceof WherePredicateStep) {
+        else if (step instanceof WherePredicateStep)
             return 3;
-        } else if (step instanceof SimplePathStep || step instanceof CyclicPathStep) {
+        else if (step instanceof SimplePathStep || step instanceof CyclicPathStep)
             return 4;
-        } else if (step instanceof TraversalFilterStep) {
+        else if (step instanceof TraversalFilterStep)
             return 5;
-        } else if (step instanceof WhereTraversalStep) {
+        else if (step instanceof WhereTraversalStep)
             return 6;
-        } else if (step instanceof OrStep) {
+        else if (step instanceof OrStep)
             return 7;
-        } else if (step instanceof AndStep) {
+        else if (step instanceof AndStep)
             return 8;
-        } else if (step instanceof DedupGlobalStep) {
+        else if (step instanceof DedupGlobalStep)
             return 9;
-        } else if (step instanceof OrderGlobalStep) {
+        else if (step instanceof OrderGlobalStep)
             return 10;
-        }
-        return 0;
+        else
+            return 0;
     }
 
     /**
      * If the given step has no child traversal that holds a lambda, then the actual rank determined by
      * {@link #getStepRank(Step)} is returned, otherwise 0.
      *
-     * @param step
+     * @param step the step to get a ranking for
      * @return The rank of the given step.
      */
     private static int rank(final Step step) {

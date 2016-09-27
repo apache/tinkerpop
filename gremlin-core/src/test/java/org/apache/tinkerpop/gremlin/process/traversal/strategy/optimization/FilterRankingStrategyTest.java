@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -38,7 +39,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class FilterRankingStrategyTest {
-
 
     public static Iterable<Object[]> data() {
         return generateTestParameters();
@@ -75,11 +75,12 @@ public class FilterRankingStrategyTest {
                 {__.identity().order().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
                 {__.order().identity().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
                 {__.order().out().dedup(), __.order().out().dedup(), Collections.emptyList()},
-                {__.has("value", 0).filter(__.out()).dedup(), __.has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {__.dedup().filter(__.out()).has("value", 0), __.has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {__.filter(__.out()).dedup().has("value", 0), __.has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {__.has("value", 0).filter(__.out()).dedup(), __.has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {__.has("value", 0).and(__.has("age"), __.has("name", "marko")).is(10), __.is(10).has("value", 0).has("name", "marko").has("age"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {has("value", 0).filter(__.out()).dedup(), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
+                {__.dedup().filter(__.out()).has("value", 0), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
+                {__.filter(__.out()).dedup().has("value", 0), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
+                {has("value", 0).filter(__.out()).dedup(), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
+                {has("value", 0).or(has("name"), has("age")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(has("name"), has("age")).dedup(), Collections.emptyList()},
+                {has("value", 0).and(has("age"), has("name", "marko")).is(10), __.is(10).has("value", 0).has("name", "marko").has("age"), Collections.singletonList(InlineFilterStrategy.instance())},
         });
     }
 }
