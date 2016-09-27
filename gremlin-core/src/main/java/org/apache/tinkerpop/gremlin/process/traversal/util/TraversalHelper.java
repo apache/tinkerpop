@@ -579,10 +579,16 @@ public final class TraversalHelper {
         }
     }
 
-    public static boolean allStepsInstanceOf(final Traversal.Admin<?, ?> traversal, final Class<?> classToCheck, boolean checkIsInstanceOf) {
+    public static boolean allStepsInstanceOf(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
         for (final Step step : traversal.getSteps()) {
-            boolean isInstance = classToCheck.isInstance(step);
-            if ((isInstance && !checkIsInstanceOf) || (!isInstance && checkIsInstanceOf))
+            boolean foundInstance = false;
+            for (final Class<?> classToCheck : classesToCheck) {
+                if (classToCheck.isInstance(step)) {
+                    foundInstance = true;
+                    break;
+                }
+            }
+            if (!foundInstance)
                 return false;
         }
         return true;

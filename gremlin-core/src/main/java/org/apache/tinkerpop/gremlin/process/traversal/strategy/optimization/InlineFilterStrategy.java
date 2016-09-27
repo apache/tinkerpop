@@ -25,10 +25,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -45,12 +49,14 @@ import java.util.Set;
  * __.filter(has("name","marko"))                                // is replaced by __.has("name","marko")
  * __.and(has("name"),has("age"))                                // is replaced by __.has("name").has("age")
  * __.and(filter(has("name","marko").has("age")),hasNot("blah")) // is replaced by __.has("name","marko").has("age").hasNot("blah")
+ * __.match(as('a').has(key,value),...)                          // is replaced by __.as('a').has(key,value).match(...)
  * </pre>
  */
 public final class InlineFilterStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final InlineFilterStrategy INSTANCE = new InlineFilterStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> POSTS = new HashSet<>(Arrays.asList(
+            MatchPredicateStrategy.class,
             FilterRankingStrategy.class,
             GraphFilterStrategy.class));
 
@@ -62,9 +68,10 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         boolean changed = true; // recursively walk child traversals trying to inline them into the current traversal line.
         while (changed) {
             changed = false;
-            for (final TraversalFilterStep<?> step : TraversalHelper.getStepsOfAssignableClass(TraversalFilterStep.class, traversal)) {
+            // filter(x.y) --> x.y
+            for (final TraversalFilterStep<?> step : TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal)) {
                 final Traversal.Admin<?, ?> childTraversal = step.getLocalChildren().get(0);
-                if (TraversalHelper.allStepsInstanceOf(childTraversal, FilterStep.class, true)) {
+                if (TraversalHelper.allStepsInstanceOf(childTraversal, FilterStep.class)) {
                     changed = true;
                     TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
                     final Step<?, ?> finalStep = childTraversal.getEndStep();
@@ -73,8 +80,9 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                     traversal.removeStep(step);
                 }
             }
-            for (final AndStep<?> step : TraversalHelper.getStepsOfAssignableClass(AndStep.class, traversal)) {
-                if (!step.getLocalChildren().stream().filter(t -> !TraversalHelper.allStepsInstanceOf(t, FilterStep.class, true)).findAny().isPresent()) {
+            // and(x,y) --> x.y
+            for (final AndStep<?> step : TraversalHelper.getStepsOfClass(AndStep.class, traversal)) {
+                if (!step.getLocalChildren().stream().filter(t -> !TraversalHelper.allStepsInstanceOf(t, FilterStep.class)).findAny().isPresent()) {
                     changed = true;
                     final List<Traversal.Admin<?, ?>> childTraversals = (List) step.getLocalChildren();
                     Step<?, ?> finalStep = null;
@@ -90,7 +98,49 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                     traversal.removeStep(step);
                 }
             }
+            // match(as('a').has(key,value),...) --> as('a').has(key,value).match(...)
+            if (traversal.getParent() instanceof EmptyStep) {
+                for (final MatchStep<?, ?> step : TraversalHelper.getStepsOfClass(MatchStep.class, traversal)) {
+                    final String startLabel = determineStartLabelForHasPullOut(step);
+                    if (null != startLabel) {
+                        for (final Traversal.Admin<?, ?> matchTraversal : new ArrayList<>(step.getGlobalChildren())) {
+                            if (!(step.getPreviousStep() instanceof EmptyStep) &&
+                                    TraversalHelper.allStepsInstanceOf(matchTraversal,
+                                            HasStep.class,
+                                            MatchStep.MatchStartStep.class,
+                                            MatchStep.MatchEndStep.class) &&
+                                    matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep &&
+                                    startLabel.equals(((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().orElse(null))) {
+                                changed = true;
+                                final String endLabel = ((MatchStep.MatchEndStep) matchTraversal.getEndStep()).getMatchKey().orElse(null); // why would this exist? but just in case
+                                matchTraversal.removeStep(0);                                       // remove MatchStartStep
+                                matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
+                                TraversalHelper.applySingleLevelStrategies(traversal, matchTraversal, InlineFilterStrategy.class);
+                                step.removeGlobalChild(matchTraversal);
+                                step.getPreviousStep().addLabel(startLabel);
+                                if (null != endLabel) matchTraversal.getEndStep().addLabel(endLabel);
+                                TraversalHelper.insertTraversal((Step) step.getPreviousStep(), matchTraversal, traversal);
+                            }
+                        }
+                        if (step.getGlobalChildren().isEmpty())
+                            traversal.removeStep(step);
+                    }
+                }
+            }
         }
+    }
+
+    private static final String determineStartLabelForHasPullOut(final MatchStep<?, ?> matchStep) {
+        final String startLabel = MatchStep.Helper.computeStartLabel(matchStep.getGlobalChildren());
+        Step<?, ?> previousStep = matchStep.getPreviousStep();
+        if (previousStep.getLabels().contains(startLabel))
+            return startLabel;
+        while (!(previousStep instanceof EmptyStep)) {
+            if (!previousStep.getLabels().isEmpty())
+                return null;
+            previousStep = previousStep.getPreviousStep();
+        }
+        return startLabel;
     }
 
     @Override

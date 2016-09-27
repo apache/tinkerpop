@@ -26,12 +26,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a end-step label bug in `MatchPredicateStrategy`.
+* Fixed a bug in `MatchPredicateStrategy` where inlined traversals did not have strategies applied to it.
 * Fixed a bug in `RepeatUnrollStrategy` where inlined traversal did not have strategies applied to it.
 * `TinkerGraphStepStrategy` is now smart about non-`HasContainer` filter steps.
 * Added `TraversalHelper.copyLabels()` for copying (or moving) labels form one step to another.
 * Added `TraversalHelper.applySingleLevelStrategies()` which will apply a subset of strategies but not walk the child tree.
 * Added the concept that hidden labels using during traversal compilation are removed at the end during `StandardVerificationStrategy`. (*breaking*)
-* Added `InlineFilterStrategy` which will determine if a `TraversalFilterStep` or `AndStep` children are filters and if so, inline them.
+* Added `InlineFilterStrategy` which will determine if a `TraversalFilterStep`, `AndStep`, `MatchStep` children are filters and if so, inline them.
 * Removed `IdentityRemovalStrategy` from the default listing as its not worth the clock cycles.
 * Removed the "!" symbol in `NotStep.toString()` as it is confusing and the `NotStep`-name is sufficient.
 * Fixed a bug in `TraversalVertexProgram` (OLAP) around ordering and connectives (i.e. `and()` and `or()`).
