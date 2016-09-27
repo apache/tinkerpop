@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
@@ -569,6 +568,50 @@ public final class TraversalHelper {
     public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
         while (!traversal.getSteps().isEmpty()) {
             traversal.removeStep(0);
+        }
+    }
+
+    public static void copyLabels(final Step<?, ?> fromStep, final Step<?, ?> toStep, final boolean moveLabels) {
+        for (final String label : fromStep.getLabels()) {
+            toStep.addLabel(label);
+            if (moveLabels)
+                fromStep.removeLabel(label);
+        }
+    }
+
+    public static boolean hasAllStepsOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
+        for (final Step step : traversal.getSteps()) {
+            boolean foundInstance = false;
+            for (final Class<?> classToCheck : classesToCheck) {
+                if (classToCheck.isInstance(step)) {
+                    foundInstance = true;
+                    break;
+                }
+            }
+            if (!foundInstance)
+                return false;
+        }
+        return true;
+    }
+
+    public static boolean hasStepOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            for (final Class<?> classToCheck : classesToCheck) {
+                if (classToCheck.isInstance(step))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> parentTraversal, final Traversal.Admin<?, ?> childTraversal, final Class<? extends TraversalStrategy> stopAfterStrategy) {
+        childTraversal.setStrategies(parentTraversal.getStrategies());
+        childTraversal.setSideEffects(parentTraversal.getSideEffects());
+        parentTraversal.getGraph().ifPresent(childTraversal::setGraph);
+        for (final TraversalStrategy<?> strategy : parentTraversal.getStrategies().toList()) {
+            strategy.apply(childTraversal);
+            if (null != stopAfterStrategy && stopAfterStrategy.isInstance(strategy))
+                break;
         }
     }
 }

@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
@@ -49,8 +48,9 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                 final RepeatStep<?> repeatStep = (RepeatStep) traversal.getSteps().get(i);
                 if (null == repeatStep.getEmitTraversal() && repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0) {
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
-                    final int repeatLength = repeatTraversal.getSteps().size() - 1;
-                    repeatTraversal.removeStep(repeatLength); // removes the RepeatEndStep
+                    repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1); // removes the RepeatEndStep
+                    TraversalHelper.applySingleLevelStrategies(traversal, repeatTraversal, RepeatUnrollStrategy.class);
+                    final int repeatLength = repeatTraversal.getSteps().size();
                     int insertIndex = i;
                     final int loops = (int) ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops();
                     for (int j = 0; j < loops; j++) {
@@ -60,11 +60,8 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                             traversal.addStep(++insertIndex, new NoOpBarrierStep<>(traversal, 5000));
                     }
                     // label last step if repeat() was labeled
-                    if (!repeatStep.getLabels().isEmpty()) {
-                        final Step<?, ?> lastStep = traversal.getSteps().get(insertIndex);
-                        repeatStep.getLabels().forEach(lastStep::addLabel);
-                    }
-
+                    if (!repeatStep.getLabels().isEmpty())
+                        TraversalHelper.copyLabels(repeatStep, traversal.getSteps().get(insertIndex), false);
                     traversal.removeStep(i); // remove the RepeatStep
                 }
             }
