@@ -23,9 +23,14 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimiza
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -71,7 +76,13 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             // filter(x.y) --> x.y
             for (final TraversalFilterStep<?> step : TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal)) {
                 final Traversal.Admin<?, ?> childTraversal = step.getLocalChildren().get(0);
-                if (TraversalHelper.allStepsInstanceOf(childTraversal, FilterStep.class)) {
+                if (TraversalHelper.hasAllStepsOfClass(childTraversal, FilterStep.class) &&
+                        !TraversalHelper.hasStepOfClass(childTraversal,
+                                DropStep.class,
+                                RangeGlobalStep.class,
+                                TailGlobalStep.class,
+                                DedupGlobalStep.class,
+                                LambdaHolder.class)) {
                     changed = true;
                     TraversalHelper.applySingleLevelStrategies(traversal, childTraversal, InlineFilterStrategy.class);
                     final Step<?, ?> finalStep = childTraversal.getEndStep();
@@ -82,7 +93,20 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             }
             // and(x,y) --> x.y
             for (final AndStep<?> step : TraversalHelper.getStepsOfClass(AndStep.class, traversal)) {
-                if (!step.getLocalChildren().stream().filter(t -> !TraversalHelper.allStepsInstanceOf(t, FilterStep.class)).findAny().isPresent()) {
+                boolean process = true;
+                for (final Traversal.Admin<?, ?> childTraversal : step.getLocalChildren()) {
+                    if (!TraversalHelper.hasAllStepsOfClass(childTraversal, FilterStep.class) ||
+                            TraversalHelper.hasStepOfClass(childTraversal,
+                                    DropStep.class,
+                                    RangeGlobalStep.class,
+                                    TailGlobalStep.class,
+                                    DedupGlobalStep.class,
+                                    LambdaHolder.class)) {
+                        process = false;
+                        break;
+                    }
+                }
+                if (process) {
                     changed = true;
                     final List<Traversal.Admin<?, ?>> childTraversals = (List) step.getLocalChildren();
                     Step<?, ?> finalStep = null;
@@ -105,7 +129,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                     if (null != startLabel) {
                         for (final Traversal.Admin<?, ?> matchTraversal : new ArrayList<>(step.getGlobalChildren())) {
                             if (!(step.getPreviousStep() instanceof EmptyStep) &&
-                                    TraversalHelper.allStepsInstanceOf(matchTraversal,
+                                    TraversalHelper.hasAllStepsOfClass(matchTraversal,
                                             HasStep.class,
                                             MatchStep.MatchStartStep.class,
                                             MatchStep.MatchEndStep.class) &&
@@ -128,6 +152,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 }
             }
         }
+
     }
 
     private static final String determineStartLabelForHasPullOut(final MatchStep<?, ?> matchStep) {

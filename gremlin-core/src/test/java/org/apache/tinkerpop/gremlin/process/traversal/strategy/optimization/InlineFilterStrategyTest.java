@@ -32,11 +32,15 @@ import java.util.Arrays;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.dedup;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.map;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.match;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.tail;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -67,8 +71,8 @@ public class InlineFilterStrategyTest {
                 {filter(out("knows")), filter(out("knows"))},
                 {filter(has("age", P.gt(10))).as("a"), has("age", P.gt(10)).as("a")},
                 {filter(has("age", P.gt(10)).as("b")).as("a"), has("age", P.gt(10)).as("b", "a")},
-                {filter(has("age", P.gt(10))), has("age", P.gt(10))},
-                {filter(and(has("age", P.gt(10)), has("name", "marko"))), has("age", P.gt(10)).has("name", "marko")},
+                {filter(has("age", P.gt(10)).as("a")), has("age", P.gt(10)).as("a")},
+                {filter(and(has("age", P.gt(10)).as("a"), has("name", "marko"))), has("age", P.gt(10)).as("a").has("name", "marko")},
                 //
                 {and(has("age", P.gt(10)), filter(has("age", 22))), has("age", P.gt(10)).has("age", 22)},
                 {and(has("age", P.gt(10)).as("a"), and(filter(has("age", 22).as("b")).as("c"), has("name", "marko").as("d"))), has("age", P.gt(10)).as("a").has("age", 22).as("b", "c").has("name", "marko").as("d")},
@@ -79,6 +83,11 @@ public class InlineFilterStrategyTest {
                 {map(match(as("a").has("age", 10), as("a").filter(has("name")).as("b"))), map(match(as("a").has("age", 10), as("a").has("name").as("b")))},
                 {V().match(as("a").has("age", 10)), V().as("a").has("age", 10)},
                 {V().match(as("a").has("age", 10).as("b"), as("a").filter(has("name")).as("b")), V().as("a").has("age", 10).as("b").match(as("a").has("name").as("b"))},
+                //
+                {filter(dedup()), filter(dedup())},
+                {filter(filter(drop())), filter(drop())},
+                {and(has("name"), limit(10).has("age")), and(has("name"), limit(10).has("age"))},
+                {filter(tail(10).as("a")), filter(tail(10).as("a"))},
         });
     }
 }

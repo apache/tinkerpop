@@ -579,7 +579,7 @@ public final class TraversalHelper {
         }
     }
 
-    public static boolean allStepsInstanceOf(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
+    public static boolean hasAllStepsOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
         for (final Step step : traversal.getSteps()) {
             boolean foundInstance = false;
             for (final Class<?> classToCheck : classesToCheck) {
@@ -592,6 +592,16 @@ public final class TraversalHelper {
                 return false;
         }
         return true;
+    }
+
+    public static boolean hasStepOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            for (final Class<?> classToCheck : classesToCheck) {
+                if (classToCheck.isInstance(step))
+                    return true;
+            }
+        }
+        return false;
     }
 
     public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> parentTraversal, final Traversal.Admin<?, ?> childTraversal, final Class<? extends TraversalStrategy> stopAfterStrategy) {
