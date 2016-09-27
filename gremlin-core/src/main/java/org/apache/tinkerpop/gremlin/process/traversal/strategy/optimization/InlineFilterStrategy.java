@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -80,7 +79,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         !TraversalHelper.hasStepOfClass(childTraversal,
                                 DropStep.class,
                                 RangeGlobalStep.class,
-                                TailGlobalStep.class,
                                 DedupGlobalStep.class,
                                 LambdaHolder.class)) {
                     changed = true;
@@ -99,7 +97,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                             TraversalHelper.hasStepOfClass(childTraversal,
                                     DropStep.class,
                                     RangeGlobalStep.class,
-                                    TailGlobalStep.class,
                                     DedupGlobalStep.class,
                                     LambdaHolder.class)) {
                         process = false;

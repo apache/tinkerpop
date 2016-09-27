@@ -22,7 +22,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -49,7 +53,11 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
             TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
             Step<?, ?> lastNonHolderStep = tinkerGraphStep;
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (currentStep instanceof HasContainerHolder || currentStep instanceof FilterStep) {
+            while (currentStep instanceof FilterStep &&
+                    !(currentStep instanceof DedupGlobalStep) &&
+                    !(currentStep instanceof RangeGlobalStep) &&
+                    !(currentStep instanceof DropStep) &&
+                    !(currentStep instanceof LambdaHolder)) {
                 if (currentStep instanceof HasContainerHolder) {
                     for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
                         if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
