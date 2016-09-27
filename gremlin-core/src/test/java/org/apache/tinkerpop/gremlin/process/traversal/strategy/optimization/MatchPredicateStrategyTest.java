@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -75,8 +77,8 @@ public class MatchPredicateStrategyTest {
                 {__.match(as("a").out().as("b"), __.where(as("b").out("knows").as("c"))), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c"))), Collections.emptyList()}, // make as().where()
                 {__.match(as("a").out().as("b"), __.where("a", P.gt("b"))), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b"))), Collections.emptyList()},  // make as().where()
                 /////////
-                // {__.match(as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c"))), Collections.emptyList()}, // make as().where()
-                // {__.match(as("a").out().as("b")).where("a", P.gt("b")), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b"))), Collections.emptyList()},  // make as().where()
+                {__.match(as("a").out().as("b")).where(as("b").filter(has("name")).out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(has("name").out("knows").as("c"))), Collections.singletonList(InlineFilterStrategy.instance())}, // make as().where()
+                {__.match(as("a").out().as("b")).where("a", P.gt("b")), __.match(as("a").out().as("b"), as("a").where(P.gt("b"))), Collections.emptyList()},  // make as().where()
         });
     }
 
