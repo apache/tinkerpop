@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `IncidentToAdjacentStrategy` where `TreeStep` traversals were allowed.
 * Fixed a end-step label bug in `MatchPredicateStrategy`.
 * Fixed a bug in `MatchPredicateStrategy` where inlined traversals did not have strategies applied to it.
 * Fixed a bug in `RepeatUnrollStrategy` where inlined traversal did not have strategies applied to it.
