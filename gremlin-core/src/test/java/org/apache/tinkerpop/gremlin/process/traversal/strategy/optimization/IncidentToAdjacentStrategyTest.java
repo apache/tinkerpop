@@ -39,24 +39,19 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class IncidentToAdjacentStrategyTest {
 
-
     @Parameterized.Parameter(value = 0)
     public Traversal original;
 
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
 
-    void applyIncidentToAdjacentStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(IncidentToAdjacentStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-    }
-
     @Test
     public void doTest() {
-        applyIncidentToAdjacentStrategy(original);
-        assertEquals(optimized, original);
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(IncidentToAdjacentStrategy.instance());
+        this.original.asAdmin().setStrategies(strategies);
+        this.original.asAdmin().applyStrategies();
+        assertEquals(this.optimized, this.original);
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -74,6 +69,7 @@ public class IncidentToAdjacentStrategyTest {
                 {__.bothE().outV(), __.bothE().outV()},
                 {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
                 {__.outE().inV().path(), __.outE().inV().path()},
+                {__.outE().inV().tree().as("a"), __.outE().inV().tree().as("a")},
                 {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
                 {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()},
                 {__.as("a").outE().inV().as("b"), __.as("a").out().as("b")}});
