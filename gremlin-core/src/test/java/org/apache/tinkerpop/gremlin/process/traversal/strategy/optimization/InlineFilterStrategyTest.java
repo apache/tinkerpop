@@ -29,9 +29,13 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.map;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.match;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.assertEquals;
 
@@ -47,18 +51,13 @@ public class InlineFilterStrategyTest {
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
 
-
-    void applyInlineFilterStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(InlineFilterStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-    }
-
     @Test
     public void doTest() {
-        applyInlineFilterStrategy(original);
-        assertEquals(optimized, original);
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(InlineFilterStrategy.instance());
+        this.original.asAdmin().setStrategies(strategies);
+        this.original.asAdmin().applyStrategies();
+        assertEquals(this.optimized, this.original);
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -67,12 +66,19 @@ public class InlineFilterStrategyTest {
         return Arrays.asList(new Traversal[][]{
                 {filter(out("knows")), filter(out("knows"))},
                 {filter(has("age", P.gt(10))).as("a"), has("age", P.gt(10)).as("a")},
-                {filter(has("age", P.gt(10)).as("b")).as("a"), has("age", P.gt(10)).as("b","a")},
+                {filter(has("age", P.gt(10)).as("b")).as("a"), has("age", P.gt(10)).as("b", "a")},
                 {filter(has("age", P.gt(10))), has("age", P.gt(10))},
                 {filter(and(has("age", P.gt(10)), has("name", "marko"))), has("age", P.gt(10)).has("name", "marko")},
+                //
                 {and(has("age", P.gt(10)), filter(has("age", 22))), has("age", P.gt(10)).has("age", 22)},
-                {and(has("age", P.gt(10)).as("a"), and(filter(has("age", 22).as("b")).as("c"), has("name", "marko").as("d"))), has("age", P.gt(10)).as("a").has("age", 22).as("b","c").has("name", "marko").as("d")},
-                {and(has("age", P.gt(10)), and(out("knows"), has("name", "marko"))), has("age", P.gt(10)).and(out("knows"), has("name", "marko"))}
+                {and(has("age", P.gt(10)).as("a"), and(filter(has("age", 22).as("b")).as("c"), has("name", "marko").as("d"))), has("age", P.gt(10)).as("a").has("age", 22).as("b", "c").has("name", "marko").as("d")},
+                {and(has("age", P.gt(10)), and(out("knows"), has("name", "marko"))), has("age", P.gt(10)).and(out("knows"), has("name", "marko"))},
+                //
+                {V().match(as("a").has("age", 10), as("a").filter(has("name")).as("b")), V().as("a").has("age", 10).match(as("a").has("name").as("b"))},
+                {match(as("a").has("age", 10), as("a").filter(has("name")).as("b")), match(as("a").has("age", 10), as("a").has("name").as("b"))},
+                {map(match(as("a").has("age", 10), as("a").filter(has("name")).as("b"))), map(match(as("a").has("age", 10), as("a").has("name").as("b")))},
+                {V().match(as("a").has("age", 10)), V().as("a").has("age", 10)},
+                {V().match(as("a").has("age", 10).as("b"), as("a").filter(has("name")).as("b")), V().as("a").has("age", 10).as("b").match(as("a").has("name").as("b"))},
         });
     }
 }

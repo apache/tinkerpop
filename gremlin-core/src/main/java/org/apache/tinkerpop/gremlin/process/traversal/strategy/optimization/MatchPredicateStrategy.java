@@ -22,20 +22,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * MatchWhereStrategy will fold any post-{@code where()} step that maintains a traversal constraint into
@@ -53,11 +51,7 @@ import java.util.stream.Collectors;
 public final class MatchPredicateStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final MatchPredicateStrategy INSTANCE = new MatchPredicateStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        PRIORS.add(IdentityRemovalStrategy.class);
-    }
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(IdentityRemovalStrategy.class, InlineFilterStrategy.class));
 
     private MatchPredicateStrategy() {
     }
@@ -89,46 +83,7 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                 } else
                     break;
             }
-            // match(as('a').has(key,value),...) --> as('a').has(key,value).match(...)
-            final String startLabel = this.determineStartLabelForHasPullOut(matchStep);
-            if (null != startLabel) {
-                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {
-                    if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep &&
-                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().isPresent() &&
-                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().get().equals(startLabel) &&
-                            !(matchStep.getPreviousStep() instanceof EmptyStep) &&
-                            !matchTraversal.getSteps().stream()
-                                    .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
-                                            !(step instanceof MatchStep.MatchEndStep) &&
-                                            !(step instanceof HasStep))
-                                    .findAny()
-                                    .isPresent()) {
-                        matchStep.removeGlobalChild(matchTraversal);
-                        matchTraversal.removeStep(0);                                       // remove MatchStartStep
-                        matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
-                        matchStep.getPreviousStep().addLabel(startLabel);
-                        TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
-                    }
-                });
-            }
         });
-    }
-
-    private String determineStartLabelForHasPullOut(final MatchStep<?, ?> matchStep) {
-        if (!(matchStep.getTraversal().getParent() instanceof EmptyStep))
-            return null;
-        else {
-            final String startLabel = MatchStep.Helper.computeStartLabel(matchStep.getGlobalChildren());
-            Step<?, ?> previousStep = matchStep.getPreviousStep();
-            if (previousStep.getLabels().contains(startLabel))
-                return startLabel;
-            while (!(previousStep instanceof EmptyStep)) {
-                if (!previousStep.getLabels().isEmpty())
-                    return null;
-                previousStep = previousStep.getPreviousStep();
-            }
-            return startLabel;
-        }
     }
 
     public static MatchPredicateStrategy instance() {
