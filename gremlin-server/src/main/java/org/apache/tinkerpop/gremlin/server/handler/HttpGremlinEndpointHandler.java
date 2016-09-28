@@ -253,8 +253,19 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         }));
 
                 evalFuture.exceptionally(t -> {
-                    sendError(ctx, INTERNAL_SERVER_ERROR,
-                            String.format("Error encountered evaluating script: %s", requestArguments.getValue0()), Optional.of(t));
+					
+					if (t.getMessage() != null) {
+						sendError(ctx, INTERNAL_SERVER_ERROR,
+								String.format("Error encountered evaluating script: %s\nExecution Interrupted by %s\nMessage: %s", 
+											  requestArguments.getValue0(), t.getClass().getName(), t.getMessage()),
+								Optional.of(t));
+                    } else {
+						sendError(ctx, INTERNAL_SERVER_ERROR,
+								String.format("Error encountered evaluating script: %s\nExecution Interrupted by %s", 
+											  requestArguments.getValue0(), t.getClass().getName()),
+								Optional.of(t));
+					}
+					
                     promise.setFailure(t);
                     return null;
                 });
