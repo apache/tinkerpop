@@ -952,7 +952,7 @@ Configuring
 ~~~~~~~~~~~
 
 As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a
-file called `config/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
+file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
 to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
@@ -1137,7 +1137,7 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
                                  .enableSsl(true).create();
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
-`config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
+`conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
 password as well as enablement of SSL from the client side.
 
 Similarly, Gremlin Server can be configured for REST and security.
