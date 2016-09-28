@@ -1,0 +1,18 @@
+
+[Unit]
+Description=Apache Tinkerpop Gremlin server daemon
+Documentation=http://tinkerpop.apache.org/
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/apache-tinkerpop-gremlin-server
+EnvironmentFile=/opt/apache-tinkerpop-gremlin-server/bin/gremlin-server.conf
+ExecStart=/opt/apache-tinkerpop-gremlin-server/bin/gremlin-server.sh
+KillMode=process
+Restart=no
+RestartSec=60s
+User=gremlin
+Group=gremlin
+
+[Install]
+WantedBy=multi-user.target
