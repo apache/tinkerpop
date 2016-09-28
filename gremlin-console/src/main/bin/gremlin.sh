@@ -36,11 +36,11 @@ fi
 
 case `uname` in
   CYGWIN*)
-    CP="`dirname $0`"/../config
+    CP="`dirname $0`"/../conf
     CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
     ;;
   *)
-    CP="`dirname $0`"/../config
+    CP="`dirname $0`"/../conf
     CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
 esac
 
