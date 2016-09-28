@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -31,7 +32,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -75,12 +84,15 @@ public class FilterRankingStrategyTest {
                 {__.identity().order().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
                 {__.order().identity().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
                 {__.order().out().dedup(), __.order().out().dedup(), Collections.emptyList()},
-                {has("value", 0).filter(__.out()).dedup(), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {__.dedup().filter(__.out()).has("value", 0), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {__.filter(__.out()).dedup().has("value", 0), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
-                {has("value", 0).filter(__.out()).dedup(), has("value", 0).filter(__.out()).dedup(), Collections.emptyList()},
+                {has("value", 0).filter(out()).dedup(), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {__.dedup().has("value", 0).or(not(has("age")), has("age", 10)).has("value", 1), __.has("value", 0).has("value", 1).or(not(has("age")), has("age", 10)).dedup(), Collections.emptyList()},
+                {__.dedup().filter(out()).has("value", 0), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {filter(out()).dedup().has("value", 0), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {has("value", 0).filter(out()).dedup(), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
                 {has("value", 0).or(has("name"), has("age")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(has("name"), has("age")).dedup(), Collections.emptyList()},
+                {has("value", 0).or(out(), in()).as(Graph.Hidden.hide("x")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(outE(), inE()).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {has("value", 0).and(has("age"), has("name", "marko")).is(10), __.is(10).has("value", 0).has("name", "marko").has("age"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {has("value", 0).filter(or(not(has("age")), has("age", 1))).has("value", 1).dedup(), has("value", 0).has("value", 1).or(not(filter(properties("age"))), has("age", 1)).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
         });
     }
 }

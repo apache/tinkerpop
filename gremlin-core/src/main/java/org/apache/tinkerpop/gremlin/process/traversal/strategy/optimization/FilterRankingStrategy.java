@@ -24,11 +24,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
@@ -37,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.HashSet;
@@ -126,7 +129,7 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
     private static int getStepRank(final Step step) {
         if (!(step instanceof FilterStep || step instanceof OrderGlobalStep))
             return 0;
-        else if (step instanceof IsStep)
+        else if (step instanceof IsStep || step instanceof ClassFilterStep)
             return 1;
         else if (step instanceof HasStep)
             return 2;
@@ -134,7 +137,7 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             return 3;
         else if (step instanceof SimplePathStep || step instanceof CyclicPathStep)
             return 4;
-        else if (step instanceof TraversalFilterStep)
+        else if (step instanceof TraversalFilterStep || step instanceof NotStep)
             return 5;
         else if (step instanceof WhereTraversalStep)
             return 6;
@@ -179,10 +182,18 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
      * Returns true if the step is not optimizable, otherwise false. A step is not optimizable if it (or any of its
      * child traversals) is a lambda holder or has a label.
      *
-     * @param step
+     * @param step the step to check for optimizability
      * @return true if the given step is optimizable, otherwise false.
      */
-    private static boolean isNotOptimizableStep(final Step step) {
-        return step instanceof LambdaHolder || !step.getLabels().isEmpty();
+    private static boolean isNotOptimizableStep(final Step<?, ?> step) {
+        if (step instanceof LambdaHolder)
+            return true;
+        else {
+            for (final String label : step.getLabels()) {
+                if (!Graph.Hidden.isHidden(label))
+                    return true;
+            }
+            return false;
+        }
     }
 }
