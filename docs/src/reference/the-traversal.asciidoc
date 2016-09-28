@@ -2443,17 +2443,20 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
-        TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
-            final TinkerGraphStep<?,?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
+        for (final GraphStep originalGraphStep : TraversalHelper.getStepsOfClass(GraphStep.class, traversal)) {
+            final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(originalGraphStep, tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (currentStep instanceof HasContainerHolder) {
-                ((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
-                currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
+                for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                    if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+                        tinkerGraphStep.addHasContainer(hasContainer);
+                }
+                TraversalHelper.copyLabels(currentStep, tinkerGraphStep, false);
                 traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
-        });
+        }
     }
 
     public static TinkerGraphStepStrategy instance() {
@@ -2476,6 +2479,31 @@ t.toString()
 t.iterate(); null
 t.toString()
 ----
+
+Finally, here is a complicated traversal that has various components that are optimized by the default TinkerPop strategies.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person'). <1>
+        and(has('name','marko'),filter(has('age',gt(20)))). <2>
+  match(__.as('a').has('age',lt(32)), <3>
+        __.as('a').repeat(outE().inV()).times(2).as('b')). <4>
+    where('a',neq('b')). <5>
+    where(__.as('b').both().count().is(gt(1))). <6>
+  select('b'). <7>
+  groupCount().
+    by(out().count()). <8>
+  explain()
+----
+
+<1> `TinkerGraphStepStrategy` pulls in `has()`-step predicates for global, graph-centric index lookups.
+<2> `InlineFilterStrategy` de-nests filters to increase the likelihood of filter concatenation and aggregation.
+<3> `InlineFilterStrategy` pulls out named predicates from `match()`-step to more easily allow provider strategies to use indices.
+<4> `RepeatUnrollStrategy` will unroll loops and `IncidentToAdjacentStrategy` will turn `outE().inV()`-patterns into `out()`.
+<5> `MatchPredicateStrategy` will pull in `where()`-steps so that they can be subjected to `match()`-steps runtime query optimizer.
+<6> `RangeByIsCountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
+<7> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
+<8> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
 WARNING: The reason that `OptimizationStrategy` and `ProviderOptimizationStrategy` are two different categories is
 that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the
