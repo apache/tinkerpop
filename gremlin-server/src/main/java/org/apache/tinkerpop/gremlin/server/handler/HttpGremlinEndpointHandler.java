@@ -252,11 +252,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             }
                         }));
 
-                evalFuture.exceptionally(t -> {
-					
-					String errorMessage = (t.getMessage() != null) ? t.getMessage() : 
-										String.format("Error encountered evaluating script: %s", requestArguments.getValue0());
-					sendError(ctx, INTERNAL_SERVER_ERROR, errorMessage, Optional.of(t));
+                evalFuture.exceptionally(t -> {		
+					if (t.getMessage() != null)
+						sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t));
+					else
+						sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s", requestArguments.getValue0())
+									 , Optional.of(t));			
                     promise.setFailure(t);
                     return null;
                 });
@@ -459,7 +460,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 		if (t.isPresent()){
 			node.put("Exception-Class", t.get().getClass().getName());
 		}
-		
 		
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
