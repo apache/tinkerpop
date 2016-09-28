@@ -31,9 +31,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Jason Plurad (http://github.com/pluradj)
  */
-public class DependencyGrabberTest {
+public class DependencyGrabberIntegrateTest {
     private static final GroovyClassLoader dummyClassLoader = new GroovyClassLoader();
-    private static final File extTestDir = new File(System.getProperty("user.dir"), TestHelper.makeTestDataDirectory(DependencyGrabberTest.class));
+    private static final File extTestDir = new File(System.getProperty("user.dir"), TestHelper.makeTestDataDirectory(DependencyGrabberIntegrateTest.class));
     private static final DependencyGrabber dg = new DependencyGrabber(dummyClassLoader, extTestDir.getAbsolutePath());
 
     @AfterClass
