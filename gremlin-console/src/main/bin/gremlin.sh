@@ -23,7 +23,20 @@ set -e
 set -u
 
 DIR="$( cd -P "$( dirname "$0" )" && pwd )"
-SYSTEM_EXT_DIR="${DIR}/../ext"
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+
+WORKING_DIR="$( cd -P "${DIR}/.." && pwd )"
+SYSTEM_EXT_DIR="${WORKING_DIR}/ext"
+
+pushd ${WORKING_DIR}
+# > /dev/null
+
 JAVA_OPTIONS=${JAVA_OPTIONS:-}
 
 if [ ! -z "${JAVA_OPTIONS}" ]; then
@@ -36,20 +49,11 @@ fi
 
 case `uname` in
   CYGWIN*)
-    CP="`dirname $0`"/../config
-    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /;/g')
+    CP="$CP";$( echo lib/*.jar . | sed 's/ /;/g')
     ;;
   *)
-    CP="`dirname $0`"/../config
-    CP="$CP":$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
+    CP="$CP":$( echo lib/*.jar . | sed 's/ /:/g')
 esac
-
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-done
 
 CP=$CP:$( find -L "${SYSTEM_EXT_DIR}" "${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" -mindepth 1 -maxdepth 1 -type d | \
           sort -u | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
@@ -111,3 +115,5 @@ fi
 
 # Start the JVM, execute the application, and return its exit code
 exec $JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"
+
+popd > /dev/null
