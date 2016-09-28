@@ -38,13 +38,15 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.awt.*;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,6 +72,8 @@ import static org.junit.Assert.fail;
  */
 public class GremlinGroovyScriptEngineTest {
     private static final Logger logger = LoggerFactory.getLogger(GremlinGroovyScriptEngineTest.class);
+
+    private static final Object[] EMPTY_ARGS = new Object[0];
 
     @Test
     public void shouldCompileScriptWithoutRequiringVariableBindings() throws Exception {
@@ -425,5 +429,68 @@ public class GremlinGroovyScriptEngineTest {
             assertEquals(t.getValue0() * 2, t.getValue1().get(1).intValue());
             assertEquals(t.getValue0() * -1, t.getValue1().get(2).intValue());
         });
+    }
+
+    @Test
+    public void shouldInvokeFunctionRedirectsOutputToContextWriter() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        StringWriter writer = new StringWriter();
+        engine.getContext().setWriter(writer);
+
+        final String code = "def myFunction() { print \"Hello World!\" }";
+        engine.eval(code);
+        engine.invokeFunction("myFunction", EMPTY_ARGS);
+        assertEquals("Hello World!", writer.toString());
+
+        writer = new StringWriter();
+        final StringWriter writer2 = new StringWriter();
+        engine.getContext().setWriter(writer2);
+        engine.invokeFunction("myFunction", EMPTY_ARGS);
+        assertEquals("", writer.toString());
+        assertEquals("Hello World!", writer2.toString());
+    }
+
+    @Test
+    public void testInvokeFunctionRedirectsOutputToContextOut() throws Exception {
+        final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
+        StringWriter writer = new StringWriter();
+        final StringWriter unusedWriter = new StringWriter();
+        engine.getContext().setWriter(unusedWriter);
+        engine.put("out", writer);
+
+        final String code = "def myFunction() { print \"Hello World!\" }";
+        engine.eval(code);
+        engine.invokeFunction("myFunction", EMPTY_ARGS);
+        assertEquals("", unusedWriter.toString());
+        assertEquals("Hello World!", writer.toString());
+
+        writer = new StringWriter();
+        final StringWriter writer2 = new StringWriter();
+        engine.put("out", writer2);
+        engine.invokeFunction("myFunction", EMPTY_ARGS);
+        assertEquals("", unusedWriter.toString());
+        assertEquals("", writer.toString());
+        assertEquals("Hello World!", writer2.toString());
+    }
+
+    @Test
+    public void testEngineContextAccessibleToScript() throws Exception {
+        final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
+        final ScriptContext engineContext = engine.getContext();
+        engine.put("theEngineContext", engineContext);
+        final String code = "[answer: theEngineContext.is(context)]";
+        assertThat(((Map) engine.eval(code)).get("answer"), is(true));
+    }
+
+    @Test
+    public void testContextBindingOverridesEngineContext() throws Exception {
+        final GremlinGroovyScriptEngine  engine = new GremlinGroovyScriptEngine();
+        final ScriptContext engineContext = engine.getContext();
+        final Map<String,Object> otherContext = new HashMap<>();
+        otherContext.put("foo", "bar");
+        engine.put("context", otherContext);
+        engine.put("theEngineContext", engineContext);
+        final String code = "[answer: context.is(theEngineContext) ? \"wrong\" : context.foo]";
+        assertEquals("bar", ((Map) engine.eval(code)).get("answer"));
     }
 }

@@ -46,7 +46,6 @@ import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
-import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.util.ReferenceBundle;
 
 import javax.script.Bindings;
@@ -385,8 +384,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             final Class clazz = getScriptClass(script);
             if (null == clazz) throw new ScriptException("Script class is null");
             return eval(clazz, context);
-        } catch (SyntaxException e) {
-            throw new ScriptException(e.getMessage(), e.getSourceLocator(), e.getLine());
         } catch (Exception e) {
             throw new ScriptException(e);
         }
@@ -422,9 +419,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     public CompiledScript compile(final String scriptSource) throws ScriptException {
         try {
             return new GroovyCompiledScript(this, getScriptClass(scriptSource));
-        } catch (SyntaxException e) {
-            throw new ScriptException(e.getMessage(), e.getSourceLocator(), e.getLine());
-        } catch (IOException | CompilationFailedException e) {
+        } catch (CompilationFailedException e) {
             throw new ScriptException(e);
         }
     }
@@ -463,7 +458,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return makeInterface(thiz, clazz);
     }
 
-    Class getScriptClass(final String script) throws SyntaxException, CompilationFailedException, IOException {
+    Class getScriptClass(final String script) throws CompilationFailedException {
         Class clazz = classMap.get(script);
         if (clazz != null) return clazz;
 
@@ -477,23 +472,33 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
-        context.setAttribute("context", context, ScriptContext.ENGINE_SCOPE);
-        final Writer writer = context.getWriter();
-        context.setAttribute("out", writer instanceof PrintWriter ? writer : new PrintWriter(writer), ScriptContext.ENGINE_SCOPE);
-        final Binding binding = new Binding() {
+        final Binding binding = new Binding(context.getBindings(ScriptContext.ENGINE_SCOPE)) {
             @Override
-            public Object getVariable(final String name) {
+            public Object getVariable(String name) {
                 synchronized (context) {
-                    final int scope = context.getAttributesScope(name);
+                    int scope = context.getAttributesScope(name);
                     if (scope != -1) {
                         return context.getAttribute(name, scope);
                     }
-                    throw new MissingPropertyException(name, getClass());
+                    // Redirect script output to context writer, if out var is not already provided
+                    if ("out".equals(name)) {
+                        final Writer writer = context.getWriter();
+                        if (writer != null) {
+                            return (writer instanceof PrintWriter) ?
+                                    (PrintWriter) writer :
+                                    new PrintWriter(writer, true);
+                        }
+                    }
+                    // Provide access to engine context, if context var is not already provided
+                    if ("context".equals(name)) {
+                        return context;
+                    }
                 }
+                throw new MissingPropertyException(name, getClass());
             }
 
             @Override
-            public void setVariable(final String name, final Object value) {
+            public void setVariable(String name, Object value) {
                 synchronized (context) {
                     int scope = context.getAttributesScope(name);
                     if (scope == -1) {
@@ -505,67 +510,72 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         };
 
         try {
-            final Script scriptObject = InvokerHelper.createScript(scriptClass, binding);
-            for (Method m : scriptClass.getMethods()) {
-                final String name = m.getName();
-                globalClosures.put(name, new MethodClosure(scriptObject, name));
+            // if this class is not an instance of Script, it's a full-blown class then simply return that class
+            if (!Script.class.isAssignableFrom(scriptClass)) {
+                return scriptClass;
+            } else {
+                final Script scriptObject = InvokerHelper.createScript(scriptClass, binding);
+                for (Method m : scriptClass.getMethods()) {
+                    final String name = m.getName();
+                    globalClosures.put(name, new MethodClosure(scriptObject, name));
+                }
+
+                final MetaClass oldMetaClass = scriptObject.getMetaClass();
+                scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
+                    @Override
+                    public Object invokeMethod(final Object object, final String name, final Object args) {
+                        if (args == null) {
+                            return invokeMethod(object, name, MetaClassHelper.EMPTY_ARRAY);
+                        } else if (args instanceof Tuple) {
+                            return invokeMethod(object, name, ((Tuple) args).toArray());
+                        } else if (args instanceof Object[]) {
+                            return invokeMethod(object, name, (Object[]) args);
+                        } else {
+                            return invokeMethod(object, name, new Object[]{args});
+                        }
+                    }
+
+                    @Override
+                    public Object invokeMethod(final Object object, final String name, final Object args[]) {
+                        try {
+                            return super.invokeMethod(object, name, args);
+                        } catch (MissingMethodException mme) {
+                            return callGlobal(name, args, context);
+                        }
+                    }
+
+                    @Override
+                    public Object invokeStaticMethod(final Object object, final String name, final Object args[]) {
+                        try {
+                            return super.invokeStaticMethod(object, name, args);
+                        } catch (MissingMethodException mme) {
+                            return callGlobal(name, args, context);
+                        }
+                    }
+                });
+
+                final Object o = scriptObject.run();
+
+                // if interpreter mode is enable then local vars of the script are promoted to engine scope bindings.
+                if (interpreterModeEnabled) {
+                    final Map<String, Object> localVars = (Map<String, Object>) context.getAttribute(COLLECTED_BOUND_VARS_MAP_VARNAME);
+                    if (localVars != null) {
+                        localVars.entrySet().forEach(e -> {
+                            // closures need to be cached for later use
+                            if (e.getValue() instanceof Closure)
+                                globalClosures.put(e.getKey(), (Closure) e.getValue());
+
+                            context.setAttribute(e.getKey(), e.getValue(), ScriptContext.ENGINE_SCOPE);
+                        });
+
+                        // get rid of the temporary collected vars
+                        context.removeAttribute(COLLECTED_BOUND_VARS_MAP_VARNAME, ScriptContext.ENGINE_SCOPE);
+                        localVars.clear();
+                    }
+                }
+
+                return o;
             }
-
-            final MetaClass oldMetaClass = scriptObject.getMetaClass();
-            scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
-                @Override
-                public Object invokeMethod(final Object object, final String name, final Object args) {
-                    if (args == null) {
-                        return invokeMethod(object, name, MetaClassHelper.EMPTY_ARRAY);
-                    } else if (args instanceof Tuple) {
-                        return invokeMethod(object, name, ((Tuple) args).toArray());
-                    } else if (args instanceof Object[]) {
-                        return invokeMethod(object, name, (Object[]) args);
-                    } else {
-                        return invokeMethod(object, name, new Object[]{args});
-                    }
-                }
-
-                @Override
-                public Object invokeMethod(final Object object, final String name, final Object args[]) {
-                    try {
-                        return super.invokeMethod(object, name, args);
-                    } catch (MissingMethodException mme) {
-                        return callGlobal(name, args, context);
-                    }
-                }
-
-                @Override
-                public Object invokeStaticMethod(final Object object, final String name, final Object args[]) {
-                    try {
-                        return super.invokeStaticMethod(object, name, args);
-                    } catch (MissingMethodException mme) {
-                        return callGlobal(name, args, context);
-                    }
-                }
-            });
-
-            final Object o = scriptObject.run();
-
-            // if interpreter mode is enable then local vars of the script are promoted to engine scope bindings.
-            if (interpreterModeEnabled) {
-                final Map<String, Object> localVars = (Map<String, Object>) context.getAttribute(COLLECTED_BOUND_VARS_MAP_VARNAME);
-                if (localVars != null) {
-                    localVars.entrySet().forEach(e -> {
-                        // closures need to be cached for later use
-                        if (e.getValue() instanceof Closure)
-                            globalClosures.put(e.getKey(), (Closure) e.getValue());
-
-                        context.setAttribute(e.getKey(), e.getValue(), ScriptContext.ENGINE_SCOPE);
-                    });
-
-                    // get rid of the temporary collected vars
-                    context.removeAttribute(COLLECTED_BOUND_VARS_MAP_VARNAME, ScriptContext.ENGINE_SCOPE);
-                    localVars.clear();
-                }
-            }
-
-            return o;
         } catch (Exception e) {
             throw new ScriptException(e);
         }
@@ -607,7 +617,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     private synchronized void createClassLoader() {
-        final CompilerConfiguration conf = new CompilerConfiguration();
+        final CompilerConfiguration conf = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
         conf.addCompilationCustomizers(this.importCustomizerProvider.create());
 
         customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
