@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +63,7 @@ import java.util.Set;
  * <tr><td>simplePath()</td><td>4</td></tr>
  * <tr><td>cyclicPath()</td><td>4</td></tr>
  * <tr><td>filter(traversal)</td><td>5</td></tr>
+ * <tr><td>not(traversal)</td>td>5</td></tr>
  * <tr><td>where(traversal)</td><td>6</td></tr>
  * <tr><td>or(...)</td><td>7</td></tr>
  * <tr><td>and(...)</td><td>8</td></tr>
@@ -80,11 +82,7 @@ import java.util.Set;
 public final class FilterRankingStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final FilterRankingStrategy INSTANCE = new FilterRankingStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        PRIORS.add(IdentityRemovalStrategy.class);
-    }
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(IdentityRemovalStrategy.class);
 
     private FilterRankingStrategy() {
     }

@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,6 +55,7 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
 
     private static final MatchPredicateStrategy INSTANCE = new MatchPredicateStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(IdentityRemovalStrategy.class, InlineFilterStrategy.class));
+    private static final Set<Class<? extends OptimizationStrategy>> POSTS = Collections.singleton(FilterRankingStrategy.class);
 
     private MatchPredicateStrategy() {
     }
@@ -97,5 +99,10 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPrior() {
         return PRIORS;
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPost() {
+        return POSTS;
     }
 }
