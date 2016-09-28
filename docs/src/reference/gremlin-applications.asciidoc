@@ -1532,12 +1532,12 @@ client.submit("[1,2,3,x]", params);
 Cache Management
 ^^^^^^^^^^^^^^^^
 
-If Gremlin Server processes a large number of unique scripts, the cache will grow beyond the memory available to
-Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving this problem
-and running out of memory should not be an issue for those cases.  If it is a problem or if there is no script
-parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to better
-control the nature of the script cache from the client side, by issuing scripts with a parameter to help define how
-the garbage collector should treat the references.
+If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
+available to Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving
+this problem and running out of memory should not be an issue for those cases.  If it is a problem or if there is no
+script parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to
+better control the nature of the global function cache from the client side, by issuing scripts with a parameter to
+help define how the garbage collector should treat the references.
 
 The parameter is called `#jsr223.groovy.engine.keep.globals` and has four options:
 
@@ -1547,8 +1547,19 @@ The parameter is called `#jsr223.groovy.engine.keep.globals` and has four option
 * `phantom` - removed immediately after being evaluated by the `ScriptEngine`.
 
 By specifying an option other than `hard`, an `OutOfMemoryError` in Gremlin Server should be avoided.  Of course,
-this approach will come with the downside that compiled scripts could be garbage collected and thus removed from the
+this approach will come with the downside that functions could be garbage collected and thus removed from the
 cache, forcing Gremlin Server to recompile later if that script is later encountered.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
+params.put("#jsr223.groovy.engine.keep.globals", "soft");
+client.submit("[1,2,3,x]", params);
+----
 
 [[sessions]]
 Considering Sessions
