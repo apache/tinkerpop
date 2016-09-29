@@ -70,6 +70,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +91,7 @@ import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assert.assertEquals;
@@ -831,17 +833,16 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldCloseSideEffects() throws Exception {
+    public void shouldCloseLocalSideEffects() throws Exception {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
-        final GraphTraversal traversal = g.V().aggregate("a");
+        final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
         traversal.iterate();
-        final Set sideEffects = traversal.asAdmin().getSideEffects().keys();
-        assertTrue(sideEffects.contains("a"));
+        final List sideEffects = traversal.asAdmin().getSideEffects().get("a");
+        assertFalse(sideEffects.isEmpty());
         traversal.asAdmin().getSideEffects().close();
-        final Set emptySideEffects = traversal.asAdmin().getSideEffects().keys();
-        assertTrue(emptySideEffects.isEmpty());
+        assertNull(traversal.asAdmin().getSideEffects().get("b"));
     }
 }

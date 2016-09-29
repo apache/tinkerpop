@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSideEffects {
 
     private final Client client;
-    private Set<String> keys = null;
+    private Set<String> keys = Collections.emptySet();
     private final UUID serverSideEffect;
     private final Host host;
 
@@ -56,22 +56,27 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
     @Override
     public <V> V get(final String key) throws IllegalArgumentException {
         if (!sideEffects.containsKey(key)) {
-            // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
-            // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
-            final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
-                    .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffect)
-                    .addArg(Tokens.ARGS_SIDE_EFFECT_KEY, key)
-                    .addArg(Tokens.ARGS_HOST, host)
-                    .processor("traversal").create();
-            try {
-                final Result result = client.submitAsync(msg).get().one();
-                sideEffects.put(key, null == result ? null : result.getObject());
-            } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
-                if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
-                    sideEffects.put(key, null);
-                else
-                    throw new RuntimeException("Could not get keys", root);
+            if (!closed) {
+                // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
+                // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
+                final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
+                        .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffect)
+                        .addArg(Tokens.ARGS_SIDE_EFFECT_KEY, key)
+                        .addArg(Tokens.ARGS_HOST, host)
+                        .processor("traversal").create();
+                try {
+                    final Result result = client.submitAsync(msg).get().one();
+                    sideEffects.put(key, null == result ? null : result.getObject());
+                    keys.add(key);
+                } catch (Exception ex) {
+                    final Throwable root = ExceptionUtils.getRootCause(ex);
+                    if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
+                        sideEffects.put(key, null);
+                    else
+                        throw new RuntimeException("Could not get keys", root);
+                }
+            } else {
+                sideEffects.put(key, null);
             }
         }
 
@@ -80,7 +85,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     @Override
     public Set<String> keys() {
-        if (null == keys) {
+        if (!closed) {
             // specify the ARGS_HOST so that the LoadBalancingStrategy is subverted and the connection is forced
             // from the specified host (i.e. the host from the previous request as that host will hold the side-effects)
             final RequestMessage msg = RequestMessage.build(Tokens.OPS_KEYS)
@@ -91,16 +96,13 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 keys = client.submitAsync(msg).get().all().get().stream().map(r -> r.getString()).collect(Collectors.toSet());
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
-                if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
-                    keys = Collections.emptySet();
-                else
+                if (!root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
                     throw new RuntimeException("Could not get keys", root);
             }
         }
 
         return keys;
     }
-
 
     @Override
     public void close() throws Exception {
@@ -111,8 +113,6 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                     .processor("traversal").create();
             try {
                 client.submitAsync(msg).get();
-                sideEffects.clear();
-                keys = null;
                 closed = true;
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
