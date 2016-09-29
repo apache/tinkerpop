@@ -22,13 +22,14 @@
 set -e
 set -u
 
-DIR="$( cd -P "$( dirname "$0" )" && pwd )"
+cd $(dirname $0)
+DIR=`pwd`
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+SCRIPT_NAME=`basename $0`
+while [ -h "${SCRIPT_NAME}" ]; do
+  SOURCE="$(readlink "${SCRIPT_NAME}")"
+  DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+  cd ${DIR}
 done
 
 WORKING_DIR="$( cd -P "${DIR}/.." && pwd )"
@@ -48,10 +49,10 @@ fi
 
 case `uname` in
   CYGWIN*)
-    CP="$CP";$( echo lib/*.jar . | sed 's/ /;/g')
+    CP="${CP:-}";$( echo lib/*.jar . | sed 's/ /;/g')
     ;;
   *)
-    CP="$CP":$( echo lib/*.jar . | sed 's/ /:/g')
+    CP="${CP:-}":$( echo lib/*.jar . | sed 's/ /:/g')
 esac
 
 CP=$CP:$( find -L "${SYSTEM_EXT_DIR}" "${USER_EXT_DIR:-${SYSTEM_EXT_DIR}}" -mindepth 1 -maxdepth 1 -type d | \
