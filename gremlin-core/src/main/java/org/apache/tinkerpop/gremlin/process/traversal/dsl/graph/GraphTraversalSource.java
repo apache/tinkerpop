@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -41,10 +41,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +58,7 @@ import java.util.function.UnaryOperator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GraphTraversalSource implements TraversalSource {
-
+    protected transient RemoteConnection connection;
     protected final Graph graph;
     protected TraversalStrategies strategies;
     protected Bytecode bytecode = new Bytecode();
@@ -242,7 +240,19 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public GraphTraversalSource withRemote(final RemoteConnection connection) {
-        return (GraphTraversalSource) TraversalSource.super.withRemote(connection);
+        try {
+            // check if someone called withRemote() more than once, so just release resources on the initial
+            // connection as you can't have more than one. maybe better to toss IllegalStateException??
+            if (this.connection != null)
+                this.connection.close();
+        } catch (Exception ignored) {
+            // not sure there's anything to do here
+        }
+
+        this.connection = connection;
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
+        return (GraphTraversalSource) clone;
     }
 
     //// SPAWNS
@@ -309,6 +319,10 @@ public class GraphTraversalSource implements TraversalSource {
         return this.graph.tx();
     }
 
+    @Override
+    public void close() throws Exception {
+        if (connection != null) connection.close();
+    }
 
     @Override
     public String toString() {

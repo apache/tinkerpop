@@ -127,6 +127,31 @@ control).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1460[TINKERPOP-1460]
 
+TraversalSource.close()
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`TraversalSource` now implements `AutoCloseable`, which means that the `close()` method is now available. This new
+method is important in cases where `withRemote()` is used, as `withRemote()` can open "expensive" resources that need
+to be released.
+
+In the case of TinkerPop's `DriverRemoteConnection`, `close()` will destroy the `Client` instance that is created
+internally by `withRemote()` as shown below:
+
+[source,text]
+----
+gremlin> graph = EmptyGraph.instance()
+==>emptygraph[empty]
+gremlin> g = graph.traversal().withRemote('conf/remote-graph.properties')
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> g.close()
+gremlin>
+----
+
+Note that the `withRemote()` method will call `close()` on a `RemoteConnection` passed directly to it as well, so
+there is no need to do that manually.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-790[TINKERPOP-790]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

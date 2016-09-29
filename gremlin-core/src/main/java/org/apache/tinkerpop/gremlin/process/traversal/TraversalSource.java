@@ -53,7 +53,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalSource extends Cloneable {
+public interface TraversalSource extends Cloneable, AutoCloseable {
 
     public static final String GREMLIN_REMOTE = "gremlin.remote.";
     public static final String GREMLIN_REMOTE_CONNECTION_CLASS = GREMLIN_REMOTE + "remoteConnectionClass";
@@ -427,14 +427,12 @@ public interface TraversalSource extends Cloneable {
 
     /**
      * Configures the {@code TraversalSource} as a "remote" to issue the {@link Traversal} for execution elsewhere.
+     * Implementations should track {@link RemoteConnection} instances that are created and call
+     * {@link RemoteConnection#close()} on them when the {@code TraversalSource} itself is closed.
      *
      * @param connection the {@link RemoteConnection} instance to use to submit the {@link Traversal}.
      */
-    public default TraversalSource withRemote(final RemoteConnection connection) {
-        final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(new RemoteStrategy(connection));
-        return clone;
-    }
+    public TraversalSource withRemote(final RemoteConnection connection);
 
     public default Optional<Class> getAnonymousTraversalClass() {
         return Optional.empty();
@@ -449,6 +447,11 @@ public interface TraversalSource extends Cloneable {
      */
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public TraversalSource clone();
+
+    @Override
+    public default void close() throws Exception {
+        // do nothing
+    }
 
     /**
      * @deprecated As of release 3.2.0. Please use {@link Graph#traversal(Class)}.

@@ -46,6 +46,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
     private final Iterator<Traverser.Admin<E>> traversers;
     private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
     private final RemoteTraversalSideEffects sideEffects;
+    private final Client client;
 
     public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
         // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
@@ -59,6 +60,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
             this.traversers = new TraverserIterator<>(rs.iterator());
         }
 
+        this.client = client;
         this.sideEffects = new DriverRemoteTraversalSideEffects(
                 client,
                 rs.getOriginalRequestMessage().getRequestId(),
@@ -98,6 +100,17 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
             this.lastTraverser = EmptyTraverser.instance();
             return temp;
         }
+    }
+
+    /**
+     * Releases server-side resources related to this traversal (i.e. clearing the side-effect cache of data related to
+     * this traversal.
+     */
+    @Override
+    public void close() throws Exception {
+        sideEffects.close();
+
+        // leave the client open as it is owned by the DriverRemoteConnection not the traversal or side-effects
     }
 
     static class TraverserIterator<E> implements Iterator<Traverser.Admin<E>> {
