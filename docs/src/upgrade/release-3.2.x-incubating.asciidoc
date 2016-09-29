@@ -118,6 +118,15 @@ gremlin> g.V().hasLabel("software").count()
 TinkerPop 3.2.3 fixes this misbehavior and all `has()` method overloads behave like before, except that they no longer
 support no arguments.
 
+Deprecated reconnectInitialDelay
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `reconnectInitialDelay` setting on the `Cluster` builder has been deprecated. It no longer serves any purpose.
+The value for the "initial delay" now comes from `reconnectInterval` (there are no longer two separate settings to
+control).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1460[TINKERPOP-1460]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

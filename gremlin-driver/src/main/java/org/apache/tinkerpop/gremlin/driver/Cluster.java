@@ -732,7 +732,10 @@ public final class Cluster {
 
         /**
          * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+         *
+         * @deprecated As of release 3.2.3, the value of the initial delay is now the same as the {@link #reconnectInterval}.
          */
+        @Deprecated
         public Builder reconnectIntialDelay(final int initialDelay) {
             this.reconnectInitialDelay = initialDelay;
             return this;

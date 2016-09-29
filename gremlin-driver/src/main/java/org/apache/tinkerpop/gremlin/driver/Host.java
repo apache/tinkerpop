@@ -76,7 +76,7 @@ public final class Host {
             retryThread = this.cluster.executor().scheduleAtFixedRate(() -> {
                     logger.debug("Trying to reconnect to dead host at {}", this);
                     if (reconnect.apply(this)) reconnected();
-                }, cluster.connectionPoolSettings().reconnectInitialDelay,
+                }, cluster.connectionPoolSettings().reconnectInterval,
                 cluster.connectionPoolSettings().reconnectInterval, TimeUnit.MILLISECONDS);
         }
     }
