@@ -34,6 +34,9 @@ public final class AndP<V> extends ConnectiveP<V> {
 
     public AndP(final List<P<V>> predicates) {
         super(predicates);
+        for (final P<V> p : predicates) {
+            this.and(p);
+        }
         this.biPredicate = new AndBiPredicate(this);
     }
 
@@ -49,7 +52,10 @@ public final class AndP<V> extends ConnectiveP<V> {
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be and'd together");
-        this.predicates.add((P<V>) predicate);   // TODO: clone and add?
+        else if (predicate instanceof AndP)
+            this.predicates.addAll(((AndP) predicate).getPredicates());
+        else
+            this.predicates.add((P<V>) predicate);
         return this;
     }
 

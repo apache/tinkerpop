@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -35,6 +34,9 @@ public final class OrP<V> extends ConnectiveP<V> {
 
     public OrP(final List<P<V>> predicates) {
         super(predicates);
+        for (final P<V> p : predicates) {
+            this.or(p);
+        }
         this.biPredicate = new OrBiPredicate(this);
     }
 
@@ -50,7 +52,10 @@ public final class OrP<V> extends ConnectiveP<V> {
     public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
-        this.predicates.add((P<V>) predicate);   // TODO: clone and add?
+        else if (predicate instanceof OrP)
+            this.predicates.addAll(((OrP) predicate).getPredicates());
+        else
+            this.predicates.add((P<V>) predicate);
         return this;
     }
 
