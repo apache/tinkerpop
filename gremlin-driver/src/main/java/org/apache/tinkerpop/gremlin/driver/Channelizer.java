@@ -20,9 +20,6 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
@@ -42,7 +39,6 @@ import io.netty.handler.ssl.SslContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -156,7 +152,7 @@ public interface Channelizer extends ChannelHandler {
          */
         @Override
         public void close(final Channel channel) {
-            channel.writeAndFlush(new CloseWebSocketFrame());
+            if (channel.isOpen()) channel.writeAndFlush(new CloseWebSocketFrame());
         }
 
         @Override

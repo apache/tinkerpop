@@ -27,6 +27,23 @@ TinkerPop 3.1.5
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asciidoc#tinkerpop-315-release-date-XXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Java Driver and close()
+^^^^^^^^^^^^^^^^^^^^^^^
+
+There were a few problems noted around the `close()` of `Cluster` and `Client` instances, including issues that
+presented as system hangs. These issues have been resolved, however, it is worth noting that an unchecked exception
+that was thrown under a certain situation has changed as part of the bug fixes. When submitting an in-session request
+on a `Client` that was closed (or closing) an `IllegalStateException` is thrown. This replaces older functionality
+that threw a `ConnectionException` and relied logic far deeper in the driver to produce that error and had the
+potential to open additional resources despite the intention of the user to "close".
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1467[TINKERPOP-1467]
+
 TinkerPop 3.1.4
 ---------------
 

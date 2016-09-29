@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -245,6 +246,8 @@ public abstract class Client {
      * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
      */
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+        if (isClosing()) throw new IllegalStateException("Client has been closed");
+
         if (!initialized)
             init();
 
@@ -269,6 +272,8 @@ public abstract class Client {
         }
     }
 
+    public abstract boolean isClosing();
+
     /**
      * Closes the client by making a synchronous call to {@link #closeAsync()}.
      */
@@ -290,9 +295,15 @@ public abstract class Client {
     public final static class ClusteredClient extends Client {
 
         private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+        private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
 
         ClusteredClient(final Cluster cluster) {
             super(cluster);
+        }
+
+        @Override
+        public boolean isClosing() {
+            return closing.get() != null;
         }
 
         /**
@@ -364,10 +375,14 @@ public abstract class Client {
          * Closes all the connection pools on all hosts.
          */
         @Override
-        public CompletableFuture<Void> closeAsync() {
+        public synchronized CompletableFuture<Void> closeAsync() {
+            if (closing.get() != null)
+                return closing.get();
+
             final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
             hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
-            return CompletableFuture.allOf(poolCloseFutures);
+            closing.set(CompletableFuture.allOf(poolCloseFutures));
+            return closing.get();
         }
     }
 
@@ -448,9 +463,14 @@ public abstract class Client {
          * close on the {@code Client} that created it.
          */
         @Override
-        public CompletableFuture<Void> closeAsync() {
+        public synchronized CompletableFuture<Void> closeAsync() {
             close.complete(null);
             return close;
+        }
+
+        @Override
+        public boolean isClosing() {
+            return close.isDone();
         }
 
         /**
@@ -482,6 +502,8 @@ public abstract class Client {
         private final boolean manageTransactions;
 
         private ConnectionPool connectionPool;
+
+        private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
 
         SessionedClient(final Cluster cluster, final String sessionId, final boolean manageTransactions) {
             super(cluster);
@@ -526,12 +548,22 @@ public abstract class Client {
             connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
         }
 
+        @Override
+        public boolean isClosing() {
+            return closing.get() != null;
+        }
+
         /**
          * Close the bound {@link ConnectionPool}.
          */
         @Override
-        public CompletableFuture<Void> closeAsync() {
-            return connectionPool.closeAsync();
+        public synchronized CompletableFuture<Void> closeAsync() {
+            if (closing.get() != null)
+                return closing.get();
+
+            final CompletableFuture<Void> connectionPoolClose = connectionPool.closeAsync();
+            closing.set(connectionPoolClose);
+            return connectionPoolClose;
         }
     }
 }

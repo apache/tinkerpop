@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
@@ -746,11 +745,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         client.close();
 
         try {
-            client.submit("x[0]+1");
+            client.submit("x[0]+1").all().get();
             fail("Should have thrown an exception because the connection is closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ConnectionException.class));
+            assertThat(root, instanceOf(IllegalStateException.class));
+        } finally {
+            cluster.close();
         }
     }
 
@@ -1246,6 +1247,78 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertFutureTimeout(futureThird);
             assertFutureTimeout(futureFourth);
         }
+    }
+
+    @Test
+    public void shouldCloseAllClientsOnCloseOfCluster() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client sessionlessOne = cluster.connect();
+        final Client session = cluster.connect("session");
+        final Client sessionlessTwo = cluster.connect();
+        final Client sessionlessThree = cluster.connect();
+        final Client sessionlessFour = cluster.connect();
+
+        assertEquals(2, sessionlessOne.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, session.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessTwo.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessThree.submit("1+1").all().get().get(0).getInt());
+        // dont' send anything on the 4th client
+
+        // close one of these Clients before the Cluster
+        sessionlessThree.close();
+        cluster.close();
+
+        try {
+            sessionlessOne.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            session.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessTwo.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessThree.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessFour.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        // allow call to close() even though closed through cluster
+        sessionlessOne.close();
+        session.close();
+        sessionlessTwo.close();
+
+        cluster.close();
     }
 
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
