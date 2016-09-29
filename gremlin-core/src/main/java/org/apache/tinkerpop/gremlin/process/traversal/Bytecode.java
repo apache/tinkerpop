@@ -191,8 +191,6 @@ public final class Bytecode implements Cloneable, Serializable {
         public int hashCode() {
             return this.operator.hashCode() + Arrays.hashCode(this.arguments);
         }
-
-
     }
 
     public static class Binding<V> implements Serializable {
