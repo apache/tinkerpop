@@ -48,7 +48,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -111,7 +110,7 @@ public class TinkerGraphStepStrategyTest {
                 {__.V().as("a").dedup().has("name", "marko").or(has("age"), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
                         g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).as("a").or(has("age"), has("age", gt(32))).dedup(), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age", 10), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).as("a").or(has("age", 10), has("age", gt(32))).dedup(), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                        g_V("name", eq("marko"), "age", eq(10).or(gt(32)), "name", eq("bob"), "lang", eq("java")).as("a").dedup(), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
                         g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()}
         });

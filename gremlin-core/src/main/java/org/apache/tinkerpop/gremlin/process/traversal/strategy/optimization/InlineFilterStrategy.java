@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -29,10 +30,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -89,6 +92,46 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                     traversal.removeStep(step);
                 }
             }
+            // or(has(x,y),has(x,z)) --> has(x,y.or(z))
+            for (final OrStep<?> step : TraversalHelper.getStepsOfClass(OrStep.class, traversal)) {
+                boolean process = true;
+                String key = null;
+                P predicate = null;
+                final List<String> labels = new ArrayList<>();
+                for (final Traversal.Admin<?, ?> childTraversal : step.getLocalChildren()) {
+                    this.apply(childTraversal); // todo: this may be a bad idea, but I can't seem to find a test case to break it
+                    for (final Step<?, ?> childStep : childTraversal.getSteps()) {
+                        if (childStep instanceof HasStep) {
+                            for (final HasContainer hasContainer : ((HasStep<?>) childStep).getHasContainers()) {
+                                if (null == key)
+                                    key = hasContainer.getKey();
+                                else if (!hasContainer.getKey().equals(key)) {
+                                    process = false;
+                                    break;
+                                }
+                                predicate = null == predicate ?
+                                        hasContainer.getPredicate() :
+                                        predicate.or(hasContainer.getPredicate());
+                            }
+                            labels.addAll(childStep.getLabels());
+                        } else {
+                            process = false;
+                            break;
+                        }
+                    }
+                    if (!process)
+                        break;
+                }
+                if (process) {
+                    changed = true;
+                    final HasStep hasStep = new HasStep<>(traversal, new HasContainer(key, predicate));
+                    TraversalHelper.replaceStep(step, hasStep, traversal);
+                    TraversalHelper.copyLabels(step, hasStep, false);
+                    for (final String label : labels) {
+                        hasStep.addLabel(label);
+                    }
+                }
+            }
             // and(x,y) --> x.y
             for (final AndStep<?> step : TraversalHelper.getStepsOfClass(AndStep.class, traversal)) {
                 boolean process = true;
@@ -139,6 +182,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                                 TraversalHelper.applySingleLevelStrategies(traversal, matchTraversal, InlineFilterStrategy.class);
                                 step.removeGlobalChild(matchTraversal);
                                 step.getPreviousStep().addLabel(startLabel);
+                                // TODO: matchTraversal.getEndStep().addLabel(startLabel); (perhaps insert an identity so filter rank can push has()-left)
                                 if (null != endLabel) matchTraversal.getEndStep().addLabel(endLabel);
                                 TraversalHelper.insertTraversal((Step) step.getPreviousStep(), matchTraversal, traversal);
                             }
@@ -149,7 +193,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 }
             }
         }
-
     }
 
     private static final String determineStartLabelForHasPullOut(final MatchStep<?, ?> matchStep) {
