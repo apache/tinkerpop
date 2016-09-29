@@ -49,6 +49,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCust
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -64,11 +65,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.channels.ClosedChannelException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -101,6 +98,14 @@ import static org.junit.Assert.assertEquals;
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     private Log4jRecordingAppender recordingAppender = null;
+
+    private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
+    private final Configuration conf = new BaseConfiguration() {{
+        setProperty(Graph.GRAPH, RemoteGraph.class.getName());
+        setProperty(GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
+        setProperty(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g");
+        setProperty("hidden.for.testing.only", graphGetter);
+    }};
 
     @Before
     public void setupForEachTest() {
@@ -814,18 +819,25 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldSupportLambdasUsingWithRemote() throws Exception {
-        final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
-        final Configuration conf = new BaseConfiguration() {{
-            setProperty(Graph.GRAPH, RemoteGraph.class.getName());
-            setProperty(GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
-            setProperty(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g");
-            setProperty("hidden.for.testing.only", graphGetter);
-        }};
-
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
+    }
+
+    @Test
+    public void shouldCloseSideEffects() throws Exception {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        g.addV("person").property("age", 20).iterate();
+        g.addV("person").property("age", 10).iterate();
+        final GraphTraversal traversal = g.V().aggregate("a");
+        traversal.iterate();
+        final Set sideEffects = traversal.asAdmin().getSideEffects().keys();
+        assertTrue(sideEffects.contains("a"));
+        traversal.asAdmin().getSideEffects().close();
+        final Set emptySideEffects = traversal.asAdmin().getSideEffects().keys();
+        assertTrue(emptySideEffects.isEmpty());
     }
 }
