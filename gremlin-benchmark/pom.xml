@@ -37,7 +37,6 @@ limitations under the License.
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -69,7 +68,6 @@ limitations under the License.
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
