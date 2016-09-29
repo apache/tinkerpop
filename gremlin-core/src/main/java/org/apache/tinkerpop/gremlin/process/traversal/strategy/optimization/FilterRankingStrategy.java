@@ -92,7 +92,7 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
         while(modified) {
             modified = false;
             for (final Step<?, ?> step : traversal.getSteps()) {
-                if (!step.getLabels().isEmpty()) {
+                if (step instanceof FilterStep && !step.getLabels().isEmpty()) {
                     final Step<?, ?> nextStep = step.getNextStep();
                     if (nextStep instanceof FilterStep && !(nextStep instanceof TraversalParent)) {
                         TraversalHelper.copyLabels(step, nextStep, true);
