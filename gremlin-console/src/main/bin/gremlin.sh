@@ -32,10 +32,8 @@ while [ -h "${SCRIPT_NAME}" ]; do
   cd ${DIR}
 done
 
-WORKING_DIR="$( cd -P "${DIR}/.." && pwd )"
-SYSTEM_EXT_DIR="${WORKING_DIR}/ext"
-
-pushd ${WORKING_DIR} > /dev/null
+cd ..
+SYSTEM_EXT_DIR="`pwd`/ext"
 
 JAVA_OPTIONS=${JAVA_OPTIONS:-}
 
@@ -115,5 +113,3 @@ fi
 
 # Start the JVM, execute the application, and return its exit code
 exec $JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"
-
-popd > /dev/null
