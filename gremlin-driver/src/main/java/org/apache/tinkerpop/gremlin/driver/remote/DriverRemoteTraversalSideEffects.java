@@ -45,6 +45,8 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     private final Map<String, Object> sideEffects = new HashMap<>();
 
+    private boolean closed = false;
+
     public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host) {
         this.client = client;
         this.serverSideEffect = serverSideEffect;
@@ -99,10 +101,23 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
         return keys;
     }
 
+
     @Override
     public void close() throws Exception {
-        // todo: need to add a call to "close" the side effects on the server - probably should ensure request only sends once
-
-        // leave the client open as it is owned by the DriverRemoteConnection not the traversal or side-effects
+        if (!closed) {
+            final RequestMessage msg = RequestMessage.build(Tokens.OPS_CLOSE)
+                    .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffect)
+                    .addArg(Tokens.ARGS_HOST, host)
+                    .processor("traversal").create();
+            try {
+                client.submitAsync(msg).get();
+                sideEffects.clear();
+                keys = null;
+                closed = true;
+            } catch (Exception ex) {
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                throw new RuntimeException("Error on closing side effects", root);
+            }
+        }
     }
 }
