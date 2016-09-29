@@ -42,7 +42,7 @@ import org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.SideEffectIterator;
-import org.apache.tinkerpop.gremlin.server.util.TraversalIterator;
+import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
@@ -366,7 +366,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     try {
                         // compile the traversal - without it getEndStep() has nothing in it
                         traversal.applyStrategies();
-                        handleIterator(context, new TraversalIterator(traversal));
+                        handleIterator(context, new TraverserIterator(traversal));
                     } catch (TimeoutException ex) {
                         final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg.getRequestId(), ex.getMessage());
                         logger.warn(errorMessage);
@@ -399,8 +399,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
     @Override
     protected void iterateComplete(final ChannelHandlerContext ctx, final RequestMessage msg, final Iterator itty) {
-        if (itty instanceof TraversalIterator) {
-            final Traversal.Admin traversal = ((TraversalIterator) itty).getTraversal();
+        if (itty instanceof TraverserIterator) {
+            final Traversal.Admin traversal = ((TraverserIterator) itty).getTraversal();
             if (!traversal.getSideEffects().isEmpty()) {
                 cache.put(msg.getRequestId(), traversal.getSideEffects());
             }

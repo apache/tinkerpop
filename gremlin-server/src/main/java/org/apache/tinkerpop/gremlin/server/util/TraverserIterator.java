@@ -28,15 +28,13 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TraversalIterator implements Iterator<Object> {
+public class TraverserIterator implements Iterator<Object> {
 
     private final Traversal.Admin traversal;
-    private final Iterator<Object> traversalIterator;
     private final HaltedTraverserStrategy haltedTraverserStrategy;
 
-    public TraversalIterator(final Traversal.Admin traversal) {
+    public TraverserIterator(final Traversal.Admin traversal) {
         this.traversal = traversal;
-        this.traversalIterator = traversal.getEndStep();
         this.haltedTraverserStrategy = traversal.getStrategies().getStrategy(HaltedTraverserStrategy.class).orElse(
                 Boolean.valueOf(System.getProperty("is.testing", "false")) ?
                         HaltedTraverserStrategy.detached() :
@@ -49,12 +47,12 @@ public class TraversalIterator implements Iterator<Object> {
 
     @Override
     public boolean hasNext() {
-        return this.traversalIterator.hasNext();
+        return this.traversal.hasNext();
     }
 
     @Override
     public Object next() {
-        final Traverser.Admin t = this.haltedTraverserStrategy.halt((Traverser.Admin) traversalIterator.next());
+        final Traverser.Admin t = this.haltedTraverserStrategy.halt(traversal.nextTraverser());
         return new DefaultRemoteTraverser<>(t.get(), t.bulk());
     }
 }
