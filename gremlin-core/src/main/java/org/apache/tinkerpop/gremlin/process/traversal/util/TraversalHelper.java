@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -572,10 +573,12 @@ public final class TraversalHelper {
     }
 
     public static void copyLabels(final Step<?, ?> fromStep, final Step<?, ?> toStep, final boolean moveLabels) {
-        for (final String label : fromStep.getLabels()) {
-            toStep.addLabel(label);
-            if (moveLabels)
-                fromStep.removeLabel(label);
+        if (!fromStep.getLabels().isEmpty()) {
+            for (final String label : moveLabels ? new LinkedHashSet<>(fromStep.getLabels()) : fromStep.getLabels()) {
+                toStep.addLabel(label);
+                if (moveLabels)
+                    fromStep.removeLabel(label);
+            }
         }
     }
 

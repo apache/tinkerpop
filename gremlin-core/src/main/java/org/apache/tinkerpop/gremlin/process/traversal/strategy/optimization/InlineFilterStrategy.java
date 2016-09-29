@@ -76,7 +76,10 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         while (changed) {
             changed = false;
             for (final FilterStep<?> step : TraversalHelper.getStepsOfAssignableClass(FilterStep.class, traversal)) {
-                if (step instanceof TraversalFilterStep && InlineFilterStrategy.processTraversalFilterStep((TraversalFilterStep) step, traversal))
+                if (step instanceof HasStep && InlineFilterStrategy.processHasStep((HasStep) step, traversal))
+                    // has(a,b).has(c) --> has(a,b,c)
+                    changed = true;
+                else if (step instanceof TraversalFilterStep && InlineFilterStrategy.processTraversalFilterStep((TraversalFilterStep) step, traversal))
                     // filter(x.y) --> x.y
                     changed = true;
                 else if (step instanceof OrStep && InlineFilterStrategy.processOrStep((OrStep) step, traversal))
@@ -98,6 +101,19 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
 
     ////////////////////////////
     ///////////////////////////
+
+    private static final boolean processHasStep(final HasStep<?> step, final Traversal.Admin<?, ?> traversal) {
+        if (step.getPreviousStep() instanceof HasStep) {
+            final HasStep<?> previousStep = (HasStep<?>) step.getPreviousStep();
+            for (final HasContainer hasContainer : step.getHasContainers()) {
+                previousStep.addHasContainer(hasContainer);
+            }
+            TraversalHelper.copyLabels(step, previousStep, false);
+            traversal.removeStep(step);
+            return true;
+        }
+        return false;
+    }
 
     private static final boolean processTraversalFilterStep(final TraversalFilterStep<?> step, final Traversal.Admin<?, ?> traversal) {
         final Traversal.Admin<?, ?> childTraversal = step.getLocalChildren().get(0);

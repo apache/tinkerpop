@@ -43,7 +43,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -89,9 +88,18 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        boolean modified;
-        do {
+        boolean modified = true;
+        while(modified) {
             modified = false;
+            for (final Step<?, ?> step : traversal.getSteps()) {
+                if (!step.getLabels().isEmpty()) {
+                    final Step<?, ?> nextStep = step.getNextStep();
+                    if (nextStep instanceof FilterStep && !(nextStep instanceof TraversalParent)) {
+                        TraversalHelper.copyLabels(step, nextStep, true);
+                        modified = true;
+                    }
+                }
+            }
             final List<Step> steps = traversal.getSteps();
             int prevRank = 0;
             for (int i = steps.size() - 1; i >= 0; i--) {
@@ -105,7 +113,7 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
                 }
                 prevRank = rank;
             }
-        } while (modified);
+        }
     }
 
     @Override

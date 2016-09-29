@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
@@ -79,6 +80,8 @@ public class FilterRankingStrategyTest {
 
         return Arrays.asList(new Object[][]{
                 {__.dedup().order(), __.dedup().order(), Collections.emptyList()},
+                {__.has("name", "marko").has("age", 32).dedup().has("name", "bob").as("a"), __.has("name", "marko").has("age", 32).dedup().has("name", "bob").as("a"), Collections.emptyList()},
+                {__.has("name", "marko").dedup().as("a").has("age", 32).has("name", "bob").as("b"), __.has("name", "marko").has("age", 32).dedup().has("name", "bob").as("a","b"), Collections.emptyList()},
                 {__.order().dedup(), __.dedup().order(), Collections.emptyList()},
                 {__.order().as("a").dedup(), __.order().as("a").dedup(), Collections.emptyList()},
                 {__.identity().order().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
