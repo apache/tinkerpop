@@ -231,7 +231,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         return aliases.get();
     }
 
-    private static Optional<Map<String, String>> validatedAliases(RequestMessage message) throws OpProcessorException {
+    private static Optional<Map<String, String>> validatedAliases(final RequestMessage message) throws OpProcessorException {
         final Optional<Map<String, String>> aliases = message.optionalArgs(Tokens.ARGS_ALIASES);
         if (!aliases.isPresent()) {
             final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
