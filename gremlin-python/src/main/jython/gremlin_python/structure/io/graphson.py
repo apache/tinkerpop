@@ -44,9 +44,9 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 class GraphSONWriter(object):
     @staticmethod
     def _dictify(obj):
-        for key in serializers:
+        for key, serializer in serializers.items():
             if isinstance(obj, key):
-                return serializers[key]._dictify(obj)
+                return serializer._dictify(obj)
         # list and map are treated as normal json objs (could be isolated serializers)
         if isinstance(obj, (list, set)):
             return [GraphSONWriter._dictify(o) for o in obj]
@@ -64,10 +64,10 @@ class GraphSONReader(object):
     @staticmethod
     def _objectify(obj):
         if isinstance(obj, dict):
-            if _SymbolHelper._TYPE in obj:
-                type = obj[_SymbolHelper._TYPE]
-                if type in deserializers:
-                    return deserializers[type]._objectify(obj)
+            try:
+                return deserializers[obj[_SymbolHelper._TYPE]]._objectify(obj)
+            except KeyError:
+                pass
             # list and map are treated as normal json objs (could be isolated deserializers)
             return dict((GraphSONReader._objectify(k), GraphSONReader._objectify(v)) for k, v in obj.items())
         elif isinstance(obj, list):
@@ -263,7 +263,6 @@ class _SymbolHelper(object):
         if value is not None:
             object[_SymbolHelper._VALUE] = value
         return object
-
 
 serializers = {
     Traversal: BytecodeSerializer(),
