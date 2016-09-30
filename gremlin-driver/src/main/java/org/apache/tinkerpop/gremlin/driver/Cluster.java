@@ -510,7 +510,6 @@ public final class Cluster {
          * Size of the pool for handling request/response operations.  Defaults to the number of available processors.
          */
         public Builder nioPoolSize(final int nioPoolSize) {
-            if (nioPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.nioPoolSize = nioPoolSize;
             return this;
         }
@@ -520,7 +519,6 @@ public final class Cluster {
          * by 2
          */
         public Builder workerPoolSize(final int workerPoolSize) {
-            if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.workerPoolSize = workerPoolSize;
             return this;
         }
@@ -872,6 +870,8 @@ public final class Cluster {
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
         private Manager(final Builder builder) {
+            validateBuilder(builder);
+
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
@@ -907,6 +907,57 @@ public final class Cluster {
             this.serializer = builder.serializer;
             this.executor = Executors.newScheduledThreadPool(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
+        }
+
+        private void validateBuilder(final Builder builder) {
+            if (builder.minInProcessPerConnection < 0)
+                throw new IllegalArgumentException("minInProcessPerConnection must be greater than or equal to zero");
+
+            if (builder.maxInProcessPerConnection < 1)
+                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than zero");
+
+            if (builder.minInProcessPerConnection > builder.maxInProcessPerConnection)
+                throw new IllegalArgumentException("maxInProcessPerConnection cannot be less than minInProcessPerConnection");
+
+            if (builder.minSimultaneousUsagePerConnection < 0)
+                throw new IllegalArgumentException("minSimultaneousUsagePerConnection must be greater than or equal to zero");
+
+            if (builder.maxSimultaneousUsagePerConnection < 1)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than zero");
+
+            if (builder.minSimultaneousUsagePerConnection > builder.maxSimultaneousUsagePerConnection)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection cannot be less than minSimultaneousUsagePerConnection");
+
+            if (builder.minConnectionPoolSize < 0)
+                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
+
+            if (builder.maxConnectionPoolSize < 1)
+                throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
+
+            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
+                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
+
+            if (builder.maxWaitForConnection < 1)
+                throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
+
+            if (builder.maxWaitForSessionClose < 1)
+                throw new IllegalArgumentException("maxWaitForSessionClose must be greater than zero");
+
+            if (builder.maxContentLength < 1)
+                throw new IllegalArgumentException("maxContentLength must be greater than zero");
+
+            if (builder.reconnectInterval < 1)
+                throw new IllegalArgumentException("reconnectInterval must be greater than zero");
+
+            if (builder.resultIterationBatchSize < 1)
+                throw new IllegalArgumentException("resultIterationBatchSize must be greater than zero");
+
+            if (builder.nioPoolSize < 1)
+                throw new IllegalArgumentException("nioPoolSize must be greater than zero");
+
+            if (builder.workerPoolSize < 1)
+                throw new IllegalArgumentException("workerPoolSize must be greater than zero");
+
         }
 
         synchronized void init() {
