@@ -680,7 +680,7 @@ which will boost performance and reduce resources required on the server.
 Configuration
 ^^^^^^^^^^^^^
 
-The following table describes the various YAML configuration options for the Gremlin Driver:
+The following table describes the various configuration options for the Gremlin Driver:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1011,7 +1011,7 @@ to use to `bin/gremlin-server.sh` as in:
 bin/gremlin-server.sh conf/gremlin-server-min.yaml
 ----
 
-The following table describes the various configuration options that Gremlin Server expects:
+The following table describes the various YAML configuration options that Gremlin Server expects:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -1556,7 +1556,6 @@ Type=forking
 ExecStart=/path/to/apache-tinkerpop-gremlin-server/bin/gremlin-server.sh start
 ExecStop=/path/to/apache-tinkerpop-gremlin-server/bin/gremlin-server.sh stop
 PIDFile=/path/to/apache-tinkerpop-gremlin-server/run/gremlin.pid
-User=gremlin
 
 [Install]
 WantedBy=multi-user.target
