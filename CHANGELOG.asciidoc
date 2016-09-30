@@ -59,6 +59,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Renamed the `empty.result.indicator` preference to `result.indicator.null` in Gremlin Console
 * If `result.indicator.null` is set to an empty string, then no "result line" is printed in Gremlin Console.
 * Deprecated `reconnectInitialDelay` on the Java driver.
+* Produced better errors in `readGraph` of `GryoReader` and `GraphSONReader` if a `Vertex` cannot be found in the cache on edge loading.
 * VertexPrograms can now declare traverser requirements, e.g. to have access to the path when used with `.program()`.
 * New build options for `gremlin-python` where `-DglvPython` is no longer required.
 * Added missing `InetAddress` to GraphSON extension module.

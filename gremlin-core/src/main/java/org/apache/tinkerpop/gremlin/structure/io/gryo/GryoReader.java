@@ -103,6 +103,10 @@ public final class GryoReader implements GraphReader {
             // StarAdjacentVertex whose equality should match StarVertex.
             final Vertex cachedOutV = cache.get(e.outVertex());
             final Vertex cachedInV = cache.get(e.inVertex());
+
+            if (null == cachedOutV) throw new IllegalStateException(String.format("Could not find outV with id [%s] to create edge with id [%s]", e.outVertex().id(), e.id()));
+            if (null == cachedInV) throw new IllegalStateException(String.format("Could not find inV with id [%s] to create edge with id [%s]", e.inVertex().id(), e.id()));
+
             final Edge newEdge = edgeFeatures.willAllowId(e.id()) ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
             e.properties().forEachRemaining(p -> newEdge.property(p.key(), p.value()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
