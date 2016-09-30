@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -34,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Predicate;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -86,11 +86,18 @@ public class FilterRankingStrategyTest {
                 {__.has("name", "marko").as("a").out().has("age", 32).as("b").where("a", neq("b")), __.has("name", "marko").as("a").out().has("age", 32).as("b").where("a", neq("b")), Collections.emptyList()},
                 {__.has("name", "marko").has("age", 32).dedup().has("name", "bob").as("a"), __.has("name", "marko").has("age", 32).has("name", "bob").dedup().as("a"), Collections.emptyList()},
                 {__.has("name", "marko").dedup().as("a").has("age", 32).has("name", "bob").as("b"), __.has("name", "marko").has("age", 32).has("name", "bob").dedup().as("b", "a"), Collections.emptyList()},
+                {__.where("b", eq("c")).as("a").dedup("a").has("name", "marko"), __.has("name", "marko").where("b", eq("c")).as("a").dedup("a"), Collections.emptyList()},
+                {__.where("b", eq("c")).has("name", "bob").as("a").dedup("a").has("name", "marko"), __.has("name", "bob").has("name", "marko").where("b", eq("c")).as("a").dedup("a"), Collections.emptyList()},
+                {__.has("name","marko").as("a").out().has("name","bob").dedup().as("b").where(__.as("a").out().as("b")),__.has("name","marko").as("a").out().has("name","bob").dedup().as("b").where(__.as("a").out().as("b")),Collections.emptyList()},
+                {__.has("name","marko").as("a").out().has("name","bob").as("b").dedup().where(__.as("a").out().as("b")),__.has("name","marko").as("a").out().has("name","bob").dedup().as("b").where(__.as("a").out().as("b")),Collections.emptyList()},
+                {__.has("name","marko").as("a").out().has("name","bob").dedup().as("c").where(__.as("a").out().as("b")),__.has("name","marko").as("a").out().has("name","bob").where(__.as("a").out().as("b")).dedup().as("c"),Collections.emptyList()},
                 {__.order().dedup(), __.dedup().order(), Collections.emptyList()},
                 {__.order().filter(testP).dedup(), __.order().filter(testP).dedup(), Collections.emptyList()},
                 {__.order().as("a").dedup(), __.dedup().order().as("a"), Collections.emptyList()},
                 {__.order().as("a").dedup("a"), __.order().as("a").dedup("a"), Collections.emptyList()},
-                // {__.order().as("a").dedup("a").has("name","marko"), __.has("name","marko").order().as("a").dedup("a"), Collections.emptyList()},
+                {__.order().as("a").dedup("a").has("name", "marko"), __.has("name", "marko").as("a").dedup("a").order(), Collections.emptyList()},
+                {__.order().as("a").dedup("a").has("name", "marko").out(), __.has("name", "marko").as("a").dedup("a").order().out(), Collections.emptyList()},
+                {__.order().as("a").dedup("a").has("name", "marko").where("a", eq("b")).out(), __.has("name", "marko").as("a").where("a", eq("b")).dedup("a").order().out(), Collections.emptyList()},
                 {__.identity().order().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
                 {__.order().identity().dedup(), __.dedup().order(), Collections.singletonList(IdentityRemovalStrategy.instance())},
                 {__.order().out().dedup(), __.order().out().dedup(), Collections.emptyList()},
