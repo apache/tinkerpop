@@ -254,6 +254,7 @@ case "$1" in
     ;;
   -i)
     shift
+    echo "Redirecting to 'install $@' (-i will be removed in a future release)"
     install "$@"
     ;;
   install)

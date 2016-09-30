@@ -118,6 +118,6 @@ Gremlin-server.sh and Init Scripts
 
 `gremlin-server.sh` is now also an init script and can no longer be started without parameters. To start it in the foreground, please use the `console` parameter. Also, it will still start in the foreground when provided a yaml configuration file.
 
-How to install as a service has been added to the reference docs.
+How to install as a service has been added to the link:http://tinkerpop.apache.org/docs/3.2.3/reference/#_as_a_service[Reference Documentation - As A Service].
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980], link:http://tinkerpop.apache.org/docs/3.2.3/reference/#_configuring_2[Reference Documentation - Server Configuration].
