@@ -42,7 +42,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -91,29 +90,24 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
         boolean modified = true;
         while (modified) {
             modified = false;
-            final Set<String> currentLabels = new HashSet<>();
-            for (final Step<?, ?> step : traversal.getSteps()) {
-                if (!step.getLabels().isEmpty()) {
-                    currentLabels.addAll(step.getLabels());
-                    final Step<?, ?> nextStep = step.getNextStep();
-                    if (validFilterStep(nextStep) && !usesLabels(nextStep, currentLabels)) {
-                        TraversalHelper.copyLabels(step, nextStep, true);
-                        modified = true;
+            final List<Step> steps = traversal.getSteps();
+            for (int i = 0; i < steps.size() - 1; i++) {
+                final Step<?, ?> step = steps.get(i);
+                final Step<?, ?> nextStep = step.getNextStep();
+                if (!usesLabels(nextStep, step.getLabels())) {
+                    final int nextRank = getStepRank(nextStep);
+                    if (nextRank != 0) {
+                        if (!step.getLabels().isEmpty()) {
+                            TraversalHelper.copyLabels(step, nextStep, true);
+                            modified = true;
+                        }
+                        if (getStepRank(step) > nextRank) {
+                            traversal.removeStep(nextStep);
+                            traversal.addStep(i, nextStep);
+                            modified = true;
+                        }
                     }
                 }
-            }
-            final List<Step> steps = traversal.getSteps();
-            int prevRank = 0;
-            for (int i = steps.size() - 1; i >= 0; i--) {
-                final Step curr = steps.get(i);
-                final int rank = usesLabels(curr, TraversalHelper.getLabelsUpTo(curr)) ? 0 : getStepRank(curr);
-                if (prevRank > 0 && rank > prevRank) {
-                    final Step next = curr.getNextStep();
-                    traversal.removeStep(next);
-                    traversal.addStep(i, next);
-                    modified = true;
-                }
-                prevRank = rank;
             }
         }
     }
@@ -150,11 +144,6 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             return 10;
         else
             return 0;
-    }
-
-
-    private static boolean validFilterStep(final Step<?, ?> step) {
-        return ((step instanceof FilterStep && !(step instanceof LambdaHolder)) || step instanceof OrderGlobalStep);
     }
 
     private static boolean usesLabels(final Step<?, ?> step, final Set<String> labels) {

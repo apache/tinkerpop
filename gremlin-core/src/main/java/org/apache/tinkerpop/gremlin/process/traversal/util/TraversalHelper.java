@@ -592,16 +592,6 @@ public final class TraversalHelper {
         }
     }
 
-    public static Set<String> getLabelsUpTo(final Step<?, ?> stopStep) {
-        final Set<String> labels = new HashSet<>();
-        Step<?, ?> step = stopStep.getPreviousStep();
-        while (!(step instanceof EmptyStep)) {
-            labels.addAll(step.getLabels());
-            step = step.getPreviousStep();
-        }
-        return labels;
-    }
-
     public static boolean hasAllStepsOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
         for (final Step step : traversal.getSteps()) {
             boolean foundInstance = false;
