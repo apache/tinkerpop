@@ -60,18 +60,18 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> impleme
 
     @Override
     protected Map<String, E> map(final Traverser.Admin<Element> traverser) {
-        final Map<Object, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         final Element element = traverser.get();
         final boolean isVertex = traverser.get() instanceof Vertex;
         final Iterator<? extends Property> properties = null == this.propertyTraversal ?
-                (Iterator) element.properties(this.propertyKeys) :
+                element.properties(this.propertyKeys) :
                 TraversalUtil.applyAll(traverser, this.propertyTraversal);
         while (properties.hasNext()) {
-            final Property property = properties.next();
+            final Property<?> property = properties.next();
             if (isVertex) {
-                List values = (List) map.get(property.key());
+                List<Object> values = (List<Object>) map.get(property.key());
                 if (null == values) {
-                    values = new ArrayList();
+                    values = new ArrayList<>();
                     map.put(property.key(), values);
                 }
                 values.add(this.returnType == PropertyType.VALUE ? property.value() : property);
@@ -79,13 +79,14 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> impleme
                 map.put(property.key(), this.returnType == PropertyType.VALUE ? property.value() : property);
         }
         if (this.returnType == PropertyType.VALUE && this.includeTokens) {
+        	// add tokens, as string keys
             if (element instanceof VertexProperty) {
-                map.put(T.id, element.id());
-                map.put(T.key, ((VertexProperty) element).key());
-                map.put(T.value, ((VertexProperty) element).value());
+                map.put(T.id.getAccessor(), element.id());
+                map.put(T.key.getAccessor(), ((VertexProperty<?>) element).key());
+                map.put(T.value.getAccessor(), ((VertexProperty<?>) element).value());
             } else {
-                map.put(T.id, element.id());
-                map.put(T.label, element.label());
+                map.put(T.id.getAccessor(), element.id());
+                map.put(T.label.getAccessor(), element.label());
             }
         }
         return (Map) map;
