@@ -125,7 +125,7 @@ IMPORTANT: Gremlin-Python is compatible with GraphSON 2.0 only, so this serializ
 
 [source,bash]
 ----
-$ bin/gremlin-server.sh -i org.apache.tinkerpop gremlin-python x.y.z
+$ bin/gremlin-server.sh install org.apache.tinkerpop gremlin-python x.y.z
 $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 [INFO] GremlinServer -
        \,,,/
@@ -161,7 +161,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern-py.yaml
 
 ----
 
-NOTE: The command to use `-i` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
+NOTE: The command to use `install` need only be executed once to gather `gremlin-python` dependencies into Gremlin Servers'
 path. Future starts of Gremlin Server will not require that command.
 
 Within the CPython console, an empty `Graph` is created and a traversal source is spawned with `RemoteStrategy`.

@@ -113,53 +113,11 @@ Those graph providers who relied on these tests should simply remove them from t
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235]
 
-SysV and Systemd Init Scripts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gremlin-server.sh and Init Scripts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This replaces gremlin-server.sh
+`gremlin-server.sh` is now also an init script and can no longer be started without parameters. To start it in the foreground, please use the `console` parameter. Also, it will still start in the foreground when provided a yaml configuration file.
 
-*SysV*
-
-Certain parameters can be configured via bin/gremlin-server.conf
-
-[source,bash]
-----
-# Install
-ln -s /path/to/apache-tinkerpop-gremlin-server-x.y.z/bin/gremlin-server.initd /etc/init.d/gremlin-server
-
-# Systems with chkconfig/service. E.g. Fedora, Red Hat
-chkconfig --add gremlin-server
-
-# Start
-service gremlin-server start
-
-# Or call directly
-/etc/init.d/gremlin-server restart
-
-# Can even be used without installing
-./bin/gremlin-server.initd restart
-----
-
-*systemd*
-
-JAVA_HOME and JAVA_OPTIONS can be configured via bin/gremlin-server.conf
-
-[source,bash]
-----
-# Install
-cp /path/to/apache-tinkerpop-gremlin-server-x.y.z/bin/gremlin-server.service /etc/systemd/system/
-
-# Configure systemd template
-# Update WorkingDirectory, EnvironmentFile, ExecStart installation path locations
-# Check User, Group
-edit /etc/systemd/system/gremlin-server.service
-
-# Enable
-systemctl enable gremlin-server
-
-# Start
-systemctl start gremlin-server
-
-----
+How to install as a service has been added to the reference docs.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-980[TINKERPOP-980]
