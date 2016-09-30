@@ -425,6 +425,16 @@ public final class TraversalHelper {
         return false;
     }
 
+    public static boolean anyStepRecursively(final Predicate<Step> predicate, final TraversalParent step) {
+        for (final Traversal.Admin<?, ?> localChild : step.getLocalChildren()) {
+            if (anyStepRecursively(predicate, localChild)) return true;
+        }
+        for (final Traversal.Admin<?, ?> globalChild : step.getGlobalChildren()) {
+            if (anyStepRecursively(predicate, globalChild)) return true;
+        }
+        return false;
+    }
+
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {
         if (collection instanceof BulkSet) {
             ((BulkSet<S>) collection).add(s, bulk);
@@ -580,6 +590,16 @@ public final class TraversalHelper {
                     fromStep.removeLabel(label);
             }
         }
+    }
+
+    public static Set<String> getLabelsUpTo(final Step<?, ?> stopStep) {
+        final Set<String> labels = new HashSet<>();
+        Step<?, ?> step = stopStep.getPreviousStep();
+        while (!(step instanceof EmptyStep)) {
+            labels.addAll(step.getLabels());
+            step = step.getPreviousStep();
+        }
+        return labels;
     }
 
     public static boolean hasAllStepsOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
