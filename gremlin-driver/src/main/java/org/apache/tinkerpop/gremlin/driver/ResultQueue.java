@@ -154,6 +154,10 @@ final class ResultQueue {
         return this.size() == 0;
     }
 
+    public boolean isComplete() {
+        return readComplete.isDone();
+    }
+
     void drainTo(final Collection<Result> collection) {
         if (error.get() != null) throw new RuntimeException(error.get());
         resultLinkedBlockingQueue.drainTo(collection);
