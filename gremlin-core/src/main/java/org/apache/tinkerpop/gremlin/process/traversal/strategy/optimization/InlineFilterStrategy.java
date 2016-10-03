@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -75,24 +76,18 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         boolean changed = true; // recursively walk child traversals trying to inline them into the current traversal line.
         while (changed) {
             changed = false;
-            for (final FilterStep<?> step : TraversalHelper.getStepsOfAssignableClass(FilterStep.class, traversal)) {
-                if (step instanceof HasStep && InlineFilterStrategy.processHasStep((HasStep) step, traversal))
-                    // has(a,b).has(c) --> has(a,b,c)
-                    changed = true;
-                else if (step instanceof TraversalFilterStep && InlineFilterStrategy.processTraversalFilterStep((TraversalFilterStep) step, traversal))
-                    // filter(x.y) --> x.y
-                    changed = true;
-                else if (step instanceof OrStep && InlineFilterStrategy.processOrStep((OrStep) step, traversal))
-                    // or(has(x,y),has(x,z)) --> has(x,y.or(z))
-                    changed = true;
-                else if (step instanceof AndStep && InlineFilterStrategy.processAndStep((AndStep) step, traversal))
-                    // and(x,y) --> x.y
-                    changed = true;
+            final Iterator<FilterStep> filterStepIterator = TraversalHelper.getStepsOfAssignableClass(FilterStep.class, traversal).iterator();
+            while (!changed && filterStepIterator.hasNext()) {
+                final FilterStep<?> step = filterStepIterator.next();
+                changed = step instanceof HasStep && InlineFilterStrategy.processHasStep((HasStep) step, traversal) ||
+                        step instanceof TraversalFilterStep && InlineFilterStrategy.processTraversalFilterStep((TraversalFilterStep) step, traversal) ||
+                        step instanceof OrStep && InlineFilterStrategy.processOrStep((OrStep) step, traversal) ||
+                        step instanceof AndStep && InlineFilterStrategy.processAndStep((AndStep) step, traversal);
             }
-            // match(as('a').has(key,value),...) --> as('a').has(key,value).match(...)
-            if (traversal.getParent() instanceof EmptyStep) {
-                for (final MatchStep<?, ?> step : TraversalHelper.getStepsOfClass(MatchStep.class, traversal)) {
-                    if (InlineFilterStrategy.processMatchStep(step, traversal))
+            if (!changed && traversal.getParent() instanceof EmptyStep) {
+                final Iterator<MatchStep> matchStepIterator = TraversalHelper.getStepsOfClass(MatchStep.class, traversal).iterator();
+                while (!changed && matchStepIterator.hasNext()) {
+                    if (InlineFilterStrategy.processMatchStep(matchStepIterator.next(), traversal))
                         changed = true;
                 }
             }
