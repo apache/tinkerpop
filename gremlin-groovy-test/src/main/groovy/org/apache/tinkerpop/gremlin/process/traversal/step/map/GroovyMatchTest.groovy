@@ -338,5 +338,15 @@ public abstract class GroovyMatchTest {
                     __.as('b').both.as('c')).dedup('a','b').by(label)
             """, g)
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
+            TraversalScriptHelper.compute("""
+                g.V.not(match(
+                            __.as('a').age.as('b'),
+                            __.as('a').name.as('c')).
+                        where('b', eq('c')).select('a')).name
+            """, g)
+        }
     }
 }
