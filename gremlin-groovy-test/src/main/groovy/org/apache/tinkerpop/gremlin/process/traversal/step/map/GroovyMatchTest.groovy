@@ -358,5 +358,15 @@ public abstract class GroovyMatchTest {
         public Traversal<Vertex, String> get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.match(__.as('a').out('knows').as('b'), __.as('b').out('created').as('c'), __.as('a').out('created').as('c')).dedup('a', 'b', 'c').select('a').by('name')")
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+                g.V.not(match(
+                            __.as('a').age.as('b'),
+                            __.as('a').name.as('c')).
+                        where('b', eq('c')).select('a')).name
+            """, g)
+        }
     }
 }

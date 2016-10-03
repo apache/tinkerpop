@@ -46,6 +46,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.match;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
@@ -154,8 +155,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // verifying keep labels and dedup labels interactions
     public abstract Traversal<Vertex, String> get_g_V_matchXa_knows_b__b_created_c__a_created_cX_dedupXa_b_cX_selectXaX_byXnameX();
 
+    // test not(match)
+    public abstract Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name();
+
     @Test
     @LoadGraphWith(MODERN)
+
     public void g_V_valueMap_matchXa_selectXnameX_bX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_matchXa_selectXnameX_bX();
         printTraversalForm(traversal);
@@ -546,6 +551,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
 
+    @LoadGraphWith(MODERN)
+    public void g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "peter", "josh", "vadas", "lop", "ripple"), traversal);
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -822,6 +834,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("a").out("knows").as("b"),
                     as("b").out("created").as("c"),
                     as("a").out("created").as("c")).dedup("a", "b", "c").<String>select("a").by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
+            return g.V().not(match(__.as("a").values("age").as("b"), __.as("a").values("name").as("c")).where("b", eq("c")).select("a")).values("name");
         }
     }
 }
