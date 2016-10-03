@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -424,6 +425,16 @@ public final class TraversalHelper {
         return false;
     }
 
+    public static boolean anyStepRecursively(final Predicate<Step> predicate, final TraversalParent step) {
+        for (final Traversal.Admin<?, ?> localChild : step.getLocalChildren()) {
+            if (anyStepRecursively(predicate, localChild)) return true;
+        }
+        for (final Traversal.Admin<?, ?> globalChild : step.getGlobalChildren()) {
+            if (anyStepRecursively(predicate, globalChild)) return true;
+        }
+        return false;
+    }
+
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {
         if (collection instanceof BulkSet) {
             ((BulkSet<S>) collection).add(s, bulk);
@@ -572,10 +583,12 @@ public final class TraversalHelper {
     }
 
     public static void copyLabels(final Step<?, ?> fromStep, final Step<?, ?> toStep, final boolean moveLabels) {
-        for (final String label : fromStep.getLabels()) {
-            toStep.addLabel(label);
-            if (moveLabels)
-                fromStep.removeLabel(label);
+        if (!fromStep.getLabels().isEmpty()) {
+            for (final String label : moveLabels ? new LinkedHashSet<>(fromStep.getLabels()) : fromStep.getLabels()) {
+                toStep.addLabel(label);
+                if (moveLabels)
+                    fromStep.removeLabel(label);
+            }
         }
     }
 

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterStep;
@@ -39,18 +40,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 /**
- * FilterRankingStrategy reorders filter- and order-steps according to their rank. Labeled steps or lambda holders or
- * steps that contain child traversals, that have labeled steps or lambda holders, will not be reordered.
+ * FilterRankingStrategy reorders filter- and order-steps according to their rank. It will also do its best to push
+ * step labels as far "right" as possible in order to keep traversers as small and bulkable as possible prior to the
+ * absolute need for path-labeling.
  * <p/>
  * <table>
  * <thead>
@@ -89,32 +87,29 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        boolean modified;
-        do {
+        boolean modified = true;
+        while (modified) {
             modified = false;
             final List<Step> steps = traversal.getSteps();
-            int prevRank = 0;
-            for (int i = steps.size() - 1; i >= 0; i--) {
-                final Step curr = steps.get(i);
-                final int rank = rank(curr);
-                if (prevRank > 0 && rank > prevRank) {
-                    final Step next = curr.getNextStep();
-                    traversal.removeStep(next);
-                    traversal.addStep(i, next);
-                    modified = true;
+            for (int i = 0; i < steps.size() - 1; i++) {
+                final Step<?, ?> step = steps.get(i);
+                final Step<?, ?> nextStep = step.getNextStep();
+                if (!usesLabels(nextStep, step.getLabels())) {
+                    final int nextRank = getStepRank(nextStep);
+                    if (nextRank != 0) {
+                        if (!step.getLabels().isEmpty()) {
+                            TraversalHelper.copyLabels(step, nextStep, true);
+                            modified = true;
+                        }
+                        if (getStepRank(step) > nextRank) {
+                            traversal.removeStep(nextStep);
+                            traversal.addStep(i, nextStep);
+                            modified = true;
+                        }
+                    }
                 }
-                prevRank = rank;
             }
-        } while (modified);
-    }
-
-    @Override
-    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
-        return PRIORS;
-    }
-
-    public static FilterRankingStrategy instance() {
-        return INSTANCE;
+        }
     }
 
     /**
@@ -151,47 +146,29 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             return 0;
     }
 
-    /**
-     * If the given step has no child traversal that holds a lambda, then the actual rank determined by
-     * {@link #getStepRank(Step)} is returned, otherwise 0.
-     *
-     * @param step the step to get a ranking for
-     * @return The rank of the given step.
-     */
-    private static int rank(final Step step) {
-        if (isNotOptimizableStep(step)) {
-            return 0;
-        }
-        final int rank = getStepRank(step);
-        if (rank > 0 && step instanceof TraversalParent) {
-            final TraversalParent tp = (TraversalParent) step;
-            final Iterator<Traversal.Admin<Object, Object>> childTraversalIterator = IteratorUtils.concat(
-                    tp.getLocalChildren().iterator(), tp.getGlobalChildren().iterator());
-            while (childTraversalIterator.hasNext()) {
-                if (TraversalHelper.anyStepRecursively(FilterRankingStrategy::isNotOptimizableStep, childTraversalIterator.next())) {
-                    return 0;
-                }
-            }
-        }
-        return rank;
-    }
-
-    /**
-     * Returns true if the step is not optimizable, otherwise false. A step is not optimizable if it (or any of its
-     * child traversals) is a lambda holder or has a label.
-     *
-     * @param step the step to check for optimizability
-     * @return true if the given step is optimizable, otherwise false.
-     */
-    private static boolean isNotOptimizableStep(final Step<?, ?> step) {
+    private static boolean usesLabels(final Step<?, ?> step, final Set<String> labels) {
         if (step instanceof LambdaHolder)
             return true;
-        else {
-            for (final String label : step.getLabels()) {
-                if (!Graph.Hidden.isHidden(label))
+        if (step instanceof Scoping) {
+            final Set<String> scopes = ((Scoping) step).getScopeKeys();
+            for (final String label : labels) {
+                if (scopes.contains(label))
                     return true;
             }
-            return false;
         }
+        if (step instanceof TraversalParent) {
+            if (TraversalHelper.anyStepRecursively(s -> usesLabels(s, labels), (TraversalParent) step))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return PRIORS;
+    }
+
+    public static FilterRankingStrategy instance() {
+        return INSTANCE;
     }
 }

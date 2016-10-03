@@ -171,6 +171,15 @@ uses of these exception builders as they will be removed in the future.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-944[TINKERPOP-944]
 
+Hidden Step Labels for Compilation Only
++++++++++++++++++++++++++++++++++++++++
+
+In order for `SubgraphStrategy` to work, it was necessary to have multi-level children communicate with one another
+via hidden step labels. It was decided that hidden step labels are for compilation purposes only and will be removed
+prior to traversal evaluation. This is a valid decision given that hidden labels for graph system providers are
+not allowed to be used by users. Likewise, hidden labels for steps should not be allowed be used by
+users as well.
+
 PropertyMapStep with Selection Traversal
 ++++++++++++++++++++++++++++++++++++++++
 
@@ -181,6 +190,15 @@ and if so, use that in their introspection for respective strategies. This model
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1456[TINKERPOP-1456],
 link:https://issues.apache.org/jira/browse/TINKERPOP-844[TINKERPOP-844]
 
+ConnectiveP Nesting Inlined
++++++++++++++++++++++++++++
+
+There was a bug in `ConnectiveP` (`AndP`/`OrP`), where `eq(1).and(eq(2).and(eq(3)))` was `OrP(eq(1),AndP(eq(2),eq(3)))`
+instead of unnested/inlined as `OrP(eq(1),eq(2),eq(3))`. Likewise, for `AndP`. If a provider was leveraging `ConnectiveP`
+predicates for their custom steps (e.g. graph- or vertex-centric index lookups), then they should be aware of the inlining
+and can simplify any and/or-tree walking code in their respective `ProviderOptimizationStrategy`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1470[TINKERPOP-1470]
 
 TinkerPop 3.2.2
 ---------------

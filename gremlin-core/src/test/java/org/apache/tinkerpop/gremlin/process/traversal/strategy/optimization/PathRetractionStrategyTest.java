@@ -60,8 +60,7 @@ public class PathRetractionStrategyTest {
             new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance()),
             new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance()),
             new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance()),
-            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()),
-            TraversalStrategies.GlobalCache.getStrategies(Graph.class));
+            new DefaultTraversalStrategies().addStrategies(PathRetractionStrategy.instance(), PathProcessorStrategy.instance(), MatchPredicateStrategy.instance(), RepeatUnrollStrategy.instance()));
 
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin traversal;

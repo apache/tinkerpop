@@ -48,7 +48,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -101,17 +100,17 @@ public class TinkerGraphStepStrategyTest {
                 {__.V().has("name", "marko").as("a").or(has("age"), has("age", gt(32))).has("lang", "java"),
                         g_V("name", eq("marko")).as("a").or(has("age"), has("age", gt(32))).has("lang", "java"), Collections.emptyList()},
                 {__.V().has("name", "marko").as("a").or(has("age"), has("age", gt(32))).has("lang", "java"),
-                        g_V("name", eq("marko"), "lang", eq("java")).as("a").or(has("age"), has("age", gt(32))), Collections.singletonList(FilterRankingStrategy.instance())},
+                        g_V("name", eq("marko"), "lang", eq("java")).or(has("age"), has("age", gt(32))).as("a"), Collections.singletonList(FilterRankingStrategy.instance())},
                 {__.V().dedup().has("name", "marko").or(has("age"), has("age", gt(32))).has("lang", "java"),
                         g_V("name", eq("marko"), "lang", eq("java")).or(has("age"), has("age", gt(32))).dedup(), Collections.singletonList(FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age"), has("age", gt(32))).has("lang", "java"),
-                        g_V("name", eq("marko"), "lang", eq("java")).as("a").or(has("age"), has("age", gt(32))).dedup(), Collections.singletonList(FilterRankingStrategy.instance())},
+                        g_V("name", eq("marko"), "lang", eq("java")).or(has("age"), has("age", gt(32))).dedup().as("a"), Collections.singletonList(FilterRankingStrategy.instance())},
                 {__.V().as("a").has("name", "marko").as("b").or(has("age"), has("age", gt(32))).has("lang", "java"),
-                        g_V("name", eq("marko"), "lang", eq("java")).as("a", "b").or(has("age"), has("age", gt(32))), Collections.singletonList(FilterRankingStrategy.instance())},
+                        g_V("name", eq("marko"), "lang", eq("java")).or(has("age"), has("age", gt(32))).as("b", "a"), Collections.singletonList(FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age"), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).as("a").or(has("age"), has("age", gt(32))).dedup(), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance())},
+                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(has("age"), has("age", gt(32))).dedup().as("a"), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age", 10), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).as("a").or(has("age", 10), has("age", gt(32))).dedup(), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                        g_V("name", eq("marko"), "age", eq(10).or(gt(32)), "name", eq("bob"), "lang", eq("java")).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
                         g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()}
         });
