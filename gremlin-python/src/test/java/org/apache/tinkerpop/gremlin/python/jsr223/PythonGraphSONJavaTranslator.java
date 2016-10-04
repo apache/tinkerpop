@@ -69,7 +69,7 @@ final class PythonGraphSONJavaTranslator<S extends TraversalSource, T extends Tr
             bindings.putAll(jythonEngine.getBindings(ScriptContext.ENGINE_SCOPE));
             bindings.put(this.pythonTranslator.getTraversalSource(), jythonEngine.eval("Graph().traversal()"));
             bindings.putAll(bytecode.getBindings());
-            final String graphsonBytecode = jythonEngine.eval("GraphSONWriter.writeObject(" + this.pythonTranslator.translate(bytecode) + ")", bindings).toString();
+            final String graphsonBytecode = jythonEngine.eval("graphson_io.writeObject(" + this.pythonTranslator.translate(bytecode) + ")", bindings).toString();
             // System.out.println(graphsonBytecode);
             return this.javaTranslator.translate(this.reader.readObject(new ByteArrayInputStream(graphsonBytecode.getBytes()), Bytecode.class));
         } catch (final Exception e) {

@@ -17,14 +17,12 @@ specific language governing permissions and limitations
 under the License.
 '''
 import json
-from abc import abstractmethod
 from aenum import Enum
 
 import six
 
 from gremlin_python import statics
-from gremlin_python.statics import (
-    FloatType, FunctionType, IntType, LongType, long, TypeType)
+from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType
 from gremlin_python.process.traversal import Binding
 from gremlin_python.process.traversal import Bytecode
 from gremlin_python.process.traversal import P
@@ -38,113 +36,194 @@ from gremlin_python.structure.graph import VertexProperty
 from gremlin_python.structure.graph import Path
 
 
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+_serializers = {}
+_deserializers = {}
 
 
-class GraphSONWriter(object):
-    @staticmethod
-    def _dictify(obj):
-        for key, serializer in serializers.items():
+class GraphSONTypeType(type):
+    def __new__(mcs, name, bases, dct):
+        cls = super(GraphSONTypeType, mcs).__new__(mcs, name, bases, dct)
+        if not name.startswith('_'):
+            if cls.python_type:
+                _serializers[cls.python_type] = cls
+            if cls.graphson_type:
+                _deserializers[cls.graphson_type] = cls
+        return cls
+
+
+class GraphSONIO(object):
+
+    _TYPE_KEY = "@type"
+    _VALUE_KEY = "@value"
+
+    def __init__(self, serializer_map=None, deserializer_map=None):
+        """
+        :param serializer_map: map from Python type to serializer instance implementing `dictify`
+        :param deserializer_map: map from GraphSON type tag to deserializer instance implementing `objectify`
+        """
+        self.serializers = _serializers.copy()
+        if serializer_map:
+            self.serializers.update(serializer_map)
+
+        self.deserializers = _deserializers.copy()
+        if deserializer_map:
+            self.deserializers.update(deserializer_map)
+
+    def writeObject(self, objectData):
+        # to JSON
+        return json.dumps(self.toDict(objectData), separators=(',', ':'))
+
+    def readObject(self, jsonData):
+        # from JSON
+        return self.toObject(json.loads(jsonData))
+
+    def toDict(self, obj):
+        """
+        Encodes python objects in GraphSON type-tagged dict values
+        """
+        for key, serializer in self.serializers.items():
             if isinstance(obj, key):
-                return serializer._dictify(obj)
+                return serializer.dictify(obj, self)
         # list and map are treated as normal json objs (could be isolated serializers)
         if isinstance(obj, (list, set)):
-            return [GraphSONWriter._dictify(o) for o in obj]
+            return [self.toDict(o) for o in obj]
         elif isinstance(obj, dict):
-            return dict((GraphSONWriter._dictify(k), GraphSONWriter._dictify(v)) for k, v in obj.items())
+            return dict((self.toDict(k), self.toDict(v)) for k, v in obj.items())
         else:
             return obj
 
-    @staticmethod
-    def writeObject(objectData):
-        return json.dumps(GraphSONWriter._dictify(objectData), separators=(',', ':'))
-
-
-class GraphSONReader(object):
-    @staticmethod
-    def _objectify(obj):
+    def toObject(self, obj):
+        """
+        Unpacks GraphSON type-tagged dict values into objects mapped in self.deserializers
+        """
         if isinstance(obj, dict):
             try:
-                return deserializers[obj[_SymbolHelper._TYPE]]._objectify(obj)
+                return self.deserializers[obj[self._TYPE_KEY]].objectify(obj[self._VALUE_KEY], self)
             except KeyError:
                 pass
             # list and map are treated as normal json objs (could be isolated deserializers)
-            return dict((GraphSONReader._objectify(k), GraphSONReader._objectify(v)) for k, v in obj.items())
+            return dict((self.toObject(k), self.toObject(v)) for k, v in obj.items())
         elif isinstance(obj, list):
-            return [GraphSONReader._objectify(o) for o in obj]
+            return [self.toObject(o) for o in obj]
         else:
             return obj
 
-    @staticmethod
-    def readObject(jsonData):
-        return GraphSONReader._objectify(json.loads(jsonData))
+    def typedValue(self, type_name, value, prefix="g"):
+        out = {self._TYPE_KEY: prefix + ":" + type_name}
+        if value is not None:
+            out[self._VALUE_KEY] = value
+        return out
 
 
-'''
-SERIALIZERS
-'''
+@six.add_metaclass(GraphSONTypeType)
+class _GraphSONTypeIO(object):
+    python_type = None
+    graphson_type = None
+
+    symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
+                 "or_": "or", "is_": "is", "not_": "not", "from_": "from",
+                 "set_": "set", "list_": "list", "all_": "all"}
+
+    @classmethod
+    def unmangleKeyword(cls, symbol):
+        return cls.symbolMap.get(symbol, symbol)
+
+    def dictify(self, obj, graphson_io):
+        raise NotImplementedError()
+
+    def objectify(self, d, graphson_io):
+        raise NotImplementedError()
 
 
-class GraphSONSerializer(object):
-    @abstractmethod
-    def _dictify(self, obj):
-        return obj
+class _BytecodeSerializer(_GraphSONTypeIO):
 
-
-class BytecodeSerializer(GraphSONSerializer):
-    def _dictify_instructions(self, instructions):
+    @classmethod
+    def _dictify_instructions(cls, instructions, graphson_io):
         out = []
         for instruction in instructions:
             inst = [instruction[0]]
-            inst.extend(GraphSONWriter._dictify(arg) for arg in instruction[1:])
+            inst.extend(graphson_io.toDict(arg) for arg in instruction[1:])
             out.append(inst)
         return out
 
-    def _dictify(self, bytecode):
+    @classmethod
+    def dictify(cls, bytecode, graphson_io):
         if isinstance(bytecode, Traversal):
             bytecode = bytecode.bytecode
         out = {}
         if bytecode.source_instructions:
-            out["source"] = self._dictify_instructions(bytecode.source_instructions)
+            out["source"] = cls._dictify_instructions(bytecode.source_instructions, graphson_io)
         if bytecode.step_instructions:
-            out["step"] = self._dictify_instructions(bytecode.step_instructions)
-        return _SymbolHelper.objectify("Bytecode", out)
+            out["step"] = cls._dictify_instructions(bytecode.step_instructions, graphson_io)
+        return graphson_io.typedValue("Bytecode", out)
 
 
-class TraversalStrategySerializer(GraphSONSerializer):
-    def _dictify(self, strategy):
-        return _SymbolHelper.objectify(strategy.strategy_name, GraphSONWriter._dictify(strategy.configuration))
+class TraversalSerializer(_BytecodeSerializer):
+    python_type = Traversal
 
 
-class TraverserSerializer(GraphSONSerializer):
-    def _dictify(self, traverser):
-        return _SymbolHelper.objectify("Traverser", {"value": GraphSONWriter._dictify(traverser.object),
-                                                     "bulk": GraphSONWriter._dictify(traverser.bulk)})
+class BytecodeSerializer(_BytecodeSerializer):
+    python_type = Bytecode
 
 
-class EnumSerializer(GraphSONSerializer):
-    def _dictify(self, enum):
-        return _SymbolHelper.objectify(_SymbolHelper.toGremlin(type(enum).__name__),
-                                       _SymbolHelper.toGremlin(str(enum.name)))
+class TraversalStrategySerializer(_GraphSONTypeIO):
+    python_type = TraversalStrategy
+
+    @classmethod
+    def dictify(cls, strategy, graphson_io):
+        return graphson_io.typedValue(strategy.strategy_name, graphson_io.toDict(strategy.configuration))
 
 
-class PSerializer(GraphSONSerializer):
-    def _dictify(self, p):
+class TraverserIO(_GraphSONTypeIO):
+    python_type = Traverser
+    graphson_type = "g:Traverser"
+
+    @classmethod
+    def dictify(cls, traverser, graphson_io):
+        return graphson_io.typedValue("Traverser", {"value": graphson_io.toDict(traverser.object),
+                                                     "bulk": graphson_io.toDict(traverser.bulk)})
+
+    @classmethod
+    def objectify(cls, d, graphson_io):
+        return Traverser(graphson_io.toObject(d["value"]),
+                         graphson_io.toObject(d["bulk"]))
+
+
+class EnumSerializer(_GraphSONTypeIO):
+    python_type = Enum
+
+    @classmethod
+    def dictify(cls, enum, graphson_io):
+        return graphson_io.typedValue(cls.unmangleKeyword(type(enum).__name__),
+                                      cls.unmangleKeyword(str(enum.name)))
+
+
+class PSerializer(_GraphSONTypeIO):
+    python_type = P
+
+    @classmethod
+    def dictify(cls, p, graphson_io):
         out = {"predicate": p.operator,
-               "value": [GraphSONWriter._dictify(p.value), GraphSONWriter._dictify(p.other)] if p.other is not None else
-                        GraphSONWriter._dictify(p.value)}
-        return _SymbolHelper.objectify("P", out)
+               "value": [graphson_io.toDict(p.value), graphson_io.toDict(p.other)] if p.other is not None else
+                        graphson_io.toDict(p.value)}
+        return graphson_io.typedValue("P", out)
 
 
-class BindingSerializer(GraphSONSerializer):
-    def _dictify(self, binding):
+class BindingSerializer(_GraphSONTypeIO):
+    python_type = Binding
+
+    @classmethod
+    def dictify(cls, binding, graphson_io):
         out = {"key": binding.key,
-               "value": GraphSONWriter._dictify(binding.value)}
-        return _SymbolHelper.objectify("Binding", out)
+               "value": graphson_io.toDict(binding.value)}
+        return graphson_io.typedValue("Binding", out)
 
 
-class LambdaSerializer(GraphSONSerializer):
-    def _dictify(self, lambda_object):
+class LambdaSerializer(_GraphSONTypeIO):
+    python_type = FunctionType
+
+    @classmethod
+    def dictify(cls, lambda_object, graphson_io):
         lambda_result = lambda_object()
         script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
         language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
@@ -157,137 +236,94 @@ class LambdaSerializer(GraphSONSerializer):
             out["arguments"] = six.get_function_code(eval(out["script"])).co_argcount
         else:
             out["arguments"] = -1
-        return _SymbolHelper.objectify("Lambda", out)
+        return graphson_io.typedValue("Lambda", out)
 
 
-class TypeSerializer(GraphSONSerializer):
-    def _dictify(self, clazz):
-        return GraphSONWriter._dictify(clazz())
+class TypeSerializer(_GraphSONTypeIO):
+    python_type = TypeType
+
+    @classmethod
+    def dictify(cls, typ, graphson_io):
+        return graphson_io.toDict(typ())
 
 
-class NumberSerializer(GraphSONSerializer):
-    def _dictify(self, number):
-        if isinstance(number, bool):  # python thinks that 0/1 integers are booleans
-            return number
-        elif isinstance(number, long) or (
-                    abs(number) > 2147483647):  # in python all numbers are int unless specified otherwise
-            return _SymbolHelper.objectify("Int64", number)
-        elif isinstance(number, int):
-            return _SymbolHelper.objectify("Int32", number)
-        elif isinstance(number, float):
-            return _SymbolHelper.objectify("Float", number)
-        else:
-            return number
+class _NumberIO(_GraphSONTypeIO):
+
+    @classmethod
+    def dictify(cls, n, graphson_io):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        return graphson_io.typedValue(cls.graphson_base_type, n)
+
+    @classmethod
+    def objectify(cls, v, _):
+        return cls.python_type(v)
 
 
-'''
-DESERIALIZERS
-'''
+class FloatIO(_NumberIO):
+    python_type = FloatType
+    graphson_type = "g:Float"
+    graphson_base_type = "Float"
 
 
-class GraphSONDeserializer(object):
-    @abstractmethod
-    def _objectify(self, d):
-        return d
+class DoubleIO(FloatIO):
+    graphson_type = "g:Double"
+    graphson_base_type = "Double"
 
 
-class TraverserDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        return Traverser(GraphSONReader._objectify(d[_SymbolHelper._VALUE]["value"]),
-                         GraphSONReader._objectify(d[_SymbolHelper._VALUE]["bulk"]))
+class Int64IO(_NumberIO):
+    python_type = LongType
+    graphson_type = "g:Int64"
+    graphson_base_type = "Int64"
 
 
-class NumberDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        type = d[_SymbolHelper._TYPE]
-        value = d[_SymbolHelper._VALUE]
-        if type == "g:Int32":
-            return int(value)
-        elif type == "g:Int64":
-            return long(value)
-        else:
-            return float(value)
+class Int32IO(_NumberIO):
+    python_type = IntType
+    graphson_type = "g:Int32"
+    graphson_base_type = "Int32"
 
 
-class VertexDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        value = d[_SymbolHelper._VALUE]
-        return Vertex(GraphSONReader._objectify(value["id"]), value.get("label", ""))
+class VertexDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:Vertex"
+
+    @classmethod
+    def objectify(cls, d, graphson_io):
+        return Vertex(graphson_io.toObject(d["id"]), d.get("label", ""))
 
 
-class EdgeDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        value = d[_SymbolHelper._VALUE]
-        return Edge(GraphSONReader._objectify(value["id"]),
-                    Vertex(GraphSONReader._objectify(value["outV"]), ""),
-                    value.get("label", "vertex"),
-                    Vertex(GraphSONReader._objectify(value["inV"]), ""))
+class EdgeDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:Edge"
+
+    @classmethod
+    def objectify(cls, d, graphson_io):
+        return Edge(graphson_io.toObject(d["id"]),
+                    Vertex(graphson_io.toObject(d["outV"]), ""),
+                    d.get("label", "vertex"),
+                    Vertex(graphson_io.toObject(d["inV"]), ""))
 
 
-class VertexPropertyDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        value = d[_SymbolHelper._VALUE]
-        return VertexProperty(GraphSONReader._objectify(value["id"]), value["label"],
-                              GraphSONReader._objectify(value["value"]))
+class VertexPropertyDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:VertexProperty"
+
+    @classmethod
+    def objectify(cls, d, graphson_io):
+        return VertexProperty(graphson_io.toObject(d["id"]), d["label"],
+                              graphson_io.toObject(d["value"]))
 
 
-class PropertyDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        value = d[_SymbolHelper._VALUE]
-        return Property(value["key"], GraphSONReader._objectify(value["value"]))
+class PropertyDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:Property"
+
+    @classmethod
+    def objectify(cls, d, graphson_io):
+        return Property(d["key"], graphson_io.toObject(d["value"]))
 
 
-class PathDeserializer(GraphSONDeserializer):
-    def _objectify(self, d):
-        value = d[_SymbolHelper._VALUE]
-        labels = [set(label) for label in value["labels"]]
-        objects = [GraphSONReader._objectify(o) for o in value["objects"]]
+class PathDeserializer(_GraphSONTypeIO):
+    graphson_type = "g:Path"
+
+    @classmethod
+    def objectify(cls, d, graphson_io):
+        labels = [set(label) for label in d["labels"]]
+        objects = [graphson_io.toObject(o) for o in d["objects"]]
         return Path(labels, objects)
-
-
-class _SymbolHelper(object):
-    symbolMap = {"global_": "global", "as_": "as", "in_": "in", "and_": "and",
-                 "or_": "or", "is_": "is", "not_": "not", "from_": "from",
-                 "set_": "set", "list_": "list", "all_": "all"}
-
-    _TYPE = "@type"
-    _VALUE = "@value"
-
-    @staticmethod
-    def toGremlin(symbol):
-        return _SymbolHelper.symbolMap.get(symbol, symbol)
-
-    @staticmethod
-    def objectify(type, value=None, prefix="g"):
-        object = {_SymbolHelper._TYPE: prefix + ":" + type}
-        if value is not None:
-            object[_SymbolHelper._VALUE] = value
-        return object
-
-serializers = {
-    Traversal: BytecodeSerializer(),
-    Traverser: TraverserSerializer(),
-    Bytecode: BytecodeSerializer(),
-    Binding: BindingSerializer(),
-    P: PSerializer(),
-    Enum: EnumSerializer(),
-    FunctionType: LambdaSerializer(),
-    LongType: NumberSerializer(),
-    IntType: NumberSerializer(),
-    FloatType: NumberSerializer(),
-    TypeType: TypeSerializer(),
-    TraversalStrategy: TraversalStrategySerializer(),
-}
-
-deserializers = {
-    "g:Traverser": TraverserDeserializer(),
-    "g:Int32": NumberDeserializer(),
-    "g:Int64": NumberDeserializer(),
-    "g:Float": NumberDeserializer(),
-    "g:Double": NumberDeserializer(),
-    "g:Vertex": VertexDeserializer(),
-    "g:Edge": EdgeDeserializer(),
-    "g:VertexProperty": VertexPropertyDeserializer(),
-    "g:Property": PropertyDeserializer(),
-    "g:Path": PathDeserializer()
-}

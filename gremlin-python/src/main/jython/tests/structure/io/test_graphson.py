@@ -20,6 +20,7 @@ under the License.
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 import json
+from mock import Mock
 import unittest
 from unittest import TestCase
 
@@ -28,37 +29,39 @@ import six
 from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import Path
-from gremlin_python.structure.io.graphson import GraphSONReader
-from gremlin_python.structure.io.graphson import GraphSONWriter
+from gremlin_python.structure.io.graphson import GraphSONIO
+import gremlin_python.structure.io.graphson
 from gremlin_python.process.traversal import P
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
+graphson_io = GraphSONIO()
 
-class TestGraphSONReader(TestCase):
-    def test_numbers(self):
-        x = GraphSONReader.readObject(json.dumps({
+
+class TestGraphSONIO(TestCase):
+    def test_number_input(self):
+        x = graphson_io.readObject(json.dumps({
             "@type": "g:Int32",
             "@value": 31
         }))
         assert isinstance(x, int)
         assert 31 == x
         ##
-        x = GraphSONReader.readObject(json.dumps({
+        x = graphson_io.readObject(json.dumps({
             "@type": "g:Int64",
             "@value": 31
         }))
         assert isinstance(x, long)
         assert long(31) == x
         ##
-        x = GraphSONReader.readObject(json.dumps({
+        x = graphson_io.readObject(json.dumps({
             "@type": "g:Float",
             "@value": 31.3
         }))
         assert isinstance(x, float)
         assert 31.3 == x
         ##
-        x = GraphSONReader.readObject(json.dumps({
+        x = graphson_io.readObject(json.dumps({
             "@type": "g:Double",
             "@value": 31.2
         }))
@@ -66,7 +69,7 @@ class TestGraphSONReader(TestCase):
         assert 31.2 == x
 
     def test_graph(self):
-        vertex = GraphSONReader.readObject(
+        vertex = graphson_io.readObject(
             """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
@@ -75,7 +78,7 @@ class TestGraphSONReader(TestCase):
         assert vertex == Vertex(1)
 
     def test_path(self):
-        path = GraphSONReader.readObject(
+        path = graphson_io.readObject(
             """{"@type":"g:Path","@value":{"labels":[["a"],["b","c"],[]],"objects":[{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},"value":"marko","label":"name"}}],"age":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29},"label":"age"}}]}}},{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":3},"label":"software","properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":4},"value":"lop","label":"name"}}],"lang":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":5},"value":"java","label":"lang"}}]}}},"lop"]}}"""
         )
         assert isinstance(path, Path)
@@ -88,25 +91,71 @@ class TestGraphSONReader(TestCase):
         assert "lop" == path[2]
         assert 3 == len(path)
 
+    def test_number_output(self):
+        assert {"@type":"g:Int64","@value":2} == json.loads(graphson_io.writeObject(long(2)))
+        assert {"@type":"g:Int32","@value":1} == json.loads(graphson_io.writeObject(1))
+        assert {"@type":"g:Double","@value":3.2} == json.loads(graphson_io.writeObject(3.2))
+        assert """true""" == graphson_io.writeObject(True)
 
-class TestGraphSONWriter(TestCase):
     def test_numbers(self):
-        assert {"@type": "g:Int64", "@value": 2} == json.loads(GraphSONWriter.writeObject(long(2)))
-        assert {"@type": "g:Int32", "@value": 1} == json.loads(GraphSONWriter.writeObject(1))
-        assert {"@type": "g:Float", "@value": 3.2} == json.loads(GraphSONWriter.writeObject(3.2))
-        assert """true""" == GraphSONWriter.writeObject(True)
+        assert {"@type": "g:Int64", "@value": 2} == json.loads(graphson_io.writeObject(long(2)))
+        assert {"@type": "g:Int32", "@value": 1} == json.loads(graphson_io.writeObject(1))
+        assert {"@type": "g:Double", "@value": 3.2} == json.loads(graphson_io.writeObject(3.2))
+        assert """true""" == graphson_io.writeObject(True)
 
     def test_P(self):
-        assert """{"@type":"g:P","@value":{"predicate":"and","value":[{"@type":"g:P","@value":{"predicate":"or","value":[{"@type":"g:P","@value":{"predicate":"lt","value":"b"}},{"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},{"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}}""" == GraphSONWriter.writeObject(
+        assert """{"@type":"g:P","@value":{"predicate":"and","value":[{"@type":"g:P","@value":{"predicate":"or","value":[{"@type":"g:P","@value":{"predicate":"lt","value":"b"}},{"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},{"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}}""" == graphson_io.writeObject(
             P.lt("b").or_(P.gt("c")).and_(P.neq("d")))
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
-        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(GraphSONWriter.writeObject(SubgraphStrategy))
+        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(graphson_io.writeObject(SubgraphStrategy))
         assert {"@type": "g:SubgraphStrategy", "@value": {
             "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
-            GraphSONWriter.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
+            graphson_io.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
+    def test_custom_mapping(self):
+
+        # extended mapping
+        class X(object):
+            pass
+
+        type_string = "test:Xtype"
+        override_string = "g:Int64"
+        serdes = Mock()
+
+        gio = GraphSONIO(serializer_map={X: serdes}, deserializer_map={type_string: serdes, })
+        self.assertIn(X, gio.serializers)
+        self.assertIn(type_string, gio.deserializers)
+
+        # base dicts are not modified
+        self.assertNotIn(X, gremlin_python.structure.io.graphson._serializers)
+        self.assertNotIn(type_string, gremlin_python.structure.io.graphson._deserializers)
+
+        obj = X()
+        d = gio.toDict(obj)
+        serdes.dictify.assert_called_once_with(obj, gio)
+        self.assertIs(d, serdes.dictify())
+
+        o = gio.toObject({GraphSONIO._TYPE_KEY: type_string, GraphSONIO._VALUE_KEY: obj})
+        serdes.objectify.assert_called_once_with(obj, gio)
+        self.assertIs(o, serdes.objectify())
+
+        # overridden mapping
+        type_string = "g:Int64"
+        serdes = Mock()
+        gio = GraphSONIO(serializer_map={int: serdes}, deserializer_map={type_string: serdes, override_string: serdes})
+        self.assertIsNot(gremlin_python.structure.io.graphson._serializers[int], gio.serializers[int])
+        self.assertIsNot(gremlin_python.structure.io.graphson._deserializers[type_string], gio.deserializers[type_string])
+
+        value = 3
+        d = gio.toDict(value)
+        serdes.dictify.assert_called_once_with(value, gio)
+        self.assertIs(d, serdes.dictify())
+
+        o = gio.toObject({GraphSONIO._TYPE_KEY: type_string, GraphSONIO._VALUE_KEY: value})
+        serdes.objectify.assert_called_once_with(value, gio)
+        self.assertIs(o, serdes.objectify())
 
 if __name__ == '__main__':
     unittest.main()
