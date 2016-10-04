@@ -19,9 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -49,5 +53,24 @@ public class GraphTraversalSourceTest {
 
         verify(mock1, times(1)).close();
         verify(mock2, times(1)).close();
+    }
+
+    @Test
+    public void shouldSupportStringBasedStrategies() throws Exception {
+        GraphTraversalSource g = EmptyGraph.instance().traversal();
+        assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        g = g.withStrategy(SubgraphStrategy.class.getCanonicalName(),
+                "vertices", __.hasLabel("person"),
+                "vertexProperties", __.limit(0),
+                "edges", __.hasLabel("knows"));
+        assertTrue(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        g = g.withoutStrategy(SubgraphStrategy.class.getCanonicalName());
+        assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        //
+        assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
+        g = g.withStrategy(ReadOnlyStrategy.class.getCanonicalName());
+        assertTrue(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
+        g = g.withoutStrategy(ReadOnlyStrategy.class.getCanonicalName());
+        assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
     }
 }

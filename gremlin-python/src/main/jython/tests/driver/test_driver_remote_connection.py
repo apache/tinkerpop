@@ -26,6 +26,7 @@ from gremlin_python import statics
 from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.traversal import Traverser
+from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Vertex
 
@@ -57,6 +58,19 @@ class TestDriverRemoteConnection(TestCase):
         assert 2 == g.V()[:2].count().next()
         # todo: need a traversal metrics deserializer
         g.V().out().profile().next()
+        connection.close()
+
+    def test_strategies(self):
+        statics.load_statics(globals())
+        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        g = Graph().traversal().withRemote(connection).withStrategy(
+            "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy",
+            "vertices", __.hasLabel("person"),
+            "edges", __.hasLabel("created"))
+        assert 4 == g.V().count().next()
+        assert 0 == g.E().count().next()
+        assert 1 == g.V().label().dedup().count().next()
+        assert "person" == g.V().label().dedup().next()
         connection.close()
 
     def test_side_effects(self):
@@ -104,7 +118,7 @@ class TestDriverRemoteConnection(TestCase):
         assert 3 == n["lop"]
         assert 1 == n["ripple"]
         #
-        t = g.withSideEffect('m',32).V().map(lambda: "x: x.sideEffects('m')")
+        t = g.withSideEffect('m', 32).V().map(lambda: "x: x.sideEffects('m')")
         results = t.toSet()
         assert 1 == len(results)
         assert 32 == list(results)[0]

@@ -19,20 +19,24 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -94,9 +98,55 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         public static final String withComputer = "withComputer";
         public static final String withSideEffect = "withSideEffect";
         public static final String withRemote = "withRemote";
+        public static final String withStrategy = "withStrategy";
+        public static final String withoutStrategy = "withoutStrategy";
     }
 
     /////////////////////////////
+
+    /**
+     * Add a {@link TraversalStrategy} to the traversal source given the strategy name and key/value pair creation arguments.
+     *
+     * @param strategyName   the name of the strategy (the full class name)
+     * @param namedArguments key/value pair arguments where the even indices are string keys
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withStrategy(final String strategyName, final Object... namedArguments) {
+        ElementHelper.legalPropertyKeyValueArray(namedArguments);
+        final Map<String, Object> configuration = new HashMap<>();
+        for (int i = 0; i < namedArguments.length; i = i + 2) {
+            configuration.put((String) namedArguments[i], namedArguments[i + 1]);
+        }
+        try {
+            final TraversalStrategy<?> traversalStrategy = (TraversalStrategy) ((0 == namedArguments.length) ?
+                    Class.forName(strategyName).getMethod("instance").invoke(null) :
+                    Class.forName(strategyName).getMethod("create", Configuration.class).invoke(null, new MapConfiguration(configuration)));
+            final TraversalSource clone = this.clone();
+            clone.getStrategies().addStrategies(traversalStrategy);
+            clone.getBytecode().addSource(Symbols.withStrategy, strategyName, namedArguments);
+            return clone;
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Remove a {@link TraversalStrategy} from the travesal source given the strategy name.
+     *
+     * @param strategyName the name of the strategy (the full class name)
+     * @return a new traversal source with updated strategies
+     */
+    @SuppressWarnings({"unchecked", "varargs"})
+    public default TraversalSource withoutStrategy(final String strategyName) {
+        try {
+            final TraversalSource clone = this.clone();
+            clone.getStrategies().removeStrategies((Class<TraversalStrategy>) Class.forName(strategyName));
+            clone.getBytecode().addSource(TraversalSource.Symbols.withoutStrategy, strategyName);
+            return clone;
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
 
     /**
      * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.

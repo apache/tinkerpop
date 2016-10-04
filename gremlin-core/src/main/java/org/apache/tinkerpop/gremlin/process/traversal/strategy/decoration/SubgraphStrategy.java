@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -120,7 +121,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     }
 
     private static void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
-                                final Traversal.Admin<? extends Element, ?> criterion) {
+                                       final Traversal.Admin<? extends Element, ?> criterion) {
         for (final Step<?, ?> step : stepsToApplyCriterionAfter) {
             // re-assign the step label to the criterion because the label should apply seamlessly after the filter
             final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
@@ -288,6 +289,21 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     public Traversal<VertexProperty, ?> getVertexPropertyCriterion() {
         return this.vertexPropertyCriterion;
+    }
+
+    public static SubgraphStrategy create(final Configuration configuration) {
+        final Builder builder = SubgraphStrategy.build();
+        configuration.getKeys().forEachRemaining(key -> {
+            if (key.equals("vertices") || key.equals("vertexCriterion"))
+                builder.vertices((Traversal) configuration.getProperty(key));
+            else if (key.equals("edges") || key.equals("edgeCriterion"))
+                builder.edges((Traversal) configuration.getProperty(key));
+            else if (key.equals("vertexProperties"))
+                builder.vertexProperties((Traversal) configuration.getProperty(key));
+            else
+                throw new IllegalArgumentException("The following configuration is unknown: " + key + ":" + configuration.getProperty(key));
+        });
+        return builder.create();
     }
 
     public static Builder build() {

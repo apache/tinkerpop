@@ -60,6 +60,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
 
     private final String traversalSource;
     private final boolean importStatics;
+    private static final boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     PythonTranslator(final String traversalSource, final boolean importStatics) {
         this.traversalSource = traversalSource;
@@ -101,7 +102,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
-            if (methodName.equals(TraversalSource.Symbols.withStrategies))
+            if (isTesting && methodName.equals(TraversalSource.Symbols.withStrategies))
                 continue;
             else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");

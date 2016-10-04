@@ -142,6 +142,16 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
+    public GraphTraversalSource withStrategy(final String strategyName, final Object... nameArguments) {
+        return (GraphTraversalSource) TraversalSource.super.withStrategy(strategyName, nameArguments);
+    }
+
+    @Override
+    public GraphTraversalSource withoutStrategy(final String strategyName) {
+        return (GraphTraversalSource) TraversalSource.super.withoutStrategy(strategyName);
+    }
+
+    @Override
     public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategies);
     }
