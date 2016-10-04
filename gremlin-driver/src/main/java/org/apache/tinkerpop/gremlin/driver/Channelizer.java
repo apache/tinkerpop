@@ -179,7 +179,7 @@ public interface Channelizer extends ChannelHandler {
          */
         @Override
         public void close(final Channel channel) {
-            channel.writeAndFlush(new CloseWebSocketFrame());
+            if (channel.isOpen()) channel.writeAndFlush(new CloseWebSocketFrame());
         }
 
         @Override
