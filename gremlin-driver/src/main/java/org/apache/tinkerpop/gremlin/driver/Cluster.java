@@ -36,6 +36,7 @@ import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -83,7 +84,9 @@ public final class Cluster {
      * submitted or can be directly initialized via {@link Client#init()}.
      */
     public <T extends Client> T connect() {
-        return (T) new Client.ClusteredClient(this);
+        final Client client = new Client.ClusteredClient(this);
+        manager.trackClient(client);
+        return (T) client;
     }
 
     /**
@@ -122,7 +125,9 @@ public final class Cluster {
     public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
         if (null == sessionId || sessionId.isEmpty())
             throw new IllegalArgumentException("sessionId cannot be null or empty");
-        return (T) new Client.SessionedClient(this, sessionId, manageTransactions);
+        final Client client = new Client.SessionedClient(this, sessionId, manageTransactions);
+        manager.trackClient(client);
+        return (T) client;
     }
 
     @Override
@@ -684,6 +689,8 @@ public final class Cluster {
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
+        private final List<WeakReference<Client>> openedClients = new ArrayList<>();
+
         private Manager(final Builder builder) {
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
@@ -730,6 +737,10 @@ public final class Cluster {
             });
         }
 
+        void trackClient(final Client client) {
+            openedClients.add(new WeakReference<>(client));
+        }
+
         public Host add(final InetSocketAddress address) {
             final Host newHost = new Host(address, Cluster.this);
             final Host previous = hosts.putIfAbsent(address, newHost);
@@ -744,6 +755,13 @@ public final class Cluster {
             // this method is exposed publicly in both blocking and non-blocking forms.
             if (closeFuture.get() != null)
                 return closeFuture.get();
+
+            for (WeakReference<Client> openedClient : openedClients) {
+                final Client client = openedClient.get();
+                if (client != null && !client.isClosing()) {
+                    client.close();
+                }
+            }
 
             final CompletableFuture<Void> closeIt = new CompletableFuture<>();
             closeFuture.set(closeIt);

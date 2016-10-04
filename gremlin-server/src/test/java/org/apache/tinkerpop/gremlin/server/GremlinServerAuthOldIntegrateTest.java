@@ -131,7 +131,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
             fail("This should not succeed as the client did not provide credentials");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(GSSException.class, root.getClass());
+            assertEquals(ResponseException.class, root.getClass());
 
             // removed this assert as the text of the message changes based on kerberos config - stupid kerberos
             // assertThat(root.getMessage(), startsWith("Invalid name provided"));
@@ -163,7 +163,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all();
+            client.submit("1+1").all().get();
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());

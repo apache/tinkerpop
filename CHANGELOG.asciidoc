@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Improved handling of `Cluster.close()` and `Client.close()` to prevent the methods from hanging.
 * Fixed a bug in `NotStep` where child requirements were not being analyzed.
 * Fixed output redirection and potential memory leak in `GremlinGroovyScriptEngine`.
 * Corrected naming of `g_withPath_V_asXaX_out_out_mapXa_name_it_nameX` and `g_withPath_V_asXaX_out_mapXa_nameX` in `MapTest`.
