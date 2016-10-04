@@ -57,6 +57,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * `SubgraphStrategy` now supports vertex property filtering.
 * Fixed a bug in Gremlin-Python `P` where predicates reversed the order of the predicates.
 * Added tests to `DedupTest` for the `dedup(Scope, String...)` overload.
+* Added more detailed reference documentation for IO formats.
 * Fixed a bug in serialization of `Lambda` instances in GraphSON, which prevented their use in remote traversals.
 * Fixed a naming bug in Gremlin-Python where `P._and` and `P._or` should be `P.and_` and `P.or_`. (*breaking*)
 * `where()` predicate-based steps now support `by()`-modulation.

@@ -785,6 +785,9 @@ Gremlin Server will send:
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
+NOTE: Please refer to the link:http://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
+examples of `RequestMessage` and `ResponseMessage` instances.
+
 OpProcessors Arguments
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -827,6 +830,7 @@ evaluated and is committed when the script completes (or rolled back if an error
 |=========================================================
 |Key |Type |Description
 |sasl |byte[] | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server.
+|saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
 |=========================================================
 
 '`eval` operation arguments'
