@@ -39,7 +39,7 @@ public class TinkerGraphComputerProvider extends TinkerGraphProvider {
     public GraphTraversalSource traversal(final Graph graph) {
         return RANDOM.nextBoolean() ?
                 graph.traversal().withComputer(
-                        "workers", RANDOM.nextInt(4) + 1,
+                        "workers", RANDOM.nextInt(Runtime.getRuntime().availableProcessors()) + 1,
                         "graphComputer", RANDOM.nextBoolean() ?
                                 GraphComputer.class.getCanonicalName() :
                                 TinkerGraphComputer.class.getCanonicalName()) :
