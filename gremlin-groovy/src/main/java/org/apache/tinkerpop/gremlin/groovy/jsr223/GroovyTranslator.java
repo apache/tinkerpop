@@ -19,11 +19,11 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -38,6 +38,8 @@ import java.util.List;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GroovyTranslator implements Translator.ScriptTranslator {
+
+    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private final String traversalSource;
 
@@ -77,6 +79,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
+            if (IS_TESTING && methodName.equals(TraversalSource.Symbols.withStrategies))
+                continue;
             if (0 == instruction.getArguments().length)
                 traversalScript.append(".").append(methodName).append("()");
             else {
@@ -122,9 +126,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Computer) { // TODO: blow out
-            return "";
-        } else if (object instanceof Lambda) {
+        else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Bytecode)

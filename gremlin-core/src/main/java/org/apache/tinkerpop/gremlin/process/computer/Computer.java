@@ -19,13 +19,16 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -44,6 +47,33 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
 
     private Computer(final Class<? extends GraphComputer> graphComputerClass) {
         this.graphComputerClass = graphComputerClass;
+    }
+
+    public static Computer compute(final Configuration configuration) {
+        try {
+            final Computer computer = new Computer(configuration.containsKey("graphComputer") ?
+                    (Class) Class.forName(configuration.getString("graphComputer")) :
+                    GraphComputer.class);
+            for (final String key : (List<String>) IteratorUtils.asList(configuration.getKeys())) {
+                if (key.equals("graphComputer")) {
+                    // do nothing
+                } else if (key.equals("workers"))
+                    computer.workers = configuration.getInt(key);
+                else if (key.equals("persist"))
+                    computer.persist = GraphComputer.Persist.valueOf(configuration.getString(key));
+                else if (key.equals("result"))
+                    computer.resultGraph = GraphComputer.ResultGraph.valueOf(configuration.getString(key));
+                else if (key.equals("vertices"))
+                    computer.vertices = (Traversal) configuration.getProperty(key);
+                else if (key.equals("edges"))
+                    computer.edges = (Traversal) configuration.getProperty(key);
+                else
+                    computer.configuration.put(key, configuration.getProperty(key));
+            }
+            return computer;
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     public static Computer compute() {

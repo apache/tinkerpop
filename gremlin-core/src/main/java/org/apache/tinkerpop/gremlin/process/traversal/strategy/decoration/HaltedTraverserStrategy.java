@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -56,6 +57,14 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
         else
             traverser.set(DetachedFactory.detach(traverser.get(), true));
         return traverser;
+    }
+
+    public static HaltedTraverserStrategy create(final Configuration configuration) {
+        try {
+            return new HaltedTraverserStrategy(Class.forName((String) configuration.getProperty("haltedTraverserFactory")));
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
     }
 
     ////////////

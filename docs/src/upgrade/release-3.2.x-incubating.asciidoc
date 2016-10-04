@@ -158,6 +158,50 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+Configurable Strategies
++++++++++++++++++++++++
+
+`TraversalSource.withStrategies()` and `TraversalSource.withoutStrategies()` use Java objects. In order to make strategy
+manipulation possible from Gremlin language variants like Gremlin-Python, it is important to support non-JVM-based versions
+of these methods. As such, `TraversalSource.withStrategy(String,Object...)` and `TraversalSource.withoutStrategy(String)`
+were added.
+
+If the provider has non-configurable `TraversalStrategy` classes, those classes should expose a static `instance()`-method.
+This is typical and thus, backwards compatible. However, if the provider has a `TraversalStrategy` that can be configured
+(e.g. via a `Builder`), then it should expose a static `create(Configuration)`-method, where the keys of the configuration
+are the method names of the `Builder` and the values are the method arguments. For instance, for Gremlin-Python to create
+a `SubgraphStrategy`, it does the following:
+
+[source,python]
+----
+g = Graph().traversal().withRemote(connection).
+        withStrategy('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy',
+            'vertices', __.hasLabel('person'),
+            'edges', __.has('weight',gt(0.5))
+---
+
+`SubgraphStrategy.create(Configuration)`-method is defined as:
+
+[source,java]
+----
+public static SubgraphStrategy create(final Configuration configuration) {
+    final Builder builder = SubgraphStrategy.build();
+    configuration.getKeys().forEachRemaining(key -> {
+        if (key.equals("vertices") || key.equals("vertexCriterion"))
+            builder.vertices((Traversal) configuration.getProperty(key));
+        else if (key.equals("edges") || key.equals("edgeCriterion"))
+            builder.edges((Traversal) configuration.getProperty(key));
+        else if (key.equals("vertexProperties"))
+            builder.vertexProperties((Traversal) configuration.getProperty(key));
+        else
+            throw new IllegalArgumentException("The following " + SubgraphStrategy.class.getSimpleName() + " configuration is unknown: " + key + ":" + configuration.getProperty(key));
+        });
+        return builder.create();
+    }
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1455[TINKERPOP-1455]
+
 Deprecated elementNotFound
 ++++++++++++++++++++++++++
 

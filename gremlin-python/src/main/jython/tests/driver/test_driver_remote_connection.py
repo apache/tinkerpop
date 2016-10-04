@@ -71,6 +71,12 @@ class TestDriverRemoteConnection(TestCase):
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
+        #
+        g = g.withComputer("workers", 4, "vertices", __.has("name", "marko"))
+        assert 1 == g.V().count().next()
+        assert 0 == g.E().count().next()
+        assert "person" == g.V().label().next()
+        assert "marko" == g.V().name.next()
         connection.close()
 
     def test_side_effects(self):

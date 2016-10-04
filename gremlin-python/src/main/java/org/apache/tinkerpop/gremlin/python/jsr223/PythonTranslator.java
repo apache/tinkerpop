@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -52,6 +51,7 @@ import java.util.stream.Stream;
  */
 public class PythonTranslator implements Translator.ScriptTranslator {
 
+    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
             .flatMap(arg -> IteratorUtils.stream(new ArrayIterator<>(arg)))
@@ -60,7 +60,6 @@ public class PythonTranslator implements Translator.ScriptTranslator {
 
     private final String traversalSource;
     private final boolean importStatics;
-    private static final boolean isTesting = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     PythonTranslator(final String traversalSource, final boolean importStatics) {
         this.traversalSource = traversalSource;
@@ -102,7 +101,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
-            if (isTesting && methodName.equals(TraversalSource.Symbols.withStrategies))
+            if (IS_TESTING && methodName.equals(TraversalSource.Symbols.withStrategies))
                 continue;
             else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
@@ -158,8 +157,6 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
-        else if (object instanceof Computer)
-            return "";
         else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);
         else

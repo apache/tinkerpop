@@ -189,6 +189,38 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     }
 
     /**
+     * Configure a {@link GraphComputer} to be used for the execution of subsequently spawned traversal.
+     *
+     * @param namedArguments key/value pair arguments where the even indices are string keys
+     * @return a new traversal source with updated strategies
+     */
+    public default TraversalSource withComputer(final Object... namedArguments) {
+        if (namedArguments.length == 1) {
+            if (namedArguments[0] instanceof Class)
+                return this.withComputer((Class<? extends GraphComputer>) namedArguments[1]);
+            else if (namedArguments[0] instanceof Computer)
+                return this.withComputer((Computer) namedArguments[1]);
+        }
+        ElementHelper.legalPropertyKeyValueArray(namedArguments);
+        final Map<String, Object> configuration = new HashMap<>();
+        for (int i = 0; i < namedArguments.length; i = i + 2) {
+            configuration.put((String) namedArguments[i], namedArguments[i + 1]);
+        }
+        final Computer computer = Computer.compute(new MapConfiguration(configuration));
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(computer.apply(this.getGraph()).getClass()).toList();
+        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
+        traversalStrategies[0] = new VertexProgramStrategy(computer);
+        for (int i = 0; i < graphComputerStrategies.size(); i++) {
+            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
+        }
+        ///
+        final TraversalSource clone = this.clone();
+        clone.getStrategies().addStrategies(traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withComputer, computer);
+        return clone;
+    }
+
+    /**
      * Add a {@link Function} that will generate a {@link GraphComputer} from the {@link Graph} that will be used to execute the traversal.
      * This adds a {@link VertexProgramStrategy} to the strategies.
      *

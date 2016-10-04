@@ -127,6 +127,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
+    public GraphTraversalSource withComputer(final Object... namedArguments) {
+        return (GraphTraversalSource) TraversalSource.super.withComputer(namedArguments);
+    }
+
+    @Override
     public GraphTraversalSource withComputer(final Computer computer) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(computer);
     }

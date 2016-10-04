@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
@@ -37,7 +38,11 @@ public class TinkerGraphComputerProvider extends TinkerGraphProvider {
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
         return RANDOM.nextBoolean() ?
-                graph.traversal().withComputer() :
+                graph.traversal().withComputer(
+                        "workers", RANDOM.nextInt(4) + 1,
+                        "graphComputer", RANDOM.nextBoolean() ?
+                                GraphComputer.class.getCanonicalName() :
+                                TinkerGraphComputer.class.getCanonicalName()) :
                 graph.traversal(GraphTraversalSource.computer());
     }
 }

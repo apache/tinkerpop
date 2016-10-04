@@ -19,10 +19,11 @@
 
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -58,7 +59,7 @@ public class HaltedTraverserStrategyTest {
     @Test
     public void shouldReturnDetachedElements() {
         final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal().withComputer().withStrategies(HaltedTraverserStrategy.detached());
+        final GraphTraversalSource g = graph.traversal().withComputer().withStrategy(HaltedTraverserStrategy.class.getCanonicalName(), "haltedTraverserFactory", DetachedFactory.class.getCanonicalName());
         g.V().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
         g.V().out().properties("name").forEachRemaining(vertexProperty -> assertEquals(DetachedVertexProperty.class, vertexProperty.getClass()));
         g.V().out().values("name").forEachRemaining(value -> assertEquals(String.class, value.getClass()));

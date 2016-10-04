@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -27,9 +28,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -149,5 +150,18 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         public ElementIdStrategy create() {
             return new ElementIdStrategy(idPropertyKey, idMaker);
         }
+    }
+
+    public static ElementIdStrategy create(final Configuration configuration) {
+        final ElementIdStrategy.Builder builder = ElementIdStrategy.build();
+        configuration.getKeys().forEachRemaining(key -> {
+            if (key.equals("idPropertyKey"))
+                builder.idPropertyKey((String) configuration.getProperty(key));
+            else if (key.equals("idMaker"))
+                builder.idMaker((Supplier) configuration.getProperty(key));
+            else
+                throw new IllegalArgumentException("The following " + ElementIdStrategy.class.getSimpleName() + " configuration is unknown: " + key + ":" + configuration.getProperty(key));
+        });
+        return builder.create();
     }
 }

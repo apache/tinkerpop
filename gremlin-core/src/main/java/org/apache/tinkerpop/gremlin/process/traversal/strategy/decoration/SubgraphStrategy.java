@@ -301,7 +301,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             else if (key.equals("vertexProperties"))
                 builder.vertexProperties((Traversal) configuration.getProperty(key));
             else
-                throw new IllegalArgumentException("The following configuration is unknown: " + key + ":" + configuration.getProperty(key));
+                throw new IllegalArgumentException("The following " + SubgraphStrategy.class.getSimpleName() + " configuration is unknown: " + key + ":" + configuration.getProperty(key));
         });
         return builder.create();
     }
