@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -41,6 +43,7 @@ import java.util.Set;
  */
 public final class LazyBarrierStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
+    private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private static final LazyBarrierStrategy INSTANCE = new LazyBarrierStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             RangeByIsCountStrategy.class,
@@ -60,7 +63,9 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal) ||
-                traversal.getTraverserRequirements().contains(TraverserRequirement.PATH))
+                traversal.getTraverserRequirements().contains(TraverserRequirement.PATH) ||
+                (IS_TESTING && (TraversalHelper.hasStepOfAssignableClass(ProfileStep.class, TraversalHelper.getRootTraversal(traversal))) ||
+                        TraversalHelper.hasStepOfAssignableClass(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal)))) // necessary cause ProfileTest analyzes counts
             return;
 
         boolean foundFlatMap = false;
@@ -70,7 +75,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
             if (step instanceof PathProcessor) {
                 final Set<String> keepLabels = ((PathProcessor) step).getKeepLabels();
-                if (null == keepLabels || keepLabels.isEmpty())
+                if (null != keepLabels && keepLabels.isEmpty()) // if no more path data, then start barrier'ing again
                     labeledPath = false;
             }
             if (step instanceof FlatMapStep &&

@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -93,7 +92,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void modern_V_out_out_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         validate_g_V_out_out_profile_modern(traversal, traversal.next());
     }
@@ -102,7 +100,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void modern_V_out_out_profileXmetricsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
         validate_g_V_out_out_profile_modern(traversal, traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY));
@@ -138,7 +135,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(GRATEFUL)
     public void grateful_V_out_out_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         final TraversalMetrics traversalMetrics = traversal.next();
         validate_g_V_out_out_profile_grateful(traversalMetrics);
@@ -148,7 +144,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(GRATEFUL)
     public void grateful_V_out_out_profileXmetricsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
         final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
@@ -190,7 +185,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         TraversalMetrics traversalMetrics = traversal.next();
         assertEquals("There should be 8 steps in this traversal (counting injected profile steps).", 8, traversal.asAdmin().getSteps().size());
@@ -202,7 +196,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetricsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
         assertEquals("There should be 7 steps in this traversal (counting injected profile steps).", 7, traversal.asAdmin().getSteps().size());
@@ -237,7 +230,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_repeat_both_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_repeatXbothX_timesX3X_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
 
         final TraversalMetrics traversalMetrics = traversal.next();
@@ -250,7 +242,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_repeat_both_profileXmetricsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
         final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
@@ -316,7 +307,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_whereXinXcreatedX_count_isX1XX_name_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_name_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         final TraversalMetrics traversalMetrics = traversal.next();
         validate_g_V_whereXinXcreatedX_count_isX1XX_name_profile(traversal, traversalMetrics);
@@ -326,7 +316,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_whereXinXcreatedX_count_isX1XX_name_profileXmetricsX() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_name_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
         final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
@@ -364,14 +353,13 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void testProfileStrategyCallback() {
-        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_out_out_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
-        MockStep mockStep = new MockStep(traversal.asAdmin());
-        traversal.asAdmin().addStep(3, mockStep);
-        TraversalMetrics traversalMetrics = traversal.next();
+        final Traversal<Vertex, TraversalMetrics> t = get_g_V_out_out_profile();
+        MockStep mockStep = new MockStep(t.asAdmin());
+        t.asAdmin().addStep(3, mockStep);
+        TraversalMetrics traversalMetrics = t.next();
         assertTrue(mockStep.callbackCalled);
 
-        if (!onGraphComputer(traversal.asAdmin())) {
+        if (!onGraphComputer(t.asAdmin())) {
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }
     }
@@ -379,15 +367,14 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void testProfileStrategyCallbackSideEffect() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_out_out_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
-        MockStep mockStep = new MockStep(traversal.asAdmin());
-        traversal.asAdmin().addStep(3, mockStep);
-        traversal.iterate();
+        final Traversal<Vertex, Vertex> t = get_g_V_out_out_profileXmetricsX();
+        MockStep mockStep = new MockStep(t.asAdmin());
+        t.asAdmin().addStep(3, mockStep);
+        t.iterate();
         assertTrue(mockStep.callbackCalled);
 
-        if (!onGraphComputer(traversal.asAdmin())) {
-            final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
+        if (!onGraphComputer(t.asAdmin())) {
+            final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(METRICS_KEY);
             assertEquals(100, traversalMetrics.getMetrics(3).getCount("bogusCount").longValue());
         }
     }
@@ -396,7 +383,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
     }
@@ -405,7 +391,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_profileXmetricsX() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_profileXmetricsX();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         printTraversalForm(traversal);
         traversal.iterate();
     }
@@ -415,7 +400,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @IgnoreEngine(TraversalEngine.Type.STANDARD)
     public void g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile() {
         final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile();
-        traversal.asAdmin().getStrategies().removeStrategies(LazyBarrierStrategy.class);
         //printTraversalForm(traversal);
         try {
             traversal.iterate();

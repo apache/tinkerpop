@@ -94,6 +94,7 @@ public class LazyBarrierStrategyTest {
                 {__.out().as("a").out().in().where(P.neq("a")), __.out().as("a").out().in().where(P.neq("a")), Collections.emptyList()},
                 {__.out().as("a").out().in().where(P.neq("a")).out().out(), __.out().as("a").out().in().where(P.neq("a")).barrier(2500).out().barrier(SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(2500).out().barrier(SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), Collections.emptyList()},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(2500).out().select("b").barrier(2500).out(), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(2500).out().select("b").barrier(2500).out().barrier(SIZE).out(), Collections.singletonList(PathRetractionStrategy.instance())},
         });
