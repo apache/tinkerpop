@@ -72,7 +72,7 @@ class TestDriverRemoteConnection(TestCase):
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = g.withComputer("workers", 4, "vertices", __.has("name", "marko"))
+        g = g.withoutStrategy("org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy").withComputer("workers", 4, "vertices", __.has("name", "marko"), "edges", __.limit(0))
         assert 1 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert "person" == g.V().label().next()

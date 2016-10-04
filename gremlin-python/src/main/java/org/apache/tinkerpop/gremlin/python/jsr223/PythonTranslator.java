@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -157,6 +158,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
+        else if (object instanceof Computer)
+            return "";
         else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);
         else
