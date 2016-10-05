@@ -100,7 +100,8 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 keys = client.submitAsync(msg).get().all().get().stream().map(r -> r.getString()).collect(Collectors.toSet());
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
-                if (!root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
+                final String exMsg = null == root ? "" : root.getMessage();
+                if (!exMsg.equals("Could not find side-effects for " + serverSideEffect + "."))
                     throw new RuntimeException("Could not get keys", root);
             }
         }
