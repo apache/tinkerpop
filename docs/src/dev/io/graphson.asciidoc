@@ -150,6 +150,10 @@ file.withWriter { writer ->
   writer.write(toJson(Order.incr, "Order"))
   writer.write(toJson(Pop.all, "Pop"))
   writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda"))
+  tm = g.V().hasLabel('person').out().out().tree().profile().next()
+  metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));
+  metrics.addNested(new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(1)));
+  writer.write(toJson(m, "Metrics"))
   writer.write(toJson(P.gt(0), "P"))
   writer.write(toJson(P.gt(0).and(P.lt(10)), "P and"))
   writer.write(toJson(P.gt(0).or(P.within(-1, -10, -100)), "P or"))
@@ -3676,6 +3680,67 @@ Lambda
     "script" : "{ it.get() }",
     "language" : "gremlin-groovy",
     "arguments" : 1
+  }
+}
+----
+
+Metrics
+^^^^^^^
+
+[source,json]
+----
+{
+  "@type" : "g:Metrics",
+  "@value" : {
+    "dur" : {
+      "@type" : "g:Double",
+      "@value" : 0.163871
+    },
+    "counts" : {
+      "traverserCount" : {
+        "@type" : "g:Int64",
+        "@value" : 4
+      },
+      "elementCount" : {
+        "@type" : "g:Int64",
+        "@value" : 4
+      }
+    },
+    "name" : "TinkerGraphStep(vertex,[~label.eq(person)])",
+    "annotations" : {
+      "percentDur" : {
+        "@type" : "g:Double",
+        "@value" : 14.805689498929809
+      }
+    },
+    "id" : "7.0.0()",
+    "metrics" : [ {
+      "@type" : "g:Metrics",
+      "@value" : {
+        "dur" : {
+          "@type" : "g:Double",
+          "@value" : 0.293702
+        },
+        "counts" : {
+          "traverserCount" : {
+            "@type" : "g:Int64",
+            "@value" : 13
+          },
+          "elementCount" : {
+            "@type" : "g:Int64",
+            "@value" : 13
+          }
+        },
+        "name" : "VertexStep(OUT,vertex)",
+        "annotations" : {
+          "percentDur" : {
+            "@type" : "g:Double",
+            "@value" : 26.535876495625722
+          }
+        },
+        "id" : "2.0.0()"
+      }
+    } ]
   }
 }
 ----
