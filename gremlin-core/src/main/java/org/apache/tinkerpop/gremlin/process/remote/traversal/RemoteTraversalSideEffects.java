@@ -19,11 +19,24 @@
 package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalSideEffects;
 
 /**
+ * When a traversal is executed remotely, the ability to retrieve those side-effects (i.e. the value in "a" in the
+ * traversal {@code g.V().aggregate('a').values('name')}) can be exposed through this interface. As an example,
+ * with TinkerPop's {@code DriverRemoteConnection} that connects to Gremlin Server as a "remote", the side-effects
+ * are left on the server. The {@code RemoteTraversalSideEffects} implementation, in that case, lazily loads those
+ * side-effects when requested. Implementations should attempt to match the features of the locally processed
+ * {@link DefaultTraversalSideEffects} to keep consistency.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface RemoteTraversalSideEffects extends TraversalSideEffects, AutoCloseable {
+
+    /**
+     * If the "remote" that actually executed the traversal maintained resources that can be released, when the user
+     * is done with the side-effects, then this method can be used to trigger that release.
+     */
     @Override
     public default void close() throws Exception {
         //  do nothing

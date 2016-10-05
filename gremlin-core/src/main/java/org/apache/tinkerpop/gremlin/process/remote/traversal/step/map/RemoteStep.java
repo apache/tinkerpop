@@ -63,7 +63,5 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
             }
         }
         return this.remoteTraversal.nextTraverser();
-        //final Traverser.Admin<E> remoteTraverser = this.remoteTraversal.nextTraverser();
-        //return this.getTraversal().getTraverserGenerator().generate(remoteTraverser.get(), (Step) this, remoteTraverser.bulk());
     }
 }

@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -37,7 +39,10 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver.
+ * A {@link AbstractRemoteTraversal} implementation for the Gremlin Driver. This {@link Traversal} implementation is
+ * typically iterated from with {@link RemoteStep} where it the {@link #nextTraverser()} method is called. While
+ * this class provides implementations for both {@link #next()} and {@link #hasNext()} that unroll "bulked" results,
+ * those methods are not called directly from with TinkerPop remoting.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -93,6 +98,8 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
     @Override
     public Traverser.Admin<E> nextTraverser() {
+        // the lastTraverser is initialized as "empty" at start of iteration so the initial pass through will
+        // call next() to begin the iteration
         if (0L == this.lastTraverser.bulk())
             return this.traversers.next();
         else {
