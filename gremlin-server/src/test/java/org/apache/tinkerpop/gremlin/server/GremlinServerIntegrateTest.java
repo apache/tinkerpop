@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
@@ -55,6 +56,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -64,6 +66,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -104,7 +108,6 @@ import static org.junit.Assert.assertEquals;
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     private Log4jRecordingAppender recordingAppender = null;
-
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraphs().get("graph");
     private final Configuration conf = new BaseConfiguration() {{
         setProperty(Graph.GRAPH, RemoteGraph.class.getName());
@@ -833,16 +836,80 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldCloseLocalSideEffects() throws Exception {
+    public void shouldGetSideEffectKeysUsingWithRemote() throws Exception {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
         traversal.iterate();
-        final List sideEffects = traversal.asAdmin().getSideEffects().get("a");
-        assertFalse(sideEffects.isEmpty());
-        traversal.asAdmin().getSideEffects().close();
-        assertNull(traversal.asAdmin().getSideEffects().get("b"));
+        final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
+
+        // Get keys
+        final Set<String> sideEffectKeys = se.keys();
+        assertEquals(2, sideEffectKeys.size());
+
+        // Get side effects
+        final List aSideEffects = se.get("a");
+        assertThat(aSideEffects.isEmpty(), is(false));
+        final List bSideEffects = se.get("b");
+        assertThat(bSideEffects.isEmpty(), is(false));
+
+        // Should get local keys/side effects after close
+        se.close();
+
+        final Set<String> localSideEffectKeys = se.keys();
+        assertEquals(2, localSideEffectKeys.size());
+
+        final List localASideEffects = se.get("a");
+        assertThat(localASideEffects.isEmpty(), is(false));
+
+        final List localBSideEffects = se.get("b");
+        assertThat(localBSideEffects.isEmpty(), is(false));
+    }
+
+    @Test
+    public void shouldCloseSideEffectsUsingWithRemote() throws Exception {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        g.addV("person").property("age", 20).iterate();
+        g.addV("person").property("age", 10).iterate();
+        final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
+        traversal.iterate();
+        final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
+        final List sideEffects = se.get("a");
+        assertThat(sideEffects.isEmpty(), is(false));
+        se.close();
+
+        // Can't get new side effects after close
+        assertNull(se.get("b"));
+
+        // Earlier keys should be cached locally
+        final Set<String> localSideEffectKeys = se.keys();
+        assertEquals(1, localSideEffectKeys.size());
+        final List localSideEffects = se.get("a");
+        assertThat(localSideEffects.isEmpty(), is(false));
+
+        // Try to get side effect from server
+        final Cluster cluster = Cluster.build("localhost").create();
+        final Client client = cluster.connect();
+        Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
+        field.setAccessible(true);
+        UUID serverSideEffectId = (UUID) field.get(se);
+        final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
+                .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffectId)
+                .addArg(Tokens.ARGS_SIDE_EFFECT_KEY, "b")
+                .processor("traversal").create();
+        boolean error;
+        try {
+            client.submitAsync(msg).get();
+            error = false;
+        } catch (Exception ex) {
+            error = true;
+        }
+        assertThat(error, is(true));
     }
 }
+
+
+
