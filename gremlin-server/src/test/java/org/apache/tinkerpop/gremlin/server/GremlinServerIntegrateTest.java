@@ -52,6 +52,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCusto
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
@@ -850,9 +851,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(2, sideEffectKeys.size());
 
         // Get side effects
-        final List aSideEffects = se.get("a");
+        final BulkSet aSideEffects = se.get("a");
         assertThat(aSideEffects.isEmpty(), is(false));
-        final List bSideEffects = se.get("b");
+        final BulkSet bSideEffects = se.get("b");
         assertThat(bSideEffects.isEmpty(), is(false));
 
         // Should get local keys/side effects after close
@@ -861,10 +862,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Set<String> localSideEffectKeys = se.keys();
         assertEquals(2, localSideEffectKeys.size());
 
-        final List localASideEffects = se.get("a");
+        final BulkSet localASideEffects = se.get("a");
         assertThat(localASideEffects.isEmpty(), is(false));
 
-        final List localBSideEffects = se.get("b");
+        final BulkSet localBSideEffects = se.get("b");
         assertThat(localBSideEffects.isEmpty(), is(false));
     }
 
@@ -877,7 +878,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final GraphTraversal traversal = g.V().aggregate("a").aggregate("b");
         traversal.iterate();
         final DriverRemoteTraversalSideEffects se = (DriverRemoteTraversalSideEffects) traversal.asAdmin().getSideEffects();
-        final List sideEffects = se.get("a");
+        final BulkSet sideEffects = se.get("a");
         assertThat(sideEffects.isEmpty(), is(false));
         se.close();
 
@@ -887,7 +888,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Earlier keys should be cached locally
         final Set<String> localSideEffectKeys = se.keys();
         assertEquals(1, localSideEffectKeys.size());
-        final List localSideEffects = se.get("a");
+        final BulkSet localSideEffects = se.get("a");
         assertThat(localSideEffects.isEmpty(), is(false));
 
         // Try to get side effect from server
@@ -896,13 +897,16 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
         field.setAccessible(true);
         UUID serverSideEffectId = (UUID) field.get(se);
+        final Map<String, String> aliases = new HashMap<>();
+        aliases.put("g", "g");
         final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
                 .addArg(Tokens.ARGS_SIDE_EFFECT, serverSideEffectId)
                 .addArg(Tokens.ARGS_SIDE_EFFECT_KEY, "b")
+                .addArg(Tokens.ARGS_ALIASES, aliases)
                 .processor("traversal").create();
         boolean error;
         try {
-            client.submitAsync(msg).get();
+            client.submitAsync(msg).get().one();
             error = false;
         } catch (Exception ex) {
             error = true;
