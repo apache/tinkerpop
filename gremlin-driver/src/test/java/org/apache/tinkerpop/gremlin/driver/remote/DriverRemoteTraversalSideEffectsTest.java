@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -63,9 +64,28 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
     }
 
     @Test
-    public void shouldNotContactRemoteMoreThanOnceForClose() throws Exception {
+    public void shoudlNotContactRemoteForGetAfterCloseIsCalled() throws Exception {
         final Client client = mock(Client.class);
         mockClientForCall(client);
+        mockClientForCall(client);
+        final UUID sideEffectKey = UUID.fromString("31dec2c6-b214-4a6f-a68b-996608dce0d9");
+        final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null);
+
+        assertNotNull(sideEffects.get("a"));
+        sideEffects.close();
+
+        // Side effect 'a' should be cached locally
+        assertNotNull(sideEffects.get("a"));
+        assertNotNull(sideEffects.get("a"));
+        assertNotNull(sideEffects.get("a"));
+
+        // Once for get and once for close
+        verify(client, times(2)).submitAsync(any(RequestMessage.class));
+    }
+
+    @Test
+    public void shouldNotContactRemoteMoreThanOnceForClose() throws Exception {
+        final Client client = mock(Client.class);
         mockClientForCall(client);
 
         final UUID sideEffectKey = UUID.fromString("31dec2c6-b214-4a6f-a68b-996608dce0d9");
@@ -79,7 +99,7 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
 
         assertEquals(0, sideEffects.keys().size());
 
-        // once for the keys and once for the close message
+        // once for the close message
         verify(client, times(1)).submitAsync(any(RequestMessage.class));
     }
 

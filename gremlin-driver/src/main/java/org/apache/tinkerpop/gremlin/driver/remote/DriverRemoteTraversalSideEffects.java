@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTrave
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -67,10 +68,13 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 try {
                     final Result result = client.submitAsync(msg).get().one();
                     sideEffects.put(key, null == result ? null : result.getObject());
+                    if (keys.isEmpty())
+                        keys = new HashSet<>();
                     keys.add(key);
                 } catch (Exception ex) {
                     final Throwable root = ExceptionUtils.getRootCause(ex);
-                    if (root.getMessage().equals("Could not find side-effects for " + serverSideEffect + "."))
+                    final String exMsg = null == root ? "" : root.getMessage();
+                    if (exMsg.equals("Could not find side-effects for " + serverSideEffect + "."))
                         sideEffects.put(key, null);
                     else
                         throw new RuntimeException("Could not get keys", root);
