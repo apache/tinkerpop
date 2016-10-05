@@ -404,7 +404,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
          * Specifies the partition of the graph to read from.  It is possible to assign multiple partition keys so
          * as to read from multiple partitions at the same time.
          *
-         * @deprecated Since 3.2.3. Use {@link Builder#readPartitions} instead
+         * @deprecated As of release 3.2.3, replaced by {@link Builder#readPartitions(List)}.
          */
         @Deprecated
         public Builder addReadPartition(final String readPartition) {
