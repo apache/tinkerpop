@@ -150,11 +150,39 @@ class TestDriverRemoteConnection(TestCase):
             raise Exception("Accessing a non-existent key should throw an error")
         except KeyError:
             pass
-        result = t.side_effects.close()
-        assert not result
-        with pytest.raises(KeyError):
-            x = t.side_effects['m']
-        connection.close()
+
+    def test_side_effect_close(self):
+        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        g = Graph().traversal().withRemote(connection)
+        t = g.V().aggregate('a').aggregate('b')
+        t.toList()
+
+        # The 'a' key should return some side effects
+        results = t.side_effects.get('a')
+        assert results
+
+        # Close result is None
+        results = t.side_effects.close()
+        assert not results
+
+        # Shouldn't get any new info from server
+        # 'b' isn't in local cache
+        results = t.side_effects.get('b')
+        assert not results
+
+        # But 'a' should still be cached locally
+        results = t.side_effects.get('a')
+        assert results
+
+        # 'a' should have been added to local keys cache, but not 'b'
+        results = t.side_effects.keys()
+        assert len(results) == 1
+        a, = results
+        assert a == 'a'
+
+        # Try to get 'b' directly from server, should throw error
+        with pytest.raises(Exception):
+            t.side_effects.value_lambda('b')
 
 
 if __name__ == '__main__':
