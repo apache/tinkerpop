@@ -914,6 +914,3 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(error, is(true));
     }
 }
-
-
-
