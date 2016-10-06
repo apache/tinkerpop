@@ -43,6 +43,7 @@ import java.util.Set;
  */
 public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<Class<? extends TraversalStrategy>> {
 
+    public static final String STRATEGY = "strategy";
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -80,7 +82,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         final StringBuilder traversalScript = new StringBuilder(start);
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
-            if(IS_TESTING && methodName.equals(TraversalSource.Symbols.withStrategies))
+            if (IS_TESTING && methodName.equals(TraversalSource.Symbols.withStrategies))
                 continue;
             if (0 == instruction.getArguments().length)
                 traversalScript.append(".").append(methodName).append("()");
@@ -100,13 +102,23 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
         else if (object instanceof String)
-            return "\"" + object + "\"";
+            return ((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"";
         else if (object instanceof List) {
             final List<String> list = new ArrayList<>(((List) object).size());
             for (final Object item : (List) object) {
                 list.add(convertToString(item));
             }
             return list.toString();
+        } else if (object instanceof Map) {
+            final StringBuilder map = new StringBuilder("new LinkedHashMap(){{");
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                map.append("put(").
+                        append(convertToString(entry.getKey())).
+                        append(",").
+                        append(convertToString(entry.getValue())).
+                        append(");");
+            }
+            return map.append("}}").toString();
         } else if (object instanceof Long)
             return object + "L";
         else if (object instanceof Double)
@@ -134,6 +146,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
+        else if (object instanceof Traversal)
+            return this.internalTranslate("__", ((Traversal) object).asAdmin().getBytecode());
         else
             return null == object ? "null" : object.toString();
     }

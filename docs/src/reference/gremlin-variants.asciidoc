@@ -227,15 +227,15 @@ it is possible to use the `withBindings()`-model as Gremlin-Python's `Bindings.o
 Traversal Strategies
 ~~~~~~~~~~~~~~~~~~~~
 
-In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, the `withStrategy()` and
-`withoutStrategy()` steps should be used.
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, the `withStrategies(Map<String,Object>...)` and
+`withoutStrategies(String...)` steps should be used.
 
 [gremlin-python,modern]
 ----
-g = g.withStrategy('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy','vertices',__.hasLabel('person'),'edges',__.has('weight',gt(0.5)))
+g = g.withStrategies({'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy','vertices': hasLabel('person'),'edges': has('weight',gt(0.5))})
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
-g = g.withoutStrategy('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy')
+g = g.withoutStrategies('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy')
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
 ----

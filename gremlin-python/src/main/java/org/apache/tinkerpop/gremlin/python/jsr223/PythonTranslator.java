@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -102,7 +103,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
-            if (IS_TESTING && methodName.equals(TraversalSource.Symbols.withStrategies))
+            if (IS_TESTING && methodName.equals(TraversalSource.Symbols.withStrategies) && !(instruction.getArguments()[0] instanceof Map))
                 continue;
             else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
@@ -133,13 +134,22 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
         else if (object instanceof String)
-            return "\"" + object + "\"";
+            return ((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"";
         else if (object instanceof List) {
             final List<String> list = new ArrayList<>(((List) object).size());
             for (final Object item : (List) object) {
                 list.add(convertToString(item));
             }
             return list.toString();
+        } else if (object instanceof Map) {
+            final StringBuilder map = new StringBuilder("{");
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                map.append(convertToString(entry.getKey())).
+                        append(":").
+                        append(convertToString(entry.getValue())).
+                        append(",");
+            }
+            return map.length() > 1 ? map.substring(0, map.length() - 1) + "}" : map.append("}").toString();
         } else if (object instanceof Long)
             return object + "L";
         else if (object instanceof Boolean)
@@ -158,6 +168,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
+        else if (object instanceof Traversal)
+            return this.internalTranslate("__", ((Traversal.Admin) object).asAdmin().getBytecode());
         else if (object instanceof Computer)
             return "";
         else if (object instanceof Lambda)

@@ -324,20 +324,21 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
     }
 
+    public static final String INCLUDE_META_PROPERTIES = "includeMetaProperties";
+    public static final String WRITE_PARTITION = "writePartition";
+    public static final String PARTITION_KEY = "partitionKey";
+    public static final String READ_PARTITIONS = "readPartitions";
+
     public static PartitionStrategy create(final Configuration configuration) {
         final PartitionStrategy.Builder builder = PartitionStrategy.build();
-        configuration.getKeys().forEachRemaining(key -> {
-            if (key.equals("includeMetaProperties"))
-                builder.includeMetaProperties((Boolean) configuration.getProperty(key));
-            else if (key.equals("writePartition"))
-                builder.writePartition((String) configuration.getProperty(key));
-            else if (key.equals("partitionKey"))
-                builder.partitionKey((String) configuration.getProperty(key));
-            else if (key.equals("readPartitions"))
-                builder.readPartitions((List<String>) configuration.getProperty(key));
-            else
-                throw new IllegalArgumentException("The following " + PartitionStrategy.class.getSimpleName() + " configuration is unknown: " + key + ":" + configuration.getProperty(key));
-        });
+        if (configuration.containsKey(INCLUDE_META_PROPERTIES))
+            builder.includeMetaProperties(configuration.getBoolean(INCLUDE_META_PROPERTIES));
+        if (configuration.containsKey(WRITE_PARTITION))
+            builder.writePartition(configuration.getString(WRITE_PARTITION));
+        if (configuration.containsKey(PARTITION_KEY))
+            builder.partitionKey(configuration.getString(PARTITION_KEY));
+        if (configuration.containsKey(READ_PARTITIONS))
+            builder.readPartitions((List) configuration.getList(READ_PARTITIONS));
         return builder.create();
     }
 

@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -371,7 +372,10 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void shouldFilterVertexProperties() throws Exception {
-        GraphTraversalSource sg = g.withStrategy(SubgraphStrategy.class.getCanonicalName(), "vertexProperties", __.has("startTime", P.gt(2005)));
+        GraphTraversalSource sg = g.withStrategies(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.STRATEGY, SubgraphStrategy.class.getCanonicalName());
+            put(SubgraphStrategy.VERTEX_PROPERTIES, __.has("startTime", P.gt(2005)));
+        }});
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
         if (sg.getStrategies().getStrategy(InlineFilterStrategy.class).isPresent())
@@ -397,7 +401,11 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         sg = g.withStrategies(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
         checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.incr).values("location"));
         //
-        sg = g.withStrategy(SubgraphStrategy.class.getCanonicalName(), "vertices", __.has("location"), "vertexProperties", __.hasNot("endTime"));
+        sg = g.withStrategies(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.STRATEGY, SubgraphStrategy.class.getCanonicalName());
+            put(SubgraphStrategy.VERTICES, __.has("location"));
+            put(SubgraphStrategy.VERTEX_PROPERTIES, __.hasNot("endTime"));
+        }});
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().valueMap("location").select(Column.values).unfold().unfold());
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().propertyMap("location").select(Column.values).unfold().unfold().value());
         //

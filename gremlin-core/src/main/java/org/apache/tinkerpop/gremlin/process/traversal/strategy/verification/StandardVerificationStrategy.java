@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
@@ -52,7 +53,7 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            for (String label : step.getLabels()) {
+            for (String label : new ArrayList<>(step.getLabels())) {
                 if (Graph.Hidden.isHidden(label))
                     step.removeLabel(label);
             }

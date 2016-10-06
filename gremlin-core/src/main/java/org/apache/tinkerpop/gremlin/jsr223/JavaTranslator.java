@@ -89,16 +89,33 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     ////
 
-    private Traversal.Admin<?, ?> translateFromAnonymous(final Bytecode bytecode) {
-        try {
-            final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
-            for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-                invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
+    private Object translateObject(final Object object) {
+        if (object instanceof Bytecode.Binding)
+            return ((Bytecode.Binding) object).value();
+        else if (object instanceof Bytecode) {
+            try {
+                final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
+                for (final Bytecode.Instruction instruction : ((Bytecode) object).getStepInstructions()) {
+                    invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
+                }
+                return traversal;
+            } catch (final Throwable e) {
+                throw new IllegalStateException(e.getMessage());
             }
-            return traversal;
-        } catch (final Throwable e) {
-            throw new IllegalStateException(e.getMessage());
-        }
+        } else if (object instanceof Map) {
+            final Map<Object, Object> map = new HashMap<>(((Map) object).size());
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                map.put(translateObject(entry.getKey()), translateObject(entry.getValue()));
+            }
+            return map;
+        } else if (object instanceof List) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (List) object) {
+                list.add(translateObject(o));
+            }
+            return list;
+        } else
+            return object;
     }
 
     private Object invokeMethod(final Object delegate, final Class returnType, final String methodName, final Object... arguments) {
@@ -109,12 +126,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         // create a copy of the argument array so as not to mutate the original bytecode
         final Object[] argumentsCopy = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i] instanceof Bytecode.Binding)
-                argumentsCopy[i] = ((Bytecode.Binding) arguments[i]).value();
-            else if (arguments[i] instanceof Bytecode)
-                argumentsCopy[i] = this.translateFromAnonymous((Bytecode) arguments[i]);
-            else
-                argumentsCopy[i] = arguments[i];
+            argumentsCopy[i] = translateObject(arguments[i]);
         }
         try {
             for (final Method method : methodCache.get(methodName)) {

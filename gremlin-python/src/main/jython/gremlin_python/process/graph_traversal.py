@@ -57,17 +57,9 @@ class GraphTraversalSource(object):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withStrategies", *args)
     return source
-  def withStrategy(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
-    source.bytecode.add_source("withStrategy", *args)
-    return source
   def withoutStrategies(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withoutStrategies", *args)
-    return source
-  def withoutStrategy(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
-    source.bytecode.add_source("withoutStrategy", *args)
     return source
   def withRemote(self, remote_connection):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))

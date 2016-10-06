@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -419,17 +420,12 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("C").readPartitions("A").create();
         final GraphTraversalSource sourceCA = g.withStrategies(partitionStrategyCA);
 
-        final PartitionStrategy partitionStrategyCABC = PartitionStrategy.build()
-                .partitionKey(partition)
-                .writePartition("C")
-                .addReadPartition("A")
-                .addReadPartition("B")
-                .addReadPartition("C").create();
-        final GraphTraversalSource sourceCABC = g.withStrategy(PartitionStrategy.class.getCanonicalName(),
-                "writePartition", "C",
-                "partitionKey", partition,
-                "readPartitions", Arrays.asList("A", "B", "C"));
-
+        final GraphTraversalSource sourceCABC = g.withStrategies(new HashMap<String, Object>() {{
+            put(PartitionStrategy.STRATEGY, PartitionStrategy.class.getCanonicalName());
+            put(PartitionStrategy.WRITE_PARTITION, "C");
+            put(PartitionStrategy.PARTITION_KEY, partition);
+            put(PartitionStrategy.READ_PARTITIONS, Arrays.asList("A", "B", "C"));
+        }});
         final PartitionStrategy partitionStrategyCC = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("C").addReadPartition("C").create();
         final GraphTraversalSource sourceCC = g.withStrategies(partitionStrategyCC);

@@ -38,6 +38,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -59,7 +61,10 @@ public class HaltedTraverserStrategyTest {
     @Test
     public void shouldReturnDetachedElements() {
         final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal().withComputer().withStrategy(HaltedTraverserStrategy.class.getCanonicalName(), "haltedTraverserFactory", DetachedFactory.class.getCanonicalName());
+        final GraphTraversalSource g = graph.traversal().withComputer().withStrategies(new HashMap<String, Object>() {{
+            put(HaltedTraverserStrategy.STRATEGY, HaltedTraverserStrategy.class.getCanonicalName());
+            put(HaltedTraverserStrategy.HALTED_TRAVERSER_FACTORY, DetachedFactory.class.getCanonicalName());
+        }});
         g.V().out().forEachRemaining(vertex -> assertEquals(DetachedVertex.class, vertex.getClass()));
         g.V().out().properties("name").forEachRemaining(vertexProperty -> assertEquals(DetachedVertexProperty.class, vertexProperty.getClass()));
         g.V().out().values("name").forEachRemaining(value -> assertEquals(String.class, value.getClass()));

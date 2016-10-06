@@ -59,9 +59,11 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
         return traverser;
     }
 
+    public static final String HALTED_TRAVERSER_FACTORY = "haltedTraverserFactory";
+
     public static HaltedTraverserStrategy create(final Configuration configuration) {
         try {
-            return new HaltedTraverserStrategy(Class.forName((String) configuration.getProperty("haltedTraverserFactory")));
+            return new HaltedTraverserStrategy(Class.forName(configuration.getString(HALTED_TRAVERSER_FACTORY)));
         } catch (final ClassNotFoundException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }

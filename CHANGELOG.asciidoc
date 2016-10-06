@@ -26,9 +26,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `TraversalSource.withComputer(Object...)` for better language variant support.
+* Fixed a `String` bug in `GroovyTranslator` and `PythonTranslator` where if the string has double-quotes, use """ """.
+* Fixed a `List` and `Map` bug in `JavaTranslator` where such collections were not being internally translated.
+* Added `TraversalSource.withComputer(Map<String,Object>)` for better language variant support.
+* Added `TraversalSource.withStrategies(Map<String,Object>)`/`withoutStrategies(String...)` for better language variant support.
 * Added `PartitionStrategy.Builder.readPartitions()` and deprecated `PartitionStrategy.Builder.addPartition()`.
-* Added `TraversalSource.withStrategy(String,Object...)`/`withoutStrategy(String)` for better language variant support.
 * `FilterRankStrategy` now propagates labels "right" over non-`Scoping` filters.
 * Fixed a bug in `ConnectiveP` where nested equivalent connectives should be inlined.
 * Fixed a bug in `IncidentToAdjacentStrategy` where `TreeStep` traversals were allowed.

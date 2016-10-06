@@ -24,6 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -59,18 +62,20 @@ public class GraphTraversalSourceTest {
     public void shouldSupportStringBasedStrategies() throws Exception {
         GraphTraversalSource g = EmptyGraph.instance().traversal();
         assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
-        g = g.withStrategy(SubgraphStrategy.class.getCanonicalName(),
-                "vertices", __.hasLabel("person"),
-                "vertexProperties", __.limit(0),
-                "edges", __.hasLabel("knows"));
+        g = g.withStrategies(new HashMap<String, Object>() {{
+            put("strategy", SubgraphStrategy.class.getCanonicalName());
+            put("vertices", __.hasLabel("person"));
+            put("vertexProperties", __.limit(0));
+            put("edges", __.hasLabel("knows"));
+        }});
         assertTrue(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
-        g = g.withoutStrategy(SubgraphStrategy.class.getCanonicalName());
+        g = g.withoutStrategies(SubgraphStrategy.class.getCanonicalName());
         assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
         //
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
-        g = g.withStrategy(ReadOnlyStrategy.class.getCanonicalName());
+        g = g.withStrategies(Collections.singletonMap("strategy", ReadOnlyStrategy.class.getCanonicalName()));
         assertTrue(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
-        g = g.withoutStrategy(ReadOnlyStrategy.class.getCanonicalName());
+        g = g.withoutStrategies(ReadOnlyStrategy.class.getCanonicalName());
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
     }
 }

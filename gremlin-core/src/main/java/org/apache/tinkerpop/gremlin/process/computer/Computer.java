@@ -45,27 +45,36 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     private Traversal<Vertex, Vertex> vertices = null;
     private Traversal<Vertex, Edge> edges = null;
 
+    public static final String GRAPH_COMPUTER = "graphComputer";
+    public static final String WORKERS = "workers";
+    public static final String PERSIST = "persist";
+    public static final String RESULT = "result";
+    public static final String VERTICES = "vertices";
+    public static final String EDGES = "edges";
+
     private Computer(final Class<? extends GraphComputer> graphComputerClass) {
         this.graphComputerClass = graphComputerClass;
     }
 
+    private Computer() {
+
+    }
+
     public static Computer compute(final Configuration configuration) {
         try {
-            final Computer computer = new Computer(configuration.containsKey("graphComputer") ?
-                    (Class) Class.forName(configuration.getString("graphComputer")) :
-                    GraphComputer.class);
+            final Computer computer = new Computer();
             for (final String key : (List<String>) IteratorUtils.asList(configuration.getKeys())) {
-                if (key.equals("graphComputer")) {
-                    // do nothing
-                } else if (key.equals("workers"))
+                if (key.equals(GRAPH_COMPUTER))
+                    computer.graphComputerClass = (Class) Class.forName(configuration.getString("graphComputer"));
+                else if (key.equals(WORKERS))
                     computer.workers = configuration.getInt(key);
-                else if (key.equals("persist"))
+                else if (key.equals(PERSIST))
                     computer.persist = GraphComputer.Persist.valueOf(configuration.getString(key));
-                else if (key.equals("result"))
+                else if (key.equals(RESULT))
                     computer.resultGraph = GraphComputer.ResultGraph.valueOf(configuration.getString(key));
-                else if (key.equals("vertices"))
+                else if (key.equals(VERTICES))
                     computer.vertices = (Traversal) configuration.getProperty(key);
-                else if (key.equals("edges"))
+                else if (key.equals(EDGES))
                     computer.edges = (Traversal) configuration.getProperty(key);
                 else
                     computer.configuration.put(key, configuration.getProperty(key));

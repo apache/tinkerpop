@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -249,7 +250,13 @@ public final class Bytecode implements Cloneable, Serializable {
     private final Object convertArgument(final Object argument) {
         if (argument instanceof Traversal)
             return ((Traversal) argument).asAdmin().getBytecode();
-
+        else if (argument instanceof Map) {
+            final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
+                map.put(convertArgument(entry.getKey()), convertArgument(entry.getValue()));
+            }
+            return map;
+        }
         if (null != this.bindings) {
             final String variable = this.bindings.getBoundVariable(argument);
             if (null != variable)

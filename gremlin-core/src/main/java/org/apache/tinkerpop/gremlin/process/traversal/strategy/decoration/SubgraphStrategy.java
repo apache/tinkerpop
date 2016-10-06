@@ -90,8 +90,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         } else {
             final Traversal.Admin<Edge, ?> vertexPredicate;
             vertexPredicate = __.<Edge>and(
-                    __.inV().filter(this.vertexCriterion.clone()),
-                    __.outV().filter(this.vertexCriterion.clone())).asAdmin();
+                    __.inV().filter(this.vertexCriterion),
+                    __.outV().filter(this.vertexCriterion)).asAdmin();
 
             // if there is a vertex predicate then there is an implied edge filter on vertices even if there is no
             // edge predicate provided by the user.
@@ -204,8 +204,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         if (null != this.vertexPropertyCriterion) {
             final OrStep<Object> checkPropertyCriterion = new OrStep(traversal,
                     new DefaultTraversal<>().addStep(new ClassFilterStep<>(traversal, VertexProperty.class, false)),
-                    new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone())));
-            final Traversal.Admin nonCheckPropertyCriterion = new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion.clone()));
+                    new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion)));
+            final Traversal.Admin nonCheckPropertyCriterion = new DefaultTraversal<>().addStep(new TraversalFilterStep<>(traversal, this.vertexPropertyCriterion));
 
             // turn all ElementValueTraversals into filters
             for (final Step<?, ?> step : traversal.getSteps()) {
@@ -291,18 +291,18 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         return this.vertexPropertyCriterion;
     }
 
+    public static final String VERTICES = "vertices";
+    public static final String EDGES = "edges";
+    public static final String VERTEX_PROPERTIES = "vertexProperties";
+
     public static SubgraphStrategy create(final Configuration configuration) {
         final Builder builder = SubgraphStrategy.build();
-        configuration.getKeys().forEachRemaining(key -> {
-            if (key.equals("vertices") || key.equals("vertexCriterion"))
-                builder.vertices((Traversal) configuration.getProperty(key));
-            else if (key.equals("edges") || key.equals("edgeCriterion"))
-                builder.edges((Traversal) configuration.getProperty(key));
-            else if (key.equals("vertexProperties"))
-                builder.vertexProperties((Traversal) configuration.getProperty(key));
-            else
-                throw new IllegalArgumentException("The following " + SubgraphStrategy.class.getSimpleName() + " configuration is unknown: " + key + ":" + configuration.getProperty(key));
-        });
+        if (configuration.containsKey(VERTICES))
+            builder.vertices((Traversal) configuration.getProperty(VERTICES));
+        if (configuration.containsKey(EDGES))
+            builder.edges((Traversal) configuration.getProperty(EDGES));
+        if (configuration.containsKey(VERTEX_PROPERTIES))
+            builder.vertexProperties((Traversal) configuration.getProperty(VERTEX_PROPERTIES));
         return builder.create();
     }
 
