@@ -53,7 +53,7 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            for (String label : new ArrayList<>(step.getLabels())) {
+            for (String label : step.getLabels()) {
                 if (Graph.Hidden.isHidden(label))
                     step.removeLabel(label);
             }

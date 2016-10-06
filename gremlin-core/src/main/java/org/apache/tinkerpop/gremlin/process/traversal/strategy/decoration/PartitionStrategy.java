@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -55,6 +56,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -324,6 +326,20 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
     }
 
+    @Override
+    public Configuration getConfiguration() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(STRATEGY, PartitionStrategy.class.getCanonicalName());
+        map.put(INCLUDE_META_PROPERTIES, this.includeMetaProperties);
+        if (null != this.writePartition)
+            map.put(WRITE_PARTITION, this.writePartition);
+        if (null != this.readPartitions)
+            map.put(READ_PARTITIONS, this.readPartitions);
+        if (null != this.partitionKey)
+            map.put(PARTITION_KEY, this.partitionKey);
+        return new MapConfiguration(map);
+    }
+
     public static final String INCLUDE_META_PROPERTIES = "includeMetaProperties";
     public static final String WRITE_PARTITION = "writePartition";
     public static final String PARTITION_KEY = "partitionKey";
@@ -338,7 +354,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         if (configuration.containsKey(PARTITION_KEY))
             builder.partitionKey(configuration.getString(PARTITION_KEY));
         if (configuration.containsKey(READ_PARTITIONS))
-            builder.readPartitions((List) configuration.getList(READ_PARTITIONS));
+            builder.readPartitions(new ArrayList((Collection)configuration.getProperty(READ_PARTITIONS)));
         return builder.create();
     }
 

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -40,6 +41,8 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -152,16 +155,24 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         }
     }
 
+    public static final String ID_PROPERTY_KEY = "idPropertyKey";
+    public static final String ID_MAKER = "idMaker";
+
     public static ElementIdStrategy create(final Configuration configuration) {
         final ElementIdStrategy.Builder builder = ElementIdStrategy.build();
-        configuration.getKeys().forEachRemaining(key -> {
-            if (key.equals("idPropertyKey"))
-                builder.idPropertyKey((String) configuration.getProperty(key));
-            else if (key.equals("idMaker"))
-                builder.idMaker((Supplier) configuration.getProperty(key));
-            else
-                throw new IllegalArgumentException("The following " + ElementIdStrategy.class.getSimpleName() + " configuration is unknown: " + key + ":" + configuration.getProperty(key));
-        });
+        if (configuration.containsKey(ID_MAKER))
+            builder.idMaker((Supplier) configuration.getProperty(ID_MAKER));
+        if (configuration.containsKey(ID_PROPERTY_KEY))
+            builder.idPropertyKey(configuration.getString(ID_PROPERTY_KEY));
         return builder.create();
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(STRATEGY, ElementIdStrategy.class.getCanonicalName());
+        map.put(ID_PROPERTY_KEY, this.idPropertyKey);
+        map.put(ID_MAKER, this.idMaker);
+        return new MapConfiguration(map);
     }
 }

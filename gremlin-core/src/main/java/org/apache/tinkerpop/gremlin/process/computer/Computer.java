@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -65,7 +66,7 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
             final Computer computer = new Computer();
             for (final String key : (List<String>) IteratorUtils.asList(configuration.getKeys())) {
                 if (key.equals(GRAPH_COMPUTER))
-                    computer.graphComputerClass = (Class) Class.forName(configuration.getString("graphComputer"));
+                    computer.graphComputerClass = (Class) Class.forName(configuration.getString(key));
                 else if (key.equals(WORKERS))
                     computer.workers = configuration.getInt(key);
                 else if (key.equals(PERSIST))
@@ -197,5 +198,24 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
 
     public int getWorkers() {
         return this.workers;
+    }
+
+    public Configuration getConf() {
+        final Map<String, Object> map = new HashMap<>();
+        if (-1 != this.workers)
+            map.put(WORKERS, this.workers);
+        if (null != this.persist)
+            map.put(PERSIST, this.persist.name());
+        if (null != this.resultGraph)
+            map.put(RESULT, this.resultGraph.name());
+        if (null != this.vertices)
+            map.put(RESULT, this.vertices);
+        if (null != this.edges)
+            map.put(EDGES, this.edges);
+        map.put(GRAPH_COMPUTER, this.graphComputerClass.getCanonicalName());
+        for (final Map.Entry<String, Object> entry : this.configuration.entrySet()) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return new MapConfiguration(map);
     }
 }

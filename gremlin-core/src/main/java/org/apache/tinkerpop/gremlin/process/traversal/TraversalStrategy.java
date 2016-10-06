@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
@@ -74,6 +76,16 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
      */
     public default Class<S> getTraversalCategory() {
         return (Class) TraversalStrategy.class;
+    }
+
+    /**
+     * Get the configuration representation of this strategy.
+     * This is useful for converting a strategy into a serialized form.
+     *
+     * @return the configuration used to create this strategy
+     */
+    public default Configuration getConfiguration() {
+        return new MapConfiguration(Collections.singletonMap(STRATEGY, this.getClass().getCanonicalName()));
     }
 
     @Override

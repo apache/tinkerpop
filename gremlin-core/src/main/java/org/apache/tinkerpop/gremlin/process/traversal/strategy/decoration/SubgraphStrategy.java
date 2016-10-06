@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -54,9 +55,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -78,15 +80,15 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = Collections.singleton(ConnectiveStrategy.class);
 
-    private final String MARKER = Graph.Hidden.hide(UUID.randomUUID().toString());
+    private final String MARKER = Graph.Hidden.hide("gremlin.subgraphStrategy");
 
     private SubgraphStrategy(final Traversal<Vertex, ?> vertexCriterion, final Traversal<Edge, ?> edgeCriterion, final Traversal<VertexProperty, ?> vertexPropertyCriterion) {
 
-        this.vertexCriterion = null == vertexCriterion ? null : vertexCriterion.asAdmin();
+        this.vertexCriterion = null == vertexCriterion ? null : vertexCriterion.asAdmin().clone();
 
         // if there is no vertex predicate there is no need to test either side of the edge
         if (null == this.vertexCriterion) {
-            this.edgeCriterion = null == edgeCriterion ? null : edgeCriterion.asAdmin();
+            this.edgeCriterion = null == edgeCriterion ? null : edgeCriterion.asAdmin().clone();
         } else {
             final Traversal.Admin<Edge, ?> vertexPredicate;
             vertexPredicate = __.<Edge>and(
@@ -97,10 +99,10 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             // edge predicate provided by the user.
             this.edgeCriterion = null == edgeCriterion ?
                     vertexPredicate :
-                    edgeCriterion.asAdmin().addStep(new TraversalFilterStep<>(edgeCriterion.asAdmin(), vertexPredicate));
+                    edgeCriterion.asAdmin().clone().addStep(new TraversalFilterStep<>(edgeCriterion.asAdmin(), vertexPredicate));
         }
 
-        this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin();
+        this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin().clone();
 
         if (null != this.vertexCriterion)
             this.addLabelMarker(this.vertexCriterion);
@@ -272,6 +274,19 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 }
             }
         }
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(STRATEGY, SubgraphStrategy.class.getCanonicalName());
+        if (null != this.vertexCriterion)
+            map.put(VERTICES, this.vertexCriterion);
+        if (null != this.edgeCriterion)
+            map.put(EDGES, this.edgeCriterion);
+        if (null != this.vertexPropertyCriterion)
+            map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+        return new MapConfiguration(map);
     }
 
     @Override

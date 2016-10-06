@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.lang.reflect.Array;
@@ -31,14 +32,19 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class JavaTranslator<S extends TraversalSource, T extends Traversal.Admin<?, ?>> implements Translator.StepTranslator<S, T> {
+
+    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private final S traversalSource;
     private final Class anonymousTraversal;
@@ -64,6 +70,10 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         TraversalSource dynamicSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
         for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+            if (IS_TESTING &&
+                    instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
+                    ((Map) instruction.getArguments()[0]).get(TraversalStrategy.STRATEGY).toString().contains("TranslationStrategy"))
+                continue;
             dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
         boolean spawned = false;
@@ -91,7 +101,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private Object translateObject(final Object object) {
         if (object instanceof Bytecode.Binding)
-            return ((Bytecode.Binding) object).value();
+            return translateObject(((Bytecode.Binding) object).value());
         else if (object instanceof Bytecode) {
             try {
                 final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversal.getMethod("start").invoke(null);
@@ -103,17 +113,23 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 throw new IllegalStateException(e.getMessage());
             }
         } else if (object instanceof Map) {
-            final Map<Object, Object> map = new HashMap<>(((Map) object).size());
+            final Map<Object, Object> map = new LinkedHashMap<>(((Map) object).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
                 map.put(translateObject(entry.getKey()), translateObject(entry.getValue()));
             }
             return map;
         } else if (object instanceof List) {
-            final List<Object> list = new ArrayList<>();
+            final List<Object> list = new ArrayList<>(((List) object).size());
             for (final Object o : (List) object) {
                 list.add(translateObject(o));
             }
             return list;
+        } else if (object instanceof Set) {
+            final Set<Object> set = new HashSet<>(((Set) object).size());
+            for (final Object o : (Set) object) {
+                set.add(translateObject(o));
+            }
+            return set;
         } else
             return object;
     }

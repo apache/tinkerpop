@@ -19,15 +19,24 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -92,6 +101,39 @@ public class BytecodeTest {
 
         assertEquals(1, bytecode1.getBindings().size());
         assertEquals("created", bytecode1.getBindings().get("a"));
+    }
 
+    @Test
+    public void shouldSupportNestedBindings() {
+        final Bindings b = new Bindings();
+        final GraphTraversalSource g = EmptyGraph.instance().traversal().withBindings(b);
+
+        final Bytecode bytecode = g.withStrategies(new HashMap<String, Object>() {{
+            put(SubgraphStrategy.STRATEGY, SubgraphStrategy.class.getCanonicalName());
+            put(SubgraphStrategy.VERTICES, b.of("a", __.has("name", "marko")));
+        }}).V().out(b.of("b", "created")).asAdmin().getBytecode();
+
+        assertTrue(bytecode.getBindings().containsKey("a"));
+        assertTrue(bytecode.getBindings().containsKey("b"));
+        assertEquals(2, bytecode.getBindings().size());
+        assertEquals(__.has("name", "marko").asAdmin().getBytecode(), bytecode.getBindings().get("a"));
+        assertEquals("created", bytecode.getBindings().get("b"));
+    }
+
+    @Test
+    public void shouldConvertStrategies() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        Bytecode bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getBytecode();
+        assertEquals(Collections.singletonMap(ReadOnlyStrategy.STRATEGY, ReadOnlyStrategy.class.getCanonicalName()), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getBytecode();
+        assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getBytecode(),
+                ((Map) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).get(SubgraphStrategy.EDGES));
+    }
+
+    @Test
+    public void shouldConvertComputer() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        Bytecode bytecode = g.withComputer(Computer.compute().workers(10)).getBytecode();
+        assertEquals(ConfigurationConverter.getMap(Computer.compute().workers(10).getConf()), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
     }
 }

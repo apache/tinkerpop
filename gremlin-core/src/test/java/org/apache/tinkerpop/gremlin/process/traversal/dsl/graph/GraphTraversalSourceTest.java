@@ -59,7 +59,7 @@ public class GraphTraversalSourceTest {
     }
 
     @Test
-    public void shouldSupportStringBasedStrategies() throws Exception {
+    public void shouldSupportMapBasedStrategies() throws Exception {
         GraphTraversalSource g = EmptyGraph.instance().traversal();
         assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
         g = g.withStrategies(new HashMap<String, Object>() {{

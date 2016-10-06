@@ -313,9 +313,24 @@ class Bytecode(object):
         if isinstance(arg, Traversal):
             self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
+        elif isinstance(arg, dict):
+            newDict = {}
+            for key in arg:
+                newDict[self.__convertArgument(key)] = self.__convertArgument(arg[key])
+            return newDict
+        elif isinstance(arg, list):
+            newList = []
+            for item in arg:
+                newList.append(self.__convertArgument(item))
+            return newList
+        elif isinstance(arg, set):
+            newSet = set()
+            for item in arg:
+                newSet.add(self.__convertArgument(item))
+            return newSet
         elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
             self.bindings[arg[0]] = arg[1]
-            return Binding(arg[0],arg[1])
+            return Binding(arg[0],self.__convertArgument(arg[1]))
         else:
             return arg
     def __repr__(self):

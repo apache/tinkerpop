@@ -47,7 +47,7 @@ class GraphSONWriter(object):
             if isinstance(object, key):
                 return serializers[key]._dictify(object)
         # list and map are treated as normal json objects (could be isolated serializers)
-        if isinstance(object, list):
+        if isinstance(object, list) or isinstance(object, set):
             newList = []
             for item in object:
                 newList.append(GraphSONWriter._dictify(item))
@@ -181,7 +181,8 @@ class NumberSerializer(GraphSONSerializer):
     def _dictify(self, number):
         if isinstance(number, bool):  # python thinks that 0/1 integers are booleans
             return number
-        elif isinstance(number, long) or (abs(number) > 2147483647): # in python all numbers are int unless specified otherwise
+        elif isinstance(number, long) or (
+                    abs(number) > 2147483647):  # in python all numbers are int unless specified otherwise
             return _SymbolHelper.objectify("Int64", number)
         elif isinstance(number, int):
             return _SymbolHelper.objectify("Int32", number)
