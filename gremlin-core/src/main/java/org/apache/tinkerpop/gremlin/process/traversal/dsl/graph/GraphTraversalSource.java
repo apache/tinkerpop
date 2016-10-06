@@ -123,12 +123,6 @@ public class GraphTraversalSource implements TraversalSource {
     //// CONFIGURATIONS
 
     @Override
-    @SuppressWarnings({"unchecked"})
-    public GraphTraversalSource withStrategies(final Map<String, Object>... traversalStrategyConfigurations) {
-        return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategyConfigurations);
-    }
-
-    @Override
     public GraphTraversalSource withoutStrategies(final String... traversalStrategyNames) {
         return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyNames);
     }

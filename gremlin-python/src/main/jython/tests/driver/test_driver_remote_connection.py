@@ -26,6 +26,7 @@ from gremlin_python import statics
 from gremlin_python.statics import long
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.traversal import Traverser
+from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Vertex
@@ -64,10 +65,10 @@ class TestDriverRemoteConnection(TestCase):
     def test_strategies(self):
         statics.load_statics(globals())
         connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
-        g = Graph().traversal().withRemote(connection).withStrategies(
-            {"strategy": "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy",
-             "vertices": __.hasLabel("person"),
-             "edges": __.hasLabel("created")})
+        g = Graph().traversal().withRemote(connection). \
+            withStrategies(TraversalStrategy("SubgraphStrategy",
+                                             {"vertices": __.hasLabel("person"),
+                                              "edges": __.hasLabel("created")}))
         print GraphSONWriter.writeObject(g.bytecode)
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()

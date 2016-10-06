@@ -49,7 +49,7 @@ import static org.junit.Assert.assertFalse;
  */
 public class JythonTranslatorTest {
 
-    @Test
+    /*@Test
     public void shouldHandleStrategies() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
         g = g.withStrategies(new HashMap<String, Object>() {{
@@ -71,7 +71,7 @@ public class JythonTranslatorTest {
         traversal = ((GremlinScriptEngine) ScriptEngineCache.get("gremlin-jython")).eval(g.V().values("name").asAdmin().getBytecode(), bindings);
         assertEquals("marko", traversal.next());
         assertFalse(traversal.hasNext());
-    }
+    }*/
 
     @Test
     public void shouldSupportStringSupplierLambdas() throws Exception {

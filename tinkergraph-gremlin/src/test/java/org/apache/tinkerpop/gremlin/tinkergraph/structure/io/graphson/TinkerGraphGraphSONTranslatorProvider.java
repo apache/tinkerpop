@@ -61,7 +61,6 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             TraversalInterruptionComputerTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
             CoreTraversalTest.class.getCanonicalName(),
-            PartitionStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
 

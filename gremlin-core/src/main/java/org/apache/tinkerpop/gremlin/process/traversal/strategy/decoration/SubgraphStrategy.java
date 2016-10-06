@@ -279,7 +279,6 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     @Override
     public Configuration getConfiguration() {
         final Map<String, Object> map = new HashMap<>();
-        map.put(STRATEGY, SubgraphStrategy.class.getCanonicalName());
         if (null != this.vertexCriterion)
             map.put(VERTICES, this.vertexCriterion);
         if (null != this.edgeCriterion)

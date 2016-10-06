@@ -27,8 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -61,12 +60,9 @@ public final class MatchAlgorithmStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(STRATEGY, MatchAlgorithmStrategy.class.getCanonicalName());
-        map.put(MATCH_ALGORITHM, null != this.matchAlgorithmClass.getDeclaringClass() ?
+        return new MapConfiguration(Collections.singletonMap(MATCH_ALGORITHM, null != this.matchAlgorithmClass.getDeclaringClass() ?
                 this.matchAlgorithmClass.getCanonicalName().replace("." + this.matchAlgorithmClass.getSimpleName(), "$" + this.matchAlgorithmClass.getSimpleName()) :
-                this.matchAlgorithmClass.getCanonicalName());
-        return new MapConfiguration(map);
+                this.matchAlgorithmClass.getCanonicalName()));
     }
 
     public static Builder build() {

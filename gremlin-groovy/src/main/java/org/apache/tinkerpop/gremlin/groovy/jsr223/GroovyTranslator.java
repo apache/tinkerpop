@@ -19,11 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -86,7 +87,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             final String methodName = instruction.getOperator();
             if (IS_TESTING &&
                     instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                    ((Map) instruction.getArguments()[0]).get(TraversalStrategy.STRATEGY).toString().contains("TranslationStrategy"))
+                    instruction.getArguments()[0].toString().contains("TranslationStrategy"))
                 continue;
             if (0 == instruction.getArguments().length)
                 traversalScript.append(".").append(methodName).append("()");
@@ -105,9 +106,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     private String convertToString(final Object object) {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
-        else if (object instanceof String)
-            return ((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"";
-        else if (object instanceof Set) {
+        else if (object instanceof Traversal)
+            return convertToString(((Traversal) object).asAdmin().getBytecode());
+        else if (object instanceof String) {
+            return (((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"").replace("$", "\\$");
+        } else if (object instanceof Set) {
             final Set<String> set = new HashSet<>(((Set) object).size());
             for (final Object item : (Set) object) {
                 set.add(convertToString(item));
@@ -154,7 +157,13 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
-        else
+        else if (object instanceof TraversalStrategy) {
+            final TraversalStrategy strategy = (TraversalStrategy) object;
+            if (strategy.getConfiguration().isEmpty())
+                return strategy.getClass().getCanonicalName() + ".instance()";
+            else
+                return strategy.getClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(strategy.getConfiguration())) + "))";
+        } else
             return null == object ? "null" : object.toString();
     }
 

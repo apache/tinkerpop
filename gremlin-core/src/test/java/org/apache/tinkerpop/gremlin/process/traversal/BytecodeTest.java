@@ -30,13 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -104,30 +99,13 @@ public class BytecodeTest {
     }
 
     @Test
-    public void shouldSupportNestedBindings() {
-        final Bindings b = new Bindings();
-        final GraphTraversalSource g = EmptyGraph.instance().traversal().withBindings(b);
-
-        final Bytecode bytecode = g.withStrategies(new HashMap<String, Object>() {{
-            put(SubgraphStrategy.STRATEGY, SubgraphStrategy.class.getCanonicalName());
-            put(SubgraphStrategy.VERTICES, b.of("a", __.has("name", "marko")));
-        }}).V().out(b.of("b", "created")).asAdmin().getBytecode();
-
-        assertTrue(bytecode.getBindings().containsKey("a"));
-        assertTrue(bytecode.getBindings().containsKey("b"));
-        assertEquals(2, bytecode.getBindings().size());
-        assertEquals(__.has("name", "marko").asAdmin().getBytecode(), bytecode.getBindings().get("a"));
-        assertEquals("created", bytecode.getBindings().get("b"));
-    }
-
-    @Test
     public void shouldConvertStrategies() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
         Bytecode bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getBytecode();
-        assertEquals(Collections.singletonMap(ReadOnlyStrategy.STRATEGY, ReadOnlyStrategy.class.getCanonicalName()), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        assertEquals(ReadOnlyStrategy.instance(), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
         bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getBytecode();
         assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getBytecode(),
-                ((Map) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).get(SubgraphStrategy.EDGES));
+                ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getBytecode());
     }
 
     @Test

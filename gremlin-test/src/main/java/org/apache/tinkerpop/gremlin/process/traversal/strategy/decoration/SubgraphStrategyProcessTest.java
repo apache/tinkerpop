@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
@@ -372,10 +373,9 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void shouldFilterVertexProperties() throws Exception {
-        GraphTraversalSource sg = g.withStrategies(new HashMap<String, Object>() {{
-            put(SubgraphStrategy.STRATEGY, SubgraphStrategy.class.getCanonicalName());
+        GraphTraversalSource sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
             put(SubgraphStrategy.VERTEX_PROPERTIES, __.has("startTime", P.gt(2005)));
-        }});
+        }})));
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().properties("location").value());
         checkResults(Arrays.asList("purcellville", "baltimore", "oakland", "seattle", "aachen"), sg.V().values("location"));
         if (sg.getStrategies().getStrategy(InlineFilterStrategy.class).isPresent())
@@ -401,11 +401,10 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         sg = g.withStrategies(SubgraphStrategy.build().vertices(has("location")).vertexProperties(hasNot("endTime")).create());
         checkOrderedResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().order().by("location", Order.incr).values("location"));
         //
-        sg = g.withStrategies(new HashMap<String, Object>() {{
-            put(SubgraphStrategy.STRATEGY, SubgraphStrategy.class.getCanonicalName());
+        sg = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
             put(SubgraphStrategy.VERTICES, __.has("location"));
             put(SubgraphStrategy.VERTEX_PROPERTIES, __.hasNot("endTime"));
-        }});
+        }})));
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().valueMap("location").select(Column.values).unfold().unfold());
         checkResults(Arrays.asList("aachen", "purcellville", "santa fe", "seattle"), sg.V().propertyMap("location").select(Column.values).unfold().unfold().value());
         //

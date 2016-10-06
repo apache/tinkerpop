@@ -19,11 +19,15 @@
 
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -217,6 +221,23 @@ final class GraphSONTraversalSerializersV2d0 {
         }
     }
 
+    final static class TraversalStrategyJacksonSerializer extends StdScalarSerializer<TraversalStrategy> {
+
+        public TraversalStrategyJacksonSerializer() {
+            super(TraversalStrategy.class);
+        }
+
+        @Override
+        public void serialize(final TraversalStrategy traversalStrategy, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeStartObject();
+            for (final Map.Entry<Object, Object> entry : ConfigurationConverter.getMap(traversalStrategy.getConfiguration()).entrySet()) {
+                jsonGenerator.writeObjectField((String) entry.getKey(), entry.getValue());
+            }
+            jsonGenerator.writeEndObject();
+        }
+    }
+
     ///////////////////
     // DESERIALIZERS //
     //////////////////
@@ -344,6 +365,21 @@ final class GraphSONTraversalSerializersV2d0 {
         @Override
         public Traverser createObject(final Map<String, Object> data) {
             return new DefaultRemoteTraverser<>(data.get(GraphSONTokens.VALUE), (Long) data.get(GraphSONTokens.BULK));
+        }
+    }
+
+    final static class TraversalStrategyProxyJacksonDeserializer<T extends TraversalStrategy> extends AbstractObjectDeserializer<TraversalStrategyProxy> {
+
+        private final Class<T> clazz;
+
+        public TraversalStrategyProxyJacksonDeserializer(final Class<T> clazz) {
+            super(TraversalStrategyProxy.class);
+            this.clazz = clazz;
+        }
+
+        @Override
+        public TraversalStrategyProxy<T> createObject(final Map<String, Object> data) {
+            return new TraversalStrategyProxy<>(this.clazz, new MapConfiguration(data));
         }
     }
 }

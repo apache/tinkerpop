@@ -103,27 +103,14 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
 
     /**
      * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
-     * The map configurations must have a <code>strategy</code> key that is the name of the strategy class.
      *
-     * @param traversalStrategyConfigurations a collection of traversal strategies to add by configuration
+     * @param traversalStrategies a colleciton of traversal strategies to add
      * @return a new traversal source with updated strategies
      */
-    @SuppressWarnings({"unchecked"})
-    public default TraversalSource withStrategies(final Map<String, Object>... traversalStrategyConfigurations) {
+    public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         final TraversalSource clone = this.clone();
-        final List<TraversalStrategy<?>> strategies = new ArrayList<>();
-        for (final Map<String, Object> map : traversalStrategyConfigurations) {
-            try {
-                final TraversalStrategy<?> traversalStrategy = (TraversalStrategy) ((1 == map.size()) ?
-                        Class.forName((String) map.get("strategy")).getMethod("instance").invoke(null) :
-                        Class.forName((String) map.get("strategy")).getMethod("create", Configuration.class).invoke(null, new MapConfiguration(map)));
-                strategies.add(traversalStrategy);
-            } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        }
-        clone.getStrategies().addStrategies(strategies.toArray(new TraversalStrategy[strategies.size()]));
-        clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategyConfigurations);
+        clone.getStrategies().addStrategies(traversalStrategies);
+        clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         return clone;
     }
 
@@ -146,19 +133,6 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         }
         clone.getStrategies().removeStrategies(strategies.toArray(new Class[strategies.size()]));
         clone.getBytecode().addSource(Symbols.withoutStrategies, traversalStrategyNames);
-        return clone;
-    }
-
-    /**
-     * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
-     *
-     * @param traversalStrategies a colleciton of traversal strategies to add
-     * @return a new traversal source with updated strategies
-     */
-    public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
-        final TraversalSource clone = this.clone();
-        clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         return clone;
     }
 

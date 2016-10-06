@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -420,12 +421,12 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
                 .partitionKey(partition).writePartition("C").readPartitions("A").create();
         final GraphTraversalSource sourceCA = g.withStrategies(partitionStrategyCA);
 
-        final GraphTraversalSource sourceCABC = g.withStrategies(new HashMap<String, Object>() {{
-            put(PartitionStrategy.STRATEGY, PartitionStrategy.class.getCanonicalName());
+        final GraphTraversalSource sourceCABC = g.withStrategies(PartitionStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+
             put(PartitionStrategy.WRITE_PARTITION, "C");
             put(PartitionStrategy.PARTITION_KEY, partition);
             put(PartitionStrategy.READ_PARTITIONS, Arrays.asList("A", "B", "C"));
-        }});
+        }})));
         final PartitionStrategy partitionStrategyCC = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("C").addReadPartition("C").create();
         final GraphTraversalSource sourceCC = g.withStrategies(partitionStrategyCC);

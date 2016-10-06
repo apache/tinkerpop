@@ -19,14 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -72,7 +75,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
             if (IS_TESTING &&
                     instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                    ((Map) instruction.getArguments()[0]).get(TraversalStrategy.STRATEGY).toString().contains("TranslationStrategy"))
+                    instruction.getArguments()[0].toString().contains("TranslationStrategy"))
                 continue;
             dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
@@ -111,6 +114,17 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 return traversal;
             } catch (final Throwable e) {
                 throw new IllegalStateException(e.getMessage());
+            }
+        } else if (object instanceof TraversalStrategyProxy) {
+            final Map<String, Object> map = new HashMap<>();
+            final Configuration configuration = ((TraversalStrategyProxy) object).getConfiguration();
+            configuration.getKeys().forEachRemaining(key -> map.put(key, translateObject(configuration.getProperty(key))));
+            try {
+                return map.isEmpty() ?
+                        ((TraversalStrategyProxy) object).getStrategyClass().getMethod("instance").invoke(null) :
+                        ((TraversalStrategyProxy) object).getStrategyClass().getMethod("create", Configuration.class).invoke(null, new MapConfiguration(map));
+            } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                throw new IllegalStateException(e.getMessage(), e);
             }
         } else if (object instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) object).size());

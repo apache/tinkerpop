@@ -222,9 +222,10 @@ class TraversalStrategies(object):
             traversal_strategy.apply(traversal)
 
 
-@six.add_metaclass(abc.ABCMeta)
 class TraversalStrategy(object):
-    @abc.abstractmethod
+    def __init__(self, strategy_name, configuration=None):
+        self.strategy_name = strategy_name
+        self.configuration = {} if configuration is None else configuration
     def apply(self, traversal):
         return
 

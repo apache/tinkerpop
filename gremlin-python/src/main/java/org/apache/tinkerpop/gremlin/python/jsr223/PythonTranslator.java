@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -106,7 +107,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             final Object[] arguments = instruction.getArguments();
             if (IS_TESTING &&
                     instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
-                    ((Map) instruction.getArguments()[0]).get(TraversalStrategy.STRATEGY).toString().contains("TranslationStrategy"))
+                    instruction.getArguments()[0].toString().contains("TranslationStrategy"))
                 continue;
             else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
@@ -136,6 +137,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
     private String convertToString(final Object object) {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
+        else if (object instanceof Traversal)
+            return convertToString(((Traversal) object).asAdmin().getBytecode());
         else if (object instanceof String)
             return ((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"";
         else if (object instanceof Set) {
@@ -161,7 +164,13 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return map.length() > 1 ? map.substring(0, map.length() - 1) + "}" : map.append("}").toString();
         } else if (object instanceof Long)
             return object + "L";
-        else if (object instanceof Boolean)
+        else if (object instanceof TraversalStrategy) {
+            final TraversalStrategy strategy = (TraversalStrategy) object;
+            if (strategy.getConfiguration().isEmpty())
+                return "TraversalStrategy(\"" + strategy.getClass().getSimpleName() + "\")";
+            else
+                return "TraversalStrategy(\"" + strategy.getClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(strategy.getConfiguration())) + ")";
+        } else if (object instanceof Boolean)
             return object.equals(Boolean.TRUE) ? "True" : "False";
         else if (object instanceof Class)
             return ((Class) object).getCanonicalName();

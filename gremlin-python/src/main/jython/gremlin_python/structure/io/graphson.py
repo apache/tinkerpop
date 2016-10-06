@@ -33,6 +33,7 @@ from gremlin_python.process.traversal import Bytecode
 from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Traversal
 from gremlin_python.process.traversal import Traverser
+from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex
@@ -126,6 +127,11 @@ class BytecodeSerializer(GraphSONSerializer):
         if len(steps) > 0:
             dict["step"] = steps
         return _SymbolHelper.objectify("Bytecode", dict)
+
+
+class TraversalStrategySerializer(GraphSONSerializer):
+    def _dictify(self, strategy):
+        return _SymbolHelper.objectify(strategy.strategy_name, GraphSONWriter._dictify(strategy.configuration))
 
 
 class TraverserSerializer(GraphSONSerializer):
@@ -288,7 +294,8 @@ serializers = {
     FunctionType: LambdaSerializer(),
     LongType: NumberSerializer(),
     IntType: NumberSerializer(),
-    FloatType: NumberSerializer()
+    FloatType: NumberSerializer(),
+    TraversalStrategy: TraversalStrategySerializer()
 }
 
 deserializers = {

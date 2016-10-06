@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -62,18 +63,17 @@ public class GraphTraversalSourceTest {
     public void shouldSupportMapBasedStrategies() throws Exception {
         GraphTraversalSource g = EmptyGraph.instance().traversal();
         assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
-        g = g.withStrategies(new HashMap<String, Object>() {{
-            put("strategy", SubgraphStrategy.class.getCanonicalName());
+        g = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
             put("vertices", __.hasLabel("person"));
             put("vertexProperties", __.limit(0));
             put("edges", __.hasLabel("knows"));
-        }});
+        }})));
         assertTrue(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
         g = g.withoutStrategies(SubgraphStrategy.class.getCanonicalName());
         assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
         //
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
-        g = g.withStrategies(Collections.singletonMap("strategy", ReadOnlyStrategy.class.getCanonicalName()));
+        g = g.withStrategies(ReadOnlyStrategy.instance());
         assertTrue(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
         g = g.withoutStrategies(ReadOnlyStrategy.class.getCanonicalName());
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
