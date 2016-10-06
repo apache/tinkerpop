@@ -26,6 +26,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `Set`, `List`, `Map` bug in the various `Translators` where such collections were not being internally translated.
+* Fixed a `Bytecode` bug where nested structures (map, list, set) were not being analyzed for bindings and bytecode conversions.
+* Fixed a `String` bug in `GroovyTranslator` and `PythonTranslator` where if the string has double-quotes it now uses """ """.
+* Added a default `TraversalStrategy.getConfiguration()` which returns the configuration needed to construct the strategy.
+* Gremlin-Java `TraversalStrategy` and `Computer` instances are now converted to `Map`-representations in `Bytecode`.
+* `Computer` instances can be created with `Computer.create(Configuration)` and accessed via `Computer.getConf()`.
+* Every `TraversalStrategy` can be created via a `Configuration` and a static `MyStrategy.create(Configuration)`.
+* Added `TraversalSource.withComputer(Map<String,Object>)` for better language variant support.
+* Added `TraversalSource.withStrategies(Map<String,Object>...)`/`withoutStrategies(String...)` for better language variant support.
+* Added `PartitionStrategy.Builder.readPartitions()` and deprecated `PartitionStrategy.Builder.addPartition()`.
 * `FilterRankStrategy` now propagates labels "right" over non-`Scoping` filters.
 * Fixed a bug in `ConnectiveP` where nested equivalent connectives should be inlined.
 * Fixed a bug in `IncidentToAdjacentStrategy` where `TreeStep` traversals were allowed.

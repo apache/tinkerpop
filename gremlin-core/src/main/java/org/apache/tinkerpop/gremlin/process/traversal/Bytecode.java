@@ -19,6 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -26,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +45,8 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class Bytecode implements Cloneable, Serializable {
+
+    private static final Object[] EMPTY_ARRAY = new Object[]{};
 
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
@@ -110,21 +115,32 @@ public final class Bytecode implements Cloneable, Serializable {
     public Map<String, Object> getBindings() {
         final Map<String, Object> bindingsMap = new HashMap<>();
         for (final Instruction instruction : this.sourceInstructions) {
-            addInstructionBindings(bindingsMap, instruction);
+            for (final Object argument : instruction.getArguments()) {
+                addArgumentBinding(bindingsMap, argument);
+            }
         }
         for (final Instruction instruction : this.stepInstructions) {
-            addInstructionBindings(bindingsMap, instruction);
+            for (final Object argument : instruction.getArguments()) {
+                addArgumentBinding(bindingsMap, argument);
+            }
         }
         return bindingsMap;
     }
 
-    private static final void addInstructionBindings(final Map<String, Object> bindingsMap, final Instruction instruction) {
-        for (final Object argument : instruction.getArguments()) {
-            if (argument instanceof Binding)
-                bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
-            else if (argument instanceof Bytecode)
-                bindingsMap.putAll(((Bytecode) argument).getBindings());
-        }
+    private static final void addArgumentBinding(final Map<String, Object> bindingsMap, final Object argument) {
+        if (argument instanceof Binding)
+            bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
+        else if (argument instanceof Map) {
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
+                addArgumentBinding(bindingsMap, entry.getKey());
+                addArgumentBinding(bindingsMap, entry.getValue());
+            }
+        } else if (argument instanceof List) {
+            for (final Object item : (List) argument) {
+                addArgumentBinding(bindingsMap, item);
+            }
+        } else if (argument instanceof Bytecode)
+            bindingsMap.putAll(((Bytecode) argument).getBindings());
     }
 
     @Override
@@ -233,29 +249,45 @@ public final class Bytecode implements Cloneable, Serializable {
 
     private final Object[] flattenArguments(final Object... arguments) {
         if (arguments.length == 0)
-            return new Object[]{};
+            return EMPTY_ARRAY;
         final List<Object> flatArguments = new ArrayList<>();
         for (final Object object : arguments) {
             if (object instanceof Object[]) {
                 for (final Object nestObject : (Object[]) object) {
-                    flatArguments.add(convertArgument(nestObject));
+                    flatArguments.add(convertArgument(nestObject, true));
                 }
             } else
-                flatArguments.add(convertArgument(object));
+                flatArguments.add(convertArgument(object, true));
         }
         return flatArguments.toArray();
     }
 
-    private final Object convertArgument(final Object argument) {
-        if (argument instanceof Traversal)
-            return ((Traversal) argument).asAdmin().getBytecode();
-
-        if (null != this.bindings) {
+    private final Object convertArgument(final Object argument, final boolean searchBindings) {
+        if (searchBindings && null != this.bindings) {
             final String variable = this.bindings.getBoundVariable(argument);
             if (null != variable)
-                return new Binding<>(variable, argument);
+                return new Binding<>(variable, convertArgument(argument, false));
         }
-
-        return argument;
+        //
+        if (argument instanceof Traversal)
+            return ((Traversal) argument).asAdmin().getBytecode();
+        else if (argument instanceof TraversalStrategy)
+            return convertArgument(ConfigurationConverter.getMap(((TraversalStrategy) argument).getConfiguration()), true);
+        else if (argument instanceof Computer)
+            return convertArgument(ConfigurationConverter.getMap(((Computer) argument).getConf()), true);
+        else if (argument instanceof Map) {
+            final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
+                map.put(convertArgument(entry.getKey(), true), convertArgument(entry.getValue(), true));
+            }
+            return map;
+        } else if (argument instanceof List) {
+            final List<Object> list = new ArrayList<>(((List) argument).size());
+            for (final Object item : (List) argument) {
+                list.add(convertArgument(item, true));
+            }
+            return list;
+        } else
+            return argument;
     }
 }

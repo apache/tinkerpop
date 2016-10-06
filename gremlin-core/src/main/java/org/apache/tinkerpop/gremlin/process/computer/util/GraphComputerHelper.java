@@ -18,13 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -76,5 +82,24 @@ public final class GraphComputerHelper {
 
         if (!(b instanceof MapReduce)) return false;
         return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
+    }
+
+    public static TraversalStrategy[] getTraversalStrategies(final TraversalSource traversalSource, final Computer computer) {
+        Class<? extends GraphComputer> graphComputerClass;
+        if (computer.getGraphComputerClass().equals(GraphComputer.class)) {
+            try {
+                graphComputerClass = computer.apply(traversalSource.getGraph()).getClass();
+            } catch (final Exception e) {
+                graphComputerClass = GraphComputer.class;
+            }
+        } else
+            graphComputerClass = computer.getGraphComputerClass();
+        final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
+        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
+        traversalStrategies[0] = new VertexProgramStrategy(computer);
+        for (int i = 0; i < graphComputerStrategies.size(); i++) {
+            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
+        }
+        return traversalStrategies;
     }
 }

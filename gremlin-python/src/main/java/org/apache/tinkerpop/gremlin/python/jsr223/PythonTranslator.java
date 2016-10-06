@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -27,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -42,7 +42,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +54,7 @@ import java.util.stream.Stream;
  */
 public class PythonTranslator implements Translator.ScriptTranslator {
 
+    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
     private static final Set<String> STEP_NAMES = Stream.of(GraphTraversal.class.getMethods()).filter(method -> Traversal.class.isAssignableFrom(method.getReturnType())).map(Method::getName).collect(Collectors.toSet());
     private static final Set<String> NO_STATIC = Stream.of(T.values(), Operator.values())
             .flatMap(arg -> IteratorUtils.stream(new ArrayIterator<>(arg)))
@@ -101,7 +104,9 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
             final String methodName = instruction.getOperator();
             final Object[] arguments = instruction.getArguments();
-            if (methodName.equals(TraversalSource.Symbols.withStrategies))
+            if (IS_TESTING &&
+                    instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
+                    ((Map) instruction.getArguments()[0]).get(TraversalStrategy.STRATEGY).toString().contains("TranslationStrategy"))
                 continue;
             else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
@@ -132,13 +137,28 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
         else if (object instanceof String)
-            return "\"" + object + "\"";
-        else if (object instanceof List) {
+            return ((String) object).contains("\"") ? "\"\"\"" + object + "\"\"\"" : "\"" + object + "\"";
+        else if (object instanceof Set) {
+            final Set<String> set = new LinkedHashSet<>(((Set) object).size());
+            for (final Object item : (Set) object) {
+                set.add(convertToString(item));
+            }
+            return "set(" + set.toString() + ")";
+        } else if (object instanceof List) {
             final List<String> list = new ArrayList<>(((List) object).size());
             for (final Object item : (List) object) {
                 list.add(convertToString(item));
             }
             return list.toString();
+        } else if (object instanceof Map) {
+            final StringBuilder map = new StringBuilder("{");
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                map.append(convertToString(entry.getKey())).
+                        append(":").
+                        append(convertToString(entry.getValue())).
+                        append(",");
+            }
+            return map.length() > 1 ? map.substring(0, map.length() - 1) + "}" : map.append("}").toString();
         } else if (object instanceof Long)
             return object + "L";
         else if (object instanceof Boolean)
@@ -157,8 +177,6 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)
             return this.internalTranslate("__", (Bytecode) object);
-        else if (object instanceof Computer)
-            return "";
         else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);
         else

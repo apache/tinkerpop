@@ -224,6 +224,25 @@ in statically typed languages where bindings need to have the same typing as the
 it is possible to use the `withBindings()`-model as Gremlin-Python's `Bindings.of()` simply returns a 2-tuple of `(str,object)`
 (see <<connecting-via-remotegraph,`Bindings`>>).
 
+Traversal Strategies
+~~~~~~~~~~~~~~~~~~~~
+
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, the `withStrategies(Map<String,Object>...)` and
+`withoutStrategies(String...)` steps should be used.
+
+[gremlin-python,modern]
+----
+g = g.withStrategies({'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy','vertices': hasLabel('person'),'edges': has('weight',gt(0.5))})
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+g = g.withoutStrategies('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy')
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
+----
+
+IMPORTANT: While Gremlin is language agnostic, the executing traversal machine typically is not. Thus, strategies are
+traversal machine dependent and identified by the class name in the traversal machine's implementation language.
+
 The Lambda Solution
 ~~~~~~~~~~~~~~~~~~~
 

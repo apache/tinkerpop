@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.util.CoreImports;
 import org.python.jsr223.PyScriptEngine;
 import org.python.jsr223.PyScriptEngineFactory;
@@ -66,8 +67,12 @@ public class GremlinJythonScriptEngine implements GremlinScriptEngine {
                     "  elif isinstance(index,slice):\n    return self.range(index.start,index.stop)\n" +
                     "  else:\n    return TypeError('Index must be int or slice')");
             this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getitem__ = getitem_bypass");
-            this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getattr__ = lambda self, key: self.values(key)");
-
+            this.pyScriptEngine.eval(GraphTraversal.class.getSimpleName() + ".__getattr__ = lambda self, key: self.values(key)\n");
+            // necessary cause of var args bug in Jython (http://bugs.jython.org/issue1615)
+            this.pyScriptEngine.eval("def withStrategies_bypass(self, *args):\n" +
+                    "  self.getBytecode().addSource(\"withStrategies\", *args)\n" +
+                    "  return self\n");
+            this.pyScriptEngine.eval(GraphTraversalSource.class.getSimpleName() + ".withStrategies = withStrategies_bypass\n");
             this.pyScriptEngine.eval("\n" +
                     "from java.lang import Long\n" +
                     "import org.apache.tinkerpop.gremlin.util.function.Lambda\n" + // todo: remove or remove imported subclass names? (choose)

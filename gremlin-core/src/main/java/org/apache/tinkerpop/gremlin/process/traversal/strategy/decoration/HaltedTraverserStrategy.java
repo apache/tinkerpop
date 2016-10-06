@@ -19,12 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,6 +61,24 @@ public final class HaltedTraverserStrategy extends AbstractTraversalStrategy<Tra
         else
             traverser.set(DetachedFactory.detach(traverser.get(), true));
         return traverser;
+    }
+
+    public static final String HALTED_TRAVERSER_FACTORY = "haltedTraverserFactory";
+
+    public static HaltedTraverserStrategy create(final Configuration configuration) {
+        try {
+            return new HaltedTraverserStrategy(Class.forName(configuration.getString(HALTED_TRAVERSER_FACTORY)));
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(STRATEGY, HaltedTraverserStrategy.class.getCanonicalName());
+        map.put(HALTED_TRAVERSER_FACTORY, this.haltedTraverserFactory.getCanonicalName());
+        return new MapConfiguration(map);
     }
 
     ////////////

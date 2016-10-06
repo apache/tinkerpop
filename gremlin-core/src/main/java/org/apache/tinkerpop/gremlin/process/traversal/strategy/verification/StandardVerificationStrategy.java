@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 

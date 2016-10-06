@@ -158,6 +158,79 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+Configurable Strategies
++++++++++++++++++++++++
+
+`TraversalSource.withStrategies()` and `TraversalSource.withoutStrategies()` use Java objects. In order to make strategy
+manipulation possible from Gremlin language variants like Gremlin-Python, it is important to support non-JVM-based versions
+of these methods. As such, `TraversalSource.withStrategies(Map<String,Object>...)` and `TraversalSource.withoutStrategies(String...)`
+were added.
+
+If the provider has non-configurable `TraversalStrategy` classes, those classes should expose a static `instance()`-method.
+This is typical and thus, backwards compatible. However, if the provider has a `TraversalStrategy` that can be configured
+(e.g. via a `Builder`), then it should expose a static `create(Configuration)`-method, where the keys of the configuration
+are the method names of the `Builder` and the values are the method arguments. For instance, for Gremlin-Python to create
+a `SubgraphStrategy`, it does the following:
+
+[source,python]
+----
+g = Graph().traversal().withRemote(connection).
+        withStrategy({'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy',
+            'vertices': __.hasLabel('person'),
+            'edges': __.has('weight',gt(0.5))})
+---
+
+The `SubgraphStrategy.create(Configuration)`-method is defined as:
+
+[source,java]
+----
+public static SubgraphStrategy create(final Configuration configuration) {
+    final Builder builder = SubgraphStrategy.build();
+    if (configuration.containsKey(VERTICES))
+        builder.vertices((Traversal) configuration.getProperty(VERTICES));
+    if (configuration.containsKey(EDGES))
+        builder.edges((Traversal) configuration.getProperty(EDGES));
+    if (configuration.containsKey(VERTEX_PROPERTIES))
+        builder.vertexProperties((Traversal) configuration.getProperty(VERTEX_PROPERTIES));
+    return builder.create();
+}
+----
+
+Finally, in order to make serialization possible from JVM-based Gremlin language variants, all strategies have a
+`TraverserStrategy.getConfiguration()` method which returns a `Configuration` that can be used to `create()` the
+`TraversalStrategy`.
+
+The `SubgraphStrategy.getConfiguration()`-method is defined as:
+
+[source,java]
+----
+@Override
+public Configuration getConfiguration() {
+    final Map<String, Object> map = new HashMap<>();
+    map.put(STRATEGY, SubgraphStrategy.class.getCanonicalName());
+    if (null != this.vertexCriterion)
+        map.put(VERTICES, this.vertexCriterion);
+    if (null != this.edgeCriterion)
+            map.put(EDGES, this.edgeCriterion);
+    if (null != this.vertexPropertyCriterion)
+        map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+    return new MapConfiguration(map);
+}
+----
+
+The default implementation of `TraversalStrategy.getConfiguration()` is defined as:
+
+[source,java]
+----
+public default Configuration getConfiguration() {
+    return new MapConfiguration(Collections.singletonMap(STRATEGY, this.getClass().getCanonicalName()));
+}
+----
+
+Thus, if the provider does not have any "builder"-based strategies, then no updates to their strategies are required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1455[TINKERPOP-1455]
+
 Deprecated elementNotFound
 ++++++++++++++++++++++++++
 
