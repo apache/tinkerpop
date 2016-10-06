@@ -117,28 +117,6 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     /**
      * Remove an arbitrary collection of {@link TraversalStrategy} classes from the traversal source.
      *
-     * @param traversalStrategyNames a collection of traversal strategy class names to remove
-     * @return a new traversal source with updated strategies
-     */
-    @SuppressWarnings({"unchecked"})
-    public default TraversalSource withoutStrategies(final String... traversalStrategyNames) {
-        final TraversalSource clone = this.clone();
-        final List<Class<TraversalStrategy>> strategies = new ArrayList<>();
-        for (final String name : traversalStrategyNames) {
-            try {
-                strategies.add((Class) Class.forName(name));
-            } catch (final ClassNotFoundException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        }
-        clone.getStrategies().removeStrategies(strategies.toArray(new Class[strategies.size()]));
-        clone.getBytecode().addSource(Symbols.withoutStrategies, traversalStrategyNames);
-        return clone;
-    }
-
-    /**
-     * Remove an arbitrary collection of {@link TraversalStrategy} classes from the traversal source.
-     *
      * @param traversalStrategyClasses a collection of traversal strategy classes to remove
      * @return a new traversal source with updated strategies
      */

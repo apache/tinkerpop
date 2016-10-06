@@ -21,12 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -64,6 +66,14 @@ public final class Bytecode implements Cloneable, Serializable {
         if (sourceName.equals(TraversalSource.Symbols.withBindings)) {
             this.bindings = (Bindings) arguments[0];
             this.bindings.clear();
+        } else if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
+            final Class<TraversalStrategy>[] classes = new Class[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
+                        ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
+                        (Class) arguments[i];
+            }
+            this.sourceInstructions.add(new Instruction(sourceName, classes));
         } else {
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
             if (null != this.bindings) this.bindings.clear();
@@ -137,8 +147,8 @@ public final class Bytecode implements Cloneable, Serializable {
                 addArgumentBinding(bindingsMap, entry.getKey());
                 addArgumentBinding(bindingsMap, entry.getValue());
             }
-        } else if (argument instanceof List) {
-            for (final Object item : (List) argument) {
+        } else if (argument instanceof Collection) {
+            for (final Object item : (Collection) argument) {
                 addArgumentBinding(bindingsMap, item);
             }
         } else if (argument instanceof Bytecode)

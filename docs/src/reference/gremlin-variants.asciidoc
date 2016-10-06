@@ -62,6 +62,7 @@ Gremlin-Python users will typically make use of the following classes.
 >>> from gremlin_python import statics
 >>> from gremlin_python.structure.graph import Graph
 >>> from gremlin_python.process.graph_traversal import __
+>>> from gremlin_python.process.traversal import TraversalStrategy
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 
 In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
@@ -227,21 +228,21 @@ it is possible to use the `withBindings()`-model as Gremlin-Python's `Bindings.o
 Traversal Strategies
 ~~~~~~~~~~~~~~~~~~~~
 
-In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, the `withStrategies(Map<String,Object>...)` and
-`withoutStrategies(String...)` steps should be used.
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
+`TraversalStrategy` class that can be used.
 
 [gremlin-python,modern]
 ----
-g = g.withStrategies({'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy','vertices': hasLabel('person'),'edges': has('weight',gt(0.5))})
+g = g.withStrategies(TraversalStrategy('SubgraphStrategy',{'vertices': hasLabel('person'),'edges': has('weight',gt(0.5))}))
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
-g = g.withoutStrategies('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy')
+g = g.withoutStrategies(TraversalStrategy('SubgraphStrategy'))
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
 ----
 
-IMPORTANT: While Gremlin is language agnostic, the executing traversal machine typically is not. Thus, strategies are
-traversal machine dependent and identified by the class name in the traversal machine's implementation language.
+IMPORTANT: Future work will include extending the Gremlin-Python `TraversalStrategy` class with mirrors of the Java-based
+Gremlin traversal machine strategies so the two variants have the same look-and-feel.
 
 The Lambda Solution
 ~~~~~~~~~~~~~~~~~~~

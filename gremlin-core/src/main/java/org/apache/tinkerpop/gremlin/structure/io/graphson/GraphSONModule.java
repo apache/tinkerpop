@@ -38,13 +38,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;

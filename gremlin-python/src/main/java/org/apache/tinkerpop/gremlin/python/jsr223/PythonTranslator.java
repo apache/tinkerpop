@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -138,6 +139,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
     private String convertToString(final Object object) {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
+        else if (object instanceof Bytecode)
+            return this.internalTranslate("__", (Bytecode) object);
         else if (object instanceof Traversal)
             return convertToString(((Traversal) object).asAdmin().getBytecode());
         else if (object instanceof String)
@@ -165,12 +168,14 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return map.length() > 1 ? map.substring(0, map.length() - 1) + "}" : map.append("}").toString();
         } else if (object instanceof Long)
             return object + "L";
-        else if (object instanceof TraversalStrategy) {
-            final TraversalStrategy strategy = (TraversalStrategy) object;
-            if (strategy.getConfiguration().isEmpty())
-                return "TraversalStrategy(\"" + strategy.getClass().getSimpleName() + "\")";
+        else if (object instanceof TraversalStrategyProxy) {
+            final TraversalStrategyProxy proxy = (TraversalStrategyProxy) object;
+            if (proxy.getConfiguration().isEmpty())
+                return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\")";
             else
-                return "TraversalStrategy(\"" + strategy.getClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(strategy.getConfiguration())) + ")";
+                return "TraversalStrategy(\"" + proxy.getStrategyClass().getSimpleName() + "\"," + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + ")";
+        } else if (object instanceof TraversalStrategy) {
+            return convertToString(new TraversalStrategyProxy((TraversalStrategy) object));
         } else if (object instanceof Boolean)
             return object.equals(Boolean.TRUE) ? "True" : "False";
         else if (object instanceof Class)
@@ -187,8 +192,6 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertToString(ConfigurationConverter.getMap(((Computer) object).getConf()));
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Bytecode)
-            return this.internalTranslate("__", (Bytecode) object);
         else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);
         else

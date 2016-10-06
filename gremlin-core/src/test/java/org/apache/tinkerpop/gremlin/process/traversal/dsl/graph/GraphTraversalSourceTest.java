@@ -69,13 +69,13 @@ public class GraphTraversalSourceTest {
             put("edges", __.hasLabel("knows"));
         }})));
         assertTrue(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
-        g = g.withoutStrategies(SubgraphStrategy.class.getCanonicalName());
+        g = g.withoutStrategies(SubgraphStrategy.class);
         assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
         //
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
         g = g.withStrategies(ReadOnlyStrategy.instance());
         assertTrue(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
-        g = g.withoutStrategies(ReadOnlyStrategy.class.getCanonicalName());
+        g = g.withoutStrategies(ReadOnlyStrategy.class);
         assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
     }
 }

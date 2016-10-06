@@ -63,15 +63,13 @@ public class GroovyTranslatorTest extends AbstractGremlinTest {
         assertEquals("marko", traversal.next());
         assertFalse(traversal.hasNext());
         //
-        g = g.withoutStrategies(SubgraphStrategy.class.getCanonicalName());
-        traversal = new GremlinGroovyScriptEngine().eval(g.V().count().asAdmin().getBytecode(), bindings);
+        traversal = new GremlinGroovyScriptEngine().eval(g.withoutStrategies(SubgraphStrategy.class).V().count().asAdmin().getBytecode(), bindings);
         assertEquals(new Long(6), traversal.next());
         assertFalse(traversal.hasNext());
         //
-        g = graph.traversal().withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+        traversal = new GremlinGroovyScriptEngine().eval(g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
             put(SubgraphStrategy.VERTICES, __.has("name", "marko"));
-        }})), ReadOnlyStrategy.instance());
-        traversal = new GremlinGroovyScriptEngine().eval(g.V().values("name").asAdmin().getBytecode(), bindings);
+        }})), ReadOnlyStrategy.instance()).V().values("name").asAdmin().getBytecode(), bindings);
         assertEquals("marko", traversal.next());
         assertFalse(traversal.hasNext());
     }

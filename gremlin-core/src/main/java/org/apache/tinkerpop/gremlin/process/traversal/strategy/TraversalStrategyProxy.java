@@ -32,6 +32,10 @@ public final class TraversalStrategyProxy<T extends TraversalStrategy> implement
     private final Configuration configuration;
     private final Class<T> strategyClass;
 
+    public TraversalStrategyProxy(final T traversalStrategy) {
+        this((Class<T>) traversalStrategy.getClass(), traversalStrategy.getConfiguration());
+    }
+
     public TraversalStrategyProxy(final Class<T> strategyClass, final Configuration configuration) {
         this.configuration = configuration;
         this.strategyClass = strategyClass;

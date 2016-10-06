@@ -123,11 +123,6 @@ public class GraphTraversalSource implements TraversalSource {
     //// CONFIGURATIONS
 
     @Override
-    public GraphTraversalSource withoutStrategies(final String... traversalStrategyNames) {
-        return (GraphTraversalSource) TraversalSource.super.withoutStrategies(traversalStrategyNames);
-    }
-
-    @Override
     public GraphTraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         return (GraphTraversalSource) TraversalSource.super.withStrategies(traversalStrategies);
     }

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -107,6 +108,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
     private String convertToString(final Object object) {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
+        else if (object instanceof Bytecode)
+            return this.internalTranslate("__", (Bytecode) object);
         else if (object instanceof Traversal)
             return convertToString(((Traversal) object).asAdmin().getBytecode());
         else if (object instanceof String) {
@@ -156,16 +159,16 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
-        } else if (object instanceof Bytecode)
-            return this.internalTranslate("__", (Bytecode) object);
-        else if (object instanceof Computer)
+        } else if (object instanceof Computer)
             return convertToString(ConfigurationConverter.getMap(((Computer) object).getConf()));
-        else if (object instanceof TraversalStrategy) {
-            final TraversalStrategy strategy = (TraversalStrategy) object;
-            if (strategy.getConfiguration().isEmpty())
-                return strategy.getClass().getCanonicalName() + ".instance()";
+        else if (object instanceof TraversalStrategyProxy) {
+            final TraversalStrategyProxy proxy = (TraversalStrategyProxy) object;
+            if (proxy.getConfiguration().isEmpty())
+                return proxy.getStrategyClass().getCanonicalName() + ".instance()";
             else
-                return strategy.getClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(strategy.getConfiguration())) + "))";
+                return proxy.getStrategyClass().getCanonicalName() + ".create(new org.apache.commons.configuration.MapConfiguration(" + convertToString(ConfigurationConverter.getMap(proxy.getConfiguration())) + "))";
+        } else if (object instanceof TraversalStrategy) {
+            return convertToString(new TraversalStrategyProxy(((TraversalStrategy) object)));
         } else
             return null == object ? "null" : object.toString();
     }
