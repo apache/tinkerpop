@@ -35,7 +35,7 @@ final class GraphSONSerializerProvider extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
     private final JsonSerializer<Object> unknownTypeSerializer;
 
-    public GraphSONSerializerProvider(GraphSONVersion version) {
+    public GraphSONSerializerProvider(final GraphSONVersion version) {
         super();
         if (version == GraphSONVersion.V1_0) {
             setDefaultKeySerializer(new GraphSONSerializersV1d0.GraphSONKeySerializer());
