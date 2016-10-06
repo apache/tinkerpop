@@ -150,6 +150,8 @@ class TestDriverRemoteConnection(TestCase):
             raise Exception("Accessing a non-existent key should throw an error")
         except KeyError:
             pass
+        connection.close()
+
 
     def test_side_effect_close(self):
         connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
@@ -183,6 +185,7 @@ class TestDriverRemoteConnection(TestCase):
         # Try to get 'b' directly from server, should throw error
         with pytest.raises(Exception):
             t.side_effects.value_lambda('b')
+        connection.close()
 
 
 if __name__ == '__main__':
