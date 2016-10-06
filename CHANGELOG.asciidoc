@@ -36,6 +36,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `TraversalSource.withComputer(Map<String,Object>)` for better language variant support.
 * Added `TraversalSource.withStrategies(Map<String,Object>...)`/`withoutStrategies(String...)` for better language variant support.
 * Added `PartitionStrategy.Builder.readPartitions()` and deprecated `PartitionStrategy.Builder.addPartition()`.
+* A new version of `LazyBarrierStrategy` has been created and added to the default strategies.
 * `FilterRankStrategy` now propagates labels "right" over non-`Scoping` filters.
 * Fixed a bug in `ConnectiveP` where nested equivalent connectives should be inlined.
 * Fixed a bug in `IncidentToAdjacentStrategy` where `TreeStep` traversals were allowed.
