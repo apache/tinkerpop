@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.python.jsr223;
 
 import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -182,6 +183,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
+        else if (object instanceof Computer)
+            return convertToString(ConfigurationConverter.getMap(((Computer) object).getConf()));
         else if (object instanceof Element)
             return convertToString(((Element) object).id()); // hack
         else if (object instanceof Bytecode)

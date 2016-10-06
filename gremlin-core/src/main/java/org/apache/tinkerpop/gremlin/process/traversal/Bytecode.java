@@ -20,9 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -31,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * When a {@link TraversalSource} is manipulated and then a {@link Traversal} is spawned and mutated, a language
@@ -287,6 +287,12 @@ public final class Bytecode implements Cloneable, Serializable {
                 list.add(convertArgument(item, true));
             }
             return list;
+        } else if (argument instanceof Set) {
+            final Set<Object> set = new LinkedHashSet<>(((Set) argument).size());
+            for (final Object item : (Set) argument) {
+                set.add(convertArgument(item, true));
+            }
+            return set;
         } else
             return argument;
     }
