@@ -87,12 +87,12 @@ class GraphTraversalSourceGenerator {
 
   /**
    * @param remoteConnection
-   * @returns {GraphTraversal}
+   * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withRemote = function (remoteConnection) {
     var traversalStrategy = new t.TraversalStrategies(this._traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new GraphTraversal(this._graph, traversalStrategy, new Bytecode(this._bytecode));
+    return new GraphTraversalSource(this._graph, traversalStrategy, new Bytecode(this._bytecode));
   };
 
   /**
