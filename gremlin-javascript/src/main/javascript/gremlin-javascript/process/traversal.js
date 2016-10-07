@@ -185,11 +185,14 @@
     this.strategies.push(strategy);
   };
 
-  /** @param {Traversal} traversal */
-  TraversalStrategies.prototype.applyStrategies = function (traversal) {
-    this.strategies.forEach(function eachStrategy(s) {
-      s.apply(traversal);
-    });
+  /**
+   * @param {Traversal} traversal
+   * @param {Function} callback
+   */
+  TraversalStrategies.prototype.applyStrategies = function (traversal, callback) {
+    eachSeries(this.strategies, function eachStrategy(s, next) {
+      s.apply(traversal, next);
+    }, callback);
   };
 
   /**
@@ -203,8 +206,9 @@
   /**
    * @abstract
    * @param {Traversal} traversal
+   * @param {Function} callback
    */
-  TraversalStrategy.prototype.apply = function (traversal) {
+  TraversalStrategy.prototype.apply = function (traversal, callback) {
 
   };
 
@@ -298,20 +302,6 @@
     this.elementName = elementName;
   }
 
-  /**
-   * @type {{barrier, cardinality, column, direction, operator, order, pop, scope, t}}
-   */
-  var enums = {};
-  enums.barrier = toEnum('Barrier', 'normSack');
-  enums.cardinality = toEnum('Cardinality', 'list set single');
-  enums.column = toEnum('Column', 'keys values');
-  enums.direction = toEnum('Direction', 'BOTH IN OUT');
-  enums.operator = toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong');
-  enums.order = toEnum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr');
-  enums.pop = toEnum('Pop', 'all first last');
-  enums.scope = toEnum('Scope', 'global local');
-  enums.t = toEnum('T', 'id key label value');
-
   // Utility functions
   /** @returns {Array} */
   function parseArgs() {
@@ -380,11 +370,17 @@
     TraversalSideEffects: TraversalSideEffects,
     TraversalStrategies: TraversalStrategies,
     TraversalStrategy: TraversalStrategy,
-    Traverser: Traverser
+    Traverser: Traverser,
+    barrier: toEnum('Barrier', 'normSack'),
+    cardinality: toEnum('Cardinality', 'list set single'),
+    column: toEnum('Column', 'keys values'),
+    direction: toEnum('Direction', 'BOTH IN OUT'),
+    operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
+    order: toEnum('Order', 'decr incr keyDecr keyIncr shuffle valueDecr valueIncr'),
+    pop: toEnum('Pop', 'all first last'),
+    scope: toEnum('Scope', 'global local'),
+    t: toEnum('T', 'id key label value')
   };
-  Object.keys(enums).forEach(function (k) {
-    toExport[k] = enums[k];
-  });
   if (typeof module !== 'undefined') {
     // CommonJS
     module.exports = toExport;

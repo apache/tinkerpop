@@ -34,9 +34,7 @@
       assert.ok(glvModule.process);
       assert.strictEqual(typeof glvModule.process.Bytecode, 'function');
       assert.strictEqual(typeof glvModule.process.EnumValue, 'function');
-      assert.strictEqual(typeof glvModule.process.inherits, 'function');
       assert.strictEqual(typeof glvModule.process.P, 'function');
-      assert.strictEqual(typeof glvModule.process.parseArgs, 'function');
       assert.strictEqual(typeof glvModule.process.Traversal, 'function');
       assert.strictEqual(typeof glvModule.process.TraversalSideEffects, 'function');
       assert.strictEqual(typeof glvModule.process.TraversalStrategies, 'function');
@@ -44,6 +42,17 @@
       assert.strictEqual(typeof glvModule.process.Traverser, 'function');
       assert.strictEqual(typeof glvModule.process.GraphTraversal, 'function');
       assert.strictEqual(typeof glvModule.process.GraphTraversalSource, 'function');
+      assert.strictEqual(typeof glvModule.process.barrier, 'object');
+      assert.strictEqual(typeof glvModule.process.cardinality, 'object');
+      assert.strictEqual(typeof glvModule.process.column, 'object');
+      assert.strictEqual(typeof glvModule.process.direction, 'object');
+      assert.strictEqual(typeof glvModule.process.operator, 'object');
+      assert.strictEqual(typeof glvModule.process.order, 'object');
+      assert.strictEqual(typeof glvModule.process.pop, 'object');
+      assert.strictEqual(typeof glvModule.process.scope, 'object');
+      assert.strictEqual(typeof glvModule.process.t, 'object');
+
+
       assert.ok(glvModule.process.statics);
 
       assert.ok(glvModule.structure);
@@ -75,4 +84,4 @@
     }
     throw new Error('No module loader was found');
   }
-}).call(this)
+}).call(this);
