@@ -339,32 +339,34 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal()
-clockWithResult(1){g.V().both().both().both().count().next()} <1>
-clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <2>
-clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <3>
+g = graph.traversal().withoutStrategies(LazyBarrierStrategy) <1>
+clockWithResult(1){g.V().both().both().both().count().next()} <2>
+clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
+clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <4>
 ----
 
-<1> A non-bulking traversal where each traverser is processed.
-<2> Each traverser entering `repeat()` has its recursion bulked.
-<3> A bulking traversal where implicit traversers are not processed.
+<1> Explicitly remove `LazyBarrierStrategy` which yields a bulking optimization.
+<2> A non-bulking traversal where each traverser is processed.
+<3> Each traverser entering `repeat()` has its recursion bulked.
+<4> A bulking traversal where implicit traversers are not processed.
 
 If `barrier()` is provided an integer argument, then the barrier will only hold `n`-number of unique traversers in its
 barrier before draining the aggregated traversers to the next step. This is useful in the aforementioned bulking
-optimization scenario, but reduces the risk of an out-of-memory exception.
+optimization scenario with the added benefit of reducing the risk of an out-of-memory exception.
 
-The non-default `LazyBarrierStrategy` inserts `barrier()`-steps in a traversal where appropriate in order to gain the
+`LazyBarrierStrategy` inserts `barrier()`-steps into a traversal where appropriate in order to gain the
 "bulking optimization."
 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal().withStrategies(LazyBarrierStrategy.instance())
+g = graph.traversal() <1>
 clockWithResult(1){g.V().both().both().both().count().next()}
-g.V().both().both().both().count().iterate().toString()  <1>
+g.V().both().both().both().count().iterate().toString()  <2>
 ----
 
+<1> `LazyBarrierStrategy` is a default strategy and thus, does not need to be explicitly activated.
 <1> With `LazyBarrierStrategy` activated, `barrier()` steps are automatically inserted where appropriate.
 
 [[by-step]]
