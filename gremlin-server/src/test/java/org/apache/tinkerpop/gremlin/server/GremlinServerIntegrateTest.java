@@ -894,9 +894,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Try to get side effect from server
         final Cluster cluster = Cluster.build("localhost").create();
         final Client client = cluster.connect();
-        Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
+        final Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
         field.setAccessible(true);
-        UUID serverSideEffectId = (UUID) field.get(se);
+        final UUID serverSideEffectId = (UUID) field.get(se);
         final Map<String, String> aliases = new HashMap<>();
         aliases.put("g", "g");
         final RequestMessage msg = RequestMessage.build(Tokens.OPS_GATHER)
