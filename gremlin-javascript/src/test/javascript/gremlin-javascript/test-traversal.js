@@ -26,9 +26,10 @@
   var helper = loadModule.call(this, './helper.js');
   var assert = helper.assert;
   var graph = helper.loadLibModule.call(this, 'structure/graph.js');
+  var t = helper.loadLibModule.call(this, 'process/traversal.js');
 
   [
-    function testBytecode() {
+    function testBytecode1() {
       var g = new graph.Graph().traversal();
       var bytecode = g.V().out('created').getBytecode();
       assert.ok(bytecode);
@@ -37,6 +38,20 @@
       assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
       assert.strictEqual(bytecode.stepInstructions[1][0], 'out');
       assert.strictEqual(bytecode.stepInstructions[1][1], 'created');
+    },
+    function testBytecode2() {
+      var g = new graph.Graph().traversal();
+      var bytecode = g.V().order().by('age', t.order.decr).getBytecode();
+      assert.ok(bytecode);
+      assert.strictEqual(bytecode.sourceInstructions.length, 0);
+      assert.strictEqual(bytecode.stepInstructions.length, 3);
+      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
+      assert.strictEqual(bytecode.stepInstructions[1][0], 'order');
+      assert.strictEqual(bytecode.stepInstructions[2][0], 'by');
+      assert.strictEqual(bytecode.stepInstructions[2][1], 'age');
+      assert.strictEqual(typeof bytecode.stepInstructions[2][2], 'object');
+      assert.strictEqual(bytecode.stepInstructions[2][2].typeName, 'Order');
+      assert.strictEqual(bytecode.stepInstructions[2][2].elementName, 'decr');
     }
   ].forEach(function (testCase) {
     testCase.call(null);

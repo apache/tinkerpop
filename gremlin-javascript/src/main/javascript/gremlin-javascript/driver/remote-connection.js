@@ -68,7 +68,7 @@
   /** @override */
   RemoteStrategy.prototype.apply = function (traversal, callback) {
     if (traversal.traversers) {
-      return;
+      return callback();
     }
     this.connection.submit(traversal.getBytecode(), function (err, remoteTraversal) {
       if (err) {

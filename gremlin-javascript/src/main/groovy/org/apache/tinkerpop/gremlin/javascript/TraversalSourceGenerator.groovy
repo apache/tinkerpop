@@ -177,11 +177,14 @@ class TraversalSourceGenerator {
     this.strategies.push(strategy);
   };
 
-  /** @param {Traversal} traversal */
-  TraversalStrategies.prototype.applyStrategies = function (traversal) {
-    this.strategies.forEach(function eachStrategy(s) {
-      s.apply(traversal);
-    });
+  /**
+   * @param {Traversal} traversal
+   * @param {Function} callback
+   */
+  TraversalStrategies.prototype.applyStrategies = function (traversal, callback) {
+    eachSeries(this.strategies, function eachStrategy(s, next) {
+      s.apply(traversal, next);
+    }, callback);
   };
 
   /**
@@ -195,8 +198,9 @@ class TraversalSourceGenerator {
   /**
    * @abstract
    * @param {Traversal} traversal
+   * @param {Function} callback
    */
-  TraversalStrategy.prototype.apply = function (traversal) {
+  TraversalStrategy.prototype.apply = function (traversal, callback) {
 
   };
 
@@ -290,24 +294,6 @@ class TraversalSourceGenerator {
     this.elementName = elementName;
   }
 
-  /**
-   * @type {{barrier, cardinality, column, direction, operator, order, pop, scope, t}}
-   */
-  var enums = {};\n""")
-
-        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports()
-                .findAll { Enum.class.isAssignableFrom(it) }
-                .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() }
-                .collect()) {
-            moduleOutput.append("  enums.${SymbolHelper.decapitalize(enumClass.getSimpleName())} = " +
-                    "toEnum('${SymbolHelper.toJs(enumClass.getSimpleName())}', '");
-            enumClass.getEnumConstants()
-                    .sort { a, b -> a.name() <=> b.name() }
-                    .each { value -> moduleOutput.append("${SymbolHelper.toJs(value.name())} "); }
-            moduleOutput.deleteCharAt(moduleOutput.length() - 1).append("');\n")
-        }
-
-        moduleOutput.append("""
   // Utility functions
   /** @returns {Array} */
   function parseArgs() {
@@ -376,11 +362,21 @@ class TraversalSourceGenerator {
     TraversalSideEffects: TraversalSideEffects,
     TraversalStrategies: TraversalStrategies,
     TraversalStrategy: TraversalStrategy,
-    Traverser: Traverser
+    Traverser: Traverser""")
+        for (final Class<? extends Enum> enumClass : CoreImports.getClassImports()
+                .findAll { Enum.class.isAssignableFrom(it) }
+                .sort { a, b -> a.getSimpleName() <=> b.getSimpleName() }
+                .collect()) {
+            moduleOutput.append(",\n    ${SymbolHelper.decapitalize(enumClass.getSimpleName())}: " +
+                    "toEnum('${SymbolHelper.toJs(enumClass.getSimpleName())}', '");
+            enumClass.getEnumConstants()
+                    .sort { a, b -> a.name() <=> b.name() }
+                    .each { value -> moduleOutput.append("${SymbolHelper.toJs(value.name())} "); }
+            moduleOutput.deleteCharAt(moduleOutput.length() - 1).append("')")
+        }
+
+        moduleOutput.append("""
   };
-  Object.keys(enums).forEach(function (k) {
-    toExport[k] = enums[k];
-  });
   if (typeof module !== 'undefined') {
     // CommonJS
     module.exports = toExport;

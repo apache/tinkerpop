@@ -87,7 +87,7 @@
       assert.strictEqual(writer.write(true), 'true');
       assert.strictEqual(writer.write(false), 'false');
     },
-    function testWriteNumber() {
+    function testWriteP() {
       var writer = new GraphSONWriter();
       var expected = JSON.stringify({"@type":"g:P","@value":{"predicate":"and","value":[{"@type":"g:P","@value":{"predicate":"or","value":[{"@type":"g:P","@value":{"predicate":"lt","value":"b"}},{"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},{"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}});
       assert.strictEqual(writer.write(P.lt("b").or(P.gt("c")).and(P.neq("d"))), expected);
