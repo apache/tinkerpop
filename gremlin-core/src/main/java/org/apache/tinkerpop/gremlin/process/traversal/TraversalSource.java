@@ -23,7 +23,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
-import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
@@ -108,8 +107,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
         clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         for (final TraversalStrategy traversalStrategy : traversalStrategies) {
             if (traversalStrategy instanceof VertexProgramStrategy) {
-                clone.getStrategies().addStrategies(GraphComputerHelper.getTraversalStrategies(this, (VertexProgramStrategy) traversalStrategy));
-                break;
+                ((VertexProgramStrategy) traversalStrategy).addGraphComputerStrategies(clone);
             }
         }
         return clone;
@@ -150,14 +148,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Computer computer) {
-        return this.withStrategies(VertexProgramStrategy.build().
-                graphComputer(computer.getGraphComputerClass()).
-                workers(computer.getWorkers()).
-                result(computer.getResultGraph()).
-                persist(computer.getPersist()).
-                vertices(computer.getVertices()).
-                edges(computer.getEdges()).
-                configure(computer.getConfiguration()).create());
+        return this.withStrategies(new VertexProgramStrategy(computer));
     }
 
     /**
@@ -168,7 +159,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer(final Class<? extends GraphComputer> graphComputerClass) {
-        return this.withStrategies(VertexProgramStrategy.build().graphComputer(graphComputerClass).create());
+        return this.withStrategies(new VertexProgramStrategy(Computer.compute(graphComputerClass)));
     }
 
     /**
@@ -178,7 +169,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withComputer() {
-        return this.withStrategies(VertexProgramStrategy.build().create());
+        return this.withStrategies(new VertexProgramStrategy(Computer.compute()));
     }
 
     /**

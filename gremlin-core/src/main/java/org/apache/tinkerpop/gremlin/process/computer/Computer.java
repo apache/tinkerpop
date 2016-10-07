@@ -19,17 +19,13 @@
 
 package org.apache.tinkerpop.gremlin.process.computer;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -53,6 +49,7 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     private Computer() {
 
     }
+
     public static Computer compute() {
         return new Computer(GraphComputer.class);
     }
@@ -61,9 +58,21 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         return new Computer(graphComputerClass);
     }
 
+    public Computer graphComputer(final Class<? extends GraphComputer> graphComputerClass) {
+        final Computer clone = this.clone();
+        clone.graphComputerClass = graphComputerClass;
+        return clone;
+    }
+
     public Computer configure(final String key, final Object value) {
         final Computer clone = this.clone();
         clone.configuration.put(key, value);
+        return clone;
+    }
+
+    public Computer configure(final Map<String, Object> configurations) {
+        final Computer clone = this.clone();
+        clone.configuration.putAll(configurations);
         return clone;
     }
 
