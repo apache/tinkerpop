@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
  * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * This class is not thread safe.
  */
 public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSideEffects {
 
