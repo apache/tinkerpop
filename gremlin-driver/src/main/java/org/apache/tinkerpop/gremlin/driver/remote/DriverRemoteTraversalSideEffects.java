@@ -68,7 +68,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 try {
                     final Result result = client.submitAsync(msg).get().one();
                     sideEffects.put(key, null == result ? null : result.getObject());
-                    if (keys.isEmpty())
+                    if (keys.equals(Collections.emptySet()))
                         keys = new HashSet<>();
                     keys.add(key);
                 } catch (Exception ex) {
@@ -97,7 +97,10 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                     .addArg(Tokens.ARGS_HOST, host)
                     .processor("traversal").create();
             try {
-                keys = client.submitAsync(msg).get().all().get().stream().map(r -> r.getString()).collect(Collectors.toSet());
+                if (keys.equals(Collections.emptySet()))
+                    keys = new HashSet<>();
+
+                client.submitAsync(msg).get().all().get().forEach(r -> keys.add(r.getString()));
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
                 final String exMsg = null == root ? "" : root.getMessage();
