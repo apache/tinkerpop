@@ -27,7 +27,7 @@ import six
 
 from gremlin_python import statics
 from gremlin_python.statics import (
-    FloatType, FunctionType, IntType, LongType, long)
+    FloatType, FunctionType, IntType, LongType, long, TypeType)
 from gremlin_python.process.traversal import Binding
 from gremlin_python.process.traversal import Bytecode
 from gremlin_python.process.traversal import P
@@ -183,6 +183,11 @@ class LambdaSerializer(GraphSONSerializer):
         return _SymbolHelper.objectify("Lambda", dict)
 
 
+class TypeSerializer(GraphSONSerializer):
+    def _dictify(self, clazz):
+        return GraphSONWriter._dictify(clazz())
+
+
 class NumberSerializer(GraphSONSerializer):
     def _dictify(self, number):
         if isinstance(number, bool):  # python thinks that 0/1 integers are booleans
@@ -280,8 +285,11 @@ class _SymbolHelper(object):
         return _SymbolHelper.symbolMap[symbol] if symbol in _SymbolHelper.symbolMap else symbol
 
     @staticmethod
-    def objectify(type, value, prefix="g"):
-        return {_SymbolHelper._TYPE: prefix + ":" + type, _SymbolHelper._VALUE: value}
+    def objectify(type, value=None, prefix="g"):
+        object = {_SymbolHelper._TYPE: prefix + ":" + type}
+        if value is not None:
+            object[_SymbolHelper._VALUE] = value
+        return object
 
 
 serializers = {
@@ -295,7 +303,8 @@ serializers = {
     LongType: NumberSerializer(),
     IntType: NumberSerializer(),
     FloatType: NumberSerializer(),
-    TraversalStrategy: TraversalStrategySerializer()
+    TypeType: TypeSerializer(),
+    TraversalStrategy: TraversalStrategySerializer(),
 }
 
 deserializers = {

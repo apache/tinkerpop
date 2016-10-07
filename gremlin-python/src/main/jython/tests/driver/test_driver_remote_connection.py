@@ -31,6 +31,7 @@ from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.io.graphson import GraphSONWriter
+from gremlin_python.process.strategies import SubgraphStrategy
 
 
 class TestDriverRemoteConnection(TestCase):
@@ -75,7 +76,15 @@ class TestDriverRemoteConnection(TestCase):
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = g.withoutStrategies(TraversalStrategy("SubgraphStrategy")). \
+        g = Graph().traversal().withRemote(connection). \
+            withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
+        print GraphSONWriter.writeObject(g.bytecode)
+        assert 4 == g.V().count().next()
+        assert 0 == g.E().count().next()
+        assert 1 == g.V().label().dedup().count().next()
+        assert "person" == g.V().label().dedup().next()
+        #
+        g = g.withoutStrategies(SubgraphStrategy). \
             withComputer({"workers": 4, "vertices": __.has("name", "marko"), "edges": __.limit(0)})
         assert 1 == g.V().count().next()
         assert 0 == g.E().count().next()

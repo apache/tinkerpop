@@ -28,12 +28,13 @@ if six.PY3:
     FloatType = float
     IntType = int
     LongType = long
+    TypeType = type
 else:
     long = long
     from types import FloatType
     from types import IntType
     from types import LongType
-
+    from types import TypeType
 
 staticMethods = {}
 staticEnums = {}

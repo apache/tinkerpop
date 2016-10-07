@@ -25,12 +25,14 @@ from unittest import TestCase
 
 import six
 
-from gremlin_python.statics import long
+from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONReader
 from gremlin_python.structure.io.graphson import GraphSONWriter
 from gremlin_python.process.traversal import P
+from gremlin_python.process.strategies import SubgraphStrategy
+from gremlin_python.process.graph_traversal import __
 
 
 class TestGraphSONReader(TestCase):
@@ -89,14 +91,21 @@ class TestGraphSONReader(TestCase):
 
 class TestGraphSONWriter(TestCase):
     def test_numbers(self):
-        assert {"@type":"g:Int64","@value":2} == json.loads(GraphSONWriter.writeObject(long(2)))
-        assert {"@type":"g:Int32","@value":1} == json.loads(GraphSONWriter.writeObject(1))
-        assert {"@type":"g:Float","@value":3.2} == json.loads(GraphSONWriter.writeObject(3.2))
+        assert {"@type": "g:Int64", "@value": 2} == json.loads(GraphSONWriter.writeObject(long(2)))
+        assert {"@type": "g:Int32", "@value": 1} == json.loads(GraphSONWriter.writeObject(1))
+        assert {"@type": "g:Float", "@value": 3.2} == json.loads(GraphSONWriter.writeObject(3.2))
         assert """true""" == GraphSONWriter.writeObject(True)
 
     def test_P(self):
         assert """{"@type":"g:P","@value":{"predicate":"and","value":[{"@type":"g:P","@value":{"predicate":"or","value":[{"@type":"g:P","@value":{"predicate":"lt","value":"b"}},{"@type":"g:P","@value":{"predicate":"gt","value":"c"}}]}},{"@type":"g:P","@value":{"predicate":"neq","value":"d"}}]}}""" == GraphSONWriter.writeObject(
             P.lt("b").or_(P.gt("c")).and_(P.neq("d")))
+
+    def test_strategies(self):
+        # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
+        assert {"@type": "g:SubgraphStrategy"} == json.loads(GraphSONWriter.writeObject(SubgraphStrategy))
+        assert {"@type": "g:SubgraphStrategy", "@value": {
+            "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
+            GraphSONWriter.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
 
 if __name__ == '__main__':

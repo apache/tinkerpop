@@ -229,20 +229,22 @@ Traversal Strategies
 ~~~~~~~~~~~~~~~~~~~~
 
 In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Python has a
-`TraversalStrategy` class that can be used.
+`TraversalStrategy` class along with numerous subclasses that mirror the standard, distributed strategies.
 
 [gremlin-python,modern]
 ----
-g = g.withStrategies(TraversalStrategy('SubgraphStrategy',{'vertices': hasLabel('person'),'edges': has('weight',gt(0.5))}))
+g = g.withStrategies(SubgraphStrategy(vertices=hasLabel('person'),edges=has('weight',gt(0.5))))
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
-g = g.withoutStrategies(TraversalStrategy('SubgraphStrategy'))
+g = g.withoutStrategies(SubgraphStrategy)
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
 ----
 
-IMPORTANT: Future work will include extending the Gremlin-Python `TraversalStrategy` class with mirrors of the Java-based
-Gremlin traversal machine strategies so the two variants have the same look-and-feel.
+NOTE: Many of the `TraversalStrategy` classes in Gremlin-Python are proxies to the respective strategy on the
+Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Traversal)` method does nothing. However,
+the strategy is encoded in the Gremlin-Python bytecode and transmittable to the Gremlin traversal machine for
+re-construction machine-side.
 
 The Lambda Solution
 ~~~~~~~~~~~~~~~~~~~

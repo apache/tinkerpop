@@ -70,6 +70,11 @@ class Traversal(object):
         self.last_traverser = None
     def __repr__(self):
         return str(self.bytecode)
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.bytecode == other.bytecode
+        else:
+            return False
     def __iter__(self):
         return self
     def __next__(self):
@@ -220,14 +225,22 @@ class TraversalStrategies(object):
     def apply_strategies(self, traversal):
         for traversal_strategy in self.traversal_strategies:
             traversal_strategy.apply(traversal)
+    def __repr__(self):
+        return str(self.traversal_strategies)
 
 
 class TraversalStrategy(object):
-    def __init__(self, strategy_name, configuration=None):
-        self.strategy_name = strategy_name
+    def __init__(self, strategy_name=None, configuration=None):
+        self.strategy_name = type(self).__name__ if strategy_name is None else strategy_name
         self.configuration = {} if configuration is None else configuration
     def apply(self, traversal):
         return
+    def __eq__(self, other):
+        return isinstance(other, self.__class__)
+    def __hash__(self):
+        return hash(self.strategy_name)
+    def __repr__(self):
+        return self.strategy_name
 
 '''
 BYTECODE
@@ -251,6 +264,11 @@ class Bytecode(object):
         for arg in args:
             instruction.append(self.__convertArgument(arg))
         self.step_instructions.append(instruction)
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.source_instructions == other.source_instructions and self.step_instructions == other.step_instructions
+        else:
+            return False
     def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
             self.bindings.update(arg.bytecode.bindings)
