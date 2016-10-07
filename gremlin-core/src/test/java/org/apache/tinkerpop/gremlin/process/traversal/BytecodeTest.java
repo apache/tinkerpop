@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
@@ -112,6 +112,8 @@ public class BytecodeTest {
     public void shouldConvertComputer() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
         Bytecode bytecode = g.withComputer(Computer.compute().workers(10)).getBytecode();
-        assertEquals(ConfigurationConverter.getMap(Computer.compute().workers(10).getConf()), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        assertEquals(VertexProgramStrategy.build().create(), bytecode.getSourceInstructions().iterator().next().getArguments()[0]);
+        assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(VertexProgramStrategy.WORKERS),
+                ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(VertexProgramStrategy.WORKERS));
     }
 }

@@ -84,7 +84,8 @@ public final class GraphComputerHelper {
         return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
     }
 
-    public static TraversalStrategy[] getTraversalStrategies(final TraversalSource traversalSource, final Computer computer) {
+    public static TraversalStrategy[] getTraversalStrategies(final TraversalSource traversalSource, final VertexProgramStrategy vertexProgramStrategy) {
+        final Computer computer = vertexProgramStrategy.getComputer();
         Class<? extends GraphComputer> graphComputerClass;
         if (computer.getGraphComputerClass().equals(GraphComputer.class)) {
             try {
@@ -95,10 +96,9 @@ public final class GraphComputerHelper {
         } else
             graphComputerClass = computer.getGraphComputerClass();
         final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
-        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size() + 1];
-        traversalStrategies[0] = new VertexProgramStrategy(computer);
+        final TraversalStrategy[] traversalStrategies = new TraversalStrategy[graphComputerStrategies.size()];
         for (int i = 0; i < graphComputerStrategies.size(); i++) {
-            traversalStrategies[i + 1] = graphComputerStrategies.get(i);
+            traversalStrategies[i] = graphComputerStrategies.get(i);
         }
         return traversalStrategies;
     }

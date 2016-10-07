@@ -19,8 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -283,8 +281,6 @@ public final class Bytecode implements Cloneable, Serializable {
         //
         if (argument instanceof Traversal)
             return ((Traversal) argument).asAdmin().getBytecode();
-        else if (argument instanceof Computer)
-            return convertArgument(ConfigurationConverter.getMap(((Computer) argument).getConf()), true);
         else if (argument instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {

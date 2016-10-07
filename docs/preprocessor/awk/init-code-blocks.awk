@@ -60,6 +60,7 @@ BEGIN {
     print "jython.eval('sys.path.append(\"" TP_HOME "/gremlin-python/target/test-classes/Lib\")')"
     print "jython.eval('from gremlin_python import statics')"
     print "jython.eval('from gremlin_python.process.traversal import *')"
+    print "jython.eval('from gremlin_python.process.strategies import *')"
     print "jython.eval('from gremlin_python.structure.graph import Graph')"
     print "jython.eval('from gremlin_python.structure.io.graphson import GraphSONWriter')"
     print "jython.eval('from gremlin_python.structure.io.graphson import GraphSONReader')"

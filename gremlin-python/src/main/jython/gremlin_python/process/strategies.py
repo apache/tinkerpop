@@ -36,30 +36,52 @@ class ElementIdStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self)
 
 
+# EventStrategy doesn't make sense outside JVM traversal machine
+
 class HaltedTraverserStrategy(TraversalStrategy):
-    def __init__(self, haltedTraverserFactory="detached"):
-        TraversalStrategy.__init__(self, configuration={"haltedTraverserFactory": haltedTraverserFactory})
+    def __init__(self, halted_traverser_factory):
+        TraversalStrategy.__init__(self, configuration={"haltedTraverserFactory": halted_traverser_factory})
 
 
 class PartitionStrategy(TraversalStrategy):
-    def __init__(self, partitionKey, writePartition=None, readPartitions=None, includeMetaProperties=False):
-        TraversalStrategy.__init__(self, configuration={"partitionKey": partitionKey,
-                                                        "includeMetaProperties": includeMetaProperties})
-        if writePartition is not None:
-            self.configuration["writePartition"] = writePartition
-        if writePartition is not None:
-            self.configuration["readPartitions"] = readPartitions
+    def __init__(self, partition_key, write_partition=None, read_partitions=None, include_meta_properties=False):
+        TraversalStrategy.__init__(self, configuration={"partitionKey": partition_key,
+                                                        "includeMetaProperties": include_meta_properties})
+        if write_partition is not None:
+            self.configuration["writePartition"] = write_partition
+        if write_partition is not None:
+            self.configuration["readPartitions"] = read_partitions
 
 
 class SubgraphStrategy(TraversalStrategy):
-    def __init__(self, vertices=None, edges=None, vertexProperties=None):
+    def __init__(self, vertices=None, edges=None, vertex_properties=None):
         TraversalStrategy.__init__(self)
         if vertices is not None:
             self.configuration["vertices"] = vertices
         if edges is not None:
             self.configuration["edges"] = edges
-        if vertexProperties is not None:
-            self.configuration["vertexProperties"] = vertexProperties
+        if vertex_properties is not None:
+            self.configuration["vertexProperties"] = vertex_properties
+
+
+class VertexProgramStrategy(TraversalStrategy):
+    def __init__(self, graph_computer=None, workers=None, persist=None, result=None, vertices=None, edges=None,
+                 configuration=None):
+        TraversalStrategy.__init__(self)
+        if graph_computer is not None:
+            self.configuration["graphComputer"] = graph_computer
+        if workers is not None:
+            self.configuration["workers"] = workers
+        if persist is not None:
+            self.configuration["persist"] = persist
+        if result is not None:
+            self.configuration["result"] = result
+        if vertices is not None:
+            self.configuration["vertices"] = vertices
+        if edges is not None:
+            self.configuration["edges"] = edges
+        if configuration is not None:
+            self.configuration.update(configuration)
 
 
 ###########################
@@ -67,8 +89,10 @@ class SubgraphStrategy(TraversalStrategy):
 ###########################
 
 class MatchAlgorithmStrategy(TraversalStrategy):
-    def __init__(self, matchAlgorithm="count"):
-        TraversalStrategy.__init__(self, configuration={"matchAlgorithm": matchAlgorithm})
+    def __init__(self, match_algorithm=None):
+        TraversalStrategy.__init__(self)
+        if match_algorithm is not None:
+            self.configuration["matchAlgorithm"] = match_algorithm
 
 
 ###########################
@@ -131,6 +155,11 @@ class RangeByIsCountStrategy(TraversalStrategy):
 
 
 class RepeatUnrollStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self)
+
+
+class GraphFilterStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 

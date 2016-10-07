@@ -46,13 +46,6 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     private Traversal<Vertex, Vertex> vertices = null;
     private Traversal<Vertex, Edge> edges = null;
 
-    public static final String GRAPH_COMPUTER = "graphComputer";
-    public static final String WORKERS = "workers";
-    public static final String PERSIST = "persist";
-    public static final String RESULT = "result";
-    public static final String VERTICES = "vertices";
-    public static final String EDGES = "edges";
-
     private Computer(final Class<? extends GraphComputer> graphComputerClass) {
         this.graphComputerClass = graphComputerClass;
     }
@@ -60,32 +53,6 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     private Computer() {
 
     }
-
-    public static Computer compute(final Configuration configuration) {
-        try {
-            final Computer computer = new Computer();
-            for (final String key : (List<String>) IteratorUtils.asList(configuration.getKeys())) {
-                if (key.equals(GRAPH_COMPUTER))
-                    computer.graphComputerClass = (Class) Class.forName(configuration.getString(key));
-                else if (key.equals(WORKERS))
-                    computer.workers = configuration.getInt(key);
-                else if (key.equals(PERSIST))
-                    computer.persist = GraphComputer.Persist.valueOf(configuration.getString(key));
-                else if (key.equals(RESULT))
-                    computer.resultGraph = GraphComputer.ResultGraph.valueOf(configuration.getString(key));
-                else if (key.equals(VERTICES))
-                    computer.vertices = (Traversal) configuration.getProperty(key);
-                else if (key.equals(EDGES))
-                    computer.edges = (Traversal) configuration.getProperty(key);
-                else
-                    computer.configuration.put(key, configuration.getProperty(key));
-            }
-            return computer;
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-    }
-
     public static Computer compute() {
         return new Computer(GraphComputer.class);
     }
@@ -200,22 +167,4 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         return this.workers;
     }
 
-    public Configuration getConf() {
-        final Map<String, Object> map = new HashMap<>();
-        if (-1 != this.workers)
-            map.put(WORKERS, this.workers);
-        if (null != this.persist)
-            map.put(PERSIST, this.persist.name());
-        if (null != this.resultGraph)
-            map.put(RESULT, this.resultGraph.name());
-        if (null != this.vertices)
-            map.put(RESULT, this.vertices);
-        if (null != this.edges)
-            map.put(EDGES, this.edges);
-        map.put(GRAPH_COMPUTER, this.graphComputerClass.getCanonicalName());
-        for (final Map.Entry<String, Object> entry : this.configuration.entrySet()) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return new MapConfiguration(map);
-    }
 }

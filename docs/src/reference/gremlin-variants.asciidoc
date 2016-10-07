@@ -62,7 +62,7 @@ Gremlin-Python users will typically make use of the following classes.
 >>> from gremlin_python import statics
 >>> from gremlin_python.structure.graph import Graph
 >>> from gremlin_python.process.graph_traversal import __
->>> from gremlin_python.process.traversal import TraversalStrategy
+>>> from gremlin_python.process.strategies import *
 >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 
 In Gremlin-Python there exists `GraphTraversalSource`, `GraphTraversal`, and `__` which mirror the respective classes in Gremlin-Java.
@@ -239,11 +239,14 @@ g.V().outE().valueMap(True).toList()
 g = g.withoutStrategies(SubgraphStrategy)
 g.V().name.toList()
 g.V().outE().valueMap(True).toList()
+g = g.withComputer(workers=2,vertices=has('name','marko'))
+g.V().name.toList()
+g.V().outE().valueMap(True).toList()
 ----
 
 NOTE: Many of the `TraversalStrategy` classes in Gremlin-Python are proxies to the respective strategy on the
 Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Traversal)` method does nothing. However,
-the strategy is encoded in the Gremlin-Python bytecode and transmittable to the Gremlin traversal machine for
+the strategy is encoded in the Gremlin-Python bytecode and transmitted to the Gremlin traversal machine for
 re-construction machine-side.
 
 The Lambda Solution

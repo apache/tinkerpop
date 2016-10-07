@@ -137,12 +137,7 @@ public class GraphTraversalSource implements TraversalSource {
     public GraphTraversalSource withBindings(final Bindings bindings) {
         return (GraphTraversalSource) TraversalSource.super.withBindings(bindings);
     }
-
-    @Override
-    public GraphTraversalSource withComputer(final Map<String,Object> computerConfiguration) {
-        return (GraphTraversalSource) TraversalSource.super.withComputer(computerConfiguration);
-    }
-
+    
     @Override
     public GraphTraversalSource withComputer(final Computer computer) {
         return (GraphTraversalSource) TraversalSource.super.withComputer(computer);

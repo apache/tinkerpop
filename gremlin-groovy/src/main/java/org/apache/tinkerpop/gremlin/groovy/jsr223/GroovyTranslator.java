@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -159,9 +158,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
-        } else if (object instanceof Computer)
-            return convertToString(ConfigurationConverter.getMap(((Computer) object).getConf()));
-        else if (object instanceof TraversalStrategyProxy) {
+        } else if (object instanceof TraversalStrategyProxy) {
             final TraversalStrategyProxy proxy = (TraversalStrategyProxy) object;
             if (proxy.getConfiguration().isEmpty())
                 return proxy.getStrategyClass().getCanonicalName() + ".instance()";
