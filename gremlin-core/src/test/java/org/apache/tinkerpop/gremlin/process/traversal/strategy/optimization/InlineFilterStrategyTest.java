@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,10 +44,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.dedup;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.filter;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.match;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.tail;
 import static org.junit.Assert.assertEquals;
 
@@ -77,7 +80,7 @@ public class InlineFilterStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Traversal[][]{
-                {has("age", 10).as("a").has("name", "marko").as("b").coin(0.5).as("c"), addHas(__.start(), "age", eq(10), "name", eq("marko")).as("a","b").coin(0.5).as("c")},
+                {has("age", 10).as("a").has("name", "marko").as("b").coin(0.5).as("c"), addHas(__.start(), "age", eq(10), "name", eq("marko")).as("a", "b").coin(0.5).as("c")},
                 //
                 {filter(out("knows")), filter(out("knows"))},
                 {filter(has("age", gt(10))).as("a"), has("age", gt(10)).as("a")},
@@ -100,17 +103,28 @@ public class InlineFilterStrategyTest {
                 {and(has("age", gt(10)), and(out("knows"), has("name", "marko"))), has("age", gt(10)).and(out("knows"), has("name", "marko"))},
                 {and(has("age", gt(20)), or(has("age", lt(10)), has("age", gt(100)))), addHas(__.start(), "age", gt(20), "age", lt(10).or(gt(100)))},
                 {and(has("age", gt(20)).as("a"), or(has("age", lt(10)), has("age", gt(100)).as("b"))), addHas(__.start(), "age", gt(20), "age", lt(10).or(gt(100))).as("a", "b")},
+                {and(has("age", gt(20)).as("a"), or(has("age", lt(10)).as("c"), has("age", gt(100)).as("b"))), addHas(__.start(), "age", gt(20), "age", lt(10).or(gt(100))).as("a", "b", "c")},
                 //
-                {V().match(as("a").has("age", 10), as("a").filter(has("name")).as("b")), V().as("a").has("age", 10).match(as("a").has("name").as("b"))},
+                {V().match(as("a").has("age", 10), as("a").filter(has("name")).as("b")), V().has("age", 10).as("a").match(as("a").has("name").as("b"))},
                 {match(as("a").has("age", 10), as("a").filter(has("name")).as("b")), match(as("a").has("age", 10), as("a").has("name").as("b"))},
+                {match(as("a").has("age", 10).both().as("b"), as("b").out().as("c")), match(as("a").has("age", 10).both().as("b"), as("b").out().as("c"))},
                 {__.map(match(as("a").has("age", 10), as("a").filter(has("name")).as("b"))), __.map(match(as("a").has("age", 10), as("a").has("name").as("b")))},
-                {V().match(as("a").has("age", 10)), V().as("a").has("age", 10)},
-                {V().match(as("a").has("age", 10).as("b"), as("a").filter(has("name")).as("b")), V().as("a").has("age", 10).as("b").match(as("a").has("name").as("b"))},
+                {V().match(as("a").has("age", 10)), V().has("age", 10).as("a")},
+                {V().match(as("a").has("age", 10).as("b"), as("a").filter(has("name")).as("b")), V().has("age", 10).as("a","b").match(as("a").has("name").as("b"))},
                 //
                 {filter(dedup()), filter(dedup())},
                 {filter(filter(drop())), filter(drop())},
                 {and(has("name"), limit(10).has("age")), and(has("name"), limit(10).has("age"))},
                 {filter(tail(10).as("a")), filter(tail(10).as("a"))},
+                //
+                {outE().hasLabel("knows").inV(), outE("knows").inV()},
+                {outE().hasLabel("knows").hasLabel("created").inV(), outE("created").inV()},
+                {outE().or(hasLabel("knows"),hasLabel("created")).inV(), outE("knows", "created").inV()},
+                {outE().or(hasLabel("knows").as("a"),hasLabel("created").as("b")).as("c").inV(), outE("knows", "created").as("a","b","c").inV()},
+                {outE().hasLabel(P.eq("knows").or(P.gt("created"))).has("weight", gt(1.0)).inV(), addHas(outE(), T.label.getAccessor(), P.eq("knows").or(P.gt("created")), "weight", gt(1.0)).inV()},
+                {outE().hasLabel(P.eq("knows").or(P.eq("created"))).has("weight", gt(1.0)).inV(), outE("knows", "created").has("weight", gt(1.0)).inV()},
+                // {outE().or(has(T.label,P.within("knows","likes")).hasLabel("created")).inV(), outE("knows", "likes", "created").inV()},
+                {outE().hasLabel(P.within("knows", "created")).inV(), outE("knows", "created").inV()},
         });
     }
 

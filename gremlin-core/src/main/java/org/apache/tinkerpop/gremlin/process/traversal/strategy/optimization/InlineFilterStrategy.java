@@ -20,6 +20,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -34,13 +36,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +62,7 @@ import java.util.Set;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
+ * __.outE().hasLabel(eq("knows").or(eq("created"))).inV()       // is replaced by __.outE("knows", "created)
  * __.filter(has("name","marko"))                                // is replaced by __.has("name","marko")
  * __.and(has("name"),has("age"))                                // is replaced by __.has("name").has("age")
  * __.and(filter(has("name","marko").has("age")),hasNot("blah")) // is replaced by __.has("name","marko").has("age").hasNot("blah")
@@ -66,7 +75,9 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     private static final Set<Class<? extends OptimizationStrategy>> POSTS = new HashSet<>(Arrays.asList(
             MatchPredicateStrategy.class,
             FilterRankingStrategy.class,
-            GraphFilterStrategy.class));
+            GraphFilterStrategy.class,
+            AdjacentToIncidentStrategy.class));
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(IdentityRemovalStrategy.class);
 
     private InlineFilterStrategy() {
     }
@@ -106,8 +117,49 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             TraversalHelper.copyLabels(step, previousStep, false);
             traversal.removeStep(step);
             return true;
-        }
-        return false;
+        } else if (step.getPreviousStep() instanceof VertexStep && ((VertexStep) step.getPreviousStep()).returnsEdge()) {
+            final VertexStep<Edge> previousStep = (VertexStep<Edge>) step.getPreviousStep();
+            final List<String> edgeLabels = new ArrayList<>();
+            for (final HasContainer hasContainer : new ArrayList<>(step.getHasContainers())) {
+                if (hasContainer.getKey().equals(T.label.getAccessor())) {
+                    if (hasContainer.getBiPredicate() == Compare.eq && hasContainer.getValue() instanceof String) {
+                        edgeLabels.add((String) hasContainer.getValue());
+                        step.removeHasContainer(hasContainer);
+                    } else if (hasContainer.getBiPredicate() == Contains.within && hasContainer.getValue() instanceof Collection) {
+                        edgeLabels.addAll((Collection<String>) hasContainer.getValue());
+                        step.removeHasContainer(hasContainer);
+                    } else if (hasContainer.getPredicate() instanceof OrP) {
+                        boolean removeContainer = true;
+                        final List<P<?>> orps = ((OrP) hasContainer.getPredicate()).getPredicates();
+                        final List<String> newEdges = new ArrayList<>();
+                        for (int i = 0; i < orps.size(); i++) {
+                            if (orps.get(i).getBiPredicate() == Compare.eq && orps.get(i).getValue() instanceof String)
+                                newEdges.add((String) orps.get(i).getValue());
+                            else {
+                                removeContainer = false;
+                                break;
+                            }
+                        }
+                        if (removeContainer) {
+                            edgeLabels.addAll(newEdges);
+                            step.removeHasContainer(hasContainer);
+                        }
+                    }
+                }
+            }
+            if (!edgeLabels.isEmpty()) {
+                final VertexStep<Edge> newVertexStep = new VertexStep<>(traversal, Edge.class, previousStep.getDirection(), edgeLabels.toArray(new String[edgeLabels.size()]));
+                TraversalHelper.replaceStep(previousStep, newVertexStep, traversal);
+                TraversalHelper.copyLabels(previousStep, newVertexStep, false);
+                if (step.getHasContainers().isEmpty()) {
+                    TraversalHelper.copyLabels(step, newVertexStep, false);
+                    traversal.removeStep(step);
+                }
+                return true;
+            }
+            return false;
+        } else
+            return false;
     }
 
     private static final boolean processTraversalFilterStep(final TraversalFilterStep<?> step, final Traversal.Admin<?, ?> traversal) {
@@ -218,8 +270,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
                 TraversalHelper.applySingleLevelStrategies(traversal, matchTraversal, InlineFilterStrategy.class);
                 step.removeGlobalChild(matchTraversal);
-                step.getPreviousStep().addLabel(startLabel);
-                // TODO: matchTraversal.getEndStep().addLabel(startLabel); (perhaps insert an identity so filter rank can push has()-left)
+                matchTraversal.getEndStep().addLabel(startLabel);
                 if (null != endLabel) matchTraversal.getEndStep().addLabel(endLabel);
                 TraversalHelper.insertTraversal((Step) step.getPreviousStep(), matchTraversal, traversal);
             }
@@ -232,6 +283,11 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPost() {
         return POSTS;
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return PRIORS;
     }
 
     public static InlineFilterStrategy instance() {

@@ -68,8 +68,8 @@ public class MatchPredicateStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
 
         return Arrays.asList(new Object[][]{
-                {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())}, // has() pull out
-                {__.out().as("a").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())}, // has() pull out
+                {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().has("name", "marko").as("a").match(as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())}, // has() pull out
+                {__.out().as("a").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").as("a").match(as("a").out().as("b")), Collections.singletonList(InlineFilterStrategy.instance())}, // has() pull out
                 {__.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), Collections.emptyList()}, // no has() pull out
                 {__.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), __.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), Collections.emptyList()}, // no has() pull out
                 {__.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), Collections.emptyList()}, // no has() pull out
