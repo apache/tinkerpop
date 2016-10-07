@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,8 +36,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
+ * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * This class is not thread safe.
  */
 public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSideEffects {
 
