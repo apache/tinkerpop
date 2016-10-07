@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * This class is not thread safe.
  */
 public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSideEffects {
 
