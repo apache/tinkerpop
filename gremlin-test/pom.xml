@@ -90,4 +90,31 @@ limitations under the License.
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>coverage</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
+                            </argLine>
+                            <excludes>
+                                <exclude>TraversalInterruptionTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

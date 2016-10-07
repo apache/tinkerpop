@@ -314,6 +314,14 @@ limitations under the License.
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- we never use this plugin - disabling helps with speeding up other processing like when using -Dcoverage -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -339,8 +347,7 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
-                            -Dis.testing=true
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
@@ -460,51 +467,6 @@ limitations under the License.
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${javadoc-plugin.version}</version>
-                <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>non-aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>javadoc</report>
-                        </reports>
-                    </reportSet>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <dependencyManagement>
         <dependencies>
@@ -664,6 +626,11 @@ limitations under the License.
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.4.201502262128</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -1225,6 +1192,99 @@ limitations under the License.
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>coverage</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>surefireArgLine</propertyName>
+                                    <excludes>
+                                        <exclude>Lib/*.class</exclude>
+                                        <exclude>Lib/aenum/**</exclude>
+                                        <exclude>Lib/backports/**</exclude>
+                                        <exclude>Lib/certifi/**</exclude>
+                                        <exclude>Lib/setuptools/**</exclude>
+                                        <exclude>Lib/setuptools.command/**</exclude>
+                                        <exclude>Lib/tornado/**</exclude>
+                                        <exclude>Lib/tornado.platform/**</exclude>
+                                        <exclude>Lib/tornado.test/**</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>prepare-it-agent</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>${session.executionRootDirectory}/target/jacoco-it.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>failsafeArgLine</propertyName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
+                                -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <executions>
+                            <execution>
+                                <id>aggregate-surefire-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <phase>install</phase>
+                                <configuration>
+                                    <aggregate>true</aggregate>
+                                    <alwaysGenerateSurefireReport>true</alwaysGenerateSurefireReport>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
         </profile>
 
     </profiles>
