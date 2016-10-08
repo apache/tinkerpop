@@ -16,8 +16,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-import abc
-import six
 from aenum import Enum
 from .. import statics
 from ..statics import long

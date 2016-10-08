@@ -62,7 +62,7 @@ import java.util.Set;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
- * __.outE().hasLabel(eq("knows").or(eq("created"))).inV()       // is replaced by __.outE("knows", "created)
+ * __.outE().hasLabel(eq("knows").or(eq("created"))).inV()       // is replaced by __.outE("knows", "created").inV()
  * __.filter(has("name","marko"))                                // is replaced by __.has("name","marko")
  * __.and(has("name"),has("age"))                                // is replaced by __.has("name").has("age")
  * __.and(filter(has("name","marko").has("age")),hasNot("blah")) // is replaced by __.has("name","marko").has("age").hasNot("blah")

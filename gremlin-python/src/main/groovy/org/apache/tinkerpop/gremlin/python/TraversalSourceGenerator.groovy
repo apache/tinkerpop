@@ -53,8 +53,6 @@ specific language governing permissions and limitations
 under the License.
 '''
 """)
-        pythonClass.append("import abc\n")
-        pythonClass.append("import six\n")
         pythonClass.append("from aenum import Enum\n")
         pythonClass.append("from .. import statics\n")
         pythonClass.append("from ..statics import long\n\n")
