@@ -70,7 +70,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
         boolean foundFlatMap = false;
         boolean labeledPath = false;
-        for (int i = 0; i < traversal.getSteps().size() - 1; i++) {
+        for (int i = 0; i < traversal.getSteps().size(); i++) {
             final Step<?, ?> step = traversal.getSteps().get(i);
 
             if (step instanceof PathProcessor) {
@@ -81,7 +81,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             if (step instanceof FlatMapStep &&
                     !(step instanceof VertexStep && ((VertexStep) step).returnsEdge()) ||
                     (step instanceof GraphStep &&
-                            (((GraphStep) step).getIds().length >= BIG_START_SIZE ||
+                            (i > 0 || ((GraphStep) step).getIds().length >= BIG_START_SIZE ||
                                     (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
                 if (foundFlatMap && !labeledPath && !(step.getNextStep() instanceof Barrier)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);
