@@ -39,18 +39,23 @@ class ElementIdStrategy(TraversalStrategy):
 # EventStrategy doesn't make sense outside JVM traversal machine
 
 class HaltedTraverserStrategy(TraversalStrategy):
-    def __init__(self, halted_traverser_factory):
-        TraversalStrategy.__init__(self, configuration={"haltedTraverserFactory": halted_traverser_factory})
+    def __init__(self, halted_traverser_factory=None):
+        TraversalStrategy.__init__(self)
+        if halted_traverser_factory is not None:
+            self.configuration["haltedTraverserFactory"] = halted_traverser_factory
 
 
 class PartitionStrategy(TraversalStrategy):
-    def __init__(self, partition_key, write_partition=None, read_partitions=None, include_meta_properties=False):
-        TraversalStrategy.__init__(self, configuration={"partitionKey": partition_key,
-                                                        "includeMetaProperties": include_meta_properties})
+    def __init__(self, partition_key=None, write_partition=None, read_partitions=None, include_meta_properties=None):
+        TraversalStrategy.__init__(self)
+        if partition_key is not None:
+            self.configuration["partitionKey"] = partition_key
         if write_partition is not None:
             self.configuration["writePartition"] = write_partition
         if write_partition is not None:
             self.configuration["readPartitions"] = read_partitions
+        if include_meta_properties is not None:
+            self.configuration["includeMetaProperties"] = include_meta_properties
 
 
 class SubgraphStrategy(TraversalStrategy):
