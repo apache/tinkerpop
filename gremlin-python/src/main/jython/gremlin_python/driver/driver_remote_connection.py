@@ -34,14 +34,14 @@ class GremlinServerError(Exception):
 
 
 class DriverRemoteConnection(RemoteConnection):
-    def __init__(self, url, traversal_source, username="", password="", loop=None):
+    def __init__(self, url, traversal_source, username="", password="", loop=None, graphson_io=None):
         super(DriverRemoteConnection, self).__init__(url, traversal_source)
         self._url = url
         self._username = username
         self._password = password
         if loop is None: self._loop = ioloop.IOLoop.current()
         self._websocket = self._loop.run_sync(lambda: websocket.websocket_connect(self.url))
-        self._graphson_io = GraphSONIO()
+        self._graphson_io = graphson_io or GraphSONIO()
 
     def submit(self, bytecode):
         '''
