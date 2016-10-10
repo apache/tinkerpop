@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Increased performance of CredentialGraph authentication
 * Added `HasContainerHolder.removeHasContainer()`-method with default `UnsupportedOperationException` implementation.
 * `TraversalSource.withComputer()` is simplified to add a `VertexProgramStrategy`. Easier for language variants.
 * Fixed a `Set`, `List`, `Map` bug in the various `Translators` where such collections were not being internally translated.
