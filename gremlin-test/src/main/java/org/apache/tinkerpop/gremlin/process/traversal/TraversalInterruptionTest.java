@@ -92,8 +92,6 @@ public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
                         startedIterating.countDown();
                     }
                 }));
-                traversal.asAdmin().applyStrategies();
-                printTraversalForm(traversal);
                 traversal.iterate();
             } catch (Exception ex) {
                 exceptionThrown.set(ex instanceof TraversalInterruptedException);
