@@ -2365,13 +2365,14 @@ g.V().out().out().path().by('name').
 TraversalStrategy
 -----------------
 
-image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the
-traversal as it deems fit. This is useful in multiple situations:
+image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` analyzes a `Traversal` and, if the traversal
+meets its criteria, can mutate it accordingly. Traversal strategies are executed at compile-time and form the foundation
+of the Gremlin traversal machine's compiler. There are 5 categories of strategies which are itemized below:
 
  * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
  * There is a more efficient way to express the traversal at the TinkerPop3 level (*optimization*).
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
- * There are are some final adjustments required before executing the traversal (*finalization*).
+ * There are are some final adjustments/cleanups/analyses required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
 
 NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
@@ -2380,8 +2381,7 @@ A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
 [source,java]
 ----
-public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
-implements TraversalStrategy.OptimizationStrategy {
+public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 
@@ -2390,16 +2390,15 @@ implements TraversalStrategy.OptimizationStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+        if (traversal.getSteps().size() <= 1)
             return;
 
-        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream().forEach(identityStep -> {
-            final Step<?, ?> previousStep = identityStep.getPreviousStep();
-            if (!(previousStep instanceof EmptyStep) || identityStep.getLabels().isEmpty()) {
-                ((IdentityStep<?>) identityStep).getLabels().forEach(previousStep::addLabel);
+        for (final IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
+            if (identityStep.getLabels().isEmpty() || !(identityStep.getPreviousStep() instanceof EmptyStep)) {
+                TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
                 traversal.removeStep(identityStep);
             }
-        });
+        }
     }
 
     public static IdentityRemovalStrategy instance() {
@@ -2412,16 +2411,16 @@ This strategy simply removes any `IdentityStep` steps in the Traversal as `aStep
 is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or
 post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an
 empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization,
-provider-optimization, finalization, or verification), then priors and posts are only possible within the category.
+provider-optimization, finalization, or verification), then priors and posts are only possible within the respective category.
 
 [source,java]
 public Set<Class<? extends S>> applyPrior();
 public Set<Class<? extends S>> applyPost();
 
 IMPORTANT: `TraversalStrategy` categories are sorted within their category and the categories are then executed in
-the following order: decoration, optimization, finalization, and verification. If a designed strategy does not fit
-cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference
-strategies within any category.
+the following order: decoration, optimization, provider optimization, finalization, and verification. If a designed strategy
+does not fit cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference
+strategies within any category. However, such generalization are strongly discouraged.
 
 An example of a `GraphSystemOptimizationStrategy` is provided below.
 
@@ -2449,7 +2448,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
             final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (currentStep instanceof HasContainerHolder) {
+            while (currentStep instanceof HasStep) {
                 for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
                     if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
                         tinkerGraphStep.addHasContainer(hasContainer);
@@ -2468,11 +2467,11 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 ----
 
 The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing
-them to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists. In the code
+their `HasContainers` to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists. In the code
 below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that
 index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy
 uses non-TinkerPop3 provided steps, it should go into the `ProviderOptimizationStrategy` category to ensure the
-added step does not corrupt the `OptimizationStrategy` strategies.
+added step does not interfere with the assumptions of the `OptimizationStrategy` strategies.
 
 [gremlin-groovy,modern]
 ----
@@ -2482,31 +2481,6 @@ t.iterate(); null
 t.toString()
 ----
 
-Finally, here is a complicated traversal that has various components that are optimized by the default TinkerPop strategies.
-
-[gremlin-groovy,modern]
-----
-g.V().hasLabel('person'). <1>
-        and(has('name','marko'),filter(has('age',gt(20)))). <2>
-  match(__.as('a').has('age',lt(32)), <3>
-        __.as('a').repeat(outE().inV()).times(2).as('b')). <4>
-    where('a',neq('b')). <5>
-    where(__.as('b').both().count().is(gt(1))). <6>
-  select('b'). <7>
-  groupCount().
-    by(out().count()). <8>
-  explain()
-----
-
-<1> `TinkerGraphStepStrategy` pulls in `has()`-step predicates for global, graph-centric index lookups.
-<2> `InlineFilterStrategy` de-nests filters to increase the likelihood of filter concatenation and aggregation.
-<3> `InlineFilterStrategy` pulls out named predicates from `match()`-step to more easily allow provider strategies to use indices.
-<4> `RepeatUnrollStrategy` will unroll loops and `IncidentToAdjacentStrategy` will turn `outE().inV()`-patterns into `out()`.
-<5> `MatchPredicateStrategy` will pull in `where()`-steps so that they can be subjected to `match()`-steps runtime query optimizer.
-<6> `RangeByIsCountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
-<7> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
-<8> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
-
 WARNING: The reason that `OptimizationStrategy` and `ProviderOptimizationStrategy` are two different categories is
 that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the
 optimizations executed at the end of the optimization strategy round are TinkerPop3 compliant. From there, provider
@@ -2515,6 +2489,34 @@ replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If provider opt
 steps and implement `OptimizationStrategy`, then other TinkerPop3 optimizations may fail to optimize the traversal or
 mis-understand the graph system specific step behaviors (e.g. `ProviderVertexStep extends VertexStep`) and yield
 incorrect semantics.
+
+Finally, here is a complicated traversal that has various components that are optimized by the default TinkerPop strategies.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person'). <1>
+        and(has('name'),  <2>
+            has('name','marko'),
+            filter(has('age',gt(20)))). <3>
+  match(__.as('a').has('age',lt(32)), <4>
+        __.as('a').repeat(outE().inV()).times(2).as('b')). <5>
+    where('a',neq('b')). <6>
+    where(__.as('b').both().count().is(gt(1))). <7>
+  select('b'). <8>
+  groupCount().
+    by(out().count()). <9>
+  explain()
+----
+
+<1> `TinkerGraphStepStrategy` pulls in `has()`-step predicates for global, graph-centric index lookups.
+<2> `FilterRankStrategy` sorts filter steps by their time/space execution costs.
+<3> `InlineFilterStrategy` de-nests filters to increase the likelihood of filter concatenation and aggregation.
+<4> `InlineFilterStrategy` pulls out named predicates from `match()`-step to more easily allow provider strategies to use indices.
+<5> `RepeatUnrollStrategy` will unroll loops and `IncidentToAdjacentStrategy` will turn `outE().inV()`-patterns into `out()`.
+<6> `MatchPredicateStrategy` will pull in `where()`-steps so that they can be subjected to `match()`-steps runtime query optimizer.
+<7> `RangeByIsCountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
+<8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
+<9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
 A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to
 end-users.  The following sub-sections detail these strategies:
@@ -2611,8 +2613,8 @@ The best way to understand `PartitionStrategy` is via example.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
-strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
+strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").readPartitions("a").create()
+strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").readPartitions("b").create()
 gA = graph.traversal().withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
 gB = graph.traversal().withStrategies(strategyB)
@@ -2656,12 +2658,12 @@ g.V().as('a').values('location').as('b').
   select('a','b').by('name').by().explain()
 ----
 
-This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the `vertexCriterion`
-(if present) in order for the `Edge` to be considered a part of the subgraph.
-
 <1> Get all vertices and their vertex property locations.
 <2> Create a `SubgraphStrategy` where vertex properties must not have an `endTime`-property (thus, the current location).
 <3> Get all vertices and their current vertex property locations.
+
+IMPORTANT: This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the vertex criterion
+(if present) in order for the `Edge` to be considered a part of the subgraph.
 
 The example below uses all three filters: vertex, edge, and vertex property. People vertices must have lived in more than three places,
 edges must be labeled "develops," and vertex properties must be the persons current location or a non-location property.

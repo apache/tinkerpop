@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -48,16 +47,15 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSteps().size() <= 1 || !TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+        if (traversal.getSteps().size() <= 1)
             return;
 
-        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream().forEach(identityStep -> {
-            final Step<?, ?> previousStep = identityStep.getPreviousStep();
-            if (!(previousStep instanceof EmptyStep) || identityStep.getLabels().isEmpty()) {
-                ((IdentityStep<?>) identityStep).getLabels().forEach(previousStep::addLabel);
+        for (final IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
+            if (identityStep.getLabels().isEmpty() || !(identityStep.getPreviousStep() instanceof EmptyStep)) {
+                TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
                 traversal.removeStep(identityStep);
             }
-        });
+        }
     }
 
     public static IdentityRemovalStrategy instance() {
