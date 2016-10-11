@@ -31,9 +31,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -43,6 +45,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.hamcrest.CoreMatchers.is;
@@ -325,5 +330,49 @@ public class TraversalHelperTest {
         assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.values(), __.out().union(__.in(), __.out())).out().asAdmin()));
         assertFalse(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().by("name").asAdmin()));
         assertFalse(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by("name").asAdmin()));
+    }
+
+    @Test
+    public void shouldGetStepsByClass() {
+        Set<String> labels = (Set) TraversalHelper.getStepsOfClass(VertexStep.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
+                .stream()
+                .flatMap(s -> s.getLabels().stream())
+                .collect(Collectors.toSet());
+        assertEquals(2, labels.size());
+        assertTrue(labels.contains("a"));
+        assertTrue(labels.contains("c"));
+        //
+        labels = (Set) TraversalHelper.getStepsOfAssignableClass(VertexStep.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
+                .stream()
+                .flatMap(s -> s.getLabels().stream())
+                .collect(Collectors.toSet());
+        assertEquals(2, labels.size());
+        assertTrue(labels.contains("a"));
+        assertTrue(labels.contains("c"));
+        //
+        labels = (Set) TraversalHelper.getStepsOfAssignableClass(FlatMapStep.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
+                .stream()
+                .flatMap(s -> s.getLabels().stream())
+                .collect(Collectors.toSet());
+        assertEquals(3, labels.size());
+        assertTrue(labels.contains("a"));
+        assertTrue(labels.contains("b"));
+        assertTrue(labels.contains("c"));
+        //
+        labels = (Set) TraversalHelper.getStepsOfClass(Step.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
+                .stream()
+                .flatMap(s -> s.getLabels().stream())
+                .collect(Collectors.toSet());
+        assertEquals(0, labels.size());
+        //
+        labels = (Set) TraversalHelper.getStepsOfAssignableClass(Step.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
+                .stream()
+                .flatMap(s -> s.getLabels().stream())
+                .collect(Collectors.toSet());
+        assertEquals(4, labels.size());
+        assertTrue(labels.contains("a"));
+        assertTrue(labels.contains("b"));
+        assertTrue(labels.contains("c"));
+        assertTrue(labels.contains("d"));
     }
 }
