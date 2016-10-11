@@ -23,7 +23,7 @@ from tornado import gen
 from tornado import ioloop
 from tornado import websocket
 
-from gremlin_python.structure.io.graphson import GraphSONIO
+from gremlin_python.structure.io.graphson import GraphSONReader, GraphSONWriter
 from .remote_connection import RemoteConnection
 from .remote_connection import RemoteTraversal
 from .remote_connection import RemoteTraversalSideEffects
@@ -34,14 +34,15 @@ class GremlinServerError(Exception):
 
 
 class DriverRemoteConnection(RemoteConnection):
-    def __init__(self, url, traversal_source, username="", password="", loop=None, graphson_io=None):
+    def __init__(self, url, traversal_source, username="", password="", loop=None, graphson_reader=None, graphson_writer=None):
         super(DriverRemoteConnection, self).__init__(url, traversal_source)
         self._url = url
         self._username = username
         self._password = password
         if loop is None: self._loop = ioloop.IOLoop.current()
         self._websocket = self._loop.run_sync(lambda: websocket.websocket_connect(self.url))
-        self._graphson_io = graphson_io or GraphSONIO()
+        self._graphson_reader = graphson_reader or GraphSONReader()
+        self._graphson_writer = graphson_writer or GraphSONWriter()
 
     def submit(self, bytecode):
         '''
@@ -65,7 +66,7 @@ class DriverRemoteConnection(RemoteConnection):
             "op": "bytecode",
             "processor": "traversal",
             "args": {
-                "gremlin": self._graphson_io.writeObject(bytecode),
+                "gremlin": self._graphson_writer.writeObject(bytecode),
                 "aliases": {"g": self.traversal_source}
             }
         }
@@ -142,7 +143,7 @@ class DriverRemoteConnection(RemoteConnection):
         if self._websocket.protocol is None:
             self._websocket = yield websocket.websocket_connect(self.url)
         self._websocket.write_message(send_message, binary=True)
-        response = Response(self._websocket, self._username, self._password, self._graphson_io)
+        response = Response(self._websocket, self._username, self._password, self._graphson_reader)
         results = None
         while True:
             recv_message = yield response.receive()
@@ -183,12 +184,12 @@ class DriverRemoteConnection(RemoteConnection):
 
 
 class Response:
-    def __init__(self, websocket, username, password, graphson_io):
+    def __init__(self, websocket, username, password, graphson_reader):
         self._websocket = websocket
         self._username = username
         self._password = password
         self._closed = False
-        self._graphson_io = graphson_io
+        self._graphson_reader = graphson_reader
 
     @gen.coroutine
     def receive(self):
@@ -225,7 +226,7 @@ class Response:
         elif status_code in [200, 206]:
             results = []
             for item in recv_message["result"]["data"]:
-                results.append(self._graphson_io.toObject(item))
+                results.append(self._graphson_reader.toObject(item))
             if status_code == 200:
                 self._closed = True
             raise gen.Return((aggregateTo, results))
