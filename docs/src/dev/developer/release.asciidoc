@@ -52,7 +52,7 @@ during this period.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 .. Review JIRA tickets in the release and ensure that:
 ... All tickets categorized by having a "Component" assigned.
-... All tickets are either of type "Bug" or "Enhancement".
+... All tickets are either of type "Bug" or "Improvement".
 ... All tickets where work was completed are "Closed"
 .... Search for "closed the pull request" in comments for hints on possible tickets that were left open by mistake.
 .... Look for tickets marked as "Resolved" as some users might not have rights to mark as "Closed" - convert these to "Closed".
