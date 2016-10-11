@@ -88,10 +88,12 @@ public class TraversalInterruptionTest extends AbstractGremlinProcessTest {
                             // this should ensure VertexStep gets to try to throw the TraversalInterruptedException
                             Thread.currentThread().interrupt();
                         }
+                    } else {
+                        startedIterating.countDown();
                     }
-                })).sideEffect(traverser -> {
-                    startedIterating.countDown();
-                });
+                }));
+                traversal.asAdmin().applyStrategies();
+                printTraversalForm(traversal);
                 traversal.iterate();
             } catch (Exception ex) {
                 exceptionThrown.set(ex instanceof TraversalInterruptedException);
