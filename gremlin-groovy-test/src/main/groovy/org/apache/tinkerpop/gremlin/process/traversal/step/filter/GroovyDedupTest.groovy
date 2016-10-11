@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path
-import org.apache.tinkerpop.gremlin.process.traversal.Scope
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScriptTraversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -94,6 +93,11 @@ public abstract class GroovyDedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_both_dedup_byXoutE_countX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.dedup.by(outE().count).name")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_groupCount_selectXvaluesX_unfold_dedup() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.groupCount.select(values).unfold.dedup")
         }
     }
 }

@@ -57,6 +57,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private boolean onGraphComputer = false;
     private final Set<String> dedupLabels;
     private Set<String> keepLabels;
+    private boolean executingAtMaster = false;
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -65,7 +66,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        if (this.onGraphComputer) return true;
+        if (this.onGraphComputer && !this.executingAtMaster) return true;
         traverser.setBulk(1);
         if (null == this.dedupLabels) {
             return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
@@ -74,6 +75,11 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
             this.dedupLabels.forEach(label -> objects.add(TraversalUtil.applyNullable((S) this.getScopeValue(Pop.last, label, traverser), this.dedupTraversal)));
             return this.duplicateSet.add(objects);
         }
+    }
+
+    @Override
+    public void atMaster(final boolean atMaster) {
+        this.executingAtMaster = atMaster;
     }
 
     @Override
@@ -206,5 +212,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
-    public Set<String> getKeepLabels() { return this.keepLabels; }
+    public Set<String> getKeepLabels() {
+        return this.keepLabels;
+    }
 }

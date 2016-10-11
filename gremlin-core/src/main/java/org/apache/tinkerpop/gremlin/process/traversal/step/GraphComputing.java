@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+
 /**
  * A {@code GraphComputing} step is one that will change its behavior whether its on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} or not.
  * {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy} is responsible for calling the {@link GraphComputing#onGraphComputer()} method.
@@ -31,5 +34,32 @@ public interface GraphComputing {
      * The step will be executing on a {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer}.
      */
     public void onGraphComputer();
+
+    /**
+     * Some steps should behave different whether they are executing at the master traversal or distributed across the worker traversals.
+     * The default implementation does nothing.
+     *
+     * @param atMaster whether the step is currently executing at master
+     */
+    public default void atMaster(boolean atMaster) {
+
+    }
+
+    public static void atMaster(final Step<?, ?> step, boolean atMaster) {
+        if (step instanceof GraphComputing)
+            ((GraphComputing) step).atMaster(atMaster);
+        if (step instanceof TraversalParent) {
+            for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                for (final Step<?, ?> s : local.getSteps()) {
+                    GraphComputing.atMaster(s, atMaster);
+                }
+            }
+            for (final Traversal.Admin<?, ?> global : ((TraversalParent) step).getGlobalChildren()) {
+                for (final Step<?, ?> s : global.getSteps()) {
+                    GraphComputing.atMaster(s, atMaster);
+                }
+            }
+        }
+    }
 
 }
