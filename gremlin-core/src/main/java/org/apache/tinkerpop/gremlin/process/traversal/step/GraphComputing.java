@@ -61,5 +61,4 @@ public interface GraphComputing {
             }
         }
     }
-
 }

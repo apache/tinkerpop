@@ -99,5 +99,10 @@ public abstract class GroovyDedupTest {
         public Traversal<Vertex, Long> get_g_V_groupCount_selectXvaluesX_unfold_dedup() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.groupCount.select(values).unfold.dedup")
         }
+
+        @Override
+        public Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').repeat(both()).times(3).emit.as('b').group.by(select('a')).by(select('b').dedup.order.by(id).fold).select(values).unfold.dedup")
+        }
     }
 }

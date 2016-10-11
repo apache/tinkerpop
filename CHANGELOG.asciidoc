@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `RepeatStep` where `emit().as('x')` wasn't adding the step labels to the emit-traverser.
 * Added `GraphComputing.atMaster(boolean)` to allow steps to know whether they are executing at master or distributed at workers.
 * Fixed a bug in OLAP where `DedupGlobalStep` wasn't de-duping local master traversers.
 * Added `HasContainerHolder.removeHasContainer()`-method with default `UnsupportedOperationException` implementation.

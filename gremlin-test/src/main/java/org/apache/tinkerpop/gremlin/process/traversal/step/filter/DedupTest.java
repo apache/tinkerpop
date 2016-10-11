@@ -85,6 +85,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_groupCount_selectXvaluesX_unfold_dedup();
 
+    public abstract Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
@@ -281,6 +283,22 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         checkResults(Collections.singletonList(1L), traversal);
     }
 
+    @Test
+    @LoadGraphWith
+    public void g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
+        final Traversal<Vertex, Collection<Vertex>> traversal = get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup();
+        printTraversalForm(traversal);
+        final Collection<Vertex> vertices = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(6, vertices.size());
+        assertTrue(vertices.contains(convertToVertex(graph, "marko")));
+        assertTrue(vertices.contains(convertToVertex(graph, "vadas")));
+        assertTrue(vertices.contains(convertToVertex(graph, "josh")));
+        assertTrue(vertices.contains(convertToVertex(graph, "peter")));
+        assertTrue(vertices.contains(convertToVertex(graph, "lop")));
+        assertTrue(vertices.contains(convertToVertex(graph, "ripple")));
+    }
+
     public static class Traversals extends DedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
@@ -352,9 +370,9 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
             return g.V().groupCount().select(values).<Long>unfold().dedup();
         }
 
-        /*@Override
-        public Traversal<Vertex,Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
+        @Override
+        public Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
             return g.V().as("a").repeat(both()).times(3).emit().as("b").group().by(select("a")).by(select("b").dedup().order().by(T.id).fold()).select(values).<Collection<Vertex>>unfold().dedup();
-        }*/
+        }
     }
 }
