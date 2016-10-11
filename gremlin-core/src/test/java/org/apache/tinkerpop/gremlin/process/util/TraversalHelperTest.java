@@ -49,7 +49,9 @@ import org.mockito.Mockito;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -104,12 +106,12 @@ public class TraversalHelperTest {
     }
 
     @Test
-    public void shouldIdentityLocalProperties() {
+    public void shouldIdentifyLocalProperties() {
         assertTrue(TraversalHelper.isLocalProperties(__.identity().asAdmin()));
         assertTrue(TraversalHelper.isLocalProperties(__.id().asAdmin()));
         assertTrue(TraversalHelper.isLocalProperties(__.label().asAdmin()));
         assertTrue(TraversalHelper.isLocalProperties(__.values("name").asAdmin()));
-        assertFalse(TraversalHelper.isLocalProperties(__.outE("knows").asAdmin()));
+        assertFalse(TraversalHelper.isLocalProperties(outE("knows").asAdmin()));
     }
 
     @Test
@@ -311,8 +313,8 @@ public class TraversalHelperTest {
         assertTrue(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name")).asAdmin()));
         assertTrue(TraversalHelper.isLocalStarGraph(__.out().repeat(__.identity()).asAdmin()));
         assertTrue(TraversalHelper.isLocalStarGraph(__.out().id().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), __.in()).asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), __.in()).id().asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), in()).asAdmin()));
+        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), in()).id().asAdmin()));
         assertTrue(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().asAdmin()));
         assertTrue(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().asAdmin()));
         assertTrue(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by(T.id).asAdmin()));
@@ -323,11 +325,11 @@ public class TraversalHelperTest {
         assertFalse(TraversalHelper.isLocalStarGraph(__.out().valueMap().asAdmin()));
         assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.out()).asAdmin()));
         assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name").out()).asAdmin()));
-        assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name").union(__.out(), __.in())).asAdmin()));
-        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.in()).label().asAdmin()));
-        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.in().out()).asAdmin()));
-        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.out().union(__.in(), __.out())).asAdmin()));
-        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.values(), __.out().union(__.in(), __.out())).out().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name").union(__.out(), in())).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), in()).label().asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), in().out()).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.out(), __.out().union(in(), __.out())).asAdmin()));
+        assertFalse(TraversalHelper.isLocalStarGraph(__.union(__.values(), __.out().union(in(), __.out())).out().asAdmin()));
         assertFalse(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().by("name").asAdmin()));
         assertFalse(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by("name").asAdmin()));
     }
@@ -374,5 +376,23 @@ public class TraversalHelperTest {
         assertTrue(labels.contains("b"));
         assertTrue(labels.contains("c"));
         assertTrue(labels.contains("d"));
+    }
+
+    @Test
+    public void shouldGetLabels() {
+        Set<String> labels = (Set) TraversalHelper.getLabels(__.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin());
+        assertEquals(4, labels.size());
+        assertTrue(labels.contains("a"));
+        assertTrue(labels.contains("b"));
+        assertTrue(labels.contains("c"));
+        assertTrue(labels.contains("d"));
+        labels = (Set) TraversalHelper.getLabels(__.out().as("a").repeat(__.out("name").as("b")).local(in().as("c")).as("d").groupCount().by(outE().as("e")).as("f").asAdmin());
+        assertEquals(6, labels.size());
+        assertTrue(labels.contains("a"));
+        assertTrue(labels.contains("b"));
+        assertTrue(labels.contains("c"));
+        assertTrue(labels.contains("d"));
+        assertTrue(labels.contains("e"));
+        assertTrue(labels.contains("f"));
     }
 }
