@@ -91,6 +91,10 @@ class TestDriverRemoteConnection(TestCase):
         assert 0 == g.E().count().next()
         assert "person" == g.V().label().next()
         assert "marko" == g.V().name.next()
+
+        g = Graph().traversal().withRemote(connection).withComputer()
+        assert 6 == g.V().count().next()
+        assert 6 == g.E().count().next()
         connection.close()
 
     def test_side_effects(self):

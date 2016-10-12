@@ -70,11 +70,11 @@ class SubgraphStrategy(TraversalStrategy):
 
 
 class VertexProgramStrategy(TraversalStrategy):
-    def __init__(self, graph_computer=None, workers=None, persist=None, result=None, vertices=None, edges=None,
-                 configuration=None):
+    def __init__(self, graph_computer=None,
+                 workers=None, persist=None, result=None, vertices=None, edges=None, configuration=None):
         TraversalStrategy.__init__(self)
-        if graph_computer is not None:
-            self.configuration["graphComputer"] = graph_computer
+        self.configuration["graphComputer"] = \
+            graph_computer if graph_computer is not None else "org.apache.tinkerpop.gremlin.process.computer.GraphComputer"
         if workers is not None:
             self.configuration["workers"] = workers
         if persist is not None:
