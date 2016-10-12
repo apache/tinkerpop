@@ -56,7 +56,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             MatchPredicateStrategy.class));
 
     private static final int BIG_START_SIZE = 5;
-    protected static final int MAX_BARRIER_SIZE = 10000;
+    protected static final int MAX_BARRIER_SIZE = 2500;
 
     private LazyBarrierStrategy() {
     }

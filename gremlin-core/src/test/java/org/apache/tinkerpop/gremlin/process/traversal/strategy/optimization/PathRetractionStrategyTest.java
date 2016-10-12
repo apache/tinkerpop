@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,7 +45,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
-import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.DEFAULT_STANDARD_BARRIER_SIZE;
+import static org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy.MAX_BARRIER_SIZE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -138,16 +137,16 @@ public class PathRetractionStrategyTest {
                 {__.V().as("a").repeat(out().where(neq("a"))).emit().select("a").values("test"), "[[[a]], []]", null},
                 // given the way this test harness is structured, I have to manual test for RepeatUnrollStrategy (and it works) TODO: add more test parameters
                 // {__.V().as("a").repeat(__.out().where(neq("a"))).times(3).select("a").values("test"), Arrays.asList(Collections.singleton("a"), Collections.singleton("a"), Collections.singleton("a"), Collections.emptySet())}
-                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(DEFAULT_STANDARD_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").select("a").out().out(), "[[]]", __.V().as("a").out().as("b").select("a").barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").select("a").count(), "[[]]", __.V().as("a").out().as("b").select("a").count()},
                 {__.V().as("a").out().as("b").select("a").barrier().count(), "[[]]", __.V().as("a").out().as("b").select("a").barrier().count()},
                 {__.V().as("a").out().as("b").dedup("a", "b").out(), "[[]]", __.V().as("a").out().as("b").dedup("a", "b").out()},
                 {__.V().as("a").out().as("b").match(as("a").out().as("b")), "[[a, b]]", __.V().as("a").out().as("b").match(as("a").out().as("b"))},
-                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(DEFAULT_STANDARD_BARRIER_SIZE)},
-                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(DEFAULT_STANDARD_BARRIER_SIZE).out().dedup("a")},
-                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(DEFAULT_STANDARD_BARRIER_SIZE).out().out()},
+                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a"), "[[a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE)},
+                {__.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").out().dedup("a"), "[[a], [a], []]", __.V().as("a").out().as("b").match(as("a").out().as("b")).select("a").barrier(MAX_BARRIER_SIZE).out().dedup("a")},
+                {__.V().as("a").out().as("b").where(P.gt("a")).out().out(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).barrier(MAX_BARRIER_SIZE).out().out()},
                 {__.V().as("a").out().as("b").where(P.gt("a")).count(), "[[]]", __.V().as("a").out().as("b").where(P.gt("a")).count()},
-                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(DEFAULT_STANDARD_BARRIER_SIZE).where(P.gt("b")).barrier(DEFAULT_STANDARD_BARRIER_SIZE).out()},
+                {__.V().as("a").out().as("b").select("a").as("c").where(P.gt("b")).out(), "[[b], []]", __.V().as("a").out().as("b").select("a").as("c").barrier(MAX_BARRIER_SIZE).where(P.gt("b")).barrier(MAX_BARRIER_SIZE).out()},
                 {__.V().select("c").map(select("c").map(select("c"))).select("c"), "[[c], [[c], [[c]]], []]", null},
                 {__.V().select("c").map(select("c").map(select("c"))).select("b"), "[[b, c], [[b, c], [[b]]], []]", null},
                 {__.V().as("a").out().as("b").select("a").select("b").union(

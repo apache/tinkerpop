@@ -48,9 +48,9 @@ import java.util.Set;
  */
 public final class PathRetractionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    public static Integer DEFAULT_STANDARD_BARRIER_SIZE = 2500;
+    public static Integer MAX_BARRIER_SIZE = 2500;
 
-    private static final PathRetractionStrategy INSTANCE = new PathRetractionStrategy(DEFAULT_STANDARD_BARRIER_SIZE);
+    private static final PathRetractionStrategy INSTANCE = new PathRetractionStrategy(MAX_BARRIER_SIZE);
     // these strategies do strong rewrites involving path labeling and thus, should run prior to PathRetractionStrategy
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             RepeatUnrollStrategy.class, MatchPredicateStrategy.class, PathProcessorStrategy.class));
