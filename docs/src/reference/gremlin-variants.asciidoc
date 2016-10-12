@@ -280,3 +280,38 @@ g.V().out().map(lambda: "x: len(x.get().value('name'))").sum().toList()         
 <7> The default lambda language is changed back to Gremlin-Python.
 <8> If the `lambda`-prefix is not provided, then it is appended automatically in order to give a more natural look to the expression.
 
+Custom Serialization
+~~~~~~~~~~~~~~~~~~~~
+
+Gremlin-Python provides a GraphSON 2.0 serialization package with the standard Apache TinkerPop `g`-types registered
+(see link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson-2d0[GraphSON 2.0]). It is possible for users to add
+new types by creating serializers and deserializers in Python and registering them with the `RemoteConnection`.
+
+[source,python]
+----
+class MyType(object):
+  GRAPHSON_PREFIX = "providerx"
+  GRAPHSON_BASE_TYPE = "MyType"
+  GRAPHSON_TYPE = GraphSONUtil.formatType(GRAPHSON_PREFIX, GRAPHSON_BASE_TYPE)
+
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+  @classmethod
+  def objectify(cls, value, reader):
+    return cls(value['x'], value['y'])
+
+  @classmethod
+  def dictify(cls, value, writer):
+    return GraphSONUtil.typedValue(cls.GRAPHSON_BASE_TYPE,
+                                  {'x': value.x, 'y': value.y},
+                                  cls.GRAPHSON_PREFIX)
+
+graphson_reader = GraphSONReader({MyType.GRAPHSON_TYPE: MyType})
+graphson_writer = GraphSONWriter({MyType: MyType})
+
+connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g',
+                                     graphson_reader=graphson_reader,
+                                     graphson_writer=graphson_writer)
+----

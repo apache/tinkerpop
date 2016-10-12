@@ -47,11 +47,14 @@ class GraphSONUtil(object):
 
     @classmethod
     def typedValue(cls, type_name, value, prefix="g"):
-        out = {cls.TYPE_KEY: prefix + ":" + type_name}
+        out = {cls.TYPE_KEY: cls.formatType(prefix, type_name)}
         if value is not None:
             out[cls.VALUE_KEY] = value
         return out
 
+    @classmethod
+    def formatType(cls, prefix, type_name):
+        return "%s:%s" % (prefix, type_name)
 
 # Read/Write classes split to follow precedence of the Java API
 class GraphSONWriter(object):
