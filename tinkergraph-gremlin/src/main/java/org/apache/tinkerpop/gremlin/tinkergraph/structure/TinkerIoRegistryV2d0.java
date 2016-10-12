@@ -130,7 +130,7 @@ public final class TinkerIoRegistryV2d0 extends AbstractIoRegistry {
 
         @Override
         public String getTypeNamespace() {
-            return "gremlin";
+            return "tinker";
         }
     }
 
