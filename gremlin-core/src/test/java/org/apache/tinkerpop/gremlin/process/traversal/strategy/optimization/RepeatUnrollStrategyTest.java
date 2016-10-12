@@ -77,7 +77,7 @@ public class RepeatUnrollStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
-            final int maxBarrierSize = 5000;
+            final int maxBarrierSize = RepeatUnrollStrategy.MAX_BARRIER_SIZE;
             final Predicate<Traverser<Vertex>> predicate = t -> t.loops() > 5;
             return Arrays.asList(new Object[][]{
                     {__.repeat(out()).times(0), __.repeat(out()).times(0), Collections.emptyList()},

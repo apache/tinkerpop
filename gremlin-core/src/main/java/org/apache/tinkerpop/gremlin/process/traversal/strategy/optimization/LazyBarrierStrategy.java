@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -55,7 +56,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             MatchPredicateStrategy.class));
 
     private static final int BIG_START_SIZE = 5;
-    protected static final int MAX_BARRIER_SIZE = 10000;
+    protected static final int MAX_BARRIER_SIZE = 2500;
 
     private LazyBarrierStrategy() {
     }
@@ -70,7 +71,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
         boolean foundFlatMap = false;
         boolean labeledPath = false;
-        for (int i = 0; i < traversal.getSteps().size() - 1; i++) {
+        for (int i = 0; i < traversal.getSteps().size(); i++) {
             final Step<?, ?> step = traversal.getSteps().get(i);
 
             if (step instanceof PathProcessor) {
@@ -81,9 +82,11 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             if (step instanceof FlatMapStep &&
                     !(step instanceof VertexStep && ((VertexStep) step).returnsEdge()) ||
                     (step instanceof GraphStep &&
-                            (((GraphStep) step).getIds().length >= BIG_START_SIZE ||
+                            (i > 0 || ((GraphStep) step).getIds().length >= BIG_START_SIZE ||
                                     (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
-                if (foundFlatMap && !labeledPath && !(step.getNextStep() instanceof Barrier)) {
+                if (foundFlatMap && !labeledPath &&
+                        !(step.getNextStep() instanceof Barrier) &&
+                        (!(step.getNextStep() instanceof EmptyStep) || step.getTraversal().getParent() instanceof EmptyStep)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);
                     TraversalHelper.copyLabels(step, noOpBarrierStep, true);
                     TraversalHelper.insertAfterStep(noOpBarrierStep, step, traversal);
