@@ -172,10 +172,7 @@ class Console {
             int lineNo = groovy.buffers.current().size() 
             if (lineNo > 0 ) {
                 String lineStr = lineNo.toString() + ">"
-                int pad = Preferences.inputPrompt.length() - lineStr.length() + 2
-                if (pad < 0) {
-                    pad = 0
-                }
+                int pad = Preferences.inputPrompt.length()
                 return Colorizer.render(Preferences.inputPromptColor, lineStr.toString().padLeft(pad, '.') + ' ')
             } else {
                 return Colorizer.render(Preferences.inputPromptColor, Preferences.inputPrompt + ' ')

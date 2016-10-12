@@ -45,6 +45,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Fixed a end-step label bug in `MatchPredicateStrategy`.
 * Fixed a bug in `MatchPredicateStrategy` where inlined traversals did not have strategies applied to it.
 * Fixed a bug in `RepeatUnrollStrategy` where inlined traversal did not have strategies applied to it.
+* Fixed padding of prompt in Gremlin Console when the number of lines went beyond a single digit.
 * Added `TraversalHelper.copyLabels()` for copying (or moving) labels form one step to another.
 * Added `TraversalHelper.applySingleLevelStrategies()` which will apply a subset of strategies but not walk the child tree.
 * Added the concept that hidden labels using during traversal compilation are removed at the end during `StandardVerificationStrategy`. (*breaking*)
