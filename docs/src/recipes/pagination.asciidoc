@@ -1,0 +1,77 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[pagination]]
+Pagination
+----------
+
+image:gremlin-paging.png[float=left,width=330]In most database applications, it is oftentimes desireable to return
+discrete blocks of data for a query rather than all of the data that the total results would contain. This approach to
+returning data is referred to as "pagination" and typically involves a situation where the client executing the query
+can specify the start position and end position (or the amount of data to return in lieu of the end position)
+representing the block of data to return. In this way, one could return the first ten records of one hundred, then the
+second ten records and so on, until potentially all one hundred were returned.
+
+In Gremlin, a basic approach to paging would look something like the following:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').fold()                            <1>
+g.V().hasLabel('person').fold().as('persons','count').
+               select('persons','count').
+                 by(range(local, 0, 2)).
+                 by(count(local))                          <2>
+g.V().hasLabel('person').fold().as('persons','count').
+               select('persons','count').
+                 by(range(local, 2, 4)).
+                 by(count(local))                          <3>
+----
+
+<1> Gets all the "person" vertices.
+<2> Gets the first two "person" vertices and includes the total number of vertices so that the client knows how many
+it has to page through.
+<3> Gets the final two "person" vertices.
+
+From a functional perspective, the above example shows a fairly standard paging model. Unfortunately, there is a
+problem. To get the total number of vertices, the traversal must first `fold()` them, which iterates out
+the traversal bringing them all into memory. If the number of "person" vertices is large, that step could lead to a
+long running traversal and perhaps one that would simply run out of memory prior to completion. There is no shortcut
+to getting a total count without doing a full iteration of the traversal. If the requirement for a total count is
+removed then the traversals become more simple:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').range(0,2)
+g.V().hasLabel('person').range(2,4)
+----
+
+NOTE: The first traversal above could also be written as `g.V().hasLabel('person').limit(2)`.
+
+In this case, there is no way to know the total count so the only way to know if the end of the results have been
+reached is to count the results from each paged result to see if there's less than the number expected or simply zero
+results. In that case, further requests for additional pages would be uncessary. Of course, this approach is not
+free of problems either. Most graph databases will not optimize the `range()` step, meaning that the second traversal
+will repeat the iteration of the first two vertices to get to the second set of two vertices. In other words, for the
+second traversal, the graph will still read four vertices even though there was only a request for two.
+
+The only way to completely avoid that problem is to re-use the same traversal instance:
+
+[gremlin-groovy,modern]
+----
+t = g.V().hasLabel('person');[]
+t.next(2)
+t.next(2)
+----

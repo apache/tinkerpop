@@ -38,13 +38,15 @@ Traversal Recipes
 
 include::between-vertices.asciidoc[]
 
-include::shortest-path.asciidoc[]
-
-include::if-then-based-grouping.asciidoc[]
+include::centrality.asciidoc[]
 
 include::cycle-detection.asciidoc[]
 
-include::centrality.asciidoc[]
+include::if-then-based-grouping.asciidoc[]
+
+include::pagination.asciidoc[]
+
+include::shortest-path.asciidoc[]
 
 include::traversal-induced-values.asciidoc[]
 
