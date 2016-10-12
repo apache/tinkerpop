@@ -97,6 +97,8 @@ public class LazyBarrierStrategyTest {
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).out().out(), Collections.emptyList()},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(2500).out().select("b").barrier(2500).out().barrier(SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
                 {__.out().as("a").out().as("b").in().where(P.neq("a")).out().select("b").out().out(), __.out().as("a").out().as("b").in().where(P.neq("a")).barrier(2500).out().select("b").barrier(2500).out().barrier(SIZE).out().barrier(SIZE), Collections.singletonList(PathRetractionStrategy.instance())},
+                {__.V().out().out().groupCount().by(__.out().out().out()).out(), __.V().out().barrier(SIZE).out().groupCount().by(__.out().out().barrier(SIZE).out()).out().barrier(SIZE), Collections.emptyList()},
+                {__.V().out().out().groupCount().by(__.out().out().out()).out().as("a"), __.V().out().barrier(SIZE).out().groupCount().by(__.out().out().barrier(SIZE).out()).out().barrier(SIZE).as("a"), Collections.emptyList()}
         });
     }
 }
