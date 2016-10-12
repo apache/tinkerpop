@@ -86,6 +86,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * VertexPrograms can now declare traverser requirements, e.g. to have access to the path when used with `.program()`.
 * New build options for `gremlin-python` where `-DglvPython` is no longer required.
 * Added missing `InetAddress` to GraphSON extension module.
+* Added new recipe for "Pagination".
 * Added functionality to Gremlin-Server REST endpoint to forward Exception Messages and Class in HTTP Response
 * Gremlin Server `TraversalOpProcessor` now returns confirmation upon `Op` `close`.
 * Added `close` method Java driver and Python driver `DriverRemoteTraversalSideEffects`.
@@ -120,7 +121,6 @@ This release also includes changes from <<release-3-1-4, 3.1.4>>.
 * Changed scope of log4j dependencies so that they would only be used in tests and the binary distributions of Gremlin Console and Server.
 * Deprecated `Io.Builder.registry()` in favor of the newly introduced `Io.Builder.onMapper()`.
 * Added new recipe for "Traversal Induced Values".
-* Added new recipe for "Pagination".
 * Fixed a potential leak of a `ReferenceCounted` resource in Gremlin Server.
 * Added class registrations for `Map.Entry` implementations to `GryoMapper`.
 * Added methods to retrieve `Cluster` settings in `gremlin-driver`.
