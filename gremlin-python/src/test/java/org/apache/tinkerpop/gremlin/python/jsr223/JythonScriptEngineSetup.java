@@ -49,8 +49,9 @@ public class JythonScriptEngineSetup {
             jythonEngine.eval("from gremlin_python.structure.graph import Edge");
             jythonEngine.eval("from gremlin_python.structure.graph import VertexProperty");
             jythonEngine.eval("from gremlin_python.structure.graph import Property");
-            jythonEngine.eval("from gremlin_python.structure.io.graphson import GraphSONWriter");
-            jythonEngine.eval("from gremlin_python.structure.io.graphson import GraphSONReader");
+            jythonEngine.eval("from gremlin_python.structure.io.graphson import GraphSONReader, GraphSONWriter");
+            jythonEngine.eval("graphson_reader = GraphSONReader()");
+            jythonEngine.eval("graphson_writer = GraphSONWriter()");
             return jythonEngine;
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
