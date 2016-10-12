@@ -55,6 +55,8 @@ import java.util.Set;
  */
 public final class VertexProgramStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
+    private static final VertexProgramStrategy INSTANCE = new VertexProgramStrategy(Computer.compute());
+
     private final Computer computer;
 
     private VertexProgramStrategy() {
@@ -63,10 +65,6 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
     public VertexProgramStrategy(final Computer computer) {
         this.computer = computer;
-    }
-
-    public Computer getComputer() {
-        return this.computer;
     }
 
     @Override
@@ -175,6 +173,10 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             graphComputerClass = this.computer.getGraphComputerClass();
         final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
         traversalSource.getStrategies().addStrategies(graphComputerStrategies.toArray(new TraversalStrategy[graphComputerStrategies.size()]));
+    }
+
+    public static VertexProgramStrategy instance() {
+        return INSTANCE;
     }
 
     ////////////////////////////////////////////////////////////
