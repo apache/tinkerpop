@@ -41,7 +41,7 @@ class GraphSONTypeType(type):
         return cls
 
 
-class _GraphSONIO(object):
+class GraphSONUtil(object):
     TYPE_KEY = "@type"
     VALUE_KEY = "@value"
 
@@ -104,7 +104,7 @@ class GraphSONReader(object):
         """
         if isinstance(obj, dict):
             try:
-                return self.deserializers[obj[_GraphSONIO.TYPE_KEY]].objectify(obj[_GraphSONIO.VALUE_KEY], self)
+                return self.deserializers[obj[GraphSONUtil.TYPE_KEY]].objectify(obj[GraphSONUtil.VALUE_KEY], self)
             except KeyError:
                 pass
             # list and map are treated as normal json objs (could be isolated deserializers)
@@ -155,7 +155,7 @@ class _BytecodeSerializer(_GraphSONTypeIO):
             out["source"] = cls._dictify_instructions(bytecode.source_instructions, writer)
         if bytecode.step_instructions:
             out["step"] = cls._dictify_instructions(bytecode.step_instructions, writer)
-        return _GraphSONIO.typedValue("Bytecode", out)
+        return GraphSONUtil.typedValue("Bytecode", out)
 
 
 class TraversalSerializer(_BytecodeSerializer):
@@ -171,7 +171,7 @@ class TraversalStrategySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, strategy, writer):
-        return _GraphSONIO.typedValue(strategy.strategy_name, writer.toDict(strategy.configuration))
+        return GraphSONUtil.typedValue(strategy.strategy_name, writer.toDict(strategy.configuration))
 
 
 class TraverserIO(_GraphSONTypeIO):
@@ -180,7 +180,7 @@ class TraverserIO(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, traverser, writer):
-        return _GraphSONIO.typedValue("Traverser", {"value": writer.toDict(traverser.object),
+        return GraphSONUtil.typedValue("Traverser", {"value": writer.toDict(traverser.object),
                                                      "bulk": writer.toDict(traverser.bulk)})
 
     @classmethod
@@ -194,8 +194,8 @@ class EnumSerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, enum, _):
-        return _GraphSONIO.typedValue(cls.unmangleKeyword(type(enum).__name__),
-                                      cls.unmangleKeyword(str(enum.name)))
+        return GraphSONUtil.typedValue(cls.unmangleKeyword(type(enum).__name__),
+                                       cls.unmangleKeyword(str(enum.name)))
 
 
 class PSerializer(_GraphSONTypeIO):
@@ -206,7 +206,7 @@ class PSerializer(_GraphSONTypeIO):
         out = {"predicate": p.operator,
                "value": [writer.toDict(p.value), writer.toDict(p.other)] if p.other is not None else
                         writer.toDict(p.value)}
-        return _GraphSONIO.typedValue("P", out)
+        return GraphSONUtil.typedValue("P", out)
 
 
 class BindingSerializer(_GraphSONTypeIO):
@@ -216,7 +216,7 @@ class BindingSerializer(_GraphSONTypeIO):
     def dictify(cls, binding, writer):
         out = {"key": binding.key,
                "value": writer.toDict(binding.value)}
-        return _GraphSONIO.typedValue("Binding", out)
+        return GraphSONUtil.typedValue("Binding", out)
 
 
 class LambdaSerializer(_GraphSONTypeIO):
@@ -236,7 +236,7 @@ class LambdaSerializer(_GraphSONTypeIO):
             out["arguments"] = six.get_function_code(eval(out["script"])).co_argcount
         else:
             out["arguments"] = -1
-        return _GraphSONIO.typedValue("Lambda", out)
+        return GraphSONUtil.typedValue("Lambda", out)
 
 
 class TypeSerializer(_GraphSONTypeIO):
@@ -253,7 +253,7 @@ class _NumberIO(_GraphSONTypeIO):
     def dictify(cls, n, writer):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
-        return _GraphSONIO.typedValue(cls.graphson_base_type, n)
+        return GraphSONUtil.typedValue(cls.graphson_base_type, n)
 
     @classmethod
     def objectify(cls, v, _):

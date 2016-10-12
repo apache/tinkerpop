@@ -26,7 +26,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Increased performance of `CredentialGraph` authentication
+* Restructured Gremlin-Python's GraphSON I/O package to make it easier for users to register serializers/deserializers. (*breaking*)
+* Fixed a bug in `ConnectiveStrategy` where infix and/or was not correctly reasoning on `choose()` `HasNextStep` injections.
+* Increased performance of `CredentialGraph` authentication.
 * Removed Java 8 stream usage from `TraversalHelper` for performance reasons.
 * Fixed a bug in `RepeatStep` where `emit().as('x')` wasn't adding the step labels to the emit-traverser.
 * Added `GraphComputing.atMaster(boolean)` to allow steps to know whether they are executing at master or distributed at workers.

@@ -57,7 +57,8 @@ setup(
         'pytest-runner',
     ],
     tests_require=[
-        'pytest'
+        'pytest',
+        'mock'
     ],
     install_requires=[
         'aenum==1.4.5',

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.HasNextStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -63,7 +64,9 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
     }
 
     private static boolean legalCurrentStep(final Step<?, ?> step) {
-        return !(step instanceof EmptyStep || step instanceof ProfileSideEffectStep || step instanceof ComputerAwareStep.EndStep || (step instanceof StartStep && !StartStep.isVariableStartStep(step)) || GraphStep.isStartStep(step));
+        return !(step instanceof EmptyStep || step instanceof ProfileSideEffectStep || step instanceof HasNextStep ||
+                step instanceof ComputerAwareStep.EndStep || (step instanceof StartStep && !StartStep.isVariableStartStep(step)) ||
+                GraphStep.isStartStep(step));
     }
 
     private static void processConnectiveMarker(final Traversal.Admin<?, ?> traversal) {

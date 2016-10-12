@@ -29,7 +29,7 @@ import six
 from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import Path
-from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, _GraphSONIO
+from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphson
 from gremlin_python.process.traversal import P
 from gremlin_python.process.strategies import SubgraphStrategy
@@ -108,7 +108,7 @@ class TestGraphSONReader(TestCase):
         assert type_string not in gremlin_python.structure.io.graphson._deserializers
 
         x = X()
-        o = reader.toObject({_GraphSONIO.TYPE_KEY: type_string, _GraphSONIO.VALUE_KEY: x})
+        o = reader.toObject({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: x})
         serdes.objectify.assert_called_once_with(x, reader)
         assert o is serdes.objectify()
 
@@ -119,7 +119,7 @@ class TestGraphSONReader(TestCase):
         assert gremlin_python.structure.io.graphson._deserializers[type_string] is not reader.deserializers[type_string]
 
         value = 3
-        o = reader.toObject({_GraphSONIO.TYPE_KEY: type_string, _GraphSONIO.VALUE_KEY: value})
+        o = reader.toObject({GraphSONUtil.TYPE_KEY: type_string, GraphSONUtil.VALUE_KEY: value})
         serdes.objectify.assert_called_once_with(value, reader)
         assert o is serdes.objectify()
 

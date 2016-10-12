@@ -21,6 +21,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 import unittest
 from unittest import TestCase
+from gremlin_python.structure.io.graphson import GraphSONWriter
 
 import pytest
 
@@ -78,14 +79,14 @@ class TestDriverRemoteConnection(TestCase):
         #
         g = Graph().traversal().withRemote(connection). \
             withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
-        print GraphSONWriter.writeObject(g.bytecode)
+        print GraphSONWriter().writeObject(g.bytecode)
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = g.withoutStrategies(SubgraphStrategy). \
-            withComputer({"workers": 4, "vertices": __.has("name", "marko"), "edges": __.limit(0)})
+            withComputer(workers=4, vertices=__.has("name", "marko"), edges=__.limit(0))
         assert 1 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert "person" == g.V().label().next()
@@ -149,7 +150,6 @@ class TestDriverRemoteConnection(TestCase):
         except KeyError:
             pass
         connection.close()
-
 
     def test_side_effect_close(self):
         connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
