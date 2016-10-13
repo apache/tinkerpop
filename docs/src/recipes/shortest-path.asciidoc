@@ -26,7 +26,6 @@ is a simple example that identifies the shortest path between vertex "1" and ver
 
 [gremlin-groovy]
 ----
-graph = TinkerGraph.open()
 v1 = graph.addVertex(T.id, 1)
 v2 = graph.addVertex(T.id, 2)
 v3 = graph.addVertex(T.id, 3)
@@ -58,7 +57,6 @@ but includes a "weight" on the edges, that will be used to help determine the "c
 
 [gremlin-groovy]
 ----
-graph = TinkerGraph.open()
 v1 = graph.addVertex(T.id, 1)
 v2 = graph.addVertex(T.id, 2)
 v3 = graph.addVertex(T.id, 3)

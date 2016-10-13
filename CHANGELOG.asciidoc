@@ -89,6 +89,7 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * New build options for `gremlin-python` where `-DglvPython` is no longer required.
 * Added missing `InetAddress` to GraphSON extension module.
 * Added new recipe for "Pagination".
+* Added new recipe for "Recommendation".
 * Added functionality to Gremlin-Server REST endpoint to forward Exception Messages and Class in HTTP Response
 * Gremlin Server `TraversalOpProcessor` now returns confirmation upon `Op` `close`.
 * Added `close` method Java driver and Python driver `DriverRemoteTraversalSideEffects`.

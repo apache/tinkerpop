@@ -46,6 +46,8 @@ include::if-then-based-grouping.asciidoc[]
 
 include::pagination.asciidoc[]
 
+include::recommendation.asciidoc[]
+
 include::shortest-path.asciidoc[]
 
 include::traversal-induced-values.asciidoc[]

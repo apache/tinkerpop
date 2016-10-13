@@ -1,0 +1,225 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[recommendation]]
+Recommendation
+--------------
+
+image:gremlin-recommendation.png[float=left,width=180]One of the more common use cases for a graph database is the
+development of link:https://en.wikipedia.org/wiki/Recommender_system[recommendation systems] and a simple approach to
+doing that is through link:https://en.wikipedia.org/wiki/Collaborative_filtering[collaborative filtering].
+Collaborative filtering assumes that if a person shares one set of opinions with a different person, they are likely to
+have similar taste with respect to other issues. With that basis in mind, it is then possible to make predictions for a
+specific person as to what their opinions might be.
+
+As a simple example, consider a graph that contains "person" and "product" vertices connected by "bought" edges. The
+following script generates some data for the graph using that basic schema:
+
+[gremlin-groovy]
+----
+g.addV("person").property("name","alice").
+  addV("person").property("name","bob").
+  addV("person").property("name","jon").
+  addV("person").property("name","jack").
+  addV("person").property("name","jill")iterate()
+(1..10).each {
+  g.addV("product").property("name","product #${it}").iterate()
+}; []
+(3..7).each {
+  g.V().has("person","name","alice").as("p").
+    V().has("product","name","product #${it}").addE("bought").from("p").iterate()
+}; []
+(1..5).each {
+  g.V().has("person","name","bob").as("p").
+    V().has("product","name","product #${it}").addE("bought").from("p").iterate()
+}; []
+(6..10).each {
+  g.V().has("person","name","jon").as("p").
+    V().has("product","name","product #${it}").addE("bought").from("p").iterate()
+}; []
+1.step(10, 2) {
+  g.V().has("person","name","jack").as("p").
+    V().has("product","name","product #${it}").addE("bought").from("p").iterate()
+}; []
+2.step(10, 2) {
+  g.V().has("person","name","jill").as("p").
+    V().has("product","name","product #${it}").addE("bought").from("p").iterate()
+}; []
+----
+
+The first step to making a recommedation to "alice" using collaborative filtering is to understand what she bought:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','alice').out('bought').values('name')
+----
+
+The following diagram depicts one of the edges traversed in the above example between "alice" and "product #5".
+Obviously, the other products "alice" bought would have similar relations, but this diagram and those to follow will
+focus on the neighborhood around that product.
+
+image:recommendation-alice-1.png[width=500]
+
+The next step is to determine who else purchased those products:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','alice').out('bought').in('bought').dedup().values('name')
+----
+
+It is worth noting that "alice" is in the results above. She should really be excluded from the list as the
+interest is in what individuals other than herself purchased:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','alice').as('her').
+      out('bought').
+      in('bought').where(neq('her')).
+      dedup().values('name')
+----
+
+The following diagram shows "alice" and those others who purchased "product #5".
+
+image:recommendation-alice-2.png[width=600]
+
+The knowledge of the people who bought the same things as "alice" can then be used to find the set of products that
+they bought:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','alice').as('her').
+      out('bought').
+      in('bought').where(neq('her')).
+      out('bought').
+      dedup().values('name')
+----
+
+image:recommendation-alice-3.png[width=800]
+
+This set of products could be the basis for recommendation, but it is important to remember that "alice" may have
+already purchased some of these products and it would be better to not pester her with recommedations for products
+that she already owns. Those products she already purchased can be excluded as follows:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','alice').as('her').
+      out('bought').aggregate('self').
+      in('bought').where(neq('her')).
+      out('bought').where(without('self')).
+      dedup().values('name')
+----
+
+image:recommendation-alice-4.png[width=800]
+
+The final step would be to group the remaining products (instead of `dedup()` which was mostly done for demonstration
+purposes) to form a ranking:
+
+[gremlin-groovy,existing]
+----
+g.V().has('person','name','alice').as('her').     <1>
+      out('bought').aggregate('self').            <2>
+      in('bought').where(neq('her')).             <3>
+      out('bought').where(without('self')).       <4>
+      groupCount().order(local).by(values, decr)  <5>
+----
+
+<1> Find "alice" who is the person for whom the product recommendation is being made.
+<2> Traverse to the products that "alice" bought and gather them for later use in the traversal.
+<3> Traverse to the "person" vertices who bought the products that "alice" bought and exclude "alice" herself from that list.
+<4> Given those people who bought similar products to "alice", find the products that they bought and exclude those that she already bought.
+<5> Group the products and count the number of times they were purchased by others to come up with a ranking of products to recommend to "alice".
+
+The previous example was already described as "basic" and obviously could take into account whatever data is available
+to further improve the quality of the recommendation (e.g. product ratings, times of purchase, etc.).  One option to
+improve the quality of what is recommended (without expanding the previous dataset) might be to choose the person
+vertices that make up the recommendation to "alice" who have the largest common set of purchases.
+
+Looking back to the previous code example, consider its more strip down representation that shows those individuals
+who have at least one product in common:
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","alice").as("alice").
+      out("bought").aggregate("self").
+      in("bought").where(neq("alice")).dedup()
+----
+
+Next, do some grouping to find count how many products they have in common:
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","alice").as("alice").
+      out("bought").aggregate("self").
+      in("bought").where(neq("alice")).dedup().
+      group().by().by(out("bought").where(within("self")).count())
+----
+
+The above output shows that the best that can be expected is three common products. The traversal needs to be aware of
+that maximum:
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","alice").as("alice").
+      out("bought").aggregate("self").
+      in("bought").where(neq("alice")).dedup().
+      group().by().by(out("bought").
+        where(within("self")).count()).
+      select(values).order(local).by(decr).limit(local, 1)
+----
+
+With the maximum value available, it can be used to chose those "person" vertices that have the three products in
+common:
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","alice").as("alice").
+      out("bought").aggregate("self").
+      in("bought").where(neq("alice")).dedup().
+      group().by().by(out("bought").
+        where(within("self")).count()).as("g").
+      select(values).order(local).by(decr).limit(local, 1).as("m").
+      select("g").unfold().where(select(values).as("m")).select(keys)
+----
+
+Now that there is a list of "person" vertices to base the recommendation on, traverse to the products that they
+purchased:
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","alice").as("alice").
+      out("bought").aggregate("self").
+      in("bought").where(neq("alice")).dedup().
+      group().by().by(out("bought").
+        where(within("self")).count()).as("g").
+      select(values).order(local).by(decr).limit(local, 1).as("m").
+      select("g").unfold().where(select(values).as("m")).select(keys).
+      out("bought").where(without("self"))
+----
+
+The above output shows that one product is held in common making it the top recommendation:
+
+[gremlin-groovy,existing]
+----
+g.V().has("person","name","alice").as("alice").
+      out("bought").aggregate("self").
+      in("bought").where(neq("alice")).dedup().
+      group().by().by(out("bought").
+        where(within("self")).count()).as("g").
+      select(values).order(local).by(decr).limit(local, 1).as("m").
+      select("g").unfold().where(select(values).as("m")).select(keys).
+      out("bought").where(without("self")).
+      groupCount().order(local).by(values, decr).by(select(keys).values("name")).unfold().select(keys).values("name")
+----
