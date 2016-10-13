@@ -188,6 +188,8 @@ be able to pull in the `has()` cause the `barrier()` blocks it. Please see the u
 how it acknowledges `NoOpBarrierSteps` (i.e. `barrier()``) skipping over them and “left”-propagating labels to the
 previous step.
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1488[TINKERPOP-1488]
+
 Configurable Strategies
 +++++++++++++++++++++++
 
