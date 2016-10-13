@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -46,13 +47,15 @@ public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<Trav
             final Neo4jGraphStep<?, ?> neo4jGraphStep = new Neo4jGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, neo4jGraphStep, traversal);
             Step<?, ?> currentStep = neo4jGraphStep.getNextStep();
-            while (currentStep instanceof HasStep) {
-                for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
-                    if (!GraphStep.processHasContainerIds(neo4jGraphStep, hasContainer))
-                        neo4jGraphStep.addHasContainer(hasContainer);
+            while (currentStep instanceof HasStep || currentStep instanceof NoOpBarrierStep) {
+                if (currentStep instanceof HasStep) {
+                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                        if (!GraphStep.processHasContainerIds(neo4jGraphStep, hasContainer))
+                            neo4jGraphStep.addHasContainer(hasContainer);
+                    }
+                    TraversalHelper.copyLabels(currentStep, currentStep.getPreviousStep(), false);
+                    traversal.removeStep(currentStep);
                 }
-                TraversalHelper.copyLabels(currentStep, neo4jGraphStep, false);
-                traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
         }

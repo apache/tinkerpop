@@ -65,7 +65,11 @@ public class TraverserSet<S> extends AbstractSet<Traverser.Admin<S>> implements 
     }
 
     public long bulkSize() {
-        return this.map.values().stream().map(Traverser::bulk).reduce(0l, (a, b) -> a + b);
+        long bulk = 0L;
+        for (final Traverser.Admin<S> traverser : this.map.values()) {
+            bulk = bulk + traverser.bulk();
+        }
+        return bulk;
     }
 
     @Override

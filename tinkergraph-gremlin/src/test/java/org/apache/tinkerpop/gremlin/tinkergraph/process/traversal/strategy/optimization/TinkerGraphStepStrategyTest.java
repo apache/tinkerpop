@@ -29,7 +29,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -88,8 +90,17 @@ public class TinkerGraphStepStrategyTest {
         return traversal.addStep(graphStep);
     }
 
+    private static GraphStep<?, ?> V(final Object... hasKeyValues) {
+        final TinkerGraphStep<Vertex, Vertex> graphStep = new TinkerGraphStep<>(new GraphStep<>(EmptyTraversal.instance(), Vertex.class, true));
+        for (int i = 0; i < hasKeyValues.length; i = i + 2) {
+            graphStep.addHasContainer(new HasContainer((String) hasKeyValues[i], (P) hasKeyValues[i + 1]));
+        }
+        return graphStep;
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
+        final int LAZY_SIZE = 2500;
         return Arrays.asList(new Object[][]{
                 {__.V().out(), g_V().out(), Collections.emptyList()},
                 {__.V().has("name", "marko").out(), g_V("name", eq("marko")).out(), Collections.emptyList()},
@@ -112,7 +123,12 @@ public class TinkerGraphStepStrategyTest {
                 {__.V().as("a").dedup().has("name", "marko").or(has("age", 10), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
                         g_V("name", eq("marko"), "age", eq(10).or(gt(32)), "name", eq("bob"), "lang", eq("java")).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()}
+                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                ///////
+                {__.V().out().out().V().has("name", "marko").out(), g_V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).asAdmin().addStep(V("name", eq("marko"))).barrier(LAZY_SIZE).out().barrier(LAZY_SIZE), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
+                {__.V().out().out().V().has("name", "marko").as("a").out(), g_V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).asAdmin().addStep(V("name", eq("marko"))).barrier(LAZY_SIZE).as("a").out(), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
+                {__.V().out().V().has("age", gt(32)).barrier(10).has("name", "marko").as("a"), g_V().out().barrier(LAZY_SIZE).asAdmin().addStep(V("age", gt(32), "name", eq("marko"))).barrier(LAZY_SIZE).barrier(10).as("a"), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
+                {__.V().out().V().has("age", gt(32)).barrier(10).has("name", "marko").as("a"), g_V().out().barrier(LAZY_SIZE).asAdmin().addStep(V("age", gt(32), "name", eq("marko"))).barrier(LAZY_SIZE).barrier(10).as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
         });
     }
 }

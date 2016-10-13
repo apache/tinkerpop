@@ -167,13 +167,29 @@ Upgrading for Providers
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
 
+Default LazyBarrierStrategy
++++++++++++++++++++++++++++
+
+`LazyBarrierStrategy` has been included as a default strategy. `LazyBarrierStrategy` walks a traversal and looks for
+"flatMaps" (`out()`, `in()`, `both()`, `values()`, `V()`, etc.) and adds "lazy barriers" to dam up the stream so to
+increase the probability of bulking the traversers. One of the side-effects is that:
+
+[source,java]
+g.V().out().V().has(a)
+
+is compiled to:
+
+[source,java]
+g.V().out().barrier().V().barrier().has(a)
+
+Given that `LazyBarrierStrategy` is an `OptimizationStrategy`, it comes before `ProviderOptimizationStrategies`.
+Thus, if the provider's `XXXGraphStepStrategy` simply walks from the second `V()` looking for `has()`-only, it will not
+be able to pull in the `has()` cause the `barrier()` blocks it. Please see the updates to `TinkerGraphStepStrategy` and
+how it acknowledges `NoOpBarrierSteps` (i.e. `barrier()``) skipping over them and “left”-propagating labels to the
+previous step.
+
 Configurable Strategies
 +++++++++++++++++++++++
-
-`TraversalSource.withStrategies()` and `TraversalSource.withoutStrategies()` use Java objects. In order to make strategy
-manipulation possible from Gremlin language variants like Gremlin-Python, it is important to support non-JVM-based versions
-of these methods. As such, `TraversalSource.withStrategies(Map<String,Object>...)` and `TraversalSource.withoutStrategies(String...)`
-were added.
 
 If the provider has non-configurable `TraversalStrategy` classes, those classes should expose a static `instance()`-method.
 This is typical and thus, backwards compatible. However, if the provider has a `TraversalStrategy` that can be configured
@@ -184,9 +200,7 @@ a `SubgraphStrategy`, it does the following:
 [source,python]
 ----
 g = Graph().traversal().withRemote(connection).
-        withStrategy({'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy',
-            'vertices': __.hasLabel('person'),
-            'edges': __.has('weight',gt(0.5))})
+        withStrategies(SubgraphStrategy(vertices=__.hasLabel('person'),edges=__.has('weight',gt(0.5))))
 ---
 
 The `SubgraphStrategy.create(Configuration)`-method is defined as:
@@ -232,7 +246,7 @@ The default implementation of `TraversalStrategy.getConfiguration()` is defined 
 [source,java]
 ----
 public default Configuration getConfiguration() {
-    return new MapConfiguration(Collections.singletonMap(STRATEGY, this.getClass().getCanonicalName()));
+    return new BaseConfiguration();
 }
 ----
 
