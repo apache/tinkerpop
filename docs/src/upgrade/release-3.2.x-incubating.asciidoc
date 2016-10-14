@@ -203,7 +203,7 @@ a `SubgraphStrategy`, it does the following:
 ----
 g = Graph().traversal().withRemote(connection).
         withStrategies(SubgraphStrategy(vertices=__.hasLabel('person'),edges=__.has('weight',gt(0.5))))
----
+----
 
 The `SubgraphStrategy.create(Configuration)`-method is defined as:
 
