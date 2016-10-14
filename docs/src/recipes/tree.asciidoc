@@ -1,0 +1,203 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[tree]]
+Tree
+----
+
+image:gremlin-tree.png[width=280]
+
+Lowest Common Ancestor
+~~~~~~~~~~~~~~~~~~~~~~
+
+image:tree-lca.png[width=230,float=right] Given a tree, the link:https://en.wikipedia.org/wiki/Lowest_common_ancestor[lowest common ancestor]
+is the deepest vertex that is common to two or more other vertices. The diagram to the right depicts the common
+ancestor tree for vertices A and D in the various green shades. The C vertex, the vertex with the darkest green
+shading, is the lowest common ancestor.
+
+The following code simply sets up the graph depicted above using "hasParent" for the edge label:
+
+[gremlin-groovy]
+----
+g.addV('name', 'A').as('a').
+  addV('name', 'B').as('b').
+  addV('name', 'C').as('c').
+  addV('name', 'D').as('d').
+  addV('name', 'E').as('e').
+  addV('name', 'F').as('f').
+  addV('name', 'G').as('g').
+  addE('hasParent').from('a').to('b').
+  addE('hasParent').from('b').to('c').
+  addE('hasParent').from('d').to('c').
+  addE('hasParent').from('c').to('e').
+  addE('hasParent').from('e').to('f').
+  addE('hasParent').from('g').to('f').iterate()
+----
+
+Given that graph, the following traversal will get the lowest common ancestor for two vertices, A and D:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','A').
+  repeat(out('hasParent')).emit().as('x').
+  repeat(__.in('hasParent')).emit(has('name','D')).
+  select('x').limit(1).values('name')
+----
+
+The above traversal is reasonably straightforward to follow in that it simply traverses up the tree from the A vertex
+and then traverses down from each ancestor until it finds the "D" vertex. The first path that uncovers that match is
+the lowest common ancestor.
+
+The complexity of finding the lowest common ancestor increases when trying to find the ancestors of three or more
+vertices.
+
+[gremlin-groovy,existing]
+----
+input = ['A','B','D']
+g.V().has('name', input.head()).
+  repeat(out('hasParent')).emit().as('x').                               <1>
+  V().has('name', within(input.tail())).                                 <2>
+  repeat(out('hasParent')).emit(where(eq('x'))).                         <3>
+  group().by(select('x')).by(path().count(local).fold()).                <4>
+  unfold().filter(select(values).count(local).is(input.tail().size())).  <5>
+  order().by(select(values).unfold().sum()).                             <6>
+  select(keys).limit(1).valueMap(true)                                   <7>
+----
+
+<1> The start of the traversal is not so different than the previous one and starts with vertex A.
+<2> Use a mid-traversal `V()` to find the child vertices B and D.
+<3> Traverse up the tree for B and D and find common ancestors that were labeled with "x".
+<4> Group on the common ancestors where the value of the grouping is the length of the path.
+<5> The result of the previous step is a `Map` with a vertex (i.e. common ancestor) for the key and a list of path
+lengths. Unroll the `Map` and ensure that the number of path lengths are equivalent to the number of children that
+were given to the mid-traversal `V()`.
+<6> Order the results based on the sum of the path lengths.
+<7> Since the results were placed in ascending order, the first result must be the lowest common ancestor.
+
+As the above traversal utilizes a mid-traversal `V()`, it cannot be used for OLAP. In OLAP, the pattern changes a bit:
+
+[gremlin-groovy,existing]
+----
+g.withComputer().V().has('name', within(input)).aggregate('input').
+  has('name', input.head()).repeat(out('hasParent')).emit().as('x').
+  select('input').unfold().has('name', within(input.tail())).
+  repeat(out('hasParent')).emit(where(eq('x'))).
+  group().by(select('x')).by(path().count(local).fold()).
+  unfold().filter(select(values).count(local).is(input.tail().size())).
+  order().by(select(values).unfold().sum()).
+  select(keys).limit(1).valueMap(true)
+----
+
+Maximum Depth
+~~~~~~~~~~~~~
+
+Finding the maximum depth of a tree starting from a specified root vertex can be determined as follows:
+
+[gremlin-groovy]
+----
+g.addV('name', 'A').as('a').
+  addV('name', 'B').as('b').
+  addV('name', 'C').as('c').
+  addV('name', 'D').as('d').
+  addV('name', 'E').as('e').
+  addV('name', 'F').as('f').
+  addV('name', 'G').as('g').
+  addE('hasParent').from('a').to('b').
+  addE('hasParent').from('b').to('c').
+  addE('hasParent').from('d').to('c').
+  addE('hasParent').from('c').to('e').
+  addE('hasParent').from('e').to('f').
+  addE('hasParent').from('g').to('f').iterate()
+g.V().has('name','F').repeat(__.in()).emit().path().count(local).max()
+g.V().has('name','C').repeat(__.in()).emit().path().count(local).max()
+----
+
+image:gremlin-max-depth.png[float=right,width=350]The traversals shown above are fairly straightforward. The traversal
+beings at a particlar starting vertex, traverse in on the "hasParent" edges emitting all vertices as it goes. It
+calculates the path length and then selects the longest one. While this approach is quite direct, there is room for
+improvement:
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','F').
+  repeat(__.in()).emit(__.not(inE())).tail(1).
+  path().count(local)
+g.V().has('name','C').
+  repeat(__.in()).emit(__.not(inE())).tail(1).
+  path().count(local)
+----
+
+There are two optimizations at play. First, there is no need to emit all the vertices, only the "leaf" vertices (i.e.
+those without incoming edges). Second, all results save the last one can be ignored to that point (i.e. the last one is
+the one at the deepest point in the tree). In this way, the path and path length only need to be calculated for a
+single result.
+
+Time-based Indexing
+~~~~~~~~~~~~~~~~~~~
+
+Trees can be used for modelling time-oriented data in a graph. Modeling time where there are "year", "month" and "day"
+vertices (or lower granularity as needed) allows the structure of the graph to inherently index data tied to them.
+
+image:gremlin-index-time.png[width=800]
+
+NOTE: This model is discussed further in this Neo4j link:https://neo4j.com/blog/modeling-a-multilevel-index-in-neoj4/[blog post].
+Also, there can be other versions of this model that utilize different edge/vertex labelling and property naming
+strategies. The schema depicted here is designed for simplicity.
+
+The Gremlin script below creates the graph depicted in the graph above:
+
+[gremlin-groovy]
+----
+g.addV(label, 'year', 'name', '2016').as('y2016').
+  addV(label, 'month', 'name', 'may').as('m05').addV(label, 'month', 'name', 'june').as('m06').
+  addV(label, 'day', 'name', '30').as('d30').addV(label, 'day', 'name', '31').as('d31').
+  addV(label, 'day', 'name', '01').as('d01').
+  addV(label, 'event', 'name', 'A').as('eA').addV(label, 'event', 'name', 'B').as('eB').
+  addV(label, 'event', 'name', 'C').as('eC').addV(label, 'event', 'name', 'D').as('eD').
+  addV(label, 'event', 'name', 'E').as('eE').
+  addE('may').from('y2016').to('m05').
+  addE('june').from('y2016').to('m06').
+  addE('day30').from('m05').to('d30').
+  addE('day31').from('m05').to('d31').
+  addE('day01').from('m06').to('d01').
+  addE('has').from('d30').to('eA').
+  addE('has').from('d30').to('eB').
+  addE('has').from('d31').to('eC').
+  addE('has').from('d31').to('eD').
+  addE('has').from('d01').to('eE').
+  addE('next').from('d30').to('d31').
+  addE('next').from('d31').to('d01').
+  addE('next').from('m05').to('m06').iterate()
+----
+
+IMPORTANT: The code example above does not create any indices. Proper index creation, which is specific to the
+graph implementation used, will be critical to the performance of traversals over this structure.
+
+[gremlin-groovy,existing]
+----
+g.V().has('name','2016').out().out().out('has').values()                  <1>
+g.V().has('name','2016').out('may').out().out('has').values()             <2>
+g.V().has('name','2016').out('may').out('day31').out('has').values()      <3>
+g.V().has('name','2016').out('may').out('day31').as('start').
+  V().has('name','2016').out('june').out('day01').as('end').
+  emit().repeat(__.in('next')).until(where(eq('start'))).
+  out('has').order().by('name').values('name')                            <4>
+----
+
+<1> Find all the events in 2016.
+<2> Find all the events in May of 2016.
+<3> Find all the events on May 31, 2016.
+<4> Find all the events between May 31, 2016 and June 1, 2016.

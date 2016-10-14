@@ -52,6 +52,8 @@ include::shortest-path.asciidoc[]
 
 include::traversal-induced-values.asciidoc[]
 
+include::tree.asciidoc[]
+
 Implementation Recipes
 ======================
 
