@@ -32,13 +32,13 @@ The following code simply sets up the graph depicted above using "hasParent" for
 
 [gremlin-groovy]
 ----
-g.addV('name', 'A').as('a').
-  addV('name', 'B').as('b').
-  addV('name', 'C').as('c').
-  addV('name', 'D').as('d').
-  addV('name', 'E').as('e').
-  addV('name', 'F').as('f').
-  addV('name', 'G').as('g').
+g.addV(id, 'A').as('a').
+  addV(id, 'B').as('b').
+  addV(id, 'C').as('c').
+  addV(id, 'D').as('d').
+  addV(id, 'E').as('e').
+  addV(id, 'F').as('f').
+  addV(id, 'G').as('g').
   addE('hasParent').from('a').to('b').
   addE('hasParent').from('b').to('c').
   addE('hasParent').from('d').to('c').
@@ -51,9 +51,9 @@ Given that graph, the following traversal will get the lowest common ancestor fo
 
 [gremlin-groovy,existing]
 ----
-g.V().has('name','A').
+g.V('A').
   repeat(out('hasParent')).emit().as('x').
-  repeat(__.in('hasParent')).emit(has('name','D')).
+  repeat(__.in('hasParent')).emit(hasId('D')).
   select('x').limit(1).values('name')
 ----
 
@@ -67,9 +67,9 @@ vertices.
 [gremlin-groovy,existing]
 ----
 input = ['A','B','D']
-g.V().has('name', input.head()).
+g.V(input.head()).
   repeat(out('hasParent')).emit().as('x').                               <1>
-  V().has('name', within(input.tail())).                                 <2>
+  V().has(id, within(input.tail())).                                     <2>
   repeat(out('hasParent')).emit(where(eq('x'))).                         <3>
   group().
     by(select('x')).
@@ -77,7 +77,7 @@ g.V().has('name', input.head()).
   unfold().filter(select(values).count(local).is(input.tail().size())).  <5>
   order().by(select(values).
   unfold().sum()).                                                       <6>
-  select(keys).limit(1).valueMap(true)                                   <7>
+  select(keys).limit(1)                                                  <7>
 ----
 
 <1> The start of the traversal is not so different than the previous one and starts with vertex A.
@@ -95,10 +95,10 @@ As the above traversal utilizes a mid-traversal `V()`, it cannot be used for OLA
 [gremlin-groovy,existing]
 ----
 g.withComputer().
-  V().has('name', within(input)).
-  aggregate('input').has('name', input.head()).                          <1>
+  V().has(id, within(input)).
+  aggregate('input').hasId(input.head()).                                <1>
   repeat(out('hasParent')).emit().as('x').
-  select('input').unfold().has('name', within(input.tail())).
+  select('input').unfold().has(id, within(input.tail())).
   repeat(out('hasParent')).emit(where(eq('x'))).
   group().
     by(select('x')).
@@ -106,7 +106,7 @@ g.withComputer().
   unfold().filter(select(values).count(local).is(input.tail().size())).
   order().
     by(select(values).unfold().sum()).
-  select(keys).limit(1).valueMap(true)
+  select(keys).limit(1)
 ----
 
 <1> The main difference for OLAP is the use of `aggregate()` over the mid-traversal`V()`.
