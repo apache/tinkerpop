@@ -29,15 +29,17 @@ In Gremlin, a basic approach to paging would look something like the following:
 
 [gremlin-groovy,modern]
 ----
-g.V().hasLabel('person').fold()                            <1>
-g.V().hasLabel('person').fold().as('persons','count').
-               select('persons','count').
-                 by(range(local, 0, 2)).
-                 by(count(local))                          <2>
-g.V().hasLabel('person').fold().as('persons','count').
-               select('persons','count').
-                 by(range(local, 2, 4)).
-                 by(count(local))                          <3>
+g.V().hasLabel('person').fold()       <1>
+g.V().hasLabel('person').
+  fold().as('persons','count').
+  select('persons','count').
+    by(range(local, 0, 2)).
+    by(count(local))                  <2>
+g.V().hasLabel('person').
+  fold().as('persons','count').
+  select('persons','count').
+    by(range(local, 2, 4)).
+    by(count(local))                  <3>
 ----
 
 <1> Gets all the "person" vertices.

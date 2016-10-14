@@ -172,11 +172,15 @@ The Gremlin script below creates the graph depicted in the graph above:
 [gremlin-groovy]
 ----
 g.addV(label, 'year', 'name', '2016').as('y2016').
-  addV(label, 'month', 'name', 'may').as('m05').addV(label, 'month', 'name', 'june').as('m06').
-  addV(label, 'day', 'name', '30').as('d30').addV(label, 'day', 'name', '31').as('d31').
+  addV(label, 'month', 'name', 'may').as('m05').
+  addV(label, 'month', 'name', 'june').as('m06').
+  addV(label, 'day', 'name', '30').as('d30').
+  addV(label, 'day', 'name', '31').as('d31').
   addV(label, 'day', 'name', '01').as('d01').
-  addV(label, 'event', 'name', 'A').as('eA').addV(label, 'event', 'name', 'B').as('eB').
-  addV(label, 'event', 'name', 'C').as('eC').addV(label, 'event', 'name', 'D').as('eD').
+  addV(label, 'event', 'name', 'A').as('eA').
+  addV(label, 'event', 'name', 'B').as('eB').
+  addV(label, 'event', 'name', 'C').as('eC').
+  addV(label, 'event', 'name', 'D').as('eD').
   addV(label, 'event', 'name', 'E').as('eE').
   addE('may').from('y2016').to('m05').
   addE('june').from('y2016').to('m06').

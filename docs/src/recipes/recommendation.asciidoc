@@ -133,7 +133,9 @@ g.V().has('person','name','alice').as('her').     <1>
       out('bought').aggregate('self').            <2>
       in('bought').where(neq('her')).             <3>
       out('bought').where(without('self')).       <4>
-      groupCount().order(local).by(values, decr)  <5>
+      groupCount().
+      order(local).
+        by(values, decr)                          <5>
 ----
 
 <1> Find "alice" who is the person for whom the product recommendation is being made.
@@ -164,7 +166,9 @@ Next, do some grouping to find count how many products they have in common:
 g.V().has("person","name","alice").as("alice").
       out("bought").aggregate("self").
       in("bought").where(neq("alice")).dedup().
-      group().by().by(out("bought").where(within("self")).count())
+      group().
+        by().by(out("bought").
+      where(within("self")).count())
 ----
 
 The above output shows that the best that can be expected is three common products. The traversal needs to be aware of
@@ -175,9 +179,12 @@ that maximum:
 g.V().has("person","name","alice").as("alice").
       out("bought").aggregate("self").
       in("bought").where(neq("alice")).dedup().
-      group().by().by(out("bought").
-        where(within("self")).count()).
-      select(values).order(local).by(decr).limit(local, 1)
+      group().
+        by().by(out("bought").
+      where(within("self")).count()).
+      select(values).
+      order(local).
+        by(decr).limit(local, 1)
 ----
 
 With the maximum value available, it can be used to chose those "person" vertices that have the three products in
@@ -188,10 +195,14 @@ common:
 g.V().has("person","name","alice").as("alice").
       out("bought").aggregate("self").
       in("bought").where(neq("alice")).dedup().
-      group().by().by(out("bought").
-        where(within("self")).count()).as("g").
-      select(values).order(local).by(decr).limit(local, 1).as("m").
-      select("g").unfold().where(select(values).as("m")).select(keys)
+      group().
+        by().by(out("bought").
+      where(within("self")).count()).as("g").
+      select(values).
+      order(local).
+        by(decr).limit(local, 1).as("m").
+      select("g").unfold().
+      where(select(values).as("m")).select(keys)
 ----
 
 Now that there is a list of "person" vertices to base the recommendation on, traverse to the products that they
@@ -202,10 +213,14 @@ purchased:
 g.V().has("person","name","alice").as("alice").
       out("bought").aggregate("self").
       in("bought").where(neq("alice")).dedup().
-      group().by().by(out("bought").
-        where(within("self")).count()).as("g").
-      select(values).order(local).by(decr).limit(local, 1).as("m").
-      select("g").unfold().where(select(values).as("m")).select(keys).
+      group().
+        by().by(out("bought").
+      where(within("self")).count()).as("g").
+      select(values).
+      order(local).
+        by(decr).limit(local, 1).as("m").
+      select("g").unfold().
+      where(select(values).as("m")).select(keys).
       out("bought").where(without("self"))
 ----
 
@@ -216,10 +231,18 @@ The above output shows that one product is held in common making it the top reco
 g.V().has("person","name","alice").as("alice").
       out("bought").aggregate("self").
       in("bought").where(neq("alice")).dedup().
-      group().by().by(out("bought").
-        where(within("self")).count()).as("g").
-      select(values).order(local).by(decr).limit(local, 1).as("m").
-      select("g").unfold().where(select(values).as("m")).select(keys).
+      group().
+        by().by(out("bought").
+      where(within("self")).count()).as("g").
+      select(values).
+      order(local).
+        by(decr).limit(local, 1).as("m").
+      select("g").unfold().
+      where(select(values).as("m")).select(keys).
       out("bought").where(without("self")).
-      groupCount().order(local).by(values, decr).by(select(keys).values("name")).unfold().select(keys).values("name")
+      groupCount().
+      order(local).
+        by(values, decr).
+        by(select(keys).values("name")).
+      unfold().select(keys).values("name")
 ----

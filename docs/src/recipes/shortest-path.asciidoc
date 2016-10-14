@@ -26,17 +26,16 @@ is a simple example that identifies the shortest path between vertex "1" and ver
 
 [gremlin-groovy]
 ----
-v1 = graph.addVertex(T.id, 1)
-v2 = graph.addVertex(T.id, 2)
-v3 = graph.addVertex(T.id, 3)
-v4 = graph.addVertex(T.id, 4)
-v5 = graph.addVertex(T.id, 5)
-v1.addEdge("knows", v2)
-v2.addEdge("knows", v4)
-v4.addEdge("knows", v5)
-v2.addEdge("knows", v3)
-v3.addEdge("knows", v4)
-g = graph.traversal()
+g.addV(id, 1).as('1').
+  addV(id, 2).as('2').
+  addV(id, 3).as('3').
+  addV(id, 4).as('4').
+  addV(id, 5).as('5').
+  addE('knows').from('1').to('2').
+  addE('knows').from('2').to('4').
+  addE('knows').from('4').to('5').
+  addE('knows').from('2').to('3').
+  addE('knows').from('3').to('4').iterate()
 g.V(1).repeat(out().simplePath()).until(hasId(5)).path().limit(1)     <1>
 g.V(1).repeat(out().simplePath()).until(hasId(5)).path().count(local) <2>
 g.V(1).repeat(out().simplePath()).until(hasId(5)).path().
@@ -57,17 +56,16 @@ but includes a "weight" on the edges, that will be used to help determine the "c
 
 [gremlin-groovy]
 ----
-v1 = graph.addVertex(T.id, 1)
-v2 = graph.addVertex(T.id, 2)
-v3 = graph.addVertex(T.id, 3)
-v4 = graph.addVertex(T.id, 4)
-v5 = graph.addVertex(T.id, 5)
-v1.addEdge("knows", v2, "weight", 1.25)
-v2.addEdge("knows", v4, "weight", 1.5)
-v4.addEdge("knows", v5, "weight", 0.25)
-v2.addEdge("knows", v3, "weight", 0.25)
-v3.addEdge("knows", v4, "weight", 0.25)
-g = graph.traversal()
+g.addV(id, 1).as('1').
+  addV(id, 2).as('2').
+  addV(id, 3).as('3').
+  addV(id, 4).as('4').
+  addV(id, 5).as('5').
+  addE('knows').from('1').to('2').property('weight', 1.25).
+  addE('knows').from('2').to('4').property('weight', 1.5).
+  addE('knows').from('4').to('5').property('weight', 0.25).
+  addE('knows').from('2').to('3').property('weight', 0.25).
+  addE('knows').from('3').to('4').property('weight', 0.25).iterate()
 g.V(1).repeat(out().simplePath()).until(hasId(5)).path().
   group().by(count(local)).next()                                                         <1>
 g.V(1).repeat(outE().inV().simplePath()).until(hasId(5)).
