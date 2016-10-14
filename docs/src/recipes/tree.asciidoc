@@ -71,9 +71,12 @@ g.V().has('name', input.head()).
   repeat(out('hasParent')).emit().as('x').                               <1>
   V().has('name', within(input.tail())).                                 <2>
   repeat(out('hasParent')).emit(where(eq('x'))).                         <3>
-  group().by(select('x')).by(path().count(local).fold()).                <4>
+  group().
+    by(select('x')).
+    by(path().count(local).fold()).                                      <4>
   unfold().filter(select(values).count(local).is(input.tail().size())).  <5>
-  order().by(select(values).unfold().sum()).                             <6>
+  order().by(select(values).
+  unfold().sum()).                                                       <6>
   select(keys).limit(1).valueMap(true)                                   <7>
 ----
 
@@ -91,15 +94,22 @@ As the above traversal utilizes a mid-traversal `V()`, it cannot be used for OLA
 
 [gremlin-groovy,existing]
 ----
-g.withComputer().V().has('name', within(input)).aggregate('input').
-  has('name', input.head()).repeat(out('hasParent')).emit().as('x').
+g.withComputer().
+  V().has('name', within(input)).
+  aggregate('input').has('name', input.head()).                          <1>
+  repeat(out('hasParent')).emit().as('x').
   select('input').unfold().has('name', within(input.tail())).
   repeat(out('hasParent')).emit(where(eq('x'))).
-  group().by(select('x')).by(path().count(local).fold()).
+  group().
+    by(select('x')).
+    by(path().count(local).fold()).
   unfold().filter(select(values).count(local).is(input.tail().size())).
-  order().by(select(values).unfold().sum()).
+  order().
+    by(select(values).unfold().sum()).
   select(keys).limit(1).valueMap(true)
 ----
+
+<1> The main difference for OLAP is the use of `aggregate()` over the mid-traversal`V()`.
 
 Maximum Depth
 ~~~~~~~~~~~~~
@@ -194,7 +204,8 @@ g.V().has('name','2016').out('may').out('day31').out('has').values()      <3>
 g.V().has('name','2016').out('may').out('day31').as('start').
   V().has('name','2016').out('june').out('day01').as('end').
   emit().repeat(__.in('next')).until(where(eq('start'))).
-  out('has').order().by('name').values('name')                            <4>
+  out('has').
+  order().by('name').values('name')                                       <4>
 ----
 
 <1> Find all the events in 2016.
