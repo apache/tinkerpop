@@ -293,6 +293,8 @@ limitations under the License.
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
                         <exclude>**/.glv</exclude>
+                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
