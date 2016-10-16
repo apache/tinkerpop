@@ -453,8 +453,8 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
 [[release-3-1-5]]
-TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.1.5 (Release Date: October 17, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Improved handling of `Cluster.close()` and `Client.close()` to prevent the methods from hanging.
 * Fixed a bug in `NotStep` where child requirements were not being analyzed.
@@ -464,6 +464,23 @@ TinkerPop 3.1.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed the `appveyor.yml` file as the AppVeyor build is no longer enabled by Apache Infrastructure.
 * Fixed TinkerGraph which was not saving on `close()` if the path only consisted of the file name.
 * Fixed a bug in `RangeByIsCountStrategy` which didn't use the `NotStep` properly.
+
+Bugs
+^^^^
+
+* TINKERPOP-1158 gremlin.sh -v emits log4j initialization errors
+* TINKERPOP-1391 issue with where filter
+* TINKERPOP-1442 Killing session should make better attempt to cleanup
+* TINKERPOP-1451 TinkerGraph persistence cannot handle a single file name as the graph location
+* TINKERPOP-1467 Improve close() operations on the Java driver
+* TINKERPOP-1478 Propogate ScriptEngine fixes from groovy to GremlinGroovyScriptEngine
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-927 bin/publish-docs.sh should only upload diffs.
+* TINKERPOP-1264 Improve BLVP docs
+* TINKERPOP-1477 Make DependencyGrabberTest an integration test
 
 [[release-3-1-4]]
 TinkerPop 3.1.4 (Release Date: September 6, 2016)
