@@ -23,8 +23,10 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-3]]
-TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.2.3 (Release Date: October 17, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This release also includes changes from <<release-3-1-5, 3.1.5>>.
 
 * Restructured Gremlin-Python's GraphSON I/O package to make it easier for users to register serializers/deserializers. (*breaking*)
 * Fixed a bug with `TraversalOpProcessor` that was returning a final result prior to committing the transaction.
@@ -94,6 +96,54 @@ TinkerPop 3.2.3 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added functionality to Gremlin-Server REST endpoint to forward Exception Messages and Class in HTTP Response
 * Gremlin Server `TraversalOpProcessor` now returns confirmation upon `Op` `close`.
 * Added `close` method Java driver and Python driver `DriverRemoteTraversalSideEffects`.
+
+Bugs
+^^^^
+
+* TINKERPOP-1423 IncidentToAdjacentStrategy should be disabled for tree steps
+* TINKERPOP-1440 g:Path needs a GraphSON deserializer in Gremlin-Python
+* TINKERPOP-1457 Groovy Lambdas for remote traversals not serializable
+* TINKERPOP-1458 Gremlin Server doesn't return confirmation upon Traversal OpProcessor "close" op
+* TINKERPOP-1466 PeerPressureTest has been failing recently
+* TINKERPOP-1472 RepeatUnrollStrategy does not semi-compile inlined repeat traversal
+* TINKERPOP-1495 Global list deduplication doesn't work in OLAP
+* TINKERPOP-1500 and/or infix and choose() do not work correctly.
+* TINKERPOP-1511 Remote client addV, V()
+
+Improvements
+^^^^^^^^^^^^
+
+* TINKERPOP-790 Implement AutoCloseable on TraversalSource
+* TINKERPOP-944 Deprecate Graph.Exceptions.elementNotFound
+* TINKERPOP-1189 SimpleAuthenticator over HttpChannelizer makes Gremlin Server pretty slow and consumes more CPU
+* TINKERPOP-1249 Gremlin driver to periodically issue ping / heartbeat to gremlin server
+* TINKERPOP-1280 VertexPrograms should declare traverser requirements
+* TINKERPOP-1330 by()-modulation for where()
+* TINKERPOP-1409 Make the "null" return in the gremlin console into something more understandable  *(breaking)*
+* TINKERPOP-1431 Documentation generation requires tests to execute on gremlin-python
+* TINKERPOP-1437 Add tests for dedup(Scope) in DedupTest
+* TINKERPOP-1444 Benchmark bytecode->Traversal creation and implement GremlinServer cache if necessary.
+* TINKERPOP-1448 gremlin-python should be Python 2/3 compatible
+* TINKERPOP-1449 Streamline gremlin-python build
+* TINKERPOP-1455 Provide String-based withStrategy()/withoutStrategy() for language variant usage
+* TINKERPOP-1456 Support SubgraphStrategy.vertexProperties().
+* TINKERPOP-1460 Deprecate reconnectInitialDelay in Java driver
+* TINKERPOP-1464 Gryo Serialization for Bytecode
+* TINKERPOP-1469 Get rid of Stream-usage in TraversalHelper
+* TINKERPOP-1470 InlineFilterStrategy should try and P.or() has() children in OrSteps.
+* TINKERPOP-1486 Improve API of RemoteConnection
+* TINKERPOP-1487 Reference Documentation for IO
+* TINKERPOP-1488 Make LazyBarrierStrategy part of the default TraversalStrategies *(breaking)*
+* TINKERPOP-1492 RemoteStrategy or the RemoteConnection should append a lazy barrier().
+* TINKERPOP-1423 IncidentToAdjacentStrategy should be disabled for tree steps
+* TINKERPOP-1440 g:Path needs a GraphSON deserializer in Gremlin-Python
+* TINKERPOP-1457 Groovy Lambdas for remote traversals not serializable
+* TINKERPOP-1458 Gremlin Server doesn't return confirmation upon Traversal OpProcessor "close" op
+* TINKERPOP-1466 PeerPressureTest has been failing recently
+* TINKERPOP-1472 RepeatUnrollStrategy does not semi-compile inlined repeat traversal
+* TINKERPOP-1495 Global list deduplication doesn't work in OLAP
+* TINKERPOP-1500 and/or infix and choose() do not work correctly.
+* TINKERPOP-1511 Remote client addV, V()
 
 [[release-3-2-2]]
 TinkerPop 3.2.2 (Release Date: September 6, 2016)
