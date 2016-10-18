@@ -113,7 +113,6 @@ limitations under the License.
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
-        <module>gremlin-benchmark</module>
         <module>gremlin-groovy</module>
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
@@ -126,6 +125,7 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
+        <module>gremlin-tools</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
@@ -1237,7 +1237,7 @@ limitations under the License.
                                     <goal>prepare-agent</goal>
                                 </goals>
                                 <configuration>
-                                    <destFile>${session.executionRootDirectory}/target/jacoco-it.exec</destFile>
+                                    <destFile>target/jacoco-it.exec</destFile>
                                     <append>true</append>
                                     <propertyName>failsafeArgLine</propertyName>
                                 </configuration>

@@ -146,6 +146,8 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Execute with the `-DuseEpoll` option to try to use Netty native transport (works on Linux, but will fallback to Java NIO on other OS).
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Benchmarks: `mvn verify -DskipBenchmarks=false`
+* Test coverage report: `mvn clean install -Dcoverage` - note that the `install` is necessary because report aggregation is bound to that part of the lifecycle.
+** Reports are generated to `gremlin-tools/gremlin-coverage/target/site`
 
 [[docker-integration]]
 Docker Integration

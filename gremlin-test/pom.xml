@@ -91,6 +91,7 @@ limitations under the License.
         </plugins>
     </build>
 
+    <!-- for whatever reason, jacoco doesn't like running the TraversalInterruptionTest - ignore for now -->
     <profiles>
         <profile>
             <id>coverage</id>
