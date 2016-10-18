@@ -24,22 +24,22 @@
   "use strict";
 
   function Traversal(graph, traversalStrategies, bytecode) {
-    this._graph = graph;
-    this._traversalStrategies = traversalStrategies;
-    this._bytecode = bytecode;
+    this.graph = graph;
+    this.traversalStrategies = traversalStrategies;
+    this.bytecode = bytecode;
     this.traversers = null;
     this.sideEffects = null;
   }
 
   /** @returns {Bytecode} */
   Traversal.prototype.getBytecode = function () {
-    return this._bytecode;
+    return this.bytecode;
   };
 
   /** @param {Function} callback */
   Traversal.prototype.list = function (callback) {
     var self = this;
-    this._traversalStrategies.applyStrategies(this, function (err) {
+    this.traversalStrategies.applyStrategies(this, function (err) {
       if (err) {
         return callback(err);
       }
@@ -59,7 +59,7 @@
    * @returns {String}
    */
   Traversal.prototype.toString = function () {
-    return this._bytecode.toString();
+    return this.bytecode.toString();
   };
   
   /**
