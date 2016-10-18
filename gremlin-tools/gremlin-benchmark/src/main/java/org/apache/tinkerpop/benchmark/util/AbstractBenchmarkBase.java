@@ -104,7 +104,7 @@ public abstract class AbstractBenchmarkBase {
     }
 
     protected String getReportDir() {
-        return System.getProperty("benchmark.dir", DEFAULT_BENCHMARK_DIRECTORY);
+        return System.getProperty("benchmarkReportDir", DEFAULT_BENCHMARK_DIRECTORY);
     }
 
     private int getIntProperty(final String propertyName, final int defaultValue) {
