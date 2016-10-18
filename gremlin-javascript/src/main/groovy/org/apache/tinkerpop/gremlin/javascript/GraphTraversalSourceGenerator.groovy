@@ -80,9 +80,9 @@ class GraphTraversalSourceGenerator {
    * @constructor
    */
   function GraphTraversalSource(graph, traversalStrategies, bytecode) {
-    this._graph = graph;
-    this._traversalStrategies = traversalStrategies;
-    this._bytecode = bytecode || new Bytecode();
+    this.graph = graph;
+    this.traversalStrategies = traversalStrategies;
+    this.bytecode = bytecode || new Bytecode();
   }
 
   /**
@@ -90,9 +90,9 @@ class GraphTraversalSourceGenerator {
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withRemote = function (remoteConnection) {
-    var traversalStrategy = new t.TraversalStrategies(this._traversalStrategies);
+    var traversalStrategy = new t.TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new GraphTraversalSource(this._graph, traversalStrategy, new Bytecode(this._bytecode));
+    return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
   };
 
   /**
@@ -100,7 +100,7 @@ class GraphTraversalSourceGenerator {
    * @returns {string}
    */
   GraphTraversalSource.prototype.toString = function () {
-    return 'graphtraversalsource[' + this._graph.toString() + ']';
+    return 'graphtraversalsource[' + this.graph.toString() + ']';
   };
 """)
         GraphTraversalSource.getMethods(). // SOURCE STEPS
@@ -122,8 +122,8 @@ class GraphTraversalSourceGenerator {
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.${method} = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 """)
                 }
@@ -141,8 +141,8 @@ class GraphTraversalSourceGenerator {
    * @returns {GraphTraversal}
    */
   GraphTraversalSource.prototype.${method} = function (args) {
-    var b = new Bytecode(this._bytecode).addStep('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
-    return new GraphTraversal(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addStep('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
+    return new GraphTraversal(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 """)
                 }
@@ -153,6 +153,7 @@ class GraphTraversalSourceGenerator {
                 """
   /**
    * Represents a graph traversal.
+   * @extends Traversal
    * @constructor
    */
   function GraphTraversal(graph, traversalStrategies, bytecode) {
@@ -175,7 +176,7 @@ class GraphTraversalSourceGenerator {
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.${method} = function (args) {
-    this._bytecode.addStep('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('${SymbolHelper.toJava(method)}', parseArgs.apply(null, arguments));
     return this;
   };
 """)
