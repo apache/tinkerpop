@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.3</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-groovy</artifactId>
     <name>Apache TinkerPop :: Gremlin Groovy</name>
