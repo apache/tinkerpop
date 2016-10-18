@@ -37,9 +37,9 @@
    * @constructor
    */
   function GraphTraversalSource(graph, traversalStrategies, bytecode) {
-    this._graph = graph;
-    this._traversalStrategies = traversalStrategies;
-    this._bytecode = bytecode || new Bytecode();
+    this.graph = graph;
+    this.traversalStrategies = traversalStrategies;
+    this.bytecode = bytecode || new Bytecode();
   }
 
   /**
@@ -47,9 +47,9 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withRemote = function (remoteConnection) {
-    var traversalStrategy = new t.TraversalStrategies(this._traversalStrategies);
+    var traversalStrategy = new t.TraversalStrategies(this.traversalStrategies);
     traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new GraphTraversalSource(this._graph, traversalStrategy, new Bytecode(this._bytecode));
+    return new GraphTraversalSource(this.graph, traversalStrategy, new Bytecode(this.bytecode));
   };
 
   /**
@@ -57,7 +57,7 @@
    * @returns {string}
    */
   GraphTraversalSource.prototype.toString = function () {
-    return 'graphtraversalsource[' + this._graph.toString() + ']';
+    return 'graphtraversalsource[' + this.graph.toString() + ']';
   };
 
   /**
@@ -66,8 +66,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withBulk = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withBulk', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withBulk', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -76,8 +76,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withComputer = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withComputer', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withComputer', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -86,8 +86,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withPath = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withPath', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withPath', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -96,8 +96,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withSack = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withSack', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withSack', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -106,8 +106,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withSideEffect = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withSideEffect', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withSideEffect', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -116,8 +116,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withStrategies = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withStrategies', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withStrategies', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -126,8 +126,8 @@
    * @returns {GraphTraversalSource}
    */
   GraphTraversalSource.prototype.withoutStrategies = function (args) {
-    var b = new Bytecode(this._bytecode).addSource('withoutStrategies', parseArgs.apply(null, arguments));
-    return new GraphTraversalSource(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addSource('withoutStrategies', parseArgs.apply(null, arguments));
+    return new GraphTraversalSource(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -136,8 +136,8 @@
    * @returns {GraphTraversal}
    */
   GraphTraversalSource.prototype.E = function (args) {
-    var b = new Bytecode(this._bytecode).addStep('E', parseArgs.apply(null, arguments));
-    return new GraphTraversal(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addStep('E', parseArgs.apply(null, arguments));
+    return new GraphTraversal(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -146,8 +146,8 @@
    * @returns {GraphTraversal}
    */
   GraphTraversalSource.prototype.V = function (args) {
-    var b = new Bytecode(this._bytecode).addStep('V', parseArgs.apply(null, arguments));
-    return new GraphTraversal(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addStep('V', parseArgs.apply(null, arguments));
+    return new GraphTraversal(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -156,8 +156,8 @@
    * @returns {GraphTraversal}
    */
   GraphTraversalSource.prototype.addV = function (args) {
-    var b = new Bytecode(this._bytecode).addStep('addV', parseArgs.apply(null, arguments));
-    return new GraphTraversal(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addStep('addV', parseArgs.apply(null, arguments));
+    return new GraphTraversal(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
@@ -166,12 +166,13 @@
    * @returns {GraphTraversal}
    */
   GraphTraversalSource.prototype.inject = function (args) {
-    var b = new Bytecode(this._bytecode).addStep('inject', parseArgs.apply(null, arguments));
-    return new GraphTraversal(this._graph, new t.TraversalStrategies(this._traversalStrategies), b);
+    var b = new Bytecode(this.bytecode).addStep('inject', parseArgs.apply(null, arguments));
+    return new GraphTraversal(this.graph, new t.TraversalStrategies(this.traversalStrategies), b);
   };
 
   /**
    * Represents a graph traversal.
+   * @extends Traversal
    * @constructor
    */
   function GraphTraversal(graph, traversalStrategies, bytecode) {
@@ -185,7 +186,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.V = function (args) {
-    this._bytecode.addStep('V', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('V', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -194,7 +195,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.addE = function (args) {
-    this._bytecode.addStep('addE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('addE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -203,7 +204,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.addInE = function (args) {
-    this._bytecode.addStep('addInE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('addInE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -212,7 +213,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.addOutE = function (args) {
-    this._bytecode.addStep('addOutE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('addOutE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -221,7 +222,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.addV = function (args) {
-    this._bytecode.addStep('addV', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('addV', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -230,7 +231,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.aggregate = function (args) {
-    this._bytecode.addStep('aggregate', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('aggregate', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -239,7 +240,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.and = function (args) {
-    this._bytecode.addStep('and', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('and', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -248,7 +249,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.as = function (args) {
-    this._bytecode.addStep('as', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('as', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -257,7 +258,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.barrier = function (args) {
-    this._bytecode.addStep('barrier', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('barrier', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -266,7 +267,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.both = function (args) {
-    this._bytecode.addStep('both', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('both', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -275,7 +276,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.bothE = function (args) {
-    this._bytecode.addStep('bothE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('bothE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -284,7 +285,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.bothV = function (args) {
-    this._bytecode.addStep('bothV', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('bothV', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -293,7 +294,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.branch = function (args) {
-    this._bytecode.addStep('branch', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('branch', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -302,7 +303,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.by = function (args) {
-    this._bytecode.addStep('by', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('by', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -311,7 +312,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.cap = function (args) {
-    this._bytecode.addStep('cap', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('cap', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -320,7 +321,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.choose = function (args) {
-    this._bytecode.addStep('choose', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('choose', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -329,7 +330,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.coalesce = function (args) {
-    this._bytecode.addStep('coalesce', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('coalesce', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -338,7 +339,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.coin = function (args) {
-    this._bytecode.addStep('coin', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('coin', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -347,7 +348,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.constant = function (args) {
-    this._bytecode.addStep('constant', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('constant', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -356,7 +357,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.count = function (args) {
-    this._bytecode.addStep('count', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('count', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -365,7 +366,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.cyclicPath = function (args) {
-    this._bytecode.addStep('cyclicPath', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('cyclicPath', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -374,7 +375,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.dedup = function (args) {
-    this._bytecode.addStep('dedup', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('dedup', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -383,7 +384,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.drop = function (args) {
-    this._bytecode.addStep('drop', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('drop', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -392,7 +393,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.emit = function (args) {
-    this._bytecode.addStep('emit', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('emit', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -401,7 +402,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.filter = function (args) {
-    this._bytecode.addStep('filter', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('filter', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -410,7 +411,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.flatMap = function (args) {
-    this._bytecode.addStep('flatMap', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('flatMap', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -419,7 +420,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.fold = function (args) {
-    this._bytecode.addStep('fold', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('fold', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -428,7 +429,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.from_ = function (args) {
-    this._bytecode.addStep('from', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('from', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -437,7 +438,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.group = function (args) {
-    this._bytecode.addStep('group', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('group', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -446,7 +447,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.groupCount = function (args) {
-    this._bytecode.addStep('groupCount', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('groupCount', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -455,7 +456,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.groupV3d0 = function (args) {
-    this._bytecode.addStep('groupV3d0', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('groupV3d0', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -464,7 +465,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.has = function (args) {
-    this._bytecode.addStep('has', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('has', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -473,7 +474,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.hasId = function (args) {
-    this._bytecode.addStep('hasId', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('hasId', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -482,7 +483,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.hasKey = function (args) {
-    this._bytecode.addStep('hasKey', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('hasKey', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -491,7 +492,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.hasLabel = function (args) {
-    this._bytecode.addStep('hasLabel', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('hasLabel', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -500,7 +501,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.hasNot = function (args) {
-    this._bytecode.addStep('hasNot', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('hasNot', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -509,7 +510,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.hasValue = function (args) {
-    this._bytecode.addStep('hasValue', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('hasValue', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -518,7 +519,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.id = function (args) {
-    this._bytecode.addStep('id', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('id', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -527,7 +528,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.identity = function (args) {
-    this._bytecode.addStep('identity', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('identity', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -536,7 +537,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.inE = function (args) {
-    this._bytecode.addStep('inE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('inE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -545,7 +546,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.inV = function (args) {
-    this._bytecode.addStep('inV', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('inV', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -554,7 +555,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.in_ = function (args) {
-    this._bytecode.addStep('in', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('in', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -563,7 +564,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.inject = function (args) {
-    this._bytecode.addStep('inject', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('inject', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -572,7 +573,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.is = function (args) {
-    this._bytecode.addStep('is', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('is', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -581,7 +582,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.key = function (args) {
-    this._bytecode.addStep('key', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('key', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -590,7 +591,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.label = function (args) {
-    this._bytecode.addStep('label', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('label', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -599,7 +600,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.limit = function (args) {
-    this._bytecode.addStep('limit', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('limit', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -608,7 +609,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.local = function (args) {
-    this._bytecode.addStep('local', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('local', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -617,7 +618,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.loops = function (args) {
-    this._bytecode.addStep('loops', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('loops', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -626,7 +627,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.map = function (args) {
-    this._bytecode.addStep('map', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('map', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -635,7 +636,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.mapKeys = function (args) {
-    this._bytecode.addStep('mapKeys', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('mapKeys', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -644,7 +645,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.mapValues = function (args) {
-    this._bytecode.addStep('mapValues', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('mapValues', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -653,7 +654,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.match = function (args) {
-    this._bytecode.addStep('match', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('match', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -662,7 +663,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.max = function (args) {
-    this._bytecode.addStep('max', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('max', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -671,7 +672,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.mean = function (args) {
-    this._bytecode.addStep('mean', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('mean', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -680,7 +681,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.min = function (args) {
-    this._bytecode.addStep('min', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('min', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -689,7 +690,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.not = function (args) {
-    this._bytecode.addStep('not', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('not', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -698,7 +699,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.option = function (args) {
-    this._bytecode.addStep('option', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('option', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -707,7 +708,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.optional = function (args) {
-    this._bytecode.addStep('optional', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('optional', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -716,7 +717,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.or = function (args) {
-    this._bytecode.addStep('or', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('or', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -725,7 +726,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.order = function (args) {
-    this._bytecode.addStep('order', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('order', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -734,7 +735,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.otherV = function (args) {
-    this._bytecode.addStep('otherV', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('otherV', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -743,7 +744,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.out = function (args) {
-    this._bytecode.addStep('out', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('out', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -752,7 +753,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.outE = function (args) {
-    this._bytecode.addStep('outE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('outE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -761,7 +762,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.outV = function (args) {
-    this._bytecode.addStep('outV', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('outV', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -770,7 +771,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.pageRank = function (args) {
-    this._bytecode.addStep('pageRank', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('pageRank', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -779,7 +780,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.path = function (args) {
-    this._bytecode.addStep('path', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('path', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -788,7 +789,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.peerPressure = function (args) {
-    this._bytecode.addStep('peerPressure', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('peerPressure', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -797,7 +798,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.profile = function (args) {
-    this._bytecode.addStep('profile', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('profile', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -806,7 +807,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.program = function (args) {
-    this._bytecode.addStep('program', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('program', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -815,7 +816,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.project = function (args) {
-    this._bytecode.addStep('project', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('project', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -824,7 +825,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.properties = function (args) {
-    this._bytecode.addStep('properties', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('properties', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -833,7 +834,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.property = function (args) {
-    this._bytecode.addStep('property', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('property', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -842,7 +843,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.propertyMap = function (args) {
-    this._bytecode.addStep('propertyMap', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('propertyMap', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -851,7 +852,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.range = function (args) {
-    this._bytecode.addStep('range', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('range', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -860,7 +861,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.repeat = function (args) {
-    this._bytecode.addStep('repeat', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('repeat', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -869,7 +870,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.sack = function (args) {
-    this._bytecode.addStep('sack', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('sack', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -878,7 +879,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.sample = function (args) {
-    this._bytecode.addStep('sample', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('sample', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -887,7 +888,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.select = function (args) {
-    this._bytecode.addStep('select', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('select', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -896,7 +897,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.sideEffect = function (args) {
-    this._bytecode.addStep('sideEffect', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('sideEffect', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -905,7 +906,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.simplePath = function (args) {
-    this._bytecode.addStep('simplePath', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('simplePath', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -914,7 +915,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.store = function (args) {
-    this._bytecode.addStep('store', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('store', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -923,7 +924,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.subgraph = function (args) {
-    this._bytecode.addStep('subgraph', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('subgraph', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -932,7 +933,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.sum = function (args) {
-    this._bytecode.addStep('sum', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('sum', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -941,7 +942,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.tail = function (args) {
-    this._bytecode.addStep('tail', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('tail', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -950,7 +951,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.timeLimit = function (args) {
-    this._bytecode.addStep('timeLimit', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('timeLimit', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -959,7 +960,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.times = function (args) {
-    this._bytecode.addStep('times', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('times', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -968,7 +969,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.to = function (args) {
-    this._bytecode.addStep('to', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('to', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -977,7 +978,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.toE = function (args) {
-    this._bytecode.addStep('toE', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('toE', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -986,7 +987,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.toV = function (args) {
-    this._bytecode.addStep('toV', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('toV', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -995,7 +996,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.tree = function (args) {
-    this._bytecode.addStep('tree', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('tree', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1004,7 +1005,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.unfold = function (args) {
-    this._bytecode.addStep('unfold', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('unfold', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1013,7 +1014,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.union = function (args) {
-    this._bytecode.addStep('union', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('union', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1022,7 +1023,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.until = function (args) {
-    this._bytecode.addStep('until', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('until', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1031,7 +1032,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.value = function (args) {
-    this._bytecode.addStep('value', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('value', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1040,7 +1041,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.valueMap = function (args) {
-    this._bytecode.addStep('valueMap', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('valueMap', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1049,7 +1050,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.values = function (args) {
-    this._bytecode.addStep('values', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('values', parseArgs.apply(null, arguments));
     return this;
   };
 
@@ -1058,7 +1059,7 @@
    * @returns {GraphTraversal}
    */
   GraphTraversal.prototype.where = function (args) {
-    this._bytecode.addStep('where', parseArgs.apply(null, arguments));
+    this.bytecode.addStep('where', parseArgs.apply(null, arguments));
     return this;
   };
 
