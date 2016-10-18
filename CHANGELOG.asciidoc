@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Replaced term `REST` with `HTTP` to remove any confusion as to the design of the API
 
 
 [[release-3-2-3]]
@@ -190,7 +191,6 @@ This release also includes changes from <<release-3-1-4, 3.1.4>>.
 * Added color preferences
 * Added input, result prompt preferences
 * Added multi-line indicator in Gremlin Console
-* Replaced term `REST` with `HTTP` to remove any confusion as to the design of the API
 
 Bugs
 ^^^^
