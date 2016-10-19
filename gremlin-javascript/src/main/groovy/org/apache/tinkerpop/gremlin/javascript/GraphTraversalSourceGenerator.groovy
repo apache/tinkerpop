@@ -195,6 +195,7 @@ class GraphTraversalSourceGenerator {
         __.class.getMethods().
                 findAll { GraphTraversal.class.equals(it.returnType) }.
                 findAll { Modifier.isStatic(it.getModifiers()) }.
+                findAll { !it.name.equals("__") }.
                 collect { SymbolHelper.toJs(it.name) }.
                 unique().
                 sort { a, b -> a <=> b }.
