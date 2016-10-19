@@ -1080,16 +1080,6 @@
   };
 
   /**
-   * __() static method
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  statics.__ = function (args) {
-    var g = new GraphTraversal(null, null, new Bytecode());
-    return g.__.apply(g, arguments);
-  };
-
-  /**
    * addE() static method
    * @param {...Object} args
    * @returns {GraphTraversal}
