@@ -37,6 +37,51 @@ with Apache TinkerPop. For information on how to build a Gremlin language varian
 please review the link:http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/[Gremlin Language Variants]
 tutorial.
 
+[[gremlin-java]]
+Gremlin-Java
+------------
+
+image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the Java8
+language and can be used by any Java8 compliant virtual machine. Gremlin-Java is considered the canonical, reference
+implementation of Gremlin and serves as the foundation by which all other Gremlin language variants should emulate.
+
+The Lambda Solution
+~~~~~~~~~~~~~~~~~~~
+
+Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
+most language do not support lambda introspection and thus, code analysis. In Gremlin-Java, Java8 lambdas can be leveraged.
+
+[source,java]
+g.V().out("knows").map(t -> t.get().value("name") + " is the friend name") <1>
+g.V().out("knows").sideEffect(System.out::println) <2>
+g.V().as("a").out("knows").as("b").select("b").by((Function<Vertex, Integer>) v -> v.<String>value("name").length()) <3>
+
+<1> A Java8 function is used to map a `Traverser<S>` to an object `E`.
+<2> Gremlin steps that take consumer arguments can be passed Java8 method references.
+<3> Gremlin-Java may sometimes require explicit lambda typing when types can not be automatically inferred.
+
+When sending traversals over the wire via a `RemoteConnection`, the static methods of `Lambda` should be used
+and should denote a particular JSR-223 `ScriptEngine`. `Lambda` creates a string-based lambda that is then converted
+into a lambda/closure/anonymous-function/etc. by the respective lambda language's JSR-223 `ScriptEngine` implementation.
+
+[source,java]
+g.V().out("knows").map(Lambda.function("it.get().value('name') + ' is the friend name'"))
+g.V().out("knows").sideEffect(Lambda.consumer("println it"))
+g.V().as("a").out("knows").as("b").select("b").by(Lambda.<Vertex,Integer>function("it.value('name').length()"))
+
+[[gremlin-groovy]]
+Gremlin-Groovy
+--------------
+
+image:gremlin-groovy-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Groovy implements Gremlin within the
+link:http://groovy.apache.org[Apache Groovy] language. As a JVM-based language variant, Gremlin-Groovy is backed by
+Gremlin-Java constructs. Moreover, given its scripting nature, Gremlin-Groovy serves as the language of
+<<gremlin-console,Gremlin Console>>.
+
+WARNING: In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
+statically from the anonymous traversal `__` and therefore, must always be prefixed with `__.` For instance:
+`g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))`
+
 [[gremlin-python]]
 Gremlin-Python
 --------------
