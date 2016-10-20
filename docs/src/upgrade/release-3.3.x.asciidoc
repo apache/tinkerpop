@@ -18,7 +18,9 @@ limitations under the License.
 TinkerPop 3.3.0
 ===============
 
-*NEED A NAME*
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=225]
+
+*Gremlin Symphony #40 in G Minor*
 
 TinkerPop 3.3.0
 ---------------
@@ -27,3 +29,5 @@ TinkerPop 3.3.0
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asciidoc#release-3-3-0[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
