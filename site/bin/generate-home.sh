@@ -18,14 +18,23 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-if [[ -d ../target/site/home ]]; then
-  rm -r ../target/site/home
-fi
+cd `dirname $0`/..
+
+rm -rf ../target/site/home
 mkdir -p ../target/site/
-cp -R home ../target/site
+
+hash rsync 2> /dev/null
+
+if [ $? -eq 0 ]; then
+  rsync -avq home ../target/site --exclude template
+else
+  cp -R home ../target/site
+  rm -rf ../target/site/home/template
+fi
 
 for filename in home/*.html; do
-    sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../target/site/$filename"
+echo $filename
+    sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../target/site/${filename}"
 done
 
-echo "Home page site generated to target/site/home"
+echo "Home page site generated to $(cd ../target/site/home ; pwd)"
