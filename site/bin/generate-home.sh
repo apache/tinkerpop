@@ -33,8 +33,7 @@ else
 fi
 
 for filename in home/*.html; do
-echo $filename
-    sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../target/site/${filename}"
+  sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../target/site/${filename}"
 done
 
 echo "Home page site generated to $(cd ../target/site/home ; pwd)"
