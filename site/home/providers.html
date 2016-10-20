@@ -1,0 +1,343 @@
+<img src="images/tinkerpop-meeting-room.png" class="img-responsive" />
+<div class="container">
+   <div class="hero-unit" style="padding:10px">
+      <b><font size="5" face="american typewriter">Apache TinkerPop&trade;</font></b>
+      <p><font size="5">TinkerPop-Enabled Providers</font></p>
+   </div>
+</div>
+<br/>
+<div class="container-fluid">
+   <div class="container">
+      <div class="row">
+         <div class="col-sm-10 col-md-10">
+            <p><a href="http://tinkerpop.apache.org">Apache TinkerPop</a> grows when 3<sup>rd</sup> party data systems and query languages utilize it. While Apache's distribution of TinkerPop
+               does provide production ready implementations and tools, it is ultimately the larger ecosystem of providers that ensure TinkerPop's widespread adoption.
+               There are two types of providers. The first are those that develop a (graph) database, (graph) processor, or (graph) analytics tool and want to
+               offer their users TinkerPop-specific graph computing features. The other type of provider are language designers that have a (graph) query language they
+               wish to have execute on the Gremlin traversal machine and thus, against any TinkerPop-enabled graph system.
+            </p>
+         </div>
+         <div class="col-sm-2 col-md-2">
+            <img src="images/peon-head.png" width="100px">
+         </div>
+      </div>
+   </div>
+   <div class="container">
+      <a name="data-system-providers"></a>
+      <h3>Data System Providers</h3>
+      <p>When a data system is TinkerPop-enabled, its users are able to model their domain as a graph and analyze that graph using the <a href="http://tinkerpop.apache.org/gremlin.html">Gremlin graph traversal language</a>. Furthermore, all
+         TinkerPop-enabled graph systems integrate with one another allowing providers to easily expand their system's offerings as well as allowing users to choose appropriate graph technology for their
+         application. Sometimes an application is best served by an in-memory, transactional graph database. Sometimes a multi-machine distributed graph database will do the job. Or perhaps the
+         application requires both a distributed graph database for real-time queries and, in parallel, a Big(Graph)Data processor for batch analytics.  Whatever the application's requirements, there
+         exists a TinkerPop-enabled graph system out there to meet its needs.
+      </p>
+      <div class="row">
+         <div class="col-sm-8 col-md-8">
+            At an abstract level, every data system is ultimately a "graph system" because every data system supports the representation of "things" (vertices) and their respective relationships
+            to one another (edges).  For instance, a <a href="https://en.wikipedia.org/wiki/Relational_database">relational database</a> may have a <em>people</em>-table, where the rows denote person vertices and the columns denote properties of those individuals
+            (e.g. their name and age). Moreover, that relational database may also have a <em>knows</em>-table, where two columns reference primary keys in the <em>people</em>-table and the remaining columns
+            denote properties of those relationships (e.g. creation timestamp, strength of friendship, etc.). TinkerPop enables any data system to expose its implicit graph structure within the
+            lexicon of vertices and edges. From there, what differentiates each TinkerPop-enabled system are the various time/space-tradeoffs that were made for representing their "graph" in-memory,
+            on-disk, and across a multi-machine compute cluster. TinkerPop users have the luxury of choosing a graph system based on those design choices that are important for their application.
+            Moreover, they only need to concern themselves with learning the Gremlin traversal language as every TinkerPop-enabled graph system supports Gremlin.
+         </div>
+         <div class="col-sm-4 col-md-4">
+            <img src="images/tinkerblocks.png" style="width:100%">
+         </div>
+      </div>
+      <br/>
+      It is (relatively) easy for a data system to become TinkerPop-enabled. There are two interface packages that need to be implemented with one of them being optional. Once implemented
+      the Gremlin traversal machine can talk to the provider's system and thus, so can any of their users' Gremlin traversals as well as any existing tools/technologies that have been designed
+      to interact with a TinkerPop-enabled system.
+      <br/>
+      <br/>
+      <ol>
+         <li><strong>The Graph (required)</strong>: These foundational interfaces define the semantics of the operations on a graph, vertex, edge, and property. Once implemented, the provider's
+            data system can immediately be queried using Gremlin OLTP. However, providers may want to leverage a collection of provider-specific compiler optimizations called <a href="http://tinkerpop.apache.org/docs/current/reference/#traversalstrategy">traversal strategies</a>
+            which can leverage their system's unique features (e.g. global indices, vertex-centric indices, sort orders, sequential scanners, push-down predicates, etc.).
+         </li>
+         <br/>
+         <li><strong>The GraphComputer (optional)</strong>: All OLAP-based graph processors must implement the primary graph interfaces mentioned above as well as a set of parallel-processing
+            message-passing interfaces. However, it is possible for a data system to only implement the primary graph interfaces and still provide OLAP support to their users by integrating their
+            system with an existing <code>GraphComputer</code> implementation such as, for example, <code>SparkGraphComputer</code> or <code>GiraphGraphComputer</code> (both are provided in Apache's distribution
+            of TinkerPop).
+         </li>
+      </ol>
+      <p>Finally, there are other tools and technologies that the provider can leverage from TinkerPop such as <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-server">Gremlin Server</a>, <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-console">Gremlin Console</a>, and the like. The purpose of Apache TinkerPop is to
+         make it easy for providers to add graph functionality to their system and/or to build a graph system from scratch and immediately have a query language, server infrastructure, metrics/reporting
+         integration, cluster-based analytics and more.
+      </p>
+      <ul>
+         <li><strong>Gremlin traversal language</strong>: The primary benefit of TinkerPop is the <a href="gremlin.html">Gremlin graph traversal language</a>. This language was designed specifically for graph analysis and
+            manipulation and is not complicated with an explicit JOIN syntax.
+         </li>
+         <li><strong>Gremlin traversal machine</strong>: Every Gremlin language variant compiles to a language agnostic <a href="https://en.wikipedia.org/wiki/Bytecode">bytecode</a> representation. That bytecode is ultimately translated to a machine-specific traversal. It is the responsibility of the Gremlin traversal machine to execute that traversal as a
+            real-time <a href="https://en.wikipedia.org/wiki/Online_transaction_processing">OLTP</a> query or as an analytic <a href="https://en.wikipedia.org/wiki/Online_analytical_processing">OLAP</a> query (or both). Note that the Gremlin traversal machine is not bound to the Gremlin language. Any language can take advantage of the the
+            Gremlin traversal machine by simply translating itself to Gremlin bytecode. In fact, compilers currently exist for <a href="https://github.com/twilmes/sql-gremlin">SQL</a> and <a href="https://github.com/dkuppitz/sparql-gremlin">SPARQL</a>. However, using alternative languages for graph computing leads to significantly more complicated queries
+            and typically does not match the expressivity provided by Gremlin.
+         </li>
+         <li><strong>TinkerGraph</strong>: TinkerPop provides a simple, non-transactional, in-memory graph system called <a href="http://tinkerpop.apache.org/docs/current/reference/#tinkergraph-gremlin">TinkerGraph</a>. TinkerGraph is useful for exploring graphs that can fit
+            in-memory, for doing tutorials and training without the overhead of database setup, etc. TinkerGraph boasts both OLTP and OLAP traversal machine support.
+         </li>
+         <li><strong>Gremlin Console</strong>: A command line <a href="https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">REPL</a> is provided called <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-console">Gremlin Console</a>. This console is useful when learning TinkerPop as users can load provided datasets into a
+            graph system and explore the Gremlin language without the overhead of creating a full-blown software project. Furthermore, the Gremlin Console is used extensively in production scenarios
+            because it allows system administrators to interact with a local or remote graph to gather statistics, manually explore the data to ensure data integrity, and other useful tasks.
+         </li>
+         <li><strong>Gremlin Server</strong>: It is typical for a graph database to exist on a separate machine from the user's application code. <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-server">Gremlin Server</a> bridges the network-divide
+            allowing users to seamlessly submit traversals for remote execution over a web-sockets based binary protocol. If provider already has a server, they can leverage TinkerPop-specific
+            components as needed (e.g. implement <code>RemoteConnection</code>). Gremlin Server also provides an HTTP-based API, support for <a href="http://ganglia.info/">Ganglia</a>/<a href="http://graphite.wikidot.com/">Graphite</a>/<a href="http://www.oracle.com/technetwork/articles/java/javamanagement-140525.html">JMX</a>/more
+            metrics, and a traversal routing framework for intelligent data/traversal co-location within a distributed graph database's machine cluster.
+         </li>
+         <li><strong>SparkGraphComputer</strong>: <a href="http://spark.apache.org/">Apache Spark</a>&trade; is a Big Data OLAP processor that simplifies the creation and execution of distributed data analytics.
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#sparkgraphcomputer"><code>SparkGraphComputer</code></a> turns Spark
+            into a Big(Graph)Data processor via the OLAP component of the Gremlin traversal machine. Users do not have to learn Spark's data processing language as Gremlin traversals execute
+            over Spark. For graph system providers, they can boast Spark integration once a custom <code>InputRDD</code> (or <code>InputFormat</code>) is developed.
+         </li>
+         <li><strong>GiraphGraphComputer</strong>: <a href="http://giraph.apache.org/">Apache Giraph</a>&trade; is a Big(Graph)Data processor that leverages <a href="http://hadoop.apache.org/">Apache Hadoop</a>&reg; and
+            <a href="http://zookeeper.apache.org/">Apache ZooKeeper</a>&trade; for executing distributed graph algorithms. <a href="http://tinkerpop.apache.org/docs/current/reference/#giraphgraphcomputer"><code>GiraphGraphComputer</code></a>
+            supports Gremlin OLAP and allows users to submit Gremlin traversals to Giraph for distributed execution. Providers can immediately advertise Giraph integration once a custom <code>InputFormat</code> is developed.
+         </li>
+         <li><strong>Hadoop support</strong>: <a href="http://hadoop.apache.org/">Apache Hadoop</a>&reg; has become a staple technology for Big Data applications. In TinkerPop, both <code>SparkGraphComputer</code> and <code>GiraphGraphComputer</code> can pull data
+            from the Hadoop File System (<a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html">HDFS</a>). TinkerPop provides a collection of Input- and OutputFormats for different graph serialization standards as well as tooling that makes it easy for users
+            to <a href="http://tinkerpop.apache.org/docs/current/reference/#interacting-with-hdfs">interact with HDFS</a> from the Gremlin Console or their application.
+         </li>
+      </ul>
+      <p>Information on how to build implementations of the various interfaces that TinkerPop supports can be found in the <a href="http://tinkerpop.apache.org/docs/current/dev/provider/">Provider Documentation</a>.
+      <br/>
+      <h4>TinkerPop-Enabled Graph Systems</h4>
+      <br/>
+      Apache TinkerPop is always looking to point users to graph systems that are TinkerPop-enabled. Please read Apache TinkerPop's <a href="policy.html">provider listing policy</a> for adding new projects to the listing below.
+      The listing is intended to help users identify TinkerPop-enabled graph systems and does not constitute an endorsement by Apache TinkerPop nor the Apache Software Foundation.
+      <br/>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://blazegraph.com/"><img src="images/logos/blazegraph-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://blazegraph.com/">Blazegraph</a>&trade; is a standards-based, high-performance, scalable, open-source graph database. Written entirely in Java, the platform supports Apache TinkerPop and RDF/SPARQL 1.1 family of specifications.  A commercial version includes GPU acceleration.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="http://datastax.com/products/datastax-enterprise-graph"><img src="images/logos/datastax-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://datastax.com/products/datastax-enterprise-graph">DataStax Enterprise Graph</a>&trade;, part of DataStax Enterprise's multi-model platform, is a real-time graph database built for cloud applications that need to manage complex and highly connected data. Built on the foundation of Apache Cassandra and Apache TinkerPop, DataStax Enterprise Graph delivers continuous uptime along with predictable performance and scale, while remaining operationally simple to manage.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://www.ibm.com/analytics/us/en/technology/cloud-data-services/graph/"><img src="images/logos/ibmgraph-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://www.ibm.com/analytics/us/en/technology/cloud-data-services/graph/">IBM Graph</a>&trade; is a scalable, easy-to-use, fully-managed graph database-as-a-service that is administered through IBM's Bluemix cloud platform. IBM Graph is available 24/7 and managed by a team of experts so developers can focus on building their application. Based on the Apache TinkerPop stack for building high-performance graph applications, IBM Graph provides users with a set of simplified HTTP API calls and the Gremlin graph traversal language.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="http://cambridge-intelligence.com/keylines/"><img src="images/logos/keylines-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://cambridge-intelligence.com/keylines/">KeyLines</a>&trade; is an Apache TinkerPop and Gremlin compatible JavaScript SDK for quickly and easily building powerful, custom and scalable graph visualization applications. The KeyLines SDK offers a rich library of functionality to help you visualize and explore the data in your graph database, including graph layouts, social network analysis measures, filtering, temporal graph visualization and geospatial graph analysis. It allows the visualization of complex graph data at scale.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://linkurio.us/"><img src="images/logos/linkurious-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://linkurio.us/">Linkurious</a>&trade; is a browser-based graph visualization software to search, explore and visualize connected data. It is compatible with Apache TinkerPop and thus, any TinkerPop-enabled graph system. Linkurious provides enterprise-ready security (authentication, access rights, audit) and flexibility (API, linkurious.js JS graph visualization library) to help software architects successfully deploy graph capabilities within their organizations.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="http://neo4j.com/"><img src="images/logos/neo4j-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://neo4j.com/">Neo4j</a>&trade; is the most widely used open source, transactional graph database with a large active user and customer community. Because of its scalability and ease of use, Neo4j is applied in a wide variety of use cases from fraud detection, access control to recommendation and investigative journalism. Along with the openCypher graph query language, Neo4j also supports Apache TinkerPop and currently serves as its OLTP reference implementation.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://orientdb.com/"><img src="images/logos/orientdb-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://orientdb.com/">OrientDB</a>&trade; is an open source distributed graph database with native support for Apache TinkerPop and the Gremlin graph traversal language. OrientDB handles relationships by using persistent pointers, rather than expensive join runtime operations. This guarantees a fast, constant O(1) time for traversing, no matter the database size. Furthermore, OrientDB is not only a graph database, but a multi-model database able to manage documents, keys/values, objects, full-text and spatial data.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="http://stardog.com/"><img src="images/logos/stardog-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://stardog.com/">Stardog</a>&trade; is a graph database optimized for enterprise data unification. It supports both semantic graphs, via RDF, SPARQL, and OWL, as well as property graphs via Apache TinkerPop and Gremlin--it's the only graph database that supports both models over the same database, simultaneously. Stardog also supports hybrid data unification architectures, seamlessly blending data warehouse, system of record, and virtual query strategies. Stardog is suited for enterprise data silo challenges.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://titan.thinkaurelius.com/"><img src="images/logos/titan-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://titan.thinkaurelius.com/">Titan</a>&trade; is an Apache2 licensed scalable, distributed graph database optimized for storing and querying graphs containing hundreds of billions of vertices and edges distributed across a multi-machine cluster. Titan is a transactional database that can support thousands of concurrent users executing complex Gremlin traversals in real time. Titan also provides an in-memory, compression-based OLAP processor as well as integrates with Apache TinkerPop's Spark/Giraph OLAP processors.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="http://tomsawyer.com/products/perspectives/"><img src="images/logos/tomsawyer-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://tomsawyer.com/products/perspectives/">Tom Sawyer Perspectives</a>&trade; is advanced graphics-based software for building enterprise-class data relationship visualization and analysis applications. It is a complete Software Development Kit (SDK) with a graphics-based design and preview environment. Tom Sawyer Perspectives combines visualization, layout, and analysis technology with an elegant platform architecture. Tom Sawyer Perspectives enables interaction with graph database systems via Apache TinkerPop.
+         </div>
+         <div class="col-sm-6 col-md-6"></div>
+      </div>
+   </div>
+   <br/>
+   <div class="container">
+      <a name="query-language-providers"></a>
+      <h3>Query Language Providers</h3>
+      <br/>
+      <div class="row">
+         <div class="col-sm-3 col-md-3">
+            <img src="images/gremlin-quill.png" style="width:100%;">
+         </div>
+         <div class="col-sm-9 col-md-9">
+            With the growth of <a href="https://en.wikipedia.org/wiki/NoSQL">NoSQL</a>, for which graph databases are a subclass, many new database query languages have been developed. SQL has
+            always been the industry standard, but now there exists others such as <a href="http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html">CQL</a>, <a href="https://en.wikipedia.org/wiki/Datalog">Datalog</a>,
+            and <a href="https://en.wikipedia.org/wiki/XQuery">XQuery</a>. Even in the graph database space there is <a href="https://en.wikipedia.org/wiki/SPARQL">SPARQL</a>, <a href="http://neo4j.com/developer/cypher-query-language/">Cypher</a>,
+            <a href="http://graphql.org/">GraphQL</a>, and of course, Gremlin. Much like the <a href="https://en.wikipedia.org/wiki/Java_virtual_machine">Java virtual machine</a> is a host to multiple
+            programming languages including Java, Scala, Groovy, Clojure, JavaScript, etc., the Gremlin traversal machine is a host to multiple query languages. The Gremlin traversal machine's
+            instruction set ensures <a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing Completeness</a> and as such, any query language can compile to execute on the Gremlin traversal machine.
+            There are three types of language designers. Below, each type will demonstrate the "same traversal" expressed in different languages. Ultimately, they all compile to the Gremlin traversal
+            below which computes the average rating for the projects created by Gremlin's friends.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-md-4">
+            <pre style="padding:10px"><code class="language-gremlin">g.V().has("person","name","gremlin").
+  out("knows").out("created").
+  hasLabel("project").
+  values("stars").mean()</code></pre>
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-8 col-md-9">
+            <br/>
+            <strong>Distinct query language</strong>: Query languages such as SQL and SPARQL are significantly different from Gremlin in that they require a special purpose compiler in order to
+            generate a traversal. For this reason, <a href="https://github.com/twilmes/sql-gremlin">SQL</a> and <a href="https://github.com/dkuppitz/sparql-gremlin">SPARQL</a> Gremlin compilers
+            currently exist. Note that, within reason, Gremlin compilers do not need to concern themselves with an optimal compilation (only a semantically correct compilation) as the Gremlin
+            traversal machine will leverage traversal strategies for both compile-time and runtime optimizations. Moreover, the language designer can rest assured that queries in their language
+            will be able to evaluate as either an OLTP or OLAP query. The example on the right is a SPARQL query that determines the average rating for Gremlin's friends' projects. It is because
+            of the Gremlin traversal machine, that that SPARQL query can immediately execute over Spark (for instance).
+         </div>
+         <div class="col-sm-4 col-md-3">
+            <pre style="padding:10px;"><code class="language-gremlin">SELECT AVG(?stars) WHERE {
+  ?a v:label person .
+  ?a v:name "gremlin" .
+  ?a e:knows ?b .
+  ?b e:created ?c .
+  ?c v:label "project" .
+  ?c v:stars ?stars
+}</code></pre>
+         </div>
+      </div>
+      <br/>
+      <br/>
+      <div class="row">
+         <div class="col-sm-7 col-md-8">
+            <strong>Gremlin language variants</strong>: There are various <a href="http://tinkerpop.apache.org/docs/current/tutorials/gremlin-language-variants/">Gremlin language variants</a> such as <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-python">Gremlin-Python</a>. These languages
+            generate Gremlin bytecode utilizing the same naming/style-conventions as Gremlin-Java. However, where appropriate, they can deviate from convention in order to take advantage of the unique expressive qualities of the host language. For instance, Gremlin-Python supports index slices, attribute access, etc.
+         </div>
+         <div class="col-sm-5 col-md-4">
+            <pre style="padding:10px;"><code class="language-gremlin">g.V().has('person','name','gremlin').
+  out('knows').out('created').
+  hasLabel('project').stars.mean()</code></pre>
+         </div>
+      </div>
+      <br/>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-8">
+            <strong>Domain specific languages</strong>: A users's application logic typically represents its domain in terms of real-world objects, not "vertices" and "edges." While most application developers will become comfortable writing their traversals in the vertex/edge-lexicon of Gremlin, it may be desirable to create a domain specific language for, perhaps, business users. To do so is simple. The language designer extends Traversal and interacts with an underlying GraphTraversal exposing "high-level" steps that may ultimately be composed of a complex sequence of "low-level" vertex/edge-steps. A major boon is that the DSL designer does not have to worry about compiler optimization as the "low-level" GraphTraversal representation will ultimately be subjected to traversal strategies prior to OLTP or OLAP evaluation. The example on the right is a hypothetical SocialDSL that allows users to query their graph from the perspective of people, projects, etc. and is thus bound to that graph's particular social data schema.
+         </div>
+         <div class="col-sm-6 col-md-4">
+            <br/>
+            <br/>
+            <pre style="padding:10px;"><code class="language-gremlin">SELECT(Average.of(Stars)).
+FROM(Projects)
+WHERE(Created.by(Friends.of("gremlin")))</code></pre>
+         </div>
+      </div>
+      <br/>
+      <h4>TinkerPop-Enabled Query Languages</h4>
+      <br/>
+      Apache TinkerPop is always looking to point users to TinkerPop-enabled graph query languages. Please read Apache TinkerPop's <a href="policy.html">provider listing policy</a> for adding new projects to the listing below.
+      The listing is intended to help users identify TinkerPop-enabled compilers and languages and does not constitute an endorsement by Apache TinkerPop nor the Apache Software Foundation.
+      <br/>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-console"><img src="images/logos/gremlin-groovy-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-console">Gremlin-Groovy</a> represents Gremlin inside the Groovy language and can be leveraged by any JVM-based project either through gmaven or its JSR-223 ScriptEngine implementation. It also serves as the Gremlin Console language.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#_on_gremlin_language_variants"><img src="images/logos/gremlin-java-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#_on_gremlin_language_variants">Gremlin-Java</a> represents Gremlin inside the Java8 language. Gremlin-Java is considered the canonical, reference implementation of Gremlin and is the primary compiler for all lambda-free bytecode due to its speed relative to other script-based, JVM variants.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-python"><img src="images/logos/gremlin-python-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="http://tinkerpop.apache.org/docs/current/reference/#gremlin-python">Gremlin-Python</a> represents Gremlin inside the Python language and can be used by any Python virtual machine such as CPython and Jython. Gremlin-Python traversals translate to Gremlin bytecode for RemoteConnection execution (e.g. Gremlin Server).
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="https://github.com/mpollmeier/gremlin-scala"><img src="images/logos/gremlin-scala-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="https://github.com/mpollmeier/gremlin-scala">Gremlin-Scala</a> is a Gremlin language variant that uses standard Scala functions, provides a convenient DSL to create vertices and edges, ensures type safe traversals, and incurrs minimal runtime overhead by only allocating instances if absolutely necessary.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="https://github.com/clojurewerkz/ogre"><img src="images/logos/ogre-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="https://github.com/clojurewerkz/ogre">Ogre</a> is a Gremlin language variant for Clojure. It provides an API that enhances the expressivity of Gremlin within Clojure, it doesn't introduce any significant amount of performance overhead, and it can work with any TinkerPop-enabled graph database or analytic system.
+         </div>
+         <div class="col-sm-6 col-md-6">
+            <a href="https://github.com/dkuppitz/sparql-gremlin"><img src="images/logos/sparql-gremlin-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="https://github.com/dkuppitz/sparql-gremlin">SPARQL-Gremlin</a> is a compiler used to transform SPARQL queries into Gremlin bytecode. It is based on the Apache Jena SPARQL processor ARQ, which provides access to a syntax tree of a SPARQL query.
+         </div>
+      </div>
+      <br/>
+      <div class="row">
+         <div class="col-sm-6 col-md-6">
+            <a href="https://github.com/twilmes/sql-gremlin"><img src="images/logos/sql-gremlin-logo.png" style="padding-right:20px;float:left;width:35%;"></a>
+            <a href="https://github.com/twilmes/sql-gremlin">SQL-Gremlin</a> compiles ANSI SQL to Gremlin bytecode and is useful for connecting JDBC reporting/business
+            intelligence tools to any TinkerPop-enabled graph system.
+         </div>
+      </div>
+   </div>
+   <br/>
+   <div class="container">
+      <hr/>
+      <h4>Related Resources</h4>
+      <br/>
+      <div class="carousel slide" data-ride="carousel" data-type="multi" data-interval="7000" id="relatedResources">
+         <div class="carouselGrid-inner">
+            <div class="item active">
+               <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="https://markorodriguez.com/2013/01/09/on-graph-computing/"><img src="images/resources/on-graph-computing-resource.png" width="100%"/></a></div>
+            </div>
+            <div class="item">
+               <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="https://academy.datastax.com/courses/ds230-getting-started-gremlin/property-graph"><img src="images/resources/property-graph-resource.png" width="100%"/></a></div>
+            </div>
+            <div class="item">
+               <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="http://neo4j.com/why-graph-databases/"><img src="images/resources/why-graph-databases-resource.png" width="100%"/></a></div>
+            </div>
+            <div class="item">
+               <div class="col-lg-3 col-md-3 col-sm-4 col-xs-6"><a href="https://thinkaurelius.com/2012/03/22/understanding-the-world-using-tables-and-graphs/"><img src="images/resources/tables-and-graphs-resource.png" width="100%"/></a></div>
+            </div>
+         </div>
+         <a class="left carouselGrid-control" href="#relatedResources" data-slide="prev">
+         <span class="icon-prev" aria-hidden="true"></span>
+         <span class="sr-only">Previous</span>
+         </a>
+         <a class="right carouselGrid-control" href="#relatedResources" data-slide="next">
+         <span class="icon-next" aria-hidden="true"></span>
+         <span class="sr-only">Next</span>
+         </a>
+      </div>
+      <script>
+         $('.carousel[data-type="multi"] .item').each(function(){
+           var next = $(this).next(); // grabs the next sibling of the carouselGrid
+           if (!next.length) { // if ther isn't a next
+             next = $(this).siblings(':first'); // this is the first
+           }
+           next.children(':first-child').clone().appendTo($(this)); // put the next ones on the array
+
+           for (var i=0;i<2;i++) { // THIS LOOP SPITS OUT EXTRA ITEMS TO THE CAROUSEL
+             next=next.next();
+             if (!next.length) {
+               next = $(this).siblings(':first');
+             }
+             next.children(':first-child').clone().appendTo($(this));
+           }
+
+         });
+      </script>
+   </div>
+</div>
