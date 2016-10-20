@@ -284,6 +284,7 @@ limitations under the License.
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.xml</exclude>
                         <exclude>**/*.ldjson</exclude>
+                        <exclude>**/*.graffle</exclude>
                         <exclude>**/goal.txt</exclude>
                         <exclude>**/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/script/*.txt</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
@@ -295,6 +296,8 @@ limitations under the License.
                         <exclude>**/.glv</exclude>
                         <exclude>bin/gremlin.sh</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
+                        <exclude>site/home/css/**</exclude>
+                        <exclude>site/home/js/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
