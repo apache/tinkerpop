@@ -531,6 +531,7 @@ Bugs
 * TINKERPOP-1451 TinkerGraph persistence cannot handle a single file name as the graph location
 * TINKERPOP-1467 Improve close() operations on the Java driver
 * TINKERPOP-1478 Propogate ScriptEngine fixes from groovy to GremlinGroovyScriptEngine
+* TINKERPOP-1512 gremlin-server-classic.yaml is broken
 
 Improvements
 ^^^^^^^^^^^^
