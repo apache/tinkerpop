@@ -17,10 +17,10 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 ====================
 
-TinkerPop 3.2.0 (Nine Inch Gremlins)
-------------------------------------
+TinkerPop 3.3.0 (Gremlin Symphony #40 in G Minor)
+-------------------------------------------------
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=185]
 
 [[release-3-3-0]]
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
@@ -30,6 +30,11 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Moved `gremlin-benchmark` under `gremlin-tools` module.
 * Added `gremlin-tools` and its submodule `gremlin-coverage`.
 * Changed `gremlin-benchmark` system property for the report location to `benchmarkReportDir` for consistency.
+
+TinkerPop 3.2.0 (Nine Inch Gremlins)
+------------------------------------
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-3]]
 TinkerPop 3.2.3 (Release Date: October 17, 2016)
