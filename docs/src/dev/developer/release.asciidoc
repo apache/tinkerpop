@@ -110,7 +110,7 @@ might be high.
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
-. `git diff` and review the updated files (expect all `pom.xml` files and this README)
+. `git diff` and review the updated files
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and `git push`
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
 . `mvn clean install`
@@ -138,13 +138,13 @@ validity into question.
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see
 3.2.1 for an example.
-.. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
+.. Format "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . Update "upgrade documentation":
 .. Update the release date.
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-standalone/bin/gremlin.sh gremlin.sh; popd`
-. `git diff` and review the updated files (expect all `pom.xml` files and this README)
+. `git diff` and review the updated files
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and push
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 . `bin/process-docs.sh` and validate the generated documentation locally (don't rely on "SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly)
@@ -173,7 +173,7 @@ for generating javadoc and without that the binary distributions won't contain t
 .. `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-SNAPSHOT-standalone/bin/gremlin.sh gremlin.sh; popd`
 .. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version.
 .. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
-.. `mvn deploy` - deploy the new `SNAPSHOT`
+.. `mvn deploy -DskipTests` - deploy the new `SNAPSHOT`
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`
 .. Commit and push the `SNAPSHOT` changes to git
 .. Send email to advise that code freeze is lifted.
@@ -193,12 +193,18 @@ Release & Promote
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
 . Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
-. Update homepage with references to latest distribution and to other internal links elsewhere on the page.
-.. On the link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
-Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
-. If there are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of code is still under potential development, it may stay.
+. Update home page site with references to latest distribution - specifically:
+.. Update the `template/header-footer.html`.
+.. Update `index.html`.
+.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+. Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
+. This step should olny occur after the website is updated and all links are working. If there are releases present in
+SVN that represents lines of code that are no longer under development, then remove those releases. In other words,
+if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of
+code is still under potential development, it may stay.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
 Email Templates
@@ -297,7 +303,7 @@ https://www.apache.org/dyn/closer.lua/tinkerpop/xx.yy.zz/apache-tinkerpop-gremli
 The online docs can be found here:
 
 http://tinkerpop.apache.org/docs/xx.yy.zz/reference/ (user docs)
-http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade.html#XXXXXXXXXXXXXXXXXX (upgrade docs)
+http://tinkerpop.apache.org/docs/xx.yy.zz/upgrade/#XXXXXXXXXXXXXXXXXX (upgrade docs)
 http://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 http://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 http://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [NEW!]
