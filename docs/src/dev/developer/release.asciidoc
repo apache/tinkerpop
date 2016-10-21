@@ -316,5 +316,9 @@ The Central Maven repo has sync'd as well:
 
 https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
 
+Python artifacts have also been deployed to pypi:
+
+https://pypi.python.org/pypi/gremlinpython/xx.yy.zz
+
 [include the release line logo image]
 ----
