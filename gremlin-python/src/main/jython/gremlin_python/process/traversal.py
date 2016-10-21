@@ -118,6 +118,10 @@ statics.add_static('keyDecr', Order.keyDecr)
 statics.add_static('valueDecr', Order.valueDecr)
 statics.add_static('shuffle', Order.shuffle)
 
+Pick = Enum('Pick', 'any none')
+statics.add_static('any', Pick.any)
+statics.add_static('none', Pick.none)
+
 Pop = Enum('Pop', 'all_ first last')
 statics.add_static('first', Pop.first)
 statics.add_static('last', Pop.last)

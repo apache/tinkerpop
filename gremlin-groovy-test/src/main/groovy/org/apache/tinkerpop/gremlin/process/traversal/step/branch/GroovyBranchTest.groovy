@@ -35,12 +35,23 @@ public abstract class GroovyBranchTest {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
+        public Traversal<Vertex, Object> get_g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX() {
             new ScriptTraversal<>(g, "gremlin-groovy", """
             g.V.branch{it.label == 'person' ? 'a' : 'b'}
                     .option('a', __.age)
                     .option('b', __.lang)
                     .option('b', __.name)
+            """)
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX_optionXany__labelX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+             g.V.branch(label().is("person").count)
+                    .option(1L,__.age)
+                    .option(0L,__.lang)
+                    .option(0L,__.name)
+                    .option(any,label())
             """)
         }
     }

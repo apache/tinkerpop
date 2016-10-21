@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.identity;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
@@ -54,6 +56,7 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name();
 
+    public abstract Traversal<Vertex, String> get_g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -89,6 +92,14 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("lop", "ripple", "josh", "vadas", "vadas"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "vadas", "peter", "josh", "lop", "ripple"), traversal);
+    }
+
     public static class Traversals extends ChooseTest {
 
         @Override
@@ -106,6 +117,14 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name() {
             return g.V().choose(hasLabel("person").and().out("created"), out("knows"), identity()).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name() {
+            return g.V().choose(label())
+                    .option("blah", out("knows"))
+                    .option("bleep", out("created"))
+                    .option(TraversalOptionParent.Pick.none, identity()).values("name");
         }
     }
 }
