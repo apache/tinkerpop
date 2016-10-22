@@ -72,8 +72,17 @@ limitations under the License.
       </div>
    </div>
    <div><br/></div>
-   <div class="carousel-inner" role="listbox">
-      <div class="item active">
+   <div id="gremlinCarousel" class="carousel slide" data-ride="carousel" data-interval="30000" border="none">
+      <!-- Indicators -->
+      <ol class="carousel-indicators carousel-indicators-numbers">
+         <li data-target="#gremlinCarousel" data-slide-to="0" class="active">1</li>
+         <li data-target="#gremlinCarousel" data-slide-to="1">2</li>
+         <li data-target="#gremlinCarousel" data-slide-to="2">3</li>
+         <li data-target="#gremlinCarousel" data-slide-to="3">4</li>
+         <li data-target="#gremlinCarousel" data-slide-to="4">5</li>
+      </ol>
+      <div class="carousel-inner" role="listbox">
+         <div class="item active">
                   <pre><code class="language-gremlin">
 
 
@@ -83,8 +92,8 @@ limitations under the License.
 
 
           </code></pre>
-      </div>
-      <div class="item">
+         </div>
+         <div class="item">
                   <pre><code class="language-gremlin">
     // What are the names of projects that were created by two friends?
     g.V().match(
@@ -94,8 +103,8 @@ limitations under the License.
       as("c").in("created").count().is(2)).
         select("c").by("name")
           </code></pre>
-      </div>
-      <div class="item">
+         </div>
+         <div class="item">
                   <pre><code class="language-gremlin">
 
     // What are the names of the managers in
@@ -105,8 +114,8 @@ limitations under the License.
       path().by("name")
 
           </code></pre>
-      </div>
-      <div class="item">
+         </div>
+         <div class="item">
                   <pre><code class="language-gremlin">
 
     // What is the distribution of job titles amongst Gremlin's collaborators?
@@ -116,8 +125,8 @@ limitations under the License.
       groupCount().by("title")
 
           </code></pre>
-      </div>
-      <div class="item">
+         </div>
+         <div class="item">
                   <pre><code class="language-gremlin">
 
     // Get a ranking of the most relevant products for Gremlin given his purchase history.
@@ -127,11 +136,11 @@ limitations under the License.
       groupCount().
         order(local).by(values,decr)
           </code></pre>
+         </div>
       </div>
    </div>
-</div>
-<!-- /.carousel -->
-<div class="container">
+   <!-- /.carousel -->
+   <div class="container">
       <h3>The Benefits of Graph Computing</h3>
       <p><img src="images/graph-globe.png" style="float:left;width:15%;padding:10px;"> A <strong>graph</strong> is a structure composed of <strong>vertices</strong> and <strong>edges</strong>.
          Both vertices and edges can have an arbitrary number of key/value-pairs called <strong>properties</strong>.
