@@ -72,75 +72,66 @@ limitations under the License.
       </div>
    </div>
    <div><br/></div>
-   <div id="gremlinCarousel" class="carousel slide" data-ride="carousel" data-interval="30000" border="none">
-      <!-- Indicators -->
-      <ol class="carousel-indicators carousel-indicators-numbers">
-         <li data-target="#gremlinCarousel" data-slide-to="0" class="active">1</li>
-         <li data-target="#gremlinCarousel" data-slide-to="1">2</li>
-         <li data-target="#gremlinCarousel" data-slide-to="2">3</li>
-         <li data-target="#gremlinCarousel" data-slide-to="3">4</li>
-         <li data-target="#gremlinCarousel" data-slide-to="4">5</li>
-      </ol>
-      <div class="carousel-inner" role="listbox">
-         <div class="item active">
-            <pre><code class="language-gremlin">
+   <div class="carousel-inner" role="listbox">
+      <div class="item active">
+                  <pre><code class="language-gremlin">
 
 
-// What are the names of Gremlin's friends' friends?
-g.V().has("name","gremlin").
-  out("knows").out("knows").values("name")
+    // What are the names of Gremlin's friends' friends?
+    g.V().has("name","gremlin").
+      out("knows").out("knows").values("name")
 
 
-    </code></pre>
-         </div>
-         <div class="item">
-            <pre><code class="language-gremlin">
-// What are the names of projects that were created by two friends?
-g.V().match(
-  as("a").out("knows").as("b"),
-  as("a").out("created").as("c"),
-  as("b").out("created").as("c"),
-  as("c").in("created").count().is(2)).
-    select("c").by("name")
-    </code></pre>
-         </div>
-         <div class="item">
-            <pre><code class="language-gremlin">
+          </code></pre>
+      </div>
+      <div class="item">
+                  <pre><code class="language-gremlin">
+    // What are the names of projects that were created by two friends?
+    g.V().match(
+      as("a").out("knows").as("b"),
+      as("a").out("created").as("c"),
+      as("b").out("created").as("c"),
+      as("c").in("created").count().is(2)).
+        select("c").by("name")
+          </code></pre>
+      </div>
+      <div class="item">
+                  <pre><code class="language-gremlin">
 
-// What are the names of the managers in
-//  the management chain going from Gremlin to the CEO?
-g.V().has("name","gremlin").
-  repeat(in("manages")).until(has("title","ceo")).
-  path().by("name")
+    // What are the names of the managers in
+    //  the management chain going from Gremlin to the CEO?
+    g.V().has("name","gremlin").
+      repeat(in("manages")).until(has("title","ceo")).
+      path().by("name")
 
-    </code></pre>
-         </div>
-         <div class="item">
-            <pre><code class="language-gremlin">
+          </code></pre>
+      </div>
+      <div class="item">
+                  <pre><code class="language-gremlin">
 
-// What is the distribution of job titles amongst Gremlin's collaborators?
-g.V().has("name","gremlin").as("a").
-  out("created").in("created").
-    where(neq("a")).
-  groupCount().by("title")
+    // What is the distribution of job titles amongst Gremlin's collaborators?
+    g.V().has("name","gremlin").as("a").
+      out("created").in("created").
+        where(neq("a")).
+      groupCount().by("title")
 
-    </code></pre>
-         </div>
-         <div class="item">
-            <pre><code class="language-gremlin">
+          </code></pre>
+      </div>
+      <div class="item">
+                  <pre><code class="language-gremlin">
 
-// Get a ranking of the most relevant products for Gremlin given his purchase history.
-g.V().has("name","gremlin").out("bought").aggregate("stash").
-  in("bought").out("bought").
-    where(not(within("stash"))).
-  groupCount().
-    order(local).by(values,decr)
-    </code></pre>
-         </div>
+    // Get a ranking of the most relevant products for Gremlin given his purchase history.
+    g.V().has("name","gremlin").out("bought").aggregate("stash").
+      in("bought").out("bought").
+        where(not(within("stash"))).
+      groupCount().
+        order(local).by(values,decr)
+          </code></pre>
       </div>
    </div>
-   <!-- /.carousel -->
-   <div class="container">
+</div>
+<!-- /.carousel -->
+<div class="container">
       <h3>The Benefits of Graph Computing</h3>
       <p><img src="images/graph-globe.png" style="float:left;width:15%;padding:10px;"> A <strong>graph</strong> is a structure composed of <strong>vertices</strong> and <strong>edges</strong>.
          Both vertices and edges can have an arbitrary number of key/value-pairs called <strong>properties</strong>.
