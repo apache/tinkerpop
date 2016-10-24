@@ -804,10 +804,12 @@ public abstract class Client {
     public static class SessionSettings {
         private final boolean manageTransactions;
         private final String sessionId;
+        private final boolean forceClosed;
 
         private SessionSettings(final Builder builder) {
             manageTransactions = builder.manageTransactions;
             sessionId = builder.sessionId;
+            forceClosed = builder.forceClosed;
         }
 
         /**
@@ -824,6 +826,14 @@ public abstract class Client {
             return sessionId;
         }
 
+        /**
+         * Determines if the session will be force closed. See {@link Builder#forceClosed(boolean)} for more details
+         * on what that means.
+         */
+        public boolean isForceClosed() {
+            return forceClosed;
+        }
+
         public static SessionSettings.Builder build() {
             return new SessionSettings.Builder();
         }
@@ -831,6 +841,7 @@ public abstract class Client {
         public static class Builder {
             private boolean manageTransactions = false;
             private String sessionId = UUID.randomUUID().toString();
+            private boolean forceClosed = false;
 
             private Builder() {}
 
@@ -851,6 +862,19 @@ public abstract class Client {
                 if (null == sessionId || sessionId.isEmpty())
                     throw new IllegalArgumentException("sessionId cannot be null or empty");
                 this.sessionId = sessionId;
+                return this;
+            }
+
+            /**
+             * Determines if the session should be force closed when the client is closed. Force closing will not
+             * attempt to close open transactions from existing running jobs and leave it to the underlying graph to
+             * decided how to proceed with those orphaned transactions. Setting this to {@code true} tends to lead to
+             * faster close operation which can be desirable if Gremlin Server has a long session timeout and a long
+             * script evaluation timeout as attempts to close long run jobs can occur more rapidly. By default, this
+             * value is {@link false}.
+             */
+            public Builder forceClosed(final boolean forced) {
+                this.forceClosed = forced;
                 return this;
             }
 
