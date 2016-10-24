@@ -2314,7 +2314,7 @@ supplier yields a single traverser to continue to the next step. Examples includ
 
 In Gremlin OLAP (see <<traversalvertexprogram,`TraversalVertexProgram`>>), a barrier is introduced at the end of
 every <<vertex-steps,adjacent vertex step>>. This means that the traversal does its best to compute as much as
-possible at the current, local vertex. What is can't compute without referencing an adjacent vertex is aggregated
+possible at the current, local vertex. What it can't compute without referencing an adjacent vertex is aggregated
 into a barrier collection. When there are no more traversers at the local vertex, the barriered traversers are the
 messages that are propagated to remote vertices for further processing.
 
