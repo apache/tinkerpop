@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +104,9 @@ public class KryoShimServiceLoader {
 
             if (0 != services.size()) {
                 result = services.get(services.size() - 1);
+
+                log.info("Set {} provider to {} ({}) because its priority value ({}) is the best available",
+                        KryoShimService.class.getSimpleName(), result, result.getClass(), result.getPriority());
             }
         }
 
@@ -113,9 +114,6 @@ public class KryoShimServiceLoader {
         if (null == result) {
             throw new IllegalStateException("Unable to load KryoShimService");
         }
-
-        log.info("Set {} provider to {} ({}) because its priority value ({}) is the highest available",
-                KryoShimService.class.getSimpleName(), result, result.getClass(), result.getPriority());
 
         final Configuration userConf = conf;
 
