@@ -35,6 +35,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
  */
 public class CredentialGraph {
 
+    private final int BCRYPT_ROUNDS = 4;
     private final Graph graph;
     private final GraphTraversalSource g;
     private final boolean supportsTransactions;
@@ -70,7 +71,7 @@ public class CredentialGraph {
         try {
             final Vertex v =  graph.addVertex(T.label, CredentialGraphTokens.VERTEX_LABEL_USER,
                                               CredentialGraphTokens.PROPERTY_USERNAME, username,
-                                              CredentialGraphTokens.PROPERTY_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
+                                              CredentialGraphTokens.PROPERTY_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt(BCRYPT_ROUNDS)));
             if (supportsTransactions) graph.tx().commit();
             return v;
         } catch (Exception ex) {

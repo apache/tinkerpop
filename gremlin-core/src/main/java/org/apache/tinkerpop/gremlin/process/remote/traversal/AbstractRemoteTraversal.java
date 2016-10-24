@@ -18,12 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -32,9 +36,22 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * This is a stub implementation for {@link RemoteTraversal} and requires that the {@link #nextTraverser()} method
+ * is implemented from {@link Traversal.Admin}. It is this method that gets called from {@link RemoteStep} when
+ * the {@link Traversal} is iterated.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,E> {
+
+    /**
+     * Note that internally {@link #nextTraverser()} is called from within a loop (specifically in
+     * {@link AbstractStep#next()} that breaks properly when a {@link java.util.NoSuchElementException} is thrown. In
+     * other words the "results" should be iterated to force that failure.
+     */
+    @Override
+    public abstract Traverser.Admin<E> nextTraverser();
+
     @Override
     public Bytecode getBytecode() {
         throw new UnsupportedOperationException("Remote traversals do not support this method");

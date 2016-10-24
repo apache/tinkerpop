@@ -19,30 +19,37 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Level;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,6 +72,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -80,6 +90,37 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
+
+    private Log4jRecordingAppender recordingAppender = null;
+    private Level previousLogLevel;
+
+    @Before
+    public void setupForEachTest() {
+        recordingAppender = new Log4jRecordingAppender();
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(Level.DEBUG);
+        }
+
+        rootLogger.addAppender(recordingAppender);
+    }
+
+    @After
+    public void teardownForEachTest() {
+        final org.apache.log4j.Logger rootLogger = org.apache.log4j.Logger.getRootLogger();
+
+        if (name.getMethodName().equals("shouldKeepAliveForWebSockets")) {
+            final org.apache.log4j.Logger webSocketClientHandlerLogger = org.apache.log4j.Logger.getLogger(WebSocketClientHandler.class);
+            previousLogLevel = webSocketClientHandlerLogger.getLevel();
+            webSocketClientHandlerLogger.setLevel(previousLogLevel);
+        }
+
+        rootLogger.removeAppender(recordingAppender);
+    }
+
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -131,6 +172,36 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldKeepAliveForWebSockets() throws Exception {
+        // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
+        // complicate the assertion logic
+        final Cluster cluster = Cluster.build().
+                minConnectionPoolSize(1).
+                maxConnectionPoolSize(1).
+                keepAliveInterval(1000).create();
+        final Client client = cluster.connect();
+
+        // fire up lots of requests so as to schedule/deschedule lots of ping jobs
+        for (int ix = 0; ix < 500; ix++) {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        }
+
+        // don't send any messages for a bit so that the driver pings in the background
+        Thread.sleep(3000);
+
+        // make sure no bonus messages sorta fire off once we get back to sending requests
+        for (int ix = 0; ix < 500; ix++) {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        }
+
+        // there really shouldn't be more than 3 of these sent. should definitely be at least one though
+        final long messages = recordingAppender.getMessages().stream().filter(m -> m.contains("Received response from keep-alive request")).count();
+        assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
+
+        cluster.close();
     }
 
     @Test
@@ -607,7 +678,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONSerialization() throws Exception {
+    public void shouldWorkWithGraphSONV1Serialization() throws Exception {
         final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
@@ -638,6 +709,40 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(2, ageProperties.size());
         assertEquals(1l, ageProperties.get("id"));
         assertEquals(29, ageProperties.get("value"));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONV2Serialization() throws Exception {
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V2D0).create();
+        final Client client = cluster.connect();
+
+        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+        assertEquals(1, r.size());
+
+        final Vertex v = r.get(0).get(DetachedVertex.class);
+        assertEquals(1, v.id());
+        assertEquals("person", v.label());
+
+        assertEquals(2, IteratorUtils.count(v.properties()));
+        assertEquals("marko", v.value("name"));
+        assertEquals(29, Integer.parseInt(v.value("age").toString()));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONExtendedV2Serialization() throws Exception {
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V2D0).create();
+        final Client client = cluster.connect();
+
+        final Instant now = Instant.now();
+        final List<Result> r = client.submit("java.time.Instant.ofEpochMilli(" + now.toEpochMilli() + ")").all().join();
+        assertEquals(1, r.size());
+
+        final Instant then = r.get(0).get(Instant.class);
+        assertEquals(now, then);
 
         cluster.close();
     }
@@ -746,11 +851,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         client.close();
 
         try {
-            client.submit("x[0]+1");
+            client.submit("x[0]+1").all().get();
             fail("Should have thrown an exception because the connection is closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root, instanceOf(ConnectionException.class));
+            assertThat(root, instanceOf(IllegalStateException.class));
+        } finally {
+            cluster.close();
         }
     }
 
@@ -1248,6 +1355,78 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Test
+    public void shouldCloseAllClientsOnCloseOfCluster() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client sessionlessOne = cluster.connect();
+        final Client session = cluster.connect("session");
+        final Client sessionlessTwo = cluster.connect();
+        final Client sessionlessThree = cluster.connect();
+        final Client sessionlessFour = cluster.connect();
+
+        assertEquals(2, sessionlessOne.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, session.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessTwo.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessThree.submit("1+1").all().get().get(0).getInt());
+        // dont' send anything on the 4th client
+
+        // close one of these Clients before the Cluster
+        sessionlessThree.close();
+        cluster.close();
+
+        try {
+            sessionlessOne.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            session.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessTwo.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessThree.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        try {
+            sessionlessFour.submit("1+1").all().get();
+            fail("Should have tossed an exception because cluster was closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(IllegalStateException.class));
+            assertEquals("Client has been closed", root.getMessage());
+        }
+
+        // allow call to close() even though closed through cluster
+        sessionlessOne.close();
+        session.close();
+        sessionlessTwo.close();
+
+        cluster.close();
+    }
+
     private void assertFutureTimeout(final CompletableFuture<List<Result>> futureFirst) {
         try
         {
@@ -1258,7 +1437,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms for request"));
+            assertThat(root.getMessage(), startsWith("Script evaluation exceeded the configured 'scriptEvaluationTimeout' threshold of 250 ms"));
         }
     }
 }

@@ -29,6 +29,7 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,11 +83,24 @@ final class Handler {
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
                 final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
                 final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
-                RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
+                final RequestMessage.Builder messageBuilder = RequestMessage.build(Tokens.OPS_AUTHENTICATION);
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
                     subject.set(login());
-                    saslClient.set(saslClient(getHostName(channelHandlerContext)));
+                    try {
+                        saslClient.set(saslClient(getHostName(channelHandlerContext)));
+                    } catch (SaslException saslException) {
+                        // push the sasl error into a failure response from the server. this ensures that standard
+                        // processing for the ResultQueue is kept. without this SaslException trap and subsequent
+                        // conversion to an authentication failure, the close() of the connection might not
+                        // succeed as it will appear as though pending messages remain present in the queue on the
+                        // connection and the shutdown won't proceed
+                        final ResponseMessage clientSideError = ResponseMessage.build(response.getRequestId())
+                                .code(ResponseStatusCode.FORBIDDEN).statusMessage(saslException.getMessage()).create();
+                        channelHandlerContext.fireChannelRead(clientSideError);
+                        return;
+                    }
+
                     messageBuilder.addArg(Tokens.ARGS_SASL_MECHANISM, getMechanism());
                     messageBuilder.addArg(Tokens.ARGS_SASL, saslClient.get().hasInitialResponse() ?
                                                                 evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null);
@@ -231,12 +245,12 @@ final class Handler {
             // there are that many failures someone would take notice and hopefully stop the client.
             logger.error("Could not process the response", cause);
 
-            // the channel took an error because of something pretty bad so release all the completeable
-            // futures out there
-            pending.entrySet().stream().forEach(kv -> kv.getValue().markError(cause));
+            // the channel took an error because of something pretty bad so release all the futures out there
+            pending.values().forEach(val -> val.markError(cause));
+            pending.clear();
 
             // serialization exceptions should not close the channel - that's worth a retry
-            if (!ExceptionUtils.getThrowableList(cause).stream().anyMatch(t -> t instanceof SerializationException))
+            if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
                 ctx.close();
         }
     }

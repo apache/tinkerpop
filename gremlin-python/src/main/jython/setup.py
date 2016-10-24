@@ -57,10 +57,20 @@ setup(
         'pytest-runner',
     ],
     tests_require=[
-        'pytest'
+        'pytest',
+        'mock'
     ],
     install_requires=[
         'aenum==1.4.5',
-        'tornado==4.4.1'
+        'tornado==4.4.1',
+        'six==1.10.0'
+    ],
+    classifiers=[
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
     ]
 )

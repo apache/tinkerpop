@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+[[development-environment]]
 Development Environment
 =======================
 
@@ -21,6 +22,7 @@ TinkerPop is fairly large body of code spread across many modules and covering m
 this complexity, it remains relatively straightforward a project to build. This following subsections explain how to
 configure a development environment for TinkerPop.
 
+[[system-configuration]]
 System Configuration
 --------------------
 
@@ -65,6 +67,16 @@ As of TinkerPop 3.2.2, the build optionally requires link:https://www.python.org
 Java tests that require Python code will be skipped. Developers should also install link:https://pypi.python.org/pypi/pip[pip]
 and link:https://virtualenv.pypa.io/en/stable/[virtualenv].
 
+Once the Python environment is established, the full building and testing of `gremlin-python` may commence. It can be
+done manually from the command line with:
+
+[source,text]
+mvn clean install -Pglv-python
+
+which enables the "glv-python" Maven profile or in a more automated fashion simply add a `.glv` file to the root of the
+`gremlin-python` module which will signify to Maven that the environment is Python-ready. The `.glv` file need not have
+any contents and is ignored by Git. A standard `mvn clean install` will then build `gremlin-python` in full.
+
 [[release-environment]]
 Release Environment
 ~~~~~~~~~~~~~~~~~~~
@@ -106,7 +118,7 @@ Building and Testing
 The following commands are a mix of Maven flags and shell scripts that handle different build operations
 
 * Build project: `mvn clean install`
-* Build a specific module (e.g. `gremlin-python`) within the project: `mvn clean install -pl gremlin-python`
+** Build a specific module (e.g. `gremlin-server`) within the project: `mvn clean install -pl gremlin-server`
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
 Maven project list argument, e.g.:
 +
@@ -117,7 +129,6 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 ** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
-** Build the `gremlin-python` module with native Python tests (which require that Python be installed on the system): `mvn clean install -DglvPython`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
@@ -135,7 +146,9 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Execute with the `-DuseEpoll` option to try to use Netty native transport (works on Linux, but will fallback to Java NIO on other OS).
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 * Benchmarks: `mvn verify -DskipBenchmarks=false`
-* Build and execute with native Python tests (see <<python-environment,Python Environment>>: `mvn clean install -DglvPython`
+** Reports are generated to the console and to `gremlin-tools/gremlin-benchmark/target/reports/benchmark`.
+* Test coverage report: `mvn clean install -Dcoverage` - note that the `install` is necessary because report aggregation is bound to that part of the lifecycle.
+** Reports are generated to `gremlin-tools/gremlin-coverage/target/site`.
 
 [[docker-integration]]
 Docker Integration

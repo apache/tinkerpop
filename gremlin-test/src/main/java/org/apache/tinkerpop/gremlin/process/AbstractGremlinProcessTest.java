@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -92,14 +94,27 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
             counter++;
             final String key = (String) keysClasses[i];
             final Class clazz = (Class) keysClasses[i + 1];
-            assertTrue(sideEffects.keys().contains(key));
-            assertTrue(sideEffects.exists(key));
+            assertThat(sideEffects.keys().contains(key), is(true));
+            assertThat(sideEffects.exists(key), is(true));
             assertEquals(clazz, sideEffects.get((String) keysClasses[i]).getClass());
-            assertFalse(sideEffects.exists(UUID.randomUUID().toString()));
+            assertThat(sideEffects.exists(UUID.randomUUID().toString()), is(false));
         }
         assertEquals(sideEffects.keys().size(), counter);
-        assertFalse(sideEffects.keys().contains(UUID.randomUUID().toString()));
+        assertThat(sideEffects.keys().contains(UUID.randomUUID().toString()), is(false));
         assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
+    }
+
+    public static <T> void checkOrderedResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
+        final List<T> results = traversal.toList();
+        assertFalse(traversal.hasNext());
+        if (expectedResults.size() != results.size()) {
+            logger.error("Expected results: " + expectedResults);
+            logger.error("Actual results:   " + results);
+            assertEquals("Checking result size", expectedResults.size(), results.size());
+        }
+        for (int i = 0; i < expectedResults.size(); i++) {
+            assertEquals(expectedResults.get(i), results.get(i));
+        }
     }
 
     public static <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
@@ -113,9 +128,9 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
         for (T t : results) {
             if (t instanceof Map) {
-                assertTrue("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> internalCheckMap((Map) e, (Map) t)).findAny().isPresent());
+                assertThat("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> internalCheckMap((Map) e, (Map) t)).findAny().isPresent(), is(true));
             } else {
-                assertTrue("Checking result existence: " + t, expectedResults.contains(t));
+                assertThat("Checking result existence: " + t, expectedResults.contains(t), is(true));
             }
         }
         final Map<T, Long> expectedResultsCount = new HashMap<>();
@@ -124,7 +139,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         expectedResults.forEach(t -> MapHelper.incr(expectedResultsCount, t, 1l));
         results.forEach(t -> MapHelper.incr(resultsCount, t, 1l));
         expectedResultsCount.forEach((k, v) -> assertEquals("Checking result group counts", v, resultsCount.get(k)));
-        assertFalse(traversal.hasNext());
+        assertThat(traversal.hasNext(), is(false));
     }
 
     public static <T> void checkResults(final Map<T, Long> expectedResults, final Traversal<?, T> traversal) {

@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ConnectiveStep<S> extends AbstractStep<S, S> implements TraversalParent {
+public abstract class ConnectiveStep<S> extends FilterStep<S> implements TraversalParent {
 
     public enum Connective {AND, OR}
 

@@ -22,29 +22,30 @@ import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
@@ -61,7 +62,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
-import static org.apache.tinkerpop.gremlin.util.function.Lambda.function;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -73,24 +73,39 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal().withComputer();
+        GraphTraversalSource g = graph.traversal();
 
-        Traversal<?, ?> traversal1 = g.V().has("age", P.gt(10).and(P.lt(30))).out("knows", "created").repeat(__.as("a").out().as("b").hasLabel("software")).times(1).select("b").by(T.label).groupCount().map(function("a.get()"));
-        Bytecode bytecode1 = traversal1.asAdmin().getBytecode();
-        System.out.println("BYTECODE 1: \n  " + bytecode1 + "\n");
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GraphSONWriter.build().create().writeObject(outputStream, bytecode1);
-        //
-        System.out.println("GRAPHSON BYTECODE: \n  " + new String(outputStream.toByteArray()) + "\n");
-        //
-        Traversal<?, ?> traversal2 = JavaTranslator.of(graph.traversal()).translate(GraphSONReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
-        Bytecode bytecode2 = traversal2.asAdmin().getBytecode();
-        System.out.println("BYTECODE 2: \n  " + bytecode2 + "\n");
-        assert traversal1.equals(traversal2);
-        assert bytecode1.equals(bytecode2);
-        System.out.println("RESULT: \n  " + traversal2.toList());
+        final Traversal<?, ?> traversal = g.V().repeat(out()).times(2).groupCount().by("name").select(Column.keys).order().by(Order.decr);
+        final Bytecode bytecode = traversal.asAdmin().getBytecode();
+        //final JavaTranslator translator = JavaTranslator.of(g);
+        final Map<Bytecode, Traversal.Admin<?, ?>> cache = new HashMap<>();
+        cache.put(bytecode, traversal.asAdmin());
+        final HashSet<?> result = new LinkedHashSet<>(Arrays.asList("ripple", "lop"));
+
+        System.out.println("BYTECODE: " + bytecode + "\n");
+        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
+            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
+            //assertEquals(result, t.next());
+        }));
+
+        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
+            final Traversal t = JavaTranslator.of(g).translate(bytecode);
+            //assertEquals(result, t.next());
+        }));
+
+        System.out.println("\n==Second test with reversed execution==\n");
+
+        System.out.println("BYTECODE: " + bytecode + "\n");
+        System.out.println("Bytecode->JavaTranslator call    : " + TimeUtil.clock(1000, () -> {
+            final Traversal t = JavaTranslator.of(g).translate(bytecode);
+            //assertEquals(result, t.next());
+        }));
+
+        System.out.println("Bytecode->Traversal.clone() cache: " + TimeUtil.clock(1000, () -> {
+            final Traversal.Admin<?, ?> t = cache.get(bytecode).clone();
+            //assertEquals(result, t.next());
+        }));
     }
-
 
     @Test
     @Ignore

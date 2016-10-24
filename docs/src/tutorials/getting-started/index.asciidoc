@@ -218,7 +218,7 @@ v1.addEdge("created", v2, id, 9, "weight", 0.4)
 
 NOTE: The fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`. Another important static import
 that is often seen in Gremlin comes from `org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__`, which allows
-for the creation of link:http://tinkerpop.apache.org/docs/3.1.1-SNAPSHOT/reference/#graph-traversal-steps[anonymous traversals].
+for the creation of link:http://tinkerpop.apache.org/docs/x.y.z/reference/#graph-traversal-steps[anonymous traversals].
 
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
 case with most graph databases.
@@ -528,7 +528,7 @@ Gremlin Server
 
 image:gremlin-server-protocol.png[width=325,float=right] link:http://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-server[Gremlin Server]
 provides a way to remotely execute Gremlin scripts against one or more `Graph` instances hosted within it. It does
-this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_rest[REST]
+this by exposing different endpoints, such as link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_http[HTTP]
 and link:http://tinkerpop.apache.org/docs/x.y.z/reference/#_connecting_via_java[websockets], which allow a request
 containing a Gremlin script to be processed with results returned.
 

@@ -46,6 +46,10 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         this.graphComputerClass = graphComputerClass;
     }
 
+    private Computer() {
+
+    }
+
     public static Computer compute() {
         return new Computer(GraphComputer.class);
     }
@@ -54,9 +58,21 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
         return new Computer(graphComputerClass);
     }
 
+    public Computer graphComputer(final Class<? extends GraphComputer> graphComputerClass) {
+        final Computer clone = this.clone();
+        clone.graphComputerClass = graphComputerClass;
+        return clone;
+    }
+
     public Computer configure(final String key, final Object value) {
         final Computer clone = this.clone();
         clone.configuration.put(key, value);
+        return clone;
+    }
+
+    public Computer configure(final Map<String, Object> configurations) {
+        final Computer clone = this.clone();
+        clone.configuration.putAll(configurations);
         return clone;
     }
 
@@ -159,4 +175,5 @@ public final class Computer implements Function<Graph, GraphComputer>, Serializa
     public int getWorkers() {
         return this.workers;
     }
+
 }

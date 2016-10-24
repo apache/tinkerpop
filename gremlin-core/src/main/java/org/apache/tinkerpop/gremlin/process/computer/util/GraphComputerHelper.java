@@ -77,4 +77,5 @@ public final class GraphComputerHelper {
         if (!(b instanceof MapReduce)) return false;
         return a.getClass().equals(b.getClass()) && a.getMemoryKey().equals(((MapReduce) b).getMemoryKey());
     }
+
 }

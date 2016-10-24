@@ -54,14 +54,11 @@ public class TinkerGraphGraphSONTranslatorProvider extends TinkerGraphProvider {
             "g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX",
             "g_VXv1X_hasXage_gt_30X",
             //
-
-            PageRankTest.Traversals.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
             CoreTraversalTest.class.getCanonicalName(),
-            PartitionStrategyProcessTest.class.getCanonicalName(),
             ElementIdStrategyProcessTest.class.getCanonicalName()));
 
 

@@ -55,4 +55,9 @@ public final class Bindings {
     protected void clear() {
         this.map.clear();
     }
+
+    @Override
+    public String toString() {
+        return this.map.toString();
+    }
 }

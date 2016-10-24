@@ -96,7 +96,7 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
 |gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
 |gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a
-value is specified here, the the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
+value is specified here, the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
 included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
 |gremlin.tinkergraph.graphFormat |The format to use to serialize the graph which may be one of the following:
 `graphml`, `graphson`, `gryo`, or a fully qualified class name that implements Io.Builder interface (which allows for

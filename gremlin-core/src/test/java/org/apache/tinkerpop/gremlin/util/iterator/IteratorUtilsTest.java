@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -83,10 +83,11 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldIterateToSet() {
-        final Iterator<Integer> itty = Arrays.asList(1, 2, 3, 3, 2, 1).iterator();
+        final List<Integer> list = Arrays.asList(1, 2, 3, 3, 2, 1);
+        final Iterator<Integer> itty = list.iterator();
         final Set<Integer> set = IteratorUtils.set(itty);
         assertEquals(3, set.size());
-        assertThat(set, hasItems(1, 2, 3));
+        assertThat(set, is(new HashSet<>(list)));
     }
 
     @Test(expected = FastNoSuchElementException.class)
@@ -99,10 +100,11 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldFlatMapIterator() {
-        final Iterator<Iterator<Integer>> itty = Arrays.asList(Arrays.asList(1, 2, 3).iterator(), new ArrayList<Integer>().iterator(), Arrays.asList(4, 5, 6).iterator()).iterator();
+        final List<Iterator<Integer>> firstList = Arrays.asList(Arrays.asList(1, 2, 3).iterator(), new ArrayList<Integer>().iterator(), Arrays.asList(4, 5, 6).iterator());
+        final Iterator<Iterator<Integer>> itty = firstList.iterator();
         final List<Integer> list = IteratorUtils.list(IteratorUtils.flatMap(itty, x -> IteratorUtils.map(x, i -> i * 10)));
         assertEquals(6, list.size());
-        assertThat(list, hasItems(10, 20, 30, 40, 50, 60));
+        assertThat(list, is(Arrays.asList(10, 20, 30, 40, 50, 60)));
     }
 
     @Test(expected = FastNoSuchElementException.class)

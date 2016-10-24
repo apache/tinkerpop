@@ -25,9 +25,278 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.3
 ---------------
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: October 17, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.3/CHANGELOG.asciidoc#release-3-2-3[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Renamed Null Result Preference
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In 3.2.2, the Gremlin Console introduced a setting called `empty.result.indicator`, which controlled the output that
+was presented when no result was returned. For consistency, this setting has been renamed to `result.indicator.null`
+and can be set as follows:
+
+[source,text]
+----
+gremlin> graph = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> graph.close()
+==>null
+gremlin> :set result.indicator.null nil
+gremlin> graph = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> graph.close()
+==>nil
+gremlin> :set result.indicator.null ""
+gremlin> graph = TinkerGraph.open()
+==>tinkergraph[vertices:0 edges:0]
+gremlin> graph.close()
+gremlin>
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1409[TINKERPOP-1409]
+
+Java Driver Keep-Alive
+^^^^^^^^^^^^^^^^^^^^^^
+
+The Java Driver now has a `keepAliveInterval` setting, which controls the amount of time in milliseconds it should wait
+on an inactive connection before it sends a message to the server to keep the connection maintained. This should help
+environments that use a load balancer in front of Gremlin Server by ensuring connections are actively maintained even
+during periods of inactivity.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1249[TINKERPOP-1249]
+
+Where Step Supports By-Modulation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is now possible to use `by()` with `where()` predicate-based steps. Previously, without using `match()`, if you wanted
+to know who was older than their friend, the following traversal would be used.
+
+[source,text]
+----
+gremlin> g.V().as('a').out('knows').as('b').
+......1>   filter(select('a','b').by('age').where('a', lt('b')))
+==>v[4]
+----
+
+Now, with `where().by()` support, the above traversal can be expressed more succinctly and more naturally as follows.
+
+[source,text]
+----
+gremlin> g.V().as('a').out('knows').as('b').
+......1>   where('a', lt('b')).by('age')
+==>v[4]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
+
+Change In has() Method Signatures
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TinkerPop 3.2.2 release unintentionally intoduced a breaking change for some `has()` method overloads. In particular the
+behavior for single item array arguments was changed:
+
+[source,text]
+----
+gremlin> g.V().hasLabel(["software"] as String[]).count()
+==>0
+----
+
+Prior this change single item arrays were treated like there was only that single item:
+
+[source,text]
+----
+gremlin> g.V().hasLabel(["software"] as String[]).count()
+==>2
+gremlin> g.V().hasLabel("software").count()
+==>2
+----
+
+TinkerPop 3.2.3 fixes this misbehavior and all `has()` method overloads behave like before, except that they no longer
+support no arguments.
+
+Deprecated reconnectInitialDelay
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `reconnectInitialDelay` setting on the `Cluster` builder has been deprecated. It no longer serves any purpose.
+The value for the "initial delay" now comes from `reconnectInterval` (there are no longer two separate settings to
+control).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1460[TINKERPOP-1460]
+
+TraversalSource.close()
+^^^^^^^^^^^^^^^^^^^^^^^
+
+`TraversalSource` now implements `AutoCloseable`, which means that the `close()` method is now available. This new
+method is important in cases where `withRemote()` is used, as `withRemote()` can open "expensive" resources that need
+to be released.
+
+In the case of TinkerPop's `DriverRemoteConnection`, `close()` will destroy the `Client` instance that is created
+internally by `withRemote()` as shown below:
+
+[source,text]
+----
+gremlin> graph = EmptyGraph.instance()
+==>emptygraph[empty]
+gremlin> g = graph.traversal().withRemote('conf/remote-graph.properties')
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> g.close()
+gremlin>
+----
+
+Note that the `withRemote()` method will call `close()` on a `RemoteConnection` passed directly to it as well, so
+there is no need to do that manually.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-790[TINKERPOP-790]
+
+IO Reference Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is new reference documentation for the various IO formats. The documentation provides more details and samples
+that should be helpful to users and providers who intend to work directly with the TinkerPop supported serialization
+formats: GraphML, GraphSON and Gryo.
+
+See: link:http://tinkerpop.apache.org/docs/3.2.3/dev/io/[IO Reference Documentation]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Default LazyBarrierStrategy
++++++++++++++++++++++++++++
+
+`LazyBarrierStrategy` has been included as a default strategy. `LazyBarrierStrategy` walks a traversal and looks for
+"flatMaps" (`out()`, `in()`, `both()`, `values()`, `V()`, etc.) and adds "lazy barriers" to dam up the stream so to
+increase the probability of bulking the traversers. One of the side-effects is that:
+
+[source,java]
+g.V().out().V().has(a)
+
+is compiled to:
+
+[source,java]
+g.V().out().barrier().V().barrier().has(a)
+
+Given that `LazyBarrierStrategy` is an `OptimizationStrategy`, it comes before `ProviderOptimizationStrategies`.
+Thus, if the provider's `XXXGraphStepStrategy` simply walks from the second `V()` looking for `has()`-only, it will not
+be able to pull in the `has()` cause the `barrier()` blocks it. Please see the updates to `TinkerGraphStepStrategy` and
+how it acknowledges `NoOpBarrierSteps` (i.e. `barrier()`) skipping over them and “left”-propagating labels to the
+previous step.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1488[TINKERPOP-1488]
+
+Configurable Strategies
++++++++++++++++++++++++
+
+If the provider has non-configurable `TraversalStrategy` classes, those classes should expose a static `instance()`-method.
+This is typical and thus, backwards compatible. However, if the provider has a `TraversalStrategy` that can be configured
+(e.g. via a `Builder`), then it should expose a static `create(Configuration)`-method, where the keys of the configuration
+are the method names of the `Builder` and the values are the method arguments. For instance, for Gremlin-Python to create
+a `SubgraphStrategy`, it does the following:
+
+[source,python]
+----
+g = Graph().traversal().withRemote(connection).
+        withStrategies(SubgraphStrategy(vertices=__.hasLabel('person'),edges=__.has('weight',gt(0.5))))
+----
+
+The `SubgraphStrategy.create(Configuration)`-method is defined as:
+
+[source,java]
+----
+public static SubgraphStrategy create(final Configuration configuration) {
+    final Builder builder = SubgraphStrategy.build();
+    if (configuration.containsKey(VERTICES))
+        builder.vertices((Traversal) configuration.getProperty(VERTICES));
+    if (configuration.containsKey(EDGES))
+        builder.edges((Traversal) configuration.getProperty(EDGES));
+    if (configuration.containsKey(VERTEX_PROPERTIES))
+        builder.vertexProperties((Traversal) configuration.getProperty(VERTEX_PROPERTIES));
+    return builder.create();
+}
+----
+
+Finally, in order to make serialization possible from JVM-based Gremlin language variants, all strategies have a
+`TraverserStrategy.getConfiguration()` method which returns a `Configuration` that can be used to `create()` the
+`TraversalStrategy`.
+
+The `SubgraphStrategy.getConfiguration()`-method is defined as:
+
+[source,java]
+----
+@Override
+public Configuration getConfiguration() {
+    final Map<String, Object> map = new HashMap<>();
+    map.put(STRATEGY, SubgraphStrategy.class.getCanonicalName());
+    if (null != this.vertexCriterion)
+        map.put(VERTICES, this.vertexCriterion);
+    if (null != this.edgeCriterion)
+            map.put(EDGES, this.edgeCriterion);
+    if (null != this.vertexPropertyCriterion)
+        map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+    return new MapConfiguration(map);
+}
+----
+
+The default implementation of `TraversalStrategy.getConfiguration()` is defined as:
+
+[source,java]
+----
+public default Configuration getConfiguration() {
+    return new BaseConfiguration();
+}
+----
+
+Thus, if the provider does not have any "builder"-based strategies, then no updates to their strategies are required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1455[TINKERPOP-1455]
+
+Deprecated elementNotFound
+++++++++++++++++++++++++++
+
+Both `Graph.Exceptions.elementNotFound()` methods have been deprecated. These exceptions were being asserted in the
+test suite but were not being used anywhere in `gremlin-core` itself. The assertions have been modified to simply
+assert that `NoSuchElementException` was thrown, which is precisely the behavior that was being indirected asserted
+when `Graph.Exceptions.elementNotFound()` were being used.
+
+Providers should not need to take any action in this case for their tests to pass, however, it would be wise to remove
+uses of these exception builders as they will be removed in the future.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-944[TINKERPOP-944]
+
+Hidden Step Labels for Compilation Only
++++++++++++++++++++++++++++++++++++++++
+
+In order for `SubgraphStrategy` to work, it was necessary to have multi-level children communicate with one another
+via hidden step labels. It was decided that hidden step labels are for compilation purposes only and will be removed
+prior to traversal evaluation. This is a valid decision given that hidden labels for graph system providers are
+not allowed to be used by users. Likewise, hidden labels for steps should not be allowed be used by
+users as well.
+
+PropertyMapStep with Selection Traversal
+++++++++++++++++++++++++++++++++++++++++
+
+`PropertyMapStep` now supports selection of properties via child property traversal. If a provider was relying solely
+on the provided property keys in a `ProviderOptimizationStrategy`, they will need to check if there is a child traversal
+and if so, use that in their introspection for respective strategies. This model was created to support `SubgraphStrategy.vertexProperties()` filtering.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1456[TINKERPOP-1456],
+link:https://issues.apache.org/jira/browse/TINKERPOP-844[TINKERPOP-844]
+
+ConnectiveP Nesting Inlined
++++++++++++++++++++++++++++
+
+There was a bug in `ConnectiveP` (`AndP`/`OrP`), where `eq(1).and(eq(2).and(eq(3)))` was `AndP(eq(1),AndP(eq(2),eq(3)))`
+instead of unnested/inlined as `AndP(eq(1),eq(2),eq(3))`. Likewise, for `OrP`. If a provider was leveraging `ConnectiveP`
+predicates for their custom steps (e.g. graph- or vertex-centric index lookups), then they should be aware of the inlining
+and can simplify any and/or-tree walking code in their respective `ProviderOptimizationStrategy`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1470[TINKERPOP-1470]
 
 TinkerPop 3.2.2
 ---------------
@@ -100,6 +369,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1285],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1285[TINKERPOP-1037],
 link:http://tinkerpop.apache.org/docs/3.2.2/reference/#console-preferences[Reference Documentation -
 Console Preferences]
+
+REST API Renamed to HTTP API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is only a rename to clarify the design of the API. There is no change to the API itself.
+
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -353,7 +627,7 @@ Hadoop FileSystem Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `HadoopGremlinPlugin` defines two variables: `hdfs` and `fs`. The first is a reference to the HDFS `FileSystemStorage`
-and the latter is a reference to the the local `FileSystemStorage`. Prior to 3.2.x, `fs` was called `local`. However,
+and the latter is a reference to the local `FileSystemStorage`. Prior to 3.2.x, `fs` was called `local`. However,
 there was a variable name conflict with `Scope.local`. As such `local` is now `fs`. This issue existed prior to 3.2.x,
 but was not realized until this release. Finally, this only effects Gremlin Console users.
 
@@ -529,7 +803,7 @@ RemoteGraph
 `RemoteGraph` is a lightweight `Graph` implementation that acts as a proxy for sending traversals to Gremlin Server for
 remote execution. It is an interesting alternative to the other methods for connecting to Gremlin Server in that all
 other methods involved construction of a `String` representation of the `Traversal` which is then submitted as a script
-to Gremlin Server (via driver or REST).
+to Gremlin Server (via driver or HTTP).
 
 [source,groovy]
 ----

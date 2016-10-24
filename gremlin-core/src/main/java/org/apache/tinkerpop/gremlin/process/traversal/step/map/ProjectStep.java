@@ -52,7 +52,7 @@ public final class ProjectStep<S, E> extends MapStep<S, Map<String, E>> implemen
     protected Map<String, E> map(final Traverser.Admin<S> traverser) {
         final Map<String, E> end = new LinkedHashMap<>(this.projectKeys.size(), 1.0f);
         for (final String projectKey : this.projectKeys) {
-            end.put(projectKey, TraversalUtil.apply(traverser, this.traversalRing.next()));
+            end.put(projectKey, TraversalUtil.applyNullable(traverser, this.traversalRing.next()));
         }
         this.traversalRing.reset();
         return end;

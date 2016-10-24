@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -33,12 +35,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -53,6 +55,8 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +87,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         this.writePartition = builder.writePartition;
         this.partitionKey = builder.partitionKey;
         this.readPartitions = Collections.unmodifiableSet(builder.readPartitions);
-        this.includeMetaProperties  = builder.includeMetaProperties;
+        this.includeMetaProperties = builder.includeMetaProperties;
     }
 
     public String getWritePartition() {
@@ -190,8 +194,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
 
         final List<Step> stepsToInsertPropertyMutations = traversal.getSteps().stream().filter(step ->
-            step instanceof AddEdgeStep || step instanceof AddVertexStep ||
-                    step instanceof AddVertexStartStep || (includeMetaProperties && step instanceof AddPropertyStep)
+                step instanceof AddEdgeStep || step instanceof AddVertexStep ||
+                        step instanceof AddVertexStartStep || (includeMetaProperties && step instanceof AddPropertyStep)
         ).collect(Collectors.toList());
 
         stepsToInsertPropertyMutations.forEach(step -> {
@@ -271,11 +275,11 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
      * {@link VertexProperty} it applies a filter based on the current partitioning.  If is not a
      * {@link VertexProperty} the property is simply passed through.
      */
-    public final class MapPropertiesFilter implements Function<Traverser<Map<String,List<Property>>>, Map<String,List<Property>>>, Serializable {
+    public final class MapPropertiesFilter implements Function<Traverser<Map<String, List<Property>>>, Map<String, List<Property>>>, Serializable {
         @Override
         public Map<String, List<Property>> apply(final Traverser<Map<String, List<Property>>> mapTraverser) {
-            final Map<String,List<Property>> values = mapTraverser.get();
-            final Map<String,List<Property>> filtered = new HashMap<>();
+            final Map<String, List<Property>> values = mapTraverser.get();
+            final Map<String, List<Property>> filtered = new HashMap<>();
 
             // note the final filter that removes the partitionKey from the outgoing Map
             values.entrySet().forEach(p -> {
@@ -302,11 +306,11 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
     /**
      * Takes a {@link Map} of a {@link List} of {@link Property} objects and unwraps the {@link Property#value()}.
      */
-    public final class MapPropertiesConverter implements Function<Traverser<Map<String,List<Property>>>, Map<String,List<Property>>>, Serializable {
+    public final class MapPropertiesConverter implements Function<Traverser<Map<String, List<Property>>>, Map<String, List<Property>>>, Serializable {
         @Override
         public Map<String, List<Property>> apply(final Traverser<Map<String, List<Property>>> mapTraverser) {
-            final Map<String,List<Property>> values = mapTraverser.get();
-            final Map<String,List<Property>> converted = new HashMap<>();
+            final Map<String, List<Property>> values = mapTraverser.get();
+            final Map<String, List<Property>> converted = new HashMap<>();
 
             values.entrySet().forEach(p -> {
                 final List l = p.getValue().stream().map(property -> property.value()).collect(Collectors.toList());
@@ -322,13 +326,46 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
     }
 
+    @Override
+    public Configuration getConfiguration() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(STRATEGY, PartitionStrategy.class.getCanonicalName());
+        map.put(INCLUDE_META_PROPERTIES, this.includeMetaProperties);
+        if (null != this.writePartition)
+            map.put(WRITE_PARTITION, this.writePartition);
+        if (null != this.readPartitions)
+            map.put(READ_PARTITIONS, this.readPartitions);
+        if (null != this.partitionKey)
+            map.put(PARTITION_KEY, this.partitionKey);
+        return new MapConfiguration(map);
+    }
+
+    public static final String INCLUDE_META_PROPERTIES = "includeMetaProperties";
+    public static final String WRITE_PARTITION = "writePartition";
+    public static final String PARTITION_KEY = "partitionKey";
+    public static final String READ_PARTITIONS = "readPartitions";
+
+    public static PartitionStrategy create(final Configuration configuration) {
+        final PartitionStrategy.Builder builder = PartitionStrategy.build();
+        if (configuration.containsKey(INCLUDE_META_PROPERTIES))
+            builder.includeMetaProperties(configuration.getBoolean(INCLUDE_META_PROPERTIES));
+        if (configuration.containsKey(WRITE_PARTITION))
+            builder.writePartition(configuration.getString(WRITE_PARTITION));
+        if (configuration.containsKey(PARTITION_KEY))
+            builder.partitionKey(configuration.getString(PARTITION_KEY));
+        if (configuration.containsKey(READ_PARTITIONS))
+            builder.readPartitions(new ArrayList((Collection)configuration.getProperty(READ_PARTITIONS)));
+        return builder.create();
+    }
+
     public final static class Builder {
         private String writePartition;
         private String partitionKey;
         private Set<String> readPartitions = new HashSet<>();
         private boolean includeMetaProperties = false;
 
-        Builder() { }
+        Builder() {
+        }
 
         /**
          * Set to {@code true} if the {@link VertexProperty} instances should get assigned to partitions.  This
@@ -367,6 +404,26 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
          * Specifies the partition of the graph to read from.  It is possible to assign multiple partition keys so
          * as to read from multiple partitions at the same time.
          */
+        public Builder readPartitions(final List<String> readPartitions) {
+            this.readPartitions.addAll(readPartitions);
+            return this;
+        }
+
+        /**
+         * Specifies the partition of the graph to read from.  It is possible to assign multiple partition keys so
+         * as to read from multiple partitions at the same time.
+         */
+        public Builder readPartitions(final String... readPartitions) {
+            return this.readPartitions(Arrays.asList(readPartitions));
+        }
+
+        /**
+         * Specifies the partition of the graph to read from.  It is possible to assign multiple partition keys so
+         * as to read from multiple partitions at the same time.
+         *
+         * @deprecated As of release 3.2.3, replaced by {@link Builder#readPartitions(List)}.
+         */
+        @Deprecated
         public Builder addReadPartition(final String readPartition) {
             this.readPartitions.add(readPartition);
             return this;

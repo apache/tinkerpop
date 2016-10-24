@@ -14,8 +14,8 @@ _bsp/
 doc/out
 docs/*.asciidoc
 ext/
-benchmarks/
 *$py.class
 __pycache__/
 *.py[cdo]
 __version__.py
+.glv

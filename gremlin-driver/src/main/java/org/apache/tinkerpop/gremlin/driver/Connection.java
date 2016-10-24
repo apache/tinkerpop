@@ -35,6 +35,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,15 +57,22 @@ final class Connection {
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
+    private final long keepAliveInterval;
 
     public static final int MAX_IN_PROCESS = 4;
     public static final int MIN_IN_PROCESS = 1;
     public static final int MAX_WAIT_FOR_CONNECTION = 3000;
     public static final int MAX_WAIT_FOR_SESSION_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 65536;
+
+    /**
+     * @deprecated As of release 3.2.3, replaced by {@link #RECONNECT_INTERVAL}.
+     */
+    @Deprecated
     public static final int RECONNECT_INITIAL_DELAY = 1000;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
+    public static final long KEEP_ALIVE_INTERVAL = 1800000;
 
     /**
      * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of
@@ -82,6 +91,7 @@ final class Connection {
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
+    private final AtomicReference<ScheduledFuture> keepAliveFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
@@ -89,10 +99,11 @@ final class Connection {
         this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
+        this.keepAliveInterval = pool.settings().keepAliveInterval;
 
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
-        if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection while the cluster after close() is called");
+        if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection with the cluster after close() is called");
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         try {
@@ -128,7 +139,7 @@ final class Connection {
         return isDead;
     }
 
-    public boolean isClosed() {
+    boolean isClosing() {
         return closeFuture.get() != null;
     }
 
@@ -148,22 +159,30 @@ final class Connection {
         return pending;
     }
 
-    public CompletableFuture<Void> closeAsync() {
+    public synchronized CompletableFuture<Void> closeAsync() {
+        if (isClosing()) return closeFuture.get();
+
         final CompletableFuture<Void> future = new CompletableFuture<>();
-        if (!closeFuture.compareAndSet(null, future))
-            return closeFuture.get();
+        closeFuture.set(future);
+
+        // stop any pings being sent at the server for keep-alive
+        final ScheduledFuture keepAlive = keepAliveFuture.get();
+        if (keepAlive != null) keepAlive.cancel(true);
 
         // make sure all requests in the queue are fully processed before killing.  if they are then shutdown
         // can be immediate.  if not this method will signal the readCompleted future defined in the write()
         // operation to check if it can close.  in this way the connection no longer receives writes, but
         // can continue to read. If a request never comes back the future won't get fulfilled and the connection
         // will maintain a "pending" request, that won't quite ever go away.  The build up of such a dead requests
-        // on a connection in the connection pool will force the pool to replace the connection for a fresh one
-        if (pending.isEmpty()) {
+        // on a connection in the connection pool will force the pool to replace the connection for a fresh one.
+        if (isOkToClose()) {
             if (null == channel)
                 future.complete(null);
             else
                 shutdown(future);
+        } else {
+            // there may be some pending requests. schedule a job to wait for those to complete and then shutdown
+            new CheckForPending(future).runUntilDone(cluster.executor(), 1000, TimeUnit.MILLISECONDS);
         }
 
         return future;
@@ -181,7 +200,8 @@ final class Connection {
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
-        final ChannelPromise promise = channel.newPromise()
+
+        final ChannelPromise requestPromise = channel.newPromise()
                 .addListener(f -> {
                     if (!f.isSuccess()) {
                         if (logger.isDebugEnabled())
@@ -234,9 +254,29 @@ final class Connection {
                                 requestMessage, pool.host));
                     }
                 });
-        channel.writeAndFlush(requestMessage, promise);
+        channel.writeAndFlush(requestMessage, requestPromise);
 
-        return promise;
+        // try to keep the connection alive if the channel allows such things - websockets will
+        if (channelizer.supportsKeepAlive() && keepAliveInterval > 0) {
+
+            final ScheduledFuture oldKeepAliveFuture = keepAliveFuture.getAndSet(cluster.executor().scheduleAtFixedRate(() -> {
+                logger.debug("Request sent to server to keep {} alive", thisConnection);
+                try {
+                    channel.writeAndFlush(channelizer.createKeepAliveMessage());
+                } catch (Exception ex) {
+                    // will just log this for now - a future real request can be responsible for the failure that
+                    // marks the host as dead. this also may not mean the host is actually dead. more robust handling
+                    // is in play for real requests, not this simple ping
+                    logger.warn(String.format("Keep-alive did not succeed on %s", thisConnection), ex);
+                }
+            }, keepAliveInterval, keepAliveInterval, TimeUnit.MILLISECONDS));
+
+            // try to cancel the old future if it's still un-executed - no need to ping since a new write has come
+            // through on the connection
+            if (oldKeepAliveFuture != null) oldKeepAliveFuture.cancel(true);
+        }
+
+        return requestPromise;
     }
 
     public void returnToPool() {
@@ -248,16 +288,20 @@ final class Connection {
         }
     }
 
+    private boolean isOkToClose() {
+        return pending.isEmpty() || (channel !=null && !channel.isOpen()) || !pool.host.isAvailable();
+    }
+
     /**
      * Close was signaled in closeAsync() but there were pending messages at that time. This method attempts the
      * shutdown if the returned result cleared up the last pending message.
      */
     private void tryShutdown() {
-        if (isClosed() && pending.isEmpty())
+        if (isClosing() && isOkToClose())
             shutdown(closeFuture.get());
     }
 
-    private void shutdown(final CompletableFuture<Void> future) {
+    private synchronized void shutdown(final CompletableFuture<Void> future) {
         // shutdown can be called directly from closeAsync() or after write() and therefore this method should only
         // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
@@ -287,6 +331,7 @@ final class Connection {
             }
 
             channelizer.close(channel);
+
             final ChannelPromise promise = channel.newPromise();
             promise.addListener(f -> {
                 if (f.cause() != null)
@@ -307,5 +352,46 @@ final class Connection {
     @Override
     public String toString() {
         return connectionLabel;
+    }
+
+    /**
+     * Self-cancelling tasks that periodically checks for the pending queue to clear before shutting down the
+     * {@code Connection}. Once it does that, it self cancels the scheduled job in the executor.
+     */
+    private final class CheckForPending implements Runnable {
+        private volatile ScheduledFuture<?> self;
+        private final CompletableFuture<Void> future;
+
+        CheckForPending(final CompletableFuture<Void> future) {
+            this.future = future;
+        }
+
+        @Override
+        public void run() {
+            logger.info("Checking for pending messages to complete before close on {}", this);
+
+            if (isOkToClose()) {
+                shutdown(future);
+                boolean interrupted = false;
+                try {
+                    while(null == self) {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            interrupted = true;
+                        }
+                    }
+                    self.cancel(false);
+                } finally {
+                    if(interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+
+        void runUntilDone(final ScheduledExecutorService executor, final long period, final TimeUnit unit) {
+            self = executor.scheduleAtFixedRate(this, period, period, unit);
+        }
     }
 }

@@ -66,7 +66,7 @@ class GremlinSetCommand extends SetCommand {
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_INFO_COLOR
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_INPUT_PROMPT_COLOR
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_RESULT_PROMPT_COLOR
-            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_EMPTY_RESULT_IND
+            set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_RESULT_IND_NULL
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_INPUT_PROMPT
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_RESULT_PROMPT
             set << org.apache.tinkerpop.gremlin.console.Preferences.PREF_EDGE_COLOR

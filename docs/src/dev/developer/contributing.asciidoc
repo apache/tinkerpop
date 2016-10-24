@@ -27,7 +27,7 @@ Ways to Contribute
 image:gremlin-apache.png[width=250,float=left] While the concept of an open source contribution can refer to doing
 development work on the code base, there are many other ways outside of coding to contribute to Apache TinkerPop.
 Participating on the various mailing lists, offering ideas, reporting bugs, writing documentation are all welcome
-contributions to the project that help improve the The TinkerPop. This section of the document is designed to help
+contributions to the project that help improve the TinkerPop. This section of the document is designed to help
 provide some structure for potential contributors and to give them ideas for how they could get started becoming more
 involved in the TinkerPop community.
 
@@ -112,7 +112,7 @@ Before proceeding, contributors should evaluate if the proposed change is likely
 
 * Is it clear that code must change? Proposing a JIRA issue and pull request is appropriate only when a clear problem
 or change has been identified. When in doubt, email dev@tinkerpop.apache.org first about the possible change.
-* Search the the mailing list archives for related discussions. Often, the problem has been discussed before, with
+* Search the mailing list archives for related discussions. Often, the problem has been discussed before, with
 a resolution that doesn't require a code change, or recording what kinds of changes will not be accepted as a
 resolution.
 * Search link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA] for existing issues.
@@ -179,9 +179,9 @@ link:https://github.com/apache/tinkerpop[GitHub repository] if not already done.
 . Make changes in the fork
 .. It is typically best to create a branch for the changes. Consider naming that branch after the JIRA issue number
 to easily track what that branch is for.
-.. Consider which branch to create the branch from in the first place. In other words, is the change to be targetted
-at a specific TinkerPop version (e.g. a patch to an older version)? When in doubt, please ask on
-dev@tinkerpop.apache.org.
+.. Consider which release branch (e.g. `master`, `tp31` etc) to create the development branch from in the first place.
+In other words, is the change to be targetted at a specific TinkerPop version (e.g. a patch to an older version)? When
+in doubt, please ask on dev@tinkerpop.apache.org.
 . Build the project and run tests.
 .. A simple build can be accomplished with maven: `mvn clean install`.
 .. Often, a "simple build" isn't sufficient and integration tests are required:
@@ -204,7 +204,7 @@ on the Apache TinkerPop repository.
 .. Include a rough synopsis of how the changes were tested. This might be as simple as "Ran mvn clean install to
 success and performed manual testing in the Gremlin Console".
 .. Include other descriptive elements about the change if they are not already included in the JIRA ticket.
-.. Automated builds will occur with Travis and AppVeyor. Please be sure that the pull request passes those builds and
+.. Automated builds will occur with Travis. Please be sure that the pull request passes those builds and
 correct them if there are problems.
 
 Once the pull request has been placed it will go into *review*:

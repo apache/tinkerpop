@@ -101,7 +101,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_name_order() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order();
         printTraversalForm(traversal);
-        assertCommon(traversal);
+        checkOrderedResults(Arrays.asList("josh", "lop", "marko", "peter", "ripple", "vadas"), traversal);
     }
 
     @Test
@@ -109,14 +109,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order_byXa1_b1X_byXb2_a2X();
         printTraversalForm(traversal);
-        final List<String> names = traversal.toList();
-        assertEquals(names.size(), 6);
-        assertEquals("marko", names.get(0));
-        assertEquals("vadas", names.get(1));
-        assertEquals("peter", names.get(2));
-        assertEquals("ripple", names.get(3));
-        assertEquals("josh", names.get(4));
-        assertEquals("lop", names.get(5));
+        checkOrderedResults(Arrays.asList("marko", "vadas", "peter", "ripple", "josh", "lop"), traversal);
     }
 
     @Test
@@ -124,7 +117,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_order_byXname_incrX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_incrX_name();
         printTraversalForm(traversal);
-        assertCommon(traversal);
+        checkOrderedResults(Arrays.asList("josh", "lop", "marko", "peter", "ripple", "vadas"), traversal);
     }
 
     @Test
@@ -132,18 +125,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_order_byXnameX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXnameX_name();
         printTraversalForm(traversal);
-        assertCommon(traversal);
-    }
-
-    private static void assertCommon(Traversal<Vertex, String> traversal) {
-        final List<String> names = traversal.toList();
-        assertEquals(names.size(), 6);
-        assertEquals("josh", names.get(0));
-        assertEquals("lop", names.get(1));
-        assertEquals("marko", names.get(2));
-        assertEquals("peter", names.get(3));
-        assertEquals("ripple", names.get(4));
-        assertEquals("vadas", names.get(5));
+        checkOrderedResults(Arrays.asList("josh", "lop", "marko", "peter", "ripple", "vadas"), traversal);
     }
 
     @Test
@@ -151,15 +133,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_outE_order_byXweight_decrX_weight() {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_order_byXweight_decrX_weight();
         printTraversalForm(traversal);
-        final List<Double> weights = traversal.toList();
-        assertEquals(6, weights.size());
-        assertEquals(Double.valueOf(1.0d), weights.get(0));
-        assertEquals(Double.valueOf(1.0d), weights.get(1));
-        assertEquals(Double.valueOf(0.5d), weights.get(2));
-        assertEquals(Double.valueOf(0.4d), weights.get(3));
-        assertEquals(Double.valueOf(0.4d), weights.get(4));
-        assertEquals(Double.valueOf(0.2d), weights.get(5));
-
+        checkOrderedResults(Arrays.asList(1.0d, 1.0d, 0.5d, 0.4d, 0.4d, 0.2d), traversal);
     }
 
     @Test
@@ -167,14 +141,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name();
         printTraversalForm(traversal);
-        final List<String> names = traversal.toList();
-        assertEquals(names.size(), 6);
-        assertEquals("marko", names.get(0));
-        assertEquals("vadas", names.get(1));
-        assertEquals("peter", names.get(2));
-        assertEquals("ripple", names.get(3));
-        assertEquals("josh", names.get(4));
-        assertEquals("lop", names.get(5));
+        checkOrderedResults(Arrays.asList("marko", "vadas", "peter", "ripple", "josh", "lop"), traversal);
     }
 
     @Test
@@ -337,11 +304,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_order_byXvalueXageX__decrX_name();
         printTraversalForm(traversal);
-        assertEquals("peter", traversal.next());
-        assertEquals("josh", traversal.next());
-        assertEquals("marko", traversal.next());
-        assertEquals("vadas", traversal.next());
-        assertFalse(traversal.hasNext());
+        checkOrderedResults(Arrays.asList("peter", "josh", "marko", "vadas"), traversal);
     }
 
     @Test
@@ -349,19 +312,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_properties_order_byXkey_decrX_key() {
         final Traversal<Vertex, String> traversal = get_g_V_properties_order_byXkey_decrX_key();
         printTraversalForm(traversal);
-        assertEquals("name", traversal.next());
-        assertEquals("name", traversal.next());
-        assertEquals("name", traversal.next());
-        assertEquals("name", traversal.next());
-        assertEquals("name", traversal.next());
-        assertEquals("name", traversal.next());
-        assertEquals("lang", traversal.next());
-        assertEquals("lang", traversal.next());
-        assertEquals("age", traversal.next());
-        assertEquals("age", traversal.next());
-        assertEquals("age", traversal.next());
-        assertEquals("age", traversal.next());
-        assertFalse(traversal.hasNext());
+        checkOrderedResults(Arrays.asList(
+                "name", "name", "name", "name", "name", "name",
+                "lang", "lang",
+                "age", "age", "age", "age"), traversal);
     }
 
     @Test
@@ -391,14 +345,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_hasLabelXpersonX_order_byXage_decrX_limitX5X_name();
         printTraversalForm(traversal);
-        final List<String> results = traversal.toList();
-        assertEquals(5, results.size());
-        assertFalse(traversal.hasNext());
-        assertEquals("peter", results.get(0));
-        assertEquals("josh", results.get(1));
-        assertEquals("josh", results.get(2));
-        assertEquals("josh", results.get(3));
-        assertEquals("marko", results.get(4));
+        checkOrderedResults(Arrays.asList("peter", "josh", "josh", "josh", "marko"), traversal);
     }
 
     @Test
@@ -421,19 +368,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_hasLabelXsongX_order_byXperfomances_decrX_byXnameX_rangeX110_120X_name();
         printTraversalForm(traversal);
-        final List<String> results = traversal.toList();
-        assertEquals(10, results.size());
-        assertEquals("WANG DANG DOODLE", results.get(0));
-        assertEquals("THE ELEVEN", results.get(1));
-        assertEquals("WAY TO GO HOME", results.get(2));
-        assertEquals("FOOLISH HEART", results.get(3));
-        assertEquals("GIMME SOME LOVING", results.get(4));
-        assertEquals("DUPREES DIAMOND BLUES", results.get(5));
-        assertEquals("CORRINA", results.get(6));
-        assertEquals("PICASSO MOON", results.get(7));
-        assertEquals("KNOCKING ON HEAVENS DOOR", results.get(8));
-        assertEquals("MEMPHIS BLUES", results.get(9));
-        assertFalse(traversal.hasNext());
+        checkOrderedResults(Arrays.asList(
+                "WANG DANG DOODLE", "THE ELEVEN", "WAY TO GO HOME", "FOOLISH HEART",
+                "GIMME SOME LOVING", "DUPREES DIAMOND BLUES", "CORRINA", "PICASSO MOON",
+                "KNOCKING ON HEAVENS DOOR", "MEMPHIS BLUES"), traversal);
     }
 
     public static class Traversals extends OrderTest {

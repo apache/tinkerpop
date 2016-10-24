@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
@@ -58,7 +60,7 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
     };
 
     public AbstractGraphSONMessageSerializerV2d0() {
-        final GraphSONMapper.Builder builder = configureBuilder(GraphSONMapper.build());
+        final GraphSONMapper.Builder builder = configureBuilder(initBuilder(null));
         mapper = builder.create().createMapper();
     }
 
@@ -85,12 +87,12 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
 
             // a graph was found so use the mapper it constructs.  this allows graphson to be auto-configured with any
             // custom classes that the implementation allows for
-            initialBuilder = g.io(GraphSONIo.build()).mapper();
+            initialBuilder = initBuilder(g.io(GraphSONIo.build()).mapper());
         } else {
             // no graph was supplied so just use the default - this will likely be the case when using a graph
             // with no custom classes or a situation where the user needs complete control like when using two
             // distinct implementations each with their own custom classes.
-            initialBuilder = GraphSONMapper.build();
+            initialBuilder = initBuilder(null);
         }
 
         addIoRegistries(config, initialBuilder);
@@ -166,6 +168,13 @@ public abstract class AbstractGraphSONMessageSerializerV2d0 extends AbstractMess
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2d0.class.getName());
             throw new SerializationException(ex);
         }
+    }
+
+    private GraphSONMapper.Builder initBuilder(final GraphSONMapper.Builder builder) {
+        final GraphSONMapper.Builder b = null == builder ? GraphSONMapper.build() : builder;
+        return b.addCustomModule(new AbstractGraphSONMessageSerializerV2d0.GremlinServerModule())
+                .addCustomModule(GraphSONXModuleV2d0.build().create(false))
+                .version(GraphSONVersion.V2_0);
     }
 
     public final static class GremlinServerModule extends SimpleModule {

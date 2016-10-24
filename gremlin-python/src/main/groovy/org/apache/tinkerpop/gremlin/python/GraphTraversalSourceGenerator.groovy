@@ -58,9 +58,11 @@ under the License.
         pythonClass.append("import sys\n")
         pythonClass.append("from .traversal import Traversal\n")
         pythonClass.append("from .traversal import TraversalStrategies\n")
+        pythonClass.append("from .strategies import VertexProgramStrategy\n")
         pythonClass.append("from .traversal import Bytecode\n")
         pythonClass.append("from ..driver.remote_connection import RemoteStrategy\n")
-        pythonClass.append("from .. import statics\n\n")
+        pythonClass.append("from .. import statics\n")
+        pythonClass.append("from ..statics import long\n\n")
 
 //////////////////////////
 // GraphTraversalSource //
@@ -81,7 +83,8 @@ under the License.
                 findAll {
                     !it.name.equals("clone") &&
                             !it.name.equals(TraversalSource.Symbols.withBindings) &&
-                            !it.name.equals(TraversalSource.Symbols.withRemote)
+                            !it.name.equals(TraversalSource.Symbols.withRemote) &&
+                            !it.name.equals(TraversalSource.Symbols.withComputer)
                 }.
                 collect { SymbolHelper.toPython(it.name) }.
                 unique().
@@ -101,6 +104,8 @@ under the License.
     return source
   def withBindings(self, bindings):
     return self
+  def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
+    return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
 """)
         GraphTraversalSource.getMethods(). // SPAWN STEPS
                 findAll { GraphTraversal.class.equals(it.returnType) }.
@@ -128,7 +133,7 @@ under the License.
     if isinstance(index, int):
         return self.range(long(index), long(index + 1))
     elif isinstance(index, slice):
-        return self.range(0L if index.start is None else long(index.start), long(sys.maxint) if index.stop is None else long(index.stop))
+        return self.range(long(0) if index.start is None else long(index.start), long(sys.maxsize) if index.stop is None else long(index.stop))
     else:
         raise TypeError("Index must be int or slice")
   def __getattr__(self, key):

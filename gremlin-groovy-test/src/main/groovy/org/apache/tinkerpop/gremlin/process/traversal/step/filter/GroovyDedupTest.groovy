@@ -30,6 +30,15 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyDedupTest {
 
     public static class Traversals extends DedupTest {
+        @Override
+        public Traversal<Vertex, String> get_g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold() {
+            return new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.in.values('name').fold.dedup(Scope.local).unfold");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold() {
+            return new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out.as('x').in.as('y').select('x','y').by('name').fold.dedup(Scope.local,'x','y').unfold");
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
@@ -84,6 +93,16 @@ public abstract class GroovyDedupTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_both_dedup_byXoutE_countX_name() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.both.both.dedup.by(outE().count).name")
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_groupCount_selectXvaluesX_unfold_dedup() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.groupCount.select(values).unfold.dedup")
+        }
+
+        @Override
+        public Traversal<Vertex, Collection<Vertex>> get_g_V_asXaX_repeatXbothX_timesX3X_emit_asXbX_group_byXselectXaXX_byXselectXbX_dedup_order_byXidX_foldX_selectXvaluesX_unfold_dedup() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').repeat(both()).times(3).emit.as('b').group.by(select('a')).by(select('b').dedup.order.by(id).fold).select(values).unfold.dedup")
         }
     }
 }

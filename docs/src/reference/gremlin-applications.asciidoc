@@ -173,7 +173,8 @@ Preferences are set with `:set name value`.  Values can contain spaces when quot
 |result.prompt.color | colors | Color of the result prompt.
 |input.prompt | string | Text of the input prompt.
 |result.prompt | string | Text of the result prompt.
-|empty.result.indicator | string | Text of the void/no results indicator.
+|result.indicator.null | string | Text of the void/no results indicator - setting to empty string (i.e. "" at the
+command line) will print no result line in these cases.
 |=========================================================
 
 Colors can contain a comma-separated combination of 1 each of foreground, background, and attribute.
@@ -686,6 +687,7 @@ The following table describes the various configuration options for the Gremlin 
 |Key |Description |Default
 |connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
+|connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |1800000
 |connectionPool.keyCertChainFile |The X.509 certificate chain file in PEM format. |_none_
 |connectionPool.keyFile |The `PKCS#8` private key file in PEM format. |_none_
 |connectionPool.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
@@ -762,17 +764,17 @@ The above code demonstrates using the `TitanIoRegistry` which is an `IoRegistry`
 what classes (from Titan in this case) to auto-register during serialization.  Gremlin Server roughly uses this same
 approach when it configures it's serializers, so using this same model will ensure compatibility when making requests.
 
-Connecting via REST
+Connecting via HTTP
 ~~~~~~~~~~~~~~~~~~~
 
 image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a
-WebSockets-based connection, it can also be configured to support link:http://en.wikipedia.org/wiki/Representational_state_transfer[REST].
-The REST endpoint provides for a communication protocol familiar to most developers, with a wide support of
-programming languages, tools and libraries for accessing it.  As a result, REST provides a fast way to get started
+WebSockets-based connection, it can also be configured to support plain HTTP web service.
+The HTTP endpoint provides for a communication protocol familiar to most developers, with a wide support of
+programming languages, tools and libraries for accessing it.  As a result, HTTP provides a fast way to get started
 with Gremlin Server.   It also may represent an easier upgrade path from link:http://rexster.tinkerpop.com/[Rexster]
 as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
 
-Gremlin Server provides for a single REST endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
+Gremlin Server provides for a single HTTP endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
 script as a request.  For each request, it returns a response containing the serialized results of that script.
 To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default
 `WebSocketChannelizer`, in the configuration file:
@@ -839,7 +841,7 @@ curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bind
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
 string argument with by setting the `language` key.
 
-WARNING: Consider the size of the result of a submitted script being returned from the REST endpoint.  A script
+WARNING: Consider the size of the result of a submitted script being returned from the HTTP endpoint.  A script
 that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSockets configuration, which supports streaming, if that type of use case is required.
@@ -860,7 +862,7 @@ Connecting via withRemote
 image:remote-graph.png[width=145,float=left] A `TraversalSource` has several `withRemote()` methods which provide an
 interesting alternative to the other methods for connecting to Gremlin Server. It is interesting in that all other
 methods involve construction of a `String` representation of the `Traversal` which is then submitted as a script
-to Gremlin Server (via driver or REST). This approach is quite akin to SQL, where query strings are embedded into code
+to Gremlin Server (via driver or HTTP). This approach is quite akin to SQL, where query strings are embedded into code
 and submitted to a database server. While there are patterns for taking this approach that can lead to maintainable
 application code, using `withRemote()` could be a better method as it brings some good benefits with it:
 
@@ -905,7 +907,12 @@ the `TraversalSource` be generated with `EmptyGraph` as follows:
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote('conf/remote-graph.properties')
 g.V().valueMap(true)
+g.close()
 ----
+
+Note the call to `close()` above. The call to `withRemote()` internally instantiates a `Client` instance that can only
+be released by "closing" the `GraphTraversalSource`. It is important to take that step to release resources created
+in that step.
 
 If working with multiple remote `TraversalSource` instances it is more efficient to construct a `Cluster` object and
 then re-use it.
@@ -916,11 +923,14 @@ cluster = Cluster.open('conf/remote-objects.yaml')
 graph = EmptyGraph.instance()
 g = graph.traversal().withRemote(DriverRemoteConnection.using(cluster, "g"))
 g.V().valueMap(true)
+g.close()
 cluster.close()
 ----
 
 If the `Cluster` instance is supplied externally, as is shown above, then it is not closed implicitly by the close of
-the `RemoteGraph`.  In this case, the `Cluster` must be closed explicitly.
+"g".  Closing "g" will only close the `Client` instance associated with that `TraversalSource`. In this case, the
+`Cluster` must also be closed explicitly. Closing "g" and the "cluster" aren't actually both necessary - the close of
+a `Cluster` will close all `Client` instance spawned by the `Cluster`.
 
 IMPORTANT: `RemoteGraph` uses the `TraversalOpProcessor` in Gremlin Server which requires a cache to enable the
 retrieval of side-effects (if the `Traversal` produces any). That cache can be configured (e.g. controlling eviction
@@ -950,7 +960,7 @@ Configuring
 ~~~~~~~~~~~
 
 As mentioned earlier, Gremlin Server is configured though a YAML file.  By default, Gremlin Server will look for a
-file called `config/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
+file called `conf/gremlin-server.yaml` to configure itself on startup.  To override this default, supply the file
 to use to `bin/gremlin-server.sh` as in:
 
 [source,text]
@@ -1135,10 +1145,10 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
                                  .enableSsl(true).create();
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided
-`config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
+`conf/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and
 password as well as enablement of SSL from the client side.
 
-Similarly, Gremlin Server can be configured for REST and security.
+Similarly, Gremlin Server can be configured for HTTP and security.
 
 [source,text]
 ----
@@ -1253,7 +1263,7 @@ There are a number of pre-packaged `CustomizerProvider` implementations:
 |=========================================================
 |Customizer |Description
 |`CompileStaticCustomizerProvider` |Applies `CompileStatic` annotations to incoming scripts thus removing dynamic dispatch. More information about static compilation can be found in the link:http://docs.groovy-lang.org/latest/html/documentation/#_static_compilation[Groovy Documentation].  It is possible to configure this `CustomizerProvider` by specifying a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions] that can have the effect of securing calls to various methods.
-|`ConfigurationCustomizerProvider` |Allows configuration of the the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
+|`ConfigurationCustomizerProvider` |Allows configuration of the Groovy `CompilerConfiguration` object by taking a `Map` of key/value pairs where the "key" is a property to set on the `CompilerConfiguration`.
 |`ThreadInterruptCustomizerProvider` |Injects checks for thread interruption, thus allowing the thread to potentially respect calls to `Thread.interrupt()`
 |`TimedInterruptCustomizerProvider` |Injects checks into loops to interrupt them if they exceed the configured timeout in milliseconds.
 |`TypeCheckedCustomizerProvider` |Similar to the above mentioned, `CompileStaticCustomizerProvider`, the `TypeCheckedCustomizerProvider` injects `TypeChecked` annotations to incoming scripts.  More information on the nature of this annotation can be found in the link:http://docs.groovy-lang.org/latest/html/documentation/#_the_code_typechecked_code_annotation[Groovy Documentation].  It too takes a comma separated list of link:http://docs.groovy-lang.org/latest/html/documentation/#Typecheckingextensions-Workingwithextensions[type checking extensions].
@@ -1386,7 +1396,10 @@ trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support
 programming languages and can be consumed by a wide variety of tools.
 
 [source,yaml]
+----
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0 }
+----
 
 The above configuration represents the default serialization under the `application/json` MIME type and produces JSON
 consistent with standard JSON data types.  It has the following configuration option:
@@ -1527,12 +1540,12 @@ client.submit("[1,2,3,x]", params);
 Cache Management
 ^^^^^^^^^^^^^^^^
 
-If Gremlin Server processes a large number of unique scripts, the cache will grow beyond the memory available to
-Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving this problem
-and running out of memory should not be an issue for those cases.  If it is a problem or if there is no script
-parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to better
-control the nature of the script cache from the client side, by issuing scripts with a parameter to help define how
-the garbage collector should treat the references.
+If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
+available to Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving
+this problem and running out of memory should not be an issue for those cases.  If it is a problem or if there is no
+script parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to
+better control the nature of the global function cache from the client side, by issuing scripts with a parameter to
+help define how the garbage collector should treat the references.
 
 The parameter is called `#jsr223.groovy.engine.keep.globals` and has four options:
 
@@ -1542,8 +1555,19 @@ The parameter is called `#jsr223.groovy.engine.keep.globals` and has four option
 * `phantom` - removed immediately after being evaluated by the `ScriptEngine`.
 
 By specifying an option other than `hard`, an `OutOfMemoryError` in Gremlin Server should be avoided.  Of course,
-this approach will come with the downside that compiled scripts could be garbage collected and thus removed from the
+this approach will come with the downside that functions could be garbage collected and thus removed from the
 cache, forcing Gremlin Server to recompile later if that script is later encountered.
+
+[source,java]
+----
+Cluster cluster = Cluster.open();
+Client client = cluster.connect();
+
+Map<String,Object> params = new HashMap<>();
+params.put("x",4);
+params.put("#jsr223.groovy.engine.keep.globals", "soft");
+client.submit("[1,2,3,x]", params);
+----
 
 [[sessions]]
 Considering Sessions
@@ -1644,7 +1668,7 @@ will simply have Gremlin Server close transactions on all graphs for every reque
 Considering State
 ^^^^^^^^^^^^^^^^^
 
-With REST and any sessionless requests, there is no variable state maintained between requests.  Therefore,
+With HTTP and any sessionless requests, there is no variable state maintained between requests.  Therefore,
 when <<connecting-via-console,connecting with the console>>, for example, it is not possible to create a variable in
 one command and then expect to access it in the next:
 
@@ -1659,7 +1683,7 @@ No such property: x for class: Script4
 Display stack trace? [yN] n
 ----
 
-The same behavior would be seen with REST or when using sessionless requests through one of the Gremlin Server drivers.
+The same behavior would be seen with HTTP or when using sessionless requests through one of the Gremlin Server drivers.
 If having this behavior is desireable, then <<sessions,consider sessions>>.
 
 There is an exception to this notion of state not existing between requests and that is globally defined functions.
@@ -1698,7 +1722,7 @@ $ curl -X POST -d "{\"gremlin\":\"divideIt(8, 2)\"}" "http://localhost:8182"
 {"message":"Error encountered evaluating script: divideIt(8, 2)"}
 ----
 
-In the above REST-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
+In the above HTTP-based requests, the bindings contain a special parameter that tells the `ScriptEngine` cache to
 immediately forget the script after execution. In this way, the function does not end up being globally available.
 
 [[gremlin-plugins]]

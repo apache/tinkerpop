@@ -93,18 +93,6 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
-    public void shouldHandleVertexResultFromTraversal() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final Client aliased = client.alias("g");
-        final ResultSet resultSet = aliased.submit(g.V().both().both());
-        final List<Result> results = resultSet.all().get();
-
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
-        assertEquals(30, results.size());
-    }
-
-    @Test
     public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();

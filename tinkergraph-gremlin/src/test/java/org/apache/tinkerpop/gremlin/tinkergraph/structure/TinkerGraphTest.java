@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
@@ -425,6 +426,44 @@ public class TinkerGraphTest {
     @Test
     public void shouldPersistToGryo() {
         final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryo.kryo";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, false);
+        reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistToGryoAndHandleMultiProperties() {
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryoMulti.kryo";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateTheCrew(graph);
+        graph.close();
+
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.toString());
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertCrewGraph(reloadedGraph, false);
+        reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistWithRelativePath() {
+        final String graphLocation = TestHelper.convertToRelative(TinkerGraphTest.class,
+                new File(TestHelper.makeTestDataDirectory(TinkerGraphTest.class)))  + "shouldPersistToGryoRelative.kryo";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 

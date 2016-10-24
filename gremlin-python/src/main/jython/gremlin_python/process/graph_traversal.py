@@ -19,9 +19,11 @@ under the License.
 import sys
 from .traversal import Traversal
 from .traversal import TraversalStrategies
+from .strategies import VertexProgramStrategy
 from .traversal import Bytecode
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
+from ..statics import long
 
 class GraphTraversalSource(object):
   def __init__(self, graph, traversal_strategies, bytecode=None):
@@ -35,10 +37,6 @@ class GraphTraversalSource(object):
   def withBulk(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
     source.bytecode.add_source("withBulk", *args)
-    return source
-  def withComputer(self, *args):
-    source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
-    source.bytecode.add_source("withComputer", *args)
     return source
   def withPath(self, *args):
     source = GraphTraversalSource(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
@@ -66,6 +64,8 @@ class GraphTraversalSource(object):
     return source
   def withBindings(self, bindings):
     return self
+  def withComputer(self,graph_computer=None, workers=None, result=None, persist=None, vertices=None, edges=None, configuration=None):
+    return self.withStrategies(VertexProgramStrategy(graph_computer,workers,result,persist,vertices,edges,configuration))
   def E(self, *args):
     traversal = GraphTraversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
     traversal.bytecode.add_step("E", *args)
@@ -91,7 +91,7 @@ class GraphTraversal(Traversal):
     if isinstance(index, int):
         return self.range(long(index), long(index + 1))
     elif isinstance(index, slice):
-        return self.range(0L if index.start is None else long(index.start), long(sys.maxint) if index.stop is None else long(index.stop))
+        return self.range(long(0) if index.start is None else long(index.start), long(sys.maxsize) if index.stop is None else long(index.stop))
     else:
         raise TypeError("Index must be int or slice")
   def __getattr__(self, key):

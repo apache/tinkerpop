@@ -21,11 +21,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -64,11 +66,16 @@ public final class NotStep<S> extends FilterStep<S> implements TraversalParent {
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, "!" + this.notTraversal);
+        return StringFactory.stepString(this, this.notTraversal);
     }
 
     @Override
     public int hashCode() {
         return super.hashCode() ^ this.notTraversal.hashCode();
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getSelfAndChildRequirements();
     }
 }

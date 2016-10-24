@@ -51,41 +51,9 @@ import java.util.Iterator;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest",
         method = "g_V_hasXnoX_groupCountXaX_capXaX",
-        reason = "This test asserts an empty side-effect which reflects as a null rather than an \"empty\" and thus doens't assert")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest",
-        method = "g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX",
-        reason = "Issues with Longs")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest",
-        method = "g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX",
-        reason = "Issues with Longs")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest",
-        method = "g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name",
-        reason = "Issues with Longs")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest",
-        method = "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
-        reason = "Issues with BigInteger")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest",
-        method = "g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX",
-        reason = "Issues with Longs")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest",
-        method = "g_VXlistXv1_v2_v3XX_name",
-        reason = "Issues with ids")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
-        method = "g_VXv1X_hasXage_gt_30X",
-        reason = "Issues with ids")
+        reason = "This test asserts an empty side-effect which reflects as a null rather than an \"empty\" and thus doesn't assert")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PeerPressureTest",
-        method = "*",
-        reason = "hmmmm")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest",
         method = "*",
         reason = "hmmmm")
 @Graph.OptOut(
@@ -97,9 +65,17 @@ import java.util.Iterator;
         method = "*",
         reason = "hmmmm")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest",
+        method = "g_V_hasLabelXpersonX_projectXa_bX_byXoutE_countX_byXageX",
+        reason = "Not happy in OLAP.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectTest",
+        method = "g_V_outXcreatedX_projectXa_bX_byXnameX_byXinXcreatedX_countX_order_byXselectXbX__decrX_selectXaX",
+        reason = "Not happy in OLAP.")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "*",
-        reason = "RemoteGraph can't serialize a lambda so the test fails before it has a chance for the Traversal to be evaluated")
+        reason = "The test suite does not support profiling or lambdas and for groovy tests: 'Could not locate method: GraphTraversalSource.withStrategies([{traversalCategory=interface org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy$DecorationStrategy}])'")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest",
         method = "*",

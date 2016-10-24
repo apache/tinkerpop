@@ -22,14 +22,18 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 import unittest
 from unittest import TestCase
 
+import six
+
+from gremlin_python.statics import long
 from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import VertexProperty
+from gremlin_python.structure.graph import Path
 
 
 class TestGraph(TestCase):
-    def testGraphObjects(self):
+    def test_graph_objects(self):
         vertex = Vertex(1)
         assert "v[1]" == str(vertex)
         assert "vertex" == vertex.label
@@ -44,14 +48,14 @@ class TestGraph(TestCase):
         assert "phrase" == edge.inV.label
         assert edge.inV != edge.outV
         #
-        vertex_property = VertexProperty(24L, "name", "marko")
+        vertex_property = VertexProperty(long(24), "name", "marko")
         assert "vp[name->marko]" == str(vertex_property)
         assert "name" == vertex_property.label
         assert "name" == vertex_property.key
         assert "marko" == vertex_property.value
-        assert 24L == vertex_property.id
+        assert long(24) == vertex_property.id
         assert isinstance(vertex_property.id, long)
-        assert vertex_property == VertexProperty(24L, "name", "marko")
+        assert vertex_property == VertexProperty(long(24), "name", "marko")
         #
         property = Property("age", 29)
         assert "p[age->29]" == str(property)
@@ -59,7 +63,8 @@ class TestGraph(TestCase):
         assert 29 == property.value
         assert isinstance(property.value, int)
         assert property == Property("age", 29)
-        assert property != Property("age", 29L)
+        if not six.PY3:
+            assert property != Property("age", long(29))
         #
         for i in [vertex, edge, vertex_property, property]:
             for j in [vertex, edge, vertex_property, property]:
@@ -68,6 +73,47 @@ class TestGraph(TestCase):
                 else:
                     assert i == j
                     assert i.__hash__() == hash(i)
+
+    def test_path(self):
+        path = Path([set(["a", "b"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
+        assert "[1, v[1], 'hello']" == str(path)
+        assert 1 == path["a"]
+        assert Vertex(1) == path["c"]
+        assert [1, Vertex(1)] == path["b"]
+        assert path[0] == 1
+        assert path[1] == Vertex(1)
+        assert path[2] == "hello"
+        assert 3 == len(path)
+        assert "hello" in path
+        assert "goodbye" not in path
+        assert Vertex(1) in path
+        assert Vertex(123) not in path
+        #
+        try:
+            temp = path[3]
+            raise Exception("Accessing beyond the list index should throw an index error")
+        except IndexError:
+            pass
+        #
+        try:
+            temp = path["zz"]
+            raise Exception("Accessing nothing should throw a key error")
+        except KeyError:
+            pass
+        #
+        try:
+            temp = path[1:2]
+            raise Exception("Accessing using slices should throw a type error")
+        except TypeError:
+            pass
+        #
+        assert path == path
+        assert hash(path) == hash(path)
+        path2 = Path([set(["a", "b"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
+        assert path == path2
+        assert hash(path) == hash(path2)
+        assert path != Path([set(["a"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
+        assert path != Path([set(["a", "b"]), set(["c", "b"]), set([])], [3, Vertex(1), "hello"])
 
 
 if __name__ == '__main__':

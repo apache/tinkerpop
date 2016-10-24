@@ -30,4 +30,8 @@ public interface HasContainerHolder {
     public List<HasContainer> getHasContainers();
 
     public void addHasContainer(final HasContainer hasContainer);
+
+    public default void removeHasContainer(final HasContainer hasContainer) {
+        throw new UnsupportedOperationException("The holder does not support container removal: " + this.getClass().getCanonicalName());
+    }
 }

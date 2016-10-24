@@ -86,6 +86,7 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
         if (frame instanceof TextWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));
         } else if (frame instanceof PongWebSocketFrame) {
+            logger.debug("Received response from keep-alive request");
         } else if (frame instanceof BinaryWebSocketFrame) {
             ctx.fireChannelRead(frame.retain(2));
         } else if (frame instanceof CloseWebSocketFrame)
@@ -95,9 +96,9 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-        logger.warn("Exception caught during WebSocket processing - closing connection", cause);
         if (!handshakeFuture.isDone()) handshakeFuture.setFailure(cause);
-        ctx.close();
+
+        // let the GremlinResponseHandler take care of exception logging, channel closing, and cleanup
         ctx.fireExceptionCaught(cause);
     }
 }

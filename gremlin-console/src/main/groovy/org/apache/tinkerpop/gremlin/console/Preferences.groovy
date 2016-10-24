@@ -73,9 +73,9 @@ public class Preferences {
     public static final String PREF_RESULT_PROMPT_COLOR_DEFAULT = "reset"
     public static String  resultPromptColor = PREF_RESULT_PROMPT_COLOR_DEFAULT
 
-    public static final String PREF_EMPTY_RESULT_IND = "empty.result.indicator"
-    public static final String PREF_EMPTY_RESULT_IND_DEFAULT = "null"
-    public static String  emptyResult = PREF_EMPTY_RESULT_IND_DEFAULT
+    public static final String PREF_RESULT_IND_NULL = "result.indicator.null"
+    public static final String PREF_RESULT_IND_NULL_DEFAULT = "null"
+    public static String  emptyResult = PREF_RESULT_IND_NULL_DEFAULT
 
     public static final String PREF_INPUT_PROMPT = "input.prompt"
     public static final String PREF_INPUT_PROMPT_DEFAULT = "gremlin>"
@@ -212,9 +212,9 @@ public class Preferences {
                             inputPromptColor =  getValidColor(PREF_INPUT_PROMPT_COLOR, evt.newValue, PREF_INPUT_PROMPT_COLOR_DEFAULT)
                         } else if (evt.key == PREF_RESULT_PROMPT_COLOR) {
                             resultPromptColor =  getValidColor(PREF_RESULT_PROMPT_COLOR, evt.newValue, PREF_RESULT_PROMPT_COLOR_DEFAULT)
-                        } else if (evt.key == PREF_EMPTY_RESULT_IND) {
+                        } else if (evt.key == PREF_RESULT_IND_NULL) {
                             if (null == evt.newValue) {
-                                emptyResult =  STORE.get(PREF_EMPTY_RESULT_IND, PREF_EMPTY_RESULT_IND_DEFAULT)
+                                emptyResult =  STORE.get(PREF_RESULT_IND_NULL, PREF_RESULT_IND_NULL_DEFAULT)
                             } else {
                                 emptyResult = evt.newValue
                             }
@@ -285,7 +285,7 @@ public class Preferences {
 
         resultPromptColor =  getValidColor(PREF_RESULT_PROMPT_COLOR, null, PREF_RESULT_PROMPT_COLOR_DEFAULT)
 
-        emptyResult =  STORE.get(PREF_EMPTY_RESULT_IND, PREF_EMPTY_RESULT_IND_DEFAULT)
+        emptyResult =  STORE.get(PREF_RESULT_IND_NULL, PREF_RESULT_IND_NULL_DEFAULT)
 
         inputPrompt =  STORE.get(PREF_INPUT_PROMPT, PREF_INPUT_PROMPT_DEFAULT)
 

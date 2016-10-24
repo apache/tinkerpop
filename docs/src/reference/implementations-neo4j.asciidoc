@@ -42,6 +42,8 @@ because it only references the Apache2-licensed Neo4j API (not its implementatio
 binaries. To access the binaries, use the `:install` command to download binaries from
 link:http://search.maven.org/[Maven Central Repository].
 
+TIP: For configuring Grape, the dependency resolver of Groovy, please refer to the <<gremlin-applications,Gremlin Applications>> section.
+
 [source,groovy]
 ----
 gremlin> :install org.apache.tinkerpop neo4j-gremlin x.y.z
@@ -329,4 +331,3 @@ a cluster handled by two Gremlin Servers or Neo4j Enterprise. The only limits as
 utilized are prescribed by Neo4j itself. Please refer to their
 link:http://neo4j.com/docs/operations-manual/current/#ha-setup-tutorial[documentation] for more information on how
 this feature works.
-

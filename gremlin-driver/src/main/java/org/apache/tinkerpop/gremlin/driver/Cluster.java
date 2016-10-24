@@ -37,6 +37,7 @@ import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -84,7 +85,9 @@ public final class Cluster {
      * submitted or can be directly initialized via {@link Client#init()}.
      */
     public <T extends Client> T connect() {
-        return (T) new Client.ClusteredClient(this, Client.Settings.build().create());
+        final Client client = new Client.ClusteredClient(this, Client.Settings.build().create());
+        manager.trackClient(client);
+        return (T) client;
     }
 
     /**
@@ -132,8 +135,10 @@ public final class Cluster {
      * Creates a new {@link Client} based on the settings provided.
      */
     public <T extends Client> T connect(final Client.Settings settings) {
-        return settings.getSession().isPresent() ? (T) new Client.SessionedClient(this, settings) :
-                (T) new Client.ClusteredClient(this, settings);
+        final Client client = settings.getSession().isPresent() ? new Client.SessionedClient(this, settings) :
+                new Client.ClusteredClient(this, settings);
+        manager.trackClient(client);
+        return (T) client;
     }
 
     @Override
@@ -163,6 +168,7 @@ public final class Cluster {
                 .port(settings.port)
                 .enableSsl(settings.connectionPool.enableSsl)
                 .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
+                .keepAliveInterval(settings.connectionPool.keepAliveInterval)
                 .keyCertChainFile(settings.connectionPool.keyCertChainFile)
                 .keyFile(settings.connectionPool.keyFile)
                 .keyPassword(settings.connectionPool.keyPassword)
@@ -254,7 +260,7 @@ public final class Cluster {
 
     /**
      * Gets the list of hosts that the {@code Cluster} was able to connect to.  A {@link Host} is assumed unavailable
-     * until a connection to it is proven to be present.  This will not happen until the the {@link Client} submits
+     * until a connection to it is proven to be present.  This will not happen until the {@link Client} submits
      * requests that succeed in reaching a server at the {@link Host} or {@link Client#init()} is called which
      * initializes the {@link ConnectionPool} for the {@link Client} itself.  The number of available hosts returned
      * from this method will change as different servers come on and offline.
@@ -388,6 +394,14 @@ public final class Cluster {
     }
 
     /**
+     * Gets time in milliseconds to wait after the last message is sent over a connection before sending a keep-alive
+     * message to the server.
+     */
+    public long getKeepAliveInterval() {
+        return manager.connectionPoolSettings.keepAliveInterval;
+    }
+
+    /**
      * Specifies the load balancing strategy to use on the client side.
      */
     public Class<? extends LoadBalancingStrategy> getLoadBalancingStrategy() {
@@ -478,6 +492,7 @@ public final class Cluster {
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String trustCertChainFile = null;
@@ -500,7 +515,6 @@ public final class Cluster {
          * Size of the pool for handling request/response operations.  Defaults to the number of available processors.
          */
         public Builder nioPoolSize(final int nioPoolSize) {
-            if (nioPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.nioPoolSize = nioPoolSize;
             return this;
         }
@@ -510,7 +524,6 @@ public final class Cluster {
          * by 2
          */
         public Builder workerPoolSize(final int workerPoolSize) {
-            if (workerPoolSize < 1) throw new IllegalArgumentException("The workerPoolSize must be greater than zero");
             this.workerPoolSize = workerPoolSize;
             return this;
         }
@@ -569,6 +582,16 @@ public final class Cluster {
          */
         public Builder trustCertificateChainFile(final String certificateChainFile) {
             this.trustCertChainFile = certificateChainFile;
+            return this;
+        }
+
+        /**
+         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
+         * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
+         * {@link Channelizer#supportsKeepAlive()}.  Set to zero to disable this feature.
+         */
+        public Builder keepAliveInterval(final long keepAliveInterval) {
+            this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -712,7 +735,10 @@ public final class Cluster {
 
         /**
          * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
+         *
+         * @deprecated As of release 3.2.3, the value of the initial delay is now the same as the {@link #reconnectInterval}.
          */
+        @Deprecated
         public Builder reconnectIntialDelay(final int initialDelay) {
             this.reconnectInitialDelay = initialDelay;
             return this;
@@ -848,7 +874,11 @@ public final class Cluster {
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
+        private final List<WeakReference<Client>> openedClients = new ArrayList<>();
+
         private Manager(final Builder builder) {
+            validateBuilder(builder);
+
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
@@ -871,6 +901,7 @@ public final class Cluster {
             connectionPoolSettings.keyCertChainFile = builder.keyCertChainFile;
             connectionPoolSettings.keyFile = builder.keyFile;
             connectionPoolSettings.keyPassword = builder.keyPassword;
+            connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
             connectionPoolSettings.channelizer = builder.channelizer;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
@@ -885,6 +916,57 @@ public final class Cluster {
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
         }
 
+        private void validateBuilder(final Builder builder) {
+            if (builder.minInProcessPerConnection < 0)
+                throw new IllegalArgumentException("minInProcessPerConnection must be greater than or equal to zero");
+
+            if (builder.maxInProcessPerConnection < 1)
+                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than zero");
+
+            if (builder.minInProcessPerConnection > builder.maxInProcessPerConnection)
+                throw new IllegalArgumentException("maxInProcessPerConnection cannot be less than minInProcessPerConnection");
+
+            if (builder.minSimultaneousUsagePerConnection < 0)
+                throw new IllegalArgumentException("minSimultaneousUsagePerConnection must be greater than or equal to zero");
+
+            if (builder.maxSimultaneousUsagePerConnection < 1)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than zero");
+
+            if (builder.minSimultaneousUsagePerConnection > builder.maxSimultaneousUsagePerConnection)
+                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection cannot be less than minSimultaneousUsagePerConnection");
+
+            if (builder.minConnectionPoolSize < 0)
+                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
+
+            if (builder.maxConnectionPoolSize < 1)
+                throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
+
+            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
+                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
+
+            if (builder.maxWaitForConnection < 1)
+                throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
+
+            if (builder.maxWaitForSessionClose < 1)
+                throw new IllegalArgumentException("maxWaitForSessionClose must be greater than zero");
+
+            if (builder.maxContentLength < 1)
+                throw new IllegalArgumentException("maxContentLength must be greater than zero");
+
+            if (builder.reconnectInterval < 1)
+                throw new IllegalArgumentException("reconnectInterval must be greater than zero");
+
+            if (builder.resultIterationBatchSize < 1)
+                throw new IllegalArgumentException("resultIterationBatchSize must be greater than zero");
+
+            if (builder.nioPoolSize < 1)
+                throw new IllegalArgumentException("nioPoolSize must be greater than zero");
+
+            if (builder.workerPoolSize < 1)
+                throw new IllegalArgumentException("workerPoolSize must be greater than zero");
+
+        }
+
         synchronized void init() {
             if (initialized)
                 return;
@@ -896,6 +978,10 @@ public final class Cluster {
                 if (host != null)
                     host.makeAvailable();
             });
+        }
+
+        void trackClient(final Client client) {
+            openedClients.add(new WeakReference<>(client));
         }
 
         public Host add(final InetSocketAddress address) {
@@ -912,6 +998,13 @@ public final class Cluster {
             // this method is exposed publicly in both blocking and non-blocking forms.
             if (closeFuture.get() != null)
                 return closeFuture.get();
+
+            for (WeakReference<Client> openedClient : openedClients) {
+                final Client client = openedClient.get();
+                if (client != null && !client.isClosing()) {
+                    client.close();
+                }
+            }
 
             final CompletableFuture<Void> closeIt = new CompletableFuture<>();
             closeFuture.set(closeIt);

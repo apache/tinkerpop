@@ -116,7 +116,7 @@ Implementing GraphComputer
 
 image:furnace-character-3.png[width=150,float=right] The most complex method in GraphComputer is the `submit()`-method. The method must do the following:
 
-. Ensure the the GraphComputer has not already been executed.
+. Ensure the GraphComputer has not already been executed.
 . Ensure that at least there is a VertexProgram or 1 MapReduce job.
 . If there is a VertexProgram, validate that it can execute on the GraphComputer given the respectively defined features.
 . Create the Memory to be used for the computation.
@@ -287,7 +287,7 @@ for (final MapReduce mapReduce : mapReducers) {
 
 <1> Note that the final results of the reducer are provided to the Memory as specified by the application developer's
 `MapReduce.addResultToMemory()` implementation.
-<2> If there is no reduce stage, the the map-stage results are inserted into Memory as specified by the application
+<2> If there is no reduce stage, the map-stage results are inserted into Memory as specified by the application
 developer's `MapReduce.addResultToMemory()` implementation.
 
 Hadoop-Gremlin Usage
@@ -329,7 +329,7 @@ GraphFilterAware Interface
 ++++++++++++++++++++++++++
 
 <<graph-filter,Graph filters>> by OLAP processors to only pull a subgraph of the full graph from the graph data source. For instance, the
-example below constructs a `GraphFilter` that will only pull the the "knows"-graph amongst people into the `GraphComputer`
+example below constructs a `GraphFilter` that will only pull the "knows"-graph amongst people into the `GraphComputer`
 for processing.
 
 [source,java]
@@ -785,6 +785,9 @@ Gremlin Server will send:
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
+NOTE: Please refer to the link:http://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
+examples of `RequestMessage` and `ResponseMessage` instances.
+
 OpProcessors Arguments
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -827,6 +830,7 @@ evaluated and is committed when the script completes (or rolled back if an error
 |=========================================================
 |Key |Type |Description
 |sasl |byte[] | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server.
+|saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
 |=========================================================
 
 '`eval` operation arguments'
@@ -841,7 +845,7 @@ be aliased to different variable names for purposes of the current request.  The
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
 to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
-|scriptEvalTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |=========================================================
 
 Session OpProcessor
@@ -883,7 +887,7 @@ Gremlin Server are deployed, session state is not shared among them.
 |session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist).
 |manageTransaction |Boolean |When set to `true` the transaction for the current request is auto-committed or rolled-back as are done with sessionless requests - defaulted to `false`.
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
-|scriptEvalTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
+|scriptEvaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
 |language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`)
 |aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
 be aliased to different variable names for purposes of the current request.  The value represents the name the
@@ -912,7 +916,7 @@ Unlike Standard and Session OpProcessors, the Traversal OpProcessor does not sim
 `Traversal`. It instead returns `Traverser` objects which allows the client to take advantage of
 link:http://tinkerpop.apache.org/docs/current/reference/#barrier-step[bulking]. To describe this interaction more
 directly, the returned `Traverser` will represent some value from the `Traversal` result and the number of times it
-is represented in the the full stream of results. So, if a `Traversal` happens to return the same vertex twenty times
+is represented in the full stream of results. So, if a `Traversal` happens to return the same vertex twenty times
 it won't return twenty instances of the same object. It will return one in `Traverser` with the `bulk` value set to
 twenty. Under this model, the amount of processing and network overhead can be reduced considerably.
 

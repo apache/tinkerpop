@@ -45,7 +45,7 @@ public interface RemoteConnection extends AutoCloseable {
     /**
      * Submits {@link Traversal} {@link Bytecode} to a server and returns a {@link Traversal}.
      * The {@link Traversal} is an abstraction over two types of results that can be returned as part of the
-     * response from the server: the results of the {@link Traversal} itself and the the side-effects that it produced.
+     * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
      */
     public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
 }

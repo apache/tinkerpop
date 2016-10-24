@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Serialize results to JSON with version 2.0.x schema.
+ * Serialize results to JSON with version 2.0.x schema and the extended module.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -64,9 +65,8 @@ public final class GraphSONMessageSerializerV2d0 extends AbstractGraphSONMessage
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        return builder.version(GraphSONVersion.V2_0)
-                .addCustomModule(new GremlinServerModule())
-                .typeInfo(TypeInfo.PARTIAL_TYPES);
+        // already set to 2.0 in AbstractGraphSONMessageSerializerV2d0
+        return builder.typeInfo(TypeInfo.PARTIAL_TYPES);
     }
 
     @Override

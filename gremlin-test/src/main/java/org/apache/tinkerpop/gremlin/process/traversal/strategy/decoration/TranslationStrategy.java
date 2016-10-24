@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -70,9 +71,12 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             return;
 
         // verifications to ensure unsupported steps do not exist in the traversal
-        if (Boolean.valueOf(System.getProperty("is.testing", "false")) &&
-                (traversal.getBytecode().toString().contains("$") || traversal.getBytecode().toString().contains("HashSetSupplier")))
-            throw new VerificationException("Test suite does not support lambdas", traversal);
+        if (Boolean.valueOf(System.getProperty("is.testing", "false"))) {
+            if (traversal.getBytecode().toString().contains("$") || traversal.getBytecode().toString().contains("HashSetSupplier"))
+                throw new VerificationException("Test suite does not support lambdas", traversal);
+            if (TraversalHelper.hasStepOfAssignableClassRecursively(ProgramVertexProgramStep.class, traversal))
+                throw new VerificationException("Test suite does not support embedded vertex programs", traversal);
+        }
 
         final Traversal.Admin<?, ?> translatedTraversal;
         final Bytecode bytecode = Boolean.valueOf(System.getProperty("is.testing", "false")) ?

@@ -68,6 +68,8 @@ Publications
 
 Unless otherwise noted, all "publications" are externally managed:
 
+* Rodriguez, M.A., link:http://www.datastax.com/dev/blog/gremlins-time-machine["Gremlin's Time Machine,"] DataStax Engineering Blog, September 2016.
+* Rodriguez, M.A., link:http://www.slideshare.net/slidarko/gremlins-graph-traversal-machinery["Gremlin's Graph Traversal Machinery,"] Cassandra Summit, September 2016.
 * Rodriguez, M.A., link:http://www.datastax.com/dev/blog/the-mechanics-of-gremlin-olap["The Mechanics of Gremlin OLAP,"] DataStax Engineering Blog, April 2016.
 * Rodriguez, M.A., link:http://www.slideshare.net/slidarko/quantum-processes-in-graph-computing["Quantum Processes in Graph Computing,"] GraphDay '16 Presentation, Austin Texas, January 2016. [video presentation]
 * Rodriguez, M.A., Watkins, J.H., link:http://arxiv.org/abs/1511.06278["Quantum Walks with Gremlin,"] GraphDay '16 Proceedings, Austin Texas, January 2016.
@@ -88,4 +90,6 @@ Developer
 Provides information on ways to contribute to TinkerPop as well as details on building the project and other specific information for contributors.
 |image:tinkerpop-enabled.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Providers] +
 Documentation for providers who implement the TinkerPop interfaces, develop plugins or drivers, or provide other third-party libraries for TinkerPop.
+|image:gremlin-io2.png[width=200] |link:http://tinkerpop.apache.org/docs/x.y.z/dev/io/[IO Reference] +
+Reference Documentation for providers and users of the various IO formats that TinkerPop has: GraphML, GraphSON and Gryo.
 |=========================================================

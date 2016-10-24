@@ -16,10 +16,10 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
-import abc
-import six
 from aenum import Enum
 from .. import statics
+from ..statics import long
+
 
 class Traversal(object):
     def __init__(self, graph, traversal_strategies, bytecode):
@@ -31,6 +31,11 @@ class Traversal(object):
         self.last_traverser = None
     def __repr__(self):
         return str(self.bytecode)
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.bytecode == other.bytecode
+        else:
+            return False
     def __iter__(self):
         return self
     def __next__(self):
@@ -172,10 +177,10 @@ class P(object):
    @staticmethod
    def without(*args):
       return P("without", *args)
-   def _and(self, arg):
-      return P("and", arg, self)
-   def _or(self, arg):
-      return P("or", arg, self)
+   def and_(self, arg):
+      return P("and", self, arg)
+   def or_(self, arg):
+      return P("or", self, arg)
    def __eq__(self, other):
         return isinstance(other, self.__class__) and self.operator == other.operator and self.value == other.value and self.other == other.other
    def __repr__(self):
@@ -240,7 +245,9 @@ TRAVERSER
 '''
 
 class Traverser(object):
-    def __init__(self, object, bulk=1L):
+    def __init__(self, object, bulk=None):
+        if bulk is None:
+            bulk = long(1)
         self.object = object
         self.bulk = bulk
     def __repr__(self):
@@ -275,13 +282,22 @@ class TraversalStrategies(object):
     def apply_strategies(self, traversal):
         for traversal_strategy in self.traversal_strategies:
             traversal_strategy.apply(traversal)
+    def __repr__(self):
+        return str(self.traversal_strategies)
 
 
-@six.add_metaclass(abc.ABCMeta)
 class TraversalStrategy(object):
-    @abc.abstractmethod
+    def __init__(self, strategy_name=None, configuration=None):
+        self.strategy_name = type(self).__name__ if strategy_name is None else strategy_name
+        self.configuration = {} if configuration is None else configuration
     def apply(self, traversal):
         return
+    def __eq__(self, other):
+        return isinstance(other, self.__class__)
+    def __hash__(self):
+        return hash(self.strategy_name)
+    def __repr__(self):
+        return self.strategy_name
 
 '''
 BYTECODE
@@ -305,13 +321,33 @@ class Bytecode(object):
         for arg in args:
             instruction.append(self.__convertArgument(arg))
         self.step_instructions.append(instruction)
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.source_instructions == other.source_instructions and self.step_instructions == other.step_instructions
+        else:
+            return False
     def __convertArgument(self,arg):
         if isinstance(arg, Traversal):
             self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
+        elif isinstance(arg, dict):
+            newDict = {}
+            for key in arg:
+                newDict[self.__convertArgument(key)] = self.__convertArgument(arg[key])
+            return newDict
+        elif isinstance(arg, list):
+            newList = []
+            for item in arg:
+                newList.append(self.__convertArgument(item))
+            return newList
+        elif isinstance(arg, set):
+            newSet = set()
+            for item in arg:
+                newSet.add(self.__convertArgument(item))
+            return newSet
         elif isinstance(arg, tuple) and 2 == len(arg) and isinstance(arg[0], str):
             self.bindings[arg[0]] = arg[1]
-            return Binding(arg[0],arg[1])
+            return Binding(arg[0],self.__convertArgument(arg[1]))
         else:
             return arg
     def __repr__(self):

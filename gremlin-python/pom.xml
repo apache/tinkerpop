@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
@@ -47,12 +47,6 @@
         </dependency>
         <!-- TESTING -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
@@ -73,12 +67,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <properties>
-        <!-- provide a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
+        <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
@@ -124,24 +117,6 @@
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>addSources</goal>
-                            <goal>addTestSources</goal>
-                            <goal>generateStubs</goal>
-                            <goal>compile</goal>
-                            <goal>testGenerateStubs</goal>
-                            <goal>testCompile</goal>
-                            <goal>removeStubs</goal>
-                            <goal>removeTestStubs</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <invokeDynamic>true</invokeDynamic>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -275,7 +250,7 @@
     </build>
 
     <profiles>
-        <!-- This default profile works around the issue where the glvPython profile which is expected to run all tests
+        <!-- This default profile works around the issue where the glv-python profile which is expected to run all tests
              can't override the exclusions defined below. -->
         <profile>
             <id>glv-python-standard</id>
@@ -285,13 +260,13 @@
             <build>
                 <plugins>
                     <!-- excludes python related tests that require python itself installed on the system - run with the
-                         python profile if python is present -->
+                         python profile if glVPython is present -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <python.home>${project.build.testOutputDirectory}</python.home>
+                                <python.home>${project.build.outputDirectory}</python.home>
                             </systemPropertyVariables>
                             <excludes>
                                 <exclude>**/jsr223/Python*Test.java</exclude>
@@ -307,9 +282,9 @@
             <id>glv-python</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>glvPython</name>
-                </property>
+                <file>
+                    <exists>.glv</exists>
+                </file>
             </activation>
             <build>
 
@@ -320,33 +295,25 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <python.home>${project.build.testOutputDirectory}</python.home>
+                                <python.home>${project.build.outputDirectory}</python.home>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-                    <!-- required for the jython tests  -->
                     <plugin>
                         <groupId>net.sf.mavenjython</groupId>
                         <artifactId>jython-compile-maven-plugin</artifactId>
                         <version>1.4</version>
                         <executions>
                             <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jython</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>pythonDependencies</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>process-resources</phase>
                                 <goals>
                                     <goal>jython</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                                     <libraries>
                                         <param>aenum==1.4.5</param>
                                         <param>tornado==4.4.1</param>
+                                        <param>six==1.10.0</param>
                                     </libraries>
                                 </configuration>
                             </execution>
@@ -421,17 +388,16 @@
                             </execution>
                             <execution>
                                 <id>native-python-build</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>compile</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <skip>${skipTests}</skip>
                                     <target>
                                         <exec executable="env/bin/python" dir="${project.build.directory}/python"
                                               failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py build --build-lib ${project.build.testOutputDirectory}/Lib"/>
+                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -454,13 +420,7 @@
                                               failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py sdist"/>
-                                        </exec>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
-                                              failonerror="true">
-                                            <env key="VERSION" value="${project.version}"/>
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py bdist_wheel"/>
+                                            <arg line="setup.py sdist bdist_wheel"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -468,7 +428,8 @@
 
                             <!--
                             use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
-                            had to use the ant plugin - maven-exec-plugin
+                            this has to be an integration-test because we need gremlin-server running and the standard
+                            test phase doesn't have a pre/post event like integration-test does.
                             -->
                             <execution>
                                 <id>native-python-test</id>
@@ -492,7 +453,6 @@
                     <plugin>
                         <groupId>org.codehaus.gmavenplus</groupId>
                         <artifactId>gmavenplus-plugin</artifactId>
-                        <version>1.2</version>
                         <dependencies>
                             <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
@@ -596,6 +556,19 @@ log.info("Gremlin Server shutdown")
             </activation>
             <build>
                 <plugins>
+                    <!--
+                    pypi doesn't have a staging area like sonatype so the deploy to pypi is done out of the normal
+                    release band. it is performed after successful VOTE in which case, the maven artifacts should
+                    not be deployed again - hence the plugin is disabled. deployment to pypi uses the antrun plugin
+                    below with twine so disabling the plugin has no effect on the pypi deployment.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
@@ -613,9 +586,10 @@ log.info("Gremlin Server shutdown")
                                               failonerror="true">
                                             <arg line="install twine"/>
                                         </exec>
+                                        <!-- to use the pypi test environment add: -r pypitest -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
-                                            <arg line="upload dist/* -r pypi -s"/>
+                                            <arg line="upload dist/* -r pypi -s "/>
                                         </exec>
                                     </tasks>
                                 </configuration>

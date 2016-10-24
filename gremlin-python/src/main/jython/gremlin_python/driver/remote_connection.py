@@ -42,7 +42,7 @@ class RemoteConnection(object):
 
     @abc.abstractmethod
     def submit(self, bytecode):
-        print "sending " + bytecode + " to GremlinServer..."
+        print("sending " + bytecode + " to GremlinServer...")
         return RemoteTraversal(iter([]), TraversalSideEffects())
 
     def __repr__(self):
@@ -57,15 +57,33 @@ class RemoteTraversal(Traversal):
 
 
 class RemoteTraversalSideEffects(TraversalSideEffects):
-    def __init__(self, keys_lambda, value_lambda):
-        self.keys_lambda = keys_lambda
-        self.value_lambda = value_lambda
+    def __init__(self, keys_lambda, value_lambda, close_lambda):
+        self._keys_lambda = keys_lambda
+        self._value_lambda = value_lambda
+        self._close_lambda = close_lambda
+        self._keys = set()
+        self._side_effects = {}
+        self._closed = False
 
     def keys(self):
-        return self.keys_lambda()
+        if not self._closed:
+            self._keys = self._keys_lambda()
+        return self._keys
 
     def get(self, key):
-        return self.value_lambda(key)
+        if not self._side_effects.get(key):
+            if not self._closed:
+                results = self._value_lambda(key)
+                self._side_effects[key] = results
+                self._keys.add(key)
+            else:
+                return None
+        return self._side_effects[key]
+
+    def close(self):
+        results = self._close_lambda()
+        self._closed = True
+        return results
 
 
 class RemoteStrategy(TraversalStrategy):

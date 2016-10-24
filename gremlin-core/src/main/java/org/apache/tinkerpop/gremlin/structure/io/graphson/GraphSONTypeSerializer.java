@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.databind.BeanProperty;
@@ -198,6 +199,8 @@ public class GraphSONTypeSerializer extends TypeSerializer {
             return InetAddress.class;
         } else if (Traverser.class.isAssignableFrom(c)) {
             return Traverser.class;
+        } else if (Lambda.class.isAssignableFrom(c)) {
+            return Lambda.class;
         }
         return c;
     }

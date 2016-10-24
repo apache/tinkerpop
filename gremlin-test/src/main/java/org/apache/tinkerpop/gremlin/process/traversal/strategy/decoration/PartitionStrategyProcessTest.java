@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -31,6 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -39,7 +41,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -51,8 +57,8 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldAppendPartitionToVertex() {
         final PartitionStrategy partitionStrategy = PartitionStrategy.build()
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final Vertex v = create(partitionStrategy).addV().property("any", "thing").next();
+                .partitionKey(partition).writePartition("A").readPartitions("A").create();
+        final Vertex v = g.withStrategies(partitionStrategy).addV().property("any", "thing").next();
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
@@ -65,8 +71,8 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldAppendPartitionToVertexProperty() {
         final PartitionStrategy partitionStrategy = PartitionStrategy.build()
                 .includeMetaProperties(true)
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final Vertex v = create(partitionStrategy).addV().property("any", "thing").next();
+                .partitionKey(partition).writePartition("A").readPartitions("A").create();
+        final Vertex v = g.withStrategies(partitionStrategy).addV().property("any", "thing").next();
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
@@ -81,8 +87,8 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldAppendPartitionToVertexPropertyOverMultiProperty() {
         final PartitionStrategy partitionStrategy = PartitionStrategy.build()
                 .includeMetaProperties(true)
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final Vertex v = create(partitionStrategy).addV().property(VertexProperty.Cardinality.list, "any", "thing")
+                .partitionKey(partition).writePartition("A").readPartitions("A").create();
+        final Vertex v = g.withStrategies(partitionStrategy).addV().property(VertexProperty.Cardinality.list, "any", "thing")
                 .property(VertexProperty.Cardinality.list, "any", "more").next();
 
         assertNotNull(v);
@@ -97,8 +103,8 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldNotAppendPartitionToVertexProperty() {
         final PartitionStrategy partitionStrategy = PartitionStrategy.build()
                 .includeMetaProperties(false)
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final Vertex v = create(partitionStrategy).addV().property("any", "thing").next();
+                .partitionKey(partition).writePartition("A").readPartitions("A").create();
+        final Vertex v = g.withStrategies(partitionStrategy).addV().property("any", "thing").next();
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
@@ -111,19 +117,19 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldAppendPartitionToAllVertexProperties() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
 
-        final GraphTraversalSource gOverB = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverB = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("B").addReadPartition("B").create());
 
-        final GraphTraversalSource gOverAB = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverAB = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("B").addReadPartition("B").addReadPartition("A").create());
 
-        final Vertex v = gOverA.addV().property("any", "thing").property("some","thing").next();
+        final Vertex v = gOverA.addV().property("any", "thing").property("some", "thing").next();
 
         assertNotNull(v);
         assertEquals("thing", v.property("any").value());
@@ -173,7 +179,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForValues() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
@@ -191,9 +197,9 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForValuesWithEmptyKeys() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+                .partitionKey(partition).writePartition("A").readPartitions("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
 
         assertEquals(1l, (long) gOverA.V(v).values().count().next());
@@ -204,7 +210,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForProperties() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
@@ -221,9 +227,9 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForPropertiesWithEmptyKeys() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+                .partitionKey(partition).writePartition("A").readPartitions("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
 
         assertEquals(1l, (long) gOverA.V(v).properties().count().next());
@@ -234,9 +240,9 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForPropertyMap() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+                .partitionKey(partition).writePartition("A").readPartitions("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
 
         gOverA.V(v).propertyMap(partition).next();
@@ -246,7 +252,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForPropertyMapWithEmptyKeys() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
@@ -255,10 +261,11 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("thing", ((List<VertexProperty>) gOverA.V(v).propertyMap().next().get("any")).get(0).value());
     }
 
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForValueMap() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
@@ -267,8 +274,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
             gOverA.V(v).valueMap(partition).next();
             fail("Should have thrown exception");
         } catch (Exception ex) {
-            final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertThat(root.getMessage(), startsWith("Cannot explicitly request the partitionKey in the traversal"));
+
         }
     }
 
@@ -276,7 +282,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldHidePartitionKeyForValueMapWithEmptyKeys() {
-        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+        final GraphTraversalSource gOverA = g.withStrategies(PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create());
         final Vertex v = gOverA.addV().property("any", "thing").next();
@@ -290,7 +296,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldAppendPartitionToEdge() {
         final PartitionStrategy partitionStrategy = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final GraphTraversalSource source = create(partitionStrategy);
+        final GraphTraversalSource source = g.withStrategies(partitionStrategy);
         final Vertex v1 = source.addV().property("any", "thing").next();
         final Vertex v2 = source.addV().property("some", "thing").next();
         final Edge e = source.withSideEffect("v2", v2).V(v1.id()).addE("connectsTo").from("v2").property("every", "thing").next();
@@ -314,19 +320,19 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldWriteVerticesToMultiplePartitions() {
         final PartitionStrategy partitionStrategyAA = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final GraphTraversalSource sourceAA = create(partitionStrategyAA);
+        final GraphTraversalSource sourceAA = g.withStrategies(partitionStrategyAA);
 
         final PartitionStrategy partitionStrategyBA = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("B").addReadPartition("A").create();
-        final GraphTraversalSource sourceBA = create(partitionStrategyBA);
+        final GraphTraversalSource sourceBA = g.withStrategies(partitionStrategyBA);
 
         final PartitionStrategy partitionStrategyBB = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("B").addReadPartition("B").create();
-        final GraphTraversalSource sourceBB = create(partitionStrategyBB);
+        final GraphTraversalSource sourceBB = g.withStrategies(partitionStrategyBB);
 
         final PartitionStrategy partitionStrategyBAB = PartitionStrategy.build()
-                .partitionKey(partition).writePartition("B").addReadPartition("A").addReadPartition("B").create();
-        final GraphTraversalSource sourceBAB = create(partitionStrategyBAB);
+                .partitionKey(partition).writePartition("B").readPartitions("A", "B").create();
+        final GraphTraversalSource sourceBAB = g.withStrategies(partitionStrategyBAB);
 
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
@@ -351,11 +357,11 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldThrowExceptionOnVInDifferentPartition() {
         final PartitionStrategy partitionStrategyAA = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final GraphTraversalSource sourceAA = create(partitionStrategyAA);
+        final GraphTraversalSource sourceAA = g.withStrategies(partitionStrategyAA);
 
         final PartitionStrategy partitionStrategyA = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("A").create();
-        final GraphTraversalSource sourceA = create(partitionStrategyA);
+        final GraphTraversalSource sourceA = g.withStrategies(partitionStrategyA);
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
         assertEquals(vA.id(), sourceAA.V(vA.id()).id().next());
@@ -373,11 +379,11 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldThrowExceptionOnEInDifferentPartition() {
         final PartitionStrategy partitionStrategyAA = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final GraphTraversalSource sourceAA = create(partitionStrategyAA);
+        final GraphTraversalSource sourceAA = g.withStrategies(partitionStrategyAA);
 
         final PartitionStrategy partitionStrategyA = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("A").create();
-        final GraphTraversalSource sourceA = create(partitionStrategyA);
+        final GraphTraversalSource sourceA = g.withStrategies(partitionStrategyA);
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
         final Edge e = sourceAA.withSideEffect("vA", vA).V(vA.id()).addE("knows").to("vA").next();
@@ -396,40 +402,38 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldWriteToMultiplePartitions() {
         final PartitionStrategy partitionStrategyAA = PartitionStrategy.build()
-                .partitionKey(partition).writePartition("A").addReadPartition("A").create();
-        final GraphTraversalSource sourceAA = create(partitionStrategyAA);
+                .partitionKey(partition).writePartition("A").readPartitions("A").create();
+        final GraphTraversalSource sourceAA = g.withStrategies(partitionStrategyAA);
 
         final PartitionStrategy partitionStrategyBA = PartitionStrategy.build()
-                .partitionKey(partition).writePartition("B").addReadPartition("A").create();
-        final GraphTraversalSource sourceBA = create(partitionStrategyBA);
+                .partitionKey(partition).writePartition("B").readPartitions("A").create();
+        final GraphTraversalSource sourceBA = g.withStrategies(partitionStrategyBA);
 
         final PartitionStrategy partitionStrategyCAB = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("C").addReadPartition("A").addReadPartition("B").create();
-        final GraphTraversalSource sourceCAB = create(partitionStrategyCAB);
+        final GraphTraversalSource sourceCAB = g.withStrategies(partitionStrategyCAB);
 
         final PartitionStrategy partitionStrategyC = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("C").create();
-        final GraphTraversalSource sourceC = create(partitionStrategyC);
+        final GraphTraversalSource sourceC = g.withStrategies(partitionStrategyC);
 
         final PartitionStrategy partitionStrategyCA = PartitionStrategy.build()
-                .partitionKey(partition).writePartition("C").addReadPartition("A").create();
-        final GraphTraversalSource sourceCA = create(partitionStrategyCA);
+                .partitionKey(partition).writePartition("C").readPartitions("A").create();
+        final GraphTraversalSource sourceCA = g.withStrategies(partitionStrategyCA);
 
-        final PartitionStrategy partitionStrategyCABC = PartitionStrategy.build()
-                .partitionKey(partition)
-                .writePartition("C")
-                .addReadPartition("A")
-                .addReadPartition("B")
-                .addReadPartition("C").create();
-        final GraphTraversalSource sourceCABC = create(partitionStrategyCABC);
+        final GraphTraversalSource sourceCABC = g.withStrategies(PartitionStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
 
+            put(PartitionStrategy.WRITE_PARTITION, "C");
+            put(PartitionStrategy.PARTITION_KEY, partition);
+            put(PartitionStrategy.READ_PARTITIONS, Arrays.asList("A", "B", "C"));
+        }})));
         final PartitionStrategy partitionStrategyCC = PartitionStrategy.build()
                 .partitionKey(partition).writePartition("C").addReadPartition("C").create();
-        final GraphTraversalSource sourceCC = create(partitionStrategyCC);
+        final GraphTraversalSource sourceCC = g.withStrategies(partitionStrategyCC);
 
         final PartitionStrategy partitionStrategyCBC = PartitionStrategy.build()
-                .partitionKey(partition).writePartition("C").addReadPartition("C").addReadPartition("B").create();
-        final GraphTraversalSource sourceCBC = create(partitionStrategyCBC);
+                .partitionKey(partition).writePartition("C").readPartitions(Arrays.asList("B", "C")).create();
+        final GraphTraversalSource sourceCBC = g.withStrategies(partitionStrategyCBC);
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
         final Vertex vAA = sourceAA.addV().property("any", "aa").next();
@@ -479,9 +483,5 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(vB.id(), sourceCBC.E(eBtovC.id()).outV().id().next());
         assertEquals(vC.id(), sourceCBC.E(eAtovC.id()).inV().id().next());
         assertFalse(sourceCBC.E(eAtovC.id()).outV().hasNext());
-    }
-
-    private GraphTraversalSource create(final PartitionStrategy strategy) {
-        return graphProvider.traversal(graph, strategy);
     }
 }

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -207,6 +205,9 @@ final class Settings {
             if (connectionPoolConf.containsKey("resultIterationBatchSize"))
                 cpSettings.resultIterationBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
 
+            if (connectionPoolConf.containsKey("keepAliveInterval"))
+                cpSettings.keepAliveInterval = connectionPoolConf.getLong("keepAliveInterval");
+
 
             settings.connectionPool = cpSettings;
         }
@@ -249,6 +250,13 @@ final class Settings {
          * The maximum size of a connection pool for a {@link Host}. By default this is set to 8.
          */
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
+
+        /**
+         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. This
+         * setting is only relevant to {@link Channelizer} implementations that return {@code true} for
+         * {@link Channelizer#supportsKeepAlive()}. Set to zero to disable this feature.
+         */
+        public long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
 
         /**
          * A connection under low use can be destroyed. This setting determines the threshold for determining when

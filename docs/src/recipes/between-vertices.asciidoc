@@ -19,7 +19,7 @@ Between Vertices
 ----------------
 
 It is quite common to have a situation where there are two particular vertices of a graph and a need to execute some
-traversal on the paths found between them. Consider the following examples:
+traversal on the paths found between them. Consider the following examples using the modern toy graph:
 
 [gremlin-groovy,modern]
 ----

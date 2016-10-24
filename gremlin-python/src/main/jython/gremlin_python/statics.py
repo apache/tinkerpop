@@ -16,7 +16,25 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 '''
+
+from types import FunctionType
+
+import six
 from aenum import Enum
+
+
+if six.PY3:
+    class long(int): pass
+    FloatType = float
+    IntType = int
+    LongType = long
+    TypeType = type
+else:
+    long = long
+    from types import FloatType
+    from types import IntType
+    from types import LongType
+    from types import TypeType
 
 staticMethods = {}
 staticEnums = {}

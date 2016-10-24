@@ -25,7 +25,7 @@ limitations under the License.
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.2.3-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -113,7 +113,6 @@ limitations under the License.
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
-        <module>gremlin-benchmark</module>
         <module>gremlin-groovy</module>
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
@@ -126,6 +125,7 @@ limitations under the License.
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-archetype</module>
+        <module>gremlin-tools</module>
     </modules>
     <scm>
         <connection>scm:git:git@git-wip-us.apache.org:repos/asf/tinkerpop.git</connection>
@@ -135,7 +135,6 @@ limitations under the License.
     <properties>
         <commons.configuration.version>1.10</commons.configuration.version>
         <groovy.version>2.4.7</groovy.version>
-        <junit.version>4.12</junit.version>
         <metrics.version>3.0.2</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -273,7 +272,6 @@ limitations under the License.
                     <excludes>
                         <exclude>.travis.yml</exclude>
                         <exclude>.dockerignore</exclude>
-                        <exclude>appveyor.yml</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
@@ -294,6 +292,9 @@ limitations under the License.
                         <exclude>**/src/main/static/**</exclude>
                         <exclude>**/_bsp/**</exclude>
                         <exclude>DEPENDENCIES</exclude>
+                        <exclude>**/.glv</exclude>
+                        <exclude>bin/gremlin.sh</exclude>
+                        <exclude>gremlin-console/bin/gremlin.sh</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
@@ -312,6 +313,14 @@ limitations under the License.
                         </exclusions>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <!-- we never use this plugin - disabling helps with speeding up other processing like when using -Dcoverage -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -338,8 +347,7 @@ limitations under the License.
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.17</version>
                     <configuration>
-                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory}
-                            -Dis.testing=true
+                        <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
@@ -433,54 +441,32 @@ limitations under the License.
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>1.5</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>addSources</goal>
+                                <goal>addTestSources</goal>
+                                <goal>generateStubs</goal>
+                                <goal>compile</goal>
+                                <goal>testGenerateStubs</goal>
+                                <goal>testCompile</goal>
+                                <goal>removeStubs</goal>
+                                <goal>removeTestStubs</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <targetBytecode>1.8</targetBytecode>
+                        <invokeDynamic>true</invokeDynamic>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${javadoc-plugin.version}</version>
-                <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>non-aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>javadoc</report>
-                        </reports>
-                    </reportSet>
-                    <reportSet>
-                        <id>aggregate</id>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <includeDependencySources>true</includeDependencySources>
-                            <dependencySourceIncludes>
-                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                            </dependencySourceIncludes>
-                            <overview>${basedir}/docs/javadoc/overview.html</overview>
-                            <quiet>true</quiet>
-                        </configuration>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <dependencyManagement>
         <dependencies>
@@ -598,6 +584,53 @@ limitations under the License.
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>1.2.17</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>1.9.5</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-all</artifactId>
+                <version>1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.4.201502262128</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -776,6 +809,31 @@ limitations under the License.
                                     <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <outputDirectory>${htmlsingle.output.dir}/dev/developer</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>3</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>io-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/io</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/dev/io</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
@@ -1137,30 +1195,51 @@ limitations under the License.
         </profile>
 
         <profile>
-            <id>windows</id>
+            <id>coverage</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <os>
-                    <family>windows</family>
-                </os>
+                <property>
+                    <name>coverage</name>
+                </property>
             </activation>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>download-hadoop-winutils</id>
-                                <phase>generate-test-resources</phase>
+                                <id>prepare-agent</id>
                                 <goals>
-                                    <goal>download-single</goal>
+                                    <goal>prepare-agent</goal>
                                 </goals>
                                 <configuration>
-                                    <url>http://public-repo-1.hortonworks.com/</url>
-                                    <fromFile>hdp-win-alpha/winutils.exe</fromFile>
-                                    <toDir>${project.build.directory}/hadoop_home/bin</toDir>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>surefireArgLine</propertyName>
+                                    <excludes>
+                                        <exclude>Lib/*.class</exclude>
+                                        <exclude>Lib/aenum/**</exclude>
+                                        <exclude>Lib/backports/**</exclude>
+                                        <exclude>Lib/certifi/**</exclude>
+                                        <exclude>Lib/setuptools/**</exclude>
+                                        <exclude>Lib/setuptools.command/**</exclude>
+                                        <exclude>Lib/tornado/**</exclude>
+                                        <exclude>Lib/tornado.platform/**</exclude>
+                                        <exclude>Lib/tornado.test/**</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>prepare-it-agent</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>target/jacoco-it.exec</destFile>
+                                    <append>true</append>
+                                    <propertyName>failsafeArgLine</propertyName>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1169,14 +1248,44 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>-Dlog4j.configuration=${log4j-test.properties}
-                                -Dbuild.dir=${project.build.directory}
-                                -Dhadoop.home.dir=${project.build.directory}/hadoop_home -Dis.testing=true
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dbuild.dir=${project.build.directory} -Dis.testing=true ${surefireArgLine}
                             </argLine>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
+                                -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
+                                -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
+                                -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine}
+                            </argLine>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.19.1</version>
+                        <executions>
+                            <execution>
+                                <id>aggregate-surefire-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <phase>install</phase>
+                                <configuration>
+                                    <aggregate>true</aggregate>
+                                    <alwaysGenerateSurefireReport>true</alwaysGenerateSurefireReport>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
+
         </profile>
+
     </profiles>
 </project>

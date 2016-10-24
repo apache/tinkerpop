@@ -55,26 +55,26 @@ for an anonymous traversal, it is possible to simply write `inE()`. Be aware of 
 when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use
 the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 
-[[lambda-steps]]
-Lambda Steps
-~~~~~~~~~~~~
+[[general-steps]]
+General Steps
+~~~~~~~~~~~~~
 
-WARNING: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
-Gremlin language. In practice, lambda steps should be avoided and traversal verification strategies exist to disallow t
-heir use unless explicitly "turned off." For more information on the problems with lambdas, please read
-<<a-note-on-lambdas,A Note on Lambdas>>.
-
-There are four generic steps by which all other specific steps described later extend.
+There are five general steps, each having a traversal and a lambda representation, by which all other specific steps described later extend.
 
 [width="100%",cols="10,12",options="header"]
 |=========================================================
 | Step| Description
-| `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
-| `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
-| `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
-| `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
-| `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
+| `map(Traversal<S, E>)` <br> `map(Function<Traverser<S>, E>)` | map the traverser to some object of type `E` for the next step to process.
+| `flatMap(Traversal<S, E>)` <br> `flatMap(Function<Traverser<S>, Iterator<E>>)` | map the traverser to an iterator of `E` objects that are streamed to the next step.
+| `filter(Traversal<?, ?>)` <br> `filter(Predicate<Traverser<S>>)` | map the traverser to either true or false, where false will not pass the traverser to the next step.
+| `sideEffect(Traversal<S, S>)` <br> `sideEffect(Consumer<Traverser<S>>)` | perform some operation on the traverser and pass it to the next step.
+| `branch(Traversal<S, M>)` <br> `branch(Function<Traverser<S>,M>)` | split the traverser to all the traversals indexed by the `M` token.
 |=========================================================
+
+WARNING: Lambda steps are presented for educational purposes as they represent the foundational constructs of the
+Gremlin language. In practice, lambda steps should be avoided in favor of their traversals representation and traversal
+verification strategies exist to disallow their use unless explicitly "turned off." For more information on the problems
+with lambdas, please read <<a-note-on-lambdas,A Note on Lambdas>>.
 
 The `Traverser<S>` object provides access to:
 
@@ -92,43 +92,54 @@ image:map-lambda.png[width=150,float=right]
 ----
 g.V(1).out().values('name') <1>
 g.V(1).out().map {it.get().value('name')} <2>
+g.V(1).out().map(values('name')) <3>
 ----
 
 <1> An outgoing traversal from vertex 1 to the name values of the adjacent vertices.
 <2> The same operation, but using a lambda to access the name property values.
+<3> Again the same operation, but using the traversal representation of `map()`.
 
 image:filter-lambda.png[width=160,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().filter {it.get().label() == 'person'} <1>
-g.V().hasLabel('person') <2>
+g.V().filter(label().is('person')) <2>
+g.V().hasLabel('person') <3>
 ----
 
 <1> A filter that only allows the vertex to pass if it has an age-property.
-<2> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
+<2> The same operation, but using the traversal represention of `filter()`.
+<3> The more specific `has()`-step is implemented as a `filter()` with respective predicate.
 
 
 image:side-effect-lambda.png[width=175,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').sideEffect(System.out.&println) <1>
+g.V().sideEffect(outE().count().store("o")).
+      sideEffect(inE().count().store("i")).cap("o","i") <2>
 ----
 
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
+<2> Compute the out- and in-degree for each vertex. Both `sideEffect()` are fed with the same vertex.
 
 image:branch-lambda.png[width=180,float=right]
 [gremlin-groovy,modern]
 ----
-g.V().branch(values('name')).
+g.V().branch {it.get().value('name')}.
       option('marko', values('age')).
       option(none, values('name')) <1>
+g.V().branch(values('name')).
+      option('marko', values('age')).
+      option(none, values('name')) <2>
 g.V().choose(has('name','marko'),
              values('age'),
-             values('name')) <2>
+             values('name')) <3>
 ----
 
 <1> If the vertex is "marko", get his age, else get the name of the vertex.
-<2> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
+<2> The same operation, but using the traversal represention of `branch()`.
+<3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
 [[addedge-step]]
 AddEdge Step
@@ -307,7 +318,7 @@ g.V().hasLabel('software').as('a','b','c').
 Barrier Step
 ~~~~~~~~~~~~
 
-The `barrier()`-step (*barrier*) turns the the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
+The `barrier()`-step (*barrier*) turns the lazy traversal pipeline into a bulk-synchronous pipeline. This step is
 useful in the following situations:
 
   * When everything prior to `barrier()` needs to be executed before moving onto the steps after the `barrier()` (i.e. ordering).
@@ -328,32 +339,34 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal()
-clockWithResult(1){g.V().both().both().both().count().next()} <1>
-clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <2>
-clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <3>
+g = graph.traversal().withoutStrategies(LazyBarrierStrategy) <1>
+clockWithResult(1){g.V().both().both().both().count().next()} <2>
+clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
+clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <4>
 ----
 
-<1> A non-bulking traversal where each traverser is processed.
-<2> Each traverser entering `repeat()` has its recursion bulked.
-<3> A bulking traversal where implicit traversers are not processed.
+<1> Explicitly remove `LazyBarrierStrategy` which yields a bulking optimization.
+<2> A non-bulking traversal where each traverser is processed.
+<3> Each traverser entering `repeat()` has its recursion bulked.
+<4> A bulking traversal where implicit traversers are not processed.
 
 If `barrier()` is provided an integer argument, then the barrier will only hold `n`-number of unique traversers in its
 barrier before draining the aggregated traversers to the next step. This is useful in the aforementioned bulking
-optimization scenario, but reduces the risk of an out-of-memory exception.
+optimization scenario with the added benefit of reducing the risk of an out-of-memory exception.
 
-The non-default `LazyBarrierStrategy` inserts `barrier()`-steps in a traversal where appropriate in order to gain the
+`LazyBarrierStrategy` inserts `barrier()`-steps into a traversal where appropriate in order to gain the
 "bulking optimization."
 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal().withStrategies(LazyBarrierStrategy.instance())
+g = graph.traversal() <1>
 clockWithResult(1){g.V().both().both().both().count().next()}
-g.V().both().both().both().count().iterate().toString()  <1>
+g.V().both().both().both().count().iterate().toString()  <2>
 ----
 
+<1> `LazyBarrierStrategy` is a default strategy and thus, does not need to be explicitly activated.
 <1> With `LazyBarrierStrategy` activated, `barrier()` steps are automatically inserted where appropriate.
 
 [[by-step]]
@@ -742,7 +755,7 @@ g.V().has('name',not(within('josh','marko'))).valueMap() <5>
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
-<3> Find all vertices whose names are exact matches to any names in the the collection `[josh,marko]`, display all
+<3> Find all vertices whose names are exact matches to any names in the collection `[josh,marko]`, display all
 the key,value pairs for those verticies.
 <4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
 <5> Same as the prior example save using `not` on `within` to yield `without`.
@@ -851,7 +864,7 @@ in a object-local traversal. As such, the `order().by()` and the `limit()` refer
 stream as a whole.
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit
-of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
+of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[match-step]]
@@ -1628,7 +1641,7 @@ g.V(1).repeat(out()).until(outE().count().is(0)).path().by('name') <3>
 <3> Starting from vertex 1, keep taking outgoing edges until a vertex is reached that has no more outgoing edges.
 
 WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) process their current objects "locally."
-In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the
+In OLAP, where the atomic unit of computing is the vertex and its local "star graph," it is important that the
 anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to
 an adjacent vertex's properties or edges.
 
@@ -1874,8 +1887,8 @@ g.V().aggregate('x').limit(1).cap('x')
 g.V().store('x').limit(1).cap('x')
 ----
 
-It is interesting to note that there are three results in the `store()` side-effect even though the interval
-selection is for 2 objects. Realize that when the third object is on its way to the `range()` filter (i.e. `[0..1]`),
+It is interesting to note that there are two results in the `store()` side-effect even though the interval
+selection is for 1 object. Realize that when the second object is on its way to the `range()` filter (i.e. `[0..1]`),
 it passes through `store()` and thus, stored before filtered.
 
 [gremlin-groovy,modern]
@@ -2190,6 +2203,18 @@ g.V().where(out('created').count().is(gte(2))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
 g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
 g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
+g.V().as('a').out('knows').as('b').
+  where('a',gt('b')).
+    by('age').
+  select('a','b').
+    by('name') <7>
+g.V().as('a').out('knows').as('b').
+  where('a',gt('b').or(eq('b'))).
+    by('age').
+    by('age').
+    by(__.in('knows').values('age')).
+  select('a','b').
+    by('name') <8>
 ----
 
 <1> What are the names of the people who have created a project?
@@ -2198,9 +2223,11 @@ g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 <4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
 <5> What are the names of the people who have not created anything, but are known by someone?
 <6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
+<7> Marko knows josh and vadas but is only older than vadas.
+<8> Marko is younger than josh, but josh knows someone equal in age to marko (which is marko).
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
-of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
+of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
 edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop3 (see
 link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
@@ -2338,13 +2365,14 @@ g.V().out().out().path().by('name').
 TraversalStrategy
 -----------------
 
-image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the
-traversal as it deems fit. This is useful in multiple situations:
+image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` analyzes a `Traversal` and, if the traversal
+meets its criteria, can mutate it accordingly. Traversal strategies are executed at compile-time and form the foundation
+of the Gremlin traversal machine's compiler. There are 5 categories of strategies which are itemized below:
 
  * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
  * There is a more efficient way to express the traversal at the TinkerPop3 level (*optimization*).
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
- * There are are some final adjustments required before executing the traversal (*finalization*).
+ * There are are some final adjustments/cleanups/analyses required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
 
 NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
@@ -2353,8 +2381,7 @@ A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
 [source,java]
 ----
-public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
-implements TraversalStrategy.OptimizationStrategy {
+public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 
@@ -2363,16 +2390,15 @@ implements TraversalStrategy.OptimizationStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+        if (traversal.getSteps().size() <= 1)
             return;
 
-        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream().forEach(identityStep -> {
-            final Step<?, ?> previousStep = identityStep.getPreviousStep();
-            if (!(previousStep instanceof EmptyStep) || identityStep.getLabels().isEmpty()) {
-                ((IdentityStep<?>) identityStep).getLabels().forEach(previousStep::addLabel);
+        for (final IdentityStep<?> identityStep : TraversalHelper.getStepsOfClass(IdentityStep.class, traversal)) {
+            if (identityStep.getLabels().isEmpty() || !(identityStep.getPreviousStep() instanceof EmptyStep)) {
+                TraversalHelper.copyLabels(identityStep, identityStep.getPreviousStep(), false);
                 traversal.removeStep(identityStep);
             }
-        });
+        }
     }
 
     public static IdentityRemovalStrategy instance() {
@@ -2385,16 +2411,16 @@ This strategy simply removes any `IdentityStep` steps in the Traversal as `aStep
 is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or
 post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an
 empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization,
-provider-optimization, finalization, or verification), then priors and posts are only possible within the category.
+provider-optimization, finalization, or verification), then priors and posts are only possible within the respective category.
 
 [source,java]
 public Set<Class<? extends S>> applyPrior();
 public Set<Class<? extends S>> applyPost();
 
 IMPORTANT: `TraversalStrategy` categories are sorted within their category and the categories are then executed in
-the following order: decoration, optimization, finalization, and verification. If a designed strategy does not fit
-cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference
-strategies within any category.
+the following order: decoration, optimization, provider optimization, finalization, and verification. If a designed strategy
+does not fit cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference
+strategies within any category. However, such generalization are strongly discouraged.
 
 An example of a `GraphSystemOptimizationStrategy` is provided below.
 
@@ -2418,17 +2444,22 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
-        TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
-            final TinkerGraphStep<?,?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
+        for (final GraphStep originalGraphStep : TraversalHelper.getStepsOfClass(GraphStep.class, traversal)) {
+            final TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(originalGraphStep, tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (currentStep instanceof HasContainerHolder) {
-                ((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
-                currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
-                traversal.removeStep(currentStep);
+            while (currentStep instanceof HasStep || currentStep instanceof NoOpBarrierStep) {
+                if (currentStep instanceof HasStep) {
+                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                        if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
+                            tinkerGraphStep.addHasContainer(hasContainer);
+                    }
+                    TraversalHelper.copyLabels(currentStep, currentStep.getPreviousStep(), false);
+                    traversal.removeStep(currentStep);
+                }
                 currentStep = currentStep.getNextStep();
             }
-        });
+        }
     }
 
     public static TinkerGraphStepStrategy instance() {
@@ -2438,11 +2469,9 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 ----
 
 The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing
-them to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists. In the code
-below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that
-index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy
-uses non-TinkerPop3 provided steps, it should go into the `ProviderOptimizationStrategy` category to ensure the
-added step does not corrupt the `OptimizationStrategy` strategies.
+their `HasContainers` to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists.
+Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `ProviderOptimizationStrategy` category
+to ensure the added step does not interfere with the assumptions of the `OptimizationStrategy` strategies.
 
 [gremlin-groovy,modern]
 ----
@@ -2460,6 +2489,34 @@ replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If provider opt
 steps and implement `OptimizationStrategy`, then other TinkerPop3 optimizations may fail to optimize the traversal or
 mis-understand the graph system specific step behaviors (e.g. `ProviderVertexStep extends VertexStep`) and yield
 incorrect semantics.
+
+Finally, here is a complicated traversal that has various components that are optimized by the default TinkerPop strategies.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person'). <1>
+        and(has('name'),  <2>
+            has('name','marko'),
+            filter(has('age',gt(20)))). <3>
+  match(__.as('a').has('age',lt(32)), <4>
+        __.as('a').repeat(outE().inV()).times(2).as('b')). <5>
+    where('a',neq('b')). <6>
+    where(__.as('b').both().count().is(gt(1))). <7>
+  select('b'). <8>
+  groupCount().
+    by(out().count()). <9>
+  explain()
+----
+
+<1> `TinkerGraphStepStrategy` pulls in `has()`-step predicates for global, graph-centric index lookups.
+<2> `FilterRankStrategy` sorts filter steps by their time/space execution costs.
+<3> `InlineFilterStrategy` de-nests filters to increase the likelihood of filter concatenation and aggregation.
+<4> `InlineFilterStrategy` pulls out named predicates from `match()`-step to more easily allow provider strategies to use indices.
+<5> `RepeatUnrollStrategy` will unroll loops and `IncidentToAdjacentStrategy` will turn `outE().inV()`-patterns into `out()`.
+<6> `MatchPredicateStrategy` will pull in `where()`-steps so that they can be subjected to `match()`-steps runtime query optimizer.
+<7> `RangeByIsCountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
+<8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
+<9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
 A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to
 end-users.  The following sub-sections detail these strategies:
@@ -2556,8 +2613,8 @@ The best way to understand `PartitionStrategy` is via example.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").addReadPartition("a").create()
-strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").addReadPartition("b").create()
+strategyA = PartitionStrategy.build().partitionKey("_partition").writePartition("a").readPartitions("a").create()
+strategyB = PartitionStrategy.build().partitionKey("_partition").writePartition("b").readPartitions("b").create()
 gA = graph.traversal().withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
 gB = graph.traversal().withStrategies(strategyB)
@@ -2585,17 +2642,44 @@ ReadOnlyStrategy
 SubgraphStrategy
 ~~~~~~~~~~~~~~~~
 
-`SubgraphStrategy` is quite similar to `PartitionStrategy` in that it restrains a `Traversal` to certain vertices
-and edges as determined by a `Traversal` criterion defined individually for each.
+`SubgraphStrategy` is similar to `PartitionStrategy` in that it constrains a `Traversal` to certain vertices, edges,
+ and vertex properties as determined by a `Traversal`-based criterion defined individually for each.
 
 [gremlin-groovy]
 ----
-graph = TinkerFactory.createModern()
-strategy = SubgraphStrategy.build().edgeCriterion(hasId(8,9,10)).create()
-g = graph.traversal().withStrategies(strategy)
-g.V() // shows all vertices as no filter for vertices was specified
-g.E() // shows only the edges defined in the edgeCriterion
+graph = TinkerFactory.createTheCrew()
+g = graph.traversal()
+g.V().as('a').values('location').as('b').  <1>
+  select('a','b').by('name').by()
+g = g.withStrategies(SubgraphStrategy.build().vertexProperties(hasNot('endTime')).create()) <2>
+g.V().as('a').values('location').as('b').  <3>
+  select('a','b').by('name').by()
+g.V().as('a').values('location').as('b').
+  select('a','b').by('name').by().explain()
 ----
 
-This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the `vertexCriterion`
+<1> Get all vertices and their vertex property locations.
+<2> Create a `SubgraphStrategy` where vertex properties must not have an `endTime`-property (thus, the current location).
+<3> Get all vertices and their current vertex property locations.
+
+IMPORTANT: This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the vertex criterion
 (if present) in order for the `Edge` to be considered a part of the subgraph.
+
+The example below uses all three filters: vertex, edge, and vertex property. People vertices must have lived in more than three places,
+edges must be labeled "develops," and vertex properties must be the persons current location or a non-location property.
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createTheCrew()
+g = graph.traversal().withStrategies(SubgraphStrategy.build().
+  vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
+  edges(hasLabel('develops')).
+  vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())
+g.V().valueMap(true)
+g.E().valueMap(true)
+g.V().outE().inV().
+  path().
+    by('name').
+    by().
+    by('name')
+----

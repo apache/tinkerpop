@@ -53,7 +53,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
             path = traverser.path();
         else {
             path = MutablePath.make();
-            traverser.path().forEach((object, labels) -> path.extend(TraversalUtil.apply(object, this.traversalRing.next()), labels));
+            traverser.path().forEach((object, labels) -> path.extend(TraversalUtil.applyNullable(object, this.traversalRing.next()), labels));
         }
         this.traversalRing.reset();
         return path;
