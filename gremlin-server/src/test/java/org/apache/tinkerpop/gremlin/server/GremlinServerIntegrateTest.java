@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import java.io.File;
-
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -56,8 +54,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
-import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
-import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -96,7 +92,6 @@ import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assert.assertEquals;
@@ -168,19 +163,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldStartWithDefaultSettings":
                 return new Settings();
-            case "shouldHaveTheSessionTimeout":
-                settings.processors.clear();
-                final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
-                processorSettings.className = SessionOpProcessor.class.getCanonicalName();
-                processorSettings.config = new HashMap<>();
-                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
-                settings.processors.add(processorSettings);
-                break;
-            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
-            case "shouldExecuteInSessionWithTransactionManagement":
-                deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("graph", "conf/neo4j-empty.properties");
-                break;
             case "shouldUseSimpleSandbox":
                 settings.scriptEngines.get("gremlin-groovy").config = getScriptEngineConfForSimpleSandbox();
                 break;

@@ -19,7 +19,7 @@ limitations under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>tinkerpop</artifactId>
+        <artifactId>gremlin-tools</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
         <version>3.3.0-SNAPSHOT</version>
     </parent>
