@@ -178,13 +178,11 @@ public class GryoRegistrator implements KryoRegistrator {
         // duplication, but it would be a bit cumbersome to do so without disturbing
         // the ordering of the existing entries in that constructor, since not all
         // of the entries are for TinkerPop (and the ordering is significant).
-        if (Boolean.valueOf(System.getProperty("is.testing", "false"))) {
-            try {
-                m.put(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
-                m.put(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
-            } catch (final ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+        try {
+            m.put(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
+            m.put(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
         m.put(WrappedArray.ofRef.class, null);
         m.put(MessagePayload.class, null);
