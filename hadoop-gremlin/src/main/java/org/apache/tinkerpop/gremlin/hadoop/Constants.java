@@ -61,6 +61,8 @@ public final class Constants {
     public static final String GREMLIN_SPARK_SKIP_PARTITIONER = "gremlin.spark.skipPartitioner"; // don't partition the loadedGraphRDD
     public static final String GREMLIN_SPARK_SKIP_GRAPH_CACHE = "gremlin.spark.skipGraphCache";  // don't cache the loadedGraphRDD (ignores graphStorageLevel)
     public static final String SPARK_SERIALIZER = "spark.serializer";
+    public static final String SPARK_KRYO_REGISTRATOR = "spark.kryo.registrator";
+    public static final String SPARK_KRYO_REGISTRATION_REQUIRED = "spark.kryo.registrationRequired";
 
     public static String getGraphLocation(final String location) {
         return location.endsWith("/") ? location + Constants.HIDDEN_G : location + "/" + Constants.HIDDEN_G;

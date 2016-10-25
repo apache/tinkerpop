@@ -46,6 +46,8 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed all performance tests that were not part of `gremlin-benchmark`.
 * Removed dependency on `junit-benchmarks` and it's related reference to `h2`.
 * Moved the source for the "home page" into the repository under `/site` so that it easier to accept contributions.
+* Bumped to support Spark 2.0.0.
+* Added `UnshadedKryoShimService` as the new default serializer model for `SparkGraphComputer`.
 * Replaced term `REST` with `HTTP` to remove any confusion as to the design of the API.
 * Moved `gremlin-benchmark` under `gremlin-tools` module.
 * Added `gremlin-tools` and its submodule `gremlin-coverage`.
