@@ -171,11 +171,6 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
             }
         } else
             graphComputerClass = this.computer.getGraphComputerClass();
-        try {
-            Class.forName(graphComputerClass.getCanonicalName());
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
         final List<TraversalStrategy<?>> graphComputerStrategies = TraversalStrategies.GlobalCache.getStrategies(graphComputerClass).toList();
         traversalSource.getStrategies().addStrategies(graphComputerStrategies.toArray(new TraversalStrategy[graphComputerStrategies.size()]));
     }
