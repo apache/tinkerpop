@@ -84,7 +84,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
-        System.setProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, HadoopPoolShimService.class.getCanonicalName()); // HadoopPools only with Giraph
         final Configuration configuration = hadoopGraph.configuration();
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
         this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
@@ -97,6 +96,9 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         this.giraphConfiguration.setBoolean(GiraphConstants.STATIC_GRAPH.getKey(), true);
         this.giraphConfiguration.setVertexInputFormatClass(GiraphVertexInputFormat.class);
         this.giraphConfiguration.setVertexOutputFormatClass(GiraphVertexOutputFormat.class);
+        if (null == this.giraphConfiguration.get(KryoShimServiceLoader.KRYO_SHIM_SERVICE, null))
+            this.giraphConfiguration.set(KryoShimServiceLoader.KRYO_SHIM_SERVICE, HadoopPoolShimService.class.getCanonicalName());
+        System.setProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, this.giraphConfiguration.get(KryoShimServiceLoader.KRYO_SHIM_SERVICE));
         this.useWorkerThreadsInConfiguration = this.giraphConfiguration.getInt(GiraphConstants.MAX_WORKERS, -666) != -666 || this.giraphConfiguration.getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), -666) != -666;
     }
 
