@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
+import org.apache.spark.launcher.SparkLauncher;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
@@ -39,8 +41,10 @@ import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.io.ToyGraphInputRDD;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 
 import java.util.Map;
 
@@ -52,6 +56,10 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
+        if (this.getClass().equals(SparkHadoopGraphProvider.class) &&
+                !UnshadedKryoShimService.class.getCanonicalName().equals(System.getProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, null)))
+            Spark.close();
+
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
 
@@ -82,9 +90,10 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         }
 
         config.put(Constants.GREMLIN_HADOOP_DEFAULT_GRAPH_COMPUTER, SparkGraphComputer.class.getCanonicalName());
-        config.put("spark.master", "local[4]");
-        config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
-        config.put("spark.kryo.registrationRequired", true);
+        config.put(SparkLauncher.SPARK_MASTER, "local[4]");
+        config.put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
+        config.put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
+        config.put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
         return config;
     }
 

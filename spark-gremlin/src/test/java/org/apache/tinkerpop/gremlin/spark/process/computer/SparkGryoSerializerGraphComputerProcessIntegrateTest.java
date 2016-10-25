@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = SparkHadoopGraphGryoRegistratorProvider.class, graph = HadoopGraph.class)
-public class SparkGryoRegistratorGraphComputerProcessIntegrateTest {
+@GraphProviderClass(provider = SparkHadoopGraphGryoSerializerProvider.class, graph = HadoopGraph.class)
+public class SparkGryoSerializerGraphComputerProcessIntegrateTest {
 }

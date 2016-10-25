@@ -19,34 +19,27 @@
 
 package org.apache.tinkerpop.gremlin.spark.process.computer;
 
-import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolShimService;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 
 import java.util.Map;
 
-import static org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader.KRYO_SHIM_SERVICE;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SparkHadoopGraphGryoRegistratorProvider extends SparkHadoopGraphProvider {
+public final class SparkHadoopGraphGryoSerializerProvider extends SparkHadoopGraphProvider {
 
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
-        Spark.close();
+        if (this.getClass().equals(SparkHadoopGraphGryoSerializerProvider.class) &&
+                !HadoopPoolShimService.class.getCanonicalName().equals(System.getProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, null)))
+            Spark.close();
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        // ensure the context doesn't stay open for the GryoSerializer tests to follow
-        // this is primarily to ensure that the KryoShimService loaded specifically in these tests don't leak to the other tests
-        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);
-        config.put("spark.serializer", KryoSerializer.class.getCanonicalName());
-        config.put("spark.kryo.registrator", GryoRegistrator.class.getCanonicalName());
-        System.setProperty(KRYO_SHIM_SERVICE, UnshadedKryoShimService.class.getCanonicalName());
-        KryoShimServiceLoader.load(true);
-        System.clearProperty(KRYO_SHIM_SERVICE);
+        config.put(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
+        config.remove(Constants.SPARK_KRYO_REGISTRATOR);
         return config;
     }
 }

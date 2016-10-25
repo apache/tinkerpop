@@ -30,6 +30,7 @@ import com.esotericsoftware.kryo.io.Output;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.IoRegistryAwareKryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
@@ -48,7 +49,8 @@ public class UnshadedKryoShimService implements KryoShimService {
 
     private static volatile boolean initialized;
 
-    public UnshadedKryoShimService() { }
+    public UnshadedKryoShimService() {
+    }
 
     @Override
     public Object readClassAndObject(final InputStream source) {
@@ -123,23 +125,23 @@ public class UnshadedKryoShimService implements KryoShimService {
                         sparkConf.set(GryoPool.CONFIG_IO_REGISTRY, regStr);
                     }
                     // Setting spark.serializer here almost certainly isn't necessary, but it doesn't hurt
-                    sparkConf.set("spark.serializer", IoRegistryAwareKryoSerializer.class.getCanonicalName());
+                    sparkConf.set(Constants.SPARK_SERIALIZER, IoRegistryAwareKryoSerializer.class.getCanonicalName());
 
-                    final String registrator = conf.getString("spark.kryo.registrator");
+                    final String registrator = conf.getString(Constants.SPARK_KRYO_REGISTRATOR);
                     if (null != registrator) {
-                        sparkConf.set("spark.kryo.registrator", registrator);
-                        log.info("Copied spark.kryo.registrator: {}", registrator);
+                        sparkConf.set(Constants.SPARK_KRYO_REGISTRATOR, registrator);
+                        log.info("Copied " + Constants.SPARK_KRYO_REGISTRATOR + ": {}", registrator);
                     } else {
-                        log.info("Not copying spark.kryo.registrator");
+                        log.info("Not copying " + Constants.SPARK_KRYO_REGISTRATOR);
                     }
 
+                    // Instantiate the spark.serializer
+                    final IoRegistryAwareKryoSerializer ioReg = new IoRegistryAwareKryoSerializer(sparkConf);
+
+                    // Setup a pool backed by our spark.serializer instance
                     // Reuse Gryo poolsize for Kryo poolsize (no need to copy this to SparkConf)
                     final int poolSize = conf.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE,
                             GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
-                    // Instantiate the spark.serializer
-                    final IoRegistryAwareKryoSerializer ioReg = new IoRegistryAwareKryoSerializer(sparkConf);
-                    // Setup a pool backed by our spark.serializer instance
-
                     for (int i = 0; i < poolSize; i++) {
                         KRYOS.add(ioReg.newKryo());
                     }
