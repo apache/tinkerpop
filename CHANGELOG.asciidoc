@@ -509,6 +509,11 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
+[[release-3-1-6]]
+TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 [[release-3-1-5]]
 TinkerPop 3.1.5 (Release Date: October 17, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
