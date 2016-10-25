@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.algorithm.generator;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -67,6 +68,7 @@ public class DistributionGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldGenerateDifferentGraph() throws Exception {
             int executions = 0;
             boolean same = true;
@@ -110,6 +112,7 @@ public class DistributionGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldGenerateSameGraph() throws Exception {
             final Configuration configuration = graphProvider.newGraphConfiguration("g1", this.getClass(), name.getMethodName(), null);
             final Graph g1 = graphProvider.openTestGraph(configuration);
@@ -158,6 +161,7 @@ public class DistributionGeneratorTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldProcessEdges() {
             final Distribution dist = new NormalDistribution(2);
             final DistributionGenerator generator = DistributionGenerator.build(graph)
