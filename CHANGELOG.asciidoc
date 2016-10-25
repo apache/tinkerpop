@@ -23,10 +23,10 @@ TinkerPop 3.2.0 (Nine Inch Gremlins)
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=185]
 
 [[release-3-2-4]]
-TinkerPop 3.2.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+* Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 
 [[release-3-2-3]]
 TinkerPop 3.2.3 (Release Date: October 17, 2016)
