@@ -52,6 +52,7 @@ import static org.junit.Assert.fail;
 
 /**
  * @author Matthias Broecheler (me@matthiasb.com)
+ * @author Marko A. Rodriguez (marko@markorodriguez.com)
  */
 public class TraversalStrategiesTest {
 
