@@ -697,7 +697,8 @@ public class FeatureSupportTest {
             "multiPropertiesNotSupported",
             "metaPropertiesNotSupported",
             "userSuppliedIdsNotSupported",
-            "userSuppliedIdsOfThisTypeNotSupported"
+            "userSuppliedIdsOfThisTypeNotSupported",
+            "identicalMultiPropertiesNotSupported"
     })
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
             "propertyRemovalNotSupported"
@@ -877,6 +878,22 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_MULTI_PROPERTIES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_DUPLICATE_MULTI_PROPERTIES, supported = false)
+        public void shouldSupportIdenticalMultiPropertyIfTheSameKeyCanBeAssignedSameValueMoreThanOnce() throws Exception {
+            try {
+                final Vertex v = graph.addVertex("name", "stephen", "name", "stephen");
+                if (2 == IteratorUtils.count(v.properties()))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_DUPLICATE_MULTI_PROPERTIES));
+            } catch (Exception ex) {
+                validateException(VertexProperty.Exceptions.identicalMultiPropertiesNotSupported(), ex);
+            }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = VertexFeatures.FEATURE_MULTI_PROPERTIES, supported = false)
         public void shouldSupportMultiPropertyIfTheSameKeyCanBeAssignedMoreThanOnce() throws Exception {
             try {
@@ -1023,7 +1040,13 @@ public class FeatureSupportTest {
         @Test
         public void shouldSupportRegularTransactionsIfThreadedTransactionsAreEnabled() {
             if (graphFeatures.supportsThreadedTransactions())
-                assertTrue(graphFeatures.supportsThreadedTransactions());
+                assertThat(graphFeatures.supportsThreadedTransactions(), is(true));
+        }
+
+        @Test
+        public void shouldSupportMultiPropertiesIfSupportingIdenticalMultiProperties() {
+            if (vertexFeatures.supportsDuplicateMultiProperties())
+                assertThat(vertexFeatures.supportsMultiProperties(), is(true));
         }
     }
 }

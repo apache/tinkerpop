@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
@@ -512,6 +513,7 @@ public interface Graph extends AutoCloseable, Host {
         public interface VertexFeatures extends ElementFeatures {
             public static final String FEATURE_ADD_VERTICES = "AddVertices";
             public static final String FEATURE_MULTI_PROPERTIES = "MultiProperties";
+            public static final String FEATURE_DUPLICATE_MULTI_PROPERTIES = "DuplicateMultiProperties";
             public static final String FEATURE_META_PROPERTIES = "MetaProperties";
             public static final String FEATURE_REMOVE_VERTICES = "RemoveVertices";
 
@@ -547,6 +549,16 @@ public interface Graph extends AutoCloseable, Host {
             @FeatureDescriptor(name = FEATURE_MULTI_PROPERTIES)
             public default boolean supportsMultiProperties() {
                 return true;
+            }
+
+            /**
+             * Determines if a {@link Vertex} can support non-unique values on the same key. For this value to be
+             * {@code true}, then {@link #supportsMetaProperties()} must also return true. By default this method,
+             * just returns what {@link #supportsMultiProperties()} returns.
+             */
+            @FeatureDescriptor(name = FEATURE_DUPLICATE_MULTI_PROPERTIES)
+            public default boolean supportsDuplicateMultiProperties() {
+                return supportsMultiProperties();
             }
 
             /**
