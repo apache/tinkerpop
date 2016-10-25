@@ -40,6 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Deprecated the "performance" tests in `OptIn`.
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 
 [[release-3-2-3]]
