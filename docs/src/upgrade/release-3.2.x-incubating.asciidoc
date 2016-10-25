@@ -29,6 +29,22 @@ TinkerPop 3.2.4
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asciidoc#release-3-2-4[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecated Performance OptIn
+++++++++++++++++++++++++++++
+
+In 3.2.1, all `junit-benchmark` performance tests were deprecated. At that time, the `OptIn` representations of these
+tests should have been deprecated as well, but they were not. That omission has been remedied now. Specifically, the
+following fields were deprecated:
+
+* `OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE`
+* `OptIn.SUITE_PROCESS_PERFORMANCE`
+* `OptIn.SUITE_STRUCTURE_PERFORMANCE`
 
 TinkerPop 3.2.3
 ---------------
