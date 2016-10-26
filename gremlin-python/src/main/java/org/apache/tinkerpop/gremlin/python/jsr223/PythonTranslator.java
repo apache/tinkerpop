@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -183,6 +184,8 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return "Cardinality." + SymbolHelper.toPython(object.toString());
         else if (object instanceof SackFunctions.Barrier)
             return "Barrier." + SymbolHelper.toPython(object.toString());
+        else if (object instanceof TraversalOptionParent.Pick)
+            return "Pick." + SymbolHelper.toPython(object.toString());
         else if (object instanceof Enum)
             return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
         else if (object instanceof P)

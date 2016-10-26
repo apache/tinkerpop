@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -349,7 +350,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(Column.class, 132));
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
-            add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer())); // ***LAST ID***
+            add(GryoTypeReg.of(TraversalOptionParent.Pick.class, 137)); // ***LAST ID***
+            add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
 
             add(GryoTypeReg.of(TraverserSet.class, 58));
             add(GryoTypeReg.of(Tree.class, 61));

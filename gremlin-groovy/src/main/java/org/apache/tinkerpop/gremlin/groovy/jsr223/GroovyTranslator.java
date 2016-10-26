@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -151,6 +152,8 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return "SackFunctions.Barrier." + object.toString();
         else if (object instanceof VertexProperty.Cardinality)
             return "VertexProperty.Cardinality." + object.toString();
+        else if (object instanceof TraversalOptionParent.Pick)
+            return "TraversalOptionParent.Pick." + object.toString();
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
         else if (object instanceof Element)

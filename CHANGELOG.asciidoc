@@ -27,6 +27,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Deprecated the "performance" tests in `OptIn`.
+* Added `Pick.none` and `Pick.any` to the serializers and importers.
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 
 [[release-3-2-3]]
