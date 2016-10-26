@@ -21,10 +21,8 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolShimService;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 
 import java.util.Map;
 
@@ -34,7 +32,10 @@ import java.util.Map;
 public final class SparkHadoopGraphGryoSerializerProvider extends SparkHadoopGraphProvider {
 
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
-        Spark.close();
+        if (!SparkHadoopGraphGryoSerializerProvider.class.getCanonicalName().equals(System.getProperty(PREVIOUS_SPARK_PROVIDER, null))) {
+            Spark.close();
+            System.setProperty(PREVIOUS_SPARK_PROVIDER, SparkHadoopGraphGryoSerializerProvider.class.getCanonicalName());
+        }
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
         config.remove(Constants.SPARK_KRYO_REGISTRATOR);

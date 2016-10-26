@@ -52,9 +52,14 @@ import java.util.Map;
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
 public class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
+    protected static final String PREVIOUS_SPARK_PROVIDER = "previous.spark.provider";
+
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
-        Spark.close();
+        if (this.getClass().equals(SparkHadoopGraphProvider.class) && !SparkHadoopGraphProvider.class.getCanonicalName().equals(System.getProperty(PREVIOUS_SPARK_PROVIDER, null))) {
+            Spark.close();
+            System.setProperty(PREVIOUS_SPARK_PROVIDER, SparkHadoopGraphProvider.class.getCanonicalName());
+        }
 
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
