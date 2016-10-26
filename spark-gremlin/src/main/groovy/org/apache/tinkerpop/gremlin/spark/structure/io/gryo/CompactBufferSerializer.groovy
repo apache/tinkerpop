@@ -44,10 +44,8 @@ public final class CompactBufferSerializer<T> extends Serializer<CompactBuffer<T
         kryo.writeClassAndObject(output, compactBuffer.evidence$1);
         kryo.writeClassAndObject(output, compactBuffer.element0);
         kryo.writeClassAndObject(output, compactBuffer.element1);
-        output.flush();
         output.writeVarInt(compactBuffer.org$apache$spark$util$collection$CompactBuffer$$curSize, true);
         kryo.writeClassAndObject(output, compactBuffer.otherElements);
-        output.flush();
     }
 
     @Override

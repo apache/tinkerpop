@@ -33,11 +33,8 @@ public final class Tuple3Serializer<A, B, C> extends Serializer<Tuple3<A, B, C>>
     @Override
     public void write(final Kryo kryo, final Output output, final Tuple3<A, B, C> tuple3) {
         kryo.writeClassAndObject(output, tuple3._1());
-        output.flush();
         kryo.writeClassAndObject(output, tuple3._2());
-        output.flush();
         kryo.writeClassAndObject(output, tuple3._3());
-        output.flush();
     }
 
     @Override

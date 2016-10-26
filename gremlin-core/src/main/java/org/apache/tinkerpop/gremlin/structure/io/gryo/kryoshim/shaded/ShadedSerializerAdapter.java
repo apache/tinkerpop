@@ -26,7 +26,7 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 public class ShadedSerializerAdapter<T> extends Serializer<T> {
 
-    SerializerShim<T> serializer;
+    private final SerializerShim<T> serializer;
 
     public ShadedSerializerAdapter(final SerializerShim<T> serializer) {
         this.serializer = serializer;
@@ -50,5 +50,9 @@ public class ShadedSerializerAdapter<T> extends Serializer<T> {
         final ShadedKryoAdapter shadedKryoAdapter = new ShadedKryoAdapter(kryo);
         final ShadedInputAdapter shadedInputAdapter = new ShadedInputAdapter(input);
         return serializer.read(shadedKryoAdapter, shadedInputAdapter, aClass);
+    }
+
+    public SerializerShim<T> getSerializerShim() {
+        return this.serializer;
     }
 }
