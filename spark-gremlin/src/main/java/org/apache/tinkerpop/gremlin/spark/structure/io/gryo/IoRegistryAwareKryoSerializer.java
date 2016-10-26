@@ -31,41 +31,46 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.Un
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.TypeRegistration;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A {@link KryoSerializer} that attempts to honor {@link GryoPool#CONFIG_IO_REGISTRY}.
  */
-public class IoRegistryAwareKryoSerializer extends KryoSerializer {
-
-    private final SparkConf configuration;
+public final class IoRegistryAwareKryoSerializer extends KryoSerializer {
 
     private static final Logger log = LoggerFactory.getLogger(IoRegistryAwareKryoSerializer.class);
 
+    private final List<TypeRegistration<?>> typeRegistrations = new ArrayList<>();
+
     public IoRegistryAwareKryoSerializer(final SparkConf configuration) {
         super(configuration);
-        // store conf so that we can access its registry (if one is present) in newKryo()
-        this.configuration = configuration;
+        if (!configuration.contains(GryoPool.CONFIG_IO_REGISTRY))
+            log.info("SparkConf does not contain a {} property. Skipping {} processing.", GryoPool.CONFIG_IO_REGISTRY, IoRegistry.class.getCanonicalName());
+        else {
+            final GryoPool pool = GryoPool.build().poolSize(1).ioRegistries(Arrays.asList(configuration.get(GryoPool.CONFIG_IO_REGISTRY).split(","))).create();
+            for (final TypeRegistration<?> type : pool.getMapper().getTypeRegistrations()) {
+                log.info("Registering {} with serializer type: {}", type.getTargetClass().getCanonicalName(), type);
+                this.typeRegistrations.add(type);
+            }
+        }
     }
 
     @Override
     public Kryo newKryo() {
         final Kryo kryo = super.newKryo();
-        return applyIoRegistryIfPresent(kryo);
-    }
-
-    private Kryo applyIoRegistryIfPresent(final Kryo kryo) {
-        if (!this.configuration.contains(GryoPool.CONFIG_IO_REGISTRY)) {
-            log.info("SparkConf does not contain setting {}, skipping {} handling", GryoPool.CONFIG_IO_REGISTRY, IoRegistry.class.getCanonicalName());
-            return kryo;
-        }
-        final GryoPool pool = GryoPool.build().poolSize(1).ioRegistries(Arrays.asList(this.configuration.get(GryoPool.CONFIG_IO_REGISTRY).split(","))).create();
-        for (final TypeRegistration<?> type : pool.getMapper().getTypeRegistrations()) {
-            log.info("Registering {} with serializer {} and id {}", type.getTargetClass().getCanonicalName(), type.getSerializerShim(), type.getId());
-            kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter<>(type.getSerializerShim()), type.getId());
+        for (final TypeRegistration<?> type : this.typeRegistrations) {
+            if (null != type.getSerializerShim())
+                kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(type.getSerializerShim()), type.getId());
+            else if (null != type.getShadedSerializer() && type.getShadedSerializer() instanceof ShadedSerializerAdapter)
+                kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(((ShadedSerializerAdapter) type.getShadedSerializer()).getSerializerShim()), type.getId());
+            else
+                kryo.register(type.getTargetClass(), type.getId());
         }
         return kryo;
     }

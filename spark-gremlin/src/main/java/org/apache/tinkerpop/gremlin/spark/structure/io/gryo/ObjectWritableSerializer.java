@@ -37,7 +37,6 @@ public final class ObjectWritableSerializer<T> implements SerializerShim<ObjectW
     @Override
     public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ObjectWritable<T> starGraph) {
         kryo.writeClassAndObject(output, starGraph.get());
-        output.flush();
     }
 
     @Override

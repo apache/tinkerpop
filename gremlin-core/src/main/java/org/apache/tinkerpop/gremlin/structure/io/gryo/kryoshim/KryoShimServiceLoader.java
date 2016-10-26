@@ -114,7 +114,7 @@ public class KryoShimServiceLoader {
             throw new IllegalStateException("Unable to load KryoShimService");
 
         // once the shim service is defined, configure it
-        log.info("Configuring KryoShimService {} with following configuration:\n####################\n{}\n####################",
+        log.info("Configuring KryoShimService {} with following configuration:\n#######START########\n{}\n########END#########",
                 cachedShimService.getClass().getCanonicalName(),
                 ConfigurationUtils.toString(configuration));
         cachedShimService.applyConfiguration(configuration);
