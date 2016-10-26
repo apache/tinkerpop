@@ -94,7 +94,7 @@ public final class SparkExecutor {
 
                     // if the partition is empty, return without starting a new VP iteration
                     if (!partitionIterator.hasNext())
-                        return Collections.emptyList();
+                        return Collections.emptyIterator();
 
                     final VertexProgram<M> workerVertexProgram = VertexProgram.createVertexProgram(HadoopGraph.open(graphComputerConfiguration), vertexProgramConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program (a worker's task)
                     final String[] vertexComputeKeysArray = VertexProgramHelper.vertexComputeKeysAsArray(workerVertexProgram.getVertexComputeKeys()); // the compute keys as an array
