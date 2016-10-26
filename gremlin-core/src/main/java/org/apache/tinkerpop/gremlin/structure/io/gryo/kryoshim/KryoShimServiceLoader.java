@@ -35,8 +35,7 @@ import java.util.ServiceLoader;
 public class KryoShimServiceLoader {
 
     private static volatile KryoShimService cachedShimService;
-
-    private static volatile Configuration conf;
+    private static volatile Configuration configuration;
 
     private static final Logger log = LoggerFactory.getLogger(KryoShimServiceLoader.class);
 
@@ -47,8 +46,8 @@ public class KryoShimServiceLoader {
      */
     public static final String KRYO_SHIM_SERVICE = "gremlin.io.kryoShimService";
 
-    public static void applyConfiguration(final Configuration conf) {
-        KryoShimServiceLoader.conf = conf;
+    public static void applyConfiguration(final Configuration configuration) {
+        KryoShimServiceLoader.configuration = configuration;
         load(true);
     }
 
@@ -84,7 +83,9 @@ public class KryoShimServiceLoader {
             }
         }
 
-        String shimClass = System.getProperty(KRYO_SHIM_SERVICE);
+        String shimClass = null != configuration && configuration.containsKey(KRYO_SHIM_SERVICE) ?
+                configuration.getString(KRYO_SHIM_SERVICE) :
+                System.getProperty(KRYO_SHIM_SERVICE);
 
         if (null != shimClass) {
             for (KryoShimService kss : services) {
@@ -115,7 +116,7 @@ public class KryoShimServiceLoader {
             throw new IllegalStateException("Unable to load KryoShimService");
         }
 
-        final Configuration userConf = conf;
+        final Configuration userConf = configuration;
 
         if (null != userConf) {
             log.info("Configuring {} provider {} with user-provided configuration",
@@ -136,7 +137,7 @@ public class KryoShimServiceLoader {
     }
 
     /**
-     * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#writeClassAndObject(Output, Object)},
+     * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#writeClassAndObject},
      * where the {@code output} parameter is an internally-created {@link ByteArrayOutputStream}.  Returns
      * the byte array underlying that stream.
      *
@@ -154,7 +155,7 @@ public class KryoShimServiceLoader {
     }
 
     /**
-     * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#readClassAndObject(Input)},
+     * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#readClassAndObject},
      * where the {@code input} parameter is {@code source}.  Returns the deserialized object.
      *
      * @param source an input stream containing data for a serialized object class and instance

@@ -31,6 +31,8 @@ import java.util.Collections;
  */
 public final class HadoopPools {
 
+    private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration();
+
     private HadoopPools() {
     }
 
@@ -59,8 +61,17 @@ public final class HadoopPools {
 
     public static GryoPool getGryoPool() {
         if (!INITIALIZED) {
-            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");     // TODO: this is necessary because we can't get the pool intialized in the Merger code of the Hadoop process.
-            initialize(new BaseConfiguration());
+            /*if (null != System.getProperty("configuration", null)) {
+                try {
+                    HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the System properties configuration");
+                    initialize((Configuration) Serializer.deserializeObject(System.getProperty("configuration").getBytes()));
+                } catch (final Exception e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            } else {*/
+            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");
+            initialize(EMPTY_CONFIGURATION);
+            //}
         }
         return GRYO_POOL;
     }
