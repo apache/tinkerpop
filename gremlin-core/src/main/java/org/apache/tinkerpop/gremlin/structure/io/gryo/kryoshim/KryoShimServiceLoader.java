@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.tinkerpop.gremlin.util.SystemUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +49,12 @@ public class KryoShimServiceLoader {
     public static final String KRYO_SHIM_SERVICE = "gremlin.io.kryoShimService";
 
     public static void applyConfiguration(final Configuration configuration) {
-        KryoShimServiceLoader.configuration = configuration;
-        load(true);
+        if (null == KryoShimServiceLoader.configuration ||
+                !ConfigurationUtils.toString(KryoShimServiceLoader.configuration).equals(ConfigurationUtils.toString(configuration))) {
+            KryoShimServiceLoader.configuration = configuration;
+            load(true);
+        } else
+            load(false);
     }
 
     /**
@@ -62,78 +68,54 @@ public class KryoShimServiceLoader {
      * @return the shim service
      */
     public static KryoShimService load(final boolean forceReload) {
-
-        if (null != cachedShimService && !forceReload) {
+        // if the service is loaded and doesn't need reloading, simply return in
+        if (null != cachedShimService && !forceReload)
             return cachedShimService;
-        }
 
+        // if the configuration is null, try and load the configuration from System.properties
+        if (null == configuration)
+            configuration = SystemUtil.getSystemPropertiesConfiguration("gremlin", true);
+
+        // get all of the shim services
         final ArrayList<KryoShimService> services = new ArrayList<>();
-
-        final ServiceLoader<KryoShimService> sl = ServiceLoader.load(KryoShimService.class);
-
-        KryoShimService result = null;
-
+        final ServiceLoader<KryoShimService> serviceLoader = ServiceLoader.load(KryoShimService.class);
         synchronized (KryoShimServiceLoader.class) {
-            if (forceReload) {
-                sl.reload();
-            }
-
-            for (KryoShimService kss : sl) {
+            if (forceReload) serviceLoader.reload();
+            for (final KryoShimService kss : serviceLoader) {
                 services.add(kss);
             }
         }
-
-        String shimClass = null != configuration && configuration.containsKey(KRYO_SHIM_SERVICE) ?
-                configuration.getString(KRYO_SHIM_SERVICE) :
-                System.getProperty(KRYO_SHIM_SERVICE);
-
-        if (null != shimClass) {
-            for (KryoShimService kss : services) {
-                if (kss.getClass().getCanonicalName().equals(shimClass)) {
+        // if a shim service class is specified in the configuration, use it -- else, priority-based
+        if (configuration.containsKey(KRYO_SHIM_SERVICE)) {
+            for (final KryoShimService kss : services) {
+                if (kss.getClass().getCanonicalName().equals(configuration.getString(KRYO_SHIM_SERVICE))) {
                     log.info("Set {} provider to {} ({}) from system property {}={}",
                             KryoShimService.class.getSimpleName(), kss, kss.getClass(),
-                            KRYO_SHIM_SERVICE, shimClass);
-                    result = kss;
+                            KRYO_SHIM_SERVICE, configuration.getString(KRYO_SHIM_SERVICE));
+                    cachedShimService = kss;
+                    break;
                 }
             }
         } else {
             Collections.sort(services, KryoShimServiceComparator.INSTANCE);
-
-            for (KryoShimService kss : services) {
+            for (final KryoShimService kss : services) {
                 log.debug("Found Kryo shim service class {} (priority {})", kss.getClass(), kss.getPriority());
             }
-
             if (0 != services.size()) {
-                result = services.get(services.size() - 1);
-
+                cachedShimService = services.get(services.size() - 1);
                 log.info("Set {} provider to {} ({}) because its priority value ({}) is the best available",
-                        KryoShimService.class.getSimpleName(), result, result.getClass(), result.getPriority());
+                        KryoShimService.class.getSimpleName(), cachedShimService, cachedShimService.getClass(), cachedShimService.getPriority());
             }
         }
 
-
-        if (null == result) {
+        // no shim service was available
+        if (null == cachedShimService)
             throw new IllegalStateException("Unable to load KryoShimService");
-        }
 
-        final Configuration userConf = configuration;
-
-        if (null != userConf) {
-            log.info("Configuring {} provider {} with user-provided configuration",
-                    KryoShimService.class.getSimpleName(), result);
-            result.applyConfiguration(userConf);
-        }
-
-        return cachedShimService = result;
-    }
-
-    /**
-     * Equivalent to {@link #load(boolean)} with the parameter {@code true}.
-     *
-     * @return the (possibly cached) shim service
-     */
-    public static KryoShimService load() {
-        return load(false);
+        // once the shim service is defined, configure it
+        log.info("Configuring {} provider {} with user-provided configuration", KryoShimService.class.getSimpleName(), cachedShimService.getClass().getCanonicalName());
+        cachedShimService.applyConfiguration(configuration);
+        return cachedShimService;
     }
 
     /**
@@ -141,16 +123,13 @@ public class KryoShimServiceLoader {
      * where the {@code output} parameter is an internally-created {@link ByteArrayOutputStream}.  Returns
      * the byte array underlying that stream.
      *
-     * @param o an object for which the instance and class are serialized
+     * @param object an object for which the instance and class are serialized
      * @return the serialized form
      */
-    public static byte[] writeClassAndObjectToBytes(final Object o) {
-        final KryoShimService shimService = load();
-
+    public static byte[] writeClassAndObjectToBytes(final Object object) {
+        final KryoShimService shimService = load(false);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        shimService.writeClassAndObject(o, baos);
-
+        shimService.writeClassAndObject(object, baos);
         return baos.toByteArray();
     }
 
@@ -158,14 +137,13 @@ public class KryoShimServiceLoader {
      * A loose abstraction of {@link org.apache.tinkerpop.shaded.kryo.Kryo#readClassAndObject},
      * where the {@code input} parameter is {@code source}.  Returns the deserialized object.
      *
-     * @param source an input stream containing data for a serialized object class and instance
-     * @param <T>    the type to which the deserialized object is cast as it is returned
+     * @param inputStream an input stream containing data for a serialized object class and instance
+     * @param <T>         the type to which the deserialized object is cast as it is returned
      * @return the deserialized object
      */
-    public static <T> T readClassAndObject(final InputStream source) {
-        final KryoShimService shimService = load();
-
-        return (T) shimService.readClassAndObject(source);
+    public static <T> T readClassAndObject(final InputStream inputStream) {
+        final KryoShimService shimService = load(false);
+        return (T) shimService.readClassAndObject(inputStream);
     }
 
     /**

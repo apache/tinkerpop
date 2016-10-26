@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.util.SystemUtil;
 
 import java.util.Collections;
 
@@ -30,8 +31,6 @@ import java.util.Collections;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class HadoopPools {
-
-    private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration();
 
     private HadoopPools() {
     }
@@ -61,17 +60,9 @@ public final class HadoopPools {
 
     public static GryoPool getGryoPool() {
         if (!INITIALIZED) {
-            /*if (null != System.getProperty("configuration", null)) {
-                try {
-                    HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the System properties configuration");
-                    initialize((Configuration) Serializer.deserializeObject(System.getProperty("configuration").getBytes()));
-                } catch (final Exception e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            } else {*/
-            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");
-            initialize(EMPTY_CONFIGURATION);
-            //}
+            final Configuration configuration = SystemUtil.getSystemPropertiesConfiguration("gremlin", true);
+            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using system properties configuration: " + ConfigurationUtils.toString(configuration));
+            initialize(configuration);
         }
         return GRYO_POOL;
     }
