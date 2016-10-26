@@ -33,6 +33,7 @@ import org.apache.spark.serializer.SerializerInstance;
 import org.apache.spark.storage.BlockManagerId;
 import org.apache.spark.util.SerializableConfiguration;
 import org.apache.spark.util.collection.CompactBuffer;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -67,7 +68,7 @@ public final class GryoSerializer extends Serializer implements Serializable {
         final long bufferSizeKb = sparkConfiguration.getSizeAsKb("spark.kryoserializer.buffer", "64k");
         final long maxBufferSizeMb = sparkConfiguration.getSizeAsMb("spark.kryoserializer.buffer.max", "64m");
         referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
-        registrationRequired = sparkConfiguration.getBoolean("spark.kryo.registrationRequired", false);
+        registrationRequired = sparkConfiguration.getBoolean(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, false);
         if (bufferSizeKb >= ByteUnit.GiB.toKiB(2L)) {
             throw new IllegalArgumentException("spark.kryoserializer.buffer must be less than 2048 mb, got: " + bufferSizeKb + " mb.");
         } else {
