@@ -17,24 +17,19 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.giraph;
 
-import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.giraph.structure.io.GiraphIoRegistryCheck;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TestIoRegistry extends AbstractIoRegistry {
-
-    private static final TestIoRegistry INSTANCE = new TestIoRegistry();
-
-    private TestIoRegistry() {
-        super.register(GryoIo.class, ToyPoint.class, new ShadedSerializerAdapter<>(new ToyPoint.ToyPointSerializer()));
-    }
-
-    public static TestIoRegistry getInstance() {
-        return INSTANCE;
+public final class GiraphGremlinSuite extends AbstractGremlinSuite {
+    public GiraphGremlinSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
+        super(klass, builder, new Class<?>[]{GiraphIoRegistryCheck.class}, new Class<?>[]{GiraphIoRegistryCheck.class}, true, TraversalEngine.Type.COMPUTER);
     }
 }

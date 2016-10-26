@@ -17,26 +17,26 @@
  *  under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
 
-import java.io.Serializable;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ToyPoint implements Serializable {
+public final class ToyTriangle {
 
     private final int x;
     private final int y;
+    private final int z;
 
-    public ToyPoint(final int x, final int y) {
+    public ToyTriangle(final int x, final int y, final int z) {
         this.x = x;
         this.y = y;
+        this.z = z;
     }
 
     public int getX() {
@@ -47,29 +47,34 @@ public final class ToyPoint implements Serializable {
         return this.y;
     }
 
+    public int getZ() {
+        return this.z;
+    }
+
     public int hashCode() {
-        return this.x + this.y;
+        return this.x + this.y + this.z;
     }
 
     public boolean equals(final Object other) {
-        return other instanceof ToyPoint && ((ToyPoint) other).x == this.x && ((ToyPoint) other).y == this.y;
+        return other instanceof ToyTriangle && ((ToyTriangle) other).x == this.x && ((ToyTriangle) other).y == this.y && ((ToyTriangle) other).z == this.z;
     }
 
     @Override
     public String toString() {
-        return "[" + this.x + "," + this.y + "]";
+        return "[" + this.x + "," + this.y + "," + this.z + "]";
     }
 
-    public static class ToyPointSerializer implements SerializerShim<ToyPoint> {
+    public static class ToyTriangleSerializer implements SerializerShim<ToyTriangle> {
         @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ToyPoint toyPoint) {
-            output.writeInt(toyPoint.x);
-            output.writeInt(toyPoint.y);
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final ToyTriangle toyTriangle) {
+            output.writeInt(toyTriangle.x);
+            output.writeInt(toyTriangle.y);
+            output.writeInt(toyTriangle.z);
         }
 
         @Override
-        public <I extends InputShim> ToyPoint read(final KryoShim<I, ?> kryo, final I input, final Class<ToyPoint> toyPointClass) {
-            return new ToyPoint(input.readInt(), input.readInt());
+        public <I extends InputShim> ToyTriangle read(final KryoShim<I, ?> kryo, final I input, final Class<ToyTriangle> toyTriangleClass) {
+            return new ToyTriangle(input.readInt(), input.readInt(), input.readInt());
         }
     }
 }
