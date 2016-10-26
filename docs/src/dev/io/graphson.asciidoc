@@ -149,6 +149,7 @@ file.withWriter { writer ->
   writer.write(toJson(Operator.sum, "Operator"))
   writer.write(toJson(Order.incr, "Order"))
   writer.write(toJson(Pop.all, "Pop"))
+  writer.write(toJson(Pick.any, "Pick"))
   writer.write(toJson(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda"))
   tm = g.V().hasLabel('person').out().out().tree().profile().next()
   metrics = new org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics(tm.getMetrics(0));

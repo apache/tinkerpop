@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
@@ -145,6 +146,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             Order.values(),
                             Pop.values(),
                             SackFunctions.Barrier.values(),
+                            TraversalOptionParent.Pick.values(),
                             Scope.values(),
                             T.values()).flatMap(Stream::of).forEach(e -> put(e.getClass(), e.getDeclaringClass().getSimpleName()));
                     Arrays.asList(
@@ -215,6 +217,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Pop.class,
                     SackFunctions.Barrier.class,
                     Scope.class,
+                    TraversalOptionParent.Pick.class,
                     T.class).forEach(e -> addSerializer(e, new GraphSONTraversalSerializersV2d0.EnumJacksonSerializer()));
             addSerializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonSerializer());
             addSerializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonSerializer());
@@ -245,6 +248,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Pop.values(),
                     SackFunctions.Barrier.values(),
                     Scope.values(),
+                    TraversalOptionParent.Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new GraphSONTraversalSerializersV2d0.EnumJacksonDeserializer(e.getDeclaringClass())));
             addDeserializer(P.class, new GraphSONTraversalSerializersV2d0.PJacksonDeserializer());
             addDeserializer(Lambda.class, new GraphSONTraversalSerializersV2d0.LambdaJacksonDeserializer());
