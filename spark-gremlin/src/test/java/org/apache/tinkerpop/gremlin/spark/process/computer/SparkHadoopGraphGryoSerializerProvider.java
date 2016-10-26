@@ -34,9 +34,7 @@ import java.util.Map;
 public final class SparkHadoopGraphGryoSerializerProvider extends SparkHadoopGraphProvider {
 
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
-        if (this.getClass().equals(SparkHadoopGraphGryoSerializerProvider.class) &&
-                !HadoopPoolShimService.class.getCanonicalName().equals(System.getProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, null)))
-            Spark.close();
+        Spark.close();
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         config.put(Constants.SPARK_SERIALIZER, GryoSerializer.class.getCanonicalName());
         config.remove(Constants.SPARK_KRYO_REGISTRATOR);

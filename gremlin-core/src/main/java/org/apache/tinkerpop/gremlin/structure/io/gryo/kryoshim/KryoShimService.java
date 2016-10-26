@@ -85,10 +85,6 @@ public interface KryoShimService {
 
     /**
      * Attempt to incorporate the supplied configuration in future read/write calls.
-     * <p>
-     * This method is a wart that exists essentially just to support the old
-     * {@link HadoopPools#initialize(Configuration)} use-case.
-     * <p>
      * This method is not guaranteed to have any effect on an instance of this interface
      * after {@link #writeClassAndObject(Object, OutputStream)} or {@link #readClassAndObject(InputStream)}
      * has been invoked on that particular instance.

@@ -30,7 +30,7 @@ public interface HadoopPoolsConfigurable extends Configurable {
 
     @Override
     public default void setConf(final Configuration configuration) {
-        KryoShimServiceLoader.applyConfiguration(ConfUtil.makeApacheConfiguration(configuration));
+        HadoopPools.initialize(configuration);
     }
 
     @Override
