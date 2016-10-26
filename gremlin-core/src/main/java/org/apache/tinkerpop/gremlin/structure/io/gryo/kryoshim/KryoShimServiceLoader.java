@@ -67,14 +67,14 @@ public class KryoShimServiceLoader {
      *                    before selecting a new service to return
      * @return the shim service
      */
-    public static KryoShimService load(final boolean forceReload) {
+    private static KryoShimService load(final boolean forceReload) {
         // if the service is loaded and doesn't need reloading, simply return in
         if (null != cachedShimService && !forceReload)
             return cachedShimService;
 
         // if the configuration is null, try and load the configuration from System.properties
         if (null == configuration)
-            configuration = SystemUtil.getSystemPropertiesConfiguration("gremlin", true);
+            configuration = SystemUtil.getSystemPropertiesConfiguration("tinkerpop", true);
 
         // get all of the shim services
         final ArrayList<KryoShimService> services = new ArrayList<>();
@@ -89,9 +89,10 @@ public class KryoShimServiceLoader {
         if (configuration.containsKey(KRYO_SHIM_SERVICE)) {
             for (final KryoShimService kss : services) {
                 if (kss.getClass().getCanonicalName().equals(configuration.getString(KRYO_SHIM_SERVICE))) {
-                    log.info("Set {} provider to {} ({}) from system property {}={}",
-                            KryoShimService.class.getSimpleName(), kss, kss.getClass(),
-                            KRYO_SHIM_SERVICE, configuration.getString(KRYO_SHIM_SERVICE));
+                    log.info("Set KryoShimService to {} because of configuration {}={}",
+                            kss.getClass().getSimpleName(),
+                            KRYO_SHIM_SERVICE,
+                            configuration.getString(KRYO_SHIM_SERVICE));
                     cachedShimService = kss;
                     break;
                 }
@@ -99,12 +100,12 @@ public class KryoShimServiceLoader {
         } else {
             Collections.sort(services, KryoShimServiceComparator.INSTANCE);
             for (final KryoShimService kss : services) {
-                log.debug("Found Kryo shim service class {} (priority {})", kss.getClass(), kss.getPriority());
+                log.debug("Found KryoShimService: {} (priority {})", kss.getClass().getCanonicalName(), kss.getPriority());
             }
             if (0 != services.size()) {
                 cachedShimService = services.get(services.size() - 1);
-                log.info("Set {} provider to {} ({}) because its priority value ({}) is the best available",
-                        KryoShimService.class.getSimpleName(), cachedShimService, cachedShimService.getClass(), cachedShimService.getPriority());
+                log.info("Set KryoShimService to {} because its priority value ({}) is the best available",
+                        cachedShimService.getClass().getSimpleName(), cachedShimService.getPriority());
             }
         }
 
@@ -113,7 +114,9 @@ public class KryoShimServiceLoader {
             throw new IllegalStateException("Unable to load KryoShimService");
 
         // once the shim service is defined, configure it
-        log.info("Configuring {} provider {} with user-provided configuration", KryoShimService.class.getSimpleName(), cachedShimService.getClass().getCanonicalName());
+        log.info("Configuring KryoShimService {} with following configuration: {}",
+                cachedShimService.getClass().getCanonicalName(),
+                ConfigurationUtils.toString(configuration));
         cachedShimService.applyConfiguration(configuration);
         return cachedShimService;
     }

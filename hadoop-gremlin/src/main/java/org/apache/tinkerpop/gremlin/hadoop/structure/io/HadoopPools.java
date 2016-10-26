@@ -60,7 +60,7 @@ public final class HadoopPools {
 
     public static GryoPool getGryoPool() {
         if (!INITIALIZED) {
-            final Configuration configuration = SystemUtil.getSystemPropertiesConfiguration("gremlin", true);
+            final Configuration configuration = SystemUtil.getSystemPropertiesConfiguration("tinkerpop", true);
             HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using system properties configuration: " + ConfigurationUtils.toString(configuration));
             initialize(configuration);
         }
