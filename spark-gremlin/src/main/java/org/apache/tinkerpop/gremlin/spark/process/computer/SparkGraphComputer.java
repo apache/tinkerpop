@@ -118,7 +118,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         final StringBuilder params = new StringBuilder();
         this.sparkConfiguration.getKeys().forEachRemaining(key -> {
             if (key.startsWith("gremlin") || key.startsWith("spark")) {
-                params.append(" -D").append("gremlin.").append(key).append("=").append(this.sparkConfiguration.getProperty(key));
+                params.append(" -D").append("tinkerpop.").append(key).append("=").append(this.sparkConfiguration.getProperty(key));
             }
         });
         if (params.length() > 0) {
