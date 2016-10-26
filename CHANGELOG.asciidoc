@@ -128,6 +128,7 @@ Bugs
 * TINKERPOP-1458 Gremlin Server doesn't return confirmation upon Traversal OpProcessor "close" op
 * TINKERPOP-1466 PeerPressureTest has been failing recently
 * TINKERPOP-1472 RepeatUnrollStrategy does not semi-compile inlined repeat traversal
+* TINKERPOP-1476 TinkerGraph does not get typed with the right type name in GraphSON
 * TINKERPOP-1495 Global list deduplication doesn't work in OLAP
 * TINKERPOP-1500 and/or infix and choose() do not work correctly.
 * TINKERPOP-1511 Remote client addV, V()
