@@ -48,13 +48,13 @@ public class KryoShimServiceLoader {
      */
     public static final String KRYO_SHIM_SERVICE = "gremlin.io.kryoShimService";
 
-    public static void applyConfiguration(final Configuration configuration) {
+    public synchronized static void applyConfiguration(final Configuration configuration) {
         if (null == KryoShimServiceLoader.configuration ||
+                null == KryoShimServiceLoader.cachedShimService ||
                 !ConfigurationUtils.toString(KryoShimServiceLoader.configuration).equals(ConfigurationUtils.toString(configuration))) {
             KryoShimServiceLoader.configuration = configuration;
             load(true);
-        } else
-            load(false);
+        }
     }
 
     /**
@@ -114,7 +114,7 @@ public class KryoShimServiceLoader {
             throw new IllegalStateException("Unable to load KryoShimService");
 
         // once the shim service is defined, configure it
-        log.info("Configuring KryoShimService {} with following configuration: {}",
+        log.info("Configuring KryoShimService {} with following configuration:\n####################\n{}\n####################",
                 cachedShimService.getClass().getCanonicalName(),
                 ConfigurationUtils.toString(configuration));
         cachedShimService.applyConfiguration(configuration);

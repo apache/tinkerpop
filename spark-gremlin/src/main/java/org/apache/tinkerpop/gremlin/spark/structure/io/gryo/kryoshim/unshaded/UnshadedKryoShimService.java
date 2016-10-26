@@ -27,15 +27,13 @@ package org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.IoRegistryAwareKryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,22 +41,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class UnshadedKryoShimService implements KryoShimService {
 
-    private static final Logger log = LoggerFactory.getLogger(UnshadedKryoShimService.class);
     private static final LinkedBlockingQueue<Kryo> KRYOS = new LinkedBlockingQueue<>();
-    private static volatile boolean initialized;
+    private static volatile boolean INITIALIZED;
 
     @Override
     public Object readClassAndObject(final InputStream inputStream) {
-        final LinkedBlockingQueue<Kryo> kryos = initialize();
         Kryo k = null;
         try {
-            k = kryos.take();
+            k = KRYOS.take();
             return k.readClassAndObject(new Input(inputStream));
         } catch (final InterruptedException e) {
             throw new IllegalStateException(e);
         } finally {
             try {
-                kryos.put(k);
+                KRYOS.put(k);
             } catch (final InterruptedException e) {
                 throw new IllegalStateException(e);
             }
@@ -67,10 +63,9 @@ public class UnshadedKryoShimService implements KryoShimService {
 
     @Override
     public void writeClassAndObject(final Object object, OutputStream outputStream) {
-        final LinkedBlockingQueue<Kryo> kryos = initialize();
         Kryo k = null;
         try {
-            k = kryos.take();
+            k = KRYOS.take();
             final Output kryoOutput = new Output(outputStream);
             k.writeClassAndObject(kryoOutput, object);
             kryoOutput.flush();
@@ -78,7 +73,7 @@ public class UnshadedKryoShimService implements KryoShimService {
             throw new IllegalStateException(e);
         } finally {
             try {
-                kryos.put(k);
+                KRYOS.put(k);
             } catch (final InterruptedException e) {
                 throw new IllegalStateException(e);
             }
@@ -95,44 +90,25 @@ public class UnshadedKryoShimService implements KryoShimService {
         initialize(configuration);
     }
 
-    private LinkedBlockingQueue<Kryo> initialize() {
-        return initialize(new BaseConfiguration());
-    }
-
     private LinkedBlockingQueue<Kryo> initialize(final Configuration configuration) {
         // DCL is safe in this case due to volatility
-        if (!initialized) {
+        if (!INITIALIZED) {
             synchronized (UnshadedKryoShimService.class) {
-                if (!initialized) {
-                    final SparkConf sparkConf = new SparkConf();
-
-                    // Copy the user's IoRegistry from the param conf to the SparkConf we just created
-                    final String regStr = configuration.getString(GryoPool.CONFIG_IO_REGISTRY, null);
-                    if (null != regStr)  // SparkConf rejects null values with NPE, so this has to be checked before set(...)
-                        sparkConf.set(GryoPool.CONFIG_IO_REGISTRY, regStr);
-
+                if (!INITIALIZED) {
+                    // so we don't get a WARN that a new configuration is being created within an active context
+                    final SparkConf sparkConf = null == Spark.getContext() ? new SparkConf() : Spark.getContext().getConf().clone();
+                    configuration.getKeys().forEachRemaining(key -> sparkConf.set(key, configuration.getProperty(key).toString()));
                     // Setting spark.serializer here almost certainly isn't necessary, but it doesn't hurt
                     sparkConf.set(Constants.SPARK_SERIALIZER, IoRegistryAwareKryoSerializer.class.getCanonicalName());
-                    final String registrator = configuration.getString(Constants.SPARK_KRYO_REGISTRATOR);
-                    if (null != registrator) {
-                        sparkConf.set(Constants.SPARK_KRYO_REGISTRATOR, registrator);
-                        log.info("Copied " + Constants.SPARK_KRYO_REGISTRATOR + ": {}", registrator);
-                    } else {
-                        log.info("Not copying " + Constants.SPARK_KRYO_REGISTRATOR);
-                    }
-
                     // Instantiate the spark.serializer
-                    final IoRegistryAwareKryoSerializer ioReg = new IoRegistryAwareKryoSerializer(sparkConf);
-
+                    final IoRegistryAwareKryoSerializer ioRegistrySerializer = new IoRegistryAwareKryoSerializer(sparkConf);
                     // Setup a pool backed by our spark.serializer instance
                     // Reuse Gryo poolsize for Kryo poolsize (no need to copy this to SparkConf)
-                    final int poolSize = configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE,
-                            GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
+                    final int poolSize = configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
                     for (int i = 0; i < poolSize; i++) {
-                        KRYOS.add(ioReg.newKryo());
+                        KRYOS.add(ioRegistrySerializer.newKryo());
                     }
-
-                    initialized = true;
+                    INITIALIZED = true;
                 }
             }
         }
