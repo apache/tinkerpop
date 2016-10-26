@@ -56,7 +56,7 @@ public @interface FeatureRequirementSet {
             add(FeatureRequirement.Factory.create(Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES, Graph.Features.EdgeFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY, Graph.Features.VertexFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES, Graph.Features.VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES, Graph.Features.EdgePropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(Graph.Features.EdgePropertyFeatures.FEATURE_STRING_VALUES, Graph.Features.EdgePropertyFeatures.class));
             add(FeatureRequirement.Factory.create(Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY, Graph.Features.EdgeFeatures.class));
         }};
 

@@ -528,6 +528,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Minor fixes to various test feature requirements in `gremlin-test`.
 
 [[release-3-1-5]]
 TinkerPop 3.1.5 (Release Date: October 17, 2016)
