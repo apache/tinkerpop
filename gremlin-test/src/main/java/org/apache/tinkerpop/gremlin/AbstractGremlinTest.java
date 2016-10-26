@@ -210,6 +210,7 @@ public abstract class AbstractGremlinTest {
      *
      * @deprecated as of 3.1.1-incubating, and is not replaced
      */
+    @Deprecated
     public void tryRandomCommit(final Graph graph) {
         if (graph.features().graph().supportsTransactions() && new Random().nextBoolean())
             graph.tx().commit();
