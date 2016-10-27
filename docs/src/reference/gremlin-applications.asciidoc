@@ -1011,6 +1011,8 @@ to use to `bin/gremlin-server.sh` as in:
 bin/gremlin-server.sh conf/gremlin-server-min.yaml
 ----
 
+WARNING: On Windows, gremlin-server.bat will always start in the foreground. When no parameter is provided, it will start with the default `conf/gremlin-server.yaml` file.
+
 The following table describes the various YAML configuration options that Gremlin Server expects:
 
 [width="100%",cols="3,10,^2",options="header"]
