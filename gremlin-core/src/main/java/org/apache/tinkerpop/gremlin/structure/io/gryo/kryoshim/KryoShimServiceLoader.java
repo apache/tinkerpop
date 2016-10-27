@@ -51,10 +51,17 @@ public class KryoShimServiceLoader {
     public static void applyConfiguration(final Configuration configuration) {
         if (null == KryoShimServiceLoader.configuration ||
                 null == KryoShimServiceLoader.cachedShimService ||
-                !ConfigurationUtils.toString(KryoShimServiceLoader.configuration).equals(ConfigurationUtils.toString(configuration))) {
+                !KryoShimServiceLoader.configuration.getKeys().hasNext()) {
             KryoShimServiceLoader.configuration = configuration;
             load(true);
         }
+    }
+
+    public static void close() {
+        if (null != cachedShimService)
+            cachedShimService.close();
+        cachedShimService = null;
+        configuration = null;
     }
 
     /**
@@ -71,6 +78,10 @@ public class KryoShimServiceLoader {
         // if the service is loaded and doesn't need reloading, simply return in
         if (null != cachedShimService && !forceReload)
             return cachedShimService;
+
+        // if a service is already loaded, close it
+        if (null != cachedShimService)
+            cachedShimService.close();
 
         // if the configuration is null, try and load the configuration from System.properties
         if (null == configuration)

@@ -20,11 +20,9 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -47,6 +45,11 @@ public class HadoopPoolShimService implements KryoShimService {
     @Override
     public void applyConfiguration(final Configuration configuration) {
         HadoopPools.initialize(configuration);
+    }
+
+    @Override
+    public void close() {
+        HadoopPools.close();
     }
 
     @Override
