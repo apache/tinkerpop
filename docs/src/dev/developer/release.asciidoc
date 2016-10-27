@@ -145,7 +145,9 @@ current release was under development as this new release will have those change
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
 .. This step should only be performed by the release manager for the newest line of code (i.e. if release 3.3.x, 3.2.x and 3.1.x,
 then only do this step for 3.3.x, but update the site for 3.2.x and 3.1.x).
-.. On the link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
+.. Update the `template/header-footer.html`.
+.. Update `index.html`.
+.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
@@ -201,13 +203,9 @@ Release & Promote
 . `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Wait for Apache Sonatype to sync the artifacts to Maven Central at (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Wait for zip distributions to to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
-. Update home page site with references to latest distribution - specifically:
-.. Update the `template/header-footer.html`.
-.. Update `index.html`.
-.. Update link:http://tinkerpop.apache.org/downloads.html[Downloads] page, when moving "Current Releases" to "Archived
-Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+. `bin/publish-home.sh <username>` to publish the updated web site with new releases.
 . Execute `bin/update-current-docs.sh` to migrate to the latest documentation set for `/current`.
-. This step should olny occur after the website is updated and all links are working. If there are releases present in
+. This step should only occur after the website is updated and all links are working. If there are releases present in
 SVN that represents lines of code that are no longer under development, then remove those releases. In other words,
 if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if `3.1.3` is present and that line of
 code is still under potential development, it may stay.
