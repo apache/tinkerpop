@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkIoRegistryCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.io.ToyGraphInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -97,6 +98,8 @@ public class SparkHadoopGraphProvider extends HadoopGraphProvider {
         config.put(Constants.SPARK_SERIALIZER, KryoSerializer.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
         config.put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
+        // TODO: why do I need this here?!
+        config.put(GryoPool.CONFIG_IO_REGISTRY, ToyIoRegistry.class.getCanonicalName());
         return config;
     }
 
