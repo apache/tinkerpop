@@ -29,5 +29,5 @@ import org.junit.runner.RunWith;
  */
 @RunWith(GiraphGremlinSuite.class)
 @GraphProviderClass(provider = GiraphHadoopGraphProvider.class, graph = HadoopGraph.class)
-public class GiraphGremlinTest {
+public class GiraphGremlinIntegrateTest {
 }

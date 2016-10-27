@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ public abstract class AbstractSparkTest {
         Spark.create(sparkContext.sc());
         Spark.close();
         HadoopPools.close();
+        KryoShimServiceLoader.close();
         logger.info("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
     }
 

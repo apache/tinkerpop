@@ -20,12 +20,10 @@
 package org.apache.tinkerpop.gremlin.giraph.structure.io;
 
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractIoRegistryCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,17 +36,24 @@ public class GiraphIoRegistryCheck extends AbstractIoRegistryCheck {
     @Before
     public void setup() throws Exception {
         super.setup();
+        KryoShimServiceLoader.close();
         HadoopPools.close();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        KryoShimServiceLoader.close();
         HadoopPools.close();
     }
 
     @Test
-    public void shouldSupportIoRegistry() throws Exception {
+    public void shouldSupportGryoIoRegistry() throws Exception {
         super.checkGryoIoRegistryCompliance((HadoopGraph) graph, GiraphGraphComputer.class);
+    }
+
+    @Test
+    public void shouldSupportGraphSONIoRegistry() throws Exception {
+        super.checkGraphSONIoRegistryCompliance((HadoopGraph) graph, GiraphGraphComputer.class);
     }
 }
