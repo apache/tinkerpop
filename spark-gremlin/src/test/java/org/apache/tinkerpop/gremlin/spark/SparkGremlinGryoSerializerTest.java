@@ -29,5 +29,5 @@ import org.junit.runner.RunWith;
  */
 @RunWith(SparkGremlinSuite.class)
 @GraphProviderClass(provider = SparkHadoopGraphGryoSerializerProvider.class, graph = HadoopGraph.class)
-public class SparkGremlinGryoSerializerIntegrateTest {
+public class SparkGremlinGryoSerializerTest {
 }

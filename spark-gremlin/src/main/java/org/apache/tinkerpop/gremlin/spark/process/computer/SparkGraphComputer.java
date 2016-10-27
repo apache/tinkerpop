@@ -69,7 +69,6 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
@@ -108,26 +107,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
         this.sparkConfiguration = new HadoopConfiguration();
-        ConfigurationUtils.copy(this.hadoopGraph.configuration(), this.sparkConfiguration);
-        final String shimService = KryoSerializer.class.getCanonicalName().equals(this.sparkConfiguration.getString(Constants.SPARK_SERIALIZER, null)) &&
-                GryoRegistrator.class.getCanonicalName().equals(this.sparkConfiguration.getString(Constants.SPARK_KRYO_REGISTRATOR, null)) ?
-                UnshadedKryoShimService.class.getCanonicalName() :
-                HadoopPoolShimService.class.getCanonicalName();
-        this.sparkConfiguration.setProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, shimService);
-        ///////////
-        final StringBuilder params = new StringBuilder();
-        this.sparkConfiguration.getKeys().forEachRemaining(key -> {
-            if (key.startsWith("gremlin") || key.startsWith("spark")) {
-                params.append(" -D").append("tinkerpop.").append(key).append("=").append(this.sparkConfiguration.getProperty(key));
-            }
-        });
-        if (params.length() > 0) {
-            this.sparkConfiguration.setProperty(SparkLauncher.EXECUTOR_EXTRA_JAVA_OPTIONS,
-                    (this.sparkConfiguration.getString(SparkLauncher.EXECUTOR_EXTRA_JAVA_OPTIONS, "") + params.toString()).trim());
-            this.sparkConfiguration.setProperty(SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS,
-                    (this.sparkConfiguration.getString(SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS, "") + params.toString()).trim());
-        }
-        KryoShimServiceLoader.applyConfiguration(this.sparkConfiguration);
     }
 
     @Override
@@ -156,6 +135,32 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         // create the completable future
         return computerService.submit(() -> {
             final long startTime = System.currentTimeMillis();
+            //////////////////////////////////////////////////
+            /////// PROCESS SHIM AND SYSTEM PROPERTIES ///////
+            //////////////////////////////////////////////////
+            ConfigurationUtils.copy(this.hadoopGraph.configuration(), this.sparkConfiguration);
+            final String shimService = KryoSerializer.class.getCanonicalName().equals(this.sparkConfiguration.getString(Constants.SPARK_SERIALIZER, null)) ?
+                    UnshadedKryoShimService.class.getCanonicalName() :
+                    HadoopPoolShimService.class.getCanonicalName();
+            this.sparkConfiguration.setProperty(KryoShimServiceLoader.KRYO_SHIM_SERVICE, shimService);
+            ///////////
+            final StringBuilder params = new StringBuilder();
+            this.sparkConfiguration.getKeys().forEachRemaining(key -> {
+                if (key.startsWith("gremlin") || key.startsWith("spark")) {
+                    params.append(" -D").append("tinkerpop.").append(key).append("=").append(this.sparkConfiguration.getProperty(key));
+                    System.setProperty("tinkerpop." + key, this.sparkConfiguration.getProperty(key).toString());
+                }
+            });
+            if (params.length() > 0) {
+                this.sparkConfiguration.setProperty(SparkLauncher.EXECUTOR_EXTRA_JAVA_OPTIONS,
+                        (this.sparkConfiguration.getString(SparkLauncher.EXECUTOR_EXTRA_JAVA_OPTIONS, "") + params.toString()).trim());
+                this.sparkConfiguration.setProperty(SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS,
+                        (this.sparkConfiguration.getString(SparkLauncher.DRIVER_EXTRA_JAVA_OPTIONS, "") + params.toString()).trim());
+            }
+            KryoShimServiceLoader.applyConfiguration(this.sparkConfiguration);
+            //////////////////////////////////////////////////
+            //////////////////////////////////////////////////
+            //////////////////////////////////////////////////
             // apache and hadoop configurations that are used throughout the graph computer computation
             final org.apache.commons.configuration.Configuration graphComputerConfiguration = new HadoopConfiguration(this.sparkConfiguration);
             // TODO !! if (!graphComputerConfiguration.containsKey(Constants.SPARK_SERIALIZER))
