@@ -65,8 +65,6 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, input.getAbsolutePath());
         graph.configuration().setProperty(GryoPool.CONFIG_IO_REGISTRY, ToyIoRegistry.class.getCanonicalName());
-        final GryoOutputFormat inputFormat = new GryoOutputFormat();
-        inputFormat.getRecordWriter()
         final GryoRecordWriter writer = new GryoRecordWriter(new DataOutputStream(new FileOutputStream(input)), ConfUtil.makeHadoopConfiguration(graph.configuration()));
         validateIoRegistryGraph(graph, graphComputerClass, writer, GryoInputFormat.class);
         assertTrue(input.delete());
