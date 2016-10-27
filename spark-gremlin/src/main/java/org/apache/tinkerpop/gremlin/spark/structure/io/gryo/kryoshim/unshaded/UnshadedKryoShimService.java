@@ -29,9 +29,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.IoRegistryAwareKryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimService;
 
@@ -104,16 +103,13 @@ public class UnshadedKryoShimService implements KryoShimService {
                     // so we don't get a WARN that a new configuration is being created within an active context
                     final SparkConf sparkConf = null == Spark.getContext() ? new SparkConf() : Spark.getContext().getConf().clone();
                     configuration.getKeys().forEachRemaining(key -> sparkConf.set(key, configuration.getProperty(key).toString()));
-                    // Setting spark.serializer here almost certainly isn't necessary, but it doesn't hurt
-                    sparkConf.set(Constants.SPARK_SERIALIZER, IoRegistryAwareKryoSerializer.class.getCanonicalName());
-                    // Instantiate the spark.serializer
-                    final IoRegistryAwareKryoSerializer ioRegistrySerializer = new IoRegistryAwareKryoSerializer(sparkConf);
+                    final KryoSerializer serializer = new KryoSerializer(sparkConf);
                     // Setup a pool backed by our spark.serializer instance
                     // Reuse Gryo poolsize for Kryo poolsize (no need to copy this to SparkConf)
                     KRYOS.clear();
                     final int poolSize = configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
                     for (int i = 0; i < poolSize; i++) {
-                        KRYOS.add(ioRegistrySerializer.newKryo());
+                        KRYOS.add(serializer.newKryo());
                     }
                     INITIALIZED = true;
                 }

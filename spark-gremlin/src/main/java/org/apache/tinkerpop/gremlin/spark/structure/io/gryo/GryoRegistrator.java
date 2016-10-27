@@ -37,11 +37,17 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingP
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedSerializerAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializers;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.TypeRegistration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.util.IoRegistryHelper;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.util.SystemUtil;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.collection.mutable.WrappedArray;
@@ -159,6 +165,18 @@ public class GryoRegistrator implements KryoRegistrator {
         // so log a warning if we failed to register it somehow
         if (!shimmedClassesFromGryoMapper.contains(StarGraph.class)) {
             log.warn("No SerializerShim found for StarGraph");
+        }
+
+        // handle io-registry classes
+        for (final IoRegistry registry : IoRegistryHelper.createRegistries(SystemUtil.getSystemPropertiesConfiguration("tinkerpop", true))) {
+            for (final Pair<Class, Object> pair : registry.find(GryoIo.class)) {
+                if (pair.getValue1() instanceof SerializerShim)
+                    kryo.register(pair.getValue0(), new UnshadedSerializerAdapter((SerializerShim) pair.getValue1()));
+                else if (pair.getValue1() instanceof ShadedSerializerAdapter)
+                    kryo.register(pair.getValue0(), new UnshadedSerializerAdapter(((ShadedSerializerAdapter) pair.getValue1()).getSerializerShim()));
+                else
+                    kryo.register(pair.getValue0(), kryo.getDefaultSerializer(pair.getValue0()));
+            }
         }
     }
 
