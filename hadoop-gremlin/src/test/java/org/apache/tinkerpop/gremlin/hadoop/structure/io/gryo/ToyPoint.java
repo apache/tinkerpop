@@ -19,10 +19,22 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -68,6 +80,34 @@ public final class ToyPoint {
         @Override
         public <I extends InputShim> ToyPoint read(final KryoShim<I, ?> kryo, final I input, final Class<ToyPoint> toyPointClass) {
             return new ToyPoint(input.readInt(), input.readInt());
+        }
+    }
+
+    public static class ToyPointJacksonSerializer extends StdScalarSerializer<ToyPoint> {
+
+        public ToyPointJacksonSerializer() {
+            super(ToyPoint.class);
+        }
+
+        @Override
+        public void serialize(final ToyPoint toyPoint, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField("x", toyPoint.x);
+            jsonGenerator.writeObjectField("y", toyPoint.y);
+            jsonGenerator.writeEndObject();
+        }
+    }
+
+    public static class ToyPointJacksonDeSerializer extends AbstractObjectDeserializer<ToyPoint> {
+
+        public ToyPointJacksonDeSerializer() {
+            super(ToyPoint.class);
+        }
+
+        @Override
+        public ToyPoint createObject(final Map<String, Object> map) {
+            return new ToyPoint((int) map.get("x"), (int) map.get("y"));
         }
     }
 }

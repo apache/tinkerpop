@@ -19,10 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -77,4 +86,35 @@ public final class ToyTriangle {
             return new ToyTriangle(input.readInt(), input.readInt(), input.readInt());
         }
     }
+
+
+    public static class ToyTriangleJacksonSerializer extends StdScalarSerializer<ToyTriangle> {
+
+        public ToyTriangleJacksonSerializer() {
+            super(ToyTriangle.class);
+        }
+
+        @Override
+        public void serialize(final ToyTriangle toyTriangle, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField("x", toyTriangle.x);
+            jsonGenerator.writeObjectField("y", toyTriangle.y);
+            jsonGenerator.writeObjectField("z", toyTriangle.z);
+            jsonGenerator.writeEndObject();
+        }
+    }
+
+    public static class ToyTriangleJacksonDeSerializer extends AbstractObjectDeserializer<ToyTriangle> {
+
+        public ToyTriangleJacksonDeSerializer() {
+            super(ToyTriangle.class);
+        }
+
+        @Override
+        public ToyTriangle createObject(final Map<String, Object> map) {
+            return new ToyTriangle((int) map.get("x"), (int) map.get("y"), (int) map.get("z"));
+        }
+    }
+
 }

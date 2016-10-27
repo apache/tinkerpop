@@ -25,22 +25,24 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedSerializerAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.TypeRegistration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.shaded.ShadedSerializerAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.util.IoRegistryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * A {@link KryoSerializer} that attempts to honor {@link GryoPool#CONFIG_IO_REGISTRY}.
+ * A {@link KryoSerializer} that attempts to honor {@link IoRegistry#IO_REGISTRY}.
  */
 public final class IoRegistryAwareKryoSerializer extends KryoSerializer {
 
@@ -50,11 +52,13 @@ public final class IoRegistryAwareKryoSerializer extends KryoSerializer {
 
     public IoRegistryAwareKryoSerializer(final SparkConf configuration) {
         super(configuration);
-        if (!configuration.contains(GryoPool.CONFIG_IO_REGISTRY))
-            log.info("SparkConf does not contain a {} property. Skipping {} processing.", GryoPool.CONFIG_IO_REGISTRY, IoRegistry.class.getCanonicalName());
+        if (!configuration.contains(IoRegistry.IO_REGISTRY))
+            log.info("SparkConf does not contain a {} property. Skipping {} processing.", IoRegistry.IO_REGISTRY, IoRegistry.class.getCanonicalName());
         else {
-            final GryoPool pool = GryoPool.build().poolSize(1).ioRegistries(Arrays.asList(configuration.get(GryoPool.CONFIG_IO_REGISTRY).split(","))).create();
-            for (final TypeRegistration<?> type : pool.getMapper().getTypeRegistrations()) {
+            final Configuration apacheConfiguration = new BaseConfiguration();
+            apacheConfiguration.setProperty(IoRegistry.IO_REGISTRY, configuration.get(IoRegistry.IO_REGISTRY));
+            final GryoMapper mapper = GryoMapper.build().addRegistries(IoRegistryHelper.createRegistries(apacheConfiguration)).create();
+            for (final TypeRegistration<?> type : mapper.getTypeRegistrations()) {
                 log.info("Registering {} with serializer type: {}", type.getTargetClass().getCanonicalName(), type);
                 this.typeRegistrations.add(type);
             }
@@ -65,12 +69,12 @@ public final class IoRegistryAwareKryoSerializer extends KryoSerializer {
     public Kryo newKryo() {
         final Kryo kryo = super.newKryo();
         for (final TypeRegistration<?> type : this.typeRegistrations) {
-            if (null != type.getSerializerShim())
-                kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(type.getSerializerShim()), type.getId());
-            else if (null != type.getShadedSerializer() && type.getShadedSerializer() instanceof ShadedSerializerAdapter)
-                kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(((ShadedSerializerAdapter) type.getShadedSerializer()).getSerializerShim()), type.getId());
-            else
-                kryo.register(type.getTargetClass(), kryo.getDefaultSerializer(type.getTargetClass()), type.getId());
+                if (null != type.getSerializerShim())
+                    kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(type.getSerializerShim()), type.getId());
+                else if (null != type.getShadedSerializer() && type.getShadedSerializer() instanceof ShadedSerializerAdapter)
+                    kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(((ShadedSerializerAdapter) type.getShadedSerializer()).getSerializerShim()), type.getId());
+                else
+                    kryo.register(type.getTargetClass(), kryo.getDefaultSerializer(type.getTargetClass()), type.getId());
         }
         return kryo;
     }

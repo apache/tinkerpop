@@ -24,8 +24,13 @@ import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
+import org.apache.tinkerpop.gremlin.structure.io.util.IoRegistryHelper;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -39,7 +44,7 @@ public final class GraphSONRecordWriter extends RecordWriter<NullWritable, Verte
     private static final byte[] NEWLINE;
     private final DataOutputStream outputStream;
     private final boolean hasEdges;
-    private final GraphSONWriter graphsonWriter = GraphSONWriter.build().create();
+    private final GraphSONWriter graphsonWriter;
 
 
     static {
@@ -53,6 +58,11 @@ public final class GraphSONRecordWriter extends RecordWriter<NullWritable, Verte
     public GraphSONRecordWriter(final DataOutputStream outputStream, final Configuration configuration) {
         this.outputStream = outputStream;
         this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true);
+        this.graphsonWriter = GraphSONWriter.build().mapper(
+                GraphSONMapper.build().
+                        version(GraphSONVersion.V2_0).
+                        typeInfo(TypeInfo.PARTIAL_TYPES).
+                        addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
     }
 
     @Override

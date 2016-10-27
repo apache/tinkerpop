@@ -24,9 +24,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractIoRegistryCheck;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
-import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShimServiceLoader;
-import org.apache.tinkerpop.gremlin.util.SystemUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,5 +55,10 @@ public class SparkIoRegistryCheck extends AbstractIoRegistryCheck {
     @Test
     public void shouldSupportGryoIoRegistry() throws Exception {
         super.checkGryoIoRegistryCompliance((HadoopGraph) graph, SparkGraphComputer.class);
+    }
+
+    @Test
+    public void shouldSupportGraphSONIoRegistry() throws Exception {
+        super.checkGraphSONIoRegistryCompliance((HadoopGraph) graph, SparkGraphComputer.class);
     }
 }

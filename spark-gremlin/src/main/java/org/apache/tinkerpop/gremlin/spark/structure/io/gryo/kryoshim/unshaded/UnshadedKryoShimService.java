@@ -110,6 +110,7 @@ public class UnshadedKryoShimService implements KryoShimService {
                     final IoRegistryAwareKryoSerializer ioRegistrySerializer = new IoRegistryAwareKryoSerializer(sparkConf);
                     // Setup a pool backed by our spark.serializer instance
                     // Reuse Gryo poolsize for Kryo poolsize (no need to copy this to SparkConf)
+                    KRYOS.clear();
                     final int poolSize = configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT);
                     for (int i = 0; i < poolSize; i++) {
                         KRYOS.add(ioRegistrySerializer.newKryo());

@@ -22,6 +22,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.gremlin.util.SystemUtil;
 
@@ -43,7 +44,7 @@ public final class HadoopPools {
             INITIALIZED = true;
             GRYO_POOL = GryoPool.build().
                     poolSize(configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
-                    ioRegistries(configuration.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
+                    ioRegistries(configuration.getList(IoRegistry.IO_REGISTRY, Collections.emptyList())).
                     initializeMapper(m -> m.registrationRequired(false)).
                     create();
         }

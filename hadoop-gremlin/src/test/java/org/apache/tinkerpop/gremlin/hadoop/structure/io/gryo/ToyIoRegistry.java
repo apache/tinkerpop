@@ -20,7 +20,12 @@
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -32,6 +37,31 @@ public final class ToyIoRegistry extends AbstractIoRegistry {
     private ToyIoRegistry() {
         super.register(GryoIo.class, ToyPoint.class, new ToyPoint.ToyPointSerializer());
         super.register(GryoIo.class, ToyTriangle.class, new ToyTriangle.ToyTriangleSerializer());
+        super.register(GraphSONIo.class, null, new ToyModule());
+    }
+
+    public static class ToyModule extends TinkerPopJacksonModule {
+        public ToyModule() {
+            super("toy");
+            addSerializer(ToyPoint.class, new ToyPoint.ToyPointJacksonSerializer());
+            addDeserializer(ToyPoint.class, new ToyPoint.ToyPointJacksonDeSerializer());
+            addSerializer(ToyTriangle.class, new ToyTriangle.ToyTriangleJacksonSerializer());
+            addDeserializer(ToyTriangle.class, new ToyTriangle.ToyTriangleJacksonDeSerializer());
+        }
+
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            return new HashMap<Class, String>() {{
+                put(ToyPoint.class, "ToyPoint");
+                put(ToyTriangle.class, "ToyTriangle");
+            }};
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            return "toy";
+        }
     }
 
     public static ToyIoRegistry getInstance() {
