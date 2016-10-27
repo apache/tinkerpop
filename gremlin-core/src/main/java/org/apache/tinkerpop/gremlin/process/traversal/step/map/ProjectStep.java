@@ -101,4 +101,8 @@ public final class ProjectStep<S, E> extends MapStep<S, Map<String, E>> implemen
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements();
     }
+
+    public List<String> getProjectKeys() {
+        return this.projectKeys;
+    }
 }
