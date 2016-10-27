@@ -296,8 +296,8 @@ limitations under the License.
                         <exclude>**/.glv</exclude>
                         <exclude>bin/gremlin.sh</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
-                        <exclude>site/home/css/**</exclude>
-                        <exclude>site/home/js/**</exclude>
+                        <exclude>docs/site/home/css/**</exclude>
+                        <exclude>docs/site/home/js/**</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>
