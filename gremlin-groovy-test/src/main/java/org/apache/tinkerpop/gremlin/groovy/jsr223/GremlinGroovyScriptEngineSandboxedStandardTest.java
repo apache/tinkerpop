@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TypeCheckedCustomizerProvider;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Test;
@@ -46,8 +46,8 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest extends AbstractGrem
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {TypeCheckedCustomizerProvider.class.getSimpleName(), new TypeCheckedCustomizerProvider(), new TypeCheckedCustomizerProvider(SandboxExtension.class.getName())},
-                {CompileStaticCustomizerProvider.class.getSimpleName(), new CompileStaticCustomizerProvider(), new CompileStaticCustomizerProvider(SandboxExtension.class.getName())}});
+                {TypeCheckedCustomizerProvider.class.getSimpleName(), new TypeCheckedCustomizerProvider(), new TypeCheckedCustomizerProvider(SimpleSandboxExtension.class.getName())},
+                {CompileStaticCustomizerProvider.class.getSimpleName(), new CompileStaticCustomizerProvider(), new CompileStaticCustomizerProvider(SimpleSandboxExtension.class.getName())}});
     }
 
     @Parameterized.Parameter(value = 0)
