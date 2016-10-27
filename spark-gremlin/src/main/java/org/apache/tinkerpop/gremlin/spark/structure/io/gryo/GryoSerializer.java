@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.payload.MessagePayloa
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewOutgoingPayload;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewPayload;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.apache.tinkerpop.shaded.kryo.serializers.ExternalizableSerializer;
@@ -51,7 +53,9 @@ import scala.collection.mutable.WrappedArray;
 import scala.runtime.BoxedUnit;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,8 +71,8 @@ public final class GryoSerializer extends Serializer implements Serializable {
     public GryoSerializer(final SparkConf sparkConfiguration) {
         final long bufferSizeKb = sparkConfiguration.getSizeAsKb("spark.kryoserializer.buffer", "64k");
         final long maxBufferSizeMb = sparkConfiguration.getSizeAsMb("spark.kryoserializer.buffer.max", "64m");
-        referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
-        registrationRequired = sparkConfiguration.getBoolean(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, false);
+        this.referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
+        this.registrationRequired = sparkConfiguration.getBoolean(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, false);
         if (bufferSizeKb >= ByteUnit.GiB.toKiB(2L)) {
             throw new IllegalArgumentException("spark.kryoserializer.buffer must be less than 2048 mb, got: " + bufferSizeKb + " mb.");
         } else {
@@ -81,40 +85,16 @@ public final class GryoSerializer extends Serializer implements Serializable {
             }
         }
         // create a GryoPool and store it in static HadoopPools
+        final List<Object> ioRegistries = new ArrayList<>();
+        ioRegistries.addAll(makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList()));
+        ioRegistries.add(SparkIoRegistry.class.getCanonicalName().replace("." + SparkIoRegistry.class.getSimpleName(), "$" + SparkIoRegistry.class.getSimpleName()));
         HadoopPools.initialize(GryoPool.build().
                 poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, GryoPool.CONFIG_IO_GRYO_POOL_SIZE_DEFAULT)).
-                ioRegistries(makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
-                initializeMapper(builder -> {
-                    try {
-                        builder.addCustom(Tuple2.class, new Tuple2Serializer())
-                                .addCustom(Tuple2[].class)
-                                .addCustom(Tuple3.class, new Tuple3Serializer())
-                                .addCustom(Tuple3[].class)
-                                .addCustom(CompactBuffer.class, new CompactBufferSerializer())
-                                .addCustom(CompactBuffer[].class)
-                                .addCustom(CompressedMapStatus.class)
-                                .addCustom(BlockManagerId.class)
-                                .addCustom(HighlyCompressedMapStatus.class, new ExternalizableSerializer())   // externalizable implemented so its okay
-                                .addCustom(TorrentBroadcast.class)
-                                .addCustom(PythonBroadcast.class)
-                                .addCustom(BoxedUnit.class)
-                                .addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer())
-                                .addCustom(Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer())
-                                .addCustom(WrappedArray.ofRef.class, new WrappedArraySerializer())
-                                .addCustom(MessagePayload.class)
-                                .addCustom(ViewIncomingPayload.class)
-                                .addCustom(ViewOutgoingPayload.class)
-                                .addCustom(ViewPayload.class)
-                                .addCustom(SerializableConfiguration.class, new JavaSerializer())
-                                .addCustom(VertexWritable.class, new VertexWritableSerializer())
-                                .addCustom(ObjectWritable.class, new ObjectWritableSerializer())
-                                .referenceTracking(this.referenceTracking)
-                                .registrationRequired(this.registrationRequired);
-                        // add these as we find ClassNotFoundExceptions
-                    } catch (final ClassNotFoundException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }).create());
+                ioRegistries(ioRegistries).
+                initializeMapper(builder ->
+                        builder.referenceTracking(this.referenceTracking).
+                                registrationRequired(this.registrationRequired)).
+                create());
     }
 
     public Output newOutput() {
@@ -137,5 +117,42 @@ public final class GryoSerializer extends Serializer implements Serializable {
             apacheConfiguration.setProperty(tuple._1(), tuple._2());
         }
         return apacheConfiguration;
+    }
+
+    public static class SparkIoRegistry extends AbstractIoRegistry {
+        private static final SparkIoRegistry INSTANCE = new SparkIoRegistry();
+
+        private SparkIoRegistry() {
+            try {
+                super.register(GryoIo.class, Tuple2.class, new Tuple2Serializer());
+                super.register(GryoIo.class, Tuple2[].class, null);
+                super.register(GryoIo.class, Tuple3.class, new Tuple3Serializer());
+                super.register(GryoIo.class, Tuple3[].class, null);
+                super.register(GryoIo.class, CompactBuffer.class, new CompactBufferSerializer());
+                super.register(GryoIo.class, CompactBuffer[].class, null);
+                super.register(GryoIo.class, CompressedMapStatus.class, null);
+                super.register(GryoIo.class, BlockManagerId.class, null);
+                super.register(GryoIo.class, HighlyCompressedMapStatus.class, new ExternalizableSerializer());  // externalizable implemented so its okay
+                super.register(GryoIo.class, TorrentBroadcast.class, null);
+                super.register(GryoIo.class, PythonBroadcast.class, null);
+                super.register(GryoIo.class, BoxedUnit.class, null);
+                super.register(GryoIo.class, Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer());
+                super.register(GryoIo.class, Class.forName("scala.reflect.ManifestFactory$$anon$1"), new JavaSerializer());
+                super.register(GryoIo.class, WrappedArray.ofRef.class, new WrappedArraySerializer());
+                super.register(GryoIo.class, MessagePayload.class, null);
+                super.register(GryoIo.class, ViewIncomingPayload.class, null);
+                super.register(GryoIo.class, ViewOutgoingPayload.class, null);
+                super.register(GryoIo.class, ViewPayload.class, null);
+                super.register(GryoIo.class, SerializableConfiguration.class, new JavaSerializer());
+                super.register(GryoIo.class, VertexWritable.class, new VertexWritableSerializer());
+                super.register(GryoIo.class, ObjectWritable.class, new ObjectWritableSerializer());
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public static SparkIoRegistry getInstance() {
+            return INSTANCE;
+        }
     }
 }

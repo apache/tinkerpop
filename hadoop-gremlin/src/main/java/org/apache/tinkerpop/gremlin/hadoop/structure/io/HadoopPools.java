@@ -44,8 +44,8 @@ public final class HadoopPools {
             GRYO_POOL = GryoPool.build().
                     poolSize(configuration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
                     ioRegistries(configuration.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
-                    //initializeMapper(m -> m.registrationRequired(false)).
-                            create();
+                    initializeMapper(m -> m.registrationRequired(false)).
+                    create();
         }
     }
 

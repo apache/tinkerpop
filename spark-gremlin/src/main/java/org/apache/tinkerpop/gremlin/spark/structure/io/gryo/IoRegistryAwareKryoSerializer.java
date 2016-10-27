@@ -70,7 +70,7 @@ public final class IoRegistryAwareKryoSerializer extends KryoSerializer {
             else if (null != type.getShadedSerializer() && type.getShadedSerializer() instanceof ShadedSerializerAdapter)
                 kryo.register(type.getTargetClass(), new UnshadedSerializerAdapter(((ShadedSerializerAdapter) type.getShadedSerializer()).getSerializerShim()), type.getId());
             else
-                kryo.register(type.getTargetClass(), type.getId());
+                kryo.register(type.getTargetClass(), kryo.getDefaultSerializer(type.getTargetClass()), type.getId());
         }
         return kryo;
     }

@@ -393,6 +393,8 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(GryoTypeReg.of(ProfileStep.ProfileBiOperator.class, 119));
         }};
 
+        private final List<IoRegistry> registries = new ArrayList<>();
+
         /**
          * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
          */
@@ -425,23 +427,7 @@ public final class GryoMapper implements Mapper<Kryo> {
         @Override
         public Builder addRegistry(final IoRegistry registry) {
             if (null == registry) throw new IllegalArgumentException("The registry cannot be null");
-            final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
-            serializers.forEach(p -> {
-                if (null == p.getValue1())
-                    addCustom(p.getValue0());
-                else if (p.getValue1() instanceof SerializerShim)
-                    addCustom(p.getValue0(), new ShadedSerializerAdapter((SerializerShim) p.getValue1()));
-                else if (p.getValue1() instanceof Serializer)
-                    addCustom(p.getValue0(), (Serializer) p.getValue1());
-                else if (p.getValue1() instanceof Function)
-                    addCustom(p.getValue0(), (Function<Kryo, Serializer>) p.getValue1());
-                else
-                    throw new IllegalStateException(String.format(
-                            "Unexpected value provided by %s for serializable class %s - expected a parameter in [null, %s (or shim) implementation or Function<%s, %s>], but received %s",
-                            registry.getClass().getSimpleName(), p.getValue0().getClass().getCanonicalName(),
-                            Serializer.class.getName(), Kryo.class.getSimpleName(),
-                            Serializer.class.getSimpleName(), p.getValue1()));
-            });
+            this.registries.add(registry);
             return this;
         }
 
@@ -529,6 +515,27 @@ public final class GryoMapper implements Mapper<Kryo> {
          * Creates a {@code GryoMapper}.
          */
         public GryoMapper create() {
+            // consult the registry if provided and inject registry entries as custom classes.
+            registries.forEach(registry -> {
+                final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
+                serializers.forEach(p -> {
+                    if (null == p.getValue1())
+                        addCustom(p.getValue0());
+                    else if (p.getValue1() instanceof SerializerShim)
+                        addCustom(p.getValue0(), new ShadedSerializerAdapter((SerializerShim) p.getValue1()));
+                    else if (p.getValue1() instanceof Serializer)
+                        addCustom(p.getValue0(), (Serializer) p.getValue1());
+                    else if (p.getValue1() instanceof Function)
+                        addCustom(p.getValue0(), (Function<Kryo, Serializer>) p.getValue1());
+                    else
+                        throw new IllegalStateException(String.format(
+                                "Unexpected value provided by %s for serializable class %s - expected a parameter in [null, %s implementation or Function<%s, %s>], but received %s",
+                                registry.getClass().getSimpleName(), p.getValue0().getClass().getCanonicalName(),
+                                Serializer.class.getName(), Kryo.class.getSimpleName(),
+                                Serializer.class.getSimpleName(), p.getValue1()));
+                });
+            });
+
             return new GryoMapper(this);
         }
 

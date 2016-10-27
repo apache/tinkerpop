@@ -90,6 +90,12 @@ public class UnshadedKryoShimService implements KryoShimService {
         initialize(configuration);
     }
 
+    @Override
+    public void close() {
+        INITIALIZED = false;
+        KRYOS.clear();
+    }
+
     private LinkedBlockingQueue<Kryo> initialize(final Configuration configuration) {
         // DCL is safe in this case due to volatility
         if (!INITIALIZED) {
