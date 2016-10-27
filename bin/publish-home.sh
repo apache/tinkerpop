@@ -29,7 +29,7 @@ if [ "${USERNAME}" == "" ]; then
   exit 1
 fi
 
-if [ ! -d ../target/site/home ]; then
+if [ ! -d target/site/home ]; then
   bin/generate-home.sh || exit 1
   echo
 fi
@@ -39,7 +39,6 @@ echo
 
 SVN_CMD="svn --no-auth-cache --username=${USERNAME} --password=${PASSWORD}"
 
-cd ..
 rm -rf target/svn
 mkdir -p target/svn
 
@@ -66,6 +65,6 @@ cat ../publish-home.files | awk '/^D/ {print $2}' | xargs -r svn delete
 CHANGES=$(cat ../publish-home.files | wc -l)
 
 if [ ${CHANGES} -gt 0 ]; then
-  ${SVN_CMD} commit -m "Deploy TinkerPop homepage"
+    ${SVN_CMD} commit -m "Deploy TinkerPop homepage"
 fi
 

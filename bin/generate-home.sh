@@ -20,20 +20,24 @@
 #
 cd `dirname $0`/..
 
-rm -rf ../target/site/home
-mkdir -p ../target/site/
+rm -rf target/site/home
+mkdir -p target/site/
 
 hash rsync 2> /dev/null
 
 if [ $? -eq 0 ]; then
-  rsync -avq home ../target/site --exclude template
+  rsync -avq docs/site/home target/site --exclude template
 else
-  cp -R home ../target/site
-  rm -rf ../target/site/home/template
+  cp -R docs/site/home target/site
+  rm -rf target/site/home/template
 fi
 
+pushd docs/site/
+
 for filename in home/*.html; do
-  sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../target/site/${filename}"
+  sed -e "/!!!!!BODY!!!!!/ r $filename" home/template/header-footer.html -e /!!!!!BODY!!!!!/d > "../../target/site/${filename}"
 done
 
-echo "Home page site generated to $(cd ../target/site/home ; pwd)"
+popd
+
+echo "Home page site generated to $(cd target/site/home ; pwd)"
