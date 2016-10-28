@@ -312,6 +312,11 @@ public class GremlinServer {
                 }
             });
 
+            // kills reporter threads. this is a last bit of cleanup that can be done. typically, the jvm is headed
+            // for shutdown which would obviously kill the reporters, but when it isn't they just keep reporting.
+            // removing them all will silent them up and release the appropriate resources.
+            MetricManager.INSTANCE.removeAllReporters();
+
             logger.info("Gremlin Server - shutdown complete");
             serverStopped.complete(null);
         }, SERVER_THREAD_PREFIX + "stop").start();
