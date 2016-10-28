@@ -139,7 +139,6 @@ limitations under the License.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipIntegrationTests>true</skipIntegrationTests>
-        <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.21</slf4j.version>
         <hadoop.version>2.7.2</hadoop.version>
         <java.tuples.version>1.2</java.tuples.version>
@@ -354,7 +353,6 @@ limitations under the License.
                         </argLine>
                         <excludes>
                             <exclude>**/*IntegrateTest.java</exclude>
-                            <exclude>**/*PerformanceTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -374,29 +372,9 @@ limitations under the License.
                                 </includes>
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                                     -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>performance-test</id>
-                            <goals>
-                                <goal>integration-test</goal>
-                            </goals>
-                            <configuration>
-                                <includes>
-                                    <include>**/*PerformanceTest.java</include>
-                                </includes>
-                                <skipTests>${skipPerformanceTests}</skipTests>
-                                <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                    -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                    -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
-                                    -Dbuild.dir=${project.build.directory}
-                                </argLine>
-                                <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                             </configuration>
                         </execution>
                         <execution>
@@ -408,18 +386,6 @@ limitations under the License.
                                 <skipTests>${skipIntegrationTests}</skipTests>
                                 <summaryFiles>
                                     <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
-                                </summaryFiles>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>verify-performance-test</id>
-                            <goals>
-                                <goal>verify</goal>
-                            </goals>
-                            <configuration>
-                                <skipTests>${skipPerformanceTests}</skipTests>
-                                <summaryFiles>
-                                    <summaryFile>target/failsafe-reports/failsafe-performance.xml</summaryFile>
                                 </summaryFiles>
                             </configuration>
                         </execution>
@@ -1158,7 +1124,6 @@ limitations under the License.
                             </argLine>
                             <excludes>
                                 <exclude>**/*IntegrateTest.java</exclude>
-                                <exclude>**/*PerformanceTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -1260,8 +1225,6 @@ limitations under the License.
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <argLine>-Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
-                                -Djub.consumers=CONSOLE,H2 -Djub.db.file=target/performance/h2/benchmarks
-                                -Djub.charts.dir=target/performance/charts -Djub.customkey=${project.parent.version}
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${failsafeArgLine}
                             </argLine>
                         </configuration>

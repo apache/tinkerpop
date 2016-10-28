@@ -31,3 +31,24 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asc
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
+
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Performance Tests
++++++++++++++++++
+
+Performance tests based on `junit-benchmarks` have been removed from TinkerPop. Specifically, providers should be
+concerned with breaking changes related to the removal of:
+
+* `StructurePerformanceSuite`
+* `ProcessPerformanceSuite`
+* `GroovyEnvironmentPerformanceSuite`
+
+Those graph providers who relied on these tests should simply remove them from their respective test suites.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235]

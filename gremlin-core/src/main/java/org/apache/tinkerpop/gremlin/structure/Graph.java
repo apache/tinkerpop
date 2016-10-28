@@ -1212,30 +1212,12 @@ public interface Graph extends AutoCloseable, Host {
     public @interface OptIn {
         public static String SUITE_STRUCTURE_STANDARD = "org.apache.tinkerpop.gremlin.structure.StructureStandardSuite";
         public static String SUITE_STRUCTURE_INTEGRATE = "org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite";
-
-        /**
-         * @deprecated As of release 3.2.4, effectively replaced by the gremlin-benchmarks module.
-         */
-        @Deprecated
-        public static String SUITE_STRUCTURE_PERFORMANCE = "org.apache.tinkerpop.gremlin.structure.StructurePerformanceSuite";
         public static String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
         public static String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
-
-        /**
-         * @deprecated As of release 3.2.4, effectively replaced by the gremlin-benchmarks module.
-         */
-        @Deprecated
-        public static String SUITE_PROCESS_PERFORMANCE = "org.apache.tinkerpop.gremlin.process.ProcessPerformanceSuite";
         public static String SUITE_GROOVY_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite";
         public static String SUITE_GROOVY_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite";
         public static String SUITE_GROOVY_ENVIRONMENT = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentSuite";
         public static String SUITE_GROOVY_ENVIRONMENT_INTEGRATE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentIntegrateSuite";
-
-        /**
-         * @deprecated As of release 3.2.4, effectively replaced by the gremlin-benchmarks module.
-         */
-        @Deprecated
-        public static String SUITE_GROOVY_ENVIRONMENT_PERFORMANCE = "org.apache.tinkerpop.gremlin.groovy.GroovyEnvironmentPerformanceSuite";
 
         /**
          * The test suite class to opt in to.
