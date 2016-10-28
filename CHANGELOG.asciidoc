@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Improved ability to release resources in `GraphProvider` instances in the test suite.
 * Added a `force` option for killing sessions without waiting for transaction close or timeout of a currently running job or multiple jobs.
 * Deprecated `Session.kill()` and `Session.manualKill()`.
 * Added `choose(predicate,traversal)` and `choose(traversal,traversal)` to effect if/then-semantics (no else). Equivalent to `choose(x,y,identity())`.
