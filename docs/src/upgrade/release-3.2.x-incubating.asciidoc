@@ -35,6 +35,14 @@ Upgrading for Providers
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Duplicate Multi-Properties
+++++++++++++++++++++++++++
+
+Added `supportsDuplicateMultiProperties` to `VertexFeatures` so that graph provider who only support unique values as
+multi-properties have more flexibility in describing their graph capabilities.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-919[TINKERPOP-919]
+
 Deprecated Performance OptIn
 ++++++++++++++++++++++++++++
 
