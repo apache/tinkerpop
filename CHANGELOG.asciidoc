@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `ProjectStep.getProjectKeys()` for strategies that rely on such information.
 * Added `VertexFeatures.supportsDuplicateMultiProperties()` for graphs that only support unique values in multi-properties.
 * Deprecated the "performance" tests in `OptIn`.
 * Added `Pick.none` and `Pick.any` to the serializers and importers.
