@@ -648,7 +648,7 @@ public class TransactionTest extends AbstractGremlinTest {
         } catch (Exception ex) {
             assertThat(ex, instanceOf(IllegalStateException.class));
         } finally {
-            threadedG.tx().rollback();
+            if (threadedG.tx().isOpen()) threadedG.tx().rollback();
         }
     }
 
