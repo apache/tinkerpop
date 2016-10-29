@@ -23,12 +23,17 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -43,6 +48,14 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(GremlinProcessRunner.class)
 public abstract class StoreTest extends AbstractGremlinProcessTest {
+
+    @SafeVarargs
+    private static <E> BulkSet<E> makeBulkSet(final E... elements) {
+        final BulkSet<E> result = new BulkSet<>();
+        Collections.addAll(result, elements);
+        return result;
+    }
+
     public abstract Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX();
 
     public abstract Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(final Object v1Id);
@@ -50,6 +63,8 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Set<String>> get_g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX();
 
     public abstract Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX();
+
+    public abstract Traversal<Vertex, BulkSet<String>> get_g_V_order_byXidX_storeXaX_byXnameX_out_selectXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -114,6 +129,33 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         assertFalse(store.isEmpty());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_order_byXidX_storeXaX_byXnameX_out_selectXaX() {
+        final Traversal<Vertex, BulkSet<String>> traversal = get_g_V_order_byXidX_storeXaX_byXnameX_out_selectXaX();
+        printTraversalForm(traversal);
+        final List<BulkSet<String>> expected = new ArrayList<>(6);
+        expected.addAll(Arrays.asList(
+                makeBulkSet("marko"),
+                makeBulkSet("marko"),
+                makeBulkSet("marko"),
+                makeBulkSet("marko", "vadas", "lop", "josh"),
+                makeBulkSet("marko", "vadas", "lop", "josh"),
+                makeBulkSet("marko", "vadas", "lop", "josh", "ripple", "peter")));
+        while (traversal.hasNext()) {
+            final BulkSet<String> a = traversal.next();
+            boolean match = false;
+            for (int i = 0; i < expected.size(); i++) {
+                if (match = expected.get(i).equals(a)) {
+                    expected.remove(i);
+                    break;
+                }
+            }
+            assertTrue(match);
+        }
+        assertTrue(expected.isEmpty());
+    }
+
     public static class Traversals extends StoreTest {
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
@@ -133,6 +175,11 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
             return g.V().store("a").by(outE("created").count()).out().out().store("a").by(inE("created").values("weight").sum()).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, BulkSet<String>> get_g_V_order_byXidX_storeXaX_byXnameX_out_selectXaX() {
+            return g.V().order().by(T.id).store("a").by("name").out().select("a");
         }
     }
 }
