@@ -44,9 +44,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `SparkGraphComputer` no longer starts a worker iteration if the worker's partition is empty.
+* Added `ProjectStep.getProjectKeys()` for strategies that rely on such information.
 * Added `VertexFeatures.supportsDuplicateMultiProperties()` for graphs that only support unique values in multi-properties.
 * Deprecated the "performance" tests in `OptIn`.
 * Added `Pick.none` and `Pick.any` to the serializers and importers.
+* Added a class loader to `TraversalStrategies.GlobalCache` which guarantees strategies are registered prior to `GlobalCache.getStrategies()`.
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
 
 [[release-3-2-3]]

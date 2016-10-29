@@ -148,7 +148,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyOrderTest.Traversals.class,
             GroovyPageRankTest.Traversals.class,
             GroovyPathTest.Traversals.class,
-            // GroovyPeerPressureTest.Traversals.class, (ordering of ids in multi-threaded environments is non-deterministic)
+            GroovyPeerPressureTest.Traversals.class,
             GroovyProfileTest.Traversals.class,
             GroovyProjectTest.Traversals.class,
             GroovyProgramTest.Traversals.class,

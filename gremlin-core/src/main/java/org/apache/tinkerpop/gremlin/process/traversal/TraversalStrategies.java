@@ -225,7 +225,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     OrderLimitStrategy.instance(),
                     PathProcessorStrategy.instance(),
                     ComputerVerificationStrategy.instance());
-
             GRAPH_COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);
         }
 
@@ -239,6 +238,16 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
 
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
+            try {
+                // be sure to load the class so that its static{} traversal strategy registration component is loaded.
+                // this is more important for GraphComputer classes as they are typically not instantiated prior to strategy usage like Graph classes.
+                final String graphComputerClassName = null != graphOrGraphComputerClass.getDeclaringClass() ?
+                        graphOrGraphComputerClass.getCanonicalName().replace("." + graphOrGraphComputerClass.getSimpleName(), "$" + graphOrGraphComputerClass.getSimpleName()) :
+                        graphOrGraphComputerClass.getCanonicalName();
+                Class.forName(graphComputerClassName);
+            } catch (final ClassNotFoundException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
             if (Graph.class.isAssignableFrom(graphOrGraphComputerClass)) {
                 final TraversalStrategies traversalStrategies = GRAPH_CACHE.get(graphOrGraphComputerClass);
                 return null == traversalStrategies ? GRAPH_CACHE.get(Graph.class) : traversalStrategies;
