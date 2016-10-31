@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -134,7 +133,7 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_VX1X_optionalXaddVXdogXX_label(convertToVertexId(this.graph, "marko"));
         printTraversalForm(traversal);
         checkResults(Collections.singletonList("dog"), traversal);
-        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        assertEquals(7L, g.V().count().next().longValue());
     }
 
     public static class Traversals extends OptionalTest {
