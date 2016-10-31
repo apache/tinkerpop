@@ -42,15 +42,7 @@ import java.util.Set;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,E> {
-
-    /**
-     * Note that internally {@link #nextTraverser()} is called from within a loop (specifically in
-     * {@link AbstractStep#next()} that breaks properly when a {@link java.util.NoSuchElementException} is thrown. In
-     * other words the "results" should be iterated to force that failure.
-     */
-    @Override
-    public abstract Traverser.Admin<E> nextTraverser();
+public abstract class AbstractRemoteTraversal<S, E> implements RemoteTraversal<S, E> {
 
     @Override
     public Bytecode getBytecode() {
@@ -93,17 +85,22 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
     }
 
     @Override
-    public void setStrategies(final TraversalStrategies strategies) {
-        throw new UnsupportedOperationException("Remote traversals do not support this method");
-    }
-
-    @Override
     public TraversalStrategies getStrategies() {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 
     @Override
-    public void setParent(final TraversalParent step) {
+    public void setStrategies(final TraversalStrategies strategies) {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    @Override
+    public <T> Optional<T> getMetadata(final String key) {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    @Override
+    public <T> void setMetadata(final String key, final T value) {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 
@@ -113,7 +110,7 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
     }
 
     @Override
-    public Admin<S, E> clone() {
+    public void setParent(final TraversalParent step) {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 
@@ -129,6 +126,19 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
 
     @Override
     public void setGraph(final Graph graph) {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    /**
+     * Note that internally {@link #nextTraverser()} is called from within a loop (specifically in
+     * {@link AbstractStep#next()} that breaks properly when a {@link java.util.NoSuchElementException} is thrown. In
+     * other words the "results" should be iterated to force that failure.
+     */
+    @Override
+    public abstract Traverser.Admin<E> nextTraverser();
+
+    @Override
+    public Admin<S, E> clone() {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 }

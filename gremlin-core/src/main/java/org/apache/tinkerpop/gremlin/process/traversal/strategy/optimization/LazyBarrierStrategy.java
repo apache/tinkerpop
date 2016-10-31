@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,7 +45,7 @@ import java.util.Set;
  */
 public final class LazyBarrierStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
+    protected static final int MAX_BARRIER_SIZE = 2500;
     private static final LazyBarrierStrategy INSTANCE = new LazyBarrierStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
             RangeByIsCountStrategy.class,
@@ -56,9 +57,13 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             MatchPredicateStrategy.class));
 
     private static final int BIG_START_SIZE = 5;
-    protected static final int MAX_BARRIER_SIZE = 2500;
+    private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private LazyBarrierStrategy() {
+    }
+
+    public static LazyBarrierStrategy instance() {
+        return INSTANCE;
     }
 
     @Override
@@ -69,12 +74,13 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                         TraversalHelper.hasStepOfAssignableClass(ProfileSideEffectStep.class, TraversalHelper.getRootTraversal(traversal)))) // necessary cause ProfileTest analyzes counts
             return;
 
+        final Set<String> lazyStepIds = traversal.<Set<String>>getMetadata(NoBarrierStrategy.LAZY_STEPS_METADATA_KEY).orElse(Collections.emptySet());
         boolean foundFlatMap = false;
         boolean labeledPath = false;
         for (int i = 0; i < traversal.getSteps().size(); i++) {
             final Step<?, ?> step = traversal.getSteps().get(i);
 
-            if (step instanceof PathProcessor) {
+            if (step instanceof PathProcessor && labeledPath) {
                 final Set<String> keepLabels = ((PathProcessor) step).getKeepLabels();
                 if (null != keepLabels && keepLabels.isEmpty()) // if no more path data, then start barrier'ing again
                     labeledPath = false;
@@ -84,12 +90,16 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                     (step instanceof GraphStep &&
                             (i > 0 || ((GraphStep) step).getIds().length >= BIG_START_SIZE ||
                                     (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
-                if (foundFlatMap && !labeledPath &&
+                if (foundFlatMap && !labeledPath && !lazyStepIds.contains(step.getId()) &&
                         !(step.getNextStep() instanceof Barrier) &&
                         (!(step.getNextStep() instanceof EmptyStep) || step.getTraversal().getParent() instanceof EmptyStep)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);
-                    TraversalHelper.copyLabels(step, noOpBarrierStep, true);
+                    if (labeledPath = !step.getLabels().isEmpty()) {
+                        TraversalHelper.copyLabels(step, noOpBarrierStep, true);
+                    }
                     TraversalHelper.insertAfterStep(noOpBarrierStep, step, traversal);
+                    i++;
+                    continue;
                 } else
                     foundFlatMap = true;
             }
@@ -99,13 +109,8 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
         }
     }
 
-
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPrior() {
         return PRIORS;
-    }
-
-    public static LazyBarrierStrategy instance() {
-        return INSTANCE;
     }
 }

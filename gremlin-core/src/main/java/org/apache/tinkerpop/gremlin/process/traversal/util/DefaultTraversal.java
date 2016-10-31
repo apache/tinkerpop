@@ -37,9 +37,11 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -49,8 +51,8 @@ import java.util.Set;
  */
 public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
-    private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
-    private Step<?, E> finalEndStep = EmptyStep.instance();
+    protected final Bytecode bytecode; // TODO: perhaps make transient until 3.3.0?
+    protected final Map<String, Object> metadata;
     private final StepPosition stepPosition = new StepPosition();
     protected transient Graph graph;
     protected List<Step> steps = new ArrayList<>();
@@ -62,13 +64,15 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected transient TraverserGenerator generator;
     protected Set<TraverserRequirement> requirements;
     protected boolean locked = false;
-    protected final Bytecode bytecode; // TODO: perhaps make transient until 3.3.0?
+    private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
+    private Step<?, E> finalEndStep = EmptyStep.instance();
 
 
     private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
         this.graph = graph;
         this.strategies = traversalStrategies;
         this.bytecode = bytecode;
+        this.metadata = new HashMap<>();
     }
 
     public DefaultTraversal(final Graph graph) {
@@ -94,17 +98,57 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public Traversal.Admin<S, E> asAdmin() {
-        return this;
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
+        if (!this.locked) this.applyStrategies();
+        if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
     }
 
     @Override
-    public TraverserGenerator getTraverserGenerator() {
-        if (null == this.generator)
-            this.generator = (this.parent instanceof EmptyStep) ?
-                    DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(this.getTraverserRequirements()) :
-                    TraversalHelper.getRootTraversal(this).getTraverserGenerator();
-        return this.generator;
+    public void addStart(final Traverser.Admin<S> start) {
+        if (!this.locked) this.applyStrategies();
+        if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
+    }
+
+    @Override
+    public List<Step> getSteps() {
+        return this.unmodifiableSteps;
+    }
+
+    @Override
+    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        if (this.locked) throw Exceptions.traversalIsLocked();
+        step.setId(this.stepPosition.nextXId());
+        this.steps.add(index, step);
+        final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
+        final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
+        step.setPreviousStep(null != previousStep ? previousStep : EmptyStep.instance());
+        step.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
+        if (null != previousStep) previousStep.setNextStep(step);
+        if (null != nextStep) nextStep.setPreviousStep(step);
+        step.setTraversal(this);
+        return (Traversal.Admin<S2, E2>) this;
+    }
+
+    @Override
+    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
+        if (this.locked) throw Exceptions.traversalIsLocked();
+        final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
+        final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
+        //this.steps.get(index).setTraversal(EmptyTraversal.instance());
+        this.steps.remove(index);
+        if (null != previousStep) previousStep.setNextStep(null == nextStep ? EmptyStep.instance() : nextStep);
+        if (null != nextStep) nextStep.setPreviousStep(null == previousStep ? EmptyStep.instance() : previousStep);
+        return (Traversal.Admin<S2, E2>) this;
+    }
+
+    @Override
+    public Step<S, ?> getStartStep() {
+        return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(0);
+    }
+
+    @Override
+    public Step<?, E> getEndStep() {
+        return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(this.steps.size() - 1);
     }
 
     @Override
@@ -139,6 +183,15 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public TraverserGenerator getTraverserGenerator() {
+        if (null == this.generator)
+            this.generator = (this.parent instanceof EmptyStep) ?
+                    DefaultTraverserGeneratorFactory.instance().getTraverserGenerator(this.getTraverserRequirements()) :
+                    TraversalHelper.getRootTraversal(this).getTraverserGenerator();
+        return this.generator;
+    }
+
+    @Override
     public Set<TraverserRequirement> getTraverserRequirements() {
         if (null == this.requirements) {
             // if (!this.locked) this.applyStrategies();
@@ -158,8 +211,67 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public List<Step> getSteps() {
-        return this.unmodifiableSteps;
+    public void reset() {
+        this.steps.forEach(Step::reset);
+        this.lastTraverser = EmptyTraverser.instance();
+    }
+
+    @Override
+    public TraversalSideEffects getSideEffects() {
+        return this.sideEffects;
+    }
+
+    @Override
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
+        this.sideEffects = sideEffects;
+    }
+
+    @Override
+    public TraversalStrategies getStrategies() {
+        return this.strategies;
+    }
+
+    @Override
+    public void setStrategies(final TraversalStrategies strategies) {
+        this.strategies = strategies;
+    }
+
+    @Override
+    public <T> Optional<T> getMetadata(final String key) {
+        return getParent() instanceof EmptyStep
+                ? Optional.ofNullable((T) metadata.get(key))
+                : TraversalHelper.getRootTraversal(this).getMetadata(key);
+    }
+
+    @Override
+    public <T> void setMetadata(final String key, final T value) {
+        if (getParent() instanceof EmptyStep) metadata.put(key, value);
+        else TraversalHelper.getRootTraversal(this).setMetadata(key, value);
+    }
+
+    @Override
+    public TraversalParent getParent() {
+        return this.parent;
+    }
+
+    @Override
+    public void setParent(final TraversalParent step) {
+        this.parent = step;
+    }
+
+    @Override
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    @Override
+    public Optional<Graph> getGraph() {
+        return Optional.ofNullable(this.graph);
+    }
+
+    @Override
+    public void setGraph(final Graph graph) {
+        this.graph = graph;
     }
 
     @Override
@@ -176,6 +288,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         } catch (final FastNoSuchElementException e) {
             throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
         }
+    }
+
+    @Override
+    public Traversal.Admin<S, E> asAdmin() {
+        return this;
     }
 
     @Override
@@ -198,36 +315,18 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void reset() {
-        this.steps.forEach(Step::reset);
-        this.lastTraverser = EmptyTraverser.instance();
+    public int hashCode() {
+        int index = 0;
+        int result = this.getClass().hashCode();
+        for (final Step step : this.asAdmin().getSteps()) {
+            result ^= Integer.rotateLeft(step.hashCode(), index++);
+        }
+        return result;
     }
 
     @Override
-    public void addStart(final Traverser.Admin<S> start) {
-        if (!this.locked) this.applyStrategies();
-        if (!this.steps.isEmpty()) this.steps.get(0).addStart(start);
-    }
-
-    @Override
-    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
-        if (!this.locked) this.applyStrategies();
-        if (!this.steps.isEmpty()) this.steps.get(0).addStarts(starts);
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.traversalString(this);
-    }
-
-    @Override
-    public Step<S, ?> getStartStep() {
-        return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(0);
-    }
-
-    @Override
-    public Step<?, E> getEndStep() {
-        return this.steps.isEmpty() ? EmptyStep.instance() : this.steps.get(this.steps.size() - 1);
+    public boolean equals(final Object other) {
+        return other != null && other.getClass().equals(this.getClass()) && this.equals(((Traversal.Admin) other));
     }
 
     @Override
@@ -254,89 +353,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public boolean isLocked() {
-        return this.locked;
-    }
-
-    @Override
-    public void setSideEffects(final TraversalSideEffects sideEffects) {
-        this.sideEffects = sideEffects;
-    }
-
-    @Override
-    public TraversalSideEffects getSideEffects() {
-        return this.sideEffects;
-    }
-
-    @Override
-    public void setStrategies(final TraversalStrategies strategies) {
-        this.strategies = strategies;
-    }
-
-    @Override
-    public TraversalStrategies getStrategies() {
-        return this.strategies;
-    }
-
-    @Override
-    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        if (this.locked) throw Exceptions.traversalIsLocked();
-        step.setId(this.stepPosition.nextXId());
-        this.steps.add(index, step);
-        final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
-        final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
-        step.setPreviousStep(null != previousStep ? previousStep : EmptyStep.instance());
-        step.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
-        if (null != previousStep) previousStep.setNextStep(step);
-        if (null != nextStep) nextStep.setPreviousStep(step);
-        step.setTraversal(this);
-        return (Traversal.Admin<S2, E2>) this;
-    }
-
-    @Override
-    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
-        if (this.locked) throw Exceptions.traversalIsLocked();
-        final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
-        final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
-        //this.steps.get(index).setTraversal(EmptyTraversal.instance());
-        this.steps.remove(index);
-        if (null != previousStep) previousStep.setNextStep(null == nextStep ? EmptyStep.instance() : nextStep);
-        if (null != nextStep) nextStep.setPreviousStep(null == previousStep ? EmptyStep.instance() : previousStep);
-        return (Traversal.Admin<S2, E2>) this;
-    }
-
-    @Override
-    public void setParent(final TraversalParent step) {
-        this.parent = step;
-    }
-
-    @Override
-    public TraversalParent getParent() {
-        return this.parent;
-    }
-
-    @Override
-    public Optional<Graph> getGraph() {
-        return Optional.ofNullable(this.graph);
-    }
-
-    @Override
-    public void setGraph(final Graph graph) {
-        this.graph = graph;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return other != null && other.getClass().equals(this.getClass()) && this.equals(((Traversal.Admin) other));
-    }
-
-    @Override
-    public int hashCode() {
-        int index = 0;
-        int result = this.getClass().hashCode();
-        for (final Step step : this.asAdmin().getSteps()) {
-            result ^= Integer.rotateLeft(step.hashCode(), index++);
-        }
-        return result;
+    public String toString() {
+        return StringFactory.traversalString(this);
     }
 }

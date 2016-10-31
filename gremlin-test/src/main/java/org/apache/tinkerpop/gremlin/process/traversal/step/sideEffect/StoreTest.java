@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -135,13 +137,20 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, BulkSet<String>> traversal = get_g_V_order_byXidX_storeXaX_byXnameX_out_selectXaX();
         printTraversalForm(traversal);
         final List<BulkSet<String>> expected = new ArrayList<>(6);
-        expected.addAll(Arrays.asList(
-                makeBulkSet("marko"),
-                makeBulkSet("marko"),
-                makeBulkSet("marko"),
-                makeBulkSet("marko", "vadas", "lop", "josh"),
-                makeBulkSet("marko", "vadas", "lop", "josh"),
-                makeBulkSet("marko", "vadas", "lop", "josh", "ripple", "peter")));
+        final boolean onGraphComputer = traversal.asAdmin().getStrategies().getStrategy(VertexProgramStrategy.class).isPresent();
+        if (onGraphComputer || graph instanceof RemoteGraph) {
+            while (expected.size() < 6) {
+                expected.add(makeBulkSet("marko", "vadas", "lop", "josh", "ripple", "peter"));
+            }
+        } else {
+            expected.addAll(Arrays.asList(
+                    makeBulkSet("marko"),
+                    makeBulkSet("marko"),
+                    makeBulkSet("marko"),
+                    makeBulkSet("marko", "vadas", "lop", "josh"),
+                    makeBulkSet("marko", "vadas", "lop", "josh"),
+                    makeBulkSet("marko", "vadas", "lop", "josh", "ripple", "peter")));
+        }
         while (traversal.hasNext()) {
             final BulkSet<String> a = traversal.next();
             boolean match = false;
@@ -151,7 +160,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
                     break;
                 }
             }
-            assertTrue(match);
+            assertTrue("" + a + " should match any item of " + expected + ".", match);
         }
         assertTrue(expected.isEmpty());
     }

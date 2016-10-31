@@ -52,20 +52,19 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public List<Step> getSteps() {
-        return null == this.bypassTraversal ? Collections.emptyList() : this.bypassTraversal.getSteps();
-    }
-
-    @Override
     public Bytecode getBytecode() {
         return null == this.bypassTraversal ? new Bytecode() : this.bypassTraversal.getBytecode();
     }
 
+    @Override
+    public void addStart(final Traverser.Admin<S> start) {
+        if (null != this.bypassTraversal)
+            this.bypassTraversal.addStart(start);
+    }
 
     @Override
-    public void reset() {
-        if (null != this.bypassTraversal)
-            this.bypassTraversal.reset();
+    public List<Step> getSteps() {
+        return null == this.bypassTraversal ? Collections.emptyList() : this.bypassTraversal.getSteps();
     }
 
     @Override
@@ -90,14 +89,30 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
+    public Set<TraverserRequirement> getTraverserRequirements() {
+        return null == this.bypassTraversal ? REQUIREMENTS : this.bypassTraversal.getTraverserRequirements();
+    }
+
+    @Override
+    public void reset() {
+        if (null != this.bypassTraversal)
+            this.bypassTraversal.reset();
+    }
+
+    @Override
+    public TraversalSideEffects getSideEffects() {
+        return null == this.bypassTraversal ? EmptyTraversalSideEffects.instance() : this.bypassTraversal.getSideEffects();
+    }
+
+    @Override
     public void setSideEffects(final TraversalSideEffects sideEffects) {
         if (null != this.bypassTraversal)
             this.bypassTraversal.setSideEffects(sideEffects);
     }
 
     @Override
-    public TraversalSideEffects getSideEffects() {
-        return null == this.bypassTraversal ? EmptyTraversalSideEffects.instance() : this.bypassTraversal.getSideEffects();
+    public TraversalStrategies getStrategies() {
+        return null == this.bypassTraversal ? EmptyTraversalStrategies.instance() : this.bypassTraversal.getStrategies();
     }
 
     @Override
@@ -107,16 +122,14 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public TraversalStrategies getStrategies() {
-        return null == this.bypassTraversal ? EmptyTraversalStrategies.instance() : this.bypassTraversal.getStrategies();
+    public <T> Optional<T> getMetadata(final String key) {
+        return null == this.bypassTraversal ? Optional.empty() : this.bypassTraversal.getMetadata(key);
     }
 
     @Override
-    public void setParent(final TraversalParent step) {
-        if (null != this.bypassTraversal) {
-            this.bypassTraversal.setParent(step);
-            step.integrateChild(this.bypassTraversal);
-        }
+    public <T> void setMetadata(final String key, final T value) {
+        if (null != this.bypassTraversal)
+            this.bypassTraversal.setMetadata(key, value);
     }
 
     @Override
@@ -125,40 +138,11 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public Traversal.Admin<S, E> clone() {
-        try {
-            final AbstractLambdaTraversal<S, E> clone = (AbstractLambdaTraversal<S, E>) super.clone();
-            if (null != this.bypassTraversal)
-                clone.bypassTraversal = this.bypassTraversal.clone();
-            return clone;
-        } catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+    public void setParent(final TraversalParent step) {
+        if (null != this.bypassTraversal) {
+            this.bypassTraversal.setParent(step);
+            step.integrateChild(this.bypassTraversal);
         }
-    }
-
-    @Override
-    public E next() {
-        if (null != this.bypassTraversal)
-            return this.bypassTraversal.next();
-        throw new UnsupportedOperationException("The " + this.getClass().getSimpleName() + " can only be used as a predicate traversal");
-    }
-
-    @Override
-    public Traverser.Admin<E> nextTraverser() {
-        if (null != this.bypassTraversal)
-            return this.bypassTraversal.nextTraverser();
-        throw new UnsupportedOperationException("The " + this.getClass().getSimpleName() + " can only be used as a predicate traversal");
-    }
-
-    @Override
-    public boolean hasNext() {
-        return null == this.bypassTraversal || this.bypassTraversal.hasNext();
-    }
-
-    @Override
-    public void addStart(final Traverser.Admin<S> start) {
-        if (null != this.bypassTraversal)
-            this.bypassTraversal.addStart(start);
     }
 
     @Override
@@ -179,8 +163,22 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public Set<TraverserRequirement> getTraverserRequirements() {
-        return null == this.bypassTraversal ? REQUIREMENTS : this.bypassTraversal.getTraverserRequirements();
+    public Traverser.Admin<E> nextTraverser() {
+        if (null != this.bypassTraversal)
+            return this.bypassTraversal.nextTraverser();
+        throw new UnsupportedOperationException("The " + this.getClass().getSimpleName() + " can only be used as a predicate traversal");
+    }
+
+    @Override
+    public boolean hasNext() {
+        return null == this.bypassTraversal || this.bypassTraversal.hasNext();
+    }
+
+    @Override
+    public E next() {
+        if (null != this.bypassTraversal)
+            return this.bypassTraversal.next();
+        throw new UnsupportedOperationException("The " + this.getClass().getSimpleName() + " can only be used as a predicate traversal");
     }
 
     @Override
@@ -191,6 +189,18 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     @Override
     public boolean equals(final Object object) {
         return this.getClass().equals(object.getClass()) && this.hashCode() == object.hashCode();
+    }
+
+    @Override
+    public Traversal.Admin<S, E> clone() {
+        try {
+            final AbstractLambdaTraversal<S, E> clone = (AbstractLambdaTraversal<S, E>) super.clone();
+            if (null != this.bypassTraversal)
+                clone.bypassTraversal = this.bypassTraversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
 }

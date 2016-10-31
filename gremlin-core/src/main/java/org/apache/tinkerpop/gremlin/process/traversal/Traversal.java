@@ -59,14 +59,6 @@ import java.util.stream.StreamSupport;
  */
 public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, AutoCloseable {
 
-    public static class Symbols {
-        private Symbols() {
-            // static fields only
-        }
-
-        public static final String profile = "profile";
-    }
-
     /**
      * Get access to administrative methods of the traversal via its accompanying {@link Traversal.Admin}.
      *
@@ -236,20 +228,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         // do nothing by default
     }
 
-    /**
-     * A collection of {@link Exception} types associated with Traversal execution.
-     */
-    public static class Exceptions {
-
-        public static IllegalStateException traversalIsLocked() {
-            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer be modulated");
-        }
-
-        public static IllegalStateException traversalIsNotReversible() {
-            return new IllegalStateException("The traversal is not reversible as it contains steps that are not reversible");
-        }
-    }
-
     public interface Admin<S, E> extends Traversal<S, E> {
 
         /**
@@ -389,13 +367,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         /**
-         * Set the {@link TraversalSideEffects} of this traversal.
-         *
-         * @param sideEffects the sideEffects to set for this traversal.
-         */
-        public void setSideEffects(final TraversalSideEffects sideEffects);
-
-        /**
          * Get the {@link TraversalSideEffects} associated with the traversal.
          *
          * @return The traversal sideEffects
@@ -403,11 +374,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public TraversalSideEffects getSideEffects();
 
         /**
-         * Set the {@link TraversalStrategies} to be used by this traversal at evaluation time.
+         * Set the {@link TraversalSideEffects} of this traversal.
          *
-         * @param strategies the strategies to use on this traversal
+         * @param sideEffects the sideEffects to set for this traversal.
          */
-        public void setStrategies(final TraversalStrategies strategies);
+        public void setSideEffects(final TraversalSideEffects sideEffects);
 
         /**
          * Get the {@link TraversalStrategies} associated with this traversal.
@@ -417,12 +388,23 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public TraversalStrategies getStrategies();
 
         /**
-         * Set the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
-         * Traversals can be nested and this is the means by which the traversal tree is connected.
+         * Set the {@link TraversalStrategies} to be used by this traversal at evaluation time.
          *
-         * @param step the traversal holder parent step
+         * @param strategies the strategies to use on this traversal
          */
-        public void setParent(final TraversalParent step);
+        public void setStrategies(final TraversalStrategies strategies);
+
+        /**
+         * Get the metadata entry for the given key.
+         *
+         * @return the metadata entry for the given key.
+         */
+        public <T> Optional<T> getMetadata(final String key);
+
+        /**
+         * Set the metadata entry for the given key.
+         */
+        public <T> void setMetadata(final String key, final T value);
 
         /**
          * Get the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
@@ -431,6 +413,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          * @return the traversal holder parent step
          */
         public TraversalParent getParent();
+
+        /**
+         * Set the {@link org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent} {@link Step} that is the parent of this traversal.
+         * Traversals can be nested and this is the means by which the traversal tree is connected.
+         *
+         * @param step the traversal holder parent step
+         */
+        public void setParent(final TraversalParent step);
 
         /**
          * Cloning is used to duplicate the traversal typically in OLAP environments.
@@ -469,6 +459,28 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
             return this.getEndStep().next();
         }
 
+    }
+
+    public static class Symbols {
+        public static final String profile = "profile";
+
+        private Symbols() {
+            // static fields only
+        }
+    }
+
+    /**
+     * A collection of {@link Exception} types associated with Traversal execution.
+     */
+    public static class Exceptions {
+
+        public static IllegalStateException traversalIsLocked() {
+            return new IllegalStateException("The traversal strategies are complete and the traversal can no longer be modulated");
+        }
+
+        public static IllegalStateException traversalIsNotReversible() {
+            return new IllegalStateException("The traversal is not reversible as it contains steps that are not reversible");
+        }
     }
 
 }

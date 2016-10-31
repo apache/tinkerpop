@@ -45,16 +45,115 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     private static final TraversalSideEffects SIDE_EFFECTS = EmptyTraversalSideEffects.instance();
     private static final TraversalStrategies STRATEGIES = EmptyTraversalStrategies.instance();
 
-    public static <A, B> EmptyTraversal<A, B> instance() {
-        return INSTANCE;
-    }
-
     protected EmptyTraversal() {
 
     }
 
+    public static <A, B> EmptyTraversal<A, B> instance() {
+        return INSTANCE;
+    }
+
     public Bytecode getBytecode() {
         return new Bytecode();
+    }
+
+    @Override
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
+
+    }
+
+    @Override
+    public void addStart(final Traverser.Admin<S> start) {
+
+    }
+
+    @Override
+    public List<Step> getSteps() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) {
+        return instance();
+    }
+
+    @Override
+    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
+        return (Traversal.Admin) this;
+    }
+
+    @Override
+    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
+        return (Traversal.Admin) this;
+    }
+
+    @Override
+    public void applyStrategies() {
+
+    }
+
+    @Override
+    public TraverserGenerator getTraverserGenerator() {
+        return null;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getTraverserRequirements() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public TraversalSideEffects getSideEffects() {
+        return SIDE_EFFECTS;
+    }
+
+    @Override
+    public void setSideEffects(final TraversalSideEffects sideEffects) {
+    }
+
+    @Override
+    public TraversalStrategies getStrategies() {
+        return STRATEGIES;
+    }
+
+    @Override
+    public void setStrategies(final TraversalStrategies traversalStrategies) {
+
+    }
+
+    @Override
+    public <T> Optional<T> getMetadata(String key) {
+        return Optional.empty();
+    }
+
+    @Override
+    public <T> void setMetadata(String key, T value) {
+
+    }
+
+    @Override
+    public TraversalParent getParent() {
+        return EmptyStep.instance();
+    }
+
+    @Override
+    public void setParent(final TraversalParent step) {
+
+    }
+
+    @Override
+    public boolean isLocked() {
+        return true;
+    }
+
+    @Override
+    public Optional<Graph> getGraph() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setGraph(final Graph graph) {
+
     }
 
     @Override
@@ -73,82 +172,8 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public TraversalSideEffects getSideEffects() {
-        return SIDE_EFFECTS;
-    }
-
-    @Override
-    public void applyStrategies() {
-
-    }
-
-    @Override
-    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
-
-    }
-
-    @Override
-    public void addStart(final Traverser.Admin<S> start) {
-
-    }
-
-    @Override
-    public <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) {
-        return instance();
-    }
-
-    @Override
-    public List<Step> getSteps() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public EmptyTraversal<S, E> clone() {
-        return instance();
-    }
-
-    @Override
-    public boolean isLocked() {
-        return true;
-    }
-
-    @Override
-    public TraverserGenerator getTraverserGenerator() {
-        return null;
-    }
-
-    @Override
-    public void setSideEffects(final TraversalSideEffects sideEffects) {
-    }
-
-    @Override
-    public TraversalStrategies getStrategies() {
-        return STRATEGIES;
-    }
-
-    @Override
-    public void setParent(final TraversalParent step) {
-
-    }
-
-    @Override
-    public TraversalParent getParent() {
-        return EmptyStep.instance();
-    }
-
-    @Override
-    public void setStrategies(final TraversalStrategies traversalStrategies) {
-
-    }
-
-    @Override
-    public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
-        return (Traversal.Admin) this;
-    }
-
-    @Override
-    public <S2, E2> Traversal.Admin<S2, E2> removeStep(final int index) throws IllegalStateException {
-        return (Traversal.Admin) this;
+    public int hashCode() {
+        return -343564565;
     }
 
     @Override
@@ -157,22 +182,7 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public int hashCode() {
-        return -343564565;
-    }
-
-    @Override
-    public Set<TraverserRequirement> getTraverserRequirements() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Optional<Graph> getGraph() {
-        return Optional.empty();
-    }
-
-    @Override
-    public void setGraph(final Graph graph) {
-
+    public EmptyTraversal<S, E> clone() {
+        return instance();
     }
 }

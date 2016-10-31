@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inci
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.NoBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
@@ -62,52 +63,6 @@ import java.util.stream.Collectors;
 public interface TraversalStrategies extends Serializable, Cloneable {
 
     static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.ProviderOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
-
-    /**
-     * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
-     */
-    public List<TraversalStrategy<?>> toList();
-
-    /**
-     * Return the {@link TraversalStrategy} instance associated with the provided class.
-     *
-     * @param traversalStrategyClass the class of the strategy to get
-     * @param <T>                    the strategy class type
-     * @return an optional containing the strategy instance or not
-     */
-    public default <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
-        return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
-    }
-
-    /**
-     * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
-     * This method must ensure that the strategies are sorted prior to application.
-     *
-     * @param traversal the traversal to apply the strategies to
-     */
-    public void applyStrategies(final Traversal.Admin<?, ?> traversal);
-
-    /**
-     * Add all the provided {@link TraversalStrategy} instances to the current collection.
-     * When all the provided strategies have been added, the collection is resorted.
-     *
-     * @param strategies the traversal strategies to add
-     * @return the newly updated/sorted traversal strategies collection
-     */
-    public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies);
-
-    /**
-     * Remove all the provided {@link TraversalStrategy} classes from the current collection.
-     * When all the provided strategies have been removed, the collection is resorted.
-     *
-     * @param strategyClasses the traversal strategies to remove by their class
-     * @return the newly updated/sorted traversal strategies collection
-     */
-    @SuppressWarnings({"unchecked", "varargs"})
-    public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses);
-
-    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
-    public TraversalStrategies clone();
 
     /**
      * Sorts the list of provided strategies such that the {@link TraversalStrategy#applyPost()}
@@ -174,7 +129,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         return sortedStrategies;
     }
 
-
     static void visit(Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap, List<Class<? extends TraversalStrategy>> sortedStrategyClasses, Set<Class<? extends TraversalStrategy>> seenStrategyClases, List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses, Class<? extends TraversalStrategy> strategyClass) {
         if (seenStrategyClases.contains(strategyClass)) {
             throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
@@ -193,6 +147,51 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
     }
 
+    /**
+     * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
+     */
+    public List<TraversalStrategy<?>> toList();
+
+    /**
+     * Return the {@link TraversalStrategy} instance associated with the provided class.
+     *
+     * @param traversalStrategyClass the class of the strategy to get
+     * @param <T>                    the strategy class type
+     * @return an optional containing the strategy instance or not
+     */
+    public default <T extends TraversalStrategy> Optional<T> getStrategy(final Class<T> traversalStrategyClass) {
+        return (Optional) toList().stream().filter(s -> traversalStrategyClass.isAssignableFrom(s.getClass())).findAny();
+    }
+
+    /**
+     * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
+     * This method must ensure that the strategies are sorted prior to application.
+     *
+     * @param traversal the traversal to apply the strategies to
+     */
+    public void applyStrategies(final Traversal.Admin<?, ?> traversal);
+
+    /**
+     * Add all the provided {@link TraversalStrategy} instances to the current collection.
+     * When all the provided strategies have been added, the collection is resorted.
+     *
+     * @param strategies the traversal strategies to add
+     * @return the newly updated/sorted traversal strategies collection
+     */
+    public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies);
+
+    /**
+     * Remove all the provided {@link TraversalStrategy} classes from the current collection.
+     * When all the provided strategies have been removed, the collection is resorted.
+     *
+     * @param strategyClasses the traversal strategies to remove by their class
+     * @return the newly updated/sorted traversal strategies collection
+     */
+    @SuppressWarnings({"unchecked", "varargs"})
+    public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses);
+
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public TraversalStrategies clone();
 
     public static final class GlobalCache {
 
@@ -208,6 +207,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     AdjacentToIncidentStrategy.instance(),
                     FilterRankingStrategy.instance(),
                     MatchPredicateStrategy.instance(),
+                    NoBarrierStrategy.instance(),
                     RepeatUnrollStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
                     PathRetractionStrategy.instance(),
