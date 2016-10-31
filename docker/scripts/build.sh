@@ -39,7 +39,7 @@ function usage {
 
 while [ ! -z "$1" ]; do
   case "$1" in
-    -t | --tests ) RUN_TESTS=tue; shift ;;
+    -t | --tests ) RUN_TESTS=true; shift ;;
     -i | --integration-tests ) RUN_INTEGRATION_TESTS=true; shift ;;
     -n | --neo4j ) INCLUDE_NEO4J=true; shift ;;
     -j | --java-docs ) BUILD_JAVA_DOCS=true; shift ;;
