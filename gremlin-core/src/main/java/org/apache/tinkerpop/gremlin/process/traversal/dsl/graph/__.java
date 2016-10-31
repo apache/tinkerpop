@@ -968,6 +968,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#choose(Predicate, Traversal)
+     */
+    public static <A, B> GraphTraversal<A, B> choose(final Predicate<A> choosePredicate, final Traversal<?, B> trueChoice) {
+        return __.<A>start().choose(choosePredicate, trueChoice);
+    }
+
+    /**
      * @see GraphTraversal#choose(Function)
      */
     public static <A, M, B> GraphTraversal<A, B> choose(final Function<A, M> choiceFunction) {
@@ -986,6 +993,13 @@ public class __ {
      */
     public static <A, M, B> GraphTraversal<A, B> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, B> trueChoice, final Traversal<?, B> falseChoice) {
         return __.<A>start().choose(traversalPredicate, trueChoice, falseChoice);
+    }
+
+    /**
+     * @see GraphTraversal#choose(Traversal, Traversal)
+     */
+    public static <A, M, B> GraphTraversal<A, B> choose(final Traversal<?, M> traversalPredicate, final Traversal<?, B> trueChoice) {
+        return __.<A>start().choose(traversalPredicate, trueChoice);
     }
 
     /**

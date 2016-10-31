@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -25,11 +26,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent.Pick.none;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ChooseStepTest extends StepTest {
 
@@ -38,7 +42,10 @@ public class ChooseStepTest extends StepTest {
         return Arrays.asList(
                 __.choose(values("name")).option("marko", out()).option(none, in()),
                 __.choose(values("name")).option("marko", in()).option(none, out()),
-                __.choose(values("name")).option("josh", out()).option(none, in())
+                __.choose(values("name")).option("josh", out()).option(none, in()),
+                __.choose(out("knows").is(P.gt(0)), out("knows"), out("knows")),
+                __.choose(out("knows").is(P.gt(0)), out("knows"), out("created")),
+                __.choose(out("knows").is(P.gt(0)), out("knows"))
         );
     }
 }
