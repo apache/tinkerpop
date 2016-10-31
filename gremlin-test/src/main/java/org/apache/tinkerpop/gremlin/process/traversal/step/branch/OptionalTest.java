@@ -18,23 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.addV;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.assertEquals;
@@ -53,6 +56,8 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Path> get_g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path();
 
     public abstract Traversal<Vertex, Path> get_g_V_optionalXout_optionalXoutXX_path();
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_optionalXaddVXdogXX_label(Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -122,27 +127,41 @@ public abstract class OptionalTest extends AbstractGremlinProcessTest {
         assertTrue(paths.isEmpty());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void g_VX1X_optionalXaddVXdogXX_label() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_optionalXaddVXdogXX_label(convertToVertexId(this.graph, "marko"));
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList("dog"), traversal);
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
     public static class Traversals extends OptionalTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX2X_optionalXoutXknowsXX(Object v2Id) {
-            return this.g.V(v2Id).optional(out("knows"));
+            return g.V(v2Id).optional(out("knows"));
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX2X_optionalXinXknowsXX(Object v2Id) {
-            return this.g.V(v2Id).optional(in("knows"));
+            return g.V(v2Id).optional(in("knows"));
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_hasLabelXpersonX_optionalXoutXknowsX_optionalXoutXcreatedXXX_path() {
-            return this.g.V().hasLabel("person").optional(out("knows").optional(out("created"))).path();
+            return g.V().hasLabel("person").optional(out("knows").optional(out("created"))).path();
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_optionalXout_optionalXoutXX_path() {
-            return this.g.V().optional(out().optional(out())).path();
+            return g.V().optional(out().optional(out())).path();
         }
 
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_optionalXaddVXdogXX_label(Object v1Id) {
+            return g.V(v1Id).optional(addV("dog")).label();
+        }
     }
 }

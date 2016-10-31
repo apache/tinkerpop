@@ -50,6 +50,10 @@ public abstract class GroovyOptionalTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.optional(out().optional(out())).path")
         }
 
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_optionalXaddVXdogXX_label(Object v1Id) {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V(v1Id).optional(addV('dog')).label", "v1Id", v1Id)
+        }
     }
 
 }
