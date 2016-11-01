@@ -25,7 +25,7 @@ from setuptools import setup, Command
 root = os.path.dirname(os.path.abspath(__file__))
 
 # Path to __version__ module
-version_file = os.path.join(root, '.', '__version__.py')
+version_file = os.path.join(root, 'gremlin_python', '__version__.py')
 
 # Check if this is a source distribution.
 # If not create the __version__ module containing the version
@@ -39,7 +39,7 @@ if not os.path.exists(os.path.join(root, 'PKG-INFO')):
     fd.write('timestamp = %d\n' % timestamp)
     fd.close()
 # Load version
-import __version__
+from gremlin_python import __version__
 
 version = __version__.version
 
