@@ -110,31 +110,11 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public <A> A get(final int index) {
-        return (this.size() - 1) == index ? (A) this.currentObject : this.previousPath.get(index);
-    }
-
-
-    private final <A> A getSingleHead(final String label) {
+        int counter = this.size();
         ImmutablePath currentPath = this;
-        while (true) {
-            if (currentPath.isTail())
-                return null;
-            else if (currentPath.currentLabels.contains(label))
+        while(true) {
+            if(index == --counter)
                 return (A) currentPath.currentObject;
-            else
-                currentPath = currentPath.previousPath;
-        }
-    }
-
-
-    private final <A> A getSingleTail(final String label) {
-        A found = null;
-        ImmutablePath currentPath = this;
-        while (true) {
-            if (currentPath.isTail())
-                return found;
-            else if (currentPath.currentLabels.contains(label))
-                found = (A) currentPath.currentObject;
             currentPath = currentPath.previousPath;
         }
     }
@@ -143,18 +123,39 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     public <A> A get(final Pop pop, final String label) {
         if (Pop.all == pop) {
             // Recursively build the list to avoid building objects/labels collections.
-            final List<A> list = null == this.previousPath ? new ArrayList<>() : this.previousPath.get(Pop.all, label);
-            // Add our object, if our step labels match.
-            if (this.currentLabels.contains(label))
-                list.add((A) currentObject);
+            final List<Object> list = new ArrayList<>();
+            ImmutablePath currentPath = this;
+            while (true) {
+                if (currentPath.isTail())
+                    break;
+                else if (currentPath.currentLabels.contains(label))
+                    list.add(0, currentPath.currentObject);
+                currentPath = currentPath.previousPath;
+            }
             return (A) list;
-        } else {
-            // Delegate to the non-throwing, optimized head/tail calculations.
-            final A single = Pop.first == pop ? this.getSingleTail(label) : this.getSingleHead(label);
-            // Throw if we didn't find the label.
-            if (null == single)
+        } else if (Pop.last == pop) {
+            ImmutablePath currentPath = this;
+            while (true) {
+                if (currentPath.isTail())
+                    throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+                else if (currentPath.currentLabels.contains(label))
+                    return (A) currentPath.currentObject;
+                else
+                    currentPath = currentPath.previousPath;
+            }
+        } else { // Pop.first
+            A found = null;
+            ImmutablePath currentPath = this;
+            while (true) {
+                if (currentPath.isTail())
+                    break;
+                else if (currentPath.currentLabels.contains(label))
+                    found = (A) currentPath.currentObject;
+                currentPath = currentPath.previousPath;
+            }
+            if (null == found)
                 throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
-            return single;
+            return found;
         }
     }
 
