@@ -203,4 +203,12 @@ public final class TinkerHelper {
         }
         return (Iterator) vertices.iterator();
     }
+
+    public static Map<Object, Vertex> getVertices(final TinkerGraph graph) {
+        return graph.vertices;
+    }
+
+    public static Map<Object, Edge> getEdges(final TinkerGraph graph) {
+        return graph.edges;
+    }
 }
