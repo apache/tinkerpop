@@ -52,5 +52,14 @@ public class UnfoldStepTest extends StepTest {
         assertEquals("b", t2.next());
         assertEquals(3, t2.next());
         assertFalse(t2.hasNext());
+        //
+        final Traversal<Object[], Object> t3 = __.<Object[]>inject(new Object[]{0, 1, 2, new int[]{3, 4}}).unfold().unfold();
+        assertEquals(0, t3.next());
+        assertEquals(1, t3.next());
+        assertEquals(2, t3.next());
+        assertEquals(3, t3.next());
+        assertEquals(4, t3.next());
+        assertFalse(t3.hasNext());
+
     }
 }

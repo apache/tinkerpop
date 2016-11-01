@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -48,7 +49,7 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
         else if (s instanceof Map)
             return ((Map) s).entrySet().iterator();
         else if (s.getClass().isArray())
-            return new ArrayIterator((Object[])s);
+            return handleArrays(s);
         else
             return IteratorUtils.of((E) s);
     }
@@ -56,5 +57,17 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    private final Iterator<E> handleArrays(Object obj) {
+        if (obj instanceof Object[]) {
+            return new ArrayIterator<>((E[]) obj);
+        } else {
+            int len = Array.getLength(obj);
+            final Object[] out = new Object[len];
+            for (int i = 0; i < len; i++)
+                out[i] = Array.get(obj, i);
+            return new ArrayIterator<>((E[]) out);
+        }
     }
 }
