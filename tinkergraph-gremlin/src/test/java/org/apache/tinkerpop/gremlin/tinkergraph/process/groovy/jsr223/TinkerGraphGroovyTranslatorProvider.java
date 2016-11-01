@@ -51,6 +51,7 @@ public class TinkerGraphGroovyTranslatorProvider extends TinkerGraphProvider {
             "g_VX1X_out_injectXv2X_name",
             "shouldNeverPropagateANoBulkTraverser",
             "shouldNeverPropagateANullValuedTraverser",
+            "shouldUsePromiseAndControlTransactionsIfAvailable",
             GraphComputerTest.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),

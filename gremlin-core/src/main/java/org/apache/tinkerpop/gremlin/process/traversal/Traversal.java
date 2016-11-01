@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -42,7 +43,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -137,6 +144,43 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default Stream<E> toStream() {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+    }
+
+    /**
+     * Starts a promise to execute a function on the current {@code Traversal} that will be completed in the future.
+     * This implementation uses {@link Admin#traversalExecutorService} to execute the supplied
+     * {@code traversalFunction}.
+     */
+    public default <T> CompletableFuture<T> promise(final Function<Traversal, T> traversalFunction) {
+        return promise(traversalFunction, Admin.traversalExecutorService);
+    }
+
+    /**
+     * Starts a promise to execute a function on the current {@code Traversal} that will be completed in the future.
+     * This implementation uses the caller supplied {@code ExecutorService} to execute the {@code traversalFunction}.
+     */
+    public default <T> CompletableFuture<T> promise(final Function<Traversal, T> traversalFunction, final ExecutorService service) {
+        final CompletableFuture<T> promise = new CompletableFuture<>();
+        final Future iterationFuture = service.submit(() -> {
+            try {
+                promise.complete(traversalFunction.apply(this));
+            } catch (Exception ex) {
+                // the promise may have been cancelled by the caller, in which case, there is no need to attempt
+                // another write on completion
+                if (!promise.isDone()) promise.completeExceptionally(ex);
+            }
+        });
+
+        // if the user cancels the promise then attempt to kill the iteration.
+        promise.exceptionally(t -> {
+            if (t instanceof CancellationException) {
+                iterationFuture.cancel(true);
+            }
+
+            return null;
+        });
+
+        return promise;
     }
 
     /**
@@ -251,6 +295,12 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     }
 
     public interface Admin<S, E> extends Traversal<S, E> {
+
+        /**
+         * Service that handles promises.
+         */
+        static final ExecutorService traversalExecutorService = Executors.newCachedThreadPool(
+                new BasicThreadFactory.Builder().namingPattern("traversal-executor-%d").build());
 
         /**
          * Get the {@link Bytecode} associated with the construction of this traversal.
