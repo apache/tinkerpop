@@ -34,11 +34,11 @@ import java.util.Set;
  */
 public class ImmutablePath implements Path, Serializable, Cloneable {
 
-    private static final ImmutablePath TAIL_PATH = new ImmutablePath(null, null, Collections.emptySet());
+    private static final ImmutablePath TAIL_PATH = new ImmutablePath(null, null, null);
 
     private ImmutablePath previousPath;
     private Object currentObject;
-    private Set<String> currentLabels = new LinkedHashSet<>();
+    private Set<String> currentLabels;
 
     public static Path make() {
         return TAIL_PATH;
@@ -53,7 +53,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     private ImmutablePath(final ImmutablePath previousPath, final Object currentObject, final Set<String> currentLabels) {
         this.previousPath = previousPath;
         this.currentObject = currentObject;
-        this.currentLabels.addAll(currentLabels);
+        this.currentLabels = currentLabels;
     }
 
     private final boolean isTail() {
@@ -78,10 +78,14 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public Path extend(final Set<String> labels) {
-        final Set<String> newLabels = new LinkedHashSet<>();
-        newLabels.addAll(this.currentLabels);
-        newLabels.addAll(labels);
-        return new ImmutablePath(this.previousPath, this.currentObject, newLabels);
+        if (labels.isEmpty())
+            return this;
+        else {
+            final Set<String> newLabels = new LinkedHashSet<>();
+            newLabels.addAll(this.currentLabels);
+            newLabels.addAll(labels);
+            return new ImmutablePath(this.previousPath, this.currentObject, newLabels);
+        }
     }
 
     @Override

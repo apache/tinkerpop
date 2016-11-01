@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
+import java.util.LinkedHashSet;
 import java.util.function.Function;
 
 /**
@@ -43,20 +44,17 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
         path.forEach((object, labels) -> {
             if (object instanceof DetachedElement || object instanceof DetachedProperty || object instanceof DetachedPath) {
                 this.objects.add(object);
-                this.labels.add(labels);
             } else if (object instanceof Element) {
                 this.objects.add(DetachedFactory.detach((Element) object, withProperties));
-                this.labels.add(labels);
             } else if (object instanceof Property) {
                 this.objects.add(DetachedFactory.detach((Property) object));
-                this.labels.add(labels);
             } else if (object instanceof Path) {
                 this.objects.add(DetachedFactory.detach((Path) object, withProperties));
-                this.labels.add(labels);
             } else {
                 this.objects.add(object);
-                this.labels.add(labels);
             }
+            //Make a copy of the labels as its an UnmodifiableSet which can not be serialized.
+            this.labels.add(new LinkedHashSet<>(labels));
         });
     }
 
