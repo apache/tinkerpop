@@ -27,7 +27,9 @@ import java.util.List;
  * Internal interface used by ImmutablePath to provide more efficient implementation.
  *
  * @author Matt Frantz (http://github.com/mhfrantz)
+ * @deprecated Since 3.2.3 ({@link ImmutablePath} contains all requisite behavior)
  */
+@Deprecated
 interface ImmutablePathImpl extends Path {
 
     /**
