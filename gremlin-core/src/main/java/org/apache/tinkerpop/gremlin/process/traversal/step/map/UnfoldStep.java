@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -46,6 +47,8 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
             return ((Iterable) s).iterator();
         else if (s instanceof Map)
             return ((Map) s).entrySet().iterator();
+        else if (s.getClass().isArray())
+            return new ArrayIterator((Object[])s);
         else
             return IteratorUtils.of((E) s);
     }
