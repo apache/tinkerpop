@@ -59,15 +59,15 @@ public final class UnfoldStep<S, E> extends FlatMapStep<S, E> {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    private final Iterator<E> handleArrays(Object obj) {
-        if (obj instanceof Object[]) {
-            return new ArrayIterator<>((E[]) obj);
+    private final Iterator<E> handleArrays(final Object array) {
+        if (array instanceof Object[]) {
+            return new ArrayIterator<>((E[]) array);
         } else {
-            int len = Array.getLength(obj);
-            final Object[] out = new Object[len];
+            int len = Array.getLength(array);
+            final Object[] objectArray = new Object[len];
             for (int i = 0; i < len; i++)
-                out[i] = Array.get(obj, i);
-            return new ArrayIterator<>((E[]) out);
+                objectArray[i] = Array.get(array, i);
+            return new ArrayIterator<>((E[]) objectArray);
         }
     }
 }
