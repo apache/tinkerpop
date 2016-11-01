@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,8 +113,8 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     public <A> A get(final int index) {
         int counter = this.size();
         ImmutablePath currentPath = this;
-        while(true) {
-            if(index == --counter)
+        while (true) {
+            if (index == --counter)
                 return (A) currentPath.currentObject;
             currentPath = currentPath.previousPath;
         }
@@ -264,5 +265,21 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
             currentPath = currentPath.previousPath;
         }
         return true;
+    }
+
+    @Override
+    public boolean isSimple() {
+        final Set<Object> objects = new HashSet<>();
+        ImmutablePath currentPath = this;
+        while (true) {
+            if (currentPath.isTail())
+                return true;
+            else if (objects.contains(currentPath.currentObject))
+                return false;
+            else {
+                objects.add(currentPath.currentObject);
+                currentPath = currentPath.previousPath;
+            }
+        }
     }
 }
