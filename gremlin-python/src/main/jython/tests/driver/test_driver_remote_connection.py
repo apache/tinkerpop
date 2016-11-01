@@ -85,7 +85,7 @@ class TestDriverRemoteConnection(TestCase):
         assert "person" == g.V().label().dedup().next()
         #
         g = g.withoutStrategies(SubgraphStrategy). \
-            withComputer(workers=4, vertices=__.has("name", "marko"), edges=__.limit(0))
+            withComputer(vertices=__.has("name", "marko"), edges=__.limit(0))
         assert 1 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert "person" == g.V().label().next()
