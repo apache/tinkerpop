@@ -183,10 +183,26 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
 
         public void addLabels(final Set<String> labels);
 
+        /**
+         * Drop all path information not associated with specified labels.
+         * This is an optimization method that allows a traverser to save memory and increase the likelihood of bulking.
+         *
+         * @param labels the labels to keep path information for.
+         */
         public void keepLabels(final Set<String> labels);
 
+        /**
+         * Drop all path information associated with specified labels.
+         * This is an optimization method that allows a traverser to save memory and increase the likelihood of bulking.
+         *
+         * @param labels the labels to drop path information for.
+         */
         public void dropLabels(final Set<String> labels);
 
+        /**
+         * Drop the path of the traverser.
+         * This is an optimization method that allows a traverser to save memory and increase the likelihood of bulking.
+         */
         public void dropPath();
 
         /**

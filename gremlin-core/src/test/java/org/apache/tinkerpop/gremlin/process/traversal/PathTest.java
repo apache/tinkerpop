@@ -340,6 +340,24 @@ public class PathTest {
             assertTrue(pathA1.popEquals(Pop.last, pathA2));
             assertTrue(pathA2.popEquals(Pop.last, pathB1));
             assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend("stephen", Collections.singleton("c"));
+            pathA2 = pathA2.extend("stephen", Collections.singleton("d"));
+            pathB1 = pathB1.extend("marko", Collections.singleton("e"));
+            pathB2 = pathB2.extend("stephen", Collections.singleton("f"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA1));
+            assertFalse(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertFalse(pathB1.popEquals(Pop.all, pathB2));
+            assertFalse(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertFalse(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathB1.popEquals(Pop.first, pathB1));
+            assertFalse(pathA1.popEquals(Pop.last, pathA2));
+            assertFalse(pathA2.popEquals(Pop.last, pathB1));
+            assertFalse(pathB1.popEquals(Pop.last, pathB2));
+            assertTrue(pathB2.popEquals(Pop.last, pathB2));
         });
     }
 
