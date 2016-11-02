@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -181,11 +182,21 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public E next() {
-        if (!this.locked) this.applyStrategies();
-        if (this.lastTraverser.bulk() == 0L)
-            this.lastTraverser = this.finalEndStep.next();
-        this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
-        return this.lastTraverser.get();
+        try {
+            if (!this.locked) this.applyStrategies();
+            if (this.lastTraverser.bulk() == 0L)
+                this.lastTraverser = this.finalEndStep.next();
+            this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
+            return this.lastTraverser.get();
+        }
+        catch(FastNoSuchElementException e) {
+            if(parent == EmptyStep.instance()) {
+                throw new NoSuchElementException();
+            }
+            else {
+                throw e;
+            }
+        }
     }
 
     @Override
