@@ -449,7 +449,7 @@ Choose Step
 image::choose-step.png[width=700]
 
 The `choose()`-step (*branch*) routes the current traverser to a particular traversal branch option. With `choose()`,
-it is possible to implement if/else-based semantics as well as more complicated selections.
+it is possible to implement if/then/else-semantics as well as more complicated selections.
 
 [gremlin-groovy,modern]
 ----
@@ -466,7 +466,18 @@ g.V().hasLabel('person').
 <1> If the traversal yields an element, then do `in`, else do `out` (i.e. true/false-based option selection).
 <2> Use the result of the traversal as a key to the map of traversal options (i.e. value-based option selection).
 
-However, note that `choose()` can have an arbitrary number of options and moreover, can take an anonymous traversal as its choice function.
+If the "false"-branch is not provided, then if/then-semantics are implemented.
+
+[gremlin-groovy,modern]
+----
+g.V().choose(hasLabel('person'), out('created')).values('name') <1>
+g.V().choose(hasLabel('person'), out('created'), identity()).values('name') <2>
+----
+
+<1> If the vertex is a person, emit the vertices they created, else emit the vertex.
+<2> If/then/else with an `identity()` on the false-branch is equivalent to if/then with no false-branch.
+
+Note that `choose()` can have an arbitrary number of options and moreover, can take an anonymous traversal as its choice function.
 
 [gremlin-groovy,modern]
 ----
