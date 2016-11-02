@@ -46,6 +46,15 @@ g.V().choose(hasLabel('person'),out('created'))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1508[TINKERPOP-1508]
 
+FastNoSuchElementException converted to regular NoSuchElementException
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Previously, a call to `Traversal.next()` that did not have a result would throw a `FastNoSuchElementException`.
+This has been changed to a regular `NoSuchElementException` that includes the stack trace. Code that explicitly catches
+`FastNoSuchElementException` should be converted to check for the more general class of `NoSuchElementException`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
