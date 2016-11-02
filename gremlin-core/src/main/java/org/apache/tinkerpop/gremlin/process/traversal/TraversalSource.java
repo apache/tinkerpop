@@ -98,7 +98,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     /**
      * Add an arbitrary collection of {@link TraversalStrategy} instances to the traversal source.
      *
-     * @param traversalStrategies a colleciton of traversal strategies to add
+     * @param traversalStrategies a collection of traversal strategies to add
      * @return a new traversal source with updated strategies
      */
     public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
