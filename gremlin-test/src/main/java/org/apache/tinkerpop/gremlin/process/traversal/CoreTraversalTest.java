@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -35,6 +37,7 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -271,5 +274,37 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         g.tx().open();
         assertEquals(1, IteratorUtils.count(t));
         g.tx().rollback();
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldNotThrowFastNoSuchElementException() {
+        //FastNoSuchElement exceptions don't have a stack trace.
+        //They should be converted to regular exceptions before returning to the the user.
+        try {
+            g.V().has("foo").next();
+        } catch (NoSuchElementException e) {
+            assertEquals(NoSuchElementException.class, e.getClass());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldThrowFastNoSuchElementExceptionInNestedTraversals() {
+        //The nested traversal should throw a regular FastNoSuchElementException
+
+        GraphTraversal<Object, Object> nestedTraversal = __.has("name", "foo");
+        GraphTraversal<Vertex, Object> traversal = g.V().has("name", "marko").branch(nestedTraversal);
+
+        GraphTraversal.Admin<Object, Object> nestedTraversalAdmin = nestedTraversal.asAdmin();
+        nestedTraversalAdmin.reset();
+        nestedTraversalAdmin.addStart(nestedTraversalAdmin.getTraverserGenerator().generate(g.V().has("name", "marko").next(), (Step)traversal.asAdmin().getStartStep(), 1l));
+
+        try {
+            nestedTraversal.next();
+        } catch (NoSuchElementException e) {
+            assertEquals(FastNoSuchElementException.class, e.getClass());
+        }
+
     }
 }
