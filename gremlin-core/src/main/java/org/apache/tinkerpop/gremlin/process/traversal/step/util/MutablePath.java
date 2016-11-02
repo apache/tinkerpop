@@ -80,7 +80,7 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public Path extend(final Set<String> labels) {
-        if (!labels.isEmpty())
+        if (!labels.isEmpty() && !this.labels.get(this.labels.size() - 1).containsAll(labels))
             this.labels.get(this.labels.size() - 1).addAll(labels);
         return this;
     }

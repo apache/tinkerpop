@@ -211,11 +211,6 @@ public class GryoRegistrator implements KryoRegistrator {
         //
         m.put(MutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PathSerializer()));
         m.put(ImmutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializers.PathSerializer()));
-        try {
-            m.put(Class.forName(ImmutablePath.class.getCanonicalName() + "$TailPath"), new UnshadedSerializerAdapter<>(new GryoSerializers.PathSerializer()));
-        } catch (final ClassNotFoundException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
         //
         m.put(CompactBuffer[].class, null);
         // TODO: VoidSerializer is a default serializer and thus, may not be needed (if it is, you can't use FieldSerializer)
