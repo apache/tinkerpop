@@ -393,8 +393,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
             sourceA.E(e.id()).next();
             fail("Edge should not be in this partition");
         } catch (Exception ex) {
-            final Exception expected = FastNoSuchElementException.instance();
-            assertEquals(expected.getClass(), ex.getClass());
+            assertEquals(NoSuchElementException.class, ex.getClass());
         }
     }
 

@@ -33,6 +33,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `Pick.none` and `Pick.any` to the serializers and importers.
 * Added a class loader to `TraversalStrategies.GlobalCache` which guarantees strategies are registered prior to `GlobalCache.getStrategies()`.
 * Fixed a severe bug where `GraphComputer` strategies are not being loaded until the second use of the traversal source.
+* Traversals now throw regular NoSuchElementException instead of FastNoSuchElementException.
 
 [[release-3-2-3]]
 TinkerPop 3.2.3 (Release Date: October 17, 2016)

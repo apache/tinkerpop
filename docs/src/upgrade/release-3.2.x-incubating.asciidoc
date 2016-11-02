@@ -29,6 +29,18 @@ TinkerPop 3.2.4
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asciidoc#release-3-2-4[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+FastNoSuchElementException converted to regular NoSuchElementException
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In gremlin 3.2.x a call to Traversal#next() that did not have a result would throw a FastNoSuchElementException.
+This has been changed to a regular NoSuchElementException that includes the stack trace. Code that explicitly catches
+FastNoSuchElementException should be converted to NoSuchElementException.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1330[TINKERPOP-1330]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
