@@ -38,6 +38,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -79,10 +81,16 @@ public class TinkerGraphCountStrategyTest {
                 {__.V().count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().as("a").count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().map(out()).count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().map(out()).identity().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().map(out().groupCount()).identity().count().as("a"), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().label().map(s -> s.get().length()).count(), countStep(Vertex.class), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                {__.V().as("a").map(select("a")).count(), countStep(Vertex.class),TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 //
                 {__.V(), __.V(), Collections.emptyList()},
                 {__.V().out().count(), __.V().out().count(), Collections.emptyList()},
                 {__.count(), __.count(), Collections.emptyList()},
+                {__.V().map(out().groupCount("m")).identity().count().as("a"), __.V().map(out().groupCount("m")).identity().count().as("a"), Collections.emptyList()},
         });
     }
 }
