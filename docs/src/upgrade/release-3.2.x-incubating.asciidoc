@@ -29,6 +29,23 @@ TinkerPop 3.2.4
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.4/CHANGELOG.asciidoc#release-3-2-4[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+If/Then-Semantics with Choose Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Gremlin's `choose()`-step supports if/then/else-semantics. Thus, to effect if/then-semantics, `identity()` was required.
+Thus, the following two traversals below are equivalent with the later being possible in this release.
+
+[source,groovy]
+----
+g.V().choose(hasLabel('person'),out('created'),identity())
+g.V().choose(hasLabel('person'),out('created'))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1508[TINKERPOP-1508]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

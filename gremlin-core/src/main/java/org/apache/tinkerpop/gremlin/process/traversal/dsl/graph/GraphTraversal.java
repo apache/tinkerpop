@@ -1293,6 +1293,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
+    public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
+                                                     final Traversal<?, E2> trueChoice) {
+        this.asAdmin().getBytecode().addStep(Symbols.choose, traversalPredicate, trueChoice);
+        return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
+    }
+
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choiceFunction);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) __.map(new FunctionTraverser<>(choiceFunction))));
@@ -1302,6 +1308,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
+    }
+
+    public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
+                                                     final Traversal<?, E2> trueChoice) {
+        this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice);
+        return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
     public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {

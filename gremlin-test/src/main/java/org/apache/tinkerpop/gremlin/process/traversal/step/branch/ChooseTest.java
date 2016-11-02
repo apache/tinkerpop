@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
@@ -57,6 +58,8 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name();
+
+    public abstract Traversal<Vertex, String> get_g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -100,6 +103,14 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("marko", "vadas", "peter", "josh", "lop", "ripple"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("vadas", "josh", "vadas", "josh", "peter", "lop", "ripple"), traversal);
+    }
+
     public static class Traversals extends ChooseTest {
 
         @Override
@@ -125,6 +136,11 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
                     .option("blah", out("knows"))
                     .option("bleep", out("created"))
                     .option(TraversalOptionParent.Pick.none, identity()).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name() {
+            return g.V().choose(out("knows").count().is(P.gt(0)), out("knows")).values("name");
         }
     }
 }
