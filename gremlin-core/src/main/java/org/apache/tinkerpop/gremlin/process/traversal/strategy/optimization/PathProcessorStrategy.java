@@ -23,20 +23,28 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * PathProcessStrategy is an OLAP strategy that does its best to turn non-local children in {@code where()} and {@code select()}
@@ -47,13 +55,17 @@ import java.util.Set;
  * @example <pre>
  * __.select(a).by(x)               // is replaced by select(a).map(x)
  * __.select(a,b).by(x).by(y)       // is replaced by select(a).by(x).as(a).select(b).by(y).as(b).select(a,b)
- * __.where(as(a).out().as(b))      // is replaced by select(a).where(out().as(b))
- * __.where(as(a).out())            // is replaced by select(a).filter(out())
+ * __.where(as(a).out().as(b))      // is replaced by as(xyz).select(a).where(out().as(b)).select(xyz)
+ * __.where(as(a).out())            // is replaced by as(xyz).select(a).filter(out()).select(xyz)
  * </pre>
  */
 public final class PathProcessorStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final PathProcessorStrategy INSTANCE = new PathProcessorStrategy();
+
+    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
+
+    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(PathStep.class, TreeStep.class, LambdaHolder.class));
 
     private PathProcessorStrategy() {
     }
@@ -70,7 +82,9 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.onGraphComputer(traversal) || !TraversalHelper.isGlobalChild(traversal))
+        if (!TraversalHelper.onGraphComputer(traversal) ||
+                !TraversalHelper.isGlobalChild(traversal) ||
+                TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, TraversalHelper.getRootTraversal(traversal))) // TODO: use the MARKER model when that PR is merged
             return;
 
         // process where(as("a").out()...) => select("a").where(out()...)
@@ -90,11 +104,18 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                     }
                 }
                 final WhereTraversalStep.WhereStartStep<?> whereStartStep = (WhereTraversalStep.WhereStartStep<?>) localChild.getStartStep();
-                final int index = TraversalHelper.stepIndex(whereTraversalStep, traversal);
+                int index = TraversalHelper.stepIndex(whereTraversalStep, traversal);
                 final SelectOneStep<?, ?> selectOneStep = new SelectOneStep<>(traversal, Pop.last, whereStartStep.getScopeKeys().iterator().next());
                 traversal.addStep(index, selectOneStep);
+                final String generatedLabel = PathProcessorStrategy.generateLabel();
+                if (selectOneStep.getPreviousStep() instanceof EmptyStep) {
+                    TraversalHelper.insertBeforeStep(new IdentityStep<>(traversal), selectOneStep, traversal);
+                    index++;
+                }
+                selectOneStep.getPreviousStep().addLabel(generatedLabel);
+                TraversalHelper.insertAfterStep(new SelectOneStep<>(traversal, Pop.last, generatedLabel), whereTraversalStep, traversal);
                 whereStartStep.removeScopeKey();
-                // process where(as("a").out()) => select("a").filter(out())
+                // process where(as("a").out()) => as('xyz').select("a").filter(out()).select('xyz')
                 if (!(localChild.getEndStep() instanceof WhereTraversalStep.WhereEndStep)) {
                     localChild.removeStep(localChild.getStartStep());
                     traversal.addStep(index + 1, new TraversalFilterStep<>(traversal, localChild));
@@ -152,6 +173,10 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
 
     public static PathProcessorStrategy instance() {
         return INSTANCE;
+    }
+
+    private static String generateLabel() {
+        return IS_TESTING ? "xyz" : UUID.randomUUID().toString();
     }
 
     private static int labelCount(final String label, final Traversal.Admin<?, ?> traversal) {

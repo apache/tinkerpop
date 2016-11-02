@@ -25,11 +25,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +59,10 @@ public class PathProcessorStrategyTest {
 
     @Test
     public void doTest() {
-        this.original.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
+        final Traversal.Admin<?, ?> rootTraversal = new DefaultGraphTraversal<>();
+        final TraversalParent parent = new TraversalVertexProgramStep(rootTraversal, this.original.asAdmin());
+        rootTraversal.addStep(parent.asStep());
+        this.original.asAdmin().setParent(parent); // trick it into OLAP
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(PathProcessorStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {
@@ -81,7 +85,7 @@ public class PathProcessorStrategyTest {
                 {__.select("a").by("name"), __.select("a").map(new ElementValueTraversal<>("name")), Collections.emptyList()},
                 {__.select("a").out(), __.select("a").out(), Collections.emptyList()},
                 {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")),TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 // select("a","b")
                 {__.select("a", "b"), __.select("a", "b"), Collections.emptyList()},
@@ -95,11 +99,13 @@ public class PathProcessorStrategyTest {
                 {__.select(Pop.all, "a", "b").by("name").by("age"), __.select(Pop.all, "a", "b").by("name").by("age"), Collections.emptyList()},
                 // where(as("a")...)
                 {__.where(__.out("knows")), __.where(__.outE("knows")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.where(__.as("a").out("knows")), __.select(Pop.last, "a").filter(__.out("knows")), Collections.emptyList()},
-                {__.where(__.as("a").has("age",P.gt(10))), __.select(Pop.last, "a").has("age",P.gt(10)), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select("b").where(__.as("a").has("age",P.gt(10))), __.select("b").select(Pop.last, "a").has("age",P.gt(10)), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.where(__.as("a").out("knows").as("b")), __.select(Pop.last, "a").where(__.out("knows").as("b")), Collections.emptyList()},
-                {__.where("a", P.eq("b")), __.where("a", P.eq("b")), Collections.emptyList()}
+                {__.where(__.as("a").out("knows")), __.identity().as("xyz").select(Pop.last, "a").filter(__.out("knows")).select(Pop.last, "xyz"), Collections.emptyList()},
+                {__.where(__.as("a").has("age", P.gt(10))), __.identity().as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.select("b").where(__.as("a").has("age", P.gt(10))), __.select("b").as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.where(__.as("a").out("knows").as("b")), __.identity().as("xyz").select(Pop.last, "a").where(__.out("knows").as("b")).select(Pop.last, "xyz"), Collections.emptyList()},
+                {__.where("a", P.eq("b")), __.where("a", P.eq("b")), Collections.emptyList()},
+                {__.as("a").out().where(__.as("a").has("age", P.gt(10))).in(), __.as("a").out().as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz").in(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                {__.as("a").out().where(__.as("a").has("age", P.gt(10))).in().path(), __.as("a").out().where(__.as("a").has("age", P.gt(10))).in().path(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
         });
     }
 }
