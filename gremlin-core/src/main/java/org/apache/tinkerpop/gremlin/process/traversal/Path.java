@@ -49,6 +49,25 @@ public interface Path extends Cloneable, Iterable<Object> {
     }
 
     /**
+     * Determine if the path is empty or not.
+     *
+     * @return whether the path is empty or not.
+     */
+    public default boolean isEmpty() {
+        return this.size() == 0;
+    }
+
+    /**
+     * Get the head of the path.
+     *
+     * @param <A> the type of the head of the path
+     * @return the head of the path
+     */
+    public default <A> A head() {
+        return (A) this.objects().get(this.size() - 1);
+    }
+
+    /**
      * Add a new step to the path with an object and any number of associated labels.
      *
      * @param object the new head of the path
