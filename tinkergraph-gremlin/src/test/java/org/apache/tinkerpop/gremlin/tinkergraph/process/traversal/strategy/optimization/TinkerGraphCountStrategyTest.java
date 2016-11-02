@@ -89,6 +89,7 @@ public class TinkerGraphCountStrategyTest {
                 //
                 {__.V(), __.V(), Collections.emptyList()},
                 {__.V().out().count(), __.V().out().count(), Collections.emptyList()},
+                {__.V(1).count(), __.V(1).count(), Collections.emptyList()},
                 {__.count(), __.count(), Collections.emptyList()},
                 {__.V().map(out().groupCount("m")).identity().count().as("a"), __.V().map(out().groupCount("m")).identity().count().as("a"), Collections.emptyList()},
         });
