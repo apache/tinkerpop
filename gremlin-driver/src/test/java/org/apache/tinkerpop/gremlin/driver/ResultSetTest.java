@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,10 +48,35 @@ public class ResultSetTest extends AbstractResultQueueTest {
     }
 
     @Test
+    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadComplete() {
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        assertThat(all.isDone(), is(false));
+        readCompleted.complete(null);
+        assertThat(all.isDone(), is(true));
+    }
+
+    @Test
     public void shouldHaveAllItemsAvailableOnReadComplete() {
         assertThat(resultSet.allItemsAvailable(), is(false));
         readCompleted.complete(null);
         assertThat(resultSet.allItemsAvailable(), is(true));
+    }
+
+    @Test
+    public void shouldHaveAllItemsAvailableAsynchronouslyOnReadCompleteWhileLoading() throws Exception {
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        assertThat(all.isDone(), is(false));
+
+        final AtomicBoolean atLeastOnce = new AtomicBoolean(false);
+        addToQueue(1000, 1, true, true);
+        while (!readCompleted.isDone()) {
+            atLeastOnce.set(true);
+            if (!atLeastOnce.get())
+                assertThat(all.isDone(), is(false));
+        }
+
+        assertThat(atLeastOnce.get(), is(true));
+        assertThat(all.isDone(), is(true));
     }
 
     @Test
