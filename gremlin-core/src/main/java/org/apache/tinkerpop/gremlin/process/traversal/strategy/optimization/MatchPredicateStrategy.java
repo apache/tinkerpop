@@ -54,7 +54,7 @@ import java.util.Set;
 public final class MatchPredicateStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final MatchPredicateStrategy INSTANCE = new MatchPredicateStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(IdentityRemovalStrategy.class, InlineFilterStrategy.class));
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(IdentityRemovalStrategy.class);
     private static final Set<Class<? extends OptimizationStrategy>> POSTS = Collections.singleton(FilterRankingStrategy.class);
 
     private MatchPredicateStrategy() {

@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `PathProcessorStrategy` can inline certain `where(traversal)`-steps in order to increase the likelihood of star-local children.
 * `SparkGraphComputer` no longer starts a worker iteration if the worker's partition is empty.
 * Added `ProjectStep.getProjectKeys()` for strategies that rely on such information.
 * Added `VertexFeatures.supportsDuplicateMultiProperties()` for graphs that only support unique values in multi-properties.

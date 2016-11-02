@@ -73,11 +73,12 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
 
     private static final InlineFilterStrategy INSTANCE = new InlineFilterStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> POSTS = new HashSet<>(Arrays.asList(
-            MatchPredicateStrategy.class,
             FilterRankingStrategy.class,
             GraphFilterStrategy.class,
             AdjacentToIncidentStrategy.class));
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(IdentityRemovalStrategy.class);
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(
+            IdentityRemovalStrategy.class,
+            MatchPredicateStrategy.class));
 
     private InlineFilterStrategy() {
     }

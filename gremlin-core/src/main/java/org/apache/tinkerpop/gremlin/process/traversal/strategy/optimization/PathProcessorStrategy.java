@@ -25,34 +25,47 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * PathProcessStrategy is an OLAP strategy that does its best to turn non-local children in {@code where()} and {@code select()}
+ * into local children by inlining components of the non-local child. In this way, PathProcessStrategy helps to ensure
+ * that more traversals meet the local child constraint imposed on OLAP traversals.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.select(a).by(x)               // is replaced by select(a).map(x)
+ * __.select(a,b).by(x).by(y)       // is replaced by select(a).by(x).as(a).select(b).by(y).as(b).select(a,b)
+ * __.where(as(a).out().as(b))      // is replaced by select(a).where(out().as(b))
+ * __.where(as(a).out())            // is replaced by select(a).filter(out())
+ * </pre>
  */
 public final class PathProcessorStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final PathProcessorStrategy INSTANCE = new PathProcessorStrategy();
-
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(MatchPredicateStrategy.class);
 
     private PathProcessorStrategy() {
     }
 
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPrior() {
-        return PRIORS;
+        return Collections.singleton(MatchPredicateStrategy.class);
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPost() {
+        return Collections.singleton(InlineFilterStrategy.class);
     }
 
     @Override
@@ -60,9 +73,8 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
         if (!TraversalHelper.onGraphComputer(traversal) || !TraversalHelper.isGlobalChild(traversal))
             return;
 
-        // process where(as("a").out()...)
-        // todo: need to be able to drop path labels for this to work
-        /*final List<WhereTraversalStep> whereTraversalSteps = TraversalHelper.getStepsOfClass(WhereTraversalStep.class, traversal);
+        // process where(as("a").out()...) => select("a").where(out()...)
+        final List<WhereTraversalStep> whereTraversalSteps = TraversalHelper.getStepsOfClass(WhereTraversalStep.class, traversal);
         for (final WhereTraversalStep<?> whereTraversalStep : whereTraversalSteps) {
             final Traversal.Admin<?, ?> localChild = whereTraversalStep.getLocalChildren().get(0);
             if ((localChild.getStartStep() instanceof WhereTraversalStep.WhereStartStep) &&
@@ -82,13 +94,14 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                 final SelectOneStep<?, ?> selectOneStep = new SelectOneStep<>(traversal, Pop.last, whereStartStep.getScopeKeys().iterator().next());
                 traversal.addStep(index, selectOneStep);
                 whereStartStep.removeScopeKey();
+                // process where(as("a").out()) => select("a").filter(out())
                 if (!(localChild.getEndStep() instanceof WhereTraversalStep.WhereEndStep)) {
                     localChild.removeStep(localChild.getStartStep());
                     traversal.addStep(index + 1, new TraversalFilterStep<>(traversal, localChild));
                     traversal.removeStep(whereTraversalStep);
                 }
             }
-        }*/
+        }
 
         // process select("a","b").by(...).by(...)
         final List<SelectStep> selectSteps = TraversalHelper.getStepsOfClass(SelectStep.class, traversal);
