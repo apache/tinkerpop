@@ -405,4 +405,9 @@ public class GremlinServer {
         if (settings.gremlinPool == 0)
             settings.gremlinPool = Runtime.getRuntime().availableProcessors();
     }
+
+    @Override
+    public String toString() {
+        return "GremlinServer " + settings.host + ":" + settings.port;
+    }
 }

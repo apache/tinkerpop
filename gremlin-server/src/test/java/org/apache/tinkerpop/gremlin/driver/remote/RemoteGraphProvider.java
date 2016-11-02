@@ -36,12 +36,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RemoteGraphProvider extends AbstractGraphProvider {
+public class RemoteGraphProvider extends AbstractGraphProvider implements AutoCloseable {
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(RemoteGraph.class);
     }};
@@ -52,11 +53,20 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
     //private final Cluster cluster = Cluster.build().maxContentLength(1024000).serializer(Serializers.GRAPHSON_V2D0).create();
     private final Client client = cluster.connect();
 
-    static {
+    public RemoteGraphProvider() {
         try {
             startServer();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        try {
+            stopServer();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -120,11 +130,11 @@ public class RemoteGraphProvider extends AbstractGraphProvider {
 
         server = new GremlinServer(settings);
 
-        server.start().join();
+        server.start().get(100, TimeUnit.SECONDS);
     }
 
     public static void stopServer() throws Exception {
-        server.stop().join();
+        server.stop().get(100, TimeUnit.SECONDS);
         server = null;
     }
 

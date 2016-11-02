@@ -526,10 +526,17 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer
 
 if (${skipTests}) return
 
-log.info("Tests for native gremlin-python complete - shutting down Gremlin Server")
-project.getContextValue("gremlin.py.server").stop().join()
-project.getContextValue("gremlin.py.server.secure").stop().join()
-log.info("Gremlin Server shutdown")
+log.info("Tests for native gremlin-python complete")
+
+def server = project.getContextValue("gremlin.py.server")
+log.info("Shutting down $server")
+server.stop().join()
+
+def serverSecure = project.getContextValue("gremlin.py.server.secure")
+log.info("Shutting down $serverSecure")
+serverSecure.stop().join()
+
+log.info("All Gremlin Server instances are shutdown for gremlin-python")
 ]]>
                                         </script>
                                     </scripts>
