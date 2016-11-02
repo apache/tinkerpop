@@ -71,6 +71,26 @@ following fields were deprecated:
 * `OptIn.SUITE_PROCESS_PERFORMANCE`
 * `OptIn.SUITE_STRUCTURE_PERFORMANCE`
 
+Drivers Providers
+^^^^^^^^^^^^^^^^^
+
+Force Close
++++++++++++
+
+Closing a session will first attempt a proper close of any open transactions. A problem can occur, however, if there is
+a long run job (e.g. an OLAP-based traversal) executing, as that job will block the calls to close the transactions.
+By exercising the option to a do a "forced close" the session will skip trying to close the transactions and just
+attempt to interrupt the long run job. By not closing transactions, the session leaves it up to the underlying graph
+database to sort out how it will deal with those orphaned transactions. On the positive side though (for those graphs
+which do that well) , long run jobs have the opporunity to be cancelled without waiting for a timeout of the job itself
+which will allow resources to be released earlier.
+
+The "force" argument is passed on the "close" message and is a boolean value. This is an optional argument to "close"
+and defaults to `false`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-932[TINKERPOP-932],
+link:http://tinkerpop.apache.org/docs/current/dev/provider/#_session_opprocessor[Provider Documentation - Session OpProcessor]
+
 TinkerPop 3.2.3
 ---------------
 

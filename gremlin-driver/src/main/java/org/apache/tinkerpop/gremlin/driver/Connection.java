@@ -306,9 +306,12 @@ final class Connection {
         // be called once. once shutdown is initiated, it shouldn't be executed a second time or else it sends more
         // messages at the server and leads to ugly log messages over there.
         if (shutdownInitiated.compareAndSet(false, true)) {
+            // maybe this should be delegated back to the Client implementation??? kinda weird to instanceof here.....
             if (client instanceof Client.SessionedClient) {
-                // maybe this should be delegated back to the Client implementation???
-                final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE)).create();
+                final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
+                final RequestMessage closeMessage = client.buildMessage(
+                        RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
+
                 final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
                 write(closeMessage, closed);
 

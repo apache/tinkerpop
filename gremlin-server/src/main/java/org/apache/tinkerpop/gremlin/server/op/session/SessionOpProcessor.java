@@ -66,14 +66,26 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     /**
-     * Configuration setting for how long a session will be available before it timesout.
+     * Configuration setting for how long a session will be available before it times out.
      */
     public static final String CONFIG_SESSION_TIMEOUT = "sessionTimeout";
 
     /**
+     * Configuration setting for how long to wait in milliseconds for each configured graph to close any open
+     * transactions when the session is killed.
+     */
+    public static final String CONFIG_PER_GRAPH_CLOSE_TIMEOUT = "perGraphCloseTimeout";
+
+    /**
      * Default timeout for a session is eight hours.
      */
-    public static final long DEFAULT_SESSION_TIMEOUT = 28800000l;
+    public static final long DEFAULT_SESSION_TIMEOUT = 28800000;
+
+    /**
+     * Default amount of time to wait in milliseconds for each configured graph to close any open transactions when
+     * the session is killed.
+     */
+    public static final long DEFAULT_PER_GRAPH_CLOSE_TIMEOUT = 10000;
 
     static final Settings.ProcessorSettings DEFAULT_SETTINGS = new Settings.ProcessorSettings();
 
@@ -81,6 +93,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         DEFAULT_SETTINGS.className = SessionOpProcessor.class.getCanonicalName();
         DEFAULT_SETTINGS.config = new HashMap<String, Object>() {{
             put(CONFIG_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
+            put(CONFIG_PER_GRAPH_CLOSE_TIMEOUT, DEFAULT_PER_GRAPH_CLOSE_TIMEOUT);
         }};
     }
 
@@ -106,6 +119,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
+            final boolean force = requestMessage.<Boolean>optionalArgs(Tokens.ARGS_FORCE).orElse(false);
+
             return Optional.of(ctx -> {
                 // validate the session is present and then remove it if it is.
                 final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
@@ -114,7 +129,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
-                sessionToClose.manualKill();
+                sessionToClose.manualKill(force);
             });
         } else {
             return Optional.empty();

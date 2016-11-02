@@ -70,6 +70,7 @@ public final class Tokens {
     public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";
     public static final String ARGS_ALIASES = "aliases";
+    public static final String ARGS_FORCE = "force";
     public static final String ARGS_GREMLIN = "gremlin";
     public static final String ARGS_LANGUAGE = "language";
     public static final String ARGS_SCRIPT_EVAL_TIMEOUT = "scriptEvaluationTimeout";

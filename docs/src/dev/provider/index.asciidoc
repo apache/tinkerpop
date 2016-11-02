@@ -901,6 +901,11 @@ to send an alias pair with key of "g" and value of "g2" and thus allow the scrip
 |=========================================================
 |Key |Type |Description
 |session |String | *Required* The session identifier for the session to close.
+|force |Boolean | Determines if the session should be force closed when the client is closed. Force closing will not
+attempt to close open transactions from existing running jobs and leave it to the underlying graph to decided how to
+proceed with those orphaned transactions. Setting this to `true` tends to lead to faster close operation and release
+of resources which can be desirable if Gremlin Server has a long session timeout and a long script evaluation timeout
+as attempts to close long run jobs can occur more rapidly. If not provided, this value is `false`.
 |=========================================================
 
 Traversal OpProcessor
