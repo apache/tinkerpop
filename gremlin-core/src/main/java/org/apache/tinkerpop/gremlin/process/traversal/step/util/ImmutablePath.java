@@ -78,7 +78,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public Path extend(final Set<String> labels) {
-        if (labels.isEmpty())
+        if (labels.isEmpty() || this.currentLabels.containsAll(labels))
             return this;
         else {
             final Set<String> newLabels = new LinkedHashSet<>();
