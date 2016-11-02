@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -158,18 +159,22 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public List<Step> getSteps() {
-        return unmodifiableSteps;
+        return this.unmodifiableSteps;
     }
 
     @Override
     public Traverser.Admin<E> nextTraverser() {
-        if (!this.locked) this.applyStrategies();
-        if (this.lastTraverser.bulk() > 0L) {
-            final Traverser.Admin<E> temp = this.lastTraverser;
-            this.lastTraverser = EmptyTraverser.instance();
-            return temp;
-        } else {
-            return this.finalEndStep.next();
+        try {
+            if (!this.locked) this.applyStrategies();
+            if (this.lastTraverser.bulk() > 0L) {
+                final Traverser.Admin<E> temp = this.lastTraverser;
+                this.lastTraverser = EmptyTraverser.instance();
+                return temp;
+            } else {
+                return this.finalEndStep.next();
+            }
+        } catch (final FastNoSuchElementException e) {
+            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
         }
     }
 
@@ -181,11 +186,15 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public E next() {
-        if (!this.locked) this.applyStrategies();
-        if (this.lastTraverser.bulk() == 0L)
-            this.lastTraverser = this.finalEndStep.next();
-        this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
-        return this.lastTraverser.get();
+        try {
+            if (!this.locked) this.applyStrategies();
+            if (this.lastTraverser.bulk() == 0L)
+                this.lastTraverser = this.finalEndStep.next();
+            this.lastTraverser.setBulk(this.lastTraverser.bulk() - 1L);
+            return this.lastTraverser.get();
+        } catch (final FastNoSuchElementException e) {
+            throw this.parent instanceof EmptyStep ? new NoSuchElementException() : e;
+        }
     }
 
     @Override
