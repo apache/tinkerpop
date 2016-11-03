@@ -105,21 +105,11 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         this.vertexPropertyCriterion = null == vertexPropertyCriterion ? null : vertexPropertyCriterion.asAdmin().clone();
 
         if (null != this.vertexCriterion)
-            this.addLabelMarker(this.vertexCriterion);
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.vertexCriterion);
         if (null != this.edgeCriterion)
-            this.addLabelMarker(this.edgeCriterion);
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.edgeCriterion);
         if (null != this.vertexPropertyCriterion)
-            this.addLabelMarker(this.vertexPropertyCriterion);
-    }
-
-    private final void addLabelMarker(final Traversal.Admin<?, ?> traversal) {
-        traversal.getStartStep().addLabel(MARKER);
-        for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof TraversalParent) {
-                ((TraversalParent) step).getLocalChildren().forEach(this::addLabelMarker);
-                ((TraversalParent) step).getGlobalChildren().forEach(this::addLabelMarker);
-            }
-        }
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), this.vertexPropertyCriterion);
     }
 
     private static void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
