@@ -868,7 +868,7 @@ Gremlin Server are deployed, session state is not shared among them.
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication.
 !`eval` !Evaluate a Gremlin script provided as a `String`.
-!`close` !Close the specified session and rollback any open transactions.
+!`close` !Close the specified session. Will return a `NO CONTENT` message as confirmation of the close being completed.
 |=========================================================
 
 '`authentication` operation arguments'
