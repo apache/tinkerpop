@@ -40,6 +40,41 @@ then unexpected behaviors can emerge. Thus, a potential backwards compatibility 
 used in `optional()`. However, the behavior would be unpredictable so this backwards incompatibility is desirable.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
+Gremlin Console Script Execution
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is no longer possible to run a script in execution mode in the Gremlin Console from the terminal without use of `-e`.
+In other words, prior versions allowed:
+
+[source,text]
+bin/gremlin.sh gremlin.groovy
+
+Such a command must now be written as:
+
+[source,text]
+bin/gremlin.sh -e gremlin.groovy
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283]
+
+Deprecation Removal
+^^^^^^^^^^^^^^^^^^^
+
+The following deprecated classes, methods or fields have been removed in this version:
+
+* `gremlin-console`
+** `org.apache.tinkerpop.gremlin.console.Console(String)`
+* `gremlin-groovy`
+** `org.apache.tinkerpop.gremlin.groovy.engine.ConcurrentBindings`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine(ImportCustomizerProvider)`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine#plugins()`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.ScriptExecutor`
+** `org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension`
+
+Please see the javadoc deprecation notes or upgrade documentation specific to when the deprecation took place to
+understand how to resolve this breaking change.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1283[TINKERPOP-1283], link:https://issues.apache.org/jira/browse/TINKERPOP-1420[TINKERPOP-1420],
+link:https://issues.apache.org/jira/browse/TINKERPOP-833[TINKERPOP-833], link:https://issues.apache.org/jira/browse/TINKERPOP-1040[TINKERPOP-1040]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~

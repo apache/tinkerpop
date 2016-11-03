@@ -49,5 +49,4 @@ class SimpleSandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeChec
             }
         }
     }
-
 }

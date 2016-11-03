@@ -26,6 +26,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed previously deprecated `Console` constructor that took a `String` as an argument from `gremlin-console`.
+* Removed previously deprecated `ConcurrentBindings` from `gremlin-groovy`.
+* Removed previously deprecated `ScriptExecutor` from `gremlin-groovy`.
+* Removed previously deprecated `SandboxExtension` from `gremlin-groovy`.
+* Removed previously deprecated `GremlinGroovyScriptEngine` constructor that took `ImportCustomizerProvider` as an argument from `gremlin-groovy`.
+* Removed previously deprecated `GremlinGroovyScriptEngine#plugins()` from `gremlin-groovy`.
 * Added `OptionalStep` for use with `optional()` to better handle issues associated with branch side-effects.
 * Removed all performance tests that were not part of `gremlin-benchmark`.
 * Removed dependency on `junit-benchmarks` and it's related reference to `h2`.
