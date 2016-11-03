@@ -245,6 +245,8 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             cluster.close();
         }
 
+        // wait for log to flush before trying to assert log messages
+        Thread.sleep(1000);
         assertEquals(1, recordingAppender.getMessages().stream()
                 .filter(msg -> msg.equals("INFO - Session shouldCloseSessionOnceOnRequest closed\n")).count());
     }
@@ -279,6 +281,9 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         } finally {
             cluster.close();
         }
+
+        // wait for log to flush before trying to assert log messages
+        Thread.sleep(1000);
 
         // there will be on for the timeout and a second for closing the cluster
         assertEquals(2, recordingAppender.getMessages().stream()
