@@ -43,9 +43,9 @@ import java.util.Set;
 public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating {
 
     private char state = 'k';
-    private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, ?> preTraversal = null;
-    private Traversal.Admin<S, V> valueTraversal = null;
+    private Traversal.Admin<S, K> keyTraversal;
+    private Traversal.Admin<S, ?> preTraversal;
+    private Traversal.Admin<S, V> valueTraversal;
     ///
     private String sideEffectKey;
 
@@ -81,7 +81,9 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             final TraverserSet traverserSet = new TraverserSet<>();
             this.preTraversal.reset();
             this.preTraversal.addStart(traverser.split());
-            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+            while(this.preTraversal.hasNext()) {
+                traverserSet.add(this.preTraversal.nextTraverser());
+            }
             map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
         }
         this.getTraversal().getSideEffects().add(this.sideEffectKey, map);

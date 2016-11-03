@@ -59,9 +59,9 @@ import java.util.function.BinaryOperator;
 public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> implements ByModulating, TraversalParent {
 
     private char state = 'k';
-    private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, ?> preTraversal = null;
-    private Traversal.Admin<S, V> valueTraversal = null;
+    private Traversal.Admin<S, K> keyTraversal;
+    private Traversal.Admin<S, ?> preTraversal;
+    private Traversal.Admin<S, V> valueTraversal;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -95,7 +95,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             final TraverserSet traverserSet = new TraverserSet<>();
             this.preTraversal.reset();
             this.preTraversal.addStart(traverser);
-            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+            while(this.preTraversal.hasNext()) {
+                traverserSet.add(this.preTraversal.nextTraverser());
+            }
             map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
         }
         return map;
