@@ -54,6 +54,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -87,6 +88,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_profileXmetricsX();
 
     public abstract Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile();
+
+    public abstract Traversal<Vertex, TraversalMetrics> get_g_V_groupXmX_profile();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -409,6 +412,15 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXmX_profile() {
+        final Traversal<Vertex, TraversalMetrics> traversal = get_g_V_groupXmX_profile();
+        printTraversalForm(traversal);
+        traversal.next();
+        assertFalse(traversal.hasNext());
+    }
+
     private static boolean onGraphComputer(final Traversal.Admin<?, ?> traversal) {
         return !TraversalHelper.getStepsOfClass(TraversalVertexProgramStep.class, TraversalHelper.getRootTraversal(traversal)).isEmpty();
     }
@@ -495,6 +507,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile() {
             return g.V().hasLabel("person").pageRank().by("rank").by(__.bothE()).values("rank").profile();
+        }
+
+        @Override
+        public Traversal<Vertex, TraversalMetrics> get_g_V_groupXmX_profile() {
+            return g.V().group("m").profile();
         }
     }
 }
