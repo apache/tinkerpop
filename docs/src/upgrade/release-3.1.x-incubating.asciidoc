@@ -29,6 +29,24 @@ TinkerPop 3.1.6
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#release-3-1-6[changelog] for a complete list of all the modifications that are part of this release.
 
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+Session Close Confirmation
+++++++++++++++++++++++++++
+
+When a session is closed, it now returns a confirmation in the form of a single `NO CONTENT` message. When the message
+arrives, it means that the server has already destroyed the session. Prior to this change, the request was somewhat
+one-way, in that the client could send the request and the server would silently honor it. The confirmation makes it
+a bit easier to ensure from the client perspective that the close did what it was supposed to do, allowing the client
+to proceed only when the server was fully complete with its work.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1544[TINKERPOP-1544]
+
+
 TinkerPop 3.1.5
 ---------------
 

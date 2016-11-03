@@ -319,7 +319,7 @@ final class Connection {
                     // make sure we get a response here to validate that things closed as expected.  on error, we'll let
                     // the server try to clean up on its own.  the primary error here should probably be related to
                     // protocol issues which should not be something a user has to fuss with.
-                    closed.get(cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS);
+                    closed.join().all().get(cluster.connectionPoolSettings().maxWaitForSessionClose, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
                     final String msg = String.format(
                             "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
