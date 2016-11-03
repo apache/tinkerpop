@@ -115,6 +115,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 }
 
                 sessionToClose.manualKill();
+
+                // send back a confirmation of the close
+                ctx.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(requestMessage)
+                        .code(ResponseStatusCode.NO_CONTENT)
+                        .create());
             });
         } else {
             return Optional.empty();
