@@ -144,7 +144,8 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         cluster2.close();
 
         // triggered an error during close and since we didn't force close, the attempt to close the transaction
-        // is made
+        // is made - pause for a moment to be sure the logger gets a chance to propagate to the recordingAppender
+        Thread.sleep(1000);
         assertThat(recordingAppender.getMessages(), hasItem("INFO - Rolling back open transactions on graph before killing session: " + name.getMethodName() + "\n"));
 
     }
@@ -171,7 +172,9 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
         client2.close();
 
-        // because the close was forced, the message should appear immediately
+        // because the close was forced, the message should appear immediately but pause for a second to be
+        // sure it propagates to the recordingAppender
+        Thread.sleep(1000);
         assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on " + name.getMethodName() + " - close was forced\n"));
 
         try {
