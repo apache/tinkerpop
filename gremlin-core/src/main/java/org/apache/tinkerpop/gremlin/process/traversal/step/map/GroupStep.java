@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
@@ -61,8 +60,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, ?> preTraversal;
-    private Traversal.Admin<S, V> valueTraversal;
+    private Traversal.Admin<S, ?> preTraversal = null;
+    private Traversal.Admin<S, V> valueTraversal = null;
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -109,10 +108,12 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(2);
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(3);
         if (null != this.keyTraversal)
-            children.add((Traversal.Admin) this.keyTraversal);
+            children.add(this.keyTraversal);
         children.add(this.valueTraversal);
+        if (null != this.preTraversal)
+            children.add(this.preTraversal);
         return children;
     }
 
@@ -127,7 +128,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.preTraversal = this.integrateChild(GroupStep.generatePreTraversal(clone.valueTraversal));
+        if (null != this.preTraversal)
+            clone.preTraversal = this.preTraversal.clone();
         return clone;
     }
 
@@ -332,26 +334,30 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     public static Traversal.Admin<?, ?> generatePreTraversal(final Traversal.Admin<?, ?> valueTraversal) {
         if (!TraversalHelper.hasStepOfAssignableClass(Barrier.class, valueTraversal))
-            return valueTraversal;
+            return valueTraversal.clone();
         final Traversal.Admin<?, ?> first = __.identity().asAdmin();
+        boolean updated = false;
         for (final Step step : valueTraversal.getSteps()) {
             if (step instanceof Barrier)
                 break;
             first.addStep(step.clone());
+            updated = true;
         }
-        return first.getSteps().size() == 1 ? null : first;
+        return updated ? first : null;
     }
 
     public static <K, V> Map<K, V> doFinalReduction(final Map<K, Object> map, final Traversal.Admin<?, V> valueTraversal) {
         final Map<K, V> reducedMap = new HashMap<>(map.size());
         final Barrier reducingBarrierStep = TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).orElse(null);
         IteratorUtils.removeOnNext(map.entrySet().iterator()).forEachRemaining(entry -> {
-            valueTraversal.reset();
             if (null == reducingBarrierStep) {
-                reducedMap.put(entry.getKey(), entry.getValue() instanceof TraverserSet ?
-                        ((TraverserSet<V>) entry.getValue()).iterator().next().get() :
-                        (V) entry.getValue());
+                if (entry.getValue() instanceof TraverserSet) {
+                    if (!((TraverserSet) entry.getValue()).isEmpty())
+                        reducedMap.put(entry.getKey(), ((TraverserSet<V>) entry.getValue()).peek().get());
+                } else
+                    reducedMap.put(entry.getKey(), (V) entry.getValue());
             } else {
+                valueTraversal.reset();
                 if (entry.getValue() instanceof Traverser.Admin)
                     ((Step) reducingBarrierStep).addStart((Traverser.Admin) entry.getValue());
                 else if (entry.getValue() instanceof TraverserSet)
@@ -361,7 +367,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                     reducingBarrierStep.addBarrier((((Pair) entry.getValue()).getValue1()));
                 } else
                     reducingBarrierStep.addBarrier(entry.getValue());
-                reducedMap.put(entry.getKey(), valueTraversal.next());
+                if (valueTraversal.hasNext())
+                    reducedMap.put(entry.getKey(), valueTraversal.next());
             }
         });
         assert map.isEmpty();
