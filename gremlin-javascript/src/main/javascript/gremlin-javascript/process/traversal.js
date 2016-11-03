@@ -50,7 +50,7 @@
   /** @param {Function} callback */
   Traversal.prototype.one = function (callback) {
     this.list(function (err, result) {
-      callback(err, result ? result[0] : null);
+      callback(err, result && result.length > 0 ? result[0] : null);
     });
   };
 
