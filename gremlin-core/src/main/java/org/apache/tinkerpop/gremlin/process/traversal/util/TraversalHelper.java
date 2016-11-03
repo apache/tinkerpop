@@ -55,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -443,6 +444,26 @@ public final class TraversalHelper {
             if (anyStepRecursively(predicate, globalChild)) return true;
         }
         return false;
+    }
+
+    /**
+     * Apply the provider {@link Consumer} function to the provided {@link Traversal} and all of its children.
+     *
+     * @param consumer  the function to apply to the each traversal in the tree
+     * @param traversal the root traversal to start application
+     */
+    public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal) {
+        consumer.accept(traversal);
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> local : ((TraversalParent) step).getLocalChildren()) {
+                    applyTraversalRecursively(consumer, local);
+                }
+                for (final Traversal.Admin<?, ?> global : ((TraversalParent) step).getGlobalChildren()) {
+                    applyTraversalRecursively(consumer, global);
+                }
+            }
+        }
     }
 
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {
