@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `OptionalStep` for use with `optional()` to better handle issues associated with branch side-effects.
 * Removed all performance tests that were not part of `gremlin-benchmark`.
 * Removed dependency on `junit-benchmarks` and it's related reference to `h2`.
 * Moved the source for the "home page" into the repository under `/site` so that it easier to accept contributions.

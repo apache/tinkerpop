@@ -1157,12 +1157,11 @@ Option Step
 
 An option to a <<branch-step,`branch()`>> or <<choose-step,`choose()`>>
 
-
 [[optional-step]]
 Optional Step
 ~~~~~~~~~~~~~
 
-The `optional()`-step (*map*) returns the result of the specified traversal if it yields a result else it returns the calling
+The `optional()`-step (*branch/flatMap*) returns the result of the specified traversal if it yields a result else it returns the calling
 element, i.e. the `identity()`.
 
 [gremlin-groovy,modern]
@@ -1171,14 +1170,14 @@ g.V(2).optional(out('knows')) <1>
 g.V(2).optional(__.in('knows')) <2>
 ----
 
-<1> vadas does not have an `out` "know" edge so vadas is returned.
-<2> vadas does have an `in` "knows" edge so marko is returned.
+<1> vadas does not have an outgoing knows-edge so vadas is returned.
+<2> vadas does have an incoming knows-edge so marko is returned.
 
 `optional` is particularly useful for lifting entire graphs when used in conjunction with `path` or `tree`.
 
 [gremlin-groovy,modern]
 ----
-g.V().hasLabel('person').optional(out("knows").optional(out("created"))).path() <1>
+g.V().hasLabel('person').optional(out('knows').optional(out('created'))).path() <1>
 ----
 
 <1> Returns the paths of everybody followed by who they know followed by what they created.

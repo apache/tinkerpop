@@ -32,6 +32,14 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+OptionalStep and Side-Effects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `optional()`-step was previously implemented using `ChooseStep`. However, if the optional branch contained side-effects,
+then unexpected behaviors can emerge. Thus, a potential backwards compatibility issue arises is side-effects were being
+used in `optional()`. However, the behavior would be unpredictable so this backwards incompatibility is desirable.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-1506[TINKERPOP-1506]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,4 +59,4 @@ concerned with breaking changes related to the removal of:
 
 Those graph providers who relied on these tests should simply remove them from their respective test suites.
 
-See: https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1235[TINKERPOP-1235]
