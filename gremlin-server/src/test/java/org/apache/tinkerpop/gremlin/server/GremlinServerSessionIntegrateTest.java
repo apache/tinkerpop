@@ -85,22 +85,23 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldHaveTheSessionTimeout":
+            case "shouldCloseSessionOnceOnRequest":
                 settings.processors.clear();
                 final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
                 processorSettings.className = SessionOpProcessor.class.getCanonicalName();
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
+                Logger.getRootLogger().setLevel(Level.INFO);
                 break;
+            case "shouldBlockAdditionalRequestsDuringClose":
             case "shouldBlockAdditionalRequestsDuringForceClose":
-            case "shouldCloseSessionOnceOnRequest":
                 clearNeo4j(settings);
                 Logger.getRootLogger().setLevel(Level.INFO);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
                 break;
-            case "shouldBlockAdditionalRequestsDuringClose":
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
@@ -144,8 +145,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         cluster2.close();
 
         // triggered an error during close and since we didn't force close, the attempt to close the transaction
-        // is made - pause for a moment to be sure the logger gets a chance to propagate to the recordingAppender
-        Thread.sleep(1000);
+        // is made
         assertThat(recordingAppender.getMessages(), hasItem("INFO - Rolling back open transactions on graph before killing session: " + name.getMethodName() + "\n"));
 
     }
@@ -172,9 +172,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
 
         client2.close();
 
-        // because the close was forced, the message should appear immediately but pause for a second to be
-        // sure it propagates to the recordingAppender
-        Thread.sleep(1000);
+        // because the close was forced, the message should appear immediately
         assertThat(recordingAppender.getMessages(), hasItem("INFO - Skipped attempt to close open graph transactions on " + name.getMethodName() + " - close was forced\n"));
 
         try {
@@ -245,8 +243,6 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
             cluster.close();
         }
 
-        // wait for log to flush before trying to assert log messages
-        Thread.sleep(1000);
         assertEquals(1, recordingAppender.getMessages().stream()
                 .filter(msg -> msg.equals("INFO - Session shouldCloseSessionOnceOnRequest closed\n")).count());
     }
@@ -281,9 +277,6 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         } finally {
             cluster.close();
         }
-
-        // wait for log to flush before trying to assert log messages
-        Thread.sleep(1000);
 
         // there will be on for the timeout and a second for closing the cluster
         assertEquals(2, recordingAppender.getMessages().stream()
