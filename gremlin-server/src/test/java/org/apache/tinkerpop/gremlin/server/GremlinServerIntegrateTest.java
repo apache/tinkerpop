@@ -60,6 +60,7 @@ import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -865,11 +866,17 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         se.close();
 
         // Can't get new side effects after close
-        assertNull(se.get("b"));
+        try {
+            se.get("b");
+            fail("The traversal is closed");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("Traversal has been closed - no new side-effects can be retrieved", ex.getMessage());
+        }
 
         // Earlier keys should be cached locally
         final Set<String> localSideEffectKeys = se.keys();
-        assertEquals(1, localSideEffectKeys.size());
+        assertEquals(2, localSideEffectKeys.size());
         final BulkSet localSideEffects = se.get("a");
         assertThat(localSideEffects.isEmpty(), is(false));
 
