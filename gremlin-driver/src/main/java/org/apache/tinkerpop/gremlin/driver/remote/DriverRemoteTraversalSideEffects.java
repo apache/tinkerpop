@@ -22,7 +22,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Host;
 import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversalSideEffects;
@@ -34,8 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
@@ -53,6 +51,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     private boolean closed = false;
     private boolean retrievedAllKeys = false;
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host) {
         this.client = client;
@@ -136,5 +135,13 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 throw new RuntimeException("Error on closing side effects", root);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        // have to override the implementation from TraversalSideEffects because it relies on calls to keys() as
+        // calling that too early can cause unintended failures (i.e. in the debugger, toString() gets called when
+        // introspecting the object from the moment of construction).
+        return "sideEffects[size:" + keys.size() + "]";
     }
 }
