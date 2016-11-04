@@ -33,6 +33,7 @@ TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed previously deprecated `GremlinGroovyScriptEngine` constructor that took `ImportCustomizerProvider` as an argument from `gremlin-groovy`.
 * Removed previously deprecated `GremlinGroovyScriptEngine#plugins()` from `gremlin-groovy`.
 * Added `OptionalStep` for use with `optional()` to better handle issues associated with branch side-effects.
+* `UnfoldStep` now supports unfolding of arrays. (*breaking*)
 * Removed all performance tests that were not part of `gremlin-benchmark`.
 * Removed dependency on `junit-benchmarks` and it's related reference to `h2`.
 * Moved the source for the "home page" into the repository under `/site` so that it easier to accept contributions.
