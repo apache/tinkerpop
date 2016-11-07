@@ -35,6 +35,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Removed `ImmutablePath.TailPath` as it is no longer required with new recursion model.
 * Removed call stack recursion in `ImmutablePath`.
 * `IncidentToAdjacentStrategy` now uses a hidden label marker model to avoid repeated recursion for invalidating steps.
+* `PathProcessorStrategy` can inline certain `where(traversal)`-steps in order to increase the likelihood of star-local children.
 * `SparkGraphComputer` no longer starts a worker iteration if the worker's partition is empty.
 * Added `ProjectStep.getProjectKeys()` for strategies that rely on such information.
 * Added `VertexFeatures.supportsDuplicateMultiProperties()` for graphs that only support unique values in multi-properties.

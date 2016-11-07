@@ -71,6 +71,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_selectXa_bX_whereXa_outXknowsX_bX();
 
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_outXcreatedX_whereXasXaX_name_isXjoshXX_inXcreatedX_name();
+
     /// where(global)
 
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id);
@@ -200,6 +202,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
         assertEquals(1, counter);
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_outXcreatedX_whereXasXaX_name_isXjoshXX_inXcreatedX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_outXcreatedX_whereXasXaX_name_isXjoshXX_inXcreatedX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "josh", "peter", "josh"), traversal);
     }
 
     /// where(global)
@@ -398,6 +408,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_selectXa_bX_whereXa_outXknowsX_bX() {
             return g.V().has("age").as("a").out().in().has("age").as("b").select("a", "b").where(as("a").out("knows").as("b"));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_outXcreatedX_whereXasXaX_name_isXjoshXX_inXcreatedX_name() {
+            return g.V().as("a").out("created").where(as("a").values("name").is("josh")).in("created").values("name");
         }
 
         /// where(global)
