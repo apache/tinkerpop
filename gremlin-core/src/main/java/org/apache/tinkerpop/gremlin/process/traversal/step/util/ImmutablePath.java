@@ -61,6 +61,11 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
+    public boolean isEmpty() {
+        return this.isTail();
+    }
+
+    @Override
     public int size() {
         int counter = 0;
         ImmutablePath currentPath = this;
@@ -69,6 +74,11 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
             counter++;
             currentPath = currentPath.previousPath;
         }
+    }
+
+    @Override
+    public <A> A head() {
+        return (A) this.currentObject;
     }
 
     @Override
