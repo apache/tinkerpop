@@ -552,7 +552,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         throw ex;
                     }
 
-                    iterateComplete(ctx, msg, itty);
+                    if (!itty.hasNext()) iterateComplete(ctx, msg, itty);
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
                     // required then it will be 100% complete before the client receives it. the "frame" at this point

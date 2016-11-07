@@ -24,12 +24,17 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -71,16 +76,16 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
         final UUID sideEffectKey = UUID.fromString("31dec2c6-b214-4a6f-a68b-996608dce0d9");
         final TraversalSideEffects sideEffects = new DriverRemoteTraversalSideEffects(client, sideEffectKey, null);
 
-        assertNotNull(sideEffects.get("a"));
+        assertNotNull(sideEffects.get("test-0"));
         sideEffects.close();
 
         // Side effect 'a' should be cached locally
-        assertNotNull(sideEffects.get("a"));
-        assertNotNull(sideEffects.get("a"));
-        assertNotNull(sideEffects.get("a"));
+        assertNotNull(sideEffects.get("test-0"));
+        assertNotNull(sideEffects.get("test-0"));
+        assertNotNull(sideEffects.get("test-0"));
 
-        // Once for get and once for close
-        verify(client, times(2)).submitAsync(any(RequestMessage.class));
+        // Once for keys, once for get and once for close
+        verify(client, times(3)).submitAsync(any(RequestMessage.class));
     }
 
     @Test
@@ -97,20 +102,35 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
         sideEffects.close();
         sideEffects.close();
 
-        assertEquals(0, sideEffects.keys().size());
+        try {
+            sideEffects.keys();
+            fail("The traversal is closed");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("Traversal has been closed - side-effect keys cannot be retrieved", ex.getMessage());
+        }
+
+        try {
+            sideEffects.get("a");
+            fail("The traversal is closed");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("Traversal has been closed - side-effect keys cannot be retrieved", ex.getMessage());
+        }
 
         // once for the close message
         verify(client, times(1)).submitAsync(any(RequestMessage.class));
     }
 
     private void mockClientForCall(final Client client) throws Exception {
-        final ResultSet returnedResultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
-        addToQueue(1, 0, true, true, 1);
-        final CompletableFuture<ResultSet> returnedFuture = new CompletableFuture<>();
-        returnedFuture.complete(returnedResultSet);
 
-        // the return is just generic garbage from addToQueue for any call to submitAsync() - but given the logic
-        // of DriverRemoteTraversalSideEffects, that's ok
-        when(client.submitAsync(any(RequestMessage.class))).thenReturn(returnedFuture);
+        // the return is just generic garbage from addToQueue for any call to submitAsync().
+        when(client.submitAsync(any(RequestMessage.class))).thenAnswer((Answer<Object>) invocationOnMock -> {
+            final ResultSet returnedResultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
+            addToQueue(1, 0, true, true, 1);
+            final CompletableFuture<ResultSet> returnedFuture = new CompletableFuture<>();
+            returnedFuture.complete(returnedResultSet);
+            return returnedFuture;
+        });
     }
 }

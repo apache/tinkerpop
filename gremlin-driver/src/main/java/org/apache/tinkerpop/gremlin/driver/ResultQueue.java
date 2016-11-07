@@ -164,12 +164,12 @@ final class ResultQueue {
     }
 
     void markComplete() {
-        this.readComplete.complete(null);
-
         // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
         // added to the ResultSet
         if (aggregatedResult != null)
             add(new Result(aggregatedResult));
+
+        this.readComplete.complete(null);
 
         this.drainAllWaiting();
     }
