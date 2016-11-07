@@ -52,6 +52,11 @@ public abstract class GroovyWhereTest {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V().has('age').as('a').out.in.has('age').as('b').select('a','b').where(__.as('a').out('knows').as('b'))")
         }
 
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_outXcreatedX_whereXasXaX_name_isXjoshXX_inXcreatedX_name() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out('created').where(__.as('a').name.is('josh')).in('created').name")
+        }
+
         /// where(global)
 
         @Override
