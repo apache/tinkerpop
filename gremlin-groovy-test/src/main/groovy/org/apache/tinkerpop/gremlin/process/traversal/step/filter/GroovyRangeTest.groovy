@@ -65,28 +65,28 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').in().as('a').in().as('a').select('a').by(unfold().values('name').fold).limit(local,2)")
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').in().as('a').in().as('a').select(mixed,'a').by(unfold().values('name').fold).limit(local,2)")
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').in().as('a').in().as('a').select('a').by(unfold().values('name').fold).limit(local,1)")
+        public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').in().as('a').in().as('a').select(mixed,'a').by(unfold().values('name').fold).limit(local,1)")
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold).range(local,1,3)")
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').out().as('a').out().as('a').select(mixed,'a').by(unfold().values('name').fold).range(local,1,3)")
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold).range(local,1,2)")
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').out().as('a').out().as('a').select(mixed,'a').by(unfold().values('name').fold).range(local,1,2)")
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold).range(local,4,5)")
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V().as('a').out().as('a').out().as('a').select(mixed,'a').by(unfold().values('name').fold).range(local,4,5)")
         }
 
         @Override

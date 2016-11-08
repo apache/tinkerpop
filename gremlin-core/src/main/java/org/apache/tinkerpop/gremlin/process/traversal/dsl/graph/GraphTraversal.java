@@ -623,7 +623,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
         this.asAdmin().getBytecode().addStep(Symbols.select, selectKey1, selectKey2, otherSelectKeys);
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), null, selectKeys));
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.last, selectKeys));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
@@ -633,8 +633,31 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.select, selectKey);
-        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), null, selectKey));
+        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), Pop.last, selectKey));
     }
+
+    /**
+     * @deprecated As of release 3.3.0, replaced by {@link GraphTraversal#select(Pop, String)} with {@link Pop#mixed}.
+     */
+    @Deprecated
+    public default <E2> GraphTraversal<S, E2> selectV3d0(final String selectKey) {
+        this.asAdmin().getBytecode().addStep(Symbols.selectV3d0, selectKey);
+        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), Pop.mixed, selectKey));
+    }
+
+    /**
+     * @deprecated As of release 3.3.0, replaced by {@link GraphTraversal#select(Pop, String, String, String...)} with {@link Pop#mixed}.
+     */
+    @Deprecated
+    public default <E2> GraphTraversal<S, Map<String, E2>> selectV3d0(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
+        final String[] selectKeys = new String[otherSelectKeys.length + 2];
+        selectKeys[0] = selectKey1;
+        selectKeys[1] = selectKey2;
+        System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
+        this.asAdmin().getBytecode().addStep(Symbols.selectV3d0, selectKey1, selectKey2, otherSelectKeys);
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.mixed, selectKeys));
+    }
+
 
     public default <E2> GraphTraversal<S, E2> unfold() {
         this.asAdmin().getBytecode().addStep(Symbols.unfold);
@@ -678,7 +701,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.sum, scope);
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep<>(this.asAdmin()) : new SumLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep<>(this.asAdmin()) : new SumLocalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
@@ -688,7 +711,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.max, scope);
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep<>(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
@@ -708,7 +731,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.mean, scope);
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
@@ -1554,6 +1577,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String propertyMap = "propertyMap";
         public static final String valueMap = "valueMap";
         public static final String select = "select";
+        public static final String selectV3d0 = "selectV3d0";
         public static final String key = "key";
         public static final String value = "value";
         public static final String path = "path";

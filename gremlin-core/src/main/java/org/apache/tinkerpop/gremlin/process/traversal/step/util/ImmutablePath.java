@@ -136,7 +136,9 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     @Override
     public <A> A get(final Pop pop, final String label) {
-        if (Pop.all == pop) {
+        if (Pop.mixed == pop) {
+            return this.get(label);
+        } else if (Pop.all == pop) {
             // Recursively build the list to avoid building objects/labels collections.
             final List<Object> list = new ArrayList<>();
             ImmutablePath currentPath = this;

@@ -41,11 +41,11 @@ public class SelectStepTest extends StepTest {
                 __.select(Pop.all, "x", "y"),
                 __.select(Pop.first, "x", "y"),
                 __.select(Pop.last, "x", "y"),
-                __.select("x", "y"),
+                __.select(Pop.mixed, "x", "y"),
                 __.select(Pop.all, "x", "y").by("name").by("age"),
                 __.select(Pop.first, "x", "y").by("name").by("age"),
                 __.select(Pop.last, "x", "y").by("name").by("age"),
-                __.select("x", "y").by("name").by("age")
+                __.select(Pop.mixed, "x", "y").by("name").by("age")
         );
     }
 

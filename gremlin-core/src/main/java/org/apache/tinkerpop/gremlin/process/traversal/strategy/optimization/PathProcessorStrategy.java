@@ -127,18 +127,17 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
         // process select("a","b").by(...).by(...)
         final List<SelectStep> selectSteps = TraversalHelper.getStepsOfClass(SelectStep.class, traversal);
         for (final SelectStep<?, Object> selectStep : selectSteps) {
-            if (selectStep.getPop() != Pop.all && selectStep.getMaxRequirement().compareTo(PathProcessor.ElementRequirement.ID) > 0) {
-                if (null == selectStep.getPop()) {
-                    boolean oneLabel = true;
-                    for (final String key : selectStep.getScopeKeys()) {
-                        if (labelCount(key, TraversalHelper.getRootTraversal(traversal)) > 1) {
-                            oneLabel = false;
-                            break;
-                        }
+            if (selectStep.getPop() != Pop.all && selectStep.getPop() != Pop.mixed && // TODO: necessary?
+                    selectStep.getMaxRequirement().compareTo(PathProcessor.ElementRequirement.ID) > 0) {
+                boolean oneLabel = true;
+                for (final String key : selectStep.getScopeKeys()) {
+                    if (labelCount(key, TraversalHelper.getRootTraversal(traversal)) > 1) {
+                        oneLabel = false;
+                        break;
                     }
-                    if (!oneLabel)
-                        continue;
                 }
+                if (!oneLabel)
+                    continue;
                 final int index = TraversalHelper.stepIndex(selectStep, traversal);
                 final Map<String, Traversal.Admin<Object, Object>> byTraversals = selectStep.getByTraversals();
                 final String[] keys = new String[byTraversals.size()];
@@ -159,9 +158,9 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
         // process select("a").by(...)
         final List<SelectOneStep> selectOneSteps = TraversalHelper.getStepsOfClass(SelectOneStep.class, traversal);
         for (final SelectOneStep<?, ?> selectOneStep : selectOneSteps) {
-            if (selectOneStep.getPop() != Pop.all &&
+            if (selectOneStep.getPop() != Pop.all && selectOneStep.getPop() != Pop.mixed && // TODO: necessary?
                     selectOneStep.getMaxRequirement().compareTo(PathProcessor.ElementRequirement.ID) > 0 &&
-                    (null != selectOneStep.getPop() || labelCount(selectOneStep.getScopeKeys().iterator().next(), TraversalHelper.getRootTraversal(traversal)) <= 1)) {
+                    labelCount(selectOneStep.getScopeKeys().iterator().next(), TraversalHelper.getRootTraversal(traversal)) <= 1) {
                 final int index = TraversalHelper.stepIndex(selectOneStep, traversal);
                 final Traversal.Admin<?, ?> localChild = selectOneStep.getLocalChildren().get(0);
                 selectOneStep.removeLocalChild(localChild);

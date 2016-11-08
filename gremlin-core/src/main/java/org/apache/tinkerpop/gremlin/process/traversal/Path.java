@@ -134,7 +134,9 @@ public interface Path extends Cloneable, Iterable<Object> {
      * @throws IllegalArgumentException if the path does not contain the label
      */
     public default <A> A get(final Pop pop, final String label) throws IllegalArgumentException {
-        if (Pop.all == pop) {
+        if (Pop.mixed == pop) {
+            return this.get(label);
+        } else if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
