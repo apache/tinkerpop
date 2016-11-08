@@ -246,6 +246,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             clone.matchTraversals.add(traversal.clone());
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
+        clone.standardAlgorithmBarrier = new TraverserSet();
         return clone;
     }
 
@@ -352,7 +353,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.referencedLabelsMap;
     }
 
-    private final TraverserSet standardAlgorithmBarrier = new TraverserSet();
+    private TraverserSet standardAlgorithmBarrier = new TraverserSet();
 
     @Override
     protected Iterator<Traverser.Admin<Map<String, E>>> standardAlgorithm() throws NoSuchElementException {

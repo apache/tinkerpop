@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
@@ -53,10 +52,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -304,7 +301,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // TODO: this test requires Traversal.reverse()
     @LoadGraphWith(MODERN)
-    @Test
     public void g_V_matchXa_knows_b__c_knows_bX() {
         final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__c_knows_bX();
         try {
@@ -330,7 +326,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     // TODO: this test requires Traversal.reverse()
-    @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX() throws Exception {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX();
@@ -344,7 +339,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
     }
 
-    @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() throws Exception {
         final Traversal<Vertex, String> traversal = get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX();
@@ -556,7 +550,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
@@ -577,17 +570,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         @Before
         public void setupTest() {
             super.setupTest();
-            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
+            g = g.withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
         }
     }
 
     public static class CountMatchTraversals extends Traversals {
-        // make sure default works -- i.e. CountMatchAlgorithm
-        /*@Before
-        public void setupTest() {
-            super.setupTest();
-            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
-        }*/
+
     }
 
     public abstract static class Traversals extends MatchTest {
