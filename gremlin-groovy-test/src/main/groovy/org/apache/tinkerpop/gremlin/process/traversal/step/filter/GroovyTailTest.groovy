@@ -60,23 +60,23 @@ public abstract class GroovyTailTest {
         }
 
         @Override
-        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)")
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select(mixed,'a').by(unfold().values('name').fold).tail(local, 2)")
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)")
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select(mixed,'a').by(unfold().values('name').fold).tail(local, 1)")
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)")
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select(mixed,'a').by(unfold().values('name').fold).tail(local)")
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select('a').by(limit(local, 0)).tail(local, 1)")
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.as('a').out.as('a').out.as('a').select(mixed,'a').by(limit(local, 0)).tail(local, 1)")
         }
 
         @Override

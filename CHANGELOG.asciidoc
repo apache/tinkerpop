@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Pop.mixed` instead of using `null` to represent such semantics.
+* `select()`-step now defaults to using `Pop.last` instead of `Pop.mixed`. (*breaking*)
 * Removed previously deprecated `Console` constructor that took a `String` as an argument from `gremlin-console`.
 * Removed previously deprecated `ConcurrentBindings` from `gremlin-groovy`.
 * Removed previously deprecated `ScriptExecutor` from `gremlin-groovy`.

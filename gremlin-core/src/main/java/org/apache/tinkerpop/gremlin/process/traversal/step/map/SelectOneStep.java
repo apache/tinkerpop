@@ -44,7 +44,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     private Traversal.Admin<S, E> selectTraversal = null;
     private Set<String> keepLabels;
 
-    public SelectOneStep(final Traversal.Admin traversal, Pop pop, final String selectKey) {
+    public SelectOneStep(final Traversal.Admin traversal, final Pop pop, final String selectKey) {
         super(traversal);
         this.pop = pop;
         this.selectKey = selectKey;

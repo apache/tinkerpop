@@ -122,10 +122,11 @@ Pick = Enum('Pick', 'any none')
 statics.add_static('any', Pick.any)
 statics.add_static('none', Pick.none)
 
-Pop = Enum('Pop', 'all_ first last')
+Pop = Enum('Pop', 'all_ first last mixed')
 statics.add_static('first', Pop.first)
 statics.add_static('last', Pop.last)
 statics.add_static('all_', Pop.all_)
+statics.add_static('mixed', Pop.mixed)
 
 Scope = Enum('Scope', 'global_ local')
 statics.add_static('global_', Scope.global_)

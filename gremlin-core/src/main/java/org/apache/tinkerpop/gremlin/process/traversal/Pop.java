@@ -19,6 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 /**
+ * A {@link Path} may have multiple values associated with a single label.
+ * {@link Pop} is used to determine whether the first value, last value, or
+ * all values are gathered. Note that {@link Pop#mixed} will return results
+ * as a list if there are multiple (like {@link Pop#all}) or as a singleton
+ * if only one object in the path is labeled (like {@link Pop#last}).
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public enum Pop {
@@ -32,7 +38,11 @@ public enum Pop {
      */
     last,
     /**
-     * Get all the items and return them as a list
+     * Get all the items and return them as a list.
      */
-    all
+    all,
+    /**
+     * Get the items as either a list (for multiple) or an object (for singles).
+     */
+    mixed
 }
