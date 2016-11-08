@@ -231,8 +231,8 @@ public abstract class GroovyMatchTest {
         public Traversal<Vertex, String> get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() {
             new ScriptTraversal<>(g, "gremlin-groovy", """
                 g.V().out().as("c").match(
-                    as("b").out("knows").as("a"),
-                    as("c").out("created").as("e")).select("c")
+                    __.as("b").out("knows").as("a"),
+                    __.as("c").out("created").as("e")).select("c")
             """)
         }
 
@@ -366,7 +366,16 @@ public abstract class GroovyMatchTest {
                             __.as('a').age.as('b'),
                             __.as('a').name.as('c')).
                         where('b', eq('c')).select('a')).name
-            """, g)
+            """)
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count() {
+            new ScriptTraversal<>(g, "gremlin-groovy", """
+             g.V.match(
+                    __.as("a").out("followedBy").count.is(gt(10)).as("b"),
+                    __.as("a").in("followedBy").count().is(gt(10)).as("b")).count;
+            """)
         }
     }
 }

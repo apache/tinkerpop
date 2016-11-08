@@ -470,8 +470,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     public static final class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
 
         private final String selectKey;
-        private Set<String> scopeKeys = null;
-        private MatchStep<?, ?> parent = null;
+        private Set<String> scopeKeys;
+        private MatchStep<?, ?> parent;
 
         public MatchStartStep(final Traversal.Admin traversal, final String selectKey) {
             super(traversal);
@@ -508,7 +508,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         @Override
         public Set<String> getScopeKeys() {
-            if (null == this.scopeKeys) {
+            if (null == this.scopeKeys) { // computer the first time and then save resultant keys
                 this.scopeKeys = new HashSet<>();
                 if (null != this.selectKey)
                     this.scopeKeys.add(this.selectKey);
@@ -520,16 +520,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    public static final class MatchEndStep extends EndStep<Object> {
+    public static final class MatchEndStep extends EndStep<Object> implements Scoping {
 
         private final String matchKey;
         private final Set<String> matchKeyCollection;
-        private MatchStep<?, ?> parent = null;
+        private MatchStep<?, ?> parent;
 
         public MatchEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
             this.matchKey = matchKey;
-            this.matchKeyCollection = Collections.singleton(this.matchKey);
+            this.matchKeyCollection = null == matchKey ? Collections.emptySet() : Collections.singleton(this.matchKey);
         }
 
 
@@ -539,7 +539,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
             final Set<String> keepers = new HashSet<>(this.parent.getKeepLabels());
             final Set<String> tags = traverser.getTags();
-            for (final Traversal.Admin<?, ?> matchTraversal : this.parent.getGlobalChildren()) { // get remaining traversal patterns for the traverser
+            for (final Traversal.Admin<?, ?> matchTraversal : this.parent.matchTraversals) { // get remaining traversal patterns for the traverser
                 final String startStepId = matchTraversal.getStartStep().getId();
                 if (!tags.contains(startStepId)) {
                     keepers.addAll(this.parent.getReferencedLabelsMap().get(startStepId)); // get the reference labels required for those remaining traversals
@@ -590,6 +590,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             if (null != this.matchKey)
                 result ^= this.matchKey.hashCode();
             return result;
+        }
+
+        @Override
+        public Set<String> getScopeKeys() {
+            return this.matchKeyCollection;
         }
     }
 
