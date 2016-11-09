@@ -227,10 +227,10 @@ g.V().hasLabel("person").
        <div class="col-sm-5 col-md-4">
           <pre style="padding:10px;">
 <code class="language-gremlin">g.V().has("name","gremlin").as("a").
-out("created").in("created").
-where(neq("a")).
-in("manages").
-groupCount().by("name")</code>
+  out("created").in("created").
+    where(neq("a")).
+  in("manages").
+  groupCount().by("name")</code>
 </pre>
        </div>
     </div>
@@ -239,13 +239,13 @@ groupCount().by("name")</code>
        <div class="col-sm-5 col-md-4">
           <pre style="padding:10px;">
 <code class="language-gremlin">g.V().match(
-as("a").has("name","gremlin"),
-as("a").out("created").as("b"),
-as("b").in("created").as("c"),
-as("c").in("manages").as("d"),
-where("a",neq("c"))).
-select("d").
-groupCount().by("name")</code>
+  as("a").has("name","gremlin"),
+  as("a").out("created").as("b"),
+  as("b").in("created").as("c"),
+  as("c").in("manages").as("d"),
+    where("a",neq("c"))).
+  select("d").
+  groupCount().by("name")</code>
 </pre>
        </div>
        <div class="col-sm-7 col-md-8">
@@ -290,17 +290,17 @@ groupCount().by("name")</code>
        <br/><br/>
        <div class="col-md-5">
           <pre style="padding:10px;"><code class="language-gremlin">public class GremlinTinkerPopExample {
-public void run(String name, String property) {
+  public void run(String name, String property) {
 
-Graph graph = GraphFactory.open(...);
-GraphTraversalSource g = graph.traversal();
+    Graph graph = GraphFactory.open(...);
+    GraphTraversalSource g = graph.traversal();
 
-double avg = g.V().has("name",name).
-           out("knows").out("created").
-           values(property).mean().next();
+    double avg = g.V().has("name",name).
+                   out("knows").out("created").
+                   values(property).mean().next();
 
-System.out.println("Average rating: " + avg);
-}
+    System.out.println("Average rating: " + avg);
+  }
 }
 
 
@@ -309,20 +309,20 @@ System.out.println("Average rating: " + avg);
        </div>
        <div class="col-md-7">
           <pre style="padding:10px;"><code class="language-gremlin">public class SqlJdbcExample {
-public void run(String name, String property) {
+  public void run(String name, String property) {
 
-Connection connection = DriverManager.getConnection(...)
-Statement statement = connection.createStatement();
-ResultSet result = statement.executeQuery(
-"SELECT AVG(pr." + property + ") as AVERAGE FROM PERSONS p1" +
-"INNER JOIN KNOWS k ON k.person1 = p1.id " +
-"INNER JOIN PERSONS p2 ON p2.id = k.person2 " +
-"INNER JOIN CREATED c ON c.person = p2.id " +
-"INNER JOIN PROJECTS pr ON pr.id = c.project " +
-  "WHERE p.name = '" + name + "');
+    Connection connection = DriverManager.getConnection(...)
+    Statement statement = connection.createStatement();
+    ResultSet result = statement.executeQuery(
+      "SELECT AVG(pr." + property + ") as AVERAGE FROM PERSONS p1" +
+        "INNER JOIN KNOWS k ON k.person1 = p1.id " +
+        "INNER JOIN PERSONS p2 ON p2.id = k.person2 " +
+        "INNER JOIN CREATED c ON c.person = p2.id " +
+        "INNER JOIN PROJECTS pr ON pr.id = c.project " +
+          "WHERE p.name = '" + name + "');
 
-System.out.println("Average rating: " + result.next().getDouble("AVERAGE")
-}
+    System.out.println("Average rating: " + result.next().getDouble("AVERAGE")
+  }
 }</code>
 </pre>
        </div>
