@@ -43,9 +43,9 @@ import java.util.Set;
 public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating {
 
     private char state = 'k';
-    private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, ?> preTraversal = null;
-    private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.fold().asAdmin());
+    private Traversal.Admin<S, K> keyTraversal;
+    private Traversal.Admin<S, ?> preTraversal;
+    private Traversal.Admin<S, V> valueTraversal;
     ///
     private String sideEffectKey;
 
@@ -81,7 +81,9 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             final TraverserSet traverserSet = new TraverserSet<>();
             this.preTraversal.reset();
             this.preTraversal.addStart(traverser.split());
-            this.preTraversal.getEndStep().forEachRemaining(traverserSet::add);
+            while(this.preTraversal.hasNext()) {
+                traverserSet.add(this.preTraversal.nextTraverser());
+            }
             map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) traverserSet);
         }
         this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
@@ -99,10 +101,12 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(2);
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(3);
         if (null != this.keyTraversal)
-            children.add((Traversal.Admin) this.keyTraversal);
+            children.add(this.keyTraversal);
         children.add(this.valueTraversal);
+        if (null != this.preTraversal)
+            children.add(this.preTraversal);
         return children;
     }
 
@@ -117,7 +121,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        clone.preTraversal = this.integrateChild(GroupStep.generatePreTraversal(clone.valueTraversal));
+        if (null != this.preTraversal)
+            clone.preTraversal = this.preTraversal.clone();
         return clone;
     }
 
