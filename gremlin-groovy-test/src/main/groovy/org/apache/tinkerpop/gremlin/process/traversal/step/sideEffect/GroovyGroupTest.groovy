@@ -118,5 +118,10 @@ public abstract class GroovyGroupTest {
         public Traversal<Vertex, Map<String, Map<String, Number>>> get_g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.out('followedBy').group.by('songType').by(bothE().group.by(label).by(values('weight').sum))")
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group('m').by('name').by(__.in('knows').name).cap('m')")
+        }
     }
 }

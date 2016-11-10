@@ -88,6 +88,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Map<String, Number>>> get_g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX();
 
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
@@ -364,6 +366,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_group_byXbothE_countX_byXgroup_byXlabelXX() {
         final Traversal<Vertex, Map<Long, Map<String, List<Vertex>>>> traversal = get_g_V_group_byXbothE_countX_byXgroup_byXlabelXX();
+        printTraversalForm(traversal);
         final Map<Long, Map<String, List<Vertex>>> map = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(2, map.size());
@@ -399,6 +402,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(GRATEFUL)
     public void g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX() {
         final Traversal<Vertex, Map<String, Map<String, Number>>> traversal = get_g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX();
+        printTraversalForm(traversal);
         final Map<String, Map<String, Number>> map = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(3, map.size());
@@ -421,6 +425,20 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(777982, subMap.get("followedBy").intValue());
         assertEquals(0, subMap.get("writtenBy").intValue());
         assertEquals(0, subMap.get("sungBy").intValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX();
+        printTraversalForm(traversal);
+        final Map<String, String> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals("marko", map.get("vadas"));
+        assertEquals("marko", map.get("josh"));
+
+        checkSideEffects(traversal.asAdmin().getSideEffects(), "m", HashMap.class);
     }
 
     public static class Traversals extends GroupTest {
@@ -513,6 +531,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Map<String, Number>>> get_g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX() {
             return g.V().out("followedBy").<String, Map<String, Number>>group().by("songType").by(__.bothE().group().by(T.label).by(__.values("weight").sum()));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX() {
+            return g.V().group("m").by("name").by(__.in("knows").values("name")).cap("m");
         }
     }
 }
