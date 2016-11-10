@@ -52,19 +52,6 @@ public class RangeByIsCountStrategyTest {
     @Parameterized.Parameter(value = 1)
     public Traversal optimized;
 
-    void applyRangeByIsCountStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(RangeByIsCountStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-    }
-
-    @Test
-    public void doTest() {
-        applyRangeByIsCountStrategy(original);
-        assertEquals(optimized, original);
-    }
-
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
 
@@ -97,6 +84,23 @@ public class RangeByIsCountStrategyTest {
                 {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
                 {__.where(__.outE().hasLabel("created").count().is(0)), __.where(__.not(__.outE().hasLabel("created")))},
                 {__.where(__.out().outE().hasLabel("created").count().is(0)), __.where(__.out().not(__.outE().hasLabel("created")))},
+                {__.filter(__.bothE().count().is(gt(0))), __.filter(__.bothE())},
+                {__.filter(__.bothE().count().is(gte(1))), __.filter(__.bothE())},
+                {__.filter(__.bothE().count().is(gt(1))), __.filter(__.bothE().limit(2).count().is(gt(1)))},
+                {__.filter(__.bothE().count().is(gte(2))), __.filter(__.bothE().limit(2).count().is(gte(2)))},
         });
+    }
+
+    void applyRangeByIsCountStrategy(final Traversal traversal) {
+        final TraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(RangeByIsCountStrategy.instance());
+        traversal.asAdmin().setStrategies(strategies);
+        traversal.asAdmin().applyStrategies();
+    }
+
+    @Test
+    public void doTest() {
+        applyRangeByIsCountStrategy(original);
+        assertEquals(optimized, original);
     }
 }

@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added another optimization in `RangeByIsCountStrategy`, that removes `count().is()` altogether if it's not needed.
 * Fixed a OLAP `MatchStep.clone()`-bug that occurs when the `match()` is in a local child.
 * Fixed a bug in `RangeByIsCountStrategy` where labeled parents shouldn't have the strategy applied to their children.
 * Fixed a bug in `PathRetractionStrategy` where `MatchEndStep` labels were being dropped when they shouldn't be.
