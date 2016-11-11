@@ -76,6 +76,10 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
     private RangeByIsCountStrategy() {
     }
 
+    public static RangeByIsCountStrategy instance() {
+        return INSTANCE;
+    }
+
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final TraversalParent parent = traversal.getParent();
@@ -87,7 +91,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                 final IsStep isStep = (IsStep) traversal.getSteps().get(i + 1);
                 final P isStepPredicate = isStep.getPredicate();
                 Long highRange = null;
-                boolean useNotStep = false;
+                boolean useNotStep = false, dismissCountIs = false;
                 for (P p : isStepPredicate instanceof ConnectiveP ? ((ConnectiveP<?>) isStepPredicate).getPredicates() : Collections.singletonList(isStepPredicate)) {
                     final Object value = p.getValue();
                     final BiPredicate predicate = p.getBiPredicate();
@@ -101,10 +105,10 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                             } else {
                                 if (parent instanceof RepeatStep) {
                                     final RepeatStep repeatStep = (RepeatStep) parent;
-                                    useNotStep = Objects.equals(traversal, repeatStep.getUntilTraversal())
+                                    dismissCountIs = useNotStep = Objects.equals(traversal, repeatStep.getUntilTraversal())
                                             || Objects.equals(traversal, repeatStep.getEmitTraversal());
                                 } else {
-                                    useNotStep = parent instanceof FilterStep || parent instanceof SideEffectStep;
+                                    dismissCountIs = useNotStep = parent instanceof FilterStep || parent instanceof SideEffectStep;
                                 }
                             }
                             highRange = highRangeCandidate;
@@ -112,6 +116,9 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                                     && isStep.getNextStep() instanceof EmptyStep
                                     && ((highRange <= 1L && predicate.equals(Compare.lt))
                                     || (highRange == 1L && (predicate.equals(Compare.eq) || predicate.equals(Compare.lte))));
+                            dismissCountIs &= curr.getLabels().isEmpty() && isStep.getLabels().isEmpty()
+                                    && isStep.getNextStep() instanceof EmptyStep
+                                    && (highRange == 1L && (predicate.equals(Compare.gt) || predicate.equals(Compare.gte)));
                         }
                     } else {
                         final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
@@ -126,29 +133,31 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                     }
                 }
                 if (highRange != null) {
-                    if (useNotStep) {
+                    if (useNotStep || dismissCountIs) {
                         traversal.asAdmin().removeStep(isStep); // IsStep
                         traversal.asAdmin().removeStep(curr); // CountStep
                         size -= 2;
-                        final Traversal.Admin inner;
-                        if (prev != null) {
-                            inner = __.start().asAdmin();
-                            for (; ; ) {
-                                final Step pp = prev.getPreviousStep();
-                                inner.addStep(0, prev);
-                                if (pp instanceof EmptyStep || pp instanceof GraphStep ||
-                                        !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
-                                traversal.removeStep(prev);
-                                prev = pp;
-                                size--;
+                        if (!dismissCountIs) {
+                            final Traversal.Admin inner;
+                            if (prev != null) {
+                                inner = __.start().asAdmin();
+                                for (; ; ) {
+                                    final Step pp = prev.getPreviousStep();
+                                    inner.addStep(0, prev);
+                                    if (pp instanceof EmptyStep || pp instanceof GraphStep ||
+                                            !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
+                                    traversal.removeStep(prev);
+                                    prev = pp;
+                                    size--;
+                                }
+                            } else {
+                                inner = __.identity().asAdmin();
                             }
-                        } else {
-                            inner = __.identity().asAdmin();
+                            if (prev != null)
+                                TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
+                            else
+                                traversal.asAdmin().addStep(new NotStep<>(traversal, inner));
                         }
-                        if (prev != null)
-                            TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
-                        else
-                            traversal.asAdmin().addStep(new NotStep<>(traversal, inner));
                     } else {
                         TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange), curr, traversal);
                     }
@@ -169,9 +178,5 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
         return (parent instanceof FilterStep || parent.getLabels().isEmpty()) && // if the parent is labeled, then the count matters
                 !(parent.getNextStep() instanceof MatchStep.MatchEndStep && // if this is in a pattern match, then don't do it.
                         ((MatchStep.MatchEndStep) parent.getNextStep()).getMatchKey().isPresent());
-    }
-
-    public static RangeByIsCountStrategy instance() {
-        return INSTANCE;
     }
 }
