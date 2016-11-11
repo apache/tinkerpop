@@ -87,6 +87,8 @@ public class RangeByIsCountStrategyTest {
                 {__.out().count().is(without(2, 6, 4)), __.out().limit(6).count().is(without(2, 6, 4))},
                 {__.map(__.count().is(0)), __.map(__.limit(1).count().is(0))},
                 {__.flatMap(__.count().is(0)), __.flatMap(__.limit(1).count().is(0))},
+                {__.flatMap(__.count().is(0)).as("a"), __.flatMap(__.count().is(0)).as("a")},
+                {__.filter(__.count().is(0)).as("a"), __.filter(__.not(__.identity())).as("a")},
                 {__.filter(__.count().is(0)), __.filter(__.not(__.identity()))},
                 {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
                 {__.branch(__.count().is(0)), __.branch(__.limit(1).count().is(0))},
