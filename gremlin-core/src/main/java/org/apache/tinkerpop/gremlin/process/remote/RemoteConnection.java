@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A simple abstraction of a "connection" to a "server" that is capable of processing a {@link Traversal} and
@@ -43,9 +44,16 @@ public interface RemoteConnection extends AutoCloseable {
     public <E> Iterator<Traverser.Admin<E>> submit(final Traversal<?, E> traversal) throws RemoteConnectionException;
 
     /**
-     * Submits {@link Traversal} {@link Bytecode} to a server and returns a {@link Traversal}.
-     * The {@link Traversal} is an abstraction over two types of results that can be returned as part of the
+     * Submits {@link Traversal} {@link Bytecode} to a server and returns a {@link RemoteTraversal}.
+     * The {@link RemoteTraversal} is an abstraction over two types of results that can be returned as part of the
      * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
      */
     public <E> RemoteTraversal<?,E> submit(final Bytecode bytecode) throws RemoteConnectionException;
+
+    /**
+     * Submits {@link Traversal} {@link Bytecode} to a server and returns a promise of a {@link RemoteTraversal}.
+     * The {@link RemoteTraversal} is an abstraction over two types of results that can be returned as part of the
+     * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
+     */
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException;
 }

@@ -43,9 +43,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -326,40 +323,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public void setGraph(final Graph graph) {
         this.graph = graph;
-    }
-
-    /**
-     * Override of {@link Traversal#promise(Function)} that is aware of graph transactions.
-     */
-    @Override
-    public <T2> CompletableFuture<T2> promise(final Function<Traversal, T2> traversalFunction) {
-        return this.promise(traversalFunction, Traversal.Admin.traversalExecutorService);
-    }
-
-    /**
-     * Override of {@link Traversal#promise(Function)} that is aware of graph transactions. In a transactional graph
-     * a promise represents the full scope of a transaction, even if the graph is only partially iterated.
-     */
-    @Override
-    public <T2> CompletableFuture<T2> promise(final Function<Traversal, T2> traversalFunction, final ExecutorService service) {
-        if (graph != null && graph.features().graph().supportsTransactions()) {
-            final Function<Traversal, T2> transactionAware = traversal -> {
-
-                try {
-                    if (graph.tx().isOpen()) graph.tx().rollback();
-                    final T2 obj = traversalFunction.apply(traversal);
-                    if (graph.tx().isOpen()) graph.tx().commit();
-                    return obj;
-                } catch (Exception ex) {
-                    if (graph.tx().isOpen()) graph.tx().rollback();
-                    throw ex;
-                }
-            };
-
-            return Traversal.Admin.super.promise(transactionAware, service);
-        } else {
-            return Traversal.Admin.super.promise(traversalFunction, service);
-        }
     }
 
     @Override

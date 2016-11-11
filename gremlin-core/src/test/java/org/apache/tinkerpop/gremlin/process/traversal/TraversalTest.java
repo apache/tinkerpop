@@ -30,33 +30,21 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TraversalTest {
-
-    private final ExecutorService service = Executors.newFixedThreadPool(2);
 
     @Test
     public void shouldTryNext() {
@@ -114,139 +102,6 @@ public class TraversalTest {
         assertEquals(7, batch.size());
         assertThat(batch, hasItems(1 ,2, 3, 4, 5, 6, 7));
         assertThat(t.hasNext(), is(false));
-    }
-
-    @Test
-    public void shouldPromiseNextThreeUsingForkJoin() throws Exception {
-        final MockTraversal<Integer> t = new MockTraversal<>(1, 2, 3, 4, 5, 6, 7);
-        final CompletableFuture<List<Integer>> promiseFirst = t.promise(traversal -> traversal.next(3));
-        final List<Integer> listFirst = promiseFirst.get();
-        assertEquals(3, listFirst.size());
-        assertThat(listFirst, hasItems(1 ,2, 3));
-        assertThat(t.hasNext(), is(true));
-        assertThat(promiseFirst.isDone(), is(true));
-
-        final CompletableFuture<List<Integer>> promiseSecond = t.promise(traversal -> traversal.next(3));
-        final List<Integer> listSecond = promiseSecond.get();
-        assertEquals(3, listSecond.size());
-        assertThat(listSecond, hasItems(4, 5, 6));
-        assertThat(t.hasNext(), is(true));
-        assertThat(promiseSecond.isDone(), is(true));
-
-        final CompletableFuture<List<Integer>> promiseThird = t.promise(traversal -> traversal.next(3));
-        final List<Integer> listThird = promiseThird.get();
-        assertEquals(1, listThird.size());
-        assertThat(listThird, hasItems(7));
-        assertThat(t.hasNext(), is(false));
-        assertThat(promiseThird.isDone(), is(true));
-
-        final CompletableFuture<Integer> promiseDead = t.promise(traversal -> (Integer) traversal.next());
-        final AtomicBoolean dead = new AtomicBoolean(false);
-        promiseDead.exceptionally(tossed -> {
-            dead.set(tossed instanceof NoSuchElementException);
-            return null;
-        });
-
-        try {
-            promiseDead.get(10000, TimeUnit.MILLISECONDS);
-            fail("Should have gotten an exception");
-        } catch (Exception ex) {
-            if (ex instanceof TimeoutException) {
-                fail("This should not have timed out but should have gotten an exception caught above in the exceptionally() clause");
-            }
-
-            assertThat(ex.getCause(), instanceOf(NoSuchElementException.class));
-        }
-
-        assertThat(dead.get(), is(true));
-        assertThat(t.hasNext(), is(false));
-        assertThat(promiseDead.isDone(), is(true));
-    }
-
-    @Test
-    public void shouldPromiseNextThreeUsingSpecificExecutor() throws Exception {
-        final MockTraversal<Integer> t = new MockTraversal<>(1, 2, 3, 4, 5, 6, 7);
-        final CompletableFuture<List<Integer>> promiseFirst = t.promise(traversal -> traversal.next(3), service);
-        final List<Integer> listFirst = promiseFirst.get();
-        assertEquals(3, listFirst.size());
-        assertThat(listFirst, hasItems(1 ,2, 3));
-        assertThat(t.hasNext(), is(true));
-        assertThat(promiseFirst.isDone(), is(true));
-
-        final CompletableFuture<List<Integer>> promiseSecond = t.promise(traversal -> traversal.next(3), service);
-        final List<Integer> listSecond = promiseSecond.get();
-        assertEquals(3, listSecond.size());
-        assertThat(listSecond, hasItems(4, 5, 6));
-        assertThat(t.hasNext(), is(true));
-        assertThat(promiseSecond.isDone(), is(true));
-
-        final CompletableFuture<List<Integer>> promiseThird = t.promise(traversal -> traversal.next(3), service);
-        final List<Integer> listThird = promiseThird.get();
-        assertEquals(1, listThird.size());
-        assertThat(listThird, hasItems(7));
-        assertThat(t.hasNext(), is(false));
-        assertThat(promiseThird.isDone(), is(true));
-
-        final CompletableFuture<Integer> promiseDead = t.promise(traversal -> (Integer) traversal.next(), service);
-        final AtomicBoolean dead = new AtomicBoolean(false);
-        promiseDead.exceptionally(tossed -> {
-            dead.set(tossed instanceof NoSuchElementException);
-            return null;
-        });
-
-        try {
-            promiseDead.get(10000, TimeUnit.MILLISECONDS);
-            fail("Should have gotten an exception");
-        } catch (Exception ex) {
-            if (ex instanceof TimeoutException) {
-                fail("This should not have timed out but should have gotten an exception caught above in the exceptionally() clause");
-            }
-
-            assertThat(ex.getCause(), instanceOf(NoSuchElementException.class));
-        }
-
-        assertThat(dead.get(), is(true));
-        assertThat(t.hasNext(), is(false));
-        assertThat(promiseDead.isDone(), is(true));
-    }
-
-    @Test
-    public void shouldInterruptTraversalFunction() throws Exception {
-        final Random rand = new Random(1234567890);
-
-        // infinite traversal
-        final MockTraversal<Integer> t = new MockTraversal<>(IntStream.generate(rand::nextInt).iterator());
-
-        // iterate a bunch of it
-        final CompletableFuture<List<Integer>> promise10 = t.promise(traversal -> traversal.next(10), service);
-        assertEquals(10, promise10.get(10000, TimeUnit.MILLISECONDS).size());
-        final CompletableFuture<List<Integer>> promise100 = t.promise(traversal -> traversal.next(100), service);
-        assertEquals(100, promise100.get(10000, TimeUnit.MILLISECONDS).size());
-        final CompletableFuture<List<Integer>> promise1000 = t.promise(traversal -> traversal.next(1000), service);
-        assertEquals(1000, promise1000.get(10000, TimeUnit.MILLISECONDS).size());
-
-        // this is endless, so let's cancel
-        final CompletableFuture<List<Integer>> promiseForevers = t.promise(traversal -> traversal.next(Integer.MAX_VALUE), service);
-
-        // specify what to do on exception
-        final AtomicBoolean failed = new AtomicBoolean(false);
-        promiseForevers.exceptionally(ex -> {
-            failed.set(true);
-            return null;
-        });
-
-        try {
-            // let it actually iterate a moment
-            promiseForevers.get(500, TimeUnit.MILLISECONDS);
-            fail("This should have timed out because the traversal has infinite items in it");
-        } catch (TimeoutException tex) {
-
-        }
-
-        assertThat(promiseForevers.isDone(), is(false));
-        promiseForevers.cancel(true);
-        assertThat(failed.get(), is(true));
-        assertThat(promiseForevers.isDone(), is(true));
     }
 
     @Test

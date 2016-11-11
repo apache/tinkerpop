@@ -18,8 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
@@ -43,11 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -148,39 +145,21 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
 
     /**
      * Starts a promise to execute a function on the current {@code Traversal} that will be completed in the future.
-     * This implementation uses {@link Admin#traversalExecutorService} to execute the supplied
-     * {@code traversalFunction}.
+     * Note that this method can only be used if the {@code Traversal} is constructed using
+     * {@link TraversalSource#withRemote(Configuration)}. Calling this method otherwise will yield an
+     * {@code IllegalStateException}.
      */
     public default <T> CompletableFuture<T> promise(final Function<Traversal, T> traversalFunction) {
-        return promise(traversalFunction, Admin.traversalExecutorService);
-    }
+        // apply strategies to see if RemoteStrategy has any effect (i.e. add RemoteStep)
+        if (!this.asAdmin().isLocked()) this.asAdmin().applyStrategies();
 
-    /**
-     * Starts a promise to execute a function on the current {@code Traversal} that will be completed in the future.
-     * This implementation uses the caller supplied {@code ExecutorService} to execute the {@code traversalFunction}.
-     */
-    public default <T> CompletableFuture<T> promise(final Function<Traversal, T> traversalFunction, final ExecutorService service) {
-        final CompletableFuture<T> promise = new CompletableFuture<>();
-        final Future iterationFuture = service.submit(() -> {
-            try {
-                promise.complete(traversalFunction.apply(this));
-            } catch (Exception ex) {
-                // the promise may have been cancelled by the caller, in which case, there is no need to attempt
-                // another write on completion
-                if (!promise.isDone()) promise.completeExceptionally(ex);
-            }
-        });
-
-        // if the user cancels the promise then attempt to kill the iteration.
-        promise.exceptionally(t -> {
-            if (t instanceof CancellationException) {
-                iterationFuture.cancel(true);
-            }
-
-            return null;
-        });
-
-        return promise;
+        // use the end step so the results are bulked
+        final Step<?, E> endStep = this.asAdmin().getEndStep();
+        if (endStep instanceof RemoteStep) {
+            return ((RemoteStep) endStep).promise().thenApply(traversalFunction);
+        } else {
+            throw new IllegalStateException("Only traversals created using withRemote() can be used in an async way");
+        }
     }
 
     /**
@@ -295,12 +274,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     }
 
     public interface Admin<S, E> extends Traversal<S, E> {
-
-        /**
-         * Service that handles promises.
-         */
-        static final ExecutorService traversalExecutorService = Executors.newCachedThreadPool(
-                new BasicThreadFactory.Builder().namingPattern("traversal-executor-%d").build());
 
         /**
          * Get the {@link Bytecode} associated with the construction of this traversal.

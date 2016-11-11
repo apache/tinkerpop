@@ -46,12 +46,14 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.InterpreterModeCust
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
@@ -76,6 +78,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -989,5 +992,27 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         final BulkSet localBSideEffects = se.get("b");
         assertThat(localBSideEffects.isEmpty(), is(false));
+    }
+
+    @Test
+    public void shouldDoNonBlockingPromiseWithRemote() throws Exception {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = graph.traversal().withRemote(conf);
+        g.addV("person").property("age", 20).promise(Traversal::iterate).join();
+        g.addV("person").property("age", 10).promise(Traversal::iterate).join();
+        assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().promise(t -> t.next()).join());
+        g.addV("person").property("age", 20).promise(Traversal::iterate).join();
+
+        final Traversal traversal = g.V().hasLabel("person").has("age", 20).values("age");
+        assertEquals(20, traversal.promise(t -> ((Traversal) t).next(1).get(0)).join());
+        assertEquals(20, traversal.next());
+        assertThat(traversal.hasNext(), is(false));
+
+        final Traversal traversalCloned = g.V().hasLabel("person").has("age", 20).values("age");
+        assertEquals(20, traversalCloned.next());
+        assertEquals(20, traversalCloned.promise(t -> ((Traversal) t).next(1).get(0)).join());
+        assertThat(traversalCloned.promise(t -> ((Traversal) t).hasNext()).join(), is(false));
+
+        assertEquals(3, g.V().promise(Traversal::toList).join().size());
     }
 }

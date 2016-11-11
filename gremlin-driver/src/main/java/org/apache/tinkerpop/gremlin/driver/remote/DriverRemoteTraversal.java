@@ -66,28 +66,18 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
         }
 
         this.rs = rs;
-        this.sideEffects = new DriverRemoteTraversalSideEffects(
-                client,
+        this.sideEffects = new DriverRemoteTraversalSideEffects(client,
                 rs.getOriginalRequestMessage().getRequestId(),
-                rs.getHost());
+                rs.getHost(), rs.allItemsAvailableAsync());
     }
 
     /**
      * Gets a side-effect from the server. Do not call this method prior to completing the iteration of the
-     * {@link DriverRemoteTraversal} that spawned this as the side-effect will not be ready. If this method is called
-     * prior to iteration being complete, then it will block until the traversal notifies it of completion. Generally
+     * {@link DriverRemoteTraversal} that spawned this as the side-effect will not be ready. Generally
      * speaking, the common user would not get side-effects this way - they would use a call to {@code cap()}.
      */
     @Override
     public RemoteTraversalSideEffects getSideEffects() {
-        // wait for the read to complete (i.e. iteration on the server) before allowing the caller to get the
-        // side-effect. calling prior to this will result in the side-effect not being found. of course, the
-        // bad part here is that the method blocks indefinitely waiting for the result, but it prevents the
-        // test failure problems that happen on slower systems. in practice, it's unlikely that a user would
-        // try to get a side-effect prior to iteration, but since the API allows it, this at least prevents
-        // the error.
-        rs.allItemsAvailableAsync().join();
-
         return this.sideEffects;
     }
 
