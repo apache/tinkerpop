@@ -69,7 +69,6 @@ public class PythonProvider extends AbstractGraphProvider {
             "shouldNeverPropagateANullValuedTraverser",
             "shouldHidePartitionKeyForValues",
             "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
-            "shouldUsePromiseAndControlTransactionsIfAvailable",
             //
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),
