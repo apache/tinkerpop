@@ -23,9 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 
 import java.util.function.Consumer;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.add;
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.div;
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.add;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.div;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

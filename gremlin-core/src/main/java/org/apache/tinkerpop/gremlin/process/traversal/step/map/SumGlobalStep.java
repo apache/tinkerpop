@@ -29,7 +29,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

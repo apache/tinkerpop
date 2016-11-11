@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.3.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Moved `NumberHelper` into the `org.apache.tinkerpop.gremlin.util` package.
 * Removed previously deprecated `Console` constructor that took a `String` as an argument from `gremlin-console`.
 * Removed previously deprecated `ConcurrentBindings` from `gremlin-groovy`.
 * Removed previously deprecated `ScriptExecutor` from `gremlin-groovy`.
