@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -41,9 +40,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -310,43 +306,5 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
             assertEquals(FastNoSuchElementException.class, e.getClass());
         }
 
-    }
-
-    @Test
-    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
-    public void shouldUsePromiseAndControlTransactionsIfAvailable() throws Exception {
-        // this test will validate that transactional graphs can properly open/close transactions within a promise.
-        // as there is a feature check, non-transactional graphs can use this to simply exercise the promise API
-        final Vertex vAdded = g.addV("person").property("name", "stephen").promise(t -> (Vertex) t.next()).get(10000, TimeUnit.MILLISECONDS);
-        final Vertex vRead = g.V().has("name", "stephen").next();
-        assertEquals(vAdded.id(), vRead.id());
-
-        // transaction should have been committed at this point so test the count in this thread to validate persistence
-        assertVertexEdgeCounts(graph, 1, 0);
-
-        // cancel a promise and ensure the transaction ended in failure. hold the traversal in park until it can be
-        // interrupted, then the promise will have to rollback the transaction.
-        final CompletableFuture promiseToCancel = g.addV("person").property("name", "marko").sideEffect(traverser -> {
-            try {
-                Thread.sleep(100000);
-            } catch (Exception ignored) {
-
-            }
-        }).promise(t -> (Vertex) t.next());
-
-        try {
-            promiseToCancel.get(500, TimeUnit.MILLISECONDS);
-            fail("Should have timed out");
-        } catch (TimeoutException te) {
-
-        }
-
-        promiseToCancel.cancel(true);
-
-        // graphs that support transactions will rollback the transaction
-        if (graph.features().graph().supportsTransactions())
-            assertVertexEdgeCounts(graph, 1, 0);
-        else
-            assertVertexEdgeCounts(graph, 2, 0);
     }
 }
