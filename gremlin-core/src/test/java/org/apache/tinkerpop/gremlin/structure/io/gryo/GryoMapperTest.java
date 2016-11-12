@@ -174,8 +174,8 @@ public class GryoMapperTest {
     @Test
     public void shouldRegisterMultipleIoRegistryToSerialize() throws Exception {
         final GryoMapper mapper = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+                .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -197,12 +197,12 @@ public class GryoMapperTest {
     @Test
     public void shouldExpectReadFailureAsIoRegistryOrderIsNotRespected() throws Exception {
         final GryoMapper mapperWrite = GryoMapper.build()
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoXIoRegistry.InstanceBased.instance())
+                .addRegistry(IoYIoRegistry.InstanceBased.instance()).create();
 
         final GryoMapper mapperRead = GryoMapper.build()
-                .addRegistry(IoYIoRegistry.InstanceBased.getInstance())
-                .addRegistry(IoXIoRegistry.InstanceBased.getInstance()).create();
+                .addRegistry(IoYIoRegistry.InstanceBased.instance())
+                .addRegistry(IoXIoRegistry.InstanceBased.instance()).create();
 
         final Kryo kryoWriter = mapperWrite.createMapper();
         final Kryo kryoReader = mapperRead.createMapper();

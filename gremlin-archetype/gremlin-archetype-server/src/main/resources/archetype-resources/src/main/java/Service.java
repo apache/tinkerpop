@@ -49,7 +49,7 @@ public class Service implements AutoCloseable {
 
     private Service() {}
 
-    public static Service getInstance() {
+    public static Service instance() {
         return INSTANCE;
     }
 

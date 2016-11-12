@@ -19,7 +19,7 @@ limitations under the License.
 *******************************************************************************
 import java.time.*
 mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistry.getInstance()).
+                        addRegistry(TinkerIoRegistry.instance()).
                         addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV1d0.GremlinServerModule()).
                         version(GraphSONVersion.V1_0).create().createMapper()
 graph = TinkerFactory.createTheCrew()
@@ -105,7 +105,7 @@ file.withWriter { writer ->
 }
 
 mapper = GraphSONMapper.build().
-                        addRegistry(TinkerIoRegistryV2d0.getInstance()).
+                        addRegistry(TinkerIoRegistryV2d0.instance()).
                         typeInfo(TypeInfo.PARTIAL_TYPES).
                         addCustomModule(GraphSONXModuleV2d0.build().create(false)).
                         addCustomModule(new org.apache.tinkerpop.gremlin.driver.ser.AbstractGraphSONMessageSerializerV2d0.GremlinServerModule()).

@@ -26,7 +26,7 @@ public class App {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) throws Exception {
-        Service service = Service.getInstance();
+        Service service = Service.instance();
         try {
             logger.info("Sending request....");
 
