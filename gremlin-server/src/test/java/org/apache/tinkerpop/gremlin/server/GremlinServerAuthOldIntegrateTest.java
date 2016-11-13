@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -76,7 +75,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldFailIfSslEnabledOnServerButNotClient() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -93,7 +92,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldAuthenticateWithPlainText() throws Exception {
-        final Cluster cluster = Cluster.build().credentials("stephen", "password").create();
+        final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
         try {
@@ -107,7 +106,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldAuthenticateOverSslWithPlainText() throws Exception {
-        final Cluster cluster = Cluster.build()
+        final Cluster cluster = TestClientFactory.build()
                 .enableSsl(true)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
@@ -123,7 +122,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldFailAuthenticateWithPlainTextNoCredentials() throws Exception {
-        final Cluster cluster = Cluster.build().create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
@@ -142,7 +141,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldFailAuthenticateWithPlainTextBadPassword() throws Exception {
-        final Cluster cluster = Cluster.build().credentials("stephen", "bad").create();
+        final Cluster cluster = TestClientFactory.build().credentials("stephen", "bad").create();
         final Client client = cluster.connect();
 
         try {
@@ -159,7 +158,7 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldFailAuthenticateWithPlainTextBadUsername() throws Exception {
-        final Cluster cluster = Cluster.build().credentials("marko", "password").create();
+        final Cluster cluster = TestClientFactory.build().credentials("marko", "password").create();
         final Client client = cluster.connect();
 
         try {
@@ -175,7 +174,8 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
     
     @Test
     public void shouldAuthenticateWithPlainTextOverJSONSerialization() throws Exception {
-        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON).credentials("stephen", "password").create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON)
+                .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
         try {
@@ -189,7 +189,8 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldAuthenticateWithPlainTextOverGraphSONSerialization() throws Exception {
-        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V1D0).credentials("stephen", "password").create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0)
+                .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
         try {
@@ -203,7 +204,8 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
     
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverJsonSerialization() throws Exception {
-        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON).credentials("stephen", "password").create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON)
+                .credentials("stephen", "password").create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -220,7 +222,8 @@ public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerInte
     
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverGraphSONSerialization() throws Exception {
-        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V1D0).credentials("stephen", "password").create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0)
+                .credentials("stephen", "password").create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {

@@ -56,7 +56,7 @@ public class GremlinTraversalPerformanceTest extends AbstractGremlinServerPerfor
     public final static int DEFAULT_CONCURRENT_BENCHMARK_ROUNDS = 500;
     public final static int DEFAULT_CONCURRENT_WARMUP_ROUNDS = 10;
 
-    private final static Cluster cluster = Cluster.build("localhost").maxConnectionPoolSize(32).maxWaitForConnection(30000).create();
+    private final static Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(32).maxWaitForConnection(30000).create();
     private final static AtomicReference<Client> client = new AtomicReference<>();
 
     @Rule
