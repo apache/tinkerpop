@@ -83,7 +83,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         c.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
 
         serializer.configure(c, null);
-        cluster = Cluster.build().serializer(serializer).create();
+        cluster = TestClientFactory.build().serializer(serializer).create();
         client = cluster.connect();
     }
 

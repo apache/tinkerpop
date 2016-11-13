@@ -540,6 +540,7 @@ TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Returned a confirmation on session close from Gremlin Server.
+* Use non-default port for running tests on Gremlin Server.
 * Fully shutdown metrics services in Gremlin Server on shutdown.
 * Deprecated `tryRandomCommit()` in `AbstractGremlinTest` - the annotation was never added in 3.1.1, and was only deprecated via javadoc.
 * Minor fixes to various test feature requirements in `gremlin-test`.

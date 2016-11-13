@@ -132,7 +132,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnGETWithNoAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(401, response.getStatusLine().getStatusCode());
@@ -142,7 +142,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnPOSTWithNoAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
 
@@ -154,7 +154,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnGETWithBadAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Authorization", "not-base-64-encoded");
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -165,7 +165,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnPOSTWithBadAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Authorization", "not-base-64-encoded");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -178,7 +178,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnGETWithBadEncodedAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Authorization", "Basic: not-base-64-encoded");
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -189,7 +189,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnPOSTWithBadEncodedAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Authorization", "Basic: not-base-64-encoded");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -202,7 +202,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnGETWithInvalidPasswordAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:not-my-password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -213,7 +213,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should401OnPOSTWithInvalidPasswordAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:not-my-password".getBytes()));
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -227,7 +227,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Deprecated
     public void should401OnPOSTWithInvalidPasswordAuthorizationHeaderOld() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:not-my-password".getBytes()));
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -240,7 +240,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -255,7 +255,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -273,7 +273,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Deprecated
     public void should200OnPOSTWithAuthorizationHeaderOld() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -290,7 +290,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithBindingsAndFunction() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=addItUp(Integer.parseInt(x),Integer.parseInt(y))&bindings.x=10&bindings.y=10");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=addItUp(Integer.parseInt(x),Integer.parseInt(y))&bindings.x=10&bindings.y=10"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -304,7 +304,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResult() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g.V()");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=g.V()"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -319,7 +319,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndAliases() throws Exception {
         // we can remove this first test when rebindings are completely removed
         final CloseableHttpClient httpclientLegacy = HttpClients.createDefault();
-        final HttpGet httpgetLegacy = new HttpGet("http://localhost:8182?gremlin=g1.V()&rebindings.g1=g");
+        final HttpGet httpgetLegacy = new HttpGet(TestClientFactory.createURLString("?gremlin=g1.V()&rebindings.g1=g"));
 
         try (final CloseableHttpResponse response = httpclientLegacy.execute(httpgetLegacy)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -330,7 +330,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g1.V()&aliases.g1=g");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=g1.V()&aliases.g1=g"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -344,7 +344,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgument() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -358,7 +358,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgumentReturningVertex() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=graph.addVertex('name','stephen')");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=graph.addVertex('name','stephen')"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -372,7 +372,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithGremlinQueryStringArgumentWithBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=Integer.parseInt(x)%2BInteger.parseInt(y)&bindings.x=10&bindings.y=10");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=Integer.parseInt(x)%2BInteger.parseInt(y)&bindings.x=10&bindings.y=10"));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -386,7 +386,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should400OnGETWithNoGremlinQueryStringArgument() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString());
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(400, response.getStatusLine().getStatusCode());
@@ -396,7 +396,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnGETWithAnyAcceptHeaderDefaultResultToJson() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Accept", "*/*");
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -411,7 +411,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should400OnGETWithBadAcceptHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=1-1"));
         httpget.addHeader("Accept", "application/json+something-else-that-does-not-exist");
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
@@ -422,7 +422,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBody() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
 
@@ -440,7 +440,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         // basic test of java.time.* serialization over JSON from the server perspective. more complete tests
         // exist in gremlin-core
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"java.time.Instant.MAX\"}", Consts.UTF_8));
 
@@ -458,7 +458,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         assumeNeo4jIsPresent();
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"graph.addVertex('name','stephen');g.V().count()\"}", Consts.UTF_8));
 
@@ -470,7 +470,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(1, node.get("result").get("data").get(0).intValue());
         }
 
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g.V().count()");
+        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=g.V().count()"));
         httpget.addHeader("Accept", "application/json");
 
         // execute this a bunch of times so that there's a good chance a different thread on the server processes
@@ -492,7 +492,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         // we can remove this first test when rebindings are completely removed
         final CloseableHttpClient httpclientLegacy = HttpClients.createDefault();
-        final HttpPost httppostLegacy = new HttpPost("http://localhost:8182");
+        final HttpPost httppostLegacy = new HttpPost(TestClientFactory.createURLString());
         httppostLegacy.addHeader("Content-Type", "application/json");
         httppostLegacy.setEntity(new StringEntity("{\"gremlin\":\"g1.addV()\",\"rebindings\":{\"g1\":\"g\"}}", Consts.UTF_8));
 
@@ -505,7 +505,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.addV()\",\"aliases\":{\"g1\":\"g\"}}", Consts.UTF_8));
 
@@ -521,7 +521,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\"}", Consts.UTF_8));
 
@@ -537,7 +537,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyWithTinkerGraphResult() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern()\"}", Consts.UTF_8));
 
@@ -561,7 +561,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases() throws Exception {
         // we can remove this first test when rebindings are completely removed
         final CloseableHttpClient httpclientLegacy = HttpClients.createDefault();
-        final HttpPost httppostLegacy = new HttpPost("http://localhost:8182");
+        final HttpPost httppostLegacy = new HttpPost(TestClientFactory.createURLString());
         httppostLegacy.addHeader("Content-Type", "application/json");
         httppostLegacy.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"rebindings\":{\"g1\":\"g\"}}", Consts.UTF_8));
 
@@ -574,7 +574,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"aliases\":{\"g1\":\"g\"}}", Consts.UTF_8));
 
@@ -590,7 +590,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":{\"x\":10, \"y\":10}}", Consts.UTF_8));
 
@@ -606,7 +606,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndLongBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":10}}", Consts.UTF_8));
 
@@ -622,7 +622,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndDoubleBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":10.5}}", Consts.UTF_8));
 
@@ -638,7 +638,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndStringBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":\"10\"}}", Consts.UTF_8));
 
@@ -654,7 +654,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndBooleanBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":true}}", Consts.UTF_8));
 
@@ -670,7 +670,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndNullBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":null}}", Consts.UTF_8));
 
@@ -686,7 +686,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndArrayBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":[1,2,3]}}", Consts.UTF_8));
 
@@ -705,7 +705,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBodyAndMapBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x\", \"bindings\":{\"x\":{\"y\":1}}}", Consts.UTF_8));
 
@@ -722,7 +722,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should400OnPOSTWithGremlinJsonEndcodedBodyAndBadBindings() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":10}}", Consts.UTF_8));
 
@@ -734,7 +734,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should400OnPOSTWithGremlinJsonEndcodedBodyWithNoGremlinKey() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremadfadflin\":\"1-1\"}", Consts.UTF_8));
 
@@ -746,7 +746,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should400OnPOSTWithBadAcceptHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Accept", "application/json+something-else-that-does-not-exist");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -759,7 +759,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithAnyAcceptHeaderDefaultResultToJson() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Accept", "*/*");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -776,7 +776,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithComplexAcceptHeaderDefaultResultToJson() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "*.*;q=0.8,application/xhtml");
         httppost.addHeader("Accept", "*/*");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
@@ -793,7 +793,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should500OnGETWithGremlinEvalFailure() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1/0\"}", Consts.UTF_8));
 
