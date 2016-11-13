@@ -27,7 +27,7 @@ from unittest import TestCase
 import six
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, VertexProperty
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphson
@@ -70,12 +70,17 @@ class TestGraphSONReader(TestCase):
 
     def test_graph(self):
         vertex = self.graphson_reader.readObject(
-            """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
+                """{"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person","outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":{"@type":"g:Double","@value":0.4}}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":{"@type":"g:Double","@value":0.5}}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":{"@type":"g:Double","@value":1.0}}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+        assert isinstance(vertex.properties, dict)
+        assert "name" in vertex.properties
+        assert isinstance(vertex.properties["name"], list)
+        assert isinstance(vertex.properties["name"][0], dict)
+        assert vertex.properties["name"][0]["value"] == "marko"
 
     def test_path(self):
         path = self.graphson_reader.readObject(
