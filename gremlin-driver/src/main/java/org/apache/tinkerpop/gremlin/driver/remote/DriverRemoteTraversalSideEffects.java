@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Java driver implementation of {@link TraversalSideEffects}. This class is not thread safe.
@@ -51,7 +50,6 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
 
     private boolean closed = false;
     private boolean retrievedAllKeys = false;
-    private final AtomicInteger counter = new AtomicInteger(0);
 
     public DriverRemoteTraversalSideEffects(final Client client, final UUID serverSideEffect, final Host host) {
         this.client = client;
@@ -78,12 +76,13 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 final Result result = client.submitAsync(msg).get().all().get().get(0);
                 sideEffects.put(key, null == result ? null : result.getObject());
             } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
-                final String exMsg = null == root ? "" : root.getMessage();
-                if (exMsg.equals("Could not find side-effects for " + serverSideEffect + "."))
-                    sideEffects.put(key, null);
-                else
-                    throw new RuntimeException("Could not get side-effect for " + serverSideEffect + " with key of " + key, root == null ? ex : root);
+                // we use to try to catch  "no found" situations returned from the server here and then null the
+                // side-effect for the requested key. doesn't seem like there is a need for that now because calls
+                // to get() now initially trigger a call the keys() so you would know all of the keys available on
+                // the server and would validate them up front throwing sideEffectKeyDoesNotExist(key) which thus
+                // produces behavior similar to the non-remote side-effect implementations. if we get an exception
+                // here at this point then we likely have a legit error in communicating to the remote server.
+                throw new RuntimeException("Could not get side-effect for " + serverSideEffect + " with key of " + key, ex);
             }
         }
 
@@ -111,9 +110,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 retrievedAllKeys = true;
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
-                final String exMsg = null == root ? "" : root.getMessage();
-                if (!exMsg.equals("Could not find side-effects for " + serverSideEffect + "."))
-                    throw new RuntimeException("Could not get keys", root);
+                throw new RuntimeException("Could not get keys", null == root ? ex : root);
             }
         }
 
@@ -132,7 +129,7 @@ public class DriverRemoteTraversalSideEffects extends AbstractRemoteTraversalSid
                 closed = true;
             } catch (Exception ex) {
                 final Throwable root = ExceptionUtils.getRootCause(ex);
-                throw new RuntimeException("Error on closing side effects", root);
+                throw new RuntimeException("Error on closing side effects", null == root ? ex : root);
             }
         }
     }
