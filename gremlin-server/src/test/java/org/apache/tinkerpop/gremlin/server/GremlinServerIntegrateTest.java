@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
@@ -59,7 +58,6 @@ import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -110,6 +108,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         setProperty(GREMLIN_REMOTE_CONNECTION_CLASS, DriverRemoteConnection.class.getName());
         setProperty(DriverRemoteConnection.GREMLIN_REMOTE_DRIVER_SOURCENAME, "g");
         setProperty("hidden.for.testing.only", graphGetter);
+        setProperty("clusterConfiguration.port", TestClientFactory.PORT);
+        setProperty("clusterConfiguration.hosts", "localhost");
     }};
 
     @Before
@@ -883,7 +883,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertThat(localSideEffects.isEmpty(), is(false));
 
         // Try to get side effect from server
-        final Cluster cluster = Cluster.build("localhost").create();
+        final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
         final Field field = DriverRemoteTraversalSideEffects.class.getDeclaredField("serverSideEffect");
         field.setAccessible(true);

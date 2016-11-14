@@ -157,10 +157,10 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         // basically, we need one to submit the long run job and one to do the close operation that will cancel the
         // long run job. it is probably possible to do this with some low-level message manipulation but that's
         // probably not necessary
-        final Cluster cluster1 = Cluster.build().create();
+        final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
         client1.submit("graph.addVertex()").all().join();
-        final Cluster cluster2 = Cluster.build().create();
+        final Cluster cluster2 = TestClientFactory.open();
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
                 .sessionId(name.getMethodName())
                 .forceClosed(true).create();
@@ -187,7 +187,6 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         cluster1.close();
         cluster2.close();
     }
-
 
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {

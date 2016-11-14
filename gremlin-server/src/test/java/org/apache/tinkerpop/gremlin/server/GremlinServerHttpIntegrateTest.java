@@ -805,7 +805,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should200OnPOSTWithGraphSON2d0AcceptHeaderDefaultResultToJson() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
