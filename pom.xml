@@ -314,6 +314,56 @@ limitations under the License.
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.revapi</groupId>
+                <artifactId>revapi-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.revapi</groupId>
+                        <artifactId>revapi-java</artifactId>
+                        <version>0.11.2</version>  
+                    </dependency> 
+                </dependencies>
+                <configuration>
+
+                    <analysisConfiguration><![CDATA[
+                    {
+                      "revapi": {
+                        "java": {
+                          "filter": {
+                            //gremlin-shaded includes a lot of stuff from 3rd party libraries that break their API between
+                            //versions. Let's just not consider them part of Tinkerpop API. -->
+                            "packages": {
+                              "regex": true,
+                              "exclude": ["org\\.apache\\.tinkerpop\\.shaded(\\..+)?"],
+                              "include": ["org\\.apache\\.tinkerpop(\\..+)?"]
+                            }
+                          }
+                        },
+                        "semver": {
+                          "ignore": {
+                            "enabled": true,
+                            "versionIncreaseAllows": {
+                              "major": "breaking",
+                              "minor": "breaking",
+                              "patch": "nonBreaking"
+                            },
+                            "passThroughDifferences": ["java.class.nonPublicPartOfAPI"]
+                          }
+                        }                  
+                      }
+                    }
+                    ]]></analysisConfiguration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals> 
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>

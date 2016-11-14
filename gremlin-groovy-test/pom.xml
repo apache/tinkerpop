@@ -25,6 +25,9 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-groovy-test</artifactId>
     <name>Apache TinkerPop :: Gremlin Groovy Test</name>
+    <properties>
+        <revapi.skip>true</revapi.skip>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
