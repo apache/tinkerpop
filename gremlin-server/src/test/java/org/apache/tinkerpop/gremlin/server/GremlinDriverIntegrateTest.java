@@ -734,7 +734,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphSONExtendedV2Serialization() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V2D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2D0).create();
         final Client client = cluster.connect();
 
         final Instant now = Instant.now();
