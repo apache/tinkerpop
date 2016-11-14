@@ -121,8 +121,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         if (null != this.keyTraversal)
             clone.keyTraversal = this.keyTraversal.clone();
         clone.valueTraversal = this.valueTraversal.clone();
-        if (null != this.preTraversal)
-            clone.preTraversal = this.preTraversal.clone();
+        clone.preTraversal = (Traversal.Admin<S, ?>) GroupStep.generatePreTraversal(clone.valueTraversal);
         return clone;
     }
 
