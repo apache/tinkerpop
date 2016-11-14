@@ -35,7 +35,7 @@ Upgrading for Users
 Traversal Promises
 ^^^^^^^^^^^^^^^^^^
 
-The `Traversal` API now has two `promise()` method overloads. These methods return a promise in the form of a
+The `Traversal` API now has a new `promise()` method. These methods return a promise in the form of a
 `CompleteableFuture`. Usage is as follows:
 
 [source,groovy]
@@ -49,6 +49,8 @@ gremlin> promise.isDone()
 gremlin> g.V().out().promise{it.toList()}.thenApply{it.size()}.get()
 ==>6
 ----
+
+At this time, this method is only used for traversals that are configured using `withRemote()`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1490[TINKERPOP-1490]
 
