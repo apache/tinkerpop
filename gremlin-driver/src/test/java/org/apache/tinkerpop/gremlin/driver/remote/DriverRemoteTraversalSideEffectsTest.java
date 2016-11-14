@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.UUID;
@@ -123,7 +122,6 @@ public class DriverRemoteTraversalSideEffectsTest extends AbstractResultQueueTes
     }
 
     private void mockClientForCall(final Client client) throws Exception {
-
         // the return is just generic garbage from addToQueue for any call to submitAsync().
         when(client.submitAsync(any(RequestMessage.class))).thenAnswer((Answer<Object>) invocationOnMock -> {
             final ResultSet returnedResultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
