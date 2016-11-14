@@ -127,7 +127,7 @@ public class GremlinServerSessionIntegrateTest  extends AbstractGremlinServerInt
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
         client1.submit("graph.addVertex()").all().join();
-        final Cluster cluster2 = TestClientFactory.open()
+        final Cluster cluster2 = TestClientFactory.open();
         final Client client2 = cluster2.connect(name.getMethodName());
         client2.submit("1+1").all().join();
 

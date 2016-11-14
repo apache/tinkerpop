@@ -178,7 +178,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldKeepAliveForWebSockets() throws Exception {
         // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
         // complicate the assertion logic
-        final Cluster cluster = Cluster.build().
+        final Cluster cluster = TestClientFactory.build().
                 minConnectionPoolSize(1).
                 maxConnectionPoolSize(1).
                 keepAliveInterval(1000).create();
