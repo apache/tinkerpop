@@ -25,7 +25,7 @@ import java.util.function.BiFunction;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class NumberHelper {
+public final class NumberHelper {
 
     static final NumberHelper BYTE_NUMBER_HELPER = new NumberHelper(
             (a, b) -> a.byteValue() + b.byteValue(),
