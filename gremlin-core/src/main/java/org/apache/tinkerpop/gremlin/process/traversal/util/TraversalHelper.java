@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -671,5 +672,21 @@ public final class TraversalHelper {
             if (null != stopAfterStrategy && stopAfterStrategy.isInstance(strategy))
                 break;
         }
+    }
+
+    /**
+     * Used to left-fold a {@link HasContainer} to a {@link HasContainerHolder} if it exists. Else, append a {@link HasStep}.
+     *
+     * @param traversal    the traversal to fold or append.
+     * @param hasContainer the container to add left or append.
+     * @param <T>          the traversal type
+     * @return the has container folded or appended traversal
+     */
+    public static <T extends Traversal.Admin<?, ?>> T addHasContainer(final T traversal, final HasContainer hasContainer) {
+        if (traversal.getEndStep() instanceof HasContainerHolder) {
+            ((HasContainerHolder) traversal.getEndStep()).addHasContainer(hasContainer);
+            return traversal;
+        } else
+            return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
     }
 }

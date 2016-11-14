@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TimesModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
@@ -51,7 +50,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
@@ -908,20 +906,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(propertyKey, predicate));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(propertyKey, predicate)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(accessor.getAccessor(), predicate));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(accessor.getAccessor(), predicate)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), predicate));
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
@@ -931,45 +921,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.has(propertyKey, (Traversal) value);
         else {
             this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, value);
-            if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-                ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(propertyKey, P.eq(value)));
-                return this;
-            } else
-                return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(propertyKey, P.eq(value))));
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, P.eq(value)));
         }
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         this.asAdmin().getBytecode().addStep(Symbols.has, accessor, value);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(accessor.getAccessor(), value instanceof P ? (P) value : P.eq(value)));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(accessor.getAccessor(), value instanceof P ? (P) value : P.eq(value))));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), value instanceof P ? (P) value : P.eq(value)));
     }
 
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.has, label, propertyKey, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.label.getAccessor(), P.eq(label)));
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(propertyKey, predicate));
-            return this;
-        } else {
-            this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label))));
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(propertyKey, predicate)));
-        }
+        TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
 
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
         this.asAdmin().getBytecode().addStep(Symbols.has, label, propertyKey, value);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.label.getAccessor(), P.eq(label)));
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(propertyKey, value instanceof P ? (P) value : P.eq(value)));
-            return this;
-        } else {
-            this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label))));
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(propertyKey, value instanceof P ? (P) value : P.eq(value))));
-        }
+        TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, value instanceof P ? (P) value : P.eq(value)));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
@@ -1001,20 +971,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         labels[0] = label;
         System.arraycopy(otherLabels, 0, labels, 1, otherLabels.length);
         this.asAdmin().getBytecode().addStep(Symbols.hasLabel, labels);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.label.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.label.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels))));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
     }
 
     public default GraphTraversal<S, E> hasLabel(final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasLabel, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.label.getAccessor(), predicate));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.label.getAccessor(), predicate)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), predicate));
     }
 
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
@@ -1030,21 +992,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 ids.add(id);
             Collections.addAll(ids, otherIds);
             this.asAdmin().getBytecode().addStep(Symbols.hasId, ids.toArray());
-            if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-                ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
-                return this;
-            } else
-                return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids))));
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
         }
     }
 
     public default GraphTraversal<S, E> hasId(final P<Object> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasId, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.id.getAccessor(), predicate));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.id.getAccessor(), predicate)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), predicate));
     }
 
     public default GraphTraversal<S, E> hasKey(final String label, final String... otherLabels) {
@@ -1052,20 +1006,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         labels[0] = label;
         System.arraycopy(otherLabels, 0, labels, 1, otherLabels.length);
         this.asAdmin().getBytecode().addStep(Symbols.hasKey, labels);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.key.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.key.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels))));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), labels.length == 1 ? P.eq(labels[0]) : P.within(labels)));
     }
 
     public default GraphTraversal<S, E> hasKey(final P<String> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasKey, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.key.getAccessor(), predicate));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.key.getAccessor(), predicate)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), predicate));
     }
 
     public default GraphTraversal<S, E> hasValue(final Object value, final Object... otherValues) {
@@ -1081,21 +1027,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 values.add(value);
             Collections.addAll(values, otherValues);
             this.asAdmin().getBytecode().addStep(Symbols.hasValue, values.toArray());
-            if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-                ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.value.getAccessor(), values.size() == 1 ? P.eq(values.get(0)) : P.within(values)));
-                return this;
-            } else
-                return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.value.getAccessor(), values.size() == 1 ? P.eq(values.get(0)) : P.within(values))));
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), values.size() == 1 ? P.eq(values.get(0)) : P.within(values)));
         }
     }
 
     public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
-        if (this.asAdmin().getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) this.asAdmin().getEndStep()).addHasContainer(new HasContainer(T.value.getAccessor(), predicate));
-            return this;
-        } else
-            return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
     }
 
     public default GraphTraversal<S, E> is(final P<E> predicate) {
