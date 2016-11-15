@@ -113,6 +113,7 @@ public class InlineFilterStrategyTest {
                 {V().match(as("a").has("age", 10).has("name", "marko").as("b")), V().has("age", 10).has("name", "marko").as("a", "b")},
                 {V().match(as("a").has("age", 10).has("name", "marko").as("b"), as("a").out("knows").as("c")), V().has("age", 10).has("name", "marko").as("a", "b").match(as("a").out("knows").as("c"))},
                 {V().match(as("a").out("knows").as("c"), as("a").has("age", 10).has("name", "marko").as("b")), V().has("age", 10).has("name", "marko").as("a", "b").match(as("a").out("knows").as("c"))},
+                {V().match(as("a").out("knows").as("c"), as("a").has("age", 10).has("name", "marko").as("b"), as("a").has("name", "bob")), V().has("age", 10).has("name", "marko").has("name", "bob").as("a", "b").match(as("a").out("knows").as("c"))},
                 {V().match(as("a").has("age", 10).as("b"), as("a").filter(has("name")).as("b")), V().has("age", 10).as("a", "b").match(as("a").has("name").as("b"))},
                 //
                 {filter(dedup()), filter(dedup())},

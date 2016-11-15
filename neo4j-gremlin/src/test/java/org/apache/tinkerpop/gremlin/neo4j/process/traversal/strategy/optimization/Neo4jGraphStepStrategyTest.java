@@ -123,6 +123,12 @@ public class Neo4jGraphStepStrategyTest {
                         g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob"), "age", eq(10).or(gt(32))).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(Neo4jGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
                         g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(Neo4jGraph.class).toList()},
+                {__.V().has("name", P.eq("marko").or(P.eq("bob").and(P.eq("stephen")))).out("knows"),
+                        g_V("name", eq("marko").or(P.eq("bob").and(P.eq("stephen")))).out("knows"), Collections.emptyList()},
+                {__.V().has("name", P.eq("marko").and(P.eq("bob").and(P.eq("stephen")))).out("knows"),
+                        g_V("name", eq("marko"), "name", eq("bob"), "name", eq("stephen")).out("knows"), Collections.emptyList()},
+                {__.V().has("name", P.eq("marko").and(P.eq("bob").or(P.eq("stephen")))).out("knows"),
+                        g_V("name", eq("marko"), "name", P.eq("bob").or(eq("stephen"))).out("knows"), Collections.emptyList()},
                 ///////
                 {__.V().out().out().V().has("name", "marko").out(), g_V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).asAdmin().addStep(V("name", eq("marko"))).barrier(LAZY_SIZE).out().barrier(LAZY_SIZE), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
                 {__.V().out().out().V().has("name", "marko").as("a").out(), g_V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).asAdmin().addStep(V("name", eq("marko"))).barrier(LAZY_SIZE).as("a").out(), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance(), LazyBarrierStrategy.instance())},
