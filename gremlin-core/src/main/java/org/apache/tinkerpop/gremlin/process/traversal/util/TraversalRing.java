@@ -38,7 +38,7 @@ public final class TraversalRing<A, B> implements Serializable, Cloneable {
     }
 
     public Traversal.Admin<A, B> next() {
-        if (this.traversals.size() == 0) {
+        if (this.traversals.isEmpty()) {
             return null;
         } else {
             this.currentTraversal = (this.currentTraversal + 1) % this.traversals.size();
