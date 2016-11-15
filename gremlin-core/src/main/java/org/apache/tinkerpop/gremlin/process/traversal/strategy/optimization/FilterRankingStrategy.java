@@ -134,11 +134,11 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             return 5;
         else if (step instanceof WhereTraversalStep)
             return 6;
-        else if (step instanceof WherePredicateStep) // has by()-modulation
-            return 7;
         else if (step instanceof OrStep)
-            return 8;
+            return 7;
         else if (step instanceof AndStep)
+            return 8;
+        else if (step instanceof WherePredicateStep) // has by()-modulation
             return 9;
         else if (step instanceof DedupGlobalStep)
             return 10;
