@@ -640,8 +640,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @deprecated As of release 3.3.0, replaced by {@link GraphTraversal#select(Pop, String)} with {@link Pop#mixed}.
      */
     @Deprecated
-    public default <E2> GraphTraversal<S, E2> selectV3d0(final String selectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.selectV3d0, selectKey);
+    public default <E2> GraphTraversal<S, E2> selectV3d2(final String selectKey) {
+        this.asAdmin().getBytecode().addStep(Symbols.selectV3d2, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), Pop.mixed, selectKey));
     }
 
@@ -649,12 +649,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @deprecated As of release 3.3.0, replaced by {@link GraphTraversal#select(Pop, String, String, String...)} with {@link Pop#mixed}.
      */
     @Deprecated
-    public default <E2> GraphTraversal<S, Map<String, E2>> selectV3d0(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> selectV3d2(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
         final String[] selectKeys = new String[otherSelectKeys.length + 2];
         selectKeys[0] = selectKey1;
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
-        this.asAdmin().getBytecode().addStep(Symbols.selectV3d0, selectKey1, selectKey2, otherSelectKeys);
+        this.asAdmin().getBytecode().addStep(Symbols.selectV3d2, selectKey1, selectKey2, otherSelectKeys);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.mixed, selectKeys));
     }
 
@@ -1577,7 +1577,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String propertyMap = "propertyMap";
         public static final String valueMap = "valueMap";
         public static final String select = "select";
-        public static final String selectV3d0 = "selectV3d0";
+        public static final String selectV3d2 = "selectV3d2";
         public static final String key = "key";
         public static final String value = "value";
         public static final String path = "path";

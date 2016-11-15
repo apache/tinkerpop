@@ -42,10 +42,12 @@ it is rare for repeated labels to be used in practice. However, formal backwards
 
 Assuming that `x` is not a `Pop` argument:
 
-1. Change all `select(x,y,z)` calls to `selectV3d0(x,y,z)` calls.
+1. Change all `select(x,y,z)` calls to `selectV3d2(x,y,z)` calls.
 2. Change all `select(x,y,z)`-step calls to `select(Pop.mixed,x,y,z)`.
 
 If an explicit `Pop` argument is provided, then no changes are required.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-1541[TINKERPOP-1541]
 
 OptionalStep and Side-Effects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

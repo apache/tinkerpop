@@ -353,11 +353,11 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#selectV3d0(String)
+     * @see GraphTraversal#selectV3d2(String)
      */
     @Deprecated
-    public static <A, B> GraphTraversal<A, B> selectV3d0(final String selectKey) {
-        return __.<A>start().selectV3d0(selectKey);
+    public static <A, B> GraphTraversal<A, B> selectV3d2(final String selectKey) {
+        return __.<A>start().selectV3d2(selectKey);
     }
 
     /**
@@ -375,11 +375,11 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#selectV3d0(String, String, String...)
+     * @see GraphTraversal#selectV3d2(String, String, String...)
      */
     @Deprecated
-    public static <A, B> GraphTraversal<A, Map<String, B>> selectV3d0(final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
-        return __.<A>start().selectV3d0(selectKey1, selectKey2, otherSelectKeys);
+    public static <A, B> GraphTraversal<A, Map<String, B>> selectV3d2(final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
+        return __.<A>start().selectV3d2(selectKey1, selectKey2, otherSelectKeys);
     }
 
     /**
