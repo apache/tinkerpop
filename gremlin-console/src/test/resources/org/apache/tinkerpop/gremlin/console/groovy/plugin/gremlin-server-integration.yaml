@@ -16,7 +16,7 @@
 # under the License.
 
 host: localhost
-port: 8182
+port: 45940
 threadPoolWorker: 1
 gremlinPool: 8
 scriptEvaluationTimeout: 30000

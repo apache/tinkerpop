@@ -83,7 +83,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         c.put("custom", Collections.singletonList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
 
         serializer.configure(c, null);
-        cluster = Cluster.build().serializer(serializer).create();
+        cluster = TestClientFactory.build().serializer(serializer).create();
         client = cluster.connect();
     }
 
@@ -141,7 +141,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexResultWithLiteSerialization() throws Exception {
-        final Cluster cluster = Cluster.build().serializer(Serializers.GRYO_LITE_V1D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRYO_LITE_V1D0).create();
         final Client clientLite = cluster.connect();
         final ResultSet results = clientLite.submit("g.V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();

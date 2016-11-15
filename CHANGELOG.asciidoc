@@ -69,6 +69,7 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 * Added `choose(predicate,traversal)` and `choose(traversal,traversal)` to effect if/then-semantics (no else). Equivalent to `choose(x,y,identity())`.
 * Removed `ImmutablePath.TailPath` as it is no longer required with new recursion model.
 * Removed call stack recursion in `ImmutablePath`.
+* Fixed the handling of the `DriverRemoteConnection` pass-through configurations to the driver.
 * `IncidentToAdjacentStrategy` now uses a hidden label marker model to avoid repeated recursion for invalidating steps.
 * `PathProcessorStrategy` can inline certain `where(traversal)`-steps in order to increase the likelihood of star-local children.
 * `SparkGraphComputer` no longer starts a worker iteration if the worker's partition is empty.
@@ -568,6 +569,7 @@ TinkerPop 3.1.6 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Returned a confirmation on session close from Gremlin Server.
+* Use non-default port for running tests on Gremlin Server.
 * Fully shutdown metrics services in Gremlin Server on shutdown.
 * Deprecated `tryRandomCommit()` in `AbstractGremlinTest` - the annotation was never added in 3.1.1, and was only deprecated via javadoc.
 * Minor fixes to various test feature requirements in `gremlin-test`.
