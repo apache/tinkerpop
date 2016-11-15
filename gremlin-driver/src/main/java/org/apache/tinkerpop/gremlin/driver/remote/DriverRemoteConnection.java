@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -59,14 +60,15 @@ public class DriverRemoteConnection implements RemoteConnection {
     private static final boolean attachElements = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     public DriverRemoteConnection(final Configuration conf) {
-        if (conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && conf.containsKey("clusterConfiguration"))
+        final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
+        if (conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && hasClusterConf)
             throw new IllegalStateException(String.format("A configuration should not contain both '%s' and 'clusterConfiguration'", GREMLIN_REMOTE_DRIVER_CLUSTERFILE));
 
         remoteTraversalSourceName = conf.getString(GREMLIN_REMOTE_DRIVER_SOURCENAME, DEFAULT_TRAVERSAL_SOURCE);
 
         try {
             final Cluster cluster;
-            if (!conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && !conf.containsKey("clusterConfiguration"))
+            if (!conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) && !hasClusterConf)
                 cluster = Cluster.open();
             else
                 cluster = conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) ?
