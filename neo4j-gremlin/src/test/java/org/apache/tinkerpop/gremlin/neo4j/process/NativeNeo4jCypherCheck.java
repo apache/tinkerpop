@@ -153,12 +153,12 @@ public class NativeNeo4jCypherCheck extends AbstractNeo4jGremlinTest {
                 () -> n.cypher("MATCH (a)-[:followedBy]->(b), (b)-[:followedBy]->(a) RETURN a.name, b.name"),
                 ///
                 () -> g.V().match(
-                        as("a").out("followedBy").count().as("b"),
-                        as("a").in("followedBy").count().as("b"),
-                        as("b").is(P.gt(10))).select("a").by("name"),
+                        as("a").out("followedBy").count().is(P.gt(10)).as("b"),
+                        as("a").in("followedBy").count().is(P.gt(10)).as("b")).
+                        select("a").by("name"),
                 () -> n.cypher("MATCH (a)-[:followedBy]->(b) WITH a, COUNT(b) AS bc WHERE bc > 10 MATCH (a)<-[:followedBy]-(c) WITH a, bc, COUNT(c) AS cc WHERE bc = cc RETURN a.name"),
                 ///
-                /*() -> g.V().match(
+                () -> g.V().match(
                         as("a").in("sungBy").count().as("b"),
                         as("a").in("sungBy").as("c"),
                         as("c").out("followedBy").as("d"),
@@ -166,7 +166,7 @@ public class NativeNeo4jCypherCheck extends AbstractNeo4jGremlinTest {
                         as("e").in("sungBy").count().as("b"),
                         where("a", P.neq("e"))).select("a", "e").by("name"),
                 () -> n.cypher("MATCH (a)<-[:sungBy]-()-[:followedBy]->()-[:sungBy]->(e) WHERE a <> e WITH a, e MATCH (a)<-[:sungBy]-(b) WITH a, e, COUNT(DISTINCT b) as bc MATCH (e)<-[:sungBy]-(f) WITH a, e, bc, COUNT(DISTINCT f) as fc WHERE bc = fc RETURN a.name, e.name"),
-                *////
+                ///
                 () -> g.V().match(
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
@@ -201,14 +201,14 @@ public class NativeNeo4jCypherCheck extends AbstractNeo4jGremlinTest {
                 () -> g.V().match(
                         as("a").out("followedBy").as("b"),
                         as("b").out("followedBy").as("c")).select("a").by("name"),
-                () -> n.cypher("MATCH (a)-[:followedBy]->(b), (b)-[:followedBy]->(c) RETURN a.name")
+                () -> n.cypher("MATCH (a)-[:followedBy]->(b), (b)-[:followedBy]->(c) RETURN a.name"),
                 ///
-                /*() -> g.V().match(
+                () -> g.V().match(
                         as("a").out("followedBy").as("b"),
                         as("a").has(T.label, "song").has("performances", P.gt(10)),
                         as("a").out("writtenBy").as("c"),
                         as("b").out("writtenBy").as("c")).select("a", "b", "c").by("name"),
-                () -> n.cypher("MATCH (a)-[:followedBy]->(b), (a)-[:writtenBy]->(c), (b)-[:writtenBy]->(c) WHERE a.performances > 10 AND 'song' IN labels(a) RETURN a, b, c").select("a","b","c").by("name")*/
+                () -> n.cypher("MATCH (a)-[:followedBy]->(b), (a)-[:writtenBy]->(c), (b)-[:writtenBy]->(c) WHERE a.performances > 10 AND 'song' IN labels(a) RETURN a, b, c").select("a", "b", "c").by("name")
         );
 
         for (int i = 0; i < traversals.size(); i = i + 2) {

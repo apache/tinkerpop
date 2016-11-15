@@ -84,6 +84,11 @@ public abstract class GroovyProfileTest {
         public Traversal<Vertex, TraversalMetrics> get_g_V_hasLabelXpersonX_pageRank_byXrankX_byXbothEX_rank_profile() {
             new ScriptTraversal<>(g, "gremlin-groovy", "g.V.hasLabel('person').pageRank.by('rank').by(bothE()).rank.profile()")
         }
+
+        @Override
+        public Traversal<Vertex, TraversalMetrics> get_g_V_groupXmX_profile() {
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.V.group('m').profile")
+        }
     }
 }
 
