@@ -119,9 +119,9 @@ public class TinkerGraphStepStrategyTest {
                 {__.V().as("a").has("name", "marko").as("b").or(has("age"), has("age", gt(32))).has("lang", "java"),
                         g_V("name", eq("marko"), "lang", eq("java")).or(has("age"), has("age", gt(32))).as("b", "a"), Collections.singletonList(FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age"), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
-                        g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(has("age"), has("age", gt(32))).dedup().as("a"), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance())},
+                        g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob")).or(has("age"), has("age", gt(32))).dedup().as("a"), Arrays.asList(InlineFilterStrategy.instance(), FilterRankingStrategy.instance())},
                 {__.V().as("a").dedup().has("name", "marko").or(has("age", 10), has("age", gt(32))).filter(has("name", "bob")).has("lang", "java"),
-                        g_V("name", eq("marko"), "age", eq(10).or(gt(32)), "name", eq("bob"), "lang", eq("java")).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
+                        g_V("name", eq("marko"), "lang", eq("java"), "name", eq("bob"), "age", eq(10).or(gt(32))).dedup().as("a"), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 {__.V().has("name", "marko").or(not(has("age")), has("age", gt(32))).has("name", "bob").has("lang", "java"),
                         g_V("name", eq("marko"), "name", eq("bob"), "lang", eq("java")).or(not(filter(properties("age"))), has("age", gt(32))), TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).toList()},
                 ///////

@@ -148,7 +148,6 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -926,8 +925,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
-        this.asAdmin().getBytecode().addStep(Symbols.has, accessor, value);
-        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), value instanceof P ? (P) value : P.eq(value)));
+        if (value instanceof P)
+            return this.has(accessor, (P) value);
+        else if (value instanceof Traversal)
+            return this.has(accessor, (Traversal) value);
+        else {
+            this.asAdmin().getBytecode().addStep(Symbols.has, accessor, value);
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), P.eq(value)));
+        }
     }
 
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
@@ -990,7 +995,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 }
             } else
                 ids.add(id);
-            Collections.addAll(ids, otherIds);
+            for (final Object i : otherIds) {
+                if (i.getClass().isArray()) {
+                    for (final Object ii : (Object[]) i) {
+                        ids.add(ii);
+                    }
+                } else
+                    ids.add(i);
+            }
             this.asAdmin().getBytecode().addStep(Symbols.hasId, ids.toArray());
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
         }
@@ -1025,7 +1037,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 }
             } else
                 values.add(value);
-            Collections.addAll(values, otherValues);
+            for (final Object v : otherValues) {
+                if (v.getClass().isArray()) {
+                    for (final Object vv : (Object[]) v) {
+                        values.add(vv);
+                    }
+                } else
+                    values.add(v);
+            }
             this.asAdmin().getBytecode().addStep(Symbols.hasValue, values.toArray());
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), values.size() == 1 ? P.eq(values.get(0)) : P.within(values)));
         }
