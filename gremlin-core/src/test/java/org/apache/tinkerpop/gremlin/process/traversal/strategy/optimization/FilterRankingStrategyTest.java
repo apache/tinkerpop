@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -105,6 +106,8 @@ public class FilterRankingStrategyTest {
                 {__.dedup().has("value", 0).or(not(has("age")), has("age", 10)).has("value", 1), __.has("value", 0).has("value", 1).or(not(has("age")), has("age", 10)).dedup(), Collections.singletonList(InlineFilterStrategy.instance())},
                 {__.dedup().filter(out()).has("value", 0), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
                 {filter(out()).dedup().has("value", 0), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
+                {__.as("a").out().has("age").where(P.eq("a")), __.as("a").out().where(P.eq("a")).has("age"), Collections.emptyList()},
+                {__.as("a").out().has("age").where(P.eq("a")).by("age"), __.as("a").out().has("age").where(P.eq("a")).by("age"), Collections.emptyList()},
                 {has("value", 0).filter(out()).dedup(), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
                 {has("value", 0).or(has("name"), has("age")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(has("name"), has("age")).dedup(), Collections.singletonList(InlineFilterStrategy.instance())},
                 {has("value", 0).or(out(), in()).as(Graph.Hidden.hide("x")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(outE(), inE()).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},

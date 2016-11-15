@@ -126,7 +126,7 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             return 1;
         else if (step instanceof HasStep)
             return 2;
-        else if (step instanceof WherePredicateStep)
+        else if (step instanceof WherePredicateStep && ((WherePredicateStep) step).getLocalChildren().isEmpty())
             return 3;
         else if (step instanceof SimplePathStep || step instanceof CyclicPathStep)
             return 4;
@@ -134,14 +134,16 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             return 5;
         else if (step instanceof WhereTraversalStep)
             return 6;
-        else if (step instanceof OrStep)
+        else if (step instanceof WherePredicateStep) // has by()-modulation
             return 7;
-        else if (step instanceof AndStep)
+        else if (step instanceof OrStep)
             return 8;
-        else if (step instanceof DedupGlobalStep)
+        else if (step instanceof AndStep)
             return 9;
-        else if (step instanceof OrderGlobalStep)
+        else if (step instanceof DedupGlobalStep)
             return 10;
+        else if (step instanceof OrderGlobalStep)
+            return 11;
         else
             return 0;
     }
