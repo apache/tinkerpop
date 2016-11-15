@@ -112,10 +112,12 @@ public class FilterRankingStrategyTest {
                 {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")), __.as("a").out().where(P.eq("a")).and(has("age"), has("name")), Collections.emptyList()},
                 {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")).by("age"), __.as("a").out().has("age").has("name").where(P.eq("a")).by("age"), Collections.singletonList(InlineFilterStrategy.instance())},
                 {__.as("a").out().and(has("age"), has("name")).where(P.eq("a")), __.as("a").out().where(P.eq("a")).has("age").has("name"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.as("a").out().and(has("age"), has("name")).filter(__.where(P.eq("a"))), __.as("a").out().where(P.eq("a")).has("age").has("name"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {__.as("a").out().and(has("age"), has("name")).filter(__.where(P.eq("a")).by("age")), __.as("a").out().has("age").has("name").where(P.eq("a")).by("age"), Collections.singletonList(InlineFilterStrategy.instance())},
                 {has("value", 0).filter(out()).dedup(), has("value", 0).filter(out()).dedup(), Collections.emptyList()},
                 {has("value", 0).or(has("name"), has("age")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(has("name"), has("age")).dedup(), Collections.singletonList(InlineFilterStrategy.instance())},
                 {has("value", 0).or(out(), in()).as(Graph.Hidden.hide("x")).has("value", 1).dedup(), has("value", 0).has("value", 1).or(outE(), inE()).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                // {has("value", 0).and(has("age"), has("name", "marko")).is(10), __.is(10).has("value", 0).has("name", "marko").has("age"), Collections.singletonList(InlineFilterStrategy.instance())},
+                {has("value", 0).and(has("age"), has("name", "marko")).is(10), __.is(10).has("value", 0).has("age").has("name", "marko"), Collections.singletonList(InlineFilterStrategy.instance())},
                 {has("value", 0).filter(or(not(has("age")), has("age", 1))).has("value", 1).dedup(), has("value", 0).has("value", 1).or(not(filter(properties("age"))), has("age", 1)).dedup(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
         });
     }

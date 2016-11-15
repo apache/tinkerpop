@@ -120,32 +120,51 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
      * @return The rank of the given step.
      */
     private static int getStepRank(final Step step) {
+        final int rank;
         if (!(step instanceof FilterStep || step instanceof OrderGlobalStep))
             return 0;
         else if (step instanceof IsStep || step instanceof ClassFilterStep)
-            return 1;
+            rank = 1;
         else if (step instanceof HasStep)
-            return 2;
+            rank = 2;
         else if (step instanceof WherePredicateStep && ((WherePredicateStep) step).getLocalChildren().isEmpty())
-            return 3;
+            rank = 3;
         else if (step instanceof SimplePathStep || step instanceof CyclicPathStep)
-            return 4;
+            rank = 4;
         else if (step instanceof TraversalFilterStep || step instanceof NotStep)
-            return 5;
+            rank = 5;
         else if (step instanceof WhereTraversalStep)
-            return 6;
+            rank = 6;
         else if (step instanceof OrStep)
-            return 7;
+            rank = 7;
         else if (step instanceof AndStep)
-            return 8;
+            rank = 8;
         else if (step instanceof WherePredicateStep) // has by()-modulation
-            return 9;
+            rank = 9;
         else if (step instanceof DedupGlobalStep)
-            return 10;
+            rank = 10;
         else if (step instanceof OrderGlobalStep)
-            return 11;
+            rank = 11;
         else
             return 0;
+        ////////////
+        if (step instanceof TraversalParent)
+            return getMaxStepRank((TraversalParent) step, rank);
+        else
+            return rank;
+    }
+
+    private static int getMaxStepRank(final TraversalParent parent, final int startRank) {
+        int maxStepRank = startRank;
+        // no filter steps are global parents (yet)
+        for (final Traversal.Admin<?, ?> traversal : parent.getLocalChildren()) {
+            for (final Step<?, ?> step : traversal.getSteps()) {
+                final int stepRank = getStepRank(step);
+                if (stepRank > maxStepRank)
+                    maxStepRank = stepRank;
+            }
+        }
+        return maxStepRank;
     }
 
     private static boolean usesLabels(final Step<?, ?> step, final Set<String> labels) {
