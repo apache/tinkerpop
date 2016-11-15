@@ -271,6 +271,7 @@ limitations under the License.
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
                         <exclude>.travis.yml</exclude>
+                        <exclude>.travis.*.sh</exclude>
                         <exclude>.dockerignore</exclude>
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
