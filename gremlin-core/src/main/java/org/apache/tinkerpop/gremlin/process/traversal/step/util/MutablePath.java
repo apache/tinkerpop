@@ -113,7 +113,9 @@ public class MutablePath implements Path, Serializable {
 
     @Override
     public <A> A get(final Pop pop, final String label) {
-        if (Pop.all == pop) {
+        if (Pop.mixed == pop) {
+            return this.get(label);
+        } else if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)

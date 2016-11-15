@@ -97,6 +97,7 @@ public class PathProcessorStrategyTest {
                 {__.select(Pop.first, "a", "b").by("name").by("age"), __.select(Pop.first, "b").map(new ElementValueTraversal<>("age")).as("b").select(Pop.first, "a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
                 {__.select(Pop.last, "a", "b").by("name").by("age"), __.select(Pop.last, "b").map(new ElementValueTraversal<>("age")).as("b").select(Pop.last, "a").map(new ElementValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.select(Pop.all, "a", "b").by("name").by("age"), __.select(Pop.all, "a", "b").by("name").by("age"), Collections.emptyList()},
+                {__.select(Pop.mixed, "a", "b").by("name").by("age"), __.select(Pop.mixed, "a", "b").by("name").by("age"), Collections.emptyList()},
                 // where(as("a")...)
                 {__.where(__.out("knows")), __.where(__.outE("knows")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                 {__.where(__.as("a").out("knows")), __.identity().as("xyz").select(Pop.last, "a").filter(__.out("knows")).select(Pop.last, "xyz"), Collections.emptyList()},

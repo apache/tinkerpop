@@ -32,6 +32,21 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+SelectStep Defaults to Pop.last
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`SelectStep` and `SelectOneStep` (`select()`) are the only `Scoping` steps that default to `Pop.mixed` as their labeled path
+selection criteria. All other steps, like `match()`, `where()` and `dedup()`, use `Pop.last`. In order to better enable optimizations
+around total `Pop.last` traversals, the `select()`-steps now default to `Pop.last`. Most users will not notice a difference as
+it is rare for repeated labels to be used in practice. However, formal backwards compatibility is possible as outlined below.
+
+Assuming that `x` is not a `Pop` argument:
+
+1. Change all `select(x,y,z)` calls to `selectV3d0(x,y,z)` calls.
+2. Change all `select(x,y,z)`-step calls to `select(Pop.mixed,x,y,z)`.
+
+If an explicit `Pop` argument is provided, then no changes are required.
+
 OptionalStep and Side-Effects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
