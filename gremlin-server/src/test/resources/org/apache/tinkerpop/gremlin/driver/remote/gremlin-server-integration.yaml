@@ -16,7 +16,7 @@
 # under the License.
 
 host: localhost
-port: 8182
+port: 45940
 scriptEvaluationTimeout: 30000
 graphs: {
   graph: conf/tinkergraph-empty.properties,

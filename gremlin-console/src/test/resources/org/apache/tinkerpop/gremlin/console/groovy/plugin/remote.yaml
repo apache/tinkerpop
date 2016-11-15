@@ -16,5 +16,5 @@
 # under the License.
 
 hosts: [localhost]
-port: 8182
+port: 45940
 serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}

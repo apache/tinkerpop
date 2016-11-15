@@ -26,9 +26,7 @@
 # is the addition of "gremlin-jython" to the "scriptEngines" field.
 
 host: localhost
-port: 8182
-threadPoolWorker: 1
-gremlinPool: 8
+port: 45940
 scriptEvaluationTimeout: 30000
 graphs: {
   graph: src/test/resources/org/apache/tinkerpop/gremlin/python/driver/tinkergraph-empty.properties}

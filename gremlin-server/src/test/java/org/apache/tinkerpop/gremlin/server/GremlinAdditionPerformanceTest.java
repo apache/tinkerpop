@@ -83,7 +83,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
         final Serializers[] mimes = new Serializers[]{Serializers.GRAPHSON, Serializers.GRAPHSON_V1D0, Serializers.GRYO_V1D0};
         final Serializers mimeType = mimes[rand.nextInt(3)];
         logger.info(mimeType.toString());
-        final Cluster cluster = Cluster.build("localhost")
+        final Cluster cluster = TestClientFactory.build()
                 .serializer(mimeType)
                 .create();
         final Client client = cluster.connect();

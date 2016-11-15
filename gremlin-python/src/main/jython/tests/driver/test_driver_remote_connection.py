@@ -38,8 +38,8 @@ from gremlin_python.process.strategies import SubgraphStrategy
 class TestDriverRemoteConnection(TestCase):
     def test_traversals(self):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
-        assert "remoteconnection[ws://localhost:8182/gremlin,g]" == str(connection)
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
+        assert "remoteconnection[ws://localhost:45940/gremlin,g]" == str(connection)
         g = Graph().traversal().withRemote(connection)
 
         assert long(6) == g.V().count().toList()[0]
@@ -66,7 +66,7 @@ class TestDriverRemoteConnection(TestCase):
 
     def test_strategies(self):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         #
         g = Graph().traversal().withRemote(connection). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
@@ -98,7 +98,7 @@ class TestDriverRemoteConnection(TestCase):
 
     def test_side_effects(self):
         statics.load_statics(globals())
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         #
         g = Graph().traversal().withRemote(connection)
         ###
@@ -155,7 +155,7 @@ class TestDriverRemoteConnection(TestCase):
         connection.close()
 
     def test_side_effect_close(self):
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         g = Graph().traversal().withRemote(connection)
         t = g.V().aggregate('a').aggregate('b')
         t.toList()
@@ -192,7 +192,7 @@ class TestDriverRemoteConnection(TestCase):
 if __name__ == '__main__':
     test = False
     try:
-        connection = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+        connection = DriverRemoteConnection('ws://localhost:45940/gremlin', 'g')
         test = True
         connection.close()
     except:
