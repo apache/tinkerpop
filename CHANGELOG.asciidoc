@@ -55,6 +55,11 @@ TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Converted Spark process suite tests to "integration" tests.
+* Fixed a bug in `InlineFilterStrategy` having to do with folding `HasContainers` into `VertexStep`.
+* Deprecated `HasContainer.makeHasContainers()` which was used to dissect `AndP` and shouldn't be used at the TinkerPop-level.
+* `GraphTraversal.has()` now will try and fold-left `HasContainer` if end step is a `HasContainerHolder`.
+* Created explicit `P`-predicate methods for `GraphTraversal.hasXXX()`.
+* Fixed a bug in `FilterRankStrategy` around `where().by()` ordering.
 * Added another optimization in `RangeByIsCountStrategy`, that removes `count().is()` altogether if it's not needed.
 * Fixed a OLAP `MatchStep.clone()`-bug that occurs when the `match()` is in a local child.
 * Added another optimization in `RangeByIsCountStrategy`, that removes `count().is()` altogether if it's not needed.

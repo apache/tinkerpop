@@ -677,31 +677,45 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#has(T, Object, Object...)
+     * @see GraphTraversal#hasLabel(String, String...)
      */
-    public static <A> GraphTraversal<A, A> has(final T accessor, final Object value, Object... values) {
-        return __.<A>start().has(accessor, value, values);
+    public static <A> GraphTraversal<A, A> hasLabel(final String label, String... otherLabels) {
+        return __.<A>start().hasLabel(label, otherLabels);
     }
 
     /**
-     * @see GraphTraversal#hasLabel(Object, Object...)
+     * @see GraphTraversal#hasLabel(P)
      */
-    public static <A> GraphTraversal<A, A> hasLabel(final Object value, Object... values) {
-        return __.<A>start().hasLabel(value, values);
+    public static <A> GraphTraversal<A, A> hasLabel(final P<String> predicate) {
+        return __.<A>start().hasLabel(predicate);
     }
 
     /**
      * @see GraphTraversal#hasId(Object, Object...)
      */
-    public static <A> GraphTraversal<A, A> hasId(final Object value, Object... values) {
-        return __.<A>start().hasId(value, values);
+    public static <A> GraphTraversal<A, A> hasId(final Object id, Object... otherIds) {
+        return __.<A>start().hasId(id, otherIds);
     }
 
     /**
-     * @see GraphTraversal#hasKey(Object, Object...)
+     * @see GraphTraversal#hasId(P)
      */
-    public static <A> GraphTraversal<A, A> hasKey(final Object value, Object... values) {
-        return __.<A>start().hasKey(value, values);
+    public static <A> GraphTraversal<A, A> hasId(final P<Object> predicate) {
+        return __.<A>start().hasId(predicate);
+    }
+
+    /**
+     * @see GraphTraversal#hasKey(String, String...)
+     */
+    public static <A> GraphTraversal<A, A> hasKey(final String label, String... otherLabels) {
+        return __.<A>start().hasKey(label, otherLabels);
+    }
+
+    /**
+     * @see GraphTraversal#hasKey(P)
+     */
+    public static <A> GraphTraversal<A, A> hasKey(final P<String> predicate) {
+        return __.<A>start().hasKey(predicate);
     }
 
     /**
@@ -709,6 +723,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> hasValue(final Object value, Object... values) {
         return __.<A>start().hasValue(value, values);
+    }
+
+    /**
+     * @see GraphTraversal#hasValue(P)
+     */
+    public static <A> GraphTraversal<A, A> hasValue(final P<Object> predicate) {
+        return __.<A>start().hasValue(predicate);
     }
 
     /**

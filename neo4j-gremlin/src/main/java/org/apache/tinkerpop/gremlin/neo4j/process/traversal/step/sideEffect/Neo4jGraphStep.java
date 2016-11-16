@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -50,7 +52,7 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
     }
 
     private Iterator<? extends Edge> edges() {
-        return IteratorUtils.filter(this.getTraversal().getGraph().get().edges(this.ids), edge -> HasContainer.testAll((Edge) edge, this.hasContainers));
+        return IteratorUtils.filter(this.getTraversal().getGraph().get().edges(this.ids), edge -> HasContainer.testAll(edge, this.hasContainers));
     }
 
     private Iterator<? extends Vertex> vertices() {
@@ -75,7 +77,12 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
 
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
-        this.hasContainers.add(hasContainer);
+        if (hasContainer.getPredicate() instanceof AndP) {
+            for (final P<?> predicate : ((AndP<?>) hasContainer.getPredicate()).getPredicates()) {
+                this.addHasContainer(new HasContainer(hasContainer.getKey(), predicate));
+            }
+        } else
+            this.hasContainers.add(hasContainer);
     }
 
     @Override

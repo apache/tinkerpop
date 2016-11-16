@@ -75,22 +75,18 @@ public class HasStepTest extends StepTest {
                 // hasLabel(Object label, Object... moreLabels) should be compatible with hasLabel(Object... labels)
                 Arrays.asList(
                         __.hasLabel("person"),
-                        __.hasLabel(eq("person")),
-                        __.hasLabel(new String[]{"person"})),
+                        __.hasLabel(eq("person"))),
                 Arrays.asList(
                         __.hasLabel("person", "software"),
-                        __.hasLabel(within("person", "software")),
-                        __.hasLabel(new String[]{"person", "software"})),
+                        __.hasLabel(within("person", "software"))),
 
                 // hasKey(Object key, Object... moreKeys) should be compatible with hasKey(Object... keys)
                 Arrays.asList(
                         __.hasKey("name"),
-                        __.hasKey(eq("name")),
-                        __.hasKey(new String[]{"name"})),
+                        __.hasKey(eq("name"))),
                 Arrays.asList(
                         __.hasKey("name", "age"),
-                        __.hasKey(within("name", "age")),
-                        __.hasKey(new String[]{"name", "age"})),
+                        __.hasKey(within("name", "age"))),
 
                 // hasValue(Object value, Object... moreValues) should be compatible with hasValue(Object... values)
                 Arrays.asList(
