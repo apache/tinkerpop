@@ -155,6 +155,9 @@
   }
 
   GraphSONReader.prototype.read = function (obj) {
+    if (obj === undefined) {
+      return undefined;
+    }
     if (Array.isArray(obj)) {
       return obj.map(function mapEach(item) {
         return this.read(item);
@@ -340,7 +343,12 @@
 
   VertexPropertySerializer.prototype.deserialize = function (obj) {
     var value = obj[valueKey];
-    return new g.VertexProperty(this.reader.read(value['id']), value['label'], this.reader.read(value['value']));
+    return new g.VertexProperty(
+      this.reader.read(value['id']),
+      value['label'],
+      this.reader.read(value['value']),
+      this.reader.read(value['properties'])
+    );
   };
 
   function PropertySerializer() {
@@ -364,7 +372,8 @@
       this.reader.read(value['id']),
       this.reader.read(value['outV']),
       value['label'],
-      this.reader.read(value['inV'])
+      this.reader.read(value['inV']),
+      this.reader.read(value['properties'])
     );
   };
 
