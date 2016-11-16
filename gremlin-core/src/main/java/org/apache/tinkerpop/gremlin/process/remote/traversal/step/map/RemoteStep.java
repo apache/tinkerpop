@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.NoSuchElementException;
@@ -35,6 +37,8 @@ import java.util.NoSuchElementException;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class RemoteStep<S, E> extends AbstractStep<S, E> {
+
+    private static final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private transient RemoteConnection remoteConnection;
     private RemoteTraversal<?, E> remoteTraversal;
@@ -53,7 +57,9 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (null == this.remoteTraversal) {
             try {
-                this.remoteTraversal = this.remoteConnection.submit(this.traversal.getBytecode());
+                this.remoteTraversal = this.remoteConnection.submit(IS_TESTING ? BytecodeHelper.filterInstructions(this.traversal.getBytecode(),
+                        instruction -> !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
+                                instruction.getArguments()[0].toString().contains("TranslationStrategy"))) : this.traversal.getBytecode());
                 this.traversal.setSideEffects(this.remoteTraversal.getSideEffects());
             } catch (final RemoteConnectionException sce) {
                 throw new IllegalStateException(sce);

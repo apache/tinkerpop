@@ -35,7 +35,11 @@ import java.util.Collections;
 public final class MatchAlgorithmStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
 
     private static final String MATCH_ALGORITHM = "matchAlgorithm";
-    private final Class<? extends MatchStep.MatchAlgorithm> matchAlgorithmClass;
+    private Class<? extends MatchStep.MatchAlgorithm> matchAlgorithmClass;
+
+    private MatchAlgorithmStrategy() {
+        // for serialization
+    }
 
     private MatchAlgorithmStrategy(final Class<? extends MatchStep.MatchAlgorithm> matchAlgorithmClass) {
         this.matchAlgorithmClass = matchAlgorithmClass;

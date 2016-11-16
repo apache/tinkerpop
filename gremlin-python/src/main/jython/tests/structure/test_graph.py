@@ -48,23 +48,25 @@ class TestGraph(TestCase):
         assert "phrase" == edge.inV.label
         assert edge.inV != edge.outV
         #
-        vertex_property = VertexProperty(long(24), "name", "marko")
+        vertex_property = VertexProperty(long(24), "name", "marko", Vertex(1))
         assert "vp[name->marko]" == str(vertex_property)
         assert "name" == vertex_property.label
         assert "name" == vertex_property.key
         assert "marko" == vertex_property.value
         assert long(24) == vertex_property.id
+        assert Vertex(1) == vertex_property.vertex
         assert isinstance(vertex_property.id, long)
-        assert vertex_property == VertexProperty(long(24), "name", "marko")
+        assert vertex_property == VertexProperty(long(24), "name", "marko", Vertex(1))
         #
-        property = Property("age", 29)
+        property = Property("age", 29, Vertex(1))
         assert "p[age->29]" == str(property)
         assert "age" == property.key
         assert 29 == property.value
+        assert Vertex(1) == property.element
         assert isinstance(property.value, int)
-        assert property == Property("age", 29)
+        assert property == Property("age", 29, Vertex(1))
         if not six.PY3:
-            assert property != Property("age", long(29))
+            assert property != Property("age", long(29), Vertex(1))
         #
         for i in [vertex, edge, vertex_property, property]:
             for j in [vertex, edge, vertex_property, property]:

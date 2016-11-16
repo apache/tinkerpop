@@ -31,7 +31,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -156,9 +158,19 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
             return "TraversalOptionParent.Pick." + object.toString();
         else if (object instanceof Enum)
             return ((Enum) object).getDeclaringClass().getSimpleName() + "." + object.toString();
-        else if (object instanceof Element)
-            return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Lambda) {
+        else if (object instanceof Element) {
+            final String id = convertToString(((Element) object).id());
+            String temp = this.traversalSource.equals("__") ? "g" : this.traversalSource;
+            if (object instanceof Vertex)
+                temp = temp + ".V(" + id + ").next()";
+            else if (object instanceof Edge)
+                temp = temp + ".E(" + id + ").next()";
+            else {
+                final VertexProperty vertexProperty = (VertexProperty) object;
+                temp = temp + ".V(" + convertToString(vertexProperty.element().id()) + ").properties(" + convertToString(vertexProperty.key()) + ").hasId(" + id + ").next()";
+            }
+            return temp;
+        } else if (object instanceof Lambda) {
             final String lambdaString = ((Lambda) object).getLambdaScript().trim();
             return lambdaString.startsWith("{") ? lambdaString : "{" + lambdaString + "}";
         } else if (object instanceof TraversalStrategyProxy) {

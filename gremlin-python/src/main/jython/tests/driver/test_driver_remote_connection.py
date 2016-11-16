@@ -56,7 +56,7 @@ class TestDriverRemoteConnection(TestCase):
         assert "ripple" in results
         #
         assert 10 == g.V().repeat(both()).times(5)[0:10].count().next()
-        assert 1 == g.V().repeat(both()).times(5)[0].count().next()
+        assert 1 == g.V().repeat(both()).times(5)[0:1].count().next()
         assert 0 == g.V().repeat(both()).times(5)[0:0].count().next()
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()

@@ -47,10 +47,6 @@ public class TinkerGraphGroovyTranslatorProvider extends TinkerGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
-            "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            "g_VX1X_out_injectXv2X_name",
-            "shouldNeverPropagateANoBulkTraverser",
-            "shouldNeverPropagateANullValuedTraverser",
             GraphComputerTest.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName(),
             TraversalInterruptionTest.class.getCanonicalName(),

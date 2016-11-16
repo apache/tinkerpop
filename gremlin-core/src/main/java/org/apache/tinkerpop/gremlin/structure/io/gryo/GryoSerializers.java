@@ -23,13 +23,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -41,7 +39,6 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -136,12 +133,8 @@ public final class GryoSerializers {
     public final static class BytecodeSerializer implements SerializerShim<Bytecode> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
-            final List<Bytecode.Instruction> sourceInstructions = IteratorUtils.list(
-                    IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),
-                            i -> !i.getOperator().equals("withStrategies") && !i.getOperator().equals("withComputer")));
-            writeInstructions(kryo, output, sourceInstructions);
-            final List<Bytecode.Instruction> stepInstructions = IteratorUtils.list(bytecode.getStepInstructions().iterator());
-            writeInstructions(kryo, output, stepInstructions);
+            writeInstructions(kryo, output, bytecode.getSourceInstructions());
+            writeInstructions(kryo, output, bytecode.getStepInstructions());
         }
 
         @Override

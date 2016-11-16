@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -43,9 +44,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -62,17 +68,25 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith
     public void shouldNeverPropagateANoBulkTraverser() {
-        assertFalse(g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).hasNext());
-        assertEquals(0, g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).toList().size());
-        g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).sideEffect(t -> fail("this should not have happened")).iterate();
+        try {
+            assertFalse(g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).hasNext());
+            assertEquals(0, g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).toList().size());
+            g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).sideEffect(t -> fail("this should not have happened")).iterate();
+        } catch (VerificationException e) {
+            // its okay if lambdas can't be serialized by the test suite
+        }
     }
 
     @Test
     @LoadGraphWith
     public void shouldNeverPropagateANullValuedTraverser() {
-        assertFalse(g.V().map(t -> null).hasNext());
-        assertEquals(0, g.V().map(t -> null).toList().size());
-        g.V().map(t -> null).sideEffect(t -> fail("this should not have happened")).iterate();
+        try {
+            assertFalse(g.V().map(t -> null).hasNext());
+            assertEquals(0, g.V().map(t -> null).toList().size());
+            g.V().map(t -> null).sideEffect(t -> fail("this should not have happened")).iterate();
+        } catch (VerificationException e) {
+            // its okay if lambdas can't be serialized by the test suite
+        }
     }
 
     @Test
@@ -298,7 +312,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
         GraphTraversal.Admin<Object, Object> nestedTraversalAdmin = nestedTraversal.asAdmin();
         nestedTraversalAdmin.reset();
-        nestedTraversalAdmin.addStart(nestedTraversalAdmin.getTraverserGenerator().generate(g.V().has("name", "marko").next(), (Step)traversal.asAdmin().getStartStep(), 1l));
+        nestedTraversalAdmin.addStart(nestedTraversalAdmin.getTraverserGenerator().generate(g.V().has("name", "marko").next(), (Step) traversal.asAdmin().getStartStep(), 1l));
 
         try {
             nestedTraversal.next();

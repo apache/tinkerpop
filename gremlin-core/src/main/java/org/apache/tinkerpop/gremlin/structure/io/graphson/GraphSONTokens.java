@@ -38,6 +38,7 @@ public final class GraphSONTokens {
     public static final String EDGES = "edges";
     public static final String VERTEX = "vertex";
     public static final String VERTICES = "vertices";
+    public static final String ELEMENT = "element";
     public static final String IN = "inV";
     public static final String OUT = "outV";
     public static final String IN_E = "inE";

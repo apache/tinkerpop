@@ -27,7 +27,7 @@ from unittest import TestCase
 import six
 
 from gremlin_python.statics import *
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty
 from gremlin_python.structure.graph import Path
 from gremlin_python.structure.io.graphson import GraphSONWriter, GraphSONReader, GraphSONUtil
 import gremlin_python.structure.io.graphson
@@ -125,13 +125,12 @@ class TestGraphSONReader(TestCase):
 
 
 class TestGraphSONWriter(TestCase):
-
     graphson_writer = GraphSONWriter()
 
     def test_number_output(self):
-        assert {"@type":"g:Int64","@value":2} == json.loads(self.graphson_writer.writeObject(long(2)))
-        assert {"@type":"g:Int32","@value":1} == json.loads(self.graphson_writer.writeObject(1))
-        assert {"@type":"g:Double","@value":3.2} == json.loads(self.graphson_writer.writeObject(3.2))
+        assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.writeObject(long(2)))
+        assert {"@type": "g:Int32", "@value": 1} == json.loads(self.graphson_writer.writeObject(1))
+        assert {"@type": "g:Double", "@value": 3.2} == json.loads(self.graphson_writer.writeObject(3.2))
         assert """true""" == self.graphson_writer.writeObject(True)
 
     def test_numbers(self):
@@ -146,13 +145,38 @@ class TestGraphSONWriter(TestCase):
 
     def test_strategies(self):
         # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
-        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(self.graphson_writer.writeObject(SubgraphStrategy))
+        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
+            self.graphson_writer.writeObject(SubgraphStrategy))
         assert {"@type": "g:SubgraphStrategy", "@value": {
             "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
             self.graphson_writer.writeObject(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
-    def test_custom_mapping(self):
+    def test_graph(self):
+        assert {"@type": "g:Vertex",
+                "@value": {"id": {"@type": "g:Int64", "@value": 12}, "label": "person"}} == json.loads(
+            self.graphson_writer.writeObject(Vertex(12l, "person")))
+        assert {"@type": "g:Edge", "@value": {"id": {"@type": "g:Int32", "@value": 7},
+                                              "outV": {"@type": "g:Vertex",
+                                                       "@value": {"id": {
+                                                           "@type": "g:Int32",
+                                                           "@value": 0}, "label": "vertex"}},
+                                              "label": "knows",
+                                              "inV": {"@type": "g:Vertex", "@value": {
+                                                  "id": {"@type": "g:Int32", "@value": 1},
+                                                  "label": "vertex"}}}} == json.loads(
+            self.graphson_writer.writeObject(Edge(7, Vertex(0), "knows", Vertex(1))))
+        assert {"@type": "g:VertexProperty", "@value": {"id": "blah", "label": "keyA", "value": True,
+                                                        "vertex": {"@type": "g:Vertex",
+                                                                   "@value": {"id": "stephen",
+                                                                              "label": "vertex"}}}} == json.loads(
+            self.graphson_writer.writeObject(VertexProperty("blah", "keyA", True, Vertex("stephen"))))
+        assert {"@type": "g:Property", "@value": {"key": "name", "value": "marko", "element": {"@type": "g:Vertex",
+                                                                                               "@value": {
+                                                                                                   "id": "bob",
+                                                                                                   "label": "guy"}}}} == json.loads(
+            self.graphson_writer.writeObject(Property("name", "marko", Vertex("bob", "guy"))))
 
+    def test_custom_mapping(self):
         # extended mapping
         class X(object):
             pass

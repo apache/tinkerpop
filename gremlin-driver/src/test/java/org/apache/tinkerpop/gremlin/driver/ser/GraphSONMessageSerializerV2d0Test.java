@@ -316,7 +316,7 @@ public class GraphSONMessageSerializerV2d0Test {
         assertEquals(1, friendProperties.size());
         final JsonNode friendsProperty = friendProperties.get(0).get(GraphSONTokens.VALUEPROP);
         assertNotNull(friendsProperty);
-        assertEquals(3, friendsProperty.size());
+        assertEquals(4, friendsProperty.size());
 
         final String object1 = friendsProperty.get(GraphSONTokens.VALUE).get(0).asText();
         assertEquals("x", object1);

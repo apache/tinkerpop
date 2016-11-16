@@ -19,19 +19,44 @@
 
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.driver.remote.RemoteGraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class RemoteGraphGroovyTranslatorProvider extends RemoteGraphProvider {
 
+    private static boolean SKIP = false;
+
+    private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
+            "g_injectXg_VX1X_propertiesXnameX_nextX_value"));
+
+
+    @Override
+    public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
+                                                    final LoadGraphWith.GraphData loadGraphWith) {
+
+        final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
+        SKIP = SKIP_TESTS.contains(testMethodName) || SKIP_TESTS.contains(test.getCanonicalName());
+        return config;
+    }
+
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        final GraphTraversalSource g = graph.traversal();
-        return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g")));
+        if (SKIP)
+            return graph.traversal();
+        else {
+            final GraphTraversalSource g = graph.traversal();
+            return g.withStrategies(new TranslationStrategy(g, GroovyTranslator.of("g")));
+        }
     }
 }

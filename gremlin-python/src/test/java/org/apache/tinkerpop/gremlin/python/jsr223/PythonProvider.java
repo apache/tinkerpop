@@ -66,10 +66,7 @@ public class PythonProvider extends AbstractGraphProvider {
     private static Set<String> SKIP_TESTS = new HashSet<>(Arrays.asList(
             "testProfileStrategyCallback",
             "testProfileStrategyCallbackSideEffect",
-            "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
             "g_VX1X_out_injectXv2X_name",
-            "shouldNeverPropagateANoBulkTraverser",
-            "shouldNeverPropagateANullValuedTraverser",
             "shouldHidePartitionKeyForValues",
             "g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack",
             //

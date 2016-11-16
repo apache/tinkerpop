@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
@@ -41,6 +42,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -48,6 +51,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
 
     private final TraversalSource traversalSource;
     private final Translator translator;
+    private final boolean IS_TESTING = Boolean.valueOf(System.getProperty("is.testing", "false"));
 
     private static final Set<Class<? extends DecorationStrategy>> POSTS = new HashSet<>(Arrays.asList(
             ConnectiveStrategy.class,
@@ -73,7 +77,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
             return;
 
         // verifications to ensure unsupported steps do not exist in the traversal
-        if (Boolean.valueOf(System.getProperty("is.testing", "false"))) {
+        if (IS_TESTING) {
             if (traversal.getBytecode().toString().contains("$") || traversal.getBytecode().toString().contains("HashSetSupplier"))
                 throw new VerificationException("Test suite does not support lambdas", traversal);
             if (TraversalHelper.hasStepOfAssignableClassRecursively(ProgramVertexProgramStep.class, traversal))
@@ -81,7 +85,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         }
 
         final Traversal.Admin<?, ?> translatedTraversal;
-        final Bytecode bytecode = Boolean.valueOf(System.getProperty("is.testing", "false")) ?
+        final Bytecode bytecode = IS_TESTING ?
                 insertBindingsForTesting(traversal.getBytecode()) :
                 traversal.getBytecode();
         ////////////////
@@ -102,6 +106,14 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         } else {
             throw new IllegalArgumentException("TranslationStrategy does not know how to process the provided translator type: " + this.translator.getClass().getSimpleName());
         }
+        ////////////////
+        if (IS_TESTING && // this tests to ensure that the bytecode going in is the same as the bytecode coming out
+                !BytecodeHelper.getLambdaLanguage(traversal.getBytecode()).isPresent())
+            assertEquals(BytecodeHelper.filterInstructions(traversal.getBytecode(),
+                    instruction ->
+                            !(instruction.getOperator().equals(TraversalSource.Symbols.withStrategies) &&
+                                    instruction.getArguments()[0] instanceof TranslationStrategy)),
+                    translatedTraversal.getBytecode());
         ////////////////
         assert !translatedTraversal.isLocked();
         assert !traversal.isLocked();

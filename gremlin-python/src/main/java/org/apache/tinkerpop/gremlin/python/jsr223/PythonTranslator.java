@@ -33,8 +33,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -113,9 +115,12 @@ public class PythonTranslator implements Translator.ScriptTranslator {
                 continue;
             else if (0 == arguments.length)
                 traversalScript.append(".").append(SymbolHelper.toPython(methodName)).append("()");
-            else if (methodName.equals("range") && 2 == arguments.length)
-                traversalScript.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
-            else if (methodName.equals("limit") && 1 == arguments.length)
+            else if (methodName.equals("range") && 2 == arguments.length && ((Number) arguments[0]).intValue() != 0) {
+                if (((Number) arguments[0]).longValue() + 1 == ((Number) arguments[1]).longValue())
+                    traversalScript.append("[").append(arguments[0]).append("]");
+                else
+                    traversalScript.append("[").append(arguments[0]).append(":").append(arguments[1]).append("]");
+            } else if (methodName.equals("limit") && 1 == arguments.length)
                 traversalScript.append("[0:").append(arguments[0]).append("]");
             else if (methodName.equals("values") && 1 == arguments.length && traversalScript.length() > 3 && !STEP_NAMES.contains(arguments[0].toString()))
                 traversalScript.append(".").append(arguments[0]);
@@ -136,7 +141,7 @@ public class PythonTranslator implements Translator.ScriptTranslator {
         return traversalScript.toString();
     }
 
-    private String convertToString(final Object object) {
+    protected String convertToString(final Object object) {
         if (object instanceof Bytecode.Binding)
             return ((Bytecode.Binding) object).variable();
         else if (object instanceof Bytecode)
@@ -190,9 +195,21 @@ public class PythonTranslator implements Translator.ScriptTranslator {
             return convertStatic(((Enum) object).getDeclaringClass().getSimpleName() + ".") + SymbolHelper.toPython(object.toString());
         else if (object instanceof P)
             return convertPToString((P) object, new StringBuilder()).toString();
-        else if (object instanceof Element)
-            return convertToString(((Element) object).id()); // hack
-        else if (object instanceof Lambda)
+        else if (object instanceof Element) {
+            final String id = convertToString(((Element) object).id());
+            if (object instanceof Vertex)
+                return "Vertex(" + id + "," + convertToString(((Vertex) object).label()) + ")";
+            else if (object instanceof Edge) {
+                final Edge edge = (Edge) object;
+                return "Edge(" + id + "," +
+                        convertToString(edge.outVertex()) + "," +
+                        convertToString(edge.label()) + "," +
+                        convertToString(edge.inVertex()) + ")";
+            } else {
+                final VertexProperty vertexProperty = (VertexProperty) object;
+                return "VertexProperty(" + id + "," + convertToString(vertexProperty.label()) + "," + convertToString(vertexProperty.value()) + "," + convertToString(vertexProperty.element()) + ")";
+            }
+        } else if (object instanceof Lambda)
             return convertLambdaToString((Lambda) object);
         else
             return null == object ? "None" : object.toString();

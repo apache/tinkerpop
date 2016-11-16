@@ -36,22 +36,22 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0f).V.outE.sack(sum).by('weight').inV.sack.sum()")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0d).V.outE.sack(sum).by('weight').inV.sack.sum()")
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0f).V.repeat(__.outE.sack(sum).by('weight').inV).times(2).sack()")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0d).V.repeat(__.outE.sack(sum).by('weight').inV).times(2).sack()")
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0f).V().outE.sack(sum, 'weight').inV.sack.sum()")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0d).V().outE.sack(sum, 'weight').inV.sack.sum()")
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0f).V.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack")
+            new ScriptTraversal<>(g, "gremlin-groovy", "g.withSack(0.0d).V.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack")
         }
 
         @Override

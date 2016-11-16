@@ -47,8 +47,6 @@ public class TinkerGraphJavaTranslatorProvider extends TinkerGraphProvider {
             "testProfileStrategyCallbackSideEffect",
             TraversalInterruptionTest.class.getCanonicalName(),
             TraversalInterruptionComputerTest.class.getCanonicalName(),
-            "shouldNeverPropagateANoBulkTraverser",
-            "shouldNeverPropagateANullValuedTraverser",
             ElementIdStrategyProcessTest.class.getCanonicalName(),
             EventStrategyProcessTest.class.getCanonicalName(),
             ProgramTest.Traversals.class.getCanonicalName()));

@@ -56,6 +56,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 TinkerPop 3.2.4 (Release Date: NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added support for `VertexProperty.element()` and `Property.element()` in GraphSON to enable attachment.
+* Added `Vertex`, `Edge`, `VertexProperty`, and `Property` serializers to Gremlin-Python and exposed tests that use graph object arguments.
+* `Bytecode.getSourceInstructions()` and `Bytecode.getStepInstructions()` now returns `List<Instruction>` instead of `Iterable<Instruction>`.
+* Added various `TraversalStrategy` registrations with `GryoMapper`.
+* Fixed a naming mistake in Gremlin-Python: `IdentityRemoveStrategy` is now called `IdentityRemovalStrategy`.
+* Added `TranslationStrategy` test infrastructure that verifies `Bytecode` generated from a translation is equal to the original `Bytecode`.
 * Converted Spark process suite tests to "integration" tests.
 * Fixed a bug in `InlineFilterStrategy` having to do with folding `HasContainers` into `VertexStep`.
 * Deprecated `HasContainer.makeHasContainers()` which was used to dissect `AndP` and shouldn't be used at the TinkerPop-level.

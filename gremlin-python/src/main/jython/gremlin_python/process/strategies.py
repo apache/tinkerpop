@@ -114,7 +114,7 @@ class FilterRankingStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self)
 
 
-class IdentityRemoveStrategy(TraversalStrategy):
+class IdentityRemovalStrategy(TraversalStrategy):
     def __init__(self):
         TraversalStrategy.__init__(self)
 

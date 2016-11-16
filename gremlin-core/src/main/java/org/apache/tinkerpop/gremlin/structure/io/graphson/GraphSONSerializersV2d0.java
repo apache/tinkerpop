@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -54,6 +55,7 @@ import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -175,8 +177,10 @@ class GraphSONSerializersV2d0 {
         public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.KEY, property.key());
+            jsonGenerator.writeStringField(GraphSONTokens.KEY, property.key());
             jsonGenerator.writeObjectField(GraphSONTokens.VALUE, property.value());
+            if (null != property.element())
+                jsonGenerator.writeObjectField(GraphSONTokens.ELEMENT, DetachedFactory.detach(property.element(), false));
             jsonGenerator.writeEndObject();
         }
     }
@@ -193,15 +197,17 @@ class GraphSONSerializersV2d0 {
         }
 
         @Override
-        public void serialize(final VertexProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+        public void serialize(final VertexProperty vertexProperty, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
 
-            jsonGenerator.writeObjectField(GraphSONTokens.ID, property.id());
-            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, property.value());
+            jsonGenerator.writeObjectField(GraphSONTokens.ID, vertexProperty.id());
+            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, vertexProperty.value());
+            if (null != vertexProperty.element())
+                jsonGenerator.writeObjectField(GraphSONTokens.VERTEX, DetachedFactory.detach(vertexProperty.element(), false));
             if (includeLabel)
-                jsonGenerator.writeStringField(GraphSONTokens.LABEL, property.label());
-            tryWriteMetaProperties(property, jsonGenerator, normalize);
+                jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertexProperty.label());
+            tryWriteMetaProperties(vertexProperty, jsonGenerator, normalize);
 
             jsonGenerator.writeEndObject();
         }
@@ -298,6 +304,7 @@ class GraphSONSerializersV2d0 {
                 final Map<String, Object> intermediate = new HashMap<>();
                 intermediate.put(GraphSONTokens.STRATEGY, pair.getValue0().toString());
                 intermediate.put(GraphSONTokens.CATEGORY, pair.getValue0().getTraversalCategory().getSimpleName());
+                intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
                 intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
                 intermediates.add(intermediate);
             }
@@ -427,8 +434,8 @@ class GraphSONSerializersV2d0 {
         public Vertex createObject(final Map<String, Object> vertexData) {
             return new DetachedVertex(
                     vertexData.get(GraphSONTokens.ID),
-                    vertexData.get(GraphSONTokens.LABEL).toString(),
-                    (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES)
+                    vertexData.getOrDefault(GraphSONTokens.LABEL, Vertex.DEFAULT_LABEL).toString(),
+                    (Map<String, Object>) vertexData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap())
             );
         }
     }
@@ -443,10 +450,10 @@ class GraphSONSerializersV2d0 {
         public Edge createObject(final Map<String, Object> edgeData) {
             return new DetachedEdge(
                     edgeData.get(GraphSONTokens.ID),
-                    edgeData.get(GraphSONTokens.LABEL).toString(),
-                    (Map) edgeData.get(GraphSONTokens.PROPERTIES),
-                    Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                    Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString())
+                    edgeData.getOrDefault(GraphSONTokens.LABEL, Edge.DEFAULT_LABEL).toString(),
+                    (Map) edgeData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap()),
+                    Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.getOrDefault(GraphSONTokens.OUT_LABEL, Vertex.DEFAULT_LABEL).toString()),
+                    Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.getOrDefault(GraphSONTokens.IN_LABEL, Vertex.DEFAULT_LABEL).toString())
             );
         }
     }
@@ -459,9 +466,47 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public Property createObject(final Map<String, Object> propData) {
-            return new DetachedProperty(
-                    (String) propData.get(GraphSONTokens.KEY),
-                    propData.get(GraphSONTokens.VALUE));
+            return propData.containsKey(GraphSONTokens.ELEMENT) ?
+                    new DetachedProperty((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE), getElement(propData.get(GraphSONTokens.ELEMENT))) :
+                    new DetachedProperty((String) propData.get(GraphSONTokens.KEY), propData.get(GraphSONTokens.VALUE));
+        }
+
+        private Element getElement(final Object element) {
+            if (element instanceof Element)
+                return (Element) element;
+            else if (element instanceof Map) {
+                final Map<String, Object> map = (Map<String, Object>) element;
+                if (map.containsKey(GraphSONTokens.IN_LABEL))
+                    return new EdgeJacksonDeserializer().createObject(map);
+                else if (map.containsKey(GraphSONTokens.VALUE))
+                    return new VertexPropertyJacksonDeserializer().createObject(map);
+                else
+                    return new VertexJacksonDeserializer().createObject(map);
+            } else
+                throw new IllegalArgumentException("Unknown element structure: " + element);
+
+        }
+    }
+
+    static class VertexPropertyJacksonDeserializer extends AbstractObjectDeserializer<VertexProperty> {
+
+        protected VertexPropertyJacksonDeserializer() {
+            super(VertexProperty.class);
+        }
+
+        @Override
+        public VertexProperty createObject(final Map<String, Object> propData) {
+            return propData.containsKey(GraphSONTokens.VERTEX) ?
+                    new DetachedVertexProperty(propData.get(GraphSONTokens.ID), (String) propData.get(GraphSONTokens.LABEL), propData.get(GraphSONTokens.VALUE), (Map) propData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap()), getVertex(propData.get(GraphSONTokens.VERTEX))) :
+                    new DetachedVertexProperty(propData.get(GraphSONTokens.ID), (String) propData.get(GraphSONTokens.LABEL), propData.get(GraphSONTokens.VALUE), (Map) propData.getOrDefault(GraphSONTokens.PROPERTIES, Collections.emptyMap()));
+
+        }
+
+        private Vertex getVertex(final Object vertex) {
+            if (vertex instanceof Vertex)
+                return (Vertex) vertex;
+            else
+                return new VertexJacksonDeserializer().createObject((Map<String, Object>) vertex);
         }
     }
 
@@ -485,23 +530,6 @@ class GraphSONSerializersV2d0 {
         }
     }
 
-    static class VertexPropertyJacksonDeserializer extends AbstractObjectDeserializer<VertexProperty> {
-
-        protected VertexPropertyJacksonDeserializer() {
-            super(VertexProperty.class);
-        }
-
-        @Override
-        public VertexProperty createObject(final Map<String, Object> propData) {
-            return new DetachedVertexProperty(
-                    propData.get(GraphSONTokens.ID),
-                    (String) propData.get(GraphSONTokens.LABEL),
-                    propData.get(GraphSONTokens.VALUE),
-                    (Map) propData.get(GraphSONTokens.PROPERTIES)
-            );
-        }
-    }
-
     static class MetricsJacksonDeserializer extends AbstractObjectDeserializer<Metrics> {
         public MetricsJacksonDeserializer() {
             super(Metrics.class);
@@ -509,16 +537,16 @@ class GraphSONSerializersV2d0 {
 
         @Override
         public Metrics createObject(final Map<String, Object> metricsData) {
-            final MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
+            final MutableMetrics m = new MutableMetrics((String) metricsData.get(GraphSONTokens.ID), (String) metricsData.get(GraphSONTokens.NAME));
 
             m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
-            for (Map.Entry<String, Long> count : ((Map<String, Long>)metricsData.getOrDefault(GraphSONTokens.COUNTS, new HashMap<>(0))).entrySet()) {
+            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.COUNTS, new HashMap<>(0))).entrySet()) {
                 m.setCount(count.getKey(), count.getValue());
             }
             for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.ANNOTATIONS, new HashMap<>(0))).entrySet()) {
                 m.setAnnotation(count.getKey(), count.getValue());
             }
-            for (MutableMetrics nested : (List<MutableMetrics>)metricsData.getOrDefault(GraphSONTokens.METRICS, new ArrayList<>(0))) {
+            for (MutableMetrics nested : (List<MutableMetrics>) metricsData.getOrDefault(GraphSONTokens.METRICS, new ArrayList<>(0))) {
                 m.addNested(nested);
             }
             return m;
