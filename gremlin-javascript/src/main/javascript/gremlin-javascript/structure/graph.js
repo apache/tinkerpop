@@ -68,10 +68,20 @@
 
   inherits(Vertex, Element);
 
-  function Edge(id, outV, label, inV) {
+  function Edge(id, outV, label, inV, properties) {
     Element.call(this, id, label);
     this.outV = outV;
     this.inV = inV;
+    this.properties = {};
+    (function adaptProperties(self) {
+      if (properties) {
+        var keys = Object.keys(properties);
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          self.properties[k] = properties[k].value;
+        }
+      }
+    })(this);
   }
 
   inherits(Edge, Element);
@@ -80,10 +90,11 @@
     return 'e[' + this.id + '][' + this.outV.id + '-' + this.label + '->' + this.inV.id + ']';
   };
 
-  function VertexProperty(id, label, value) {
+  function VertexProperty(id, label, value, properties) {
     Element.call(this, id, label);
     this.value = value;
     this.key = this.label;
+    this.properties = properties;
   }
 
   inherits(VertexProperty, Element);
