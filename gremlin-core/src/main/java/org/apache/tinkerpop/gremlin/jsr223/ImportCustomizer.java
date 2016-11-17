@@ -34,6 +34,10 @@ import java.util.Set;
  */
 public class ImportCustomizer implements Customizer {
 
+    /**
+     * @deprecated As of release 3.2.4, not replaced.
+     */
+    @Deprecated
     public static final ImportCustomizer GREMLIN_CORE = ImportCustomizer.build()
             .addClassImports(CoreImports.getClassImports())
             .addEnumImports(CoreImports.getEnumImports())

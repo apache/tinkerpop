@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.ImportGremlinModule;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -28,7 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -127,10 +130,27 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .scheduledExecutorService(this.scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // make sure that server related classes are available at init
-            v.imports.add(LifeCycleHook.class.getCanonicalName());
-            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
-            gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
+            // use modules if they are present and the old approach if not
+            if (v.modules.isEmpty()) {
+                // make sure that server related classes are available at init - ultimately this body of code will be
+                // deleted when deprecation is removed
+                v.imports.add(LifeCycleHook.class.getCanonicalName());
+                v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
+                gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
+            } else {
+                // make sure that server related classes are available at init - ultimately this is the right way to
+                // do things going forward.
+                // TODO: though this Import is kinda sketchy.
+                if (v.modules.containsKey(ImportGremlinModule.class.getName())) {
+                    final List<String> listToAddImportsTo = (List<String>) v.modules.get(ImportGremlinModule.class.getName()).get("classImports");
+                    listToAddImportsTo.addAll(Arrays.asList(LifeCycleHook.class.getName(), LifeCycleHook.Context.class.getName()));
+                } else {
+                    final Map<String,Object> imports = new HashMap<>();
+                    imports.put("classImports", Arrays.asList(LifeCycleHook.class.getName(), LifeCycleHook.Context.class.getName()));
+                    v.modules.put(ImportGremlinModule.class.getName(), imports);
+                }
+                gremlinExecutorBuilder.addModules(k, v.modules);
+            }
         });
 
         gremlinExecutor = gremlinExecutorBuilder.create();

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.util.CoreImports;
+
 import java.util.Optional;
 
 /**
@@ -25,21 +27,54 @@ import java.util.Optional;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class CoreGremlinModule implements GremlinModule {
+public final class CoreGremlinModule implements GremlinModule {
 
-    private static final Optional<Customizer[]> CUSTOMIZERS = Optional.of(new Customizer[] { ImportCustomizer.GREMLIN_CORE });
+    private static final String MODULE_NAME = "tinkerpop.core";
 
+    private static final ImportCustomizer gremlinCore = ImportCustomizer.build()
+            .addClassImports(CoreImports.getClassImports())
+            .addEnumImports(CoreImports.getEnumImports())
+            .addMethodImports(CoreImports.getMethodImports()).create();
+
+    private static final Customizer[] customizers = new Customizer[] {gremlinCore};
+    private static final Builder builder = new Builder();
+
+    /**
+     * @deprecated As of 3.2.4, replaced by {@link #instance()} as this field will later become private.
+     */
+    @Deprecated
     public static final CoreGremlinModule INSTANCE = new CoreGremlinModule();
 
     private CoreGremlinModule() {}
 
+    public static CoreGremlinModule instance() {
+        return INSTANCE;
+    }
+
     @Override
     public Optional<Customizer[]> getCustomizers(final String scriptEngineName) {
-        return CUSTOMIZERS;
+        return Optional.of(customizers);
     }
 
     @Override
     public String getName() {
-        return "tinkerpop.core";
+        return MODULE_NAME;
+    }
+
+    /**
+     * {@link GremlinModule} instances all use a builder pattern for instantiation via configuration. This method is
+     * just provided for consistency with that pattern. When instantiating programmatically, use {@link #instance()}.
+     */
+    public static Builder build() {
+        return builder;
+    }
+
+    public final static class Builder {
+
+        private Builder() {}
+
+        public CoreGremlinModule create() {
+            return instance();
+        }
     }
 }
